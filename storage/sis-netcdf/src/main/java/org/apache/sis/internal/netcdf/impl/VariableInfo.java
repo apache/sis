@@ -45,7 +45,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
@@ -152,16 +151,16 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * computed by {@link ChannelDecoder#getGrids()} when first needed.
      * May stay {@code null} if the variable is not a data cube.
      *
-     * @see #getGrid(Decoder)
+     * @see #getGrid()
      */
     GridInfo grid;
 
     /**
      * For disambiguation of the case where {@link #grid} has been computed and the result still null.
-     * The that {@link #grid} may be determined and non-null even if this flag is {@code false}.
+     * Note that {@link #grid} may be determined and non-null even if this flag is {@code false}.
      *
      * @see #grid
-     * @see #getGrid(Decoder)
+     * @see #getGrid()
      */
     private transient boolean gridDetermined;
 
@@ -191,6 +190,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Creates a new variable.
      *
+     * @param  decoder     the netCDF file where this variable is stored.
      * @param  input       the channel together with a buffer for reading the variable data.
      * @param  name        the variable name.
      * @param  dimensions  the dimensions of this variable.
@@ -198,20 +198,19 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @param  dataType    the netCDF type of data, or {@code null} if unknown.
      * @param  size        the variable size. May be inaccurate and ignored.
      * @param  offset      the offset where the variable data begins in the netCDF file.
-     * @param  listeners   where to report warnings, if any.
      * @throws ArithmeticException if the variable size exceeds {@link Long#MAX_VALUE}.
      * @throws DataStoreContentException if a logical error is detected.
      */
-    VariableInfo(final ChannelDataInput      input,
-                 final String                name,
-                 final DimensionInfo[]       dimensions,
-                 final Map<String,Object>    attributes,
-                       DataType              dataType,
-                 final int                   size,
-                 final long                  offset,
-                 final WarningListeners<?>   listeners) throws DataStoreContentException
+    VariableInfo(final Decoder            decoder,
+                 final ChannelDataInput   input,
+                 final String             name,
+                 final DimensionInfo[]    dimensions,
+                 final Map<String,Object> attributes,
+                       DataType           dataType,
+                 final int                size,
+                 final long               offset) throws DataStoreContentException
     {
-        super(listeners);
+        super(decoder);
         this.name       = name;
         this.dimensions = dimensions;
         this.attributes = attributes;
@@ -232,7 +231,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                     offsetToNextRecord = Math.multiplyExact(offsetToNextRecord, dim.length());
                 } else if (i != 0) {
                     // Unlimited dimension, if any, must be first in a netCDF 3 classic format.
-                    throw new DataStoreContentException(listeners.getLocale(), Decoder.FORMAT_NAME, input.filename, null);
+                    throw new DataStoreContentException(getLocale(), Decoder.FORMAT_NAME, input.filename, null);
                 }
             }
             reader = new HyperRectangleReader(dataType.number, input, offset);
@@ -368,7 +367,11 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     @Override
     public String getFilename() {
-        return (reader != null) ? reader.filename() : null;
+        if (reader != null) {
+            final String filename = reader.filename();
+            if (filename != null) return filename;
+        }
+        return super.getFilename();
     }
 
     /**
@@ -483,12 +486,12 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @see ChannelDecoder#getGrids()
      */
     @Override
-    protected Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
+    protected Grid getGrid() throws IOException, DataStoreException {
         if (grid == null && !gridDetermined) {
             gridDetermined = true;                            // Set first for avoiding other attempts in case of failure.
             decoder.getGrids();                               // Force calculation of grid geometries if not already done.
             if (grid == null) {                               // May have been computed as a side-effect of decoder.getGrids().
-                grid = (GridInfo) super.getGrid(decoder);     // Non-null if grid dimensions are different than this variable.
+                grid = (GridInfo) super.getGrid();            // Non-null if grid dimensions are different than this variable.
             }
         }
         return grid;

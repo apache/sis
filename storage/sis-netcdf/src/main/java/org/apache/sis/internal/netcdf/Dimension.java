@@ -28,7 +28,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * and {@code Dimension.equals(object)} must return {@code true} if two {@code Dimension}
  * instances represent the same netCDF dimensions. This may require subclasses to override
  * {@link #hashCode()} and {@link #equals(Object)} if uniqueness is not guaranteed.
- * This is needed by {@link Variable#getGrid(Decoder)} default implementation.</p>
+ * This is needed by {@link Variable#getGrid()} default implementation.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

@@ -97,7 +97,7 @@ final class GridWrapper extends Grid {
 
     /**
      * Returns a localization grid having the same dimensions than this grid but in a different order.
-     * This method is invoked by {@link VariableWrapper#getGrid(Decoder)} when the localization grids created
+     * This method is invoked by {@link VariableWrapper#getGrid()} when the localization grids created
      * by {@link Decoder} subclasses are not sufficient and must be tailored for a particular variable.
      * Returns {@code null} the the given dimensions are not members of this grid.
      */

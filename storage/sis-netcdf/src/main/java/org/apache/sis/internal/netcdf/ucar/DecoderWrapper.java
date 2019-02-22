@@ -388,7 +388,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             final List<? extends VariableIF> all = file.getVariables();
             variables = new VariableWrapper[(all != null) ? all.size() : 0];
             for (int i=0; i<variables.length; i++) {
-                variables[i] = new VariableWrapper(listeners, all.get(i));
+                variables[i] = new VariableWrapper(this, all.get(i));
             }
         }
         return variables;
@@ -405,7 +405,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             }
         }
         // We should not reach this point, but let be safe.
-        return new VariableWrapper(listeners, variable);
+        return new VariableWrapper(this, variable);
     }
 
     /**

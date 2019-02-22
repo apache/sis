@@ -42,7 +42,6 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
@@ -85,7 +84,7 @@ final class VariableWrapper extends Variable {
      * The grid needs to be computed if {@link #gridDetermined} is {@code false}.
      *
      * @see #gridDetermined
-     * @see #getGrid(Decoder)
+     * @see #getGrid()
      */
     private transient GridWrapper grid;
 
@@ -93,15 +92,15 @@ final class VariableWrapper extends Variable {
      * Whether {@link #grid} has been computed. Note that the result may still null.
      *
      * @see #grid
-     * @see #getGrid(Decoder)
+     * @see #getGrid()
      */
     private transient boolean gridDetermined;
 
     /**
      * Creates a new variable wrapping the given netCDF interface.
      */
-    VariableWrapper(final WarningListeners<?> listeners, VariableIF v) {
-        super(listeners);
+    VariableWrapper(final Decoder decoder, VariableIF v) {
+        super(decoder);
         variable = v;
         if (v instanceof VariableEnhanced) {
             v = ((VariableEnhanced) v).getOriginalVariable();
@@ -123,7 +122,7 @@ final class VariableWrapper extends Variable {
                 return name.substring(Math.max(name.lastIndexOf('/'), name.lastIndexOf(File.separatorChar)) + 1);
             }
         }
-        return null;
+        return super.getFilename();
     }
 
     /**
@@ -247,7 +246,7 @@ final class VariableWrapper extends Variable {
      * @see DecoderWrapper#getGrids()
      */
     @Override
-    protected Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
+    protected Grid getGrid() throws IOException, DataStoreException {
         if (!gridDetermined) {
             gridDetermined = true;                      // Set first so we don't try twice in case of failure.
             /*
@@ -273,7 +272,7 @@ final class VariableWrapper extends Variable {
              * can map to the variable dimension using attribute values. This mechanism is described
              * in Convention.nameOfDimension(…).
              */
-            grid = (GridWrapper) super.getGrid(decoder);
+            grid = (GridWrapper) super.getGrid();
         }
         return grid;
     }

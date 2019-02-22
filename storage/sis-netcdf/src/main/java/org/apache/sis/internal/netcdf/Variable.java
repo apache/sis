@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
@@ -42,7 +41,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.Errors;
 import ucar.nc2.constants.CDM;                      // We use only String constants.
 import ucar.nc2.constants.CF;
@@ -68,13 +66,9 @@ public abstract class Variable extends NamedElement {
     protected static final WeakHashSet<Vector> SHARED_VECTORS = new WeakHashSet<>(Vector.class);
 
     /**
-     * Names of attributes where to fetch missing or pad values. Order matter since it determines the bits to be set
-     * in the map returned by {@link #getNodataValues()}. The main bit is bit 0, which identify the background value.
+     * The netCDF file where this variable is stored.
      */
-    private static final String[] NODATA_ATTRIBUTES = {
-        CDM.FILL_VALUE,
-        CDM.MISSING_VALUE
-    };
+    protected final Decoder decoder;
 
     /**
      * The pattern to use for parsing temporal units of the form "days since 1970-01-01 00:00:00".
@@ -111,8 +105,11 @@ public abstract class Variable extends NamedElement {
     /**
      * All no-data values declared for this variable, or an empty map if none.
      * This is computed by {@link #getNodataValues()} and cached for efficiency and stability.
+     * The meaning of entries in this map is described in {@code getNodataValues()} method javadoc.
+     *
+     * @see #getNodataValues()
      */
-    private Map<Number,Integer> nodataValues;
+    private Map<Number,Object> nodataValues;
 
     /**
      * Factors by which to multiply a grid index in order to get the corresponding data index, or {@code null} if none.
@@ -126,17 +123,12 @@ public abstract class Variable extends NamedElement {
     private double[] gridToDataIndices;
 
     /**
-     * Where to report warnings, if any.
-     */
-    private final WarningListeners<?> listeners;
-
-    /**
      * Creates a new variable.
      *
-     * @param listeners where to report warnings.
+     * @param decoder  the netCDF file where this variable is stored.
      */
-    protected Variable(final WarningListeners<?> listeners) {
-        this.listeners = listeners;
+    protected Variable(final Decoder decoder) {
+        this.decoder = decoder;
     }
 
     /**
@@ -145,7 +137,9 @@ public abstract class Variable extends NamedElement {
      *
      * @return name of the netCDF file containing this variable, or {@code null} if unknown.
      */
-    public abstract String getFilename();
+    public String getFilename() {
+        return decoder.getFilename();
+    }
 
     /**
      * Returns the name of this variable.
@@ -337,12 +331,11 @@ public abstract class Variable extends NamedElement {
      * Subclasses should override this class with a more direct implementation and invoke this implementation only as a fallback.
      * Typically, subclasses will handle case #1 in above list and this implementation is invoked for case #2.
      *
-     * @param  decoder  the decoder to use for constructing the grid geometry if needed.
      * @return the grid geometry for this variable, or {@code null} if none.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    protected Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
+    protected Grid getGrid() throws IOException, DataStoreException {
         final Convention convention = decoder.convention();
         /*
          * Collect all axis dimensions, in no particular order. We use this map for determining
@@ -465,13 +458,12 @@ public abstract class Variable extends NamedElement {
      * Not all variables have a grid geometry. For example collections of features do not have such grid.
      * The same grid geometry may be shared by many variables.
      *
-     * @param  decoder  the decoder to use for constructing the grid geometry if needed.
      * @return the grid geometry for this variable, or {@code null} if none.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    public final GridGeometry getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
-        final Grid info = getGrid(decoder);
+    public final GridGeometry getGridGeometry() throws IOException, DataStoreException {
+        final Grid info = getGrid();
         if (info == null) {
             return null;
         }
@@ -663,34 +655,30 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns all no-data values declared for this variable, or an empty map if none.
-     * The map keys are pad sample values or missing sample values. The map values are
-     * bitmask identifying the role of the pad/missing sample value:
+     * The map keys are the no-data values (pad sample values or missing sample values).
+     * The map values can be either {@link String} or {@link org.opengis.util.InternationalString} values
+     * containing the description of the no-data value, or an {@link Integer} set to a bitmask identifying
+     * the role of the pad/missing sample value:
      *
      * <ul>
      *   <li>If bit 0 is set, then the value is a pad value. Those values can be used for background.</li>
      *   <li>If bit 1 is set, then the value is a missing value.</li>
      * </ul>
      *
-     * Pad values are first in the map, followed by missing values.
+     * Pad values should be first in the map, followed by missing values.
      * The same value may have more than one role.
      * The map returned by this method shall be stable, i.e. two invocations of this method shall return the
      * same entries in the same order. This is necessary for mapping "no data" values to the same NaN values,
      * since their {@linkplain MathFunctions#toNanFloat(int) ordinal values} are based on order.
      *
      * @return pad/missing values with bitmask of their role.
+     *
+     * @see Convention#nodataValues(Variable)
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public final Map<Number,Integer> getNodataValues() {
+    public final Map<Number,Object> getNodataValues() {
         if (nodataValues == null) {
-            final Map<Number,Integer> pads = new LinkedHashMap<>();
-            for (int i=0; i < NODATA_ATTRIBUTES.length; i++) {
-                for (final Object value : getAttributeValues(NODATA_ATTRIBUTES[i], true)) {
-                    if (value instanceof Number) {
-                        pads.merge((Number) value, 1 << i, (v1, v2) -> v1 | v2);
-                    }
-                }
-            }
-            nodataValues = CollectionsExt.unmodifiableOrCopy(pads);
+            nodataValues = CollectionsExt.unmodifiableOrCopy(decoder.convention().nodataValues(this));
         }
         return nodataValues;
     }
@@ -854,9 +842,11 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns the locale to use for warnings and error messages.
+     *
+     * @return the locale for warnings and error messages.
      */
-    final Locale getLocale() {
-        return listeners.getLocale();
+    protected final Locale getLocale() {
+        return decoder.listeners.getLocale();
     }
 
     /**
@@ -877,7 +867,7 @@ public abstract class Variable extends NamedElement {
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
     protected final void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
-        warning(listeners, caller, method, null, null, key, arguments);
+        warning(decoder.listeners, caller, method, null, null, key, arguments);
     }
 
     /**
@@ -890,7 +880,7 @@ public abstract class Variable extends NamedElement {
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
     final void error(final Class<?> caller, final String method, final Exception exception, final short key, final Object... arguments) {
-        warning(listeners, caller, method, exception, Errors.getResources(listeners.getLocale()), key, arguments);
+        warning(decoder.listeners, caller, method, exception, Errors.getResources(getLocale()), key, arguments);
     }
 
     /**

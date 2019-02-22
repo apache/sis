@@ -656,8 +656,8 @@ main:   switch (getDimension()) {
     /**
      * Reports a non-fatal error that occurred while constructing the grid geometry. This method is invoked
      * by methods that are themselves invoked (indirectly) by {@link Grid#getGridGeometry(Decoder)}, which
-     * is invoked by {@link Variable#getGridGeometry(Decoder)}. We pretend that the warning come from the
-     * later since it is a bit closer to a public API.
+     * is invoked by {@link Variable#getGridGeometry()}. We pretend that the warning come from the later
+     * since it is a bit closer to a public API.
      *
      * @param  exception  the exception that occurred, or {@code null} if none.
      * @param  key        one or {@link Errors.Keys} constants.

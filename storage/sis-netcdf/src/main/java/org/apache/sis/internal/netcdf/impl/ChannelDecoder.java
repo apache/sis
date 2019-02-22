@@ -609,8 +609,8 @@ public final class ChannelDecoder extends Decoder {
                     default: throw malformedHeader();
                 }
             }
-            variables[j] = new VariableInfo(input, name, varDims, attributes,
-                    DataType.valueOf(input.readInt()), input.readInt(), readOffset(), listeners);
+            variables[j] = new VariableInfo(this, input, name, varDims, attributes,
+                    DataType.valueOf(input.readInt()), input.readInt(), readOffset());
         }
         /*
          * The VariableInfo constructor determined if the variables are "unlimited" or not.

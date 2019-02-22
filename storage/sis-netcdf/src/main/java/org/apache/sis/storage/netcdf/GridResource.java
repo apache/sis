@@ -24,7 +24,6 @@ import java.nio.file.Path;
 import java.nio.Buffer;
 import java.awt.image.DataBuffer;
 import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -166,7 +165,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             if (decoder.convention().roleOf(variable) != VariableRole.COVERAGE) {
                 continue;                                                   // Skip variables that are not grid coverages.
             }
-            final GridGeometry grid = variable.getGridGeometry(decoder);
+            final GridGeometry grid = variable.getGridGeometry();
             if (grid == null) {
                 continue;                                                   // Skip variables that are not grid coverages.
             }
@@ -198,7 +197,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                         final String cn = candidate.getStandardName();
                         if (cn.regionMatches(cn.length() - suffixLength, name, suffixStart, suffixLength) &&
                             cn.regionMatches(0, name, 0, prefixLength) && candidate.getDataType() == type &&
-                            grid.equals(candidate.getGridGeometry(decoder)))
+                            grid.equals(candidate.getGridGeometry()))
                         {
                             /*
                              * Found another variable with the same name except for the keyword. Verify that the
@@ -330,27 +329,33 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
          */
         boolean setBackground = true;
         int ordinal = data.hasRealValues() ? 0 : -1;
-        final InternationalString[] names = new InternationalString[2];
-        for (final Map.Entry<Number,Integer> entry : data.getNodataValues().entrySet()) {
+        final CharSequence[] names = new CharSequence[2];
+        for (final Map.Entry<Number,Object> entry : data.getNodataValues().entrySet()) {
             final Number n;
             if (ordinal >= 0) {
                 n = MathFunctions.toNanFloat(ordinal++);        // Must be consistent with Variable.replaceNaN(Object).
             } else {
                 n = entry.getKey();                             // Should be real number, made unique by the HashMap.
             }
-            final int role = entry.getValue();          // Bit 0 set (value 1) = pad value, bit 1 set = missing value.
-            final int i = (role == 1) ? 1 : 0;          // i=1 if role is only pad value, i=0 otherwise.
-            InternationalString name = names[i];
-            if (name == null) {
-                name = Vocabulary.formatInternational(i == 0 ? Vocabulary.Keys.MissingValue : Vocabulary.Keys.FillValue);
-                names[i] = name;
-            }
-            if (setBackground & (role & 1) != 0) {
-                setBackground = false;                  // Declare only one fill value.
-                builder.setBackground(name, n);
+            CharSequence name;
+            final Object label = entry.getValue();
+            if (label instanceof Integer) {
+                final int role = (Integer) label;               // Bit 0 set (value 1) = pad value, bit 1 set = missing value.
+                final int i = (role == 1) ? 1 : 0;              // i=1 if role is only pad value, i=0 otherwise.
+                name = names[i];
+                if (name == null) {
+                    name = Vocabulary.formatInternational(i == 0 ? Vocabulary.Keys.MissingValue : Vocabulary.Keys.FillValue);
+                    names[i] = name;
+                }
+                if (setBackground & (role & 1) != 0) {
+                    setBackground = false;                      // Declare only one fill value.
+                    builder.setBackground(name, n);
+                    continue;
+                }
             } else {
-                builder.addQualitative(name, n, n);
+                name = (CharSequence) label;
             }
+            builder.addQualitative(name, n, n);
         }
         return builder.setName(data.getName()).build();
     }

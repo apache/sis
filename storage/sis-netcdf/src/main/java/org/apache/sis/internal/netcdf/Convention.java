@@ -16,7 +16,9 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.Map;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.awt.image.DataBuffer;
 import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
@@ -36,6 +38,7 @@ import ucar.nc2.constants.CDM;
  *
  * <blockquote><pre>META-INF/services/org.apache.sis.internal.netcdf.Convention</pre></blockquote>
  *
+ * Instances of this class must be immutable and thread-safe.
  * This class does not encapsulate all conventions needed for understanding a netCDF file,
  * but only conventions that are more likely to need to be overridden for some data producers.
  *
@@ -83,6 +86,15 @@ public class Convention {
         "actual_range",     // Actual data range for variable.
         "valid_min",        // Fallback if "valid_range" is not specified.
         "valid_max"
+    };
+
+    /**
+     * Names of attributes where to fetch missing or pad values. Order matter since it determines the bits to be set in the
+     * map returned by {@link #nodataValues(Variable)}. The main bit is bit #0, which identifies the background value.
+     */
+    private static final String[] NODATA_ATTRIBUTES = {
+        CDM.FILL_VALUE,
+        CDM.MISSING_VALUE
     };
 
     /**
@@ -375,11 +387,45 @@ public class Convention {
     }
 
     /**
+     * Returns all no-data values declared for the given variable, or an empty map if none.
+     * The map keys are the no-data values (pad sample values or missing sample values).
+     * The map values can be either {@link String} or {@link org.opengis.util.InternationalString} values
+     * containing the description of the no-data value, or an {@link Integer} set to a bitmask identifying
+     * the role of the pad/missing sample value:
+     *
+     * <ul>
+     *   <li>If bit 0 is set, then the value is a pad value. Those values can be used for background.</li>
+     *   <li>If bit 1 is set, then the value is a missing value.</li>
+     * </ul>
+     *
+     * Pad values should be first in the map, followed by missing values.
+     * The same value may have more than one role.
+     *
+     * @param  data  the variable for which to get no-data values.
+     * @return no-data values with bitmask of their roles or textual descriptions.
+     */
+    public Map<Number,Object> nodataValues(final Variable data) {
+        final Map<Number,Object> pads = new LinkedHashMap<>();
+        for (int i=0; i < NODATA_ATTRIBUTES.length; i++) {
+            for (final Object value : data.getAttributeValues(NODATA_ATTRIBUTES[i], true)) {
+                if (value instanceof Number) {
+                    pads.merge((Number) value, 1 << i, (v1, v2) -> ((Integer) v1) | ((Integer) v2));
+                }
+            }
+        }
+        return pads;
+    }
+
+    /**
      * Builds the function converting values from their packed formats in the variable to "real" values.
      * The transfer function is typically built from the {@code "scale_factor"} and {@code "add_offset"}
      * attributes associated to the given variable, but other conventions could use different attributes.
      * The returned function will be a component of the {@link org.apache.sis.coverage.SampleDimension}
      * to be created for each variable.
+     *
+     * <p>This method is invoked only if {@link #validRange(Variable)} returned a non-null value.
+     * Since a transfer function is assumed to exist in such case (even if that function is identity),
+     * this method shall never return {@code null}.</p>
      *
      * @param  data  the variable from which to determine the transfer function.
      *               This is usually a variable containing raster data.

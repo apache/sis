@@ -309,7 +309,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
 
     /**
      * Constructs a range using the smallest type of {@link Number} that can hold the given values.
-     * The given numbers don't need to be of the same type since they will
+     * The given numbers do not need to be of the same type since they will
      * be {@linkplain Numbers#cast(Number, Class) casted} as needed.
      * More specifically this method returns:
      *
@@ -322,7 +322,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *       {@value java.lang.Integer#MIN_VALUE} and {@value java.lang.Integer#MAX_VALUE} inclusive.</li>
      *   <li>{@code NumberRange<Long>} if the given values are integers in the range of {@code long} values.</li>
      *   <li>{@code NumberRange<Float>} if the given values can be casted to {@code float} values without data lost.</li>
-     *   <li>{@code NumberRange<Double>} If none of the above types is suitable.</li>
+     *   <li>{@code NumberRange<Double>} if none of the above types is suitable.</li>
      * </ul>
      *
      * This method may return a shared instance, at implementation choice.
