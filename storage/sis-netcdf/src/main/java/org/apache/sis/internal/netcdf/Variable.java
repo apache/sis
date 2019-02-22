@@ -259,6 +259,11 @@ public abstract class Variable extends NamedElement {
     public final boolean hasRealValues() {
         final int n = getDataType().number;
         if (n == Numbers.FLOAT | n == Numbers.DOUBLE) {
+            final Convention convention = decoder.convention();
+            if (convention != Convention.DEFAULT) {
+                return convention.transferFunction(this).isIdentity();
+            }
+            // Shortcut for common case.
             double c = getAttributeAsNumber(CDM.SCALE_FACTOR);
             if (Double.isNaN(c) || c == 1) {
                 c = getAttributeAsNumber(CDM.ADD_OFFSET);
@@ -277,6 +282,18 @@ public abstract class Variable extends NamedElement {
      * @see #writeDataTypeName(StringBuilder)
      */
     public abstract DataType getDataType();
+
+    /**
+     * Returns whether this variable is used as a coordinate system axis, a coverage or something else.
+     * This is a shortcut for {@link Convention#roleOf(Variable)}, except that {@code this} can not be null.
+     *
+     * @return role of this variable.
+     *
+     * @see Convention#roleOf(Variable)
+     */
+    public final VariableRole getRole() {
+        return decoder.convention().roleOf(this);
+    }
 
     /**
      * Returns whether this variable can grow. A variable is unlimited if at least one of its dimension is unlimited.
@@ -347,7 +364,7 @@ public abstract class Variable extends NamedElement {
         final List<Variable> axes = new ArrayList<>();
         final Map<Object,Dimension> domain = new HashMap<>();
         for (final Variable candidate : decoder.getVariables()) {
-            if (convention.roleOf(candidate) == VariableRole.AXIS) {
+            if (candidate.getRole() == VariableRole.AXIS) {
                 axes.add(candidate);
                 for (final Dimension dim : candidate.getGridDimensions()) {
                     domain.put(dim, dim);

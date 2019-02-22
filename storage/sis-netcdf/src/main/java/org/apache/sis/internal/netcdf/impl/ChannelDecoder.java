@@ -921,7 +921,7 @@ public final class ChannelDecoder extends Decoder {
              */
             final Map<DimensionInfo, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
             for (final VariableInfo variable : variables) {
-                switch (convention().roleOf(variable)) {
+                switch (variable.getRole()) {
                     case COVERAGE: {
                         // If Convention.roleOf(…) overwrote the value computed by VariableInfo,
                         // remember the new value for avoiding to ask again in next loops.

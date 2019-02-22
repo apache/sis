@@ -102,11 +102,26 @@ public class TransferFunction implements Cloneable, Serializable {
 
     /**
      * Creates a transfer function initialized to the identity transform.
+     *
+     * @see #isIdentity()
      */
     public TransferFunction() {
         type  = TransferFunctionType.LINEAR;
         base  = 10;
         scale =  1;
+    }
+
+    /**
+     * Returns {@code true} if this transfer function is identity. The function is identity if
+     * its {@linkplain #getType() type} is {@linkplain TransferFunctionType#LINEAR linear},
+     * its {@linkplain #getScale() scale} is 1 and its {@linkplain #getOffset() offset} is 0.
+     *
+     * @return whether this transfer function is identity.
+     *
+     * @since 1.0
+     */
+    public boolean isIdentity() {
+        return TransferFunctionType.LINEAR.equals(type) && scale == 1 && offset == 0;
     }
 
     /**

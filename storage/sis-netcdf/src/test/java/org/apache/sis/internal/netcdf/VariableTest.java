@@ -93,7 +93,7 @@ public strictfp class VariableTest extends TestCase {
      *   <li>{@link Variable#getDescription()}</li>
      *   <li>{@link Variable#getDataType()}</li>
      *   <li>{@link Variable#getGridDimensions()} length</li>
-     *   <li>{@link Convention#roleOf(Variable)}</li>
+     *   <li>{@link Variable#getRole()}</li>
      * </ul>
      *
      * @throws IOException if an I/O error occurred while opening the file.
@@ -120,7 +120,6 @@ public strictfp class VariableTest extends TestCase {
      * @param  variables  the variable for which to test properties.
      */
     private static void assertBasicPropertiesEqual(final Object[] expected, final Variable[] variables) {
-        final Convention convention = new Convention();
         int propertyIndex = 0;
         for (final Variable variable : variables) {
             final String name = variable.getName();
@@ -130,7 +129,7 @@ public strictfp class VariableTest extends TestCase {
             assertEquals(name, expected[propertyIndex++], variable.getDescription());
             assertEquals(name, expected[propertyIndex++], dataType);
             assertEquals(name, expected[propertyIndex++], variable.getGridDimensions().size());
-            assertEquals(name, expected[propertyIndex++], convention.roleOf(variable));
+            assertEquals(name, expected[propertyIndex++], variable.getRole());
             assertEquals(0, propertyIndex % NUM_BASIC_PROPERTY_COLUMNS);            // Sanity check for VariableTest itself.
         }
         assertEquals("Expected more variables.",

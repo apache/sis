@@ -895,7 +895,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     private void addContentInfo() {
         final Map<List<String>, List<Variable>> contents = new HashMap<>(4);
         for (final Variable variable : decoder.getVariables()) {
-            if (decoder.convention().roleOf(variable) == VariableRole.COVERAGE) {
+            if (variable.getRole() == VariableRole.COVERAGE) {
                 final List<org.apache.sis.internal.netcdf.Dimension> dimensions = variable.getGridDimensions();
                 final String[] names = new String[dimensions.size()];
                 for (int i=0; i<names.length; i++) {
