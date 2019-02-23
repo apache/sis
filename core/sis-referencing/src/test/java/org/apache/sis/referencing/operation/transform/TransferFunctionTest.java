@@ -52,6 +52,7 @@ public final strictfp class TransferFunctionTest extends TestCase {
         assertEquals("scale",  1, f.getScale(),  STRICT);
         assertEquals("offset", 0, f.getOffset(), STRICT);
         assertEquals("toString", "y = x", f.toString());
+        assertTrue  ("isIdentity", f.isIdentity());
 
         f.setScale(0.15);
         f.setOffset(-2);
@@ -69,6 +70,7 @@ public final strictfp class TransferFunctionTest extends TestCase {
         assertEquals("base",    1,    b.getBase(),   STRICT);
         assertEquals("scale",   0.15, b.getScale(),  STRICT);
         assertEquals("offset", -2,    b.getOffset(), STRICT);
+        assertFalse ("isIdentity",    b.isIdentity());
     }
 
     /**
@@ -93,6 +95,7 @@ public final strictfp class TransferFunctionTest extends TestCase {
         assertEquals("base",   10, b.getBase(),   STRICT);
         assertEquals("scale",   1, b.getScale(),  STRICT);
         assertEquals("offset", -2, b.getOffset(), STRICT);
+        assertFalse ("isIdentity", b.isIdentity());
     }
 
     /**
@@ -117,6 +120,7 @@ public final strictfp class TransferFunctionTest extends TestCase {
         assertEquals("base",   10,    b.getBase(),   STRICT);
         assertEquals("scale",   0.15, b.getScale(),  STRICT);
         assertEquals("offset",  0,    b.getOffset(), STRICT);
+        assertFalse ("isIdentity",    b.isIdentity());
     }
 
     /**
@@ -141,6 +145,7 @@ public final strictfp class TransferFunctionTest extends TestCase {
         assertEquals("base",   10,    b.getBase(),   STRICT);
         assertEquals("scale",   0.15, b.getScale(),  1E-16);
         assertEquals("offset", -2,    b.getOffset(), 1E-16);
+        assertFalse ("isIdentity",    b.isIdentity());
     }
 
     /**

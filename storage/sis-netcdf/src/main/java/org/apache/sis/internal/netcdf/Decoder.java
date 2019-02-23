@@ -59,7 +59,10 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     public Path location;
 
     /**
-     * Customized conventions to apply in addition of netCDF conventions, or {@code null} if none.
+     * Conventions to apply in addition of netCDF conventions.
+     * Shall never be {@code null} after {@link #initialize()}.
+     *
+     * @see #convention()
      */
     private Convention convention;
 
@@ -122,6 +125,17 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     }
 
     /**
+     * Returns information about modifications to apply to netCDF conventions in order to handle this netCDF file.
+     * Customized conventions are necessary when the variables and attributes in a netCDF file do not follow CF-conventions.
+     *
+     * @return conventions to apply.
+     */
+    public final Convention convention() {
+        // Convention are still null if this method is invoked from Convention.isApplicableTo(Decoder).
+        return (convention != null) ? convention : Convention.DEFAULT;
+    }
+
+    /**
      * Returns a filename for formatting error message and for information purpose.
      * The filename should not contain path, but may contain file extension.
      *
@@ -146,9 +160,11 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
 
     /**
      * Defines the groups where to search for named attributes, in preference order.
-     * The {@code null} group name stands for the global attributes.
+     * The {@code null} group name stands for attributes in the root group.
      *
      * @param  groupNames  the name of the group where to search, in preference order.
+     *
+     * @see Convention#getSearchPath()
      */
     public abstract void setSearchPath(String... groupNames);
 
@@ -283,34 +299,4 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @throws DataStoreException if a logical error occurred.
      */
     public abstract Grid[] getGrids() throws IOException, DataStoreException;
-
-    /**
-     * Returns the role of the given variable. In particular, this method shall return
-     * {@link VariableRole#AXIS} if the given variable seems to be a coordinate system axis.
-     *
-     * @param  variable  the variable for which to get the role, or {@code null}.
-     * @return role of the given variable, or {@code null} if the given variable was null.
-     */
-    public final VariableRole roleOf(final Variable variable) {
-        if (variable == null) {
-            return null;
-        }
-        if (convention != null) {
-            return convention.roleOf(variable);
-        }
-        return variable.getRole();
-    }
-
-    /**
-     * If there is some specialized convention for current file that mandate a different set of
-     * axes for the given variable, returns the name of the variables for those axes. Otherwise
-     * (i.e. if the file can be parsed as a standard CF-compliant file), returns {@code null}.
-     *
-     * @param  variable  the variable for which the list of axis variables are desired.
-     * @return names of the variables containing axis values, or {@code null} if this
-     *         method performs applies no special convention for the given variable.
-     */
-    protected final String[] namesOfAxisVariables(final Variable variable) {
-        return (convention != null) ? convention.namesOfAxisVariables(variable) : null;
-    }
 }

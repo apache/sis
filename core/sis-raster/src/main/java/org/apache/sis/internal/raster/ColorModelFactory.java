@@ -42,6 +42,7 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * A factory for {@link ColorModel} objects built from a sequence of colors.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -98,9 +99,13 @@ public final class ColorModelFactory {
     /**
      * In a color map defined by a piecewise function, indices where to store the first interpolated value in the color map.
      * The number of pieces (segments) is {@code pieceStarts.length}. The last element of this array is the index after the
-     * end of the last piece. The indices are unsigned short integers. Never {@code null} but may be empty.
+     * end of the last piece. The indices are integers. Never {@code null} but may be empty.
+     *
+     * <div class="note"><b>Note:</b>
+     * indices as unsigned short are not sufficient since in the worst case the last next index will
+     * be 65536, which would be converted to 0 as a short, causing several exception afterward.</div>
      */
-    private final short[] pieceStarts;
+    private final int[] pieceStarts;
 
     /**
      * The Alpha-Red-Green-Blue codes for all segments of the piecewise function.
@@ -142,7 +147,7 @@ public final class ColorModelFactory {
         final Map.Entry<NumberRange<?>, Color[]>[] entries = categories.entrySet().toArray(new Map.Entry[categories.size()]);
         Arrays.sort(entries, RANGE_COMPARATOR);
         int     count   = 0;
-        short[] starts  = new short[entries.length + 1];
+        int[]   starts  = new int[entries.length + 1];
         int[][] codes   = new int[entries.length][];
         double  minimum = Double.POSITIVE_INFINITY;
         double  maximum = Double.NEGATIVE_INFINITY;
@@ -155,12 +160,13 @@ public final class ColorModelFactory {
             final int lower = Math.round((float) min);
             final int upper = Math.round((float) max);
             if (lower < upper) {
-                if (lower < 0 || upper > 0xFFFF) {
-                    starts = ArraysExt.EMPTY_SHORT;
+                if (lower < 0 || upper > 0x10000) {
+                    starts = ArraysExt.EMPTY_INT;
                     codes  = null;
+                    count  = 0;
                 } else if (codes != null) {
                     if (count != 0) {
-                        final int before = Short.toUnsignedInt(starts[count]);
+                        final int before = starts[count];
                         if (before != lower) {
                             if (before > lower) {
                                 // TODO: remove the overlapped colors in previous range.
@@ -173,8 +179,8 @@ public final class ColorModelFactory {
                         }
                     }
                     codes [  count] = toARGB(entry.getValue());
-                    starts[  count] = (short) lower;
-                    starts[++count] = (short) upper;
+                    starts[  count] = lower;
+                    starts[++count] = upper;
                 }
             }
         }
@@ -182,10 +188,18 @@ public final class ColorModelFactory {
             minimum = 0;
             maximum = 1;
         }
+        /*
+         * The length of 'pieceStarts' may differ from the expected length if there is holes between categories.
+         * We need to adjust the array length since it will determine the number of categories. Note that there
+         * is one more element than the number of categories.
+         */
+        if (starts.length != 0) {
+            starts = ArraysExt.resize(starts, count + 1);
+        }
         this.minimum     = (float) minimum;
         this.maximum     = (float) maximum;
-        this.pieceStarts = ArraysExt.resize(starts, count + 1);
-        this.ARGB        = ArraysExt.resize(codes,  count);
+        this.pieceStarts = starts;
+        this.ARGB        = codes;
     }
 
     /**
@@ -217,12 +231,12 @@ public final class ColorModelFactory {
          * Interpolates the colors in the color palette. Colors that do not fall
          * in the range of a category will be set to a transparent color.
          */
-        final int[] colorMap = new int[Short.toUnsignedInt(pieceStarts[categoryCount])];
+        final int[] colorMap = new int[pieceStarts[categoryCount]];
         int transparent = -1;
         for (int i=0; i<categoryCount; i++) {
             final int[] colors = ARGB[i];
-            final int   lower  = Short.toUnsignedInt(pieceStarts[i  ]);
-            final int   upper  = Short.toUnsignedInt(pieceStarts[i+1]);
+            final int   lower  = pieceStarts[i  ];
+            final int   upper  = pieceStarts[i+1];
             if (transparent < 0 && colors.length == 0) {
                 transparent = lower;
             }

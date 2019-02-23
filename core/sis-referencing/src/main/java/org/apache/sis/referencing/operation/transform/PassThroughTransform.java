@@ -160,13 +160,44 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         return MathTransforms.passThrough(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
     }
 
+    /** TODO: rename create(…) and recycle above javadoc. */
+    static MathTransform create0(final int firstAffectedCoordinate, final MathTransform subTransform, final int numTrailingCoordinates) {
+        Matrix matrix = MathTransforms.getMatrix(subTransform);
+        if (matrix != null) {
+            return newInstance(firstAffectedCoordinate, matrix, numTrailingCoordinates);
+        }
+        /*
+         * Above checks tried to avoid the creation of PassThroughTransform instance. At this point we can not
+         * avoid it anymore. But maybe we can merge two PassThroughTransforms into a single one. It may happen
+         * if 'subTransform' is a concatenation of a linear transform + pass through transform (in any order).
+         * In such case, moving the linear transform outside 'subTransform' enable above-cited merge.
+         */
+        if (subTransform instanceof ConcatenatedTransform) {
+            MathTransform transform1 = ((ConcatenatedTransform) subTransform).transform1;
+            MathTransform transform2 = ((ConcatenatedTransform) subTransform).transform2;
+            matrix = MathTransforms.getMatrix(transform1);
+            if (matrix != null && transform2 instanceof PassThroughTransform) {
+                transform1 = newInstance(firstAffectedCoordinate, matrix,     numTrailingCoordinates);
+                transform2 = newInstance(firstAffectedCoordinate, transform2, numTrailingCoordinates);
+                return MathTransforms.concatenate(transform1, transform2);
+            }
+            matrix = MathTransforms.getMatrix(transform2);
+            if (matrix != null && transform1 instanceof PassThroughTransform) {
+                transform1 = newInstance(firstAffectedCoordinate, transform1, numTrailingCoordinates);
+                transform2 = newInstance(firstAffectedCoordinate, matrix,     numTrailingCoordinates);
+                return MathTransforms.concatenate(transform1, transform2);
+            }
+        }
+        return newInstance(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
+    }
+
     /**
      * Special case for transformation backed by a matrix. Is is possible to use a new matrix for such transform,
      * instead of wrapping the sub-transform into a {@code PassThroughTransform} object. It is faster and easier
      * to concatenate.
      */
-    static Matrix asMatrix(final int firstAffectedCoordinate, final Matrix subTransform, final int numTrailingCoordinates) {
-        return expand(MatrixSIS.castOrCopy(subTransform), firstAffectedCoordinate, numTrailingCoordinates, 1);
+    private static LinearTransform newInstance(int firstAffectedCoordinate, Matrix subTransform, int numTrailingCoordinates) {
+        return MathTransforms.linear(expand(MatrixSIS.castOrCopy(subTransform), firstAffectedCoordinate, numTrailingCoordinates, 1));
     }
 
     /**
@@ -174,9 +205,9 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * the constructor for the case where the sub-transform is already a {@code PassThroughTransform}.
      * It is caller's responsibility to ensure that the argument values are valid.
      */
-    static PassThroughTransform newInstance(final int firstAffectedCoordinate,
-                                            final MathTransform subTransform,
-                                            final int numTrailingCoordinates)
+    private static PassThroughTransform newInstance(final int firstAffectedCoordinate,
+                                                    final MathTransform subTransform,
+                                                    final int numTrailingCoordinates)
     {
         int dim = subTransform.getSourceDimensions();
         if (subTransform.getTargetDimensions() == dim) {
@@ -493,11 +524,11 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * sub-transform can be expressed as a matrix. It is also invoked for computing the
      * matrix returned by {@link #derivative}.
      *
-     * @param subMatrix              the sub-transform as a matrix.
+     * @param subMatrix                the sub-transform as a matrix.
      * @param firstAffectedCoordinate  index of the first affected coordinate.
      * @param numTrailingCoordinates   number of trailing coordinates to pass through.
-     * @param affine                 0 if the matrix do not contains translation terms, or 1 if
-     *                               the matrix is an affine transform with translation terms.
+     * @param affine                   0 if the matrix do not contains translation terms, or 1 if
+     *                                 the matrix is an affine transform with translation terms.
      */
     private static Matrix expand(final MatrixSIS subMatrix,
                                  final int firstAffectedCoordinate,

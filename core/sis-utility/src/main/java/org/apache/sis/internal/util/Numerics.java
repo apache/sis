@@ -206,6 +206,22 @@ public final class Numerics extends Static {
     }
 
     /**
+     * Returns {@code value} × {@code multiplier} / {@code divisor} with control against overflow.
+     * The result is rounded toward zero.
+     *
+     * @param  value       the value to multiply and divide.
+     * @param  multiplier  the multiplication factor.
+     * @param  divisor     the division to apply after multiplication.
+     * @return {@code value} × {@code multiplier} / {@code divisor} rounded toward zero.
+     */
+    public static long multiplyDivide(final long value, final long multiplier, final long divisor) {
+        // TODO: uncomment with JDK9
+//      final long high = Math.multiplyHigh(value, multiplier);
+//      return Math.multiplyExact(value * multiplier / divisor, high);
+        return Math.multiplyExact(value, multiplier) / divisor;
+    }
+
+    /**
      * If the given value is presents in the cache, returns the cached value.
      * Otherwise returns the given value as-is.
      *

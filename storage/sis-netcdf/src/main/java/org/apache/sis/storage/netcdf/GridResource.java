@@ -24,13 +24,10 @@ import java.nio.file.Path;
 import java.nio.Buffer;
 import java.awt.image.DataBuffer;
 import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.netcdf.Decoder;
-import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Resources;
@@ -40,6 +37,7 @@ import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridDerivation;
+import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.internal.raster.RasterFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -52,7 +50,6 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import ucar.nc2.constants.CDM;                      // We use only String constants.
 
 
 /**
@@ -62,6 +59,7 @@ import ucar.nc2.constants.CDM;                      // We use only String consta
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -128,22 +126,29 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
     private final Path location;
 
     /**
+     * Allows to fetch referencing information from source variables. It's mostly useful for handling netCDF files
+     * structured in ways different than CF-convention (for example GCOM, <i>etc.</i>).
+     */
+    private final Convention convention;
+
+    /**
      * Creates a new resource. All variables in the {@code data} list shall have the same domain and the same grid geometry.
      *
      * @param  decoder  the implementation used for decoding the netCDF file.
      * @param  name     the name for the resource.
      * @param  grid     the grid geometry (size, CRS…) of the {@linkplain #data} cube.
-     * @param  data     the variables providing actual data. Shall contain at least one variable.
+     * @param  bands    the variables providing actual data. Shall contain at least one variable.
      */
-    private GridResource(final Decoder decoder, final String name, final Grid grid, final List<Variable> data)
+    private GridResource(final Decoder decoder, final String name, final GridGeometry grid, final List<Variable> bands)
             throws IOException, DataStoreException
     {
         super(decoder.listeners);
-        this.data    = data.toArray(new Variable[data.size()]);
-        ranges       = new SampleDimension[this.data.length];
-        gridGeometry = grid.getGridGeometry(decoder);
+        data         = bands.toArray(new Variable[bands.size()]);
+        ranges       = new SampleDimension[data.length];
         identifier   = decoder.nameFactory.createLocalName(decoder.namespace, name);
         location     = decoder.location;
+        convention   = decoder.convention();
+        gridGeometry = grid;
     }
 
     /**
@@ -157,10 +162,10 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
         final List<Resource> resources = new ArrayList<>();
         for (int i=0; i<variables.length; i++) {
             final Variable variable = variables[i];
-            if (decoder.roleOf(variable) != VariableRole.COVERAGE) {
+            if (decoder.convention().roleOf(variable) != VariableRole.COVERAGE) {                 // Variable may be null.
                 continue;                                                   // Skip variables that are not grid coverages.
             }
-            final Grid grid = variable.getGrid(decoder);
+            final GridGeometry grid = variable.getGridGeometry();
             if (grid == null) {
                 continue;                                                   // Skip variables that are not grid coverages.
             }
@@ -185,14 +190,14 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                     int suffixLength = name.length() - suffixStart;
                     for (int j=i; ++j < variables.length;) {
                         final Variable candidate = variables[j];
-                        if (decoder.roleOf(candidate) != VariableRole.COVERAGE) {
+                        if (decoder.convention().roleOf(candidate) != VariableRole.COVERAGE) {        // Variable may be null.
                             variables[j] = null;                                // For avoiding to revisit that variable again.
                             continue;
                         }
                         final String cn = candidate.getStandardName();
                         if (cn.regionMatches(cn.length() - suffixLength, name, suffixStart, suffixLength) &&
                             cn.regionMatches(0, name, 0, prefixLength) && candidate.getDataType() == type &&
-                            candidate.getGrid(decoder) == grid)
+                            grid.equals(candidate.getGridGeometry()))
                         {
                             /*
                              * Found another variable with the same name except for the keyword. Verify that the
@@ -251,14 +256,18 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public List<SampleDimension> getSampleDimensions() {
+    public List<SampleDimension> getSampleDimensions() throws DataStoreException {
         SampleDimension.Builder builder = null;
-        for (int i=0; i<ranges.length; i++) {
-            if (ranges[i] == null) {
-                if (builder == null) builder = new SampleDimension.Builder();
-                ranges[i] = createSampleDimension(builder, data[i]);
-                builder.clear();
+        try {
+            for (int i=0; i<ranges.length; i++) {
+                if (ranges[i] == null) {
+                    if (builder == null) builder = new SampleDimension.Builder();
+                    ranges[i] = createSampleDimension(builder, data[i]);
+                    builder.clear();
+                }
             }
+        } catch (TransformException e) {
+            throw new DataStoreReferencingException(e);
         }
         return UnmodifiableArrayList.wrap(ranges);
     }
@@ -268,20 +277,20 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
      *
      * @param  builder  the builder to use for creating the sample dimension.
      * @param  data     the data for which to create a sample dimension.
+     * @throws TransformException if an error occurred while using the transfer function.
      */
-    private static SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable data) {
-        NumberRange<?> range = data.getValidValues();
+    private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable data) throws TransformException {
+        /*
+         * Take the minimum and maximum values as determined by Apache SIS through the Convention class.  The UCAR library
+         * is used only as a fallback. We give precedence to the range computed by Apache SIS instead than the range given
+         * by UCAR because we need the range of packed values instead than the range of converted values.
+         */
+        NumberRange<?> range = convention.validRange(data);
+        if (range == null) {
+            range = data.getRangeFallback();                                // Fallback to UCAR library may happen here.
+        }
         if (range != null) {
-            /*
-             * If scale_factor and/or add_offset variable attributes are present, then this is
-             * a "packed" variable. Otherwise the transfer function is the identity transform.
-             */
-            final TransferFunction tr = new TransferFunction();
-            final double scale  = data.getAttributeAsNumber(CDM.SCALE_FACTOR);
-            final double offset = data.getAttributeAsNumber(CDM.ADD_OFFSET);
-            if (!Double.isNaN(scale))  tr.setScale (scale);
-            if (!Double.isNaN(offset)) tr.setOffset(offset);
-            final MathTransform1D mt = tr.getTransform();
+            final MathTransform1D mt = convention.transferFunction(data).getTransform();
             if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
                 /*
                  * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
@@ -289,14 +298,18 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                  * data is not wider, then assume that the minimum and maximum are real values.
                  * This is identified in Apache SIS by the range given as a MeasurementRange.
                  */
-                final boolean isMinIncluded = range.isMinIncluded();
-                final boolean isMaxIncluded = range.isMaxIncluded();
-                double minimum = (range.getMinDouble() - offset) / scale;
-                double maximum = (range.getMaxDouble() - offset) / scale;
+                final MathTransform1D inverse = mt.inverse();
+                boolean isMinIncluded = range.isMinIncluded();
+                boolean isMaxIncluded = range.isMaxIncluded();
+                double minimum = inverse.transform(range.getMinDouble());
+                double maximum = inverse.transform(range.getMaxDouble());
                 if (maximum < minimum) {
                     final double swap = maximum;
                     maximum = minimum;
                     minimum = swap;
+                    final boolean sb = isMaxIncluded;
+                    isMaxIncluded = isMinIncluded;
+                    isMinIncluded = sb;
                 }
                 if (data.getDataType().number < Numbers.FLOAT && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
                     range = NumberRange.create(Math.round(minimum), isMinIncluded, Math.round(maximum), isMaxIncluded);
@@ -304,9 +317,19 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                     range = NumberRange.create(minimum, isMinIncluded, maximum, isMaxIncluded);
                 }
             }
-            String name = data.getDescription();
-            if (name == null) name = data.getName();
-            builder.addQuantitative(name, range, mt, data.getUnit());
+            /*
+             * Range may be empty if min/max values declared in the netCDF files are erroneous,
+             * or if we have not read them correctly (edu.ucar:cdm:4.6.13 sometime confuses an
+             * unsigned integer with a signed one).
+             */
+            if (range.isEmpty()) {
+                data.warning(GridResource.class, "getSampleDimensions", Resources.Keys.IllegalValueRange_4,
+                        data.getFilename(), data.getName(), range.getMinValue(), range.getMaxValue());
+            } else {
+                String name = data.getDescription();
+                if (name == null) name = data.getName();
+                builder.addQuantitative(name, range, mt, data.getUnit());
+            }
         }
         /*
          * Adds the "missing value" or "fill value" as qualitative categories.  If a value has both roles, use "missing value"
@@ -316,27 +339,33 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
          */
         boolean setBackground = true;
         int ordinal = data.hasRealValues() ? 0 : -1;
-        final InternationalString[] names = new InternationalString[2];
-        for (final Map.Entry<Number,Integer> entry : data.getNodataValues().entrySet()) {
+        final CharSequence[] names = new CharSequence[2];
+        for (final Map.Entry<Number,Object> entry : data.getNodataValues().entrySet()) {
             final Number n;
             if (ordinal >= 0) {
                 n = MathFunctions.toNanFloat(ordinal++);        // Must be consistent with Variable.replaceNaN(Object).
             } else {
                 n = entry.getKey();                             // Should be real number, made unique by the HashMap.
             }
-            final int role = entry.getValue();          // Bit 0 set (value 1) = pad value, bit 1 set = missing value.
-            final int i = (role == 1) ? 1 : 0;          // i=1 if role is only pad value, i=0 otherwise.
-            InternationalString name = names[i];
-            if (name == null) {
-                name = Vocabulary.formatInternational(i == 0 ? Vocabulary.Keys.MissingValue : Vocabulary.Keys.FillValue);
-                names[i] = name;
-            }
-            if (setBackground & (role & 1) != 0) {
-                setBackground = false;                  // Declare only one fill value.
-                builder.setBackground(name, n);
+            CharSequence name;
+            final Object label = entry.getValue();
+            if (label instanceof Integer) {
+                final int role = (Integer) label;               // Bit 0 set (value 1) = pad value, bit 1 set = missing value.
+                final int i = (role == 1) ? 1 : 0;              // i=1 if role is only pad value, i=0 otherwise.
+                name = names[i];
+                if (name == null) {
+                    name = Vocabulary.formatInternational(i == 0 ? Vocabulary.Keys.MissingValue : Vocabulary.Keys.FillValue);
+                    names[i] = name;
+                }
+                if (setBackground & (role & 1) != 0) {
+                    setBackground = false;                      // Declare only one fill value.
+                    builder.setBackground(name, n);
+                    continue;
+                }
             } else {
-                builder.addQualitative(name, n, n);
+                name = (CharSequence) label;
             }
+            builder.addQualitative(name, n, n);
         }
         return builder.setName(data.getName()).build();
     }
@@ -405,6 +434,8 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             imageBuffer = RasterFactory.wrap(dataType.rasterDataType, samples);
         } catch (IOException e) {
             throw new DataStoreException(e);
+        } catch (TransformException e) {
+            throw new DataStoreReferencingException(e);
         } catch (RuntimeException e) {                  // Many exceptions thrown by RasterFactory.wrap(…).
             final Throwable cause = e.getCause();
             if (cause instanceof TransformException) {

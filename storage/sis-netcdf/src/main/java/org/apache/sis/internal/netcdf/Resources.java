@@ -81,6 +81,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotCreateGridGeometry_3 = 12;
 
         /**
+         * Can not relate dimension “{2}” of variable “{1}” to a coordinate system dimension in netCDF
+         * file “{0}”.
+         */
+        public static final short CanNotRelateVariableDimension_3 = 15;
+
+        /**
          * Can not render an image for “{0}”. The reason is: {1}
          */
         public static final short CanNotRender_2 = 14;
@@ -96,12 +102,18 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DimensionNotFound_3 = 1;
 
         /**
-         * Duplicated reference to “{1}” in netCDF file “{0}”.
+         * Duplicated axis “{1}” in a grid of netCDF file “{0}”.
          */
-        public static final short DuplicatedReference_2 = 7;
+        public static final short DuplicatedAxis_2 = 7;
 
         /**
-         * The declared size of variable “{1}” in netCDF file “{0}” is {2} bytes greater than expected.
+         * Illegal value range {2,number} … {3,number} for variable “{1}” in netCDF file “{0}”.
+         */
+        public static final short IllegalValueRange_4 = 16;
+
+        /**
+         * The declared size of variable “{1}” in netCDF file “{0}” is {2,number}} bytes greater than
+         * expected.
          */
         public static final short MismatchedVariableSize_3 = 8;
 
@@ -109,6 +121,12 @@ public final class Resources extends IndexedResourceBundle {
          * Variables “{1}” and “{2}” in netCDF file “{0}” does not have the same type.
          */
         public static final short MismatchedVariableType_3 = 13;
+
+        /**
+         * Variable “{1}” or netCDF file “{0}” has a different size than its coordinate system, but no
+         * resampling interval is specified.
+         */
+        public static final short ResamplingIntervalNotFound_2 = 17;
 
         /**
          * Reference system of type ‘{1}’ can not have {2} axes. The axes found in the “{0}” netCDF

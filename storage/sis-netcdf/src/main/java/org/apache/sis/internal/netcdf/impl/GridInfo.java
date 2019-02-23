@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf.impl;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
@@ -26,7 +27,9 @@ import java.util.SortedMap;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.Resources;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.measure.Units;
@@ -80,10 +83,10 @@ final class GridInfo extends Grid {
      * They are the dimensions of the grid (<strong>not</strong> the dimensions of the CRS).
      * Dimensions are listed in the order they appear in netCDF file (reverse of "natural" order).
      *
-     * @see #getShape()
+     * @see #getDimensions()
      * @see VariableInfo#dimensions
      */
-    private final Dimension[] domain;
+    private final DimensionInfo[] domain;
 
     /**
      * Describes the output values calculated by the function converting grid indices to geodetic coordinates.
@@ -99,9 +102,23 @@ final class GridInfo extends Grid {
      * @param  domain  describes the input values of the "grid to CRS" conversion, in netCDF order.
      * @param  range   the output values of the "grid to CRS" conversion, in CRS order as much as possible.
      */
-    GridInfo(final Dimension[] domain, final VariableInfo[] range) {
-        this.domain   = domain;
-        this.range    = range;
+    GridInfo(final DimensionInfo[] domain, final VariableInfo[] range) {
+        this.domain = domain;
+        this.range  = range;
+    }
+
+    /**
+     * Returns a localization grid having the same dimensions than this grid but in a different order.
+     * This method is invoked by {@link VariableInfo#getGrid()} when the localization grids created by
+     * {@link Decoder} subclasses are not sufficient and must be tailored for a particular variable.
+     * Returns {@code null} the the given dimensions are not members of this grid.
+     */
+    @Override
+    protected Grid derive(final Dimension[] dimensions) {
+        if (Arrays.equals(domain, dimensions)) {
+            return this;
+        }
+        return null;        // Not yet implemented.
     }
 
     /**
@@ -159,18 +176,31 @@ final class GridInfo extends Grid {
     }
 
     /**
-     * Returns the number of cells along each source dimension, in "natural" order.
-     *
-     * @return number of cells along each source dimension, in "natural" (opposite of netCDF) order.
+     * Returns the dimensions of this grid, in netCDF (reverse of "natural") order.
      */
     @Override
-    protected long[] getShape() {
-        final int    dim  = domain.length;
-        final long[] size = new long[dim];
-        for (int i=0; i<dim; i++) {
-            size[(dim-1) - i] = domain[i].length();
+    protected List<Dimension> getDimensions() {
+        return UnmodifiableArrayList.wrap(domain);
+    }
+
+    /**
+     * Returns {@code true} if this grid contains all axes of the specified names, ignoring case.
+     * If the given array is null, then no filtering is applied and this method returns {@code true}.
+     * If the grid contains more axes than the named ones, then the additional axes are ignored.
+     */
+    @Override
+    protected boolean containsAllNamedAxes(final String[] axisNames) {
+        if (axisNames != null) {
+next:       for (final String name : axisNames) {
+                for (final VariableInfo axis : range) {
+                    if (name.equalsIgnoreCase(axis.getName())) {
+                        continue next;
+                    }
+                }
+                return false;
+            }
         }
-        return size;
+        return true;
     }
 
     /**
@@ -202,7 +232,7 @@ final class GridInfo extends Grid {
         for (int i=0; i<range.length; i++) {
             final VariableInfo v = range[i];
             if (variables.put(v, i) != null) {
-                throw new DataStoreContentException(Resources.format(Resources.Keys.DuplicatedReference_2, getFilename(), v.getName()));
+                throw new DataStoreContentException(Resources.format(Resources.Keys.DuplicatedAxis_2, getFilename(), v.getName()));
             }
         }
         /*
@@ -228,10 +258,10 @@ final class GridInfo extends Grid {
              * straightforward netCDF files. However some more complex files may have 2 dimensions.
              */
             int i = 0;
-            final Dimension[] axisDomain = axis.dimensions;
+            final DimensionInfo[] axisDomain = axis.dimensions;
             final int[] indices = new int[axisDomain.length];
             final int[] sizes   = new int[axisDomain.length];
-            for (final Dimension dimension : axisDomain) {
+            for (final DimensionInfo dimension : axisDomain) {
                 for (int sourceDim = 0; sourceDim < domain.length; sourceDim++) {
                     if (domain[sourceDim] == dimension) {
                         indices[i] = sourceDim;

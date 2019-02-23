@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf.impl;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
@@ -32,18 +33,18 @@ import ucar.nc2.constants._Coordinate;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DataType;
+import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.io.Region;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
@@ -97,10 +98,10 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * this variable (a flattened one-dimensional sequence of values), index in the domain of {@code dimensions[length-1]}
      * varies faster, followed by index in the domain of {@code dimensions[length-2]}, <i>etc.</i>
      *
-     * @see #getShape()
+     * @see #getGridDimensions()
      * @see GridInfo#domain
      */
-    final Dimension[] dimensions;
+    final DimensionInfo[] dimensions;
 
     /**
      * The offset (in bytes) to apply for moving to the next record in variable data, or -1 if unknown.
@@ -150,9 +151,18 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * computed by {@link ChannelDecoder#getGrids()} when first needed.
      * May stay {@code null} if the variable is not a data cube.
      *
-     * @see #getGrid(Decoder)
+     * @see #getGrid()
      */
     GridInfo grid;
+
+    /**
+     * For disambiguation of the case where {@link #grid} has been computed and the result still null.
+     * Note that {@link #grid} may be determined and non-null even if this flag is {@code false}.
+     *
+     * @see #grid
+     * @see #getGrid()
+     */
+    private transient boolean gridDetermined;
 
     /**
      * {@code true} if this variable seems to be a coordinate system axis, as determined by comparing its name
@@ -180,6 +190,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Creates a new variable.
      *
+     * @param  decoder     the netCDF file where this variable is stored.
      * @param  input       the channel together with a buffer for reading the variable data.
      * @param  name        the variable name.
      * @param  dimensions  the dimensions of this variable.
@@ -187,20 +198,19 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @param  dataType    the netCDF type of data, or {@code null} if unknown.
      * @param  size        the variable size. May be inaccurate and ignored.
      * @param  offset      the offset where the variable data begins in the netCDF file.
-     * @param  listeners   where to report warnings, if any.
      * @throws ArithmeticException if the variable size exceeds {@link Long#MAX_VALUE}.
      * @throws DataStoreContentException if a logical error is detected.
      */
-    VariableInfo(final ChannelDataInput      input,
-                 final String                name,
-                 final Dimension[]           dimensions,
-                 final Map<String,Object>    attributes,
-                       DataType              dataType,
-                 final int                   size,
-                 final long                  offset,
-                 final WarningListeners<?>   listeners) throws DataStoreContentException
+    VariableInfo(final Decoder            decoder,
+                 final ChannelDataInput   input,
+                 final String             name,
+                 final DimensionInfo[]    dimensions,
+                 final Map<String,Object> attributes,
+                       DataType           dataType,
+                 final int                size,
+                 final long               offset) throws DataStoreContentException
     {
-        super(listeners);
+        super(decoder);
         this.name       = name;
         this.dimensions = dimensions;
         this.attributes = attributes;
@@ -216,12 +226,12 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
          */
         if (dataType != null && (offsetToNextRecord = dataType.size()) != 0) {
             for (int i=0; i<dimensions.length; i++) {
-                final Dimension dim = dimensions[i];
+                final DimensionInfo dim = dimensions[i];
                 if (!dim.isUnlimited) {
                     offsetToNextRecord = Math.multiplyExact(offsetToNextRecord, dim.length());
                 } else if (i != 0) {
                     // Unlimited dimension, if any, must be first in a netCDF 3 classic format.
-                    throw new DataStoreContentException(listeners.getLocale(), Decoder.FORMAT_NAME, input.filename, null);
+                    throw new DataStoreContentException(getLocale(), Decoder.FORMAT_NAME, input.filename, null);
                 }
             }
             reader = new HyperRectangleReader(dataType.number, input, offset);
@@ -357,7 +367,11 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     @Override
     public String getFilename() {
-        return (reader != null) ? reader.filename() : null;
+        if (reader != null) {
+            final String filename = reader.filename();
+            if (filename != null) return filename;
+        }
+        return super.getFilename();
     }
 
     /**
@@ -376,9 +390,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     @Override
     public String getDescription() {
         for (final String attributeName : DESCRIPTION_ATTRIBUTES) {
-            final Object value = getAttributeValue(attributeName);
-            if (value instanceof String) {
-                return (String) value;
+            final String value = getAttributeAsString(attributeName);
+            if (value != null) {
+                return value;
             }
         }
         return null;
@@ -424,7 +438,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
      * Returns {@code true} if this variable is an enumeration.
      */
-    public boolean isEnumeration() {
+    final boolean isEnumeration() {
         return meanings != null;
     }
 
@@ -433,19 +447,19 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * In netCDF 3 classic format, only the first dimension can be unlimited.
      */
     @Override
-    public boolean isUnlimited() {
+    protected boolean isUnlimited() {
         // The constructor verified that only the first dimension is unlimited.
         return (dimensions.length != 0) && dimensions[0].isUnlimited;
     }
 
     /**
-     * Returns {@code AXIS} if this variable seems to be a coordinate system axis,
+     * Returns {@code true} if this variable seems to be a coordinate system axis,
      * determined by comparing its name with the name of all dimensions in the netCDF file.
      * Also determined by inspection of {@code "coordinates"} attribute on other variables.
      */
     @Override
-    protected VariableRole getRole() {
-        return isCoordinateSystemAxis ? VariableRole.AXIS : super.getRole();
+    protected boolean isCoordinateSystemAxis() {
+        return isCoordinateSystemAxis;
     }
 
     /**
@@ -472,40 +486,26 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @see ChannelDecoder#getGrids()
      */
     @Override
-    public Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
-        if (grid == null) {
-            decoder.getGrids();            // Force calculation of grid geometries if not already done.
+    protected Grid getGrid() throws IOException, DataStoreException {
+        if (grid == null && !gridDetermined) {
+            gridDetermined = true;                            // Set first for avoiding other attempts in case of failure.
+            decoder.getGrids();                               // Force calculation of grid geometries if not already done.
+            if (grid == null) {                               // May have been computed as a side-effect of decoder.getGrids().
+                grid = (GridInfo) super.getGrid();            // Non-null if grid dimensions are different than this variable.
+            }
         }
         return grid;
     }
 
     /**
-     * Returns the names of the dimensions of this variable.
-     * The dimensions are those of the grid, not the dimensions of the coordinate system.
-     * This information is used for completing ISO 19115 metadata.
+     * Returns the dimensions of this variable in the order they are declared in the netCDF file.
+     * The dimensions are those of the grid, not the dimensions (or axes) of the coordinate system.
+     * In ISO 19123 terminology, the {@linkplain Dimension#length() dimension lengths} give the upper
+     * corner of the grid envelope plus one. The lower corner is always (0, 0, …, 0).
      */
     @Override
-    public String[] getGridDimensionNames() {
-        final String[] names = new String[dimensions.length];
-        for (int i=0; i<names.length; i++) {
-            names[i] = dimensions[i].name;
-        }
-        return names;
-    }
-
-    /**
-     * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
-     * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
-     *
-     * @return the number of grid cells for each dimension, as unsigned integers.
-     */
-    @Override
-    public int[] getShape() {
-        final int[] shape = new int[dimensions.length];
-        for (int i=0; i<shape.length; i++) {
-            shape[i] = dimensions[i].length;
-        }
-        return shape;
+    public List<Dimension> getGridDimensions() {
+        return UnmodifiableArrayList.wrap(dimensions);
     }
 
     /**
@@ -580,12 +580,16 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Returns the value of the given attribute as a string, or {@code null} if none.
+     * Returns the value of the given attribute as a non-blank string, or {@code null} if none.
      */
     @Override
     public String getAttributeAsString(final String attributeName) {
         final Object value = getAttributeValue(attributeName);
-        return (value instanceof String) ? (String) value : null;
+        if (value instanceof String) {
+            final String text = ((String) value).trim();
+            if (!text.isEmpty()) return text;
+        }
+        return null;
     }
 
     /**
@@ -656,16 +660,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     private static boolean booleanValue(final Object value) {
         return (value instanceof String) && Boolean.valueOf((String) value);
-    }
-
-    /**
-     * Whether {@link #read()} invokes {@link Vector#compress(double)} on the returned vector.
-     *
-     * @return {@code true}.
-     */
-    @Override
-    protected boolean readTriesToCompress() {
-        return true;
     }
 
     /**
@@ -836,7 +830,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @param  ordinal  the ordinal of the enumeration for which to get the value.
      * @return the value associated to the given ordinal, or {@code null} if none.
      */
-    public String meaning(final int ordinal) {
+    final String meaning(final int ordinal) {
         return (ordinal >= 0 && ordinal < meanings.length) ? meanings[ordinal] : null;
     }
 

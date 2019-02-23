@@ -16,29 +16,31 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.Set;
 import java.util.Map;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Collection;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import java.io.IOException;
-import java.awt.image.DataBuffer;
 import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.Errors;
 import ucar.nc2.constants.CDM;                      // We use only String constants.
 import ucar.nc2.constants.CF;
@@ -64,25 +66,9 @@ public abstract class Variable extends NamedElement {
     protected static final WeakHashSet<Vector> SHARED_VECTORS = new WeakHashSet<>(Vector.class);
 
     /**
-     * Names of attributes where to fetch minimum and maximum sample values, in preference order.
-     *
-     * @see #getValidValues()
+     * The netCDF file where this variable is stored.
      */
-    private static final String[] RANGE_ATTRIBUTES = {
-        "valid_range",      // Expected "reasonable" range for variable.
-        "actual_range",     // Actual data range for variable.
-        "valid_min",        // Fallback if "valid_range" is not specified.
-        "valid_max"
-    };
-
-    /**
-     * Names of attributes where to fetch missing or pad values. Order matter since it determines the bits to be set
-     * in the map returned by {@link #getNodataValues()}. The main bit is bit 0, which identify the background value.
-     */
-    private static final String[] NODATA_ATTRIBUTES = {
-        CDM.FILL_VALUE,
-        CDM.MISSING_VALUE
-    };
+    protected final Decoder decoder;
 
     /**
      * The pattern to use for parsing temporal units of the form "days since 1970-01-01 00:00:00".
@@ -119,21 +105,30 @@ public abstract class Variable extends NamedElement {
     /**
      * All no-data values declared for this variable, or an empty map if none.
      * This is computed by {@link #getNodataValues()} and cached for efficiency and stability.
+     * The meaning of entries in this map is described in {@code getNodataValues()} method javadoc.
+     *
+     * @see #getNodataValues()
      */
-    private Map<Number,Integer> nodataValues;
+    private Map<Number,Object> nodataValues;
 
     /**
-     * Where to report warnings, if any.
+     * Factors by which to multiply a grid index in order to get the corresponding data index, or {@code null} if none.
+     * This is usually null, meaning that there is an exact match between grid indices and data indices. This array may
+     * be non-null if the localization grid has smaller dimensions than the dimensions of this variable, as documented
+     * in {@link Convention#nameOfDimension(Variable, int)} javadoc.
+     *
+     * <p>Some values in this array may be {@link Double#NaN} if the {@code "resampling_interval"} attribute
+     * was not found.</p>
      */
-    private final WarningListeners<?> listeners;
+    private double[] gridToDataIndices;
 
     /**
      * Creates a new variable.
      *
-     * @param listeners where to report warnings.
+     * @param decoder  the netCDF file where this variable is stored.
      */
-    protected Variable(final WarningListeners<?> listeners) {
-        this.listeners = listeners;
+    protected Variable(final Decoder decoder) {
+        this.decoder = decoder;
     }
 
     /**
@@ -142,7 +137,9 @@ public abstract class Variable extends NamedElement {
      *
      * @return name of the netCDF file containing this variable, or {@code null} if unknown.
      */
-    public abstract String getFilename();
+    public String getFilename() {
+        return decoder.getFilename();
+    }
 
     /**
      * Returns the name of this variable.
@@ -170,13 +167,16 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns the description of this variable, or {@code null} if none.
+     * This information may be encoded in different attributes like {@code "description"}, {@code "title"},
+     * {@code "long_name"} or {@code "standard_name"}. If the return value is non-null, then it should also
+     * be non-empty.
      *
      * @return the description of this variable, or {@code null}.
      */
     public abstract String getDescription();
 
     /**
-     * Returns the unit of measurement as a string, or {@code null} or an empty string if none.
+     * Returns the unit of measurement as a string, or {@code null} if none.
      * The empty string can not be used for meaning "dimensionless unit"; some text is required.
      *
      * <p>Note: the UCAR library has its own API for handling units (e.g. {@link ucar.nc2.units.SimpleUnit}).
@@ -185,15 +185,20 @@ public abstract class Variable extends NamedElement {
      * for parsing also its {@linkplain Axis#direction direction}.</p>
      *
      * @return the unit of measurement, or {@code null}.
+     *
+     * @see #getUnit()
      */
     protected abstract String getUnitsString();
 
     /**
      * Parses the given unit symbol and set the {@link #epoch} if the parsed unit is a temporal unit.
+     * This method is invoked by {@link #getUnit()} when first needed.
      *
      * @param  symbols  the unit symbol to parse.
      * @return the parsed unit.
      * @throws Exception if the unit can not be parsed. This wide exception type is used by the UCAR library.
+     *
+     * @see #getUnit()
      */
     protected abstract Unit<?> parseUnit(String symbols) throws Exception;
 
@@ -205,6 +210,8 @@ public abstract class Variable extends NamedElement {
      * @param  other      the variable from which to copy unit and epoch, or {@code null} if none.
      * @param  overwrite  if non-null, set to the given unit instead than the unit of {@code other}.
      * @return the epoch (may be {@code null}).
+     *
+     * @see #getUnit()
      */
     public final Instant setUnit(final Variable other, Unit<?> overwrite) {
         if (other != null) {
@@ -229,7 +236,7 @@ public abstract class Variable extends NamedElement {
         if (!unitParsed) {
             unitParsed = true;                          // Set first for avoiding to report errors many times.
             final String symbols = getUnitsString();
-            if (symbols != null && !symbols.isEmpty()) try {
+            if (symbols != null) try {
                 unit = parseUnit(symbols);
             } catch (Exception ex) {
                 error(Variable.class, "getUnit", ex, Errors.Keys.CanNotAssignUnitToVariable_2, getName(), symbols);
@@ -252,6 +259,11 @@ public abstract class Variable extends NamedElement {
     public final boolean hasRealValues() {
         final int n = getDataType().number;
         if (n == Numbers.FLOAT | n == Numbers.DOUBLE) {
+            final Convention convention = decoder.convention();
+            if (convention != Convention.DEFAULT) {
+                return convention.transferFunction(this).isIdentity();
+            }
+            // Shortcut for common case.
             double c = getAttributeAsNumber(CDM.SCALE_FACTOR);
             if (Double.isNaN(c) || c == 1) {
                 c = getAttributeAsNumber(CDM.ADD_OFFSET);
@@ -267,24 +279,20 @@ public abstract class Variable extends NamedElement {
      * @return the variable data type, or {@link DataType#UNKNOWN} if unknown.
      *
      * @see #getAttributeType(String)
+     * @see #writeDataTypeName(StringBuilder)
      */
     public abstract DataType getDataType();
 
     /**
-     * Returns the name of the variable data type as the name of the primitive type
-     * followed by the span of each dimension (in unit of grid cells) between brackets.
-     * Example: {@code "SHORT[180][360]"}.
+     * Returns whether this variable is used as a coordinate system axis, a coverage or something else.
+     * This is a shortcut for {@link Convention#roleOf(Variable)}, except that {@code this} can not be null.
      *
-     * @return the name of the variable data type.
+     * @return role of this variable.
+     *
+     * @see Convention#roleOf(Variable)
      */
-    public final String getDataTypeName() {
-        final StringBuilder buffer = new StringBuilder(20);
-        buffer.append(getDataType().name().toLowerCase());
-        final int[] shape = getShape();
-        for (int i=shape.length; --i>=0;) {
-            buffer.append('[').append(Integer.toUnsignedLong(shape[i])).append(']');
-        }
-        return buffer.toString();
+    public final VariableRole getRole() {
+        return decoder.convention().roleOf(this);
     }
 
     /**
@@ -292,51 +300,177 @@ public abstract class Variable extends NamedElement {
      * In netCDF 3 classic format, only the first dimension can be unlimited.
      *
      * @return whether this variable can grow.
+     *
+     * @see Dimension#isUnlimited()
      */
-    public abstract boolean isUnlimited();
+    protected abstract boolean isUnlimited();
 
     /**
-     * Returns whether this variable is used as a coordinate system axis, a coverage or something else.
-     * In particular this method shall return {@link VariableRole#AXIS} if this variable seems to be a
-     * coordinate system axis instead than the actual data. By netCDF convention, coordinate system axes
-     * have the name of one of the dimensions defined in the netCDF header.
+     * Returns whether this variable is used as a coordinate system axis.
+     * By netCDF convention, coordinate system axes have the name of one of the dimensions defined in the netCDF header.
      *
-     * <p>The default implementation returns {@link VariableRole#COVERAGE} if the given variable can be used
-     * for generating an image, by checking the following conditions:</p>
+     * <p>This method has protected access because it should not be invoked directly. Code using variable role should
+     * invoke {@link Convention#roleOf(Variable)} instead, for allowing specialization by {@link Convention}.</p>
      *
-     * <ul>
-     *   <li>Images require at least {@value Grid#MIN_DIMENSION} dimensions of size equals or greater than {@value Grid#MIN_SPAN}.
-     *       They may have more dimensions, in which case a slice will be taken later.</li>
-     *   <li>Exclude axes. Axes are often already excluded by the above condition because axis are usually 1-dimensional,
-     *       but some axes are 2-dimensional (e.g. a localization grid).</li>
-     *   <li>Excludes characters, strings and structures, which can not be easily mapped to an image type.
-     *       In addition, 2-dimensional character arrays are often used for annotations and we do not want
-     *       to confuse them with images.</li>
-     * </ul>
+     * @return whether this variable is a coordinate system axis.
      *
-     * Subclasses shall override this method for checking the {@link VariableRole#AXIS} case before to delegate
-     * to this method.
-     *
-     * <p>This method has protected access because it should not be invoked directly except in overridden methods.
-     * Code using variable role should invoke {@link Decoder#roleOf(Variable)} instead, for allowing specialization
-     * by {@link Convention}.</p>
-     *
-     * @return the role of this variable.
+     * @see Convention#roleOf(Variable)
      */
-    protected VariableRole getRole() {
-        int numVectors = 0;                                     // Number of dimension having more than 1 value.
-        for (final int length : getShape()) {
-            if (Integer.toUnsignedLong(length) >= Grid.MIN_SPAN) {
-                numVectors++;
+    protected abstract boolean isCoordinateSystemAxis();
+
+    /**
+     * Returns a builder for the grid geometry of this variable, or {@code null} if this variable is not a data cube.
+     * Not all variables have a grid geometry. For example collections of features do not have such grid.
+     * The same grid geometry may be shared by many variables.
+     * The default implementation searches for a grid in the following ways:
+     *
+     * <ol class="verbose">
+     *   <li><b>Grid of same dimension than this variable:</b>
+     *     iterate over {@linkplain Decoder#getGrids() all localization grids} and search for an element having the
+     *     same dimensions than this variable, i.e. where {@link Grid#getDimensions()} contains the same elements
+     *     than {@link #getGridDimensions()} (not necessarily in the same order). The {@link Grid#derive(Dimension[])}
+     *     method will be invoked for reordering dimensions in the right order.</li>
+     *
+     *   <li><b>Grid of different dimension than this variable:</b>
+     *     if no localization grid has been found above, inspect {@linkplain Decoder#getVariables() all variables}
+     *     that may potentially be an axis for this variable even if they do not use the same netCDF dimensions.
+     *     Grids of different dimensions may exist if the netCDF files provides a decimated localization grid,
+     *     for example where the longitudes and latitudes variables specify the values of only 1/10 of cells.
+     *     This method tries to map the grid dimensions to variables dimensions through the mechanism documented in
+     *     {@link Convention#nameOfDimension(Variable, int)}. This method considers that we have a mapping when two
+     *     dimensions have the same "name" — not the usual {@linkplain Dimension#getName() name encoded in netCDF format},
+     *     but rather the value of some {@code "dim"} attribute. If this method can map all dimensions of this variable to
+     *     dimensions of a grid, then that grid is returned.</li>
+     *
+     *   <li>If a mapping can not be established for all dimensions, this method return {@code null}.</li>
+     * </ol>
+     *
+     * Subclasses should override this class with a more direct implementation and invoke this implementation only as a fallback.
+     * Typically, subclasses will handle case #1 in above list and this implementation is invoked for case #2.
+     *
+     * @return the grid geometry for this variable, or {@code null} if none.
+     * @throws IOException if an error occurred while reading the data.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    protected Grid getGrid() throws IOException, DataStoreException {
+        final Convention convention = decoder.convention();
+        /*
+         * Collect all axis dimensions, in no particular order. We use this map for determining
+         * if a dimension of this variable can be used as-is, without the need to search for an
+         * association through Convention.nameOfDimension(…). It may be the case for example if
+         * the variable has a vertical or temporal axis which has not been decimated contrarily
+         * to longitude and latitude axes. Note that this map is recycled later for other use.
+         */
+        final List<Variable> axes = new ArrayList<>();
+        final Map<Object,Dimension> domain = new HashMap<>();
+        for (final Variable candidate : decoder.getVariables()) {
+            if (candidate.getRole() == VariableRole.AXIS) {
+                axes.add(candidate);
+                for (final Dimension dim : candidate.getGridDimensions()) {
+                    domain.put(dim, dim);
+                }
             }
         }
-        if (numVectors >= Grid.MIN_DIMENSION) {
-            final DataType dataType = getDataType();
-            if (dataType.rasterDataType != DataBuffer.TYPE_UNDEFINED) {
-                return VariableRole.COVERAGE;
+        /*
+         * Get all dimensions of this variable in netCDF order, then replace them by dimensions from an axis variable.
+         * If we are in the situation #1 documented in javadoc, 'isIncomplete' will be 'false' after execution of this
+         * loop and all dimensions should be the same than the values returned by 'Variable.getGridDimensions()'.
+         */
+        boolean isIncomplete = false;
+        final Dimension[] dimensions = CollectionsExt.toArray(getGridDimensions(), Dimension.class);
+        for (int i=0; i<dimensions.length; i++) {
+            isIncomplete |= ((dimensions[i] = domain.remove(dimensions[i])) == null);
+        }
+        /*
+         * If there is at least one variable dimension that we did not found directly among axis dimensions, check if
+         * we can relate dimensions indirectly by Convention.nameOfDimension(…). This is the situation #2 in javadoc.
+         * We do not merge this loop with above loop because we want all dimensions recognized by situation #1 to be
+         * removed before we attempt those indirect associations.
+         */
+        if (isIncomplete) {
+            for (int i=0; i<dimensions.length; i++) {
+                if (dimensions[i] != null) {
+                    continue;
+                }
+                final String label = convention.nameOfDimension(this, i);
+                if (label == null) {
+                    return null;        // No information allowing us to relate that variable dimension to a grid dimension.
+                }
+                /*
+                 * The first time that we find a label that may allow us to associate this variable dimension with a
+                 * grid dimension, build a map of all labels associated to dimensions. We reuse the existing 'domain'
+                 * map; there is no confusion since the keys are not of the same class.
+                 */
+                if (isIncomplete) {
+                    isIncomplete = false;
+                    final Set<Dimension> requestedByConvention = new HashSet<>();
+                    final String[] namesOfAxisVariables = convention.namesOfAxisVariables(this);
+                    for (final Variable axis : axes) {
+                        final boolean isRequested = ArraysExt.containsIgnoreCase(namesOfAxisVariables, axis.getName());
+                        final List<Dimension> candidates = axis.getGridDimensions();
+                        for (int j=candidates.size(); --j >= 0;) {
+                            final Dimension dim = candidates.get(j);
+                            if (domain.containsKey(dim)) {
+                                /*
+                                 * Found a dimension that has not already be taken by the 'dimensions' array.
+                                 * If this dimension has a name defined by attribute (not Dimension.getName()),
+                                 * make this dimension available for consideration by 'dimensions[i] = …' later.
+                                 */
+                                final String name = convention.nameOfDimension(axis, j);
+                                if (name != null) {
+                                    if (gridToDataIndices == null) {
+                                        gridToDataIndices = new double[axes.size()];
+                                    }
+                                    gridToDataIndices[j] = convention.gridToDataIndices(axis);
+                                    final boolean overwrite = isRequested && requestedByConvention.add(dim);
+                                    final Dimension previous = domain.put(name, dim);
+                                    if (previous != null && !previous.equals(dim)) {
+                                        /*
+                                         * The same name maps to two different dimensions. Given the ambiguity, we should give up.
+                                         * However we make an exception if only one dimension is part of a variable that has been
+                                         * explicitly requested. We identify this disambiguation in the following ways:
+                                         *
+                                         *   isRequested = true   →  ok if overwrite = true  →  keep the newly added dimension.
+                                         *   isRequested = false  →  if was previously in requestedByConvention, restore previous.
+                                         */
+                                        if (!overwrite) {
+                                            if (!isRequested && requestedByConvention.contains(dim)) {
+                                                domain.put(name, previous);
+                                            } else {
+                                                error(Variable.class, "getGridGeometry", null, Errors.Keys.DuplicatedIdentifier_1, name);
+                                                return null;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if ((dimensions[i] = domain.remove(label)) == null) {
+                    warning(Variable.class, "getGridGeometry",        // Caller (indirectly) for this method.
+                            Resources.Keys.CanNotRelateVariableDimension_3, getFilename(), getName(), label);
+                    return null;        // Can not to relate that variable dimension to a grid dimension.
+                }
             }
         }
-        return VariableRole.OTHER;
+        /*
+         * At this point we finished collecting all dimensions to use in the grid. Search a grid containing
+         * all those dimensions, not necessarily in the same order. The 'Grid.derive(…)' method shall return
+         * a grid with the specified order.
+         */
+        Grid fallback = null;
+        for (final Grid candidate : decoder.getGrids()) {
+            final Grid grid = candidate.derive(dimensions);
+            if (grid != null) {
+                if (grid.containsAllNamedAxes(convention.namesOfAxisVariables(this))) {
+                    return grid;
+                } else if (fallback == null) {
+                    fallback = grid;
+                }
+            }
+        }
+        return fallback;
     }
 
     /**
@@ -344,36 +478,68 @@ public abstract class Variable extends NamedElement {
      * Not all variables have a grid geometry. For example collections of features do not have such grid.
      * The same grid geometry may be shared by many variables.
      *
-     * @param  decoder  the decoder to use for constructing the grid geometry if needed.
      * @return the grid geometry for this variable, or {@code null} if none.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    public abstract Grid getGrid(Decoder decoder) throws IOException, DataStoreException;
+    public final GridGeometry getGridGeometry() throws IOException, DataStoreException {
+        final Grid info = getGrid();
+        if (info == null) {
+            return null;
+        }
+        GridGeometry grid = info.getGridGeometry(decoder);
+        /*
+         * Compare the size of the variable with the size of the localization grid.
+         * If they do not match, then there is a scale factor between the two that
+         * needs to be applied.
+         */
+        if (grid.isDefined(GridGeometry.EXTENT)) {
+            GridExtent extent = grid.getExtent();
+            final List<Dimension> dimensions = getGridDimensions();
+            final long[] sizes = new long[dimensions.size()];
+            boolean needsResize = false;
+            for (int i=sizes.length; --i >= 0;) {
+                final int d = (sizes.length - 1) - i;               // Convert "natural order" index into netCDF index.
+                sizes[i] = dimensions.get(d).length();
+                if (!needsResize) {
+                    needsResize = (sizes[i] != extent.getSize(i));
+                }
+            }
+            if (needsResize) {
+                if (gridToDataIndices != null) {
+                    for (final double s : gridToDataIndices) {
+                        if (!(s > 0)) {
+                            warning(Variable.class, "getGridGeometry", Resources.Keys.ResamplingIntervalNotFound_2, getFilename(), getName());
+                            return null;
+                        }
+                    }
+                }
+                extent = extent.resize(sizes);
+                grid = grid.derive().resize(extent, gridToDataIndices).build();
+                /*
+                 * Note: the 'gridToDataIndices' array was computed as a side-effect of the call to 'getGrid(decoder)'.
+                 * This is one reason why we keep the call to 'getGrid(…)' inside this 'getGridGeometry(…)' method.
+                 */
+            }
+        }
+        return grid;
+    }
 
     /**
-     * Returns the names of the dimensions of this variable, in the order they are declared in the netCDF file.
+     * Returns the dimensions of this variable in the order they are declared in the netCDF file.
      * The dimensions are those of the grid, not the dimensions of the coordinate system.
-     * This information is used for completing ISO 19115 metadata.
+     * In ISO 19123 terminology, {@link Dimension#length()} on each dimension give the upper corner
+     * of the grid envelope plus one. The lower corner is always (0, 0, …, 0).
      *
-     * @return the names of all dimension of the grid, in netCDF order (reverse of "natural" order).
+     * <p>This information is used for completing ISO 19115 metadata, providing a default implementation of
+     * {@link Convention#roleOf(Variable)} method, or for building string representation of this variable
+     * among others.</p>
+     *
+     * @return all dimension of the grid, in netCDF order (reverse of "natural" order).
+     *
+     * @see Grid#getDimensions()
      */
-    public abstract String[] getGridDimensionNames();
-
-    /**
-     * Returns the length (number of cells) of each grid dimension, in the order they are declared in the netCDF file.
-     * The length of this array shall be equals to the length of the {@link #getGridDimensionNames()} array.
-     * Values shall be handled as unsigned 32 bits integers.
-     *
-     * <p>In ISO 19123 terminology, this method returns the upper corner of the grid envelope plus one.
-     * The lower corner is always (0, 0, …, 0). This method is used by {@link #getRole()} method,
-     * or for building string representations of this variable.</p>
-     *
-     * @return the number of grid cells for each dimension, as unsigned integer in netCDF order (reverse of "natural" order).
-     *
-     * @see Grid#getShape()
-     */
-    public abstract int[] getShape();
+    public abstract List<Dimension> getGridDimensions();
 
     /**
      * Returns the names of all attributes associated to this variable.
@@ -413,7 +579,7 @@ public abstract class Variable extends NamedElement {
      * @param  numeric        {@code true} if the value is expected to be numeric, or {@code false} for string.
      * @return the {@link String} or {@link Number} value for the named attribute.
      */
-    public final Object getAttributeValue(final String attributeName, final boolean numeric) {
+    private Object getAttributeValue(final String attributeName, final boolean numeric) {
         Object singleton = null;
         for (final Object value : getAttributeValues(attributeName, numeric)) {
             if (value != null) {
@@ -427,15 +593,20 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
-     * Returns the value of the given attribute as a string. This is a convenience method
-     * for {@link #getAttributeValues(String, boolean)} when a singleton value is expected.
+     * Returns the value of the given attribute as a non-blank string with leading/trailing spaces removed.
+     * This is a convenience method for {@link #getAttributeValues(String, boolean)} when a singleton value
+     * is expected and blank strings ignored.
      *
      * @param  attributeName  the name of the attribute for which to get the value.
-     * @return the singleton attribute value, or {@code null} if none or ambiguous.
+     * @return the singleton attribute value, or {@code null} if none, empty, blank or ambiguous.
      */
     public String getAttributeAsString(final String attributeName) {
         final Object value = getAttributeValue(attributeName, false);
-        return (value != null) ? value.toString() : null;
+        if (value != null) {
+            final String text = value.toString().trim();
+            if (!text.isEmpty()) return text;
+        }
+        return null;
     }
 
     /**
@@ -460,74 +631,21 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
-     * Returns the range of valid values, or {@code null} if unknown.
-     * The range of values is taken from the following properties, in precedence order:
+     * Returns the range of values as determined by the data type or other means, or {@code null} if unknown.
+     * This method is invoked only as a fallback if {@link Convention#validRange(Variable)} did not found a
+     * range of values by application of CF conventions. The returned range may be a range of packed values
+     * or a range of real values. In the later case, the range shall be an instance of
+     * {@link org.apache.sis.measure.MeasurementRange}.
      *
-     * <ol>
-     *   <li>{@code "valid_range"}  — expected "reasonable" range for variable.</li>
-     *   <li>{@code "actual_range"} — actual data range for variable.</li>
-     *   <li>{@code "valid_min"}    — ignored if {@code "valid_range"} is present, as specified in UCAR documentation.</li>
-     *   <li>{@code "valid_max"}    — idem.</li>
-     * </ol>
-     *
-     * Whether the returned range is a range of packed values or a range of real values is ambiguous.
-     * An heuristic rule is documented in UCAR {@link ucar.nc2.dataset.EnhanceScaleMissing} interface.
-     * If both type of ranges are available, this method should return the range of packed value.
-     * Otherwise if this method return the range of real values, then that range shall be an instance
-     * of {@link MeasurementRange} for allowing the caller to distinguish the two cases.
+     * <p>The default implementation returns the range of values that can be stored with the {@linkplain #getDataType()
+     * data type} of this variable, if that type is an integer type. The range of {@linkplain #getNodataValues() no data
+     * values} are subtracted.</p>
      *
      * @return the range of valid values, or {@code null} if unknown.
+     *
+     * @see Convention#validRange(Variable)
      */
-    public NumberRange<?> getValidValues() {
-        Number minimum = null;
-        Number maximum = null;
-        Class<? extends Number> type = null;
-        for (final String attribute : RANGE_ATTRIBUTES) {
-            for (final Object element : getAttributeValues(attribute, true)) {
-                if (element instanceof Number) {
-                    Number value = (Number) element;
-                    if (element instanceof Float) {
-                        final float fp = (Float) element;
-                        if      (fp == +Float.MAX_VALUE) value = Float.POSITIVE_INFINITY;
-                        else if (fp == -Float.MAX_VALUE) value = Float.NEGATIVE_INFINITY;
-                    } else if (element instanceof Double) {
-                        final double fp = (Double) element;
-                        if      (fp == +Double.MAX_VALUE) value = Double.POSITIVE_INFINITY;
-                        else if (fp == -Double.MAX_VALUE) value = Double.NEGATIVE_INFINITY;
-                    }
-                    type = Numbers.widestClass(type, value.getClass());
-                    minimum = Numbers.cast(minimum, type);
-                    maximum = Numbers.cast(maximum, type);
-                    value   = Numbers.cast(value,   type);
-                    if (!attribute.endsWith("max") && (minimum == null || compare(value, minimum) < 0)) minimum = value;
-                    if (!attribute.endsWith("min") && (maximum == null || compare(value, maximum) > 0)) maximum = value;
-                }
-            }
-            if (minimum != null && maximum != null) {
-                /*
-                 * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
-                 * if the type of the range is equal to the type of the scale, and the type of the
-                 * data is not wider, then assume that the minimum and maximum are real values.
-                 */
-                final int rangeType = Numbers.getEnumConstant(type);
-                if (rangeType >= getDataType().number &&
-                    rangeType >= Math.max(Numbers.getEnumConstant(getAttributeType(CDM.SCALE_FACTOR)),
-                                          Numbers.getEnumConstant(getAttributeType(CDM.ADD_OFFSET))))
-                {
-                    @SuppressWarnings({"unchecked", "rawtypes"})
-                    final NumberRange<?> range = new MeasurementRange(type, minimum, true, maximum, true, getUnit());
-                    return range;
-                } else {
-                    @SuppressWarnings({"unchecked", "rawtypes"})
-                    final NumberRange<?> range = new NumberRange(type, minimum, true, maximum, true);
-                    return range;
-                }
-            }
-        }
-        /*
-         * If we found no explicit range attribute and if the variable type is an integer type,
-         * then infer the range from the variable type and exclude the ranges of nodata values.
-         */
+    public NumberRange<?> getRangeFallback() {
         final DataType dataType = getDataType();
         if (dataType.isInteger) {
             final int size = dataType.size() * Byte.SIZE;
@@ -560,53 +678,33 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns all no-data values declared for this variable, or an empty map if none.
-     * The map keys are pad sample values or missing sample values. The map values are
-     * bitmask identifying the role of the pad/missing sample value:
+     * The map keys are the no-data values (pad sample values or missing sample values).
+     * The map values can be either {@link String} or {@link org.opengis.util.InternationalString} values
+     * containing the description of the no-data value, or an {@link Integer} set to a bitmask identifying
+     * the role of the pad/missing sample value:
      *
      * <ul>
      *   <li>If bit 0 is set, then the value is a pad value. Those values can be used for background.</li>
      *   <li>If bit 1 is set, then the value is a missing value.</li>
      * </ul>
      *
-     * Pad values are first in the map, followed by missing values.
+     * Pad values should be first in the map, followed by missing values.
      * The same value may have more than one role.
      * The map returned by this method shall be stable, i.e. two invocations of this method shall return the
      * same entries in the same order. This is necessary for mapping "no data" values to the same NaN values,
      * since their {@linkplain MathFunctions#toNanFloat(int) ordinal values} are based on order.
      *
      * @return pad/missing values with bitmask of their role.
+     *
+     * @see Convention#nodataValues(Variable)
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public final Map<Number,Integer> getNodataValues() {
+    public final Map<Number,Object> getNodataValues() {
         if (nodataValues == null) {
-            final Map<Number,Integer> pads = new LinkedHashMap<>();
-            for (int i=0; i < NODATA_ATTRIBUTES.length; i++) {
-                for (final Object value : getAttributeValues(NODATA_ATTRIBUTES[i], true)) {
-                    if (value instanceof Number) {
-                        pads.merge((Number) value, 1 << i, (v1, v2) -> v1 | v2);
-                    }
-                }
-            }
-            nodataValues = CollectionsExt.unmodifiableOrCopy(pads);
+            nodataValues = CollectionsExt.unmodifiableOrCopy(decoder.convention().nodataValues(this));
         }
         return nodataValues;
     }
-
-    /**
-     * Compares two numbers which shall be of the same class.
-     */
-    @SuppressWarnings("unchecked")
-    private static int compare(final Number n1, final Number n2) {
-        return ((Comparable) n1).compareTo((Comparable) n2);
-    }
-
-    /**
-     * Whether {@link #read()} invoked {@link Vector#compress(double)} on the returned vector.
-     * This information is used for avoiding to do twice some potentially costly operations.
-     *
-     * @return whether {@link #read()} invokes {@link Vector#compress(double)}.
-     */
-    protected abstract boolean readTriesToCompress();
 
     /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
@@ -649,7 +747,7 @@ public abstract class Variable extends NamedElement {
      * Constraints on the argument values are:
      *
      * <ul>
-     *   <li>Argument dimensions shall be equal to the length of the {@link #getShape()} array.</li>
+     *   <li>Argument dimensions shall be equal to the size of the {@link #getGridDimensions()} list.</li>
      *   <li>For each index <var>i</var>, value of {@code area[i]} shall be in the range from 0 inclusive
      *       to {@code Integer.toUnsignedLong(getShape()[length - 1 - i])} exclusive.</li>
      *   <li>Values are in "natural" order (inverse of netCDF order).</li>
@@ -767,9 +865,11 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns the locale to use for warnings and error messages.
+     *
+     * @return the locale for warnings and error messages.
      */
-    final Locale getLocale() {
-        return listeners.getLocale();
+    protected final Locale getLocale() {
+        return decoder.listeners.getLocale();
     }
 
     /**
@@ -783,14 +883,15 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Reports a warning to the listeners specified at construction time.
+     * This method is for Apache SIS internal purpose only since resources may change at any time.
      *
      * @param  caller     the caller class to report, preferably a public class.
      * @param  method     the caller method to report, preferable a public method.
      * @param  key        one or {@link Resources.Keys} constants.
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
-    protected final void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
-        warning(listeners, caller, method, null, null, key, arguments);
+    public final void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
+        warning(decoder.listeners, caller, method, null, null, key, arguments);
     }
 
     /**
@@ -802,22 +903,37 @@ public abstract class Variable extends NamedElement {
      * @param  key        one or {@link Errors.Keys} constants.
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
-    protected final void error(final Class<?> caller, final String method, final Exception exception, final short key, final Object... arguments) {
-        warning(listeners, caller, method, exception, Errors.getResources(listeners.getLocale()), key, arguments);
+    final void error(final Class<?> caller, final String method, final Exception exception, final short key, final Object... arguments) {
+        warning(decoder.listeners, caller, method, exception, Errors.getResources(getLocale()), key, arguments);
+    }
+
+    /**
+     * Appends the name of the variable data type as the name of the primitive type
+     * followed by the span of each dimension (in unit of grid cells) between brackets.
+     * Dimensions are listed in "natural" order (reverse of netCDF order).
+     * Example: {@code "SHORT[360][180]"}.
+     *
+     * @param  buffer  the buffer when to append the name of the variable data type.
+     */
+    public final void writeDataTypeName(final StringBuilder buffer) {
+        buffer.append(getDataType().name().toLowerCase(Locale.US));
+        final List<Dimension> dimensions = getGridDimensions();
+        for (int i=dimensions.size(); --i>=0;) {
+            dimensions.get(i).writeLength(buffer);
+        }
     }
 
     /**
      * Returns a string representation of this variable for debugging purpose.
      *
      * @return a string representation of this variable.
+     *
+     * @see #writeDataTypeName(StringBuilder)
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(getName()).append(" : ").append(getDataType());
-        final int[] shape = getShape();
-        for (int i=shape.length; --i>=0;) {
-            buffer.append('[').append(Integer.toUnsignedLong(shape[i])).append(']');
-        }
+        final StringBuilder buffer = new StringBuilder(getName()).append(" : ");
+        writeDataTypeName(buffer);
         if (isUnlimited()) {
             buffer.append(" (unlimited)");
         }
