@@ -33,7 +33,8 @@ import java.io.Writer;
  *
  * <ul>
  *   <li>For any Java identifier, insert soft-hyphens between lower-case letters followed by an upper-case letter.</li>
- *   <li>Between any Java identifiers separated by a {@code '.'} character, insert a zero-width space before the dot.</li>
+ *   <li>Between any Java identifiers separated by a {@code '.'} or {@code '_'} character,
+ *       insert a zero-width space before the dot or underscore.</li>
  * </ul>
  *
  * The intent is to avoid large amount of white spaces in Javadoc when a line content long code.
@@ -238,7 +239,7 @@ process:    while (i < stopAt) {
                      */
                     if (c == '(') c = content.codePointAt(++i);
                     if (c == ')') c = content.codePointAt(++i);
-                    if (c == '.' && Character.isJavaIdentifierStart(content.codePointAt(i+1))) {
+                    if ((c == '.' || c == '_') && Character.isJavaIdentifierStart(content.codePointAt(i+1))) {
                         content.insert(i++, '\u200B');              // Zero width space.
                         stopAt++;
                     }
