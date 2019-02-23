@@ -327,14 +327,13 @@ final class VariableWrapper extends Variable {
             final Object[] values = new Object[attribute.getLength()];
             for (int i=0; i<values.length; i++) {
                 if (numeric) {
-                    if ((values[i] = attribute.getNumericValue(i)) != null) {
-                        hasValues = true;
-                    }
+                    values[i] = Utils.fixSign(attribute.getNumericValue(i), attribute.isUnsigned());
+                    hasValues |= (values[i] != null);
                 } else {
                     Object value = attribute.getValue(i);
                     if (value != null) {
-                        String text = value.toString().trim();
-                        if (!text.isEmpty()) {
+                        String text = Utils.nonEmpty(value.toString());
+                        if (text != null) {
                             values[i] = text;
                             hasValues = true;
                         }

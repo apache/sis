@@ -54,4 +54,32 @@ final class Utils {
         }
         return text;
     }
+
+    /**
+     * If {@code isUnsigned} is {@code true} but the given value is negative, makes it positive.
+     *
+     * @param  number  the attribute value, or {@code null}.
+     * @return whether the number is unsigned.
+     */
+    static Number fixSign(Number number, final boolean isUnsigned) {
+        if (isUnsigned) {
+            if (number instanceof Byte) {
+                final byte value = (byte) number;
+                if (value < 0) {
+                    number = Byte.toUnsignedInt(value);
+                }
+            } else if (number instanceof Short) {
+                final short value = (Short) number;
+                if (value < 0) {
+                    number = Short.toUnsignedInt(value);
+                }
+            } else if (number instanceof Integer) {
+                final int value = (Integer) number;
+                if (value < 0) {
+                    number = Integer.toUnsignedLong(value);
+                }
+            }
+        }
+        return number;
+    }
 }

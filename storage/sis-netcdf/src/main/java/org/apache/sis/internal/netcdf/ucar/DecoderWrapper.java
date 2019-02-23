@@ -264,10 +264,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             for (final Group group : groups) {
                 final Attribute attribute = findAttribute(group, name);
                 if (attribute != null && attribute.isString()) {
-                    String value = attribute.getStringValue();
-                    if (value != null && !(value = value.trim()).isEmpty()) {
-                        return value;
-                    }
+                    return Utils.nonEmpty(attribute.getStringValue());
                 }
             }
         }
@@ -288,10 +285,10 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                 if (attribute != null) {
                     final Number value = attribute.getNumericValue();
                     if (value != null) {
-                        return value;
+                        return Utils.fixSign(value, attribute.isUnsigned());
                     }
-                    String asString = attribute.getStringValue();
-                    if (asString != null && !(asString = asString.trim()).isEmpty()) {
+                    String asString = Utils.nonEmpty(attribute.getStringValue());
+                    if (asString != null) {
                         return parseNumber(asString);
                     }
                 }
@@ -312,8 +309,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             for (final Group group : groups) {
                 final Attribute attribute = findAttribute(group, name);
                 if (attribute != null && attribute.isString()) {
-                    String value = attribute.getStringValue();
-                    if (value != null && !(value = value.trim()).isEmpty()) {
+                    String value = Utils.nonEmpty(attribute.getStringValue());
+                    if (value != null) {
                         final CalendarDate date;
                         try {
                             date = CalendarDateFormatter.isoStringToCalendarDate(Calendar.proleptic_gregorian, value);
