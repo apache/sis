@@ -122,7 +122,7 @@ public final class Axis extends NamedElement {
      * <p>Note that while we defined those values as unsigned for consistency with {@link Variable} dimensions,
      * not all operations in this {@code Axis} class support values greater than the signed integer range.</p>
      *
-     * @see Variable#getShape()
+     * @see Variable#getGridDimensions()
      */
     private final int[] sourceSizes;
 
@@ -352,7 +352,11 @@ public final class Axis extends NamedElement {
      * This is used for testing is a predefined axis can be used instead than invoking {@link #toISO(CSFactory)}.
      */
     final boolean isSameUnitAndDirection(final CoordinateSystemAxis axis) {
-        return axis.getDirection().equals(direction) && axis.getUnit().equals(getUnit());
+        if (!axis.getDirection().equals(direction)) {
+            return false;
+        }
+        final Unit<?> unit = getUnit();                         // Null to be interpreted as system unit.
+        return (unit == null) || axis.getUnit().equals(unit);
     }
 
     /**
@@ -601,7 +605,7 @@ main:   switch (getDimension()) {
      * @throws DataStoreException if a logical error occurred.
      */
     final LocalizationGridBuilder createLocalizationGrid(final Axis other) throws IOException, DataStoreException {
-        if (other.getDimension() == 2) {
+        if (getDimension() == 2 && other.getDimension() == 2) {
             final int xd =  this.sourceDimensions[0];
             final int yd =  this.sourceDimensions[1];
             final int xo = other.sourceDimensions[0];
@@ -650,16 +654,19 @@ main:   switch (getDimension()) {
     }
 
     /**
-     * Reports a non-fatal error that occurred while constructing the grid geometry.
-     * This method pretends that the error come from {@link Grid#getGridGeometry(Decoder)},
-     * which is the caller and is a bit closer to a public API.
+     * Reports a non-fatal error that occurred while constructing the grid geometry. This method is invoked
+     * by methods that are themselves invoked (indirectly) by {@link Grid#getGridGeometry(Decoder)}, which
+     * is invoked by {@link Variable#getGridGeometry()}. We pretend that the warning come from the later
+     * since it is a bit closer to a public API.
      *
      * @param  exception  the exception that occurred, or {@code null} if none.
      * @param  key        one or {@link Errors.Keys} constants.
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
+     *
+     * @see Variable#warning(Class, String, short, Object...)
      */
     private void warning(final Exception exception, final short key, final Object... arguments) {
-        coordinates.error(Grid.class, "getGridGeometry", exception, key, arguments);
+        coordinates.error(Variable.class, "getGridGeometry", exception, key, arguments);
     }
 
     /**

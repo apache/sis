@@ -186,8 +186,8 @@ search: for (final VariableInfo counts : decoder.variables) {
             if (counts.dimensions.length == 1 && counts.getDataType().isInteger) {
                 final Object sampleDimName = counts.getAttributeValue(CF.SAMPLE_DIMENSION);
                 if (sampleDimName instanceof String) {
-                    final Dimension featureDimension = counts.dimensions[0];
-                    final Dimension sampleDimension = decoder.findDimension((String) sampleDimName);
+                    final DimensionInfo featureDimension = counts.dimensions[0];
+                    final DimensionInfo sampleDimension = decoder.findDimension((String) sampleDimName);
                     if (sampleDimension == null) {
                         decoder.listeners.warning(decoder.resources().getString(Resources.Keys.DimensionNotFound_3,
                                 decoder.getFilename(), counts.getName(), sampleDimName), null);

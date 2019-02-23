@@ -329,12 +329,7 @@ public final class MathTransforms extends Static {
                 return IdentityTransform.create(firstAffectedCoordinate + dimension + numTrailingCoordinates);
             }
         }
-        final Matrix matrix = getMatrix(subTransform);
-        if (matrix != null) {
-            return linear(PassThroughTransform.asMatrix(firstAffectedCoordinate, matrix, numTrailingCoordinates));
-        } else {
-            return PassThroughTransform.newInstance(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
-        }
+        return PassThroughTransform.create0(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
     }
 
     /**

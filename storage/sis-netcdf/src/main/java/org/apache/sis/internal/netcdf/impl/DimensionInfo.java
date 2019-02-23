@@ -16,13 +16,15 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
-import org.apache.sis.internal.netcdf.NamedElement;
+import org.apache.sis.internal.netcdf.Dimension;
 
 
 /**
  * A dimension in a netCDF file. A dimension can been seen as an axis in the grid space
  * (not the geodetic space). Dimension are referenced by their index in other parts of
- * the netCDF file header.
+ * the netCDF file header. {@code Dimension} instances are unique, i.e. {@code a == b}
+ * is a sufficient test for determining that {@code a} and {@code b} represent the same
+ * dimension.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -30,7 +32,7 @@ import org.apache.sis.internal.netcdf.NamedElement;
  * @since   0.3
  * @module
  */
-final class Dimension extends NamedElement {
+final class DimensionInfo extends Dimension {
     /**
      * The dimension name.
      */
@@ -54,7 +56,7 @@ final class Dimension extends NamedElement {
      * @param length       the number of grid cell value along this dimension, as an unsigned number.
      * @param isUnlimited  whether this dimension is the "record" (also known as "unlimited") dimension.
      */
-    Dimension(final String name, final int length, final boolean isUnlimited) {
+    DimensionInfo(final String name, final int length, final boolean isUnlimited) {
         this.name        = name;
         this.length      = length;
         this.isUnlimited = isUnlimited;
@@ -70,20 +72,18 @@ final class Dimension extends NamedElement {
 
     /**
      * Returns the number of grid cell value along this dimension.
+     * In this implementation, the length is never undetermined (negative).
      */
-    final long length() {
+    @Override
+    public long length() {
         return Integer.toUnsignedLong(length);
     }
 
     /**
-     * A string representation of this dimension for debugging purpose only.
+     * Returns whether this dimension can grow.
      */
     @Override
-    public String toString() {
-        final StringBuilder buffer = new StringBuilder(name).append('[').append(length()).append(']');
-        if (isUnlimited) {
-            buffer.append(" (unlimited)");
-        }
-        return buffer.toString();
+    protected boolean isUnlimited() {
+        return isUnlimited;
     }
 }

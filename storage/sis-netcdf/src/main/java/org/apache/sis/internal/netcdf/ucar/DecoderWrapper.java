@@ -138,7 +138,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public String getFilename() {
-        String filename = file.getLocation();
+        String filename = Utils.nonEmpty(file.getLocation());
         if (filename != null) {
             int s = filename.lastIndexOf(File.separatorChar);
             if (s < 0 && File.separatorChar != '/') {
@@ -159,8 +159,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     @Override
     @SuppressWarnings("fallthrough")
     public String[] getFormatDescription() {
-        final String version = file.getFileTypeVersion();
-        final String[] format = new String["N/A".equalsIgnoreCase(version) ? 2 : 3];
+        final String version = Utils.nonEmpty(file.getFileTypeVersion());
+        final String[] format = new String[version != null ? 3 : 2];
         switch (format.length) {
             default: format[2] = version;                           // Fallthrough everywhere.
             case 2:  format[1] = file.getFileTypeDescription();
@@ -224,7 +224,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * Returns the netCDF attribute of the given name in the given group, or {@code null} if none.
      * This method is invoked for every global and group attributes to be read by this class (but
      * not {@linkplain ucar.nc2.VariableSimpleIF variable} attributes), thus providing a single point
-     * where we can filter the attributes to be read - if we want to do that in a future version.
+     * where we can filter the attributes to be read.
      *
      * <p>The {@code name} argument is typically (but is not restricted too) one of the constants
      * defined in the {@link org.apache.sis.storage.netcdf.AttributeNames} class.</p>
@@ -234,7 +234,20 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @return the attribute, or {@code null} if none.
      */
     private Attribute findAttribute(final Group group, final String name) {
-        return (group != null) ? group.findAttributeIgnoreCase(name) : file.findGlobalAttributeIgnoreCase(name);
+        Attribute value = (group != null) ? group.findAttributeIgnoreCase(name)
+                                          : file.findGlobalAttributeIgnoreCase(name);
+        if (value == null) {
+            final String mappedName = convention().mapAttributeName(name);
+            /*
+             * Identity check between String instances below is okay
+             * since this is only an optimization for a common case.
+             */
+            if (mappedName != name) {
+                value = (group != null) ? group.findAttributeIgnoreCase(mappedName)
+                                        : file.findGlobalAttributeIgnoreCase(mappedName);
+            }
+        }
+        return value;
     }
 
     /**
@@ -251,10 +264,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             for (final Group group : groups) {
                 final Attribute attribute = findAttribute(group, name);
                 if (attribute != null && attribute.isString()) {
-                    String value = attribute.getStringValue();
-                    if (value != null && !(value = value.trim()).isEmpty()) {
-                        return value;
-                    }
+                    return Utils.nonEmpty(attribute.getStringValue());
                 }
             }
         }
@@ -275,10 +285,10 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                 if (attribute != null) {
                     final Number value = attribute.getNumericValue();
                     if (value != null) {
-                        return value;
+                        return Utils.fixSign(value, attribute.isUnsigned());
                     }
-                    String asString = attribute.getStringValue();
-                    if (asString != null && !(asString = asString.trim()).isEmpty()) {
+                    String asString = Utils.nonEmpty(attribute.getStringValue());
+                    if (asString != null) {
                         return parseNumber(asString);
                     }
                 }
@@ -299,8 +309,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             for (final Group group : groups) {
                 final Attribute attribute = findAttribute(group, name);
                 if (attribute != null && attribute.isString()) {
-                    String value = attribute.getStringValue();
-                    if (value != null && !(value = value.trim()).isEmpty()) {
+                    String value = Utils.nonEmpty(attribute.getStringValue());
+                    if (value != null) {
                         final CalendarDate date;
                         try {
                             date = CalendarDateFormatter.isoStringToCalendarDate(Calendar.proleptic_gregorian, value);
@@ -349,7 +359,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public String getId() {
-        return file.getId();
+        return Utils.nonEmpty(file.getId());
     }
 
     /**
@@ -359,7 +369,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public String getTitle() {
-        return file.getTitle();
+        return Utils.nonEmpty(file.getTitle());
     }
 
     /**
@@ -375,7 +385,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             final List<? extends VariableIF> all = file.getVariables();
             variables = new VariableWrapper[(all != null) ? all.size() : 0];
             for (int i=0; i<variables.length; i++) {
-                variables[i] = new VariableWrapper(listeners, all.get(i));
+                variables[i] = new VariableWrapper(this, all.get(i));
             }
         }
         return variables;
@@ -392,7 +402,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             }
         }
         // We should not reach this point, but let be safe.
-        return new VariableWrapper(listeners, variable);
+        return new VariableWrapper(this, variable);
     }
 
     /**

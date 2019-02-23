@@ -109,6 +109,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.0
  * @since   0.3
  * @module
@@ -119,14 +120,6 @@ final class MetadataReader extends MetadataBuilder {
      * They are fields for which we are unsure of the proper ISO 19115 location.
      */
     private static final boolean EXPERIMENTAL = true;
-
-    /**
-     * Names of groups where to search for metadata, in precedence order.
-     * The {@code null} value stands for global attributes.
-     *
-     * <p>REMINDER: if modified, update class javadoc too.</p>
-     */
-    private static final String[] SEARCH_PATH = {"NCISOMetadata", "CFMetadata", null, "THREDDSMetadata"};
 
     /**
      * Names of global attributes identifying services.
@@ -158,8 +151,8 @@ final class MetadataReader extends MetadataBuilder {
     private final Decoder decoder;
 
     /**
-     * The actual search path, as a subset of {@link #SEARCH_PATH} with only the name of the groups
-     * which have been found in the NeCDF file.
+     * The actual search path, as a subset of {@link org.apache.sis.internal.netcdf.Convention#SEARCH_PATH}
+     * with only the name of the groups which have been found in the NeCDF file.
      */
     private final String[] searchPath;
 
@@ -193,7 +186,7 @@ final class MetadataReader extends MetadataBuilder {
      */
     MetadataReader(final Decoder decoder) {
         this.decoder = decoder;
-        decoder.setSearchPath(SEARCH_PATH);
+        decoder.setSearchPath(decoder.convention().getSearchPath());
         searchPath = decoder.getSearchPath();
     }
 
@@ -896,9 +889,13 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     private void addContentInfo() {
         final Map<List<String>, List<Variable>> contents = new HashMap<>(4);
         for (final Variable variable : decoder.getVariables()) {
-            if (decoder.roleOf(variable) == VariableRole.COVERAGE) {
-                final List<String> dimensions = Arrays.asList(variable.getGridDimensionNames());
-                CollectionsExt.addToMultiValuesMap(contents, dimensions, variable);
+            if (variable.getRole() == VariableRole.COVERAGE) {
+                final List<org.apache.sis.internal.netcdf.Dimension> dimensions = variable.getGridDimensions();
+                final String[] names = new String[dimensions.size()];
+                for (int i=0; i<names.length; i++) {
+                    names[i] = dimensions.get(i).getName();
+                }
+                CollectionsExt.addToMultiValuesMap(contents, Arrays.asList(names), variable);
             }
         }
         final String processingLevel = stringValue(PROCESSING_LEVEL);
@@ -939,9 +936,11 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final String name = trim(variable.getName());
         if (name != null) {
             final DefaultNameFactory f = decoder.nameFactory;
-            setBandIdentifier(f.createMemberName(null, name, f.createTypeName(null, variable.getDataTypeName())));
+            final StringBuilder buffer = new StringBuilder(20);
+            variable.writeDataTypeName(buffer);
+            setBandIdentifier(f.createMemberName(null, name, f.createTypeName(null, buffer.toString())));
         }
-        final String id = trim(variable.getAttributeAsString(CF.STANDARD_NAME));
+        final String id = variable.getAttributeAsString(CF.STANDARD_NAME);
         if (id != null && !id.equals(name)) {
             addBandName(variable.getAttributeAsString(ACDD.standard_name_vocabulary), id);
         }

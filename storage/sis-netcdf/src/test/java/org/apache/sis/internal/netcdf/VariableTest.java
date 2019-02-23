@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.List;
 import java.io.IOException;
 import java.time.Instant;
 import org.apache.sis.math.Vector;
@@ -90,7 +91,7 @@ public strictfp class VariableTest extends TestCase {
      *   <li>{@link Variable#getName()}</li>
      *   <li>{@link Variable#getDescription()}</li>
      *   <li>{@link Variable#getDataType()}</li>
-     *   <li>{@link Variable#getShape()} length</li>
+     *   <li>{@link Variable#getGridDimensions()} length</li>
      *   <li>{@link Variable#getRole()}</li>
      * </ul>
      *
@@ -126,7 +127,7 @@ public strictfp class VariableTest extends TestCase {
             assertEquals(name, expected[propertyIndex++], name);
             assertEquals(name, expected[propertyIndex++], variable.getDescription());
             assertEquals(name, expected[propertyIndex++], dataType);
-            assertEquals(name, expected[propertyIndex++], variable.getShape().length);
+            assertEquals(name, expected[propertyIndex++], variable.getGridDimensions().size());
             assertEquals(name, expected[propertyIndex++], variable.getRole());
             assertEquals(0, propertyIndex % NUM_BASIC_PROPERTY_COLUMNS);            // Sanity check for VariableTest itself.
         }
@@ -169,8 +170,21 @@ public strictfp class VariableTest extends TestCase {
     }
 
     /**
-     * Tests {@link Variable#getGridDimensionNames()} and {@link Variable#getShape()}
-     * on a simple two-dimensional dataset.
+     * Returns the dimension names.
+     */
+    private static String[] names(final List<Dimension> dimensions) {
+        return dimensions.stream().map(Dimension::getName).toArray(String[]::new);
+    }
+
+    /**
+     * Returns the dimension lengths.
+     */
+    private static long[] lengths(final List<Dimension> dimensions) {
+        return dimensions.stream().mapToLong(Dimension::length).toArray();
+    }
+
+    /**
+     * Tests {@link Variable#getGridDimensions()} on a simple two-dimensional dataset.
      *
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
@@ -180,18 +194,18 @@ public strictfp class VariableTest extends TestCase {
         final Variable variable = selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getVariables()[0];
         assertEquals("SST", variable.getName());
 
+        final List<Dimension> dimensions = variable.getGridDimensions();
         assertArrayEquals("getGridDimensionNames()", new String[] {
             "lat", "lon"
-        }, variable.getGridDimensionNames());
+        }, names(dimensions));
 
-        assertArrayEquals("getGridEnvelope()", new int[] {
+        assertArrayEquals("getGridEnvelope()", new long[] {
             73, 73
-        }, variable.getShape());
+        }, lengths(dimensions));
     }
 
     /**
-     * Tests {@link Variable#getGridDimensionNames()} and {@link Variable#getShape()}
-     * on a compound four-dimensional dataset.
+     * Tests {@link Variable#getGridDimensions()} on a compound four-dimensional dataset.
      *
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
@@ -201,13 +215,14 @@ public strictfp class VariableTest extends TestCase {
         final Variable variable = getVariablesCIP(selectDataset(TestData.NETCDF_4D_PROJECTED))[6];
         assertEquals("CIP", variable.getName());
 
+        final List<Dimension> dimensions = variable.getGridDimensions();
         assertArrayEquals("getGridDimensionNames()", new String[] {
             "time", "z0", "y0", "x0"
-        }, variable.getGridDimensionNames());
+        }, names(dimensions));
 
-        assertArrayEquals("getGridEnvelope()", new int[] {
+        assertArrayEquals("getGridEnvelope()", new long[] {
             1, 4, 19, 38
-        }, variable.getShape());
+        }, lengths(dimensions));
     }
 
     /**

@@ -17,15 +17,14 @@
 package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.List;
+import java.util.Collection;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import javax.measure.Unit;
 import ucar.ma2.Array;
 import ucar.ma2.Section;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Attribute;
-import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
 import ucar.nc2.dataset.Enhancements;
 import ucar.nc2.dataset.VariableEnhanced;
@@ -42,9 +41,7 @@ import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
@@ -83,10 +80,27 @@ final class VariableWrapper extends Variable {
     private transient Vector values;
 
     /**
+     * The grid associated to this variable, or {@code null} if none or not yet computed.
+     * The grid needs to be computed if {@link #gridDetermined} is {@code false}.
+     *
+     * @see #gridDetermined
+     * @see #getGrid()
+     */
+    private transient GridWrapper grid;
+
+    /**
+     * Whether {@link #grid} has been computed. Note that the result may still null.
+     *
+     * @see #grid
+     * @see #getGrid()
+     */
+    private transient boolean gridDetermined;
+
+    /**
      * Creates a new variable wrapping the given netCDF interface.
      */
-    VariableWrapper(final WarningListeners<?> listeners, VariableIF v) {
-        super(listeners);
+    VariableWrapper(final Decoder decoder, VariableIF v) {
+        super(decoder);
         variable = v;
         if (v instanceof VariableEnhanced) {
             v = ((VariableEnhanced) v).getOriginalVariable();
@@ -103,12 +117,12 @@ final class VariableWrapper extends Variable {
     @Override
     public String getFilename() {
         if (variable instanceof ucar.nc2.Variable) {
-            String name = ((ucar.nc2.Variable) variable).getDatasetLocation();
+            final String name = Utils.nonEmpty(((ucar.nc2.Variable) variable).getDatasetLocation());
             if (name != null) {
                 return name.substring(Math.max(name.lastIndexOf('/'), name.lastIndexOf(File.separatorChar)) + 1);
             }
         }
-        return null;
+        return super.getFilename();
     }
 
     /**
@@ -124,17 +138,19 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public String getDescription() {
-        return variable.getDescription();
+        return Utils.nonEmpty(variable.getDescription());
     }
 
     /**
-     * Returns the unit of measurement as a string, or an empty strong if none.
+     * Returns the unit of measurement as a string, or {@code null} if none.
      * Note that the UCAR library represents missing unit by an empty string,
      * which is ambiguous with dimensionless unit.
      */
     @Override
     protected String getUnitsString() {
-        return variable.getUnitsString();
+        String symbol = variable.getUnitsString();
+        return (symbol != null && (symbol = symbol.trim()).isEmpty()) ? null : symbol;
+        // Do not replace "N/A" by null since it is a valid unit symbol.
     }
 
     /**
@@ -204,16 +220,16 @@ final class VariableWrapper extends Variable {
      * Returns whether this variable can grow. A variable is unlimited if at least one of its dimension is unlimited.
      */
     @Override
-    public boolean isUnlimited() {
+    protected boolean isUnlimited() {
         return variable.isUnlimited();
     }
 
     /**
-     * Returns {@code AXIS} if this variable seems to be a coordinate system axis.
+     * Returns {@code true} if this variable seems to be a coordinate system axis.
      */
     @Override
-    protected VariableRole getRole() {
-        return variable.isCoordinateVariable() ? VariableRole.AXIS : super.getRole();
+    protected boolean isCoordinateSystemAxis() {
+        return variable.isCoordinateVariable();
     }
 
     /**
@@ -224,43 +240,46 @@ final class VariableWrapper extends Variable {
      * @see DecoderWrapper#getGrids()
      */
     @Override
-    public Grid getGrid(final Decoder decoder) throws IOException, DataStoreException {
-        if (variable instanceof Enhancements) {
-            final List<CoordinateSystem> cs = ((Enhancements) variable).getCoordinateSystems();
-            if (cs != null && !cs.isEmpty()) {
-                for (final Grid grid : decoder.getGrids()) {
-                    final GridWrapper g = ((GridWrapper) grid).forVariable(variable, cs);
-                    if (g != null) {
-                        return g;
+    protected Grid getGrid() throws IOException, DataStoreException {
+        if (!gridDetermined) {
+            gridDetermined = true;                      // Set first so we don't try twice in case of failure.
+            /*
+             * In some netCDF files, more than one grid could be associated to a variable. If the names of the
+             * variables to use as coordinate system axes have been specified, use those names for filtering.
+             * Otherwise take the first grid.
+             */
+            if (variable instanceof Enhancements) {
+                final List<CoordinateSystem> systems = ((Enhancements) variable).getCoordinateSystems();
+                if (!systems.isEmpty()) {           // For avoiding useless call to decoder.getGrids().
+                    final String[] axisNames = decoder.convention().namesOfAxisVariables(this);
+                    for (final Grid candidate : decoder.getGrids()) {
+                        grid = ((GridWrapper) candidate).forVariable(variable, systems, axisNames);
+                        if (grid != null) {
+                            return grid;
+                        }
                     }
                 }
             }
+            /*
+             * If we reach this point, we did not found a grid using the dimensions of this variable.
+             * But maybe there is a grid using other dimensions (typically with a decimation) that we
+             * can map to the variable dimension using attribute values. This mechanism is described
+             * in Convention.nameOfDimension(…).
+             */
+            grid = (GridWrapper) super.getGrid();
         }
-        return null;
+        return grid;
     }
 
     /**
-     * Returns the names of the dimensions of this variable.
-     * The dimensions are those of the grid, not the dimensions of the coordinate system.
-     * This information is used for completing ISO 19115 metadata.
+     * Returns the dimensions of this variable in the order they are declared in the netCDF file.
+     * The dimensions are those of the grid, not the dimensions (or axes) of the coordinate system.
+     * In ISO 19123 terminology, the dimension lengths give the upper corner of the grid envelope plus one.
+     * The lower corner is always (0, 0, …, 0).
      */
     @Override
-    public String[] getGridDimensionNames() {
-        final List<Dimension> dimensions = variable.getDimensions();
-        final String[] names = new String[dimensions.size()];
-        for (int i=0; i<names.length; i++) {
-            names[i] = dimensions.get(i).getShortName();
-        }
-        return names;
-    }
-
-    /**
-     * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
-     * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
-     */
-    @Override
-    public int[] getShape() {
-        return variable.getShape();
+    public List<org.apache.sis.internal.netcdf.Dimension> getGridDimensions() {
+        return DimensionWrapper.wrap(variable.getDimensions());
     }
 
     /**
@@ -308,14 +327,13 @@ final class VariableWrapper extends Variable {
             final Object[] values = new Object[attribute.getLength()];
             for (int i=0; i<values.length; i++) {
                 if (numeric) {
-                    if ((values[i] = attribute.getNumericValue(i)) != null) {
-                        hasValues = true;
-                    }
+                    values[i] = Utils.fixSign(attribute.getNumericValue(i), attribute.isUnsigned());
+                    hasValues |= (values[i] != null);
                 } else {
                     Object value = attribute.getValue(i);
                     if (value != null) {
-                        String text = value.toString().trim();
-                        if (!text.isEmpty()) {
+                        String text = Utils.nonEmpty(value.toString());
+                        if (text != null) {
                             values[i] = text;
                             hasValues = true;
                         }
@@ -341,33 +359,21 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the minimum and maximum values as determined by Apache SIS, using the UCAR library as a fallback.
-     * This method gives precedence to the range computed by Apache SIS instead than the range provided by UCAR
-     * because we need the range of packed values instead than the range of converted values. Only if Apache SIS
-     * can not determine that range, we use the UCAR library and returns the value in a {@link MeasurementRange}
-     * instance of signaling the caller that this is converted values.
+     * Returns the minimum and maximum values as determined by UCAR library, or inferred from the integer type otherwise.
+     * This method is invoked only as a fallback; we give precedence to the range computed by Apache SIS instead than the
+     * range provided by UCAR because we need the range of packed values instead than the range of converted values. Only
+     * if Apache SIS can not determine that range, that method is invoked.
      */
     @Override
-    public NumberRange<?> getValidValues() {
-        NumberRange<?> range = super.getValidValues();
-        if (range == null && variable instanceof EnhanceScaleMissing) {
+    public NumberRange<?> getRangeFallback() {
+        if (variable instanceof EnhanceScaleMissing) {
             final EnhanceScaleMissing ev = (EnhanceScaleMissing) variable;
             if (ev.hasInvalidData()) {
-                range = MeasurementRange.create(ev.getValidMin(), true, ev.getValidMax(), true, getUnit());
+                // Returns a MeasurementRange instance for signaling the caller that this is converted values.
+                return MeasurementRange.create(ev.getValidMin(), true, ev.getValidMax(), true, getUnit());
             }
         }
-        return range;
-
-    }
-
-    /**
-     * Whether {@link #read()} invokes {@link Vector#compress(double)} on the returned vector.
-     *
-     * @return {@code false}.
-     */
-    @Override
-    protected boolean readTriesToCompress() {
-        return false;
+        return super.getRangeFallback();
     }
 
     /**
