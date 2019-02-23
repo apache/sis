@@ -117,7 +117,7 @@ final class VariableWrapper extends Variable {
     @Override
     public String getFilename() {
         if (variable instanceof ucar.nc2.Variable) {
-            String name = ((ucar.nc2.Variable) variable).getDatasetLocation();
+            final String name = Utils.nonEmpty(((ucar.nc2.Variable) variable).getDatasetLocation());
             if (name != null) {
                 return name.substring(Math.max(name.lastIndexOf('/'), name.lastIndexOf(File.separatorChar)) + 1);
             }
@@ -134,19 +134,11 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Trims the leading and trailing spaces of the given string.
-     * If the string is null, empty or contains only spaces, then this method returns {@code null}.
-     */
-    private static String trim(String text) {
-        return (text != null && (text = text.trim()).isEmpty()) ? null : text;
-    }
-
-    /**
      * Returns the description of this variable, or {@code null} if none.
      */
     @Override
     public String getDescription() {
-        return trim(variable.getDescription());
+        return Utils.nonEmpty(variable.getDescription());
     }
 
     /**
@@ -156,7 +148,9 @@ final class VariableWrapper extends Variable {
      */
     @Override
     protected String getUnitsString() {
-        return trim(variable.getUnitsString());
+        String symbol = variable.getUnitsString();
+        return (symbol != null && (symbol = symbol.trim()).isEmpty()) ? null : symbol;
+        // Do not replace "N/A" by null since it is a valid unit symbol.
     }
 
     /**

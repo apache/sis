@@ -138,7 +138,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public String getFilename() {
-        String filename = file.getLocation();
+        String filename = Utils.nonEmpty(file.getLocation());
         if (filename != null) {
             int s = filename.lastIndexOf(File.separatorChar);
             if (s < 0 && File.separatorChar != '/') {
@@ -159,8 +159,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     @Override
     @SuppressWarnings("fallthrough")
     public String[] getFormatDescription() {
-        final String version = file.getFileTypeVersion();
-        final String[] format = new String["N/A".equalsIgnoreCase(version) ? 2 : 3];
+        final String version = Utils.nonEmpty(file.getFileTypeVersion());
+        final String[] format = new String[version != null ? 3 : 2];
         switch (format.length) {
             default: format[2] = version;                           // Fallthrough everywhere.
             case 2:  format[1] = file.getFileTypeDescription();
@@ -362,7 +362,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public String getId() {
-        return file.getId();
+        return Utils.nonEmpty(file.getId());
     }
 
     /**
@@ -372,7 +372,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public String getTitle() {
-        return file.getTitle();
+        return Utils.nonEmpty(file.getTitle());
     }
 
     /**
