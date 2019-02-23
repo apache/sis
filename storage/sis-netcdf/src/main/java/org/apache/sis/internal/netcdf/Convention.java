@@ -401,6 +401,9 @@ public class Convention {
      * Pad values should be first in the map, followed by missing values.
      * The same value may have more than one role.
      *
+     * <p>The default implementation returns a modifiable {@link LinkedHashMap}.
+     * Subclasses can add their own entries to the returned map.</p>
+     *
      * @param  data  the variable for which to get no-data values.
      * @return no-data values with bitmask of their roles or textual descriptions.
      */

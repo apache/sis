@@ -232,7 +232,7 @@ next:       for (final String name : axisNames) {
         for (int i=0; i<range.length; i++) {
             final VariableInfo v = range[i];
             if (variables.put(v, i) != null) {
-                throw new DataStoreContentException(Resources.format(Resources.Keys.DuplicatedReference_2, getFilename(), v.getName()));
+                throw new DataStoreContentException(Resources.format(Resources.Keys.DuplicatedAxis_2, getFilename(), v.getName()));
             }
         }
         /*

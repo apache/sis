@@ -662,6 +662,8 @@ main:   switch (getDimension()) {
      * @param  exception  the exception that occurred, or {@code null} if none.
      * @param  key        one or {@link Errors.Keys} constants.
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
+     *
+     * @see Variable#warning(Class, String, short, Object...)
      */
     private void warning(final Exception exception, final short key, final Object... arguments) {
         coordinates.error(Variable.class, "getGridGeometry", exception, key, arguments);

@@ -437,6 +437,7 @@ public abstract class Variable extends NamedElement {
                                             if (!isRequested && requestedByConvention.contains(dim)) {
                                                 domain.put(name, previous);
                                             } else {
+                                                error(Variable.class, "getGridGeometry", null, Errors.Keys.DuplicatedIdentifier_1, name);
                                                 return null;
                                             }
                                         }
@@ -447,6 +448,8 @@ public abstract class Variable extends NamedElement {
                     }
                 }
                 if ((dimensions[i] = domain.remove(label)) == null) {
+                    warning(Variable.class, "getGridGeometry",        // Caller (indirectly) for this method.
+                            Resources.Keys.CanNotRelateVariableDimension_3, getFilename(), getName(), label);
                     return null;        // Can not to relate that variable dimension to a grid dimension.
                 }
             }
@@ -505,7 +508,10 @@ public abstract class Variable extends NamedElement {
             if (needsResize) {
                 if (gridToDataIndices != null) {
                     for (final double s : gridToDataIndices) {
-                        if (!(s > 0)) return null;                  // "resampling_interval" attributes not found.
+                        if (!(s > 0)) {
+                            warning(Variable.class, "getGridGeometry", Resources.Keys.ResamplingIntervalNotFound_2, getFilename(), getName());
+                            return null;
+                        }
                     }
                 }
                 extent = extent.resize(sizes);
@@ -877,13 +883,14 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Reports a warning to the listeners specified at construction time.
+     * This method is for Apache SIS internal purpose only since resources may change at any time.
      *
      * @param  caller     the caller class to report, preferably a public class.
      * @param  method     the caller method to report, preferable a public method.
      * @param  key        one or {@link Resources.Keys} constants.
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
-    protected final void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
+    public final void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
         warning(decoder.listeners, caller, method, null, null, key, arguments);
     }
 

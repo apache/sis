@@ -317,9 +317,19 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                     range = NumberRange.create(minimum, isMinIncluded, maximum, isMaxIncluded);
                 }
             }
-            String name = data.getDescription();
-            if (name == null) name = data.getName();
-            builder.addQuantitative(name, range, mt, data.getUnit());
+            /*
+             * Range may be empty if min/max values declared in the netCDF files are erroneous,
+             * or if we have not read them correctly (edu.ucar:cdm:4.6.13 sometime confuses an
+             * unsigned integer with a signed one).
+             */
+            if (range.isEmpty()) {
+                data.warning(GridResource.class, "getSampleDimensions", Resources.Keys.IllegalValueRange_4,
+                        data.getFilename(), data.getName(), range.getMinValue(), range.getMaxValue());
+            } else {
+                String name = data.getDescription();
+                if (name == null) name = data.getName();
+                builder.addQuantitative(name, range, mt, data.getUnit());
+            }
         }
         /*
          * Adds the "missing value" or "fill value" as qualitative categories.  If a value has both roles, use "missing value"
