@@ -25,6 +25,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.TestCase;
@@ -38,7 +39,7 @@ import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
  * Tests {@link ReferencingUtilities}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -54,6 +55,16 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
         assertEquals(2.33722917, getGreenwichLongitude(HardCodedDatum.PARIS,     Units.DEGREE), 1E-12);
         assertEquals(2.33720833, getGreenwichLongitude(HardCodedDatum.PARIS_RGS, Units.DEGREE), 1E-8);
         assertEquals(2.596898,   getGreenwichLongitude(HardCodedDatum.PARIS_RGS, Units.GRAD),   1E-6);
+    }
+
+    /**
+     * Tests {@link ReferencingUtilities#getWraparoundRange(CoordinateSystem, int)}.
+     */
+    @Test
+    public void testGetWraparoundRange() {
+        assertTrue  (Double.isNaN(getWraparoundRange(HardCodedCS.GEODETIC_φλ, 0)));
+        assertEquals(360, getWraparoundRange(HardCodedCS.GEODETIC_φλ, 1), STRICT);
+        assertEquals(400, getWraparoundRange(HardCodedCS.ELLIPSOIDAL_gon, 0), STRICT);
     }
 
     /**

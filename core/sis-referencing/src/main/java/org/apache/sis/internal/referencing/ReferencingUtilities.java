@@ -40,6 +40,9 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
@@ -93,6 +96,37 @@ public final class ReferencingUtilities extends Static {
         } else {
             return primeMeridian.getAngularUnit().getConverterTo(unit).convert(primeMeridian.getGreenwichLongitude());
         }
+    }
+
+    /**
+     * Returns the range (maximum - minimum) of the given axis if it has wraparound meaning,
+     * or {@link Double#NaN} otherwise. This method implements a fallback for the longitude
+     * axis if it does not declare the minimum and maximum values as expected.
+     *
+     * @param  cs         the coordinate system for which to get wraparound range, or {@code null}.
+     * @param  dimension  dimension of the axis to test.
+     * @return the wraparound range, or {@link Double#NaN} if none.
+     */
+    public static double getWraparoundRange(final CoordinateSystem cs, final int dimension) {
+        if (cs != null) {
+            final CoordinateSystemAxis axis = cs.getAxis(dimension);
+            if (axis != null && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
+                double period = axis.getMaximumValue() - axis.getMinimumValue();
+                if (period > 0 && period != Double.POSITIVE_INFINITY) {
+                    return period;
+                }
+                final AxisDirection dir = AxisDirections.absolute(axis.getDirection());
+                if (AxisDirection.EAST.equals(dir) && cs instanceof EllipsoidalCS) {
+                    period = Longitude.MAX_VALUE - Longitude.MIN_VALUE;
+                    final Unit<?> unit = axis.getUnit();
+                    if (unit != null) {
+                        period = Units.DEGREE.getConverterTo(Units.ensureAngular(unit)).convert(period);
+                    }
+                    return period;
+                }
+            }
+        }
+        return Double.NaN;
     }
 
     /**

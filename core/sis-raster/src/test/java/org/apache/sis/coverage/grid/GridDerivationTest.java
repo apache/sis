@@ -32,7 +32,6 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
-import org.junit.Ignore;
 
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
@@ -255,7 +254,6 @@ public final strictfp class GridDerivationTest extends TestCase {
      * Tests deriving a grid geometry with an envelope crossing the antimeridian.
      */
     @Test
-    @Ignore("TODO: not yet fixed.")
     public void testSubgridCrossingAntiMeridian() {
         final GridGeometry grid = new GridGeometry(
                 new GridExtent(200, 180), PixelInCell.CELL_CORNER,
@@ -265,11 +263,12 @@ public final strictfp class GridDerivationTest extends TestCase {
                         0,  0,  1)), HardCodedCRS.WGS84);
 
         final GeneralEnvelope aoi = new GeneralEnvelope(HardCodedCRS.WGS84);
-        aoi.setRange(0, 140, -179);
+        aoi.setRange(0, 140, -179);                 // Cross anti-meridian.
         aoi.setRange(1, -90,   90);
 
         final GridGeometry subgrid = grid.derive().subgrid(aoi).build();
-        Envelope subEnv = subgrid.getEnvelope();
-        assertEquals(aoi, subEnv);
+        final Envelope subEnv = subgrid.getEnvelope();
+        aoi.setRange(0, 140, 181);
+        assertEnvelopeEquals(aoi, subEnv);
     }
 }
