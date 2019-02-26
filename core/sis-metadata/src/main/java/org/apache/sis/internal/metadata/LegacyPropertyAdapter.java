@@ -21,11 +21,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Objects;
-import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.util.AbstractIterator;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Emptiable;
 
 
 /**
@@ -199,7 +199,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
      * Returns {@code true} if the given metadata is empty.
      */
     static boolean isEmpty(final Object container) {
-        return (container instanceof AbstractMetadata) && ((AbstractMetadata) container).isEmpty();
+        return (container instanceof Emptiable) && ((Emptiable) container).isEmpty();
     }
 
 

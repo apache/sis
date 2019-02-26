@@ -214,15 +214,15 @@ public final class Envelopes extends Static {
                  *
                  *     !Utilities.deepEquals(sourceCRS, targetCRS, ComparisonMode.ALLOW_VARIANT)
                  *
-                 * but it would not be very advantageous if testing the condition is almost as long as computing
-                 * the AOI. For now we keep != as a very cheap test which will work quite often.
+                 * but it would not be very advantageous if testing the condition is almost as long as computing the AOI.
+                 * For now we keep != as a very cheap test which will work quite often.
                  */
                 DefaultGeographicBoundingBox areaOfInterest = null;
                 if (sourceCRS != targetCRS) try {
                     final DefaultGeographicBoundingBox targetAOI;
                     final ReferencingServices converter = ReferencingServices.getInstance();
-                    areaOfInterest = converter.setBounds(source, null, true);      // Should be first.
-                    targetAOI      = converter.setBounds(target, null, true);
+                    areaOfInterest = converter.setBounds(source, null, "findOperation");                // Should be first.
+                    targetAOI      = converter.setBounds(target, null, "findOperation");
                     if (areaOfInterest == null) {
                         areaOfInterest = targetAOI;
                     } else {

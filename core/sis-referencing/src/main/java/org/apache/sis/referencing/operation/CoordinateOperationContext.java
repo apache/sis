@@ -21,12 +21,11 @@ import java.util.function.Predicate;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -68,7 +67,8 @@ public class CoordinateOperationContext implements Serializable {
     private static final long serialVersionUID = -6944460471653277973L;
 
     /**
-     * The spatio-temporal area of interest, or {@code null} if none.
+     * The spatio-temporal area of interest, or {@code null} if none. This instance may be updated or
+     * replaced by other methods in this class, or (indirectly) by {@link CoordinateOperationFinder}.
      */
     private Extent areaOfInterest;
 
@@ -93,24 +93,24 @@ public class CoordinateOperationContext implements Serializable {
      */
     public CoordinateOperationContext(final Extent area, final double accuracy) {
         ArgumentChecks.ensurePositive("accuracy", accuracy);
-        areaOfInterest  = area;
+        if (area != null) {
+            areaOfInterest = new DefaultExtent(area);
+        }
         desiredAccuracy = accuracy;
     }
 
     /**
-     * Creates an operation context for the given area of interest, which may be null.
+     * Creates an operation context for the given area of interest, which may be null or
+     * {@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#isEmpty() undefined}.
      * This is a convenience method for a frequently-used operation.
      *
      * @param  areaOfInterest  the area of interest, or {@code null} if none.
-     * @return the operation context, or {@code null} if the given bounding box was null.
+     * @return the operation context, or {@code null} if the given bounding box was null or undefined.
      *
      * @since 1.0
      */
     public static CoordinateOperationContext fromBoundingBox(final GeographicBoundingBox areaOfInterest) {
-        if (areaOfInterest != null) {
-            if (areaOfInterest instanceof DefaultGeographicBoundingBox && ((DefaultGeographicBoundingBox) areaOfInterest).isEmpty()) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "areaOfInterest"));
-            }
+        if (areaOfInterest != null && !(areaOfInterest instanceof Emptiable && ((Emptiable) areaOfInterest).isEmpty())) {
             final CoordinateOperationContext context = new CoordinateOperationContext();
             context.setAreaOfInterest(areaOfInterest);
             return context;
@@ -156,6 +156,10 @@ public class CoordinateOperationContext implements Serializable {
 
     /**
      * Sets the given geographic bounding box in the given extent.
+     * This method may modify the extent given in parameters.
+     *
+     * @param  areaOfInterest  the extent to update, or {@code null}.
+     * @return the updated extent. May be the given one or a new instance.
      */
     static Extent setGeographicBoundingBox(Extent areaOfInterest, final GeographicBoundingBox bbox) {
         if (areaOfInterest != null) {
