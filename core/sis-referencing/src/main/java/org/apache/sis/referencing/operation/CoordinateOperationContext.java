@@ -24,7 +24,8 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.util.Emptiable;
+import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -105,15 +106,26 @@ public class CoordinateOperationContext implements Serializable {
      * This is a convenience method for a frequently-used operation.
      *
      * @param  areaOfInterest  the area of interest, or {@code null} if none.
-     * @return the operation context, or {@code null} if the given bounding box was null or undefined.
+     * @return the operation context, or {@code null} if the given bounding box was null, undefined
+     *         or covers the whole world (in which case Apache SIS does not need that we specify a context).
      *
      * @since 1.0
      */
     public static CoordinateOperationContext fromBoundingBox(final GeographicBoundingBox areaOfInterest) {
-        if (areaOfInterest != null && !(areaOfInterest instanceof Emptiable && ((Emptiable) areaOfInterest).isEmpty())) {
-            final CoordinateOperationContext context = new CoordinateOperationContext();
-            context.setAreaOfInterest(areaOfInterest);
-            return context;
+        if (areaOfInterest != null) {
+            /*
+             * If the area of interest covers the world, we omit creating a context in order to make
+             * easier for DefaultCoordinateOperationFactory to detect that it can use its cache.
+             */
+            if (areaOfInterest.getSouthBoundLatitude() >  Latitude.MIN_VALUE ||
+                areaOfInterest.getNorthBoundLatitude() <  Latitude.MAX_VALUE ||
+                areaOfInterest.getWestBoundLongitude() > Longitude.MIN_VALUE ||
+                areaOfInterest.getEastBoundLongitude() < Longitude.MAX_VALUE)
+            {
+                final CoordinateOperationContext context = new CoordinateOperationContext();
+                context.setAreaOfInterest(areaOfInterest);
+                return context;
+            }
         }
         return null;
     }

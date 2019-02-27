@@ -88,6 +88,7 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.ReferencingServices;
@@ -210,22 +211,34 @@ public final class ServicesForMetadata extends ReferencingServices {
             southBoundLatitude = envelope.getMinimum(1);
             northBoundLatitude = envelope.getMaximum(1);
         }
-        if (Math.abs(eastBoundLongitude - westBoundLongitude) >= (Longitude.MAX_VALUE - Longitude.MIN_VALUE)) {
-            westBoundLongitude = Longitude.MIN_VALUE;
-            eastBoundLongitude = Longitude.MAX_VALUE;
-        } else {
-            /*
-             * The envelope transformation at the beginning of this method intentionally avoided to apply datum shift.
-             * This implies that the prime meridian has not been changed and may be something else than Greenwich.
-             * We need to take it in account manually.
-             */
-            if (normalizedCRS != null) {
-                final double rotation = CRS.getGreenwichLongitude(normalizedCRS);
-                westBoundLongitude += rotation;
-                eastBoundLongitude += rotation;
+        /*
+         * The envelope transformation at the beginning of this method intentionally avoided to apply datum shift.
+         * This implies that the prime meridian has not been changed and may be something else than Greenwich.
+         * We need to take it in account manually.
+         *
+         * Note that there is no need to normalize the longitudes back to the [-180 … +180]° range after the rotation, or
+         * to verify if the longitude span is 360°. Those verifications will be done automatically by target.setBounds(…).
+         */
+        if (normalizedCRS != null) {
+            final double rotation = CRS.getGreenwichLongitude(normalizedCRS);
+            westBoundLongitude += rotation;
+            eastBoundLongitude += rotation;
+        }
+        /*
+         * In the particular case where this method is invoked (indirectly) for Envelopes.findOperation(…) purposes,
+         * replace NaN values by the whole world.  We do that only for Envelopes.findOperation(…) since we know that
+         * the geographic bounding box will be used for choosing a CRS, and a conservative approach is to select the
+         * CRS valid in the widest area. If this method is invoked for other usages, then we keep NaN values because
+         * we don't know the context (union, intersection, something else?).
+         */
+        if (findOpCaller != null) {
+            if (Double.isNaN(southBoundLatitude)) southBoundLatitude = Latitude.MIN_VALUE;
+            if (Double.isNaN(northBoundLatitude)) northBoundLatitude = Latitude.MAX_VALUE;
+            if (Double.isNaN(eastBoundLongitude) || Double.isNaN(westBoundLongitude)) {
+                // Conservatively set the two bounds because may be spanning the anti-meridian.
+                eastBoundLongitude = Longitude.MIN_VALUE;
+                westBoundLongitude = Longitude.MAX_VALUE;
             }
-            westBoundLongitude = Longitude.normalize(westBoundLongitude);
-            eastBoundLongitude = Longitude.normalize(eastBoundLongitude);
         }
         if (target == null) {
             target = new DefaultGeographicBoundingBox();
