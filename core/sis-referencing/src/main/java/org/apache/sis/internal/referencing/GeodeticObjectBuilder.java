@@ -42,6 +42,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.referencing.Builder;
 import org.apache.sis.referencing.CommonCRS;
@@ -89,6 +91,38 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      */
     public GeodeticObjectBuilder() {
         factories = new ReferencingFactoryContainer();
+    }
+
+    /**
+     * Sets the domain of validity as a geographic bounding box set to the specified values.
+     * The bounding box crosses the anti-meridian if {@code eastBoundLongitude} &lt; {@code westBoundLongitude}.
+     * If this method has already been invoked previously, the new value overwrites the previous one.
+     *
+     * @param  description         a textual description of the domain of validity, or {@code null} if none.
+     * @param  westBoundLongitude  the minimal λ value.
+     * @param  eastBoundLongitude  the maximal λ value.
+     * @param  southBoundLatitude  the minimal φ value.
+     * @param  northBoundLatitude  the maximal φ value.
+     * @return {@code this}, for method call chaining.
+     * @throws IllegalArgumentException if (<var>south bound</var> &gt; <var>north bound</var>).
+     *         Note that {@linkplain Double#NaN NaN} values are allowed.
+     */
+    public GeodeticObjectBuilder setDomainOfValidity(final CharSequence description,
+                    final double westBoundLongitude,
+                    final double eastBoundLongitude,
+                    final double southBoundLatitude,
+                    final double northBoundLatitude)
+    {
+        DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(
+                westBoundLongitude, eastBoundLongitude, southBoundLatitude, northBoundLatitude);
+        if (bbox.isEmpty()) {
+            bbox = null;
+        }
+        if (description != null || bbox != null) {
+            final DefaultExtent extent = new DefaultExtent(description, bbox, null, null);
+            properties.put(CoordinateReferenceSystem.DOMAIN_OF_VALIDITY_KEY, extent);
+        }
+        return this;
     }
 
     /**
