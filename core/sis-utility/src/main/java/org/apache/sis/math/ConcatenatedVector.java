@@ -288,8 +288,8 @@ final class ConcatenatedVector extends Vector implements Serializable {
     }
 
     /**
-     * Delegates to the backing vectors since there is a chance that they overloaded
-     * their {@code concatenate} method with a more effective implementation.
+     * Delegates to the backing vectors since there is a chance that they override
+     * their {@code concatenate} method with a more efficient implementation.
      */
     @Override
     Vector createConcatenate(final Vector toAppend) {

@@ -31,8 +31,11 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
+import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -44,7 +47,6 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
-import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants.CF;
 
@@ -677,6 +679,14 @@ main:   switch (getDimension()) {
      * @throws DataStoreException if a logical error occurred.
      */
     final Vector read() throws IOException, DataStoreException {
-        return coordinates.read().subList(0, getSizeProduct(0));
+        final TransferFunction tr = coordinates.decoder.convention().transferFunction(coordinates);
+        if (TransferFunctionType.LINEAR.equals(tr.getType())) {
+            Vector data = coordinates.read();
+            data = data.subList(0, getSizeProduct(0));              // Trim trailing NaN values.
+            data = data.transform(tr.getScale(), tr.getOffset());   // Apply scale and offset attributes, if any.
+            return data;
+        } else {
+            throw new DataStoreException();     // TODO: non-linear transform.
+        }
     }
 }

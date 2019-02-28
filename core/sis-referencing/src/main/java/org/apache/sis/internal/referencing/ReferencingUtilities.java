@@ -634,7 +634,7 @@ public final class ReferencingUtilities extends Static {
                         final double lowerToValidEnd   = ((validEnd   - lower) / period) - lowerCycles;
                         if (lowerIsBefore) {
                             /*
-                             * We need to add an integral amount of 'period' to both sides in order to move the range
+                             * We need to add an integer amount of 'period' to both sides in order to move the range
                              * inside the valid area. We need  ⎣lowerToValidStart⎦  for reaching the point where:
                              *
                              *     (validStart - period) < (new lower) ≦ validStart
@@ -692,7 +692,7 @@ public final class ReferencingUtilities extends Static {
                         if (shifted == null) {
                             shifted = new GeneralEnvelope(areaOfInterest);
                         }
-                        shifted.setRange(i, lower + lowerCycles * period,
+                        shifted.setRange(i, lower + lowerCycles * period,       // TODO: use Math.fma in JDK9.
                                             upper + upperCycles * period);
                     }
                 }

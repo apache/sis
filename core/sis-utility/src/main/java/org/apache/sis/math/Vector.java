@@ -243,7 +243,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * not {@link Float#TYPE}.
      *
      * <p>The information returned by this method is only indicative; it is not guaranteed to specify accurately
-     * this kind of objects returned by the {@link #get(int)} method. There is various situation where the types
+     * this kind of objects returned by the {@link #get(int)} method. There is various situations where the types
      * may not match:</p>
      *
      * <ul>
@@ -300,13 +300,16 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * Returns {@code true} if integer values shall be interpreted as unsigned values.
      * This method may return {@code true} for data stored in {@code byte[]}, {@code short[]}, {@code int[]}
      * or {@code long[]} arrays, but never for data stored in {@code float[]} and {@code double[]} arrays.
+     * The default implementation returns {@code false}.
      *
      * <p>Unless otherwise noticed in Javadoc, users do not need to care about this information since
      * {@code Vector} methods will perform automatically the operations needed for unsigned integers.</p>
      *
      * @return {@code true} if the integer values shall be interpreted as unsigned values.
      */
-    public abstract boolean isUnsigned();
+    public boolean isUnsigned() {
+        return false;
+    }
 
     /**
      * Returns the number of elements in this vector.
@@ -345,6 +348,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * This method may result in a lost of precision if this vector
      * stores or computes its values with the {@code double} type.
      *
+     * <p>The default implementation delegates to {@link #doubleValue(int)} and cast the result to {@code float}.</p>
+     *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
@@ -353,7 +358,9 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *
      * @see #floatValues()
      */
-    public abstract float floatValue(int index);
+    public float floatValue(int index) {
+        return (float) doubleValue(index);
+    }
 
     /**
      * Returns the value at the given index as a {@code long}.
@@ -947,6 +954,11 @@ search:     for (;;) {
         }
 
         /** Delegates to the enclosing vector. */
+        @Override Vector createTransform(final double scale, final double offset) {
+            return Vector.this.transform(scale, offset).subSampling(first, step, length);
+        }
+
+        /** Delegates to the enclosing vector. */
         @Override Vector createSubSampling(int first, int step, final int length) {
             first = toBacking(first);
             step *= this.step;
@@ -1138,6 +1150,11 @@ search:     for (;;) {
         }
 
         /** Delegates to the enclosing vector. */
+        @Override Vector createTransform(final double scale, final double offset) {
+            return Vector.this.transform(scale, offset).pick(indices);
+        }
+
+        /** Delegates to the enclosing vector. */
         @Override Vector createSubSampling(int first, final int step, final int length) {
             final int[] ni = new int[length];
             if (step == 1) {
@@ -1206,7 +1223,8 @@ search:     for (;;) {
     }
 
     /**
-     * Implementation of {@link #concatenate(Vector)} to be overridden by subclasses.
+     * Implementation of {@link #concatenate(Vector)} after argument has been validated.
+     * Provides a more convenient (but non-essential) overriding point for subclasses.
      */
     Vector createConcatenate(final Vector toAppend) {
         return new ConcatenatedVector(this, toAppend);
@@ -1225,6 +1243,42 @@ search:     for (;;) {
         final int length = size();
         return (length > 1) ? subSampling(length-1, -1, length) : this;
     }
+
+    /**
+     * Returns a view of this vector with all values transformed by the given linear equation.
+     * If {@code scale} = 1 and {@code offset} = 0, then this method returns {@code this}.
+     * Otherwise this method returns a vector where each value at index <var>i</var> is computed
+     * by {@code doubleValue(i)} × {@code scale} + {@code offset}.
+     * The values are computed on-the-fly; they are not copied.
+     *
+     * @param  scale   the scale factor to apply on each value, or 1 if none.
+     * @param  offset  the offset to apply on each value, or 0 if none.
+     * @return a vector with values computed by {@code doubleValue(i)} × {@code scale} + {@code offset}.
+     * @throws IllegalArgumentException if an argument is NaN or infinite.
+     *
+     * @since 1.0
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Vector transform(final double scale, final double offset) {
+        if (scale == 1 && offset == 0) {
+            return this;
+        }
+        ArgumentChecks.ensureFinite("scale",  scale);
+        ArgumentChecks.ensureFinite("offset", offset);
+        if (scale == 0) {
+            return new SequenceVector.Doubles(Double.class, 0, 0, size());
+        }
+        return createTransform(scale, offset);
+    }
+
+    /**
+     * Implementation of {@link #createTransform(double, double)} after arguments have been validated.
+     * Provides a more convenient (but non-essential) overriding point for subclasses.
+     */
+    Vector createTransform(final double scale, final double offset) {
+        return new LinearlyDerivedVector(this, scale, offset);
+    }
+
 
     /**
      * Returns a vector with the same data than this vector but encoded in a more compact way,

@@ -166,14 +166,6 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     }
 
     /**
-     * Default implementation for the convenience of direct sub-types.
-     */
-    @Override
-    public boolean isUnsigned() {
-        return false;
-    }
-
-    /**
      * Default implementation for the convenience of wrapper of integer types.
      */
     @Override
