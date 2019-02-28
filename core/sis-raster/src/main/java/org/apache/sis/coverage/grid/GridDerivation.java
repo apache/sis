@@ -28,7 +28,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -37,7 +36,6 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.internal.raster.Resources;
 import org.apache.sis.util.resources.Vocabulary;
@@ -50,7 +48,6 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
-import org.apache.sis.math.MathFunctions;
 
 // Branch-dependent imports
 import org.opengis.coverage.PointOutsideCoverageException;
@@ -435,123 +432,6 @@ public class GridDerivation {
     }
 
     /**
-     * Returns an envelope with coordinates equivalent to the given coordinates,
-     * but potentially shifted for intersecting the envelope of the grid geometry.
-     * This method assumes that {@code base.envelope} is non-null, which should be
-     * the case if {@link GridGeometry#requireGridToCRS()} has been invoked first.
-     *
-     * @see GeneralEnvelope#simplify()
-     */
-    private Envelope adjustWraparoundAxes(final Envelope areaOfInterest, final CoordinateOperation baseToAOI) throws TransformException {
-        CoordinateReferenceSystem crs = areaOfInterest.getCoordinateReferenceSystem();
-        if (crs == null) {
-            crs = base.envelope.getCoordinateReferenceSystem();
-        }
-        if (crs != null) {
-            GeneralEnvelope  shifted  = null;
-            AbstractEnvelope validity = null;
-            final DirectPosition lowerCorner = areaOfInterest.getLowerCorner();
-            final DirectPosition upperCorner = areaOfInterest.getUpperCorner();
-            final CoordinateSystem cs = crs.getCoordinateSystem();
-            for (int i=cs.getDimension(); --i >= 0;) {
-                final double period = ReferencingUtilities.getWraparoundRange(cs, i);
-                if (period > 0) {
-                    /*
-                     * Found an axis (typically the longitude axis) with wraparound range meaning.
-                     * We are going to need grid geometry envelope in the same CRS than the AOI.
-                     * Compute that envelope when first needed.
-                     */
-                    if (validity == null) {
-                        validity = base.envelope;
-                        if (baseToAOI != null) {
-                            final MathTransform mt = baseToAOI.getMathTransform();
-                            if (!mt.isIdentity()) {
-                                validity = Envelopes.transform(mt, validity);
-                            }
-                        }
-                    }
-                    /*
-                     * "Unroll" the range. For example if we have [+160 … -170]° of longitude, we can replace by [160 … 190]°.
-                     * We do not change the 'lower' or 'upper' value now in order to avoid rounding error. Instead we compute
-                     * how many periods we need to add to those values. We adjust the side which results in the value closest
-                     * to zero, in order to reduce rounding error if no more adjustment is done in the next block.
-                     */
-                    final double lower = lowerCorner.getOrdinate(i);
-                    final double upper = upperCorner.getOrdinate(i);
-                    double lowerCycles = 0;                             // In number of periods.
-                    double upperCycles = 0;
-                    double delta = upper - lower;
-                    if (MathFunctions.isNegative(delta)) {              // Use 'isNegative' for catching [+0 … -0] range.
-                        final double cycles = (delta == 0) ? -1 : Math.floor(delta / period);         // Always negative.
-                        delta = cycles * period;
-                        if (Math.abs(lower + delta) < Math.abs(upper - delta)) {
-                            lowerCycles = cycles;                                    // Will subtract periods to 'lower'.
-                        } else {
-                            upperCycles = -cycles;                                   // Will add periods to 'upper'.
-                        }
-                    }
-                    /*
-                     * The range may be before or after the range of the grid geometry. Compute the distance from current
-                     * lower/upper coordinate to the coordinate of valid area. The sign tells us whether we are inside or
-                     * outside valid area. If both points are inside, there is nothing to do. If both points are outside,
-                     * we can do nothing for now and clip to the valid area later. If one point is inside while the other
-                     * is outside, try to shift the range for moving that point inside (or at least make it closer).
-                     *
-                     * We try to compute multiples of 'periods' instead than just adding or subtracting 'periods' once in
-                     * order to support images that cover more than one period, for example images over 720° of longitude.
-                     * It may happen for example if an image shows data below the trajectory of a satellite.
-                     */
-                    final double  lowerToValid   = Math.ceil ((validity.getLower(i) - lower) / period) - lowerCycles;
-                    final double  upperToValid   = Math.floor((validity.getUpper(i) - upper) / period) - upperCycles;
-                    final boolean lowerIsOutside = (lowerToValid > 0);
-                    final boolean upperIsOutside = (upperToValid < 0);
-                    if (lowerIsOutside != upperIsOutside) {
-                        final double cycles;
-                        if (lowerIsOutside) {
-                            /*
-                             * We need to add 'lowerToValid' to both sides in order to move the range inside the valid area.
-                             * The new distances (in numbers of period) to valid area after the shift will be:
-                             *
-                             *     upperToValid -= lowerToValid;
-                             *     lowerToValid -= lowerToValid;        // == 0
-                             *
-                             * If the shift causes the upper value to go outside the valid area (new upperToValid < 0), it may
-                             * change which side of the valid area is intersected by the AOI. For example before the shift the
-                             * AOI may intersect the left part of the valid area, but after the shift AOI would intersect the
-                             * right part of the valid area. In order to avoid that change, we have to stop the shift before
-                             * the upper value goes outside valid area.
-                             */
-                            cycles = Math.min(lowerToValid, upperToValid);                  // All values here are positive.
-                        } else {
-                            /*
-                             * We need to subtract 'upperToValid' to both sides in order to move the range inside the valid area.
-                             * The same argument than above apply, with sign reverted and lower/upper variables interchanged.
-                             */
-                            cycles = Math.max(lowerToValid, upperToValid);                  // All values here are negative.
-                        }
-                        lowerCycles += cycles;
-                        upperCycles += cycles;
-                    }
-                    /*
-                     * If there is change to apply, copy the envelope when first needed.
-                     */
-                    if (lowerCycles != 0 || upperCycles != 0) {
-                        if (shifted == null) {
-                            shifted = new GeneralEnvelope(areaOfInterest);
-                        }
-                        shifted.setRange(i, lower + lowerCycles * period,
-                                            upper + upperCycles * period);
-                    }
-                }
-            }
-            if (shifted != null) {
-                return shifted;
-            }
-        }
-        return areaOfInterest;
-    }
-
-    /**
      * Requests a grid geometry over a sub-region of the base grid geometry and optionally with subsampling.
      * The given envelope does not need to be expressed in the same coordinate reference system (CRS)
      * than {@linkplain GridGeometry#getCoordinateReferenceSystem() the CRS of the base grid geometry};
@@ -615,7 +495,7 @@ public class GridDerivation {
             dimension = baseExtent.getDimension();      // Non-null since 'base.requireGridToCRS()' succeed.
             GeneralEnvelope indices = null;
             if (areaOfInterest != null) {
-                areaOfInterest = adjustWraparoundAxes(areaOfInterest, baseToAOI);
+                areaOfInterest = ReferencingUtilities.adjustWraparoundAxes(areaOfInterest, base.envelope, baseToAOI);
                 indices = Envelopes.transform(cornerToCRS.inverse(), areaOfInterest);
                 clipExtent(indices);
             }

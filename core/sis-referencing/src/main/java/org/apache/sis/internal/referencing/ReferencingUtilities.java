@@ -28,6 +28,8 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.IdentifiedObject;
@@ -37,7 +39,10 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.AxisDirections;
@@ -47,6 +52,9 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.math.MathFunctions;
+import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
@@ -106,6 +114,8 @@ public final class ReferencingUtilities extends Static {
      * @param  cs         the coordinate system for which to get wraparound range, or {@code null}.
      * @param  dimension  dimension of the axis to test.
      * @return the wraparound range, or {@link Double#NaN} if none.
+     *
+     * @since 1.0
      */
     public static double getWraparoundRange(final CoordinateSystem cs, final int dimension) {
         if (cs != null) {
@@ -521,5 +531,176 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return mapping;
+    }
+
+    /**
+     * Returns an envelope with coordinates equivalent to the given coordinates,
+     * but potentially shifted for intersecting the given domain of validity.
+     * The dimensions that may be shifted are the ones having an axis with wraparound meaning.
+     *
+     * <p>The coordinate reference system must be specified in the given {@code areaOfInterest},
+     * or (as a fallback) in the given {@code domainOfValidity}. If none of those envelope have
+     * a CRS, then this method does nothing. If any envelope is null, then this method returns
+     * {@code areaOfInterest} unchanged.</p>
+     *
+     * <p>This method does not intersect the area of interest with the domain of validity.
+     * It is up to the caller to compute that intersection after this method call, if desired.</p>
+     *
+     * @param  areaOfInterest    the envelope to potentially shift toward the domain of validity, or {@code null} if none.
+     * @param  domainOfValidity  the domain of validity, or {@code null} if none.
+     * @param  validToAOI        if the envelopes do not use the same CRS, the transformation from {@code domainOfValidity}
+     *                           to {@code areaOfInterest}. Otherwise {@code null}. This method does not check by itself if
+     *                           a coordinate operation is needed; it must be supplied.
+     * @return the given area of interest, possibly shifted toward the domain of validity. May also be expanded.
+     * @throws TransformException if an envelope transformation was required but failed.
+     *
+     * @see GeneralEnvelope#simplify()
+     *
+     * @since 1.0
+     */
+    public static Envelope adjustWraparoundAxes(final Envelope areaOfInterest, Envelope domainOfValidity,
+            CoordinateOperation validToAOI) throws TransformException
+    {
+        CoordinateReferenceSystem crs;
+        if (areaOfInterest != null && domainOfValidity != null &&
+                ((crs =   areaOfInterest.getCoordinateReferenceSystem()) != null ||
+                 (crs = domainOfValidity.getCoordinateReferenceSystem()) != null))
+        {
+            GeneralEnvelope shifted = null;
+            final DirectPosition lowerCorner = areaOfInterest.getLowerCorner();
+            final DirectPosition upperCorner = areaOfInterest.getUpperCorner();
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            for (int i=cs.getDimension(); --i >= 0;) {
+                final double period = getWraparoundRange(cs, i);
+                if (period > 0) {
+                    /*
+                     * Found an axis (typically the longitude axis) with wraparound range meaning.
+                     * We are going to need the domain of validity in the same CRS than the AOI.
+                     * Transform that envelope when first needed.
+                     */
+                    if (validToAOI != null) {
+                        final MathTransform mt = validToAOI.getMathTransform();
+                        validToAOI = null;
+                        if (!mt.isIdentity()) {
+                            domainOfValidity = Envelopes.transform(mt, domainOfValidity);
+                        }
+                    }
+                    /*
+                     * "Unroll" the range. For example if we have [+160 … -170]° of longitude, we can replace by [160 … 190]°.
+                     * We do not change the 'lower' or 'upper' value now in order to avoid rounding error. Instead we compute
+                     * how many periods we need to add to those values. We adjust the side which results in the value closest
+                     * to zero, in order to reduce rounding error if no more adjustment is done in the next block.
+                     */
+                    final double lower = lowerCorner.getOrdinate(i);
+                    final double upper = upperCorner.getOrdinate(i);
+                    double lowerCycles = 0;                             // In number of periods.
+                    double upperCycles = 0;
+                    double delta = upper - lower;
+                    if (MathFunctions.isNegative(delta)) {              // Use 'isNegative' for catching [+0 … -0] range.
+                        final double cycles = (delta == 0) ? -1 : Math.floor(delta / period);         // Always negative.
+                        delta = cycles * period;
+                        if (Math.abs(lower + delta) < Math.abs(upper - delta)) {
+                            lowerCycles = cycles;                                    // Will subtract periods to 'lower'.
+                        } else {
+                            upperCycles = -cycles;                                   // Will add periods to 'upper'.
+                        }
+                    }
+                    /*
+                     * The range may be before or after the domain of validity. Compute the distance from current
+                     * lower/upper coordinate to the coordinate of validity domain  (the sign tells us whether we
+                     * are before or after). The cases can be:
+                     *
+                     *   ┌─────────────┬────────────┬────────────────────────────┬───────────────────────────────┐
+                     *   │lowerIsBefore│upperIsAfter│ Meaning                    │ Action                        │
+                     *   ├─────────────┼────────────┼────────────────────────────┼───────────────────────────────┤
+                     *   │    false    │    false   │ AOI is inside valid area   │ Nothing to do                 │
+                     *   │    true     │    true    │ AOI encompasses valid area │ Nothing to do                 │
+                     *   │    true     │    false   │ AOI on left of valid area  │ Add positive amount of period │
+                     *   │    false    │    true    │ AOI on right of valid area │ Add negative amount of period │
+                     *   └─────────────┴────────────┴────────────────────────────┴───────────────────────────────┘
+                     *
+                     * We try to compute multiples of 'periods' instead than just adding or subtracting 'periods' once in
+                     * order to support images that cover more than one period, for example images over 720° of longitude.
+                     * It may happen for example if an image shows data under the trajectory of a satellite.
+                     */
+                    final double  validStart        = domainOfValidity.getMinimum(i);
+                    final double  validEnd          = domainOfValidity.getMaximum(i);
+                    final double  lowerToValidStart = ((validStart - lower) / period) - lowerCycles;    // In number of periods.
+                    final double  upperToValidEnd   = ((validEnd   - upper) / period) - upperCycles;
+                    final boolean lowerIsBefore     = (lowerToValidStart > 0);
+                    final boolean upperIsAfter      = (upperToValidEnd < 0);
+                    if (lowerIsBefore != upperIsAfter) {
+                        final double upperToValidStart = ((validStart - upper) / period) - upperCycles;
+                        final double lowerToValidEnd   = ((validEnd   - lower) / period) - lowerCycles;
+                        if (lowerIsBefore) {
+                            /*
+                             * We need to add an integral amount of 'period' to both sides in order to move the range
+                             * inside the valid area. We need  ⎣lowerToValidStart⎦  for reaching the point where:
+                             *
+                             *     (validStart - period) < (new lower) ≦ validStart
+                             *
+                             * But we may add more because there will be no intersection without following condition:
+                             *
+                             *     (new upper) ≧ validStart
+                             *
+                             * That second condition is met by  ⎡upperToValidStart⎤. Note: ⎣x⎦=floor(x) and ⎡x⎤=ceil(x).
+                             */
+                            final double cycles = Math.max(Math.floor(lowerToValidStart), Math.ceil(upperToValidStart));
+                            /*
+                             * If after the shift we see that the following condition hold:
+                             *
+                             *     (new lower) + period < validEnd
+                             *
+                             * Then we may have a situation like below:
+                             *                  ┌────────────────────────────────────────────┐
+                             *                  │             Domain of validity             │
+                             *                  └────────────────────────────────────────────┘
+                             *   ┌────────────────────┐                                ┌─────
+                             *   │  Area of interest  │                                │  AOI
+                             *   └────────────────────┘                                └─────
+                             *    ↖……………………………………………………………period……………………………………………………………↗︎
+                             *
+                             * The user may be requesting two extremums of the domain of validity. We can not express
+                             * that with a single envelope. Instead, we will expand the Area Of Interest to encompass
+                             * the full domain of validity.
+                             */
+                            if (cycles + 1 < lowerToValidEnd) {
+                                upperCycles += Math.ceil(upperToValidEnd);
+                            } else {
+                                upperCycles += cycles;
+                            }
+                            lowerCycles += cycles;
+                        } else {
+                            /*
+                             * Same reasoning than above with sign reverted and lower/upper variables interchanged.
+                             * In this block, 'upperToValidEnd' and 'lowerToValidEnd' are negative, contrarily to
+                             * above block where they were positive.
+                             */
+                            final double cycles = Math.min(Math.ceil(upperToValidEnd), Math.floor(lowerToValidEnd));
+                            if (cycles - 1 > upperToValidStart) {
+                                lowerCycles += Math.floor(lowerToValidStart);
+                            } else {
+                                lowerCycles += cycles;
+                            }
+                            upperCycles += cycles;
+                        }
+                    }
+                    /*
+                     * If there is change to apply, copy the envelope when first needed.
+                     */
+                    if (lowerCycles != 0 || upperCycles != 0) {
+                        if (shifted == null) {
+                            shifted = new GeneralEnvelope(areaOfInterest);
+                        }
+                        shifted.setRange(i, lower + lowerCycles * period,
+                                            upper + upperCycles * period);
+                    }
+                }
+            }
+            if (shifted != null) {
+                return shifted;
+            }
+        }
+        return areaOfInterest;
     }
 }

@@ -17,12 +17,16 @@
 package org.apache.sis.internal.referencing;
 
 import javax.measure.Unit;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -31,7 +35,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
 
 
@@ -135,5 +139,99 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
         assertEquals("sphericalCS",      toPropertyName(CoordinateSystem.class, SphericalCS     .class).toString());
         assertEquals("timeCS",           toPropertyName(CoordinateSystem.class, TimeCS          .class).toString());
         assertEquals("verticalCS",       toPropertyName(CoordinateSystem.class, VerticalCS      .class).toString());
+    }
+
+    /**
+     * Tests {@link ReferencingUtilities#adjustWraparoundAxes(Envelope, Envelope, CoordinateOperation)}
+     * with an envelope crossing the anti-meridian.
+     *
+     * @throws TransformException should never happen since this test does not transform coordinates.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testAdjustWraparoundAxesOverAntiMeridian() throws TransformException {
+        final GeneralEnvelope domainOfValidity = new GeneralEnvelope(HardCodedCRS.WGS84);
+        domainOfValidity.setRange(0,  80, 280);
+        domainOfValidity.setRange(1, -90, +90);
+
+        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
+        areaOfInterest.setRange(0, 140, -179);                 // Cross anti-meridian.
+        areaOfInterest.setRange(1, -90,   90);
+
+        final GeneralEnvelope expected = new GeneralEnvelope(HardCodedCRS.WGS84);
+        expected.setRange(0, 140, 181);
+        expected.setRange(1, -90, +90);
+
+        final Envelope actual = ReferencingUtilities.adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
+        assertEnvelopeEquals(expected, actual);
+    }
+
+    /**
+     * Tests {@link ReferencingUtilities#adjustWraparoundAxes(Envelope, Envelope, CoordinateOperation)}
+     * with an envelope shifted by 360° before or after the grid valid area.
+     *
+     * @throws TransformException should never happen since this test does not transform coordinates.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testAdjustWraparoundAxesWithShiftedAOI() throws TransformException {
+        final GeneralEnvelope domainOfValidity = new GeneralEnvelope(HardCodedCRS.WGS84);
+        domainOfValidity.setRange(0,  80, 100);
+        domainOfValidity.setRange(1, -70, +70);
+
+        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
+        areaOfInterest.setRange(0,  70, 90);
+        areaOfInterest.setRange(1, -80, 60);
+
+        final GeneralEnvelope expected = new GeneralEnvelope(areaOfInterest);
+
+        Envelope actual = ReferencingUtilities.adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
+        assertEnvelopeEquals(expected, actual);
+
+        areaOfInterest.setRange(0, -290, -270);                    // [70 … 90] - 360
+        actual = ReferencingUtilities.adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
+        assertEnvelopeEquals(expected, actual);
+
+        areaOfInterest.setRange(0, 430, 450);                      // [70 … 90] + 360
+        actual = ReferencingUtilities.adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
+        assertEnvelopeEquals(expected, actual);
+    }
+
+    /**
+     * Tests {@link ReferencingUtilities#adjustWraparoundAxes(Envelope, Envelope, CoordinateOperation)}
+     * with an envelope that cause the method to expand the area of interest. Illustration:
+     *
+     * {@preformat text
+     *                  ┌────────────────────────────────────────────┐
+     *                  │             Domain of validity             │
+     *                  └────────────────────────────────────────────┘
+     *   ┌────────────────────┐                                ┌─────
+     *   │  Area of interest  │                                │  AOI
+     *   └────────────────────┘                                └─────
+     *    ↖………………………………………………………360° period……………………………………………………↗︎
+     * }
+     *
+     * @throws TransformException should never happen since this test does not transform coordinates.
+     *
+     * @since 1.0
+     */
+    @Test
+    public void testAdjustWraparoundAxesCausingExpansion() throws TransformException {
+        final GeneralEnvelope domainOfValidity = new GeneralEnvelope(HardCodedCRS.WGS84);
+        domainOfValidity.setRange(0,   5, 345);
+        domainOfValidity.setRange(1, -70, +70);
+
+        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
+        areaOfInterest.setRange(0, -30,  40);
+        areaOfInterest.setRange(1, -60,  60);
+
+        final GeneralEnvelope expected = new GeneralEnvelope(HardCodedCRS.WGS84);
+        expected.setRange(0, -30, 400);
+        expected.setRange(1, -60,  60);
+
+        final Envelope actual = ReferencingUtilities.adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
+        assertEnvelopeEquals(expected, actual);
     }
 }
