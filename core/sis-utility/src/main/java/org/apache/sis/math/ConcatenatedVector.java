@@ -295,4 +295,13 @@ final class ConcatenatedVector extends Vector implements Serializable {
     Vector createConcatenate(final Vector toAppend) {
         return first.concatenate(second.concatenate(toAppend));
     }
+
+    /**
+     * Delegates to the backing vectors since there is a chance that they override
+     * their {@code transform} method with a more efficient implementation.
+     */
+    @Override
+    Vector createTransform(final double scale, final double offset) {
+        return first.transform(scale, offset).concatenate(second.transform(scale, offset));
+    }
 }

@@ -1019,9 +1019,10 @@ search:     for (;;) {
     }
 
     /**
-     * If this vector is a view over another vector, returns the backing vector.
-     * Otherwise returns {@code this}. If this method is overridden, it should be
-     * together with the {@link #toBacking(int[])} method.
+     * If this vector is a view over a subset of another vector, returns the backing vector.
+     * Otherwise returns {@code this}. If this method is overridden, it should be together
+     * with the {@link #toBacking(int[])} method. This method shall not be overridden when
+     * the view transform the values.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     Vector backingVector() {
@@ -1033,7 +1034,7 @@ search:     for (;;) {
      * If there is no such backing vector, then returns a clone of the given array.
      * This method must also check index validity.
      *
-     * <p>Only subclasses that are views of this vector will override this method.</p>
+     * <p>Only subclasses that are views over a subset of this vector will override this method.</p>
      *
      * @param  indices  the indexes given by the user.
      * @return the indexes to use. Must be a new array in order to protect it from user changes.
@@ -1278,7 +1279,6 @@ search:     for (;;) {
     Vector createTransform(final double scale, final double offset) {
         return new LinearlyDerivedVector(this, scale, offset);
     }
-
 
     /**
      * Returns a vector with the same data than this vector but encoded in a more compact way,

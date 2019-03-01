@@ -48,7 +48,7 @@ import org.apache.sis.internal.system.Modules;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -440,6 +440,27 @@ public final class Logging extends Static {
     {
         final String classname = (classe != null) ? classe.getName() : null;
         return unexpectedException(logger, classname, method, error, Level.FINE);
+    }
+
+    /**
+     * Invoked when an ignorable error occurred. This method is similar to
+     * {@link #recoverableException(Logger,Class,String,Throwable) unexpectedException(…)}
+     * except that it uses a lower logging level.
+     *
+     * @param  logger  where to log the error, or {@code null} for inferring a default value from other arguments.
+     * @param  classe  the class where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param  method  the method name where the error occurred, or {@code null} for inferring a default value from other arguments.
+     * @param  error   the error, or {@code null} if none.
+     * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
+     *         was null or if the logger does not log anything at {@link Level#FINER}.
+     *
+     * @since 1.0
+     */
+    public static boolean ignorableException(final Logger logger, final Class<?> classe,
+                                               final String method, final Throwable error)
+    {
+        final String classname = (classe != null) ? classe.getName() : null;
+        return unexpectedException(logger, classname, method, error, Level.FINER);
     }
 
     /**
