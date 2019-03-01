@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.crs;
 
+import java.time.Instant;
+import java.util.Date;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -27,7 +29,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * Tests {@link DefaultTemporalCRS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -72,5 +74,20 @@ public final strictfp class DefaultTemporalCRSTest extends TestCase {
                 "    Axis[“Time (t)”, future],\n" +
                 "    TimeUnit[“day”, 86400]]",      // ISO 19162 does not allow "Unit" keyword here.
                 HardCodedCRS.TIME);
+    }
+
+    /**
+     * Tests {@link DefaultTemporalCRS#toDate(double)} and its converse.
+     * Also compares with {@link DefaultTemporalCRS#toInstant(double)}.
+     */
+    @Test
+    public void testDateConversion() {
+        final double  value   = 58543.25;                               // 3 march 2019.
+        final Date    date    = HardCodedCRS.TIME.toDate(value);
+        final Instant instant = HardCodedCRS.TIME.toInstant(value);
+        assertEquals("toInstant", Instant.ofEpochSecond(1551420000L), instant);
+        assertEquals("toDate",    instant, date.toInstant());
+        assertEquals("toValue",   value, HardCodedCRS.TIME.toValue(instant), STRICT);
+        assertEquals("toValue",   value, HardCodedCRS.TIME.toValue(date), STRICT);
     }
 }

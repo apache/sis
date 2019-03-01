@@ -230,6 +230,11 @@ replace:    if (Character.isWhitespace(c)) {
     public static final int MILLISECONDS_PER_DAY = 24*60*60*1000;
 
     /**
+     * Number of milliseconds in one second.
+     */
+    public static final long MILLIS_PER_SECOND = 1000;
+
+    /**
      * Number of nanoseconds in one millisecond.
      */
     public static final long NANOS_PER_MILLISECOND = 1000000;

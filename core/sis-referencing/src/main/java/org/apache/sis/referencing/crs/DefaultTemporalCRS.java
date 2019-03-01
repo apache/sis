@@ -38,6 +38,8 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
+import static org.apache.sis.internal.util.StandardDateFormat.MILLIS_PER_SECOND;
 
 
 /**
@@ -92,16 +94,18 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     private TemporalDatum datum;
 
     /**
-     * A converter from values in this CRS to values in milliseconds.
+     * Conversion factor from values in this CRS to values in seconds. We use {@link UnitConverter}
+     * instead than {@code double} because the SIS implementation of {@code UnitConverter} performs
+     * some extra steps against rounding errors.
      *
      * @see #initializeConverter()
      */
-    private transient UnitConverter toMillis;
+    private transient UnitConverter toSeconds;
 
     /**
-     * The {@linkplain TemporalDatum#getOrigin origin} in milliseconds since January 1st, 1970.
-     * This field could be implicit in the {@link #toMillis} converter, but we still handle it
-     * explicitly in order to use integer arithmetic.
+     * The {@linkplain TemporalDatum#getOrigin origin} in seconds since January 1st, 1970.
+     * This field could be implicit in the {@link #toSeconds} converter, but we still handle
+     * it explicitly in order to use integer arithmetic.
      */
     private transient long origin;
 
@@ -214,8 +218,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * Initialize the fields required for {@link #toInstant(double)} and {@link #toValue(Instant)} operations.
      */
     private void initializeConverter() {
-        origin   = datum.getOrigin().getTime();
-        toMillis = super.getCoordinateSystem().getAxis(0).getUnit().asType(Time.class).getConverterTo(Units.MILLISECOND);
+        origin    = datum.getOrigin().getTime() / MILLIS_PER_SECOND;
+        toSeconds = super.getCoordinateSystem().getAxis(0).getUnit().asType(Time.class).getConverterTo(Units.SECOND);
     }
 
     /**
@@ -275,8 +279,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     }
 
     /**
-     * Convert the given value into an instant object.
-     * If the given value is {@link Double#NaN NaN} or infinite, then this method returns {@code null}.
+     * Converts the given value into an instant object.
+     * If the given value {@linkplain Double#isNaN is NaN} or infinite, then this method returns {@code null}.
      * This method is the converse of {@link #toValue(Instant)}.
      *
      * @param  value  a value in this axis unit.
@@ -284,16 +288,20 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * @since 1.0
      */
-    public Instant toInstant(final double value) {
-        if (Double.isNaN(value) || Double.isInfinite(value)) {
+    public Instant toInstant(double value) {
+        if (Double.isFinite(value)) {
+            value = toSeconds.convert(value);
+            final long t = Math.round(value);                           // In seconds.
+            return Instant.ofEpochSecond(Math.addExact(t, origin),      // Number of seconds since epoch.
+                    Math.round((value - t) * NANOS_PER_SECOND));        // Nanoseconds adjustment.
+        } else {
             return null;
         }
-        return Instant.ofEpochMilli(Math.round(toMillis.convert(value)) + origin);
     }
 
     /**
-     * Convert the given value into a {@link Date} object.
-     * If the given value is {@link Double#NaN NaN} or infinite, then this method returns {@code null}.
+     * Converts the given value into a {@link Date} object.
+     * If the given value is {@linkplain Double#isNaN is NaN} or infinite, then this method returns {@code null}.
      * This method is the converse of {@link #toValue(Date)}.
      *
      * <p>This method is provided for interoperability with legacy {@code java.util.Date} object.
@@ -302,46 +310,60 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * @param  value  a value in this axis unit.
      * @return the value as a {@linkplain Date date}, or {@code null} if the given value is NaN or infinite.
      */
-    public Date toDate(final double value) {
-        if (Double.isNaN(value) || Double.isInfinite(value)) {
+    public Date toDate(double value) {
+        if (Double.isFinite(value)) {
+            value = toSeconds.convert(value);
+            final long t = Math.round(value);                                       // In seconds.
+            long ms = Math.addExact(t, origin);                                     // Number of seconds since epoch.
+            ms = Math.multiplyExact(ms, MILLIS_PER_SECOND);                         // Number of milliseconds since epoch.
+            ms = Math.addExact(Math.round((value - t) * MILLIS_PER_SECOND), ms);    // Milliseconds adjustment.
+            return new Date(ms);
+        } else {
             return null;
         }
-        return new Date(Math.round(toMillis.convert(value)) + origin);
     }
 
     /**
-     * Convert the given instant into a value in this axis unit.
-     * If the given instant is {@code null}, then this method returns {@link Double#NaN NaN}.
+     * Converts the given instant into a value in this axis unit.
+     * If the given instant is {@code null}, then this method returns {@link Double#NaN}.
      * This method is the converse of {@link #toInstant(double)}.
      *
      * @param  time  the value as an instant, or {@code null}.
-     * @return the value in this axis unit, or {@link Double#NaN NaN} if the given instant is {@code null}.
+     * @return the value in this axis unit, or {@link Double#NaN} if the given instant is {@code null}.
      *
      * @since 1.0
      */
     public double toValue(final Instant time) {
-        if (time == null) {
+        if (time != null) {
+            double t = Math.subtractExact(time.getEpochSecond(), origin);
+            t += time.getNano() / (double) NANOS_PER_SECOND;
+            return toSeconds.inverse().convert(t);
+        } else {
             return Double.NaN;
         }
-        return toMillis.inverse().convert(time.toEpochMilli() - origin);
     }
 
     /**
-     * Convert the given {@linkplain Date date} into a value in this axis unit.
-     * If the given time is {@code null}, then this method returns {@link Double#NaN NaN}.
+     * Converts the given {@linkplain Date date} into a value in this axis unit.
+     * If the given time is {@code null}, then this method returns {@link Double#NaN}.
      * This method is the converse of {@link #toDate(double)}.
      *
      * <p>This method is provided for interoperability with legacy {@code java.util.Date} object.
-     * New code should use {@link #toValue(Date)} instead.</p>
+     * New code should use {@link #toValue(Instant)} instead.</p>
      *
      * @param  time  the value as a {@linkplain Date date}, or {@code null}.
-     * @return the value in this axis unit, or {@link Double#NaN NaN} if the given time is {@code null}.
+     * @return the value in this axis unit, or {@link Double#NaN} if the given time is {@code null}.
      */
     public double toValue(final Date time) {
-        if (time == null) {
+        if (time != null) {
+            long ms = time.getTime();                       // Number of milliseconds since epoch.
+            long t = ms / MILLIS_PER_SECOND;                // Number of seconds since epoch.
+            ms %= MILLIS_PER_SECOND;                        // Milliseconds adjustment.
+            t = Math.subtractExact(t, origin);              // Time in seconds.
+            return toSeconds.inverse().convert(t + ms / (double) MILLIS_PER_SECOND);
+        } else {
             return Double.NaN;
         }
-        return toMillis.inverse().convert(time.getTime() - origin);
     }
 
     /**
@@ -414,7 +436,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      */
     private void setCoordinateSystem(final TimeCS cs) {
         setCoordinateSystem("timeCS", cs);
-        if (toMillis == null && datum != null) {
+        if (toSeconds == null && datum != null) {
             initializeConverter();
         }
     }
