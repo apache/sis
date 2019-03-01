@@ -139,7 +139,7 @@
       </roles>
     </developer>
     <developer>
-      <name>Charitha</name>
+      <name>Charitha Madusanka</name>
       <id>charithcc</id>
       <roles>
         <role>PMC member</role>
@@ -169,7 +169,7 @@
       <name>Ian Holsman</name>
       <id>ianh</id>
       <roles>
-        <role>PMC member</role>
+        <role>PMC emeritus</role>
         <role>mentor</role>
       </roles>
     </developer>
@@ -199,7 +199,7 @@
       </roles>
     </developer>
     <developer>
-      <name>Marc le Bihan</name>
+      <name>Marc Le Bihan</name>
       <roles>
         <role>PMC member</role>
       </roles>
@@ -223,6 +223,12 @@
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Olivier Nouguier</name>
       <roles>
         <role>PMC member</role>
       </roles>
@@ -432,7 +438,7 @@
       <dependency>
         <groupId>org.locationtech.jts</groupId>
         <artifactId>jts-core</artifactId>
-        <version>1.16.0</version>
+        <version>1.16.1</version>
         <optional>true</optional>
       </dependency>
       <dependency>
@@ -450,7 +456,7 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.17</version>
+        <version>1.18</version>
       </dependency>
 
       <!-- Databases -->
@@ -687,7 +693,7 @@
       <!-- Set "*-source-release.zip" filename prefix to "sis-*" instead of "parent-*" -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1</version>
         <executions>
           <execution>
             <id>source-release-assembly</id>
@@ -920,13 +926,17 @@
       </plugin>
     </plugins>
 
-    <!-- Following plugins are used only by some specific modules. -->
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>3.0.0-M1</version>
+        </plugin>
+        <plugin>
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
-          <version>9.4.12.v20180830</version>
+          <version>9.4.15.v20190215</version>
         </plugin>
       </plugins>
     </pluginManagement>

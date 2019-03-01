@@ -62,6 +62,9 @@ public final strictfp class LinearlyDerivedVectorTest extends TestCase {
 
     /**
      * Tests application of two {@code transform} method calls, which should be merged in a single wrapper.
+     * This method does not verify that the two method calls have been correctly merged (that would require
+     * access to private fields), but we verified using debugger. This method verifies at least that the
+     * resulting vector computes correct values.
      */
     @Test
     public void testOptimizations() {
