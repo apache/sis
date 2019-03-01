@@ -719,7 +719,7 @@ search:     for (;;) {
              * The result will be converted to the same type than the vector element type if possible,
              * or the next wider type if the increment is an unsigned value too big for the element type.
              */
-            if (type >= Numbers.BYTE && type <= Numbers.LONG && tolerance < 1) {
+            if (type >= Numbers.BYTE && type <= Numbers.LONG && tolerance < 0.5) {
                 long p;
                 final long inc = subtract(longValue(--i), p = longValue(--i));
                 while (i != 0) {
@@ -743,38 +743,38 @@ search:     for (;;) {
              * this vector by an instance of SequenceVector should produce exactly the same double values,
              * in the limit of the accuracy allowed by the floating point values.
              */
-            if (type >= Numbers.FLOAT && type <= Numbers.DOUBLE) {
-                final double first = doubleValue(0);
-                double inc = (doubleValue(--i) - first) / i;                              // First estimation of increment.
+            final double first = doubleValue(0);
+            double inc = (doubleValue(--i) - first) / i;                              // First estimation of increment.
+            if (type == Numbers.DOUBLE || type == Numbers.BIG_DECIMAL) {
                 final int pz = Math.max(0, Math.min(i, (int) Math.rint(-first / inc)));   // Presumed index of value zero.
                 if (doubleValue(pz) == 0) {
-                    final Number value = (pz == i) ? get(pz-1) : get(pz+1);               // Value adjacent to zero.
-                    if (!(value instanceof Float)) {
+                    final Number value = (pz == i) ? get(pz-1) : get(pz+1);     // Value adjacent to zero.
+                    if (value != null && !(value instanceof Float)) {           // Float type is not accurate enough.
                         inc = value.doubleValue();                              // Presumed less subject to rounding errors.
                         if (pz == i) inc = -inc;
                     }
                 }
-                if (type == Numbers.FLOAT) {
-                    while (i >= 1) {
-                        final float  value = floatValue(i);
-                        final double delta = Math.abs(first + inc*i-- - value);
-                        final double accur = Math.ulp(value);
-                        if (!((accur > tolerance) ? (delta < accur) : (delta <= tolerance))) {  // Use '!' for catching NaN.
-                            return null;
-                        }
-                    }
-                    final float f = (float) inc;
-                    if (f == inc) return f;                            // Use the java.lang.Float wrapper class if possible.
-                } else {
-                    while (i >= 1) {
-                        final double delta = Math.abs(first + inc*i - doubleValue(i--));
-                        if (!(delta <= tolerance)) {                   // Use '!' for catching NaN.
-                            return null;
-                        }
+            }
+            if (type == Numbers.FLOAT) {
+                while (i >= 1) {
+                    final float  value = floatValue(i);
+                    final double delta = Math.abs(first + inc*i-- - value);
+                    final double accur = Math.ulp(value);
+                    if (!((accur > tolerance) ? (delta < accur) : (delta <= tolerance))) {  // Use '!' for catching NaN.
+                        return null;
                     }
                 }
-                return inc;
+                final float f = (float) inc;
+                if (f == inc) return f;                            // Use the java.lang.Float wrapper class if possible.
+            } else {
+                while (i >= 1) {
+                    final double delta = Math.abs(first + inc*i - doubleValue(i--));
+                    if (!(delta <= tolerance)) {                   // Use '!' for catching NaN.
+                        return null;
+                    }
+                }
             }
+            return inc;
         } catch (ArithmeticException e) {
             warning("increment", e);
         }
