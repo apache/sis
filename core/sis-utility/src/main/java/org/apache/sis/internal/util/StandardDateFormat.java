@@ -232,17 +232,17 @@ replace:    if (Character.isWhitespace(c)) {
     /**
      * Number of milliseconds in one second.
      */
-    public static final long MILLIS_PER_SECOND = 1000;
+    public static final int MILLIS_PER_SECOND = 1000;
 
     /**
      * Number of nanoseconds in one millisecond.
      */
-    public static final long NANOS_PER_MILLISECOND = 1000000;
+    public static final int NANOS_PER_MILLISECOND = 1000000;
 
     /**
      * Number of nanoseconds in one second.
      */
-    public static final long NANOS_PER_SECOND = 1000000000;
+    public static final int NANOS_PER_SECOND = 1000000000;
 
     /**
      * Converts the given legacy {@code Date} object into a {@code java.time} implementation in given timezone.

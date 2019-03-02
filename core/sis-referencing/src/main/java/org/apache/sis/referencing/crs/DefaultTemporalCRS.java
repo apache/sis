@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.measure.quantity.Time;
 import javax.measure.UnitConverter;
+import javax.measure.Unit;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -36,6 +37,7 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
+import org.apache.sis.math.Fraction;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
@@ -218,8 +220,19 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * Initialize the fields required for {@link #toInstant(double)} and {@link #toValue(Instant)} operations.
      */
     private void initializeConverter() {
-        origin    = datum.getOrigin().getTime() / MILLIS_PER_SECOND;
-        toSeconds = super.getCoordinateSystem().getAxis(0).getUnit().asType(Time.class).getConverterTo(Units.SECOND);
+        toSeconds = getUnit().getConverterTo(Units.SECOND);
+        long t = datum.getOrigin().getTime();
+        origin = t / MILLIS_PER_SECOND;
+        t %= MILLIS_PER_SECOND;
+        if (t != 0) {
+            /*
+             * The origin is usually an integer amount of days or hours. It rarely has a fractional amount of seconds.
+             * If it happens anyway, put the fractional amount of seconds in the converter instead than adding another
+             * field in this class for such very rare situation. Accuracy should be okay since the offset is small.
+             */
+            UnitConverter c = Units.converter(null, new Fraction((int) t, MILLIS_PER_SECOND).simplify());
+            toSeconds = c.concatenate(toSeconds);
+        }
     }
 
     /**
@@ -261,6 +274,27 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     }
 
     /**
+     * Returns the unit of measurement of temporal measurement in the coordinate reference system.
+     * This is a convenience method for {@link org.opengis.referencing.cs.CoordinateSystemAxis#getUnit()}
+     * on the unique axis of this coordinate reference system. The unit of measurement returned by this method
+     * is the unit of the value expected in argument by {@link #toInstant(double)} and {@link #toDate(double)},
+     * and the unit of the value returned by {@code toValue(…)} methods.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * this method is declared final and does not invoke overridden {@link #getCoordinateSystem()} method
+     * because this {@code getUnit()} method is invoked indirectly by constructors. Another reason is that
+     * the overriding point is the {@code CoordinateSystemAxis.getUnit()} method and we want to avoid
+     * introducing another overriding point that could be inconsistent with above method.</div>
+     *
+     * @return the temporal unit of measurement of coordinates in this CRS.
+     *
+     * @since 1.0
+     */
+    public final Unit<Time> getUnit() {
+        return super.getCoordinateSystem().getAxis(0).getUnit().asType(Time.class);
+    }
+
+    /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -283,7 +317,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * If the given value {@linkplain Double#isNaN is NaN} or infinite, then this method returns {@code null}.
      * This method is the converse of {@link #toValue(Instant)}.
      *
-     * @param  value  a value in this axis unit.
+     * @param  value  a value in this axis. Unit of measurement is given by {@link #getUnit()}.
      * @return the value as an instant, or {@code null} if the given value is NaN or infinite.
      *
      * @since 1.0
@@ -307,7 +341,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * <p>This method is provided for interoperability with legacy {@code java.util.Date} object.
      * New code should use {@link #toInstant(double)} instead.</p>
      *
-     * @param  value  a value in this axis unit.
+     * @param  value  a value in this axis unit. Unit of measurement is given by {@link #getUnit()}.
      * @return the value as a {@linkplain Date date}, or {@code null} if the given value is NaN or infinite.
      */
     public Date toDate(double value) {
@@ -330,6 +364,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * @param  time  the value as an instant, or {@code null}.
      * @return the value in this axis unit, or {@link Double#NaN} if the given instant is {@code null}.
+     *         Unit of measurement is given by {@link #getUnit()}.
      *
      * @since 1.0
      */
@@ -353,6 +388,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * @param  time  the value as a {@linkplain Date date}, or {@code null}.
      * @return the value in this axis unit, or {@link Double#NaN} if the given time is {@code null}.
+     *         Unit of measurement is given by {@link #getUnit()}.
      */
     public double toValue(final Date time) {
         if (time != null) {
