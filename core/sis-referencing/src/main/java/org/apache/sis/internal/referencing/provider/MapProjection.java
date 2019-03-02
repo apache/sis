@@ -192,7 +192,7 @@ public abstract class MapProjection extends AbstractProvider {
     public static void validate(final ParameterDescriptor<? extends Number> descriptor, final double value)
             throws IllegalArgumentException
     {
-        if (Double.isNaN(value) || Double.isInfinite(value)) {
+        if (!Double.isFinite(value)) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalParameterValue_2,
                     descriptor.getName(), value));
         }

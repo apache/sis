@@ -154,7 +154,7 @@ abstract strictfp class MapProjectionTestCase extends MathTransformTestCase {
         coordinate[1] = φ;
         ((NormalizedProjection) transform).transform(coordinate, 0, coordinate, 0, false);
         final double y = coordinate[1];
-        if (!isNaN(y) && !Double.isInfinite(y)) {
+        if (Double.isFinite(y)) {
             assertEquals(0, coordinate[0], tolerance);
         }
         return y;
