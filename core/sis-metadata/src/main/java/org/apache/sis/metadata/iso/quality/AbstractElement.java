@@ -276,7 +276,7 @@ public class AbstractElement extends ISOMetadata implements Element {
                              modCount++;
                     default: if (!it.hasNext()) break;
                              throw new IllegalArgumentException(Errors.format(
-                                     Errors.Keys.ExcessiveArgumentSize_3, "dates", 2, dates.size()));
+                                     Errors.Keys.TooManyCollectionElements_3, "dates", 2, dates.size()));
                 }
             }
             return modCount != c;

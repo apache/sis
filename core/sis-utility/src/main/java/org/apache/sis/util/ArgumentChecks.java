@@ -518,7 +518,7 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
-     * Ensures that the given collection size of array length is between the given bounds, inclusive.
+     * Ensures that the given collection size or array length is between the given bounds, inclusive.
      * This method performs the same check than {@link #ensureBetween(String, int, int, int)
      * ensureBetween(…)}, but the error message is different in case of failure.
      *
@@ -539,10 +539,10 @@ public final class ArgumentChecks extends Static {
             if (min == 1) {
                 message = Errors.format(Errors.Keys.EmptyArgument_1, name);
             } else {
-                message = Errors.format(Errors.Keys.InsufficientArgumentSize_3, name, min, size);
+                message = Errors.format(Errors.Keys.TooFewCollectionElements_3, name, min, size);
             }
         } else if (size > max) {
-            message = Errors.format(Errors.Keys.ExcessiveArgumentSize_3, name, max, size);
+            message = Errors.format(Errors.Keys.TooManyCollectionElements_3, name, max, size);
         } else {
             return;
         }
