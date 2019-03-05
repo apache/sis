@@ -320,13 +320,10 @@ public class TensorParameters<E> implements Serializable {
     public TensorParameters(final Class<E> elementType, final String prefix, final String separator,
             final ParameterDescriptor<Integer>... dimensions)
     {
-        ArgumentChecks.ensureNonNull("elementType", elementType);
-        ArgumentChecks.ensureNonNull("prefix",      prefix);
-        ArgumentChecks.ensureNonNull("separator",   separator);
-        ArgumentChecks.ensureNonNull("dimensions",  dimensions);
-        if (dimensions.length == 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "dimensions"));
-        }
+        ArgumentChecks.ensureNonNull ("elementType", elementType);
+        ArgumentChecks.ensureNonNull ("prefix",      prefix);
+        ArgumentChecks.ensureNonNull ("separator",   separator);
+        ArgumentChecks.ensureNonEmpty("dimensions",  dimensions);
         this.elementType = elementType;
         this.prefix      = prefix;
         this.separator   = separator;

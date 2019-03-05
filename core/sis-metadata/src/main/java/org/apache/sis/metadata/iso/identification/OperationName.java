@@ -28,6 +28,7 @@ import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.opengis.metadata.identification.OperationMetadata;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -73,7 +74,7 @@ final class OperationName implements OperationMetadata, Serializable {
      */
     @Override
     public String toString() {
-        return "OperationMetadata[“" + operationName + "”]";
+        return Strings.bracket("OperationMetadata", operationName);
     }
 
     /**

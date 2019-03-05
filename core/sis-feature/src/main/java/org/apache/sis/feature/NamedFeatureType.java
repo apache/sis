@@ -27,6 +27,7 @@ import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.feature.FeatureInstantiationException;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.feature.Resources;
 
 
@@ -150,6 +151,6 @@ final class NamedFeatureType implements FeatureType, Serializable {
      */
     @Override
     public String toString() {
-        return "FeatureType[“" + name + "”]";
+        return Strings.bracket("FeatureType", name);
     }
 }

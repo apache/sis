@@ -17,11 +17,13 @@
 package org.apache.sis.util;
 
 import java.util.Map;                                               // For javadoc
+import java.util.BitSet;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.apache.sis.internal.util.Strings;
 
 import org.apache.sis.util.resources.Errors;
 
@@ -161,6 +163,86 @@ public final class ArgumentChecks extends Static {
         }
         if (text.length() == 0) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
+        }
+    }
+
+    /**
+     * Makes sure that an array is non-null and non-empty. If the given {@code array} is null,
+     * then a {@link NullArgumentException} is thrown. Otherwise if the array length is equals
+     * to 0, then an {@link IllegalArgumentException} is thrown.
+     *
+     * @param  name   the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  array  the user argument to check against null value and empty array.
+     * @throws NullArgumentException if {@code array} is null.
+     * @throws IllegalArgumentException if {@code array} is empty.
+     *
+     * @since 1.0
+     */
+    public static void ensureNonEmpty(final String name, final Object[] array)
+            throws NullArgumentException, IllegalArgumentException
+    {
+        if (array == null) {
+            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, name));
+        }
+        if (array.length == 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
+        }
+    }
+
+    /**
+     * Ensures that the given {@code values} array is non-null and non-empty. This method can also ensures that all values
+     * are between the given bounds (inclusive) and are distinct. The distinct values requirement is useful for validating
+     * arrays of spatio-temporal dimension indices, where dimensions can not be repeated.
+     *
+     * <p>Note that a successful call to {@code ensureNonEmpty(name, values, 0, max, true)} implies
+     * 1 ≦ {@code values.length} ≦ {@code max}.</p>
+     *
+     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  values    integer values to validate.
+     * @param  min       the minimal allowed value (inclusive), or {@link Integer#MIN_VALUE} if none.
+     * @param  max       the maximal allowed value (inclusive), or {@link Integer#MAX_VALUE} if none.
+     * @param  distinct  {@code true} if each value must be unique.
+     * @throws NullArgumentException if {@code values} is null.
+     * @throws IllegalArgumentException if {@code values} is empty, contains a value lower than {@code min},
+     *         contains a value greater than {@code max}, or contains duplicated values while {@code distinct} is {@code true}.
+     *
+     * @since 1.0
+     */
+    public static void ensureNonEmpty(final String name, final int[] values, final int min, final int max, final boolean distinct)
+            throws IllegalArgumentException
+    {
+        if (values == null) {
+            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, name));
+        }
+        if (values.length == 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
+        }
+        long found = 0;                             // Cheap way to check for duplication when (max - min) ≦ 64.
+        BitSet more = null;                         // Used only if above cheap way is not sufficient.
+        for (int i=0; i<values.length; i++) {
+            final int index = values[i];
+            if (index < min || index > max) {
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.ValueOutOfRange_4, Strings.toIndexed(name, i), min, max, index));
+            }
+            if (distinct) {
+                int flag = index - min;
+                if (flag <= Long.SIZE) {
+                    if (found != (found |= 1L << flag)) {
+                        continue;                               // No collision for current index.
+                    }
+                } else {
+                    flag -= Long.SIZE;
+                    if (more == null) {
+                        more = new BitSet();
+                    }
+                    if (!more.get(flag)) {
+                        more.set(flag);
+                        continue;                               // No collision for current index.
+                    }
+                }
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedNumber_1, index));
+            }
         }
     }
 

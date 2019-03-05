@@ -31,6 +31,7 @@ import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -126,6 +127,6 @@ public class SimpleCitation implements Citation, Serializable {
      */
     @Override
     public String toString() {
-        return "Citation[“" + title + "”]";
+        return Strings.bracket("Citation", title);
     }
 }

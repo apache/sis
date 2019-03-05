@@ -23,6 +23,7 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
 
@@ -114,6 +115,6 @@ public abstract class NamedElement {
      */
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[\"" + getName() + "\"]";
+        return Strings.bracket(getClass().getSimpleName(), getName());
     }
 }

@@ -863,12 +863,7 @@ public class GridExtent implements Serializable {
     static int[] verifyDimensions(int[] dimensions, final int limit) {
         ArgumentChecks.ensureNonNull("dimensions", dimensions);
         final int n = dimensions.length;
-        if (n == 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "dimensions"));
-        }
-        if (n > limit) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.TooManyOccurrences_2, limit, "dimension"));
-        }
+        ArgumentChecks.ensureSizeBetween("dimensions", 1, limit, n);
         dimensions = dimensions.clone();
         if (!ArraysExt.isSorted(dimensions, true)) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.NotStrictlyOrderedDimensions));

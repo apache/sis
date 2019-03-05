@@ -231,9 +231,19 @@ public final class Errors extends IndexedResourceBundle {
         public static final short DuplicatedElement_1 = 24;
 
         /**
+         * File “{0}” is referenced more than once.
+         */
+        public static final short DuplicatedFileReference_1 = 186;
+
+        /**
          * Name or identifier “{0}” is used more than once.
          */
         public static final short DuplicatedIdentifier_1 = 25;
+
+        /**
+         * Value {0,number} is used more than once.
+         */
+        public static final short DuplicatedNumber_1 = 187;
 
         /**
          * Option “{0}” is duplicated.
@@ -484,7 +494,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short InvalidVersionIdentifier_1 = 179;
 
         /**
-         * A different value is already associated to the “{0}” key.
+         * Key “{0}” is associated twice to different values.
          */
         public static final short KeyCollision_1 = 75;
 

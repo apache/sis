@@ -100,6 +100,6 @@ final strictfp class CitationMock implements Citation, Identifier {
      */
     @Override
     public String toString() {
-        return "Citation[“" + title + "”]";
+        return Strings.bracket("Citation", title);
     }
 }

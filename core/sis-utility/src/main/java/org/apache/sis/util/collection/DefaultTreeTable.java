@@ -122,10 +122,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * @param  columns  the list of table columns.
      */
     public DefaultTreeTable(TableColumn<?>... columns) {
-        ArgumentChecks.ensureNonNull("columns", columns);
-        if (columns.length == 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "columns"));
-        }
+        ArgumentChecks.ensureNonEmpty("columns", columns);
         /*
          * Copy the array for safety against user changes, and also for forcing the element type
          * to TableColumn, not a subclass, because of the UnmodifiableArrayList.wrap(E[]) contract.
