@@ -882,6 +882,15 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
+     * Returns the resources to use for error messages.
+     *
+     * @return the resources for error messages using the locales specified to the decoder.
+     */
+    final Errors errors() {
+        return Errors.getResources(getLocale());
+    }
+
+    /**
      * Reports a warning to the listeners specified at construction time.
      * This method is for Apache SIS internal purpose only since resources may change at any time.
      *
@@ -904,7 +913,7 @@ public abstract class Variable extends NamedElement {
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
     final void error(final Class<?> caller, final String method, final Exception exception, final short key, final Object... arguments) {
-        warning(decoder.listeners, caller, method, exception, Errors.getResources(getLocale()), key, arguments);
+        warning(decoder.listeners, caller, method, exception, errors(), key, arguments);
     }
 
     /**

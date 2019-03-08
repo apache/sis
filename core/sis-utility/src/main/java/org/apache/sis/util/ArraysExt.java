@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Comparator;
 import java.lang.reflect.Array;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -1258,22 +1259,89 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns a sequence of increasing values of the given length. Each value is increased by 1.
-     * For example {@code sequence(-1, 4)} returns {@code {-1, 0, 1, 2}}. This method is a convenience for
-     * enumerating a subset of dimensions in a coordinate reference system or a subset of bands in an image.
+     * Returns a finite arithmetic progression of the given length. Each value is increased by 1.
+     * For example {@code sequence(-1, 4)} returns {@code {-1, 0, 1, 2}}.
+     *
+     * <div class="note"><b>Purpose:</b>
+     * this method is convenient for enumerating dimensions in a coordinate reference system or bands in an image.
+     * Some methods in the Java library or in Apache SIS want dimensions or bands to be specified by their indices.
+     * An example in the Java library is the {@code bankIndices} argument in
+     * <code>{@linkplain java.awt.image.Raster#createBandedRaster(int, int, int, int, int[], int[], java.awt.Point)
+     * Raster.createBandedRaster}(…, bankIndices, …)</code>.
+     * An example in Apache SIS is the {@code range} argument in
+     * <code>{@linkplain org.apache.sis.storage.GridCoverageResource#read GridCoverageResource.read}(…, range)</code>.</div>
+     *
+     * For any array returned by this method, <code>{@linkplain #isSequence(int, int[]) isSequence}(start, array)</code>
+     * is guaranteed to return {@code true}.
      *
      * @param  start   first value in the array to return.
      * @param  length  number of values to return.
      * @return a sequence of increasing integers starting at {@code start} and having {@code length} values.
+     * @throws ArithmeticException if {@code start + length} overflows 32 bits integer.
+     *
+     * @see java.util.stream.IntStream#range(int, int)
      *
      * @since 1.0
      */
     public static int[] sequence(final int start, final int length) {
-        final int[] array = new int[length];
-        for (int i=0; i<length; i++) {
-            array[i] = start + i;
+        if (length > 0) {
+            if (start + (length - 1) >= start) {
+                final int[] array = new int[length];
+                for (int i=0; i<length; i++) {
+                    array[i] = start + i;
+                }
+                return array;
+            } else {
+                throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
+            }
+        } else if (length == 0) {
+            return EMPTY_INT;
+        } else {
+            throw new NegativeArraySizeException(Errors.format(Errors.Keys.NegativeArgument_2, "length", length));
         }
-        return array;
+    }
+
+    /**
+     * Returns {@code true} if the given array is a finite arithmetic progression starting at the given value.
+     * More specifically:
+     *
+     * <ul>
+     *   <li>If {@code array} is {@code null}, then return {@code false}.</li>
+     *   <li>Otherwise if {@code array} is empty, then return {@code true} for consistency
+     *       with <code>{@linkplain #sequence(int, int) sequence}(start, 0)</code>.</li>
+     *   <li>Otherwise for any index 0 ≦ <var>i</var> {@literal <} {@code array.length}, if {@code array[i]}
+     *       is equal to {@code start + i} (computed as if no overflow occurs), then return {@code true}.</li>
+     *   <li>Otherwise return {@code false}.</li>
+     * </ul>
+     *
+     * <div class="note"><b>Example:</b>
+     * {@code isSequence(1, array)} returns {@code true} if the given array is {@code {1, 2, 3, 4}}
+     * but {@code false} if the array is {@code {1, 2, 4}} (missing 3).</div>
+     *
+     * @param  start  first value expected in the given {@code array}.
+     * @param  array  the array to test, or {@code null}.
+     * @return {@code true} if the given array is non-null and equal to
+     *         <code>{@linkplain #sequence(int, int) sequence}(start, array.length)</code>.
+     *
+     * @see #sequence(int, int)
+     *
+     * @since 1.0
+     */
+    public static boolean isSequence(final int start, final int[] array) {
+        if (array == null) {
+            return false;
+        }
+        if (array.length != 0) {
+            if (start + (array.length - 1) < start) {
+                return false;                               // Overflow.
+            }
+            for (int i=0; i<array.length; i++) {
+                if (array[i] != start + i) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

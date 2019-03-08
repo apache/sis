@@ -919,7 +919,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public long longValue(final int index) {
             final long value = super.longValue(index);
             if (value >= 0) return value;
-            throw new ArithmeticException();
+            throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
         }
 
         /** Returns the string representation at the given index. */
@@ -960,7 +960,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public int       intValue(int index) {
             final int value = super.intValue(index);
             if (value >= 0) return value;
-            throw new ArithmeticException();
+            throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
         }
 
         /** Uses a larger type if the value exceed integer capacity. */
@@ -1016,7 +1016,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public short   shortValue(int index) {
             final short value = super.shortValue(index);
             if (value >= 0) return value;
-            throw new ArithmeticException();
+            throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Short.SIZE));
         }
 
         /** Uses a larger type if the value exceed short integer capacity. */
@@ -1073,7 +1073,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public byte     byteValue(int index) {
             final byte value = super.byteValue(index);
             if (value >= 0) return value;
-            throw new ArithmeticException();
+            throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Byte.SIZE));
         }
 
         /** Uses a larger type if the value exceed integer capacity. */

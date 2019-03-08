@@ -349,7 +349,7 @@ public final class Axis extends NamedElement {
     private int getSize(final int i) {
         final int n = sourceSizes[i];
         if (n >= 0) return n;
-        throw new ArithmeticException("signed integer overflow");
+        throw new ArithmeticException(coordinates.errors().getString(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
     }
 
     /**

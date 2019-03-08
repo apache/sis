@@ -687,7 +687,7 @@ search:     for (;;) {
         final long inc = a - b;
         // The sign of the difference shall be the same than the sign of Long.compare(…).
         if ((((isUnsigned() ? Long.compareUnsigned(a, b) : Long.compare(a, b)) ^ inc) & Long.MIN_VALUE) != 0) {
-            throw new ArithmeticException();
+            throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
         }
         return inc;
     }

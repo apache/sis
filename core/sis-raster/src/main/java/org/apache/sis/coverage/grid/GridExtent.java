@@ -995,7 +995,9 @@ public class GridExtent implements Serializable {
                 final int j = i + m;
                 long low  = coordinates[i];
                 long size = coordinates[j] - low + 1;                                             // Result is an unsigned number.
-                if (size == 0) throw new ArithmeticException("long overflow");
+                if (size == 0) {
+                    throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
+                }
                 long r = Long.divideUnsigned(size, s);
                 if (r*s == size) r--;                           // Make inclusive if the division did not already rounded toward 0.
                 sub.coordinates[i] = low /= s;

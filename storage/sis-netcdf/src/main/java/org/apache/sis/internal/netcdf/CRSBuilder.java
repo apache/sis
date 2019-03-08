@@ -235,7 +235,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
      */
     private void add(final Axis axis) throws DataStoreContentException {
         if (dimension == Byte.MAX_VALUE) {
-            throw new DataStoreContentException(Errors.getResources(getFirstAxis().coordinates.getLocale())
+            throw new DataStoreContentException(getFirstAxis().coordinates.errors()
                     .getString(Errors.Keys.ExcessiveListSize_2, "axes", (short) (Byte.MAX_VALUE + 1)));
         }
         if (dimension >= axes.length) {

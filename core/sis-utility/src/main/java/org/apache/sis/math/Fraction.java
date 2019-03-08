@@ -18,6 +18,7 @@ package org.apache.sis.math;
 
 import java.io.Serializable;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 
 
@@ -115,7 +116,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      */
     private Fraction simplify(long num, long den) {
         if (num == Long.MIN_VALUE || den == Long.MIN_VALUE) {
-            throw new ArithmeticException();
+            throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
         }
         if (num == 0) {
             den = Long.signum(den);             // Simplify  0/x  as  0/±1 or 0/0.
@@ -357,7 +358,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
     public short shortValue() {
         final int n = intValue();
         if ((n & ~0xFFFF) == 0) return (short) n;
-        throw new ArithmeticException();
+        throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Short.SIZE));
     }
 
     /**
@@ -370,7 +371,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
     public byte byteValue() {
         final int n = intValue();
         if ((n & ~0xFF) == 0) return (byte) n;
-        throw new ArithmeticException();
+        throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Byte.SIZE));
     }
 
     /**

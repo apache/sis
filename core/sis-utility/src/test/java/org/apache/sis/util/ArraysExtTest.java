@@ -58,6 +58,25 @@ public final strictfp class ArraysExtTest extends TestCase {
     }
 
     /**
+     * Tests {@link ArraysExt#sequence(int, int)} and {@link ArraysExt#isSequence(int, int[])}.
+     */
+    @Test
+    public void testSequence() {
+        int[] sequence = ArraysExt.sequence(-1, 4);
+        assertArrayEquals("sequence", new int[] {-1, 0, 1, 2}, sequence);
+        assertTrue ("isSequence", ArraysExt.isSequence(-1, sequence));
+        assertFalse("isSequence", ArraysExt.isSequence(-2, sequence));
+        assertTrue ("isSequence", ArraysExt.isSequence(1, new int[] {1, 2, 3, 4}));
+        assertFalse("isSequence", ArraysExt.isSequence(1, new int[] {1, 2,    4}));
+        try {
+            ArraysExt.sequence(Integer.MAX_VALUE - 10, 12);
+            fail("Expected ArithmeticException.");
+        } catch (ArithmeticException e) {
+            assertNotNull(e.getMessage());
+        }
+    }
+
+    /**
      * Tests {@link ArraysExt#unionOfSorted(int[], int[])}.
      */
     @Test

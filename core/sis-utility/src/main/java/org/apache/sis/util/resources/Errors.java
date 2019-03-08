@@ -489,6 +489,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short InfiniteArgumentValue_1 = 73;
 
         /**
+         * Integer overflow during {0} bits arithmetic operation.
+         */
+        public static final short IntegerOverflow_1 = 188;
+
+        /**
          * “{0}” is an invalid version identifier.
          */
         public static final short InvalidVersionIdentifier_1 = 179;
