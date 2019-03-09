@@ -682,6 +682,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Resolution = 153;
 
         /**
+         * Result
+         */
+        public static final short Result = 164;
+
+        /**
          * Root
          */
         public static final short Root = 90;

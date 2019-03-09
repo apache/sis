@@ -61,6 +61,9 @@ import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_D
  *   <li>Create a {@link InterpolatedTransform} with the above shift grid.</li>
  * </ol>
  *
+ * Builders can be used only once;
+ * points can not be added or modified after {@link #create(MathTransformFactory)} has been invoked.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
@@ -351,6 +354,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * <i>etc.</i>. Coordinates are stored in row-major order (column index varies faster, followed by row index).
      *
      * @param  coordinates coordinates in each target dimensions, stored in row-major order.
+     * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      *
      * @since 1.0
      */
@@ -369,6 +373,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param  gridX   the column index in the grid where to store the given target position.
      * @param  gridY   the row index in the grid where to store the given target position.
      * @param  target  the target coordinates, assumed uncertain.
+     * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      * @throws IllegalArgumentException if the {@code x} or {@code y} coordinate value is out of grid range.
      * @throws MismatchedDimensionException if the target position does not have the expected number of dimensions.
      */

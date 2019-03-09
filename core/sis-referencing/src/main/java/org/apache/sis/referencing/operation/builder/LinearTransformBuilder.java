@@ -17,8 +17,15 @@
 package org.apache.sis.referencing.operation.builder;
 
 import java.util.Map;
+import java.util.List;
+import java.util.Queue;
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.text.NumberFormat;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import org.opengis.util.FactoryException;
@@ -27,6 +34,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.geometry.coordinate.Position;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.io.TableAppender;
@@ -60,8 +68,22 @@ import org.apache.sis.util.Classes;
  * Otherwise a builder created by the {@link #LinearTransformBuilder()} constructor will be able to handle
  * randomly distributed coordinates.
  *
- * <p>The transform coefficients are determined using a <cite>least squares</cite> estimation method,
+ * <p>Builders can be used only once;
+ * points can not be added or modified after {@link #create(MathTransformFactory)} has been invoked.
+ * The transform coefficients are determined using a <cite>least squares</cite> estimation method,
  * with the assumption that source positions are exact and all the uncertainty is in the target positions.</p>
+ *
+ * <div class="section">Linearizers</div>
+ * Consider the following situation (commonly found with {@linkplain org.apache.sis.storage.netcdf netCDF files}):
+ * the <i>sources</i> coordinates are pixel indices and the <i>targets</i> are (longitude, latitude) coordinates,
+ * but we suspect that the <i>sources to targets</i> transform is some undetermined map projection, maybe Mercator.
+ * A linear approximation between those coordinates will give poor results; the results would be much better if all
+ * (longitude, latitude) coordinates were converted to the right projection first. However that map projection may
+ * not be known, but we can try to guess it by trials-and-errors using a set of plausible projections.
+ * That set can be specified by {@link #addLinearizers(Map, int...)}.
+ * If the {@link #create(MathTransformFactory)} method finds that one of the specified projections seems a good fit,
+ * it will automatically convert all target coordinates to that projection.
+ * That selected projection is given by {@link #linearizer()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -103,6 +125,12 @@ public class LinearTransformBuilder extends TransformBuilder {
      * This layout allows to create only a few (typically two) large arrays instead of a multitude of small arrays.
      * Example: {x[], y[], z[]}.
      * This is {@code null} if not yet specified.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * we could use a flat array with (x₀, y₀), (x₁, y₁), (x₂, y₂), <i>etc.</i> coordinate tuples instead.
+     * Such flat array would be more convenient for some coordinate conversions with {@link MathTransform}.
+     * But using array of arrays is more convenient for other calculations working on one dimension at time,
+     * make data more local for CPU, and also allows handling of more points.</div>
      */
     private double[][] targets;
 
@@ -122,8 +150,25 @@ public class LinearTransformBuilder extends TransformBuilder {
     private int numPoints;
 
     /**
+     * If the user suspects that the transform may be linear when the target is another space than the space of
+     * {@link #targets} coordinates, projections toward spaces to try. The {@link #create(MathTransformFactory)}
+     * method will try to apply those transforms on {@link #targets} and check if they produce better fits.
+     *
+     * @see #addLinearizers(Map, int[])
+     * @see #linearizer()
+     */
+    private List<ProjectedTransformTry> linearizers;
+
+    /**
+     * If one of the {@linkplain #linearizers} have been applied, that linearizer. Otherwise {@code null}.
+     *
+     * @see #linearizer()
+     */
+    private transient ProjectedTransformTry appliedLinearizer;
+
+    /**
      * The transform created by the last call to {@link #create(MathTransformFactory)}.
-     * This is reset to {@code null} when coordinates are modified.
+     * A non-null value means that this builder became unmodifiable.
      */
     private transient LinearTransform transform;
 
@@ -131,7 +176,24 @@ public class LinearTransformBuilder extends TransformBuilder {
      * An estimation of the Pearson correlation coefficient for each target dimension.
      * This is {@code null} if not yet computed.
      */
-    private transient double[] correlation;
+    private transient double[] correlations;
+
+    /**
+     * Creates a temporary builder with all source fields from the given builder and no target arrays.
+     * Calculated fields, namely {@link #correlations} and {@link #transform}, are left uninitialized.
+     * Arrays are copied by references and their content shall not be modified. The new builder should
+     * not be made accessible to users since changes in this builder would be reflected in the source
+     * values or original builder. This constructor is reserved to {@link #create(MathTransformFactory)}
+     * internal usage.
+     *
+     * @param original  the builder from which to take array references of source values.
+     */
+    private LinearTransformBuilder(final LinearTransformBuilder original) {
+        gridSize   = original.gridSize;
+        sources    = original.sources;
+        gridLength = original.gridLength;
+        numPoints  = original.numPoints;
+    }
 
     /**
      * Creates a new linear transform builder for randomly distributed positions.
@@ -326,6 +388,14 @@ search: for (int j=numPoints; --j >= 0;) {
     }
 
     /**
+     * Returns the error message to be given to {@link IllegalStateException}
+     * when this builder can not be modified anymore.
+     */
+    private static String unmodifiable() {
+        return Errors.format(Errors.Keys.UnmodifiableObject_1, LinearTransformBuilder.class);
+    }
+
+    /**
      * Returns the number of dimensions in the source grid, or -1 if this builder is not backed by a grid.
      * Contrarily to the other {@code get*Dimensions()} methods, this method does not throw exception.
      *
@@ -391,12 +461,14 @@ search: for (int j=numPoints; --j >= 0;) {
             }
             return envelope;
         } else {
-            return envelope(sources);
+            return envelope(sources, numPoints);
         }
     }
 
     /**
      * Returns the envelope of target points. The lower and upper values are inclusive.
+     * If a {@linkplain #linearizer() linearizer has been applied}, then coordinates of
+     * the returned envelope are projected by that linearizer.
      *
      * @return the envelope of target points.
      * @throws IllegalStateException if the target points are not yet known.
@@ -404,22 +476,24 @@ search: for (int j=numPoints; --j >= 0;) {
      * @since 1.0
      */
     public Envelope getTargetEnvelope() {
-        return envelope(targets);
+        return envelope(targets, (gridLength != 0) ? gridLength : numPoints);
     }
 
     /**
      * Implementation of {@link #getSourceEnvelope()} and {@link #getTargetEnvelope()}.
      */
-    private static Envelope envelope(final double[][] points) {
+    private static Envelope envelope(final double[][] points, final int numPoints) {
         if (points == null) {
             throw new IllegalStateException(noData());
         }
         final int dim = points.length;
         final GeneralEnvelope envelope = new GeneralEnvelope(dim);
         for (int i=0; i<dim; i++) {
+            final double[] values = points[i];
             double lower = Double.POSITIVE_INFINITY;
             double upper = Double.NEGATIVE_INFINITY;
-            for (final double value : points[i]) {
+            for (int j=0; j<numPoints; j++) {
+                final double value = values[j];
                 if (value < lower) lower = value;
                 if (value > upper) upper = value;
             }
@@ -447,7 +521,7 @@ search: for (int j=numPoints; --j >= 0;) {
      *
      * <p>All source positions shall have the same number of dimensions (the <cite>source dimension</cite>),
      * and all target positions shall have the same number of dimensions (the <cite>target dimension</cite>).
-     * However the source dimension does not need to be the same the target dimension.
+     * However the source dimension does not need to be the same than the target dimension.
      * Apache SIS currently supports only one- or two-dimensional source positions,
      * together with arbitrary target dimension.</p>
      *
@@ -459,6 +533,7 @@ search: for (int j=numPoints; --j >= 0;) {
      *
      * @param  sourceToTarget  a map of source positions to target positions.
      *         Source positions are assumed precise and target positions are assumed uncertain.
+     * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      * @throws IllegalArgumentException if the given positions contain NaN or infinite coordinate values.
      * @throws IllegalArgumentException if this builder has been {@linkplain #LinearTransformBuilder(int...)
      *         created for a grid} but some source coordinates are not indices in that grid.
@@ -469,14 +544,15 @@ search: for (int j=numPoints; --j >= 0;) {
     public void setControlPoints(final Map<? extends Position, ? extends Position> sourceToTarget)
             throws MismatchedDimensionException
     {
+        if (transform != null) {
+            throw new IllegalStateException(unmodifiable());
+        }
         ArgumentChecks.ensureNonNull("sourceToTarget", sourceToTarget);
-        transform   = null;
-        correlation = null;
-        sources     = null;
-        targets     = null;
-        numPoints   = 0;
-        int srcDim  = 0;
-        int tgtDim  = 0;
+        sources    = null;
+        targets    = null;
+        numPoints  = 0;
+        int srcDim = 0;
+        int tgtDim = 0;
         for (final Map.Entry<? extends Position, ? extends Position> entry : sourceToTarget.entrySet()) {
             final DirectPosition src = position(entry.getKey());   if (src == null) continue;
             final DirectPosition tgt = position(entry.getValue()); if (tgt == null) continue;
@@ -542,6 +618,10 @@ search: for (int j=numPoints; --j >= 0;) {
      * Returns all control points as a map. Values are source coordinates and keys are target coordinates.
      * The map is unmodifiable and is guaranteed to contain only non-null keys and values.
      * The map is a view: changes in this builder are immediately reflected in the returned map.
+     *
+     * <p>If {@link #linearizer()} returns a non-empty value,
+     * then the values in the returned map are projected using that linearizer.
+     * This may happen only after {@link #create(MathTransformFactory) create(…)} has been invoked.</p>
      *
      * @return all control points in this builder.
      *
@@ -788,6 +868,7 @@ search:         for (int j=domain(); --j >= 0;) {
      *                 then for every index <var>i</var> the {@code source[i]} value shall be in the [0 … {@code gridSize[i]}-1] range inclusive.
      *                 If this builder has been created with the {@link #LinearTransformBuilder()} constructor, then no constraint apply.
      * @param  target  the target coordinates, assumed uncertain.
+     * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      * @throws IllegalArgumentException if this builder has been {@linkplain #LinearTransformBuilder(int...) created for a grid}
      *         but some source coordinates are out of index range, or if {@code target} contains NaN of infinite numbers.
      * @throws MismatchedDimensionException if the source or target position does not have the expected number of dimensions.
@@ -795,6 +876,9 @@ search:         for (int j=domain(); --j >= 0;) {
      * @since 0.8
      */
     public void setControlPoint(final int[] source, final double[] target) {
+        if (transform != null) {
+            throw new IllegalStateException(unmodifiable());
+        }
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
         verifySourceDimension(source.length);
@@ -808,6 +892,9 @@ search:         for (int j=domain(); --j >= 0;) {
             index = flatIndex(source);        // Invoked first for validating argument before to allocate arrays.
             if (targets == null) {
                 allocate(tgtDim);
+            }
+            if (Double.isNaN(targets[0][index])) {
+                numPoints++;
             }
         } else {
             /*
@@ -836,10 +923,11 @@ search:         for (int j=domain(); --j >= 0;) {
         for (int i=0; i<tgtDim; i++) {
             isValid &= Double.isFinite(targets[i][index] = target[i]);
         }
-        transform   = null;
-        correlation = null;
         if (!isValid) {
-            if (gridSize == null) numPoints--;
+            numPoints--;
+            for (int i=0; i<tgtDim; i++) {
+                targets[i][index] = Double.NaN;
+            }
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalMapping_2,
                                                source, new DirectPositionView.Double(target)));
         }
@@ -849,6 +937,9 @@ search:         for (int j=domain(); --j >= 0;) {
      * Returns a single target coordinate for the given source coordinate, or {@code null} if none.
      * This method can be used for retrieving points set by previous calls to
      * {@link #setControlPoint(int[], double[])} or {@link #setControlPoints(Map)}.
+     *
+     * <p>If {@link #linearizer()} returns a non-empty value, then the returned values are projected using that linearizer.
+     * This may happen only if this method is invoked after {@link #create(MathTransformFactory) create(…)}.</p>
      *
      * <div class="note"><b>Performance note:</b>
      * current implementation is efficient for builders {@linkplain #LinearTransformBuilder(int...) created for a grid}
@@ -900,9 +991,13 @@ search:         for (int j=domain(); --j >= 0;) {
      * <i>etc.</i>. Coordinates are stored in row-major order (column index varies faster, followed by row index).
      *
      * @param  coordinates coordinates in each target dimensions, stored in row-major order.
+     * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      */
-    final void setControlPoints(final Vector... coordinates) {
+    final void setControlPoints(final Vector[] coordinates) {
         assert gridSize != null;
+        if (transform != null) {
+            throw new IllegalStateException(unmodifiable());
+        }
         final int tgtDim = coordinates.length;
         final double[][] result = new double[tgtDim][];
         for (int i=0; i<tgtDim; i++) {
@@ -917,9 +1012,8 @@ search:         for (int j=domain(); --j >= 0;) {
             }
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, gridLength, size));
         }
-        targets     = result;
-        transform   = null;
-        correlation = null;
+        targets = result;
+        numPoints = gridLength;
     }
 
     /**
@@ -955,8 +1049,12 @@ search:         for (int j=domain(); --j >= 0;) {
      *                    Value can be from 0 inclusive to {@link #getSourceDimensions()} exclusive.
      *                    The recommended direction is the direction of most stable values, typically 1 (rows) for longitudes.
      * @param  period     that wraparound range (typically 360° for longitudes).
+     * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      */
     final void resolveWraparoundAxis(final int dimension, final int direction, final double period) {
+        if (transform != null) {
+            throw new IllegalStateException(unmodifiable());
+        }
         final double[] coordinates = targets[dimension];
         int stride = 1;
         for (int i=0; i<direction; i++) {
@@ -1014,8 +1112,56 @@ search:         for (int j=domain(); --j >= 0;) {
     }
 
     /**
+     * Adds transforms to potentially apply on target coordinates before to compute the linear transform.
+     * This method can be invoked if one suspects that the <cite>source to target</cite> transform may be
+     * more linear when the target is another space than the current space of {@linkplain #getTargetEnvelope()
+     * target coordinates}. If linearizers have been specified, then the {@link #create(MathTransformFactory)}
+     * method will try to apply each transform on target coordinates and check which one results in the best
+     * {@linkplain #correlation() correlation} coefficients. It may be none.
+     *
+     * <p>The linearizers are specified as {@link MathTransform}s from current target coordinates to other spaces
+     * where <cite>sources to new targets</cite> transforms may be more linear. The keys in the map are arbitrary
+     * identifiers used in {@link #toString()} for analysis or debugging purpose.
+     * The {@code dimensions} argument specifies which target dimensions to project and can be null or omitted
+     * if the projections shall be applied on all target coordinates. It is possible to invoke this method many
+     * times with different {@code dimensions} argument values.</p>
+     *
+     * @param  projections  projections from current target coordinates to other spaces which may result in more linear transforms.
+     * @param  dimensions   the target dimensions to project, or null or omitted for projecting all target dimensions.
+     *                      If non-null and non-empty, then all transforms in the {@code projections} map shall have a
+     *                      number of source and target dimensions equals to the length of this array.
+     * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
+     *
+     * @see #linearizer()
+     * @see #correlation()
+     *
+     * @since 1.0
+     */
+    public void addLinearizers(final Map<String,MathTransform> projections, int... dimensions) {
+        if (transform != null) {
+            throw new IllegalStateException(unmodifiable());
+        }
+        final int tgtDim = getTargetDimensions();
+        if (dimensions == null || dimensions.length == 0) {
+            dimensions = ArraysExt.sequence(0, tgtDim);
+        }
+        if (linearizers == null) {
+            linearizers = new ArrayList<>();
+        }
+        for (final Map.Entry<String,MathTransform> entry : projections.entrySet()) {
+            ProjectedTransformTry t = new ProjectedTransformTry(entry.getKey(), entry.getValue(), dimensions, tgtDim);
+            if (!t.projection.isIdentity()) {
+                linearizers.add(t);
+            }
+        }
+    }
+
+    /**
      * Creates a linear transform approximation from the source positions to the target positions.
      * This method assumes that source positions are precise and that all uncertainty is in the target positions.
+     * If {@linkplain #addLinearizers linearizers have been specified}, then this method may project all target
+     * coordinates using one of those linearizers in order to get a more linear transform.
+     * If such projection is applied, then {@link #linearizer()} will return a non-empty value after this method call.
      *
      * @param  factory  the factory to use for creating the transform, or {@code null} for the default factory.
      *                  The {@link MathTransformFactory#createAffineTransform(Matrix)} method of that factory
@@ -1027,68 +1173,129 @@ search:         for (int j=domain(); --j >= 0;) {
      * @since 0.8
      */
     @Override
-    @SuppressWarnings("serial")
     public LinearTransform create(final MathTransformFactory factory) throws FactoryException {
         if (transform == null) {
-            final double[][] sources = this.sources;                    // Protect from changes.
-            final double[][] targets = this.targets;
-            if (targets == null) {
-                throw new InvalidGeodeticParameterException(noData());
-            }
-            final int sourceDim = (sources != null) ? sources.length : gridSize.length;
-            final int targetDim = targets.length;
-            correlation = new double[targetDim];
-            final MatrixSIS matrix = Matrices.create(targetDim + 1, sourceDim + 1,  ExtendedPrecisionMatrix.ZERO);
-            matrix.setElement(targetDim, sourceDim, 1);
-            for (int j=0; j < targetDim; j++) {
-                final double c;
-                switch (sourceDim) {
-                    case 1: {
-                        final int row = j;
-                        final Line line = new Line() {
-                            @Override public void setEquation(final Number slope, final Number y0) {
-                                super.setEquation(slope, y0);
-                                matrix.setNumber(row, 0, slope);    // Preserve the extended precision (double-double).
-                                matrix.setNumber(row, 1, y0);
-                            }
-                        };
-                        if (sources != null) {
-                            c = line.fit(vector(sources[0]), vector(targets[j]));
+            MatrixSIS matrix = fit();
+            if (linearizers != null) {
+                /*
+                 * We are going to try to project target coordinates in an attempt to find a more linear transform.
+                 * If a projection allows better results than unprojected coordinates, the following variables will
+                 * be set to values to assign to this 'LinearTransformBuilder' after the loop. We do not assign new
+                 * values to this 'LinearTransformBuilder' directly (as we find them) in the loop because the checks
+                 * for a better transform require the original values.
+                 */
+                double     bestCorrelation   = average(correlations);
+                double[]   bestCorrelations  = null;
+                MatrixSIS  bestTransform     = null;
+                double[][] transformedArrays = null;
+                /*
+                 * Store the correlation when using no conversions, only for this.toString() purpose. We copy
+                 * 'ProjectedTransformTry' list in an array both for excluding the dummy entry, and also for
+                 * avoiding ConcurrentModificationException if a debugger invokes toString() during the loop.
+                 */
+                final ProjectedTransformTry[] alternatives = linearizers.toArray(new ProjectedTransformTry[linearizers.size()]);
+                linearizers.add(new ProjectedTransformTry((float) bestCorrelation));
+                /*
+                 * 'tmp' and 'pool' are temporary objects for this computation only. We use a pool because the
+                 * 'double[]' arrays may be large (e.g. megabytes) and we want to avoid creating new arrays of
+                 * such size for each projection to try.
+                 */
+                final Queue<double[]> pool = new ArrayDeque<>();
+                final int n = (gridLength != 0) ? gridLength : numPoints;
+                final LinearTransformBuilder tmp = new LinearTransformBuilder(this);
+                for (final ProjectedTransformTry alt : alternatives) {
+                    if ((tmp.targets = alt.transform(targets, n, pool)) != null) {
+                        final MatrixSIS altTransform    = tmp.fit();
+                        final double[]  altCorrelations = alt.replace(correlations, tmp.correlations);
+                        final double    altCorrelation  = average(altCorrelations);
+                        alt.correlation = (float) altCorrelation;
+                        if (altCorrelation > bestCorrelation) {
+                            ProjectedTransformTry.recycle(transformedArrays, pool);
+                            transformedArrays = tmp.targets;
+                            bestCorrelation   = altCorrelation;
+                            bestCorrelations  = altCorrelations;
+                            bestTransform     = alt.replace(matrix, altTransform);
+                            appliedLinearizer = alt;
                         } else {
-                            c = line.fit(Vector.createSequence(0, 1, gridSize[0]),
-                                         Vector.create(targets[j]));
+                            ProjectedTransformTry.recycle(tmp.targets, pool);
                         }
-                        break;
-                    }
-                    case 2: {
-                        final int row = j;
-                        final Plane plan = new Plane() {
-                            @Override public void setEquation(final Number sx, final Number sy, final Number z0) {
-                                super.setEquation(sx, sy, z0);
-                                matrix.setNumber(row, 0, sx);       // Preserve the extended precision (double-double).
-                                matrix.setNumber(row, 1, sy);
-                                matrix.setNumber(row, 2, z0);
-                            }
-                        };
-                        if (sources != null) {
-                            c = plan.fit(vector(sources[0]), vector(sources[1]), vector(targets[j]));
-                        } else try {
-                            c = plan.fit(gridSize[0], gridSize[1], Vector.create(targets[j]));
-                        } catch (IllegalArgumentException e) {
-                            // This may happen if the z vector still contain some "NaN" values.
-                            throw new InvalidGeodeticParameterException(noData(), e);
-                        }
-                        break;
-                    }
-                    default: {
-                        throw new FactoryException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, sourceDim));
                     }
                 }
-                correlation[j] = c;
+                if (bestTransform != null) {
+                    matrix       = bestTransform;
+                    targets      = transformedArrays;
+                    correlations = bestCorrelations;
+                }
             }
             transform = (LinearTransform) nonNull(factory).createAffineTransform(matrix);
         }
         return transform;
+    }
+
+    /**
+     * Computes the matrix of the linear approximation. This is the implementation of {@link #create(MathTransformFactory)}
+     * without the step creating the {@link LinearTransform} from a matrix. The {@link #correlations} field is set as a side
+     * effect of this method call.
+     */
+    @SuppressWarnings("serial")
+    private MatrixSIS fit() throws FactoryException {
+        final double[][] sources = this.sources;                    // Protect from changes.
+        final double[][] targets = this.targets;
+        if (targets == null) {
+            throw new InvalidGeodeticParameterException(noData());
+        }
+        final int sourceDim = (sources != null) ? sources.length : gridSize.length;
+        final int targetDim = targets.length;
+        correlations = new double[targetDim];
+        final MatrixSIS matrix = Matrices.create(targetDim + 1, sourceDim + 1,  ExtendedPrecisionMatrix.ZERO);
+        matrix.setElement(targetDim, sourceDim, 1);
+        for (int j=0; j < targetDim; j++) {
+            final double c;
+            switch (sourceDim) {
+                case 1: {
+                    final int row = j;
+                    final Line line = new Line() {
+                        @Override public void setEquation(final Number slope, final Number y0) {
+                            super.setEquation(slope, y0);
+                            matrix.setNumber(row, 0, slope);    // Preserve the extended precision (double-double).
+                            matrix.setNumber(row, 1, y0);
+                        }
+                    };
+                    if (sources != null) {
+                        c = line.fit(vector(sources[0]), vector(targets[j]));
+                    } else {
+                        c = line.fit(Vector.createSequence(0, 1, gridSize[0]),
+                                     Vector.create(targets[j]));
+                    }
+                    break;
+                }
+                case 2: {
+                    final int row = j;
+                    final Plane plan = new Plane() {
+                        @Override public void setEquation(final Number sx, final Number sy, final Number z0) {
+                            super.setEquation(sx, sy, z0);
+                            matrix.setNumber(row, 0, sx);       // Preserve the extended precision (double-double).
+                            matrix.setNumber(row, 1, sy);
+                            matrix.setNumber(row, 2, z0);
+                        }
+                    };
+                    if (sources != null) {
+                        c = plan.fit(vector(sources[0]), vector(sources[1]), vector(targets[j]));
+                    } else try {
+                        c = plan.fit(gridSize[0], gridSize[1], Vector.create(targets[j]));
+                    } catch (IllegalArgumentException e) {
+                        // This may happen if the z vector still contain some "NaN" values.
+                        throw new InvalidGeodeticParameterException(noData(), e);
+                    }
+                    break;
+                }
+                default: {
+                    throw new FactoryException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, sourceDim));
+                }
+            }
+            correlations[j] = c;
+        }
+        return matrix;
     }
 
     /**
@@ -1102,43 +1309,137 @@ search:         for (int j=domain(); --j >= 0;) {
     }
 
     /**
-     * Returns the correlation coefficients of the last transform created by {@link #create create(…)},
-     * or {@code null} if none. If non-null, the array length is equals to the number of target
-     * dimensions.
+     * Returns a global estimation of correlation by computing the average of absolute values.
+     * We don't use {@link org.apache.sis.math.MathFunctions#magnitude(double...)} because it
+     * would result in values greater than 1.
+     */
+    private static double average(final double[] correlations) {
+        double sum = 0;
+        for (int i=0; i<correlations.length; i++) {
+            sum += Math.abs(correlations[i]);
+        }
+        return sum / correlations.length;
+    }
+
+    /**
+     * If all target coordinates have been projected to another space, returns the projection applied.
+     * This method returns a non-empty value only if all the following conditions are met:
      *
-     * @return estimation of correlation coefficients for each target dimension, or {@code null}.
+     * <ol>
+     *   <li>{@link #addLinearizers(Map, int...)} has been invoked.</li>
+     *   <li>{@link #create(MathTransformFactory)} has been invoked.</li>
+     *   <li>The {@code create(…)} method at step 2 found that projecting target coordinates using
+     *       one of the linearizers specified at step 1 results in a more linear transform.</li>
+     * </ol>
+     *
+     * If this method returns a non-empty value, then the envelope returned by {@link #getTargetEnvelope()}
+     * and all control points returned by {@link #getControlPoint(int[])} are projected by this transform.
+     *
+     * @return the projection applied on target coordinates before to compute a linear transform.
+     *
+     * @since 1.0
+     */
+    public Optional<MathTransform> linearizer() {
+        return (appliedLinearizer != null) ? Optional.of(appliedLinearizer.projection) : Optional.empty();
+    }
+
+    /**
+     * Returns the Pearson correlation coefficients of the transform created by {@link #create create(…)}.
+     * The closer those coefficients are to +1 or -1, the better the fit.
+     * This method returns {@code null} if {@code create(…)} has not yet been invoked.
+     * If non-null, the array length is equal to the number of target dimensions.
+     *
+     * @return estimation of Pearson correlation coefficients for each target dimension,
+     *         or {@code null} if {@code create(…)} has not been invoked yet.
      */
     public double[] correlation() {
-        return (correlation != null) ? correlation.clone() : null;
+        return (correlations != null) ? correlations.clone() : null;
     }
 
     /**
      * Returns a string representation of this builder for debugging purpose.
+     * Current implementation shows the following information:
+     *
+     * <ul>
+     *   <li>Number of points.</li>
+     *   <li>Linearizers and their correlation coefficients (if available).</li>
+     *   <li>The linear transform (if already computed).</li>
+     * </ul>
+     *
+     * The string representation may change in any future version.
      *
      * @return a string representation of this builder.
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this)).append('[');
-        if (sources != null) {
-            buffer.append(sources[0].length).append(" points");
+        final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this))
+                .append('[').append(numPoints).append(" points");
+        if (gridSize != null) {
+            String separator = " on ";
+            for (final int size : gridSize) {
+                buffer.append(separator).append(size);
+                separator = " × ";
+            }
+            buffer.append(" grid");
         }
         buffer.append(']');
-        if (transform != null) {
-            final String lineSeparator = System.lineSeparator();
+        final String lineSeparator = System.lineSeparator();
+        /*
+         * Example (from LinearTransformBuilderTest):
+         * ┌────────────┬─────────────┐
+         * │ Conversion │ Correlation │
+         * ├────────────┼─────────────┤
+         * │ x³ y²      │ 1.000000    │
+         * │ x² y³      │ 0.997437    │
+         * │ Identité   │ 0.995969    │
+         * └────────────┴─────────────┘
+         */
+        if (linearizers != null) {
             buffer.append(':').append(lineSeparator);
-            final TableAppender table = new TableAppender(buffer, " ");
-            table.setMultiLinesCells(true);
-            table.append(Matrices.toString(transform.getMatrix())).nextColumn();
-            table.append(lineSeparator).append("  ")
-                 .append(Vocabulary.format(Vocabulary.Keys.Correlation)).append(" =").nextColumn();
-            table.append(Matrices.create(correlation.length, 1, correlation).toString());
+            Collections.sort(linearizers);
+            NumberFormat nf = null;
+            final TableAppender table = new TableAppender(buffer, " │ ");
+            table.appendHorizontalSeparator();
+            table.append(Vocabulary.format(Vocabulary.Keys.Conversion)).nextColumn();
+            table.append(Vocabulary.format(Vocabulary.Keys.Correlation)).nextLine();
+            table.appendHorizontalSeparator();
+            for (final ProjectedTransformTry alt : linearizers) {
+                nf = alt.summarize(table, nf);
+            }
+            table.appendHorizontalSeparator();
             try {
                 table.flush();
             } catch (IOException e) {
                 throw new UncheckedIOException(e);      // Should never happen since we wrote into a StringBuilder.
             }
         }
+        /*
+         * Example:
+         * Result:
+         * ┌               ┐                 ┌        ┐
+         * │ 2.0  0    3.0 │   Correlation = │ 0.9967 │
+         * │ 0    1.0  1.0 │                 │ 0.9950 │
+         * │ 0    0    1   │                 └        ┘
+         * └               ┘
+         */
+        if (transform != null) {
+            if (linearizers != null) {
+                buffer.append(Vocabulary.format(Vocabulary.Keys.Result));
+            }
+            buffer.append(':').append(lineSeparator);
+            final TableAppender table = new TableAppender(buffer, " ");
+            table.setMultiLinesCells(true);
+            table.append(Matrices.toString(transform.getMatrix())).nextColumn();
+            table.append(lineSeparator).append("  ")
+                 .append(Vocabulary.format(Vocabulary.Keys.Correlation)).append(" =").nextColumn();
+            table.append(Matrices.create(correlations.length, 1, correlations).toString());
+            try {
+                table.flush();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);      // Should never happen since we wrote into a StringBuilder.
+            }
+        }
+        Strings.insertLineInLeftMargin(buffer, lineSeparator);
         return buffer.toString();
     }
 }

@@ -19,9 +19,12 @@ package org.apache.sis.referencing.operation.builder;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.Collections;
 import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.geometry.DirectPosition1D;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.test.DependsOnMethod;
@@ -30,7 +33,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-import org.opengis.geometry.DirectPosition;
 
 
 /**
@@ -405,5 +407,38 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         assertTrue (actual.containsValue(t23));
         assertTrue (actual.containsValue(t00));
         assertMapEquals(expected, actual);
+    }
+
+    /**
+     * Tests the effect of {@link LinearTransformBuilder#addLinearizers(Map, int...)}.
+     *
+     * @throws FactoryException if the transform can not be created.
+     */
+    @Test
+    public void testLinearizers() throws FactoryException {
+        final int width  = 3;
+        final int height = 4;
+        final LinearTransformBuilder builder = new LinearTransformBuilder(width, height);
+        for (int y=0; y<height; y++) {
+            final int[]    source = new int[2];
+            final double[] target = new double[2];
+            for (int x=0; x<width; x++) {
+                source[0] = x;
+                source[1] = y;
+                target[0] = StrictMath.cbrt(3 + x*2);
+                target[1] = StrictMath.sqrt(1 + y);
+                builder.setControlPoint(source, target);
+            }
+        }
+        final NonLinearTransform x2y3 = new NonLinearTransform();
+        final NonLinearTransform x3y2 = new NonLinearTransform();
+        builder.addLinearizers(Collections.singletonMap("x² y³", x2y3));
+        builder.addLinearizers(Collections.singletonMap("x³ y²", x3y2), 1, 0);
+        final Matrix m = builder.create(null).getMatrix();
+        assertSame("linearizer", x3y2, builder.linearizer().get());
+        assertMatrixEquals("linear",
+                new Matrix3(2, 0, 3,
+                            0, 1, 1,
+                            0, 0, 1), m, 1E-15);
     }
 }

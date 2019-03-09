@@ -581,7 +581,7 @@ public abstract class AbstractMathTransform extends FormattableObject
             } catch (TransformException exception) {
                 /*
                  * If an exception occurred but the transform nevertheless declares having been
-                 * able to process all coordinate points (setting to NaN those that can't be
+                 * able to process all coordinate points (setting to NaN those that can not be
                  * transformed), we will keep the first exception (to be propagated at the end
                  * of this method) and continue. Otherwise we will stop immediately.
                  */

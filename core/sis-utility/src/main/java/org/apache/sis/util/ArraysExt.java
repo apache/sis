@@ -1259,7 +1259,7 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns a finite arithmetic progression of the given length. Each value is increased by 1.
+     * Returns a finite arithmetic progression of the given length and common difference of 1.
      * For example {@code sequence(-1, 4)} returns {@code {-1, 0, 1, 2}}.
      *
      * <div class="note"><b>Purpose:</b>
@@ -1302,7 +1302,8 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns {@code true} if the given array is a finite arithmetic progression starting at the given value.
+     * Returns {@code true} if the given array is a finite arithmetic progression starting at the given value
+     * and having a common difference of 1.
      * More specifically:
      *
      * <ul>
@@ -1317,6 +1318,9 @@ public final class ArraysExt extends Static {
      * <div class="note"><b>Example:</b>
      * {@code isSequence(1, array)} returns {@code true} if the given array is {@code {1, 2, 3, 4}}
      * but {@code false} if the array is {@code {1, 2, 4}} (missing 3).</div>
+     *
+     * This method is useful when {@code array} is an argument specified to another method, and determining that the
+     * argument values are {@code start}, {@code start}+1, {@code start}+2, <i>etc.</i> allows some optimizations.
      *
      * @param  start  first value expected in the given {@code array}.
      * @param  array  the array to test, or {@code null}.
