@@ -347,9 +347,9 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Envelope = 151;
 
         /**
-         * Error
+         * Errors
          */
-        public static final short Error = 167;
+        public static final short Errors = 167;
 
         /**
          * Exit

@@ -666,30 +666,28 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * The given math transform is typically the transform computed by {@link #create(MathTransformFactory)},
      * but not necessarily.
      *
-     * @param  mt      the transform to test.
-     * @param  locale  the locale for column labels, or {@code null} for default locale.
+     * @param  mt  the transform to test.
      * @return statistics of difference between computed values and expected values for each target dimension.
      * @throws NoninvertibleTransformException if an error occurred while inverting a transform.
      *
      * @since 1.0
      */
-    public Statistics[] error(final MathTransform mt, final Locale locale) throws NoninvertibleTransformException {
+    public Statistics[] error(final MathTransform mt) throws NoninvertibleTransformException {
         final int           tgtDim = mt.getTargetDimensions();
         final double[]      point  = new double[Math.max(tgtDim, SOURCE_DIMENSION)];
         final Statistics[]  stats  = new Statistics[tgtDim + SOURCE_DIMENSION];
-        final StringBuilder buffer = new StringBuilder(Vocabulary.getResources(locale).getString(Vocabulary.Keys.Error)).append(' ');
-        final int           spos   = buffer.length();
+        final StringBuilder buffer = new StringBuilder();
         for (int i=0; i<stats.length; i++) {
-            buffer.setLength(spos);
+            buffer.setLength(0);
             if (i < tgtDim) {
-                buffer.append("P→");
+                buffer.append("P → ");
                 if (i < 3) {
                     buffer.append((char) ('x' + i));
                 } else {
                     buffer.append('z').append(i - 1);       // After (x,y,z) continue with z2, z3, z4, etc.
                 }
             } else {
-                buffer.append((char) ('i' + (i - tgtDim))).append("←P");
+                buffer.append((char) ('i' + (i - tgtDim))).append(" ← P′");
             }
             stats[i] = new Statistics(buffer.toString());
         }
@@ -761,7 +759,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
             if (transform != null) {
                 buffer.append(Strings.CONTINUATION_ITEM);
                 final Vocabulary vocabulary = Vocabulary.getResources(locale);
-                vocabulary.appendLabel(Vocabulary.Keys.Result, buffer);
+                vocabulary.appendLabel(Vocabulary.Keys.Errors, buffer);
                 buffer.append(lineSeparator);
                 final StatisticsFormat sf;
                 if (locale != null) {
@@ -769,11 +767,11 @@ public class LocalizationGridBuilder extends TransformBuilder {
                 } else {
                     sf = StatisticsFormat.getInstance();
                 }
-                sf.format(error(transform, locale), buffer);
+                sf.format(error(transform), buffer);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
-        } catch (TransformException e) {
+        } catch (NoninvertibleTransformException e) {
             // Ignore - we will not report error statistics.
         }
         Strings.insertLineInLeftMargin(buffer, lineSeparator);
