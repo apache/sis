@@ -666,24 +666,30 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * The given math transform is typically the transform computed by {@link #create(MathTransformFactory)},
      * but not necessarily.
      *
-     * @param  mt  the transform to test.
+     * @param  mt      the transform to test.
+     * @param  locale  the locale for column labels, or {@code null} for default locale.
      * @return statistics of difference between computed values and expected values for each target dimension.
-     * @throws TransformException if an error occurred while transforming a coordinate.
+     * @throws NoninvertibleTransformException if an error occurred while inverting a transform.
      *
      * @since 1.0
      */
-    public Statistics[] error(final MathTransform mt) throws TransformException {
+    public Statistics[] error(final MathTransform mt, final Locale locale) throws NoninvertibleTransformException {
         final int           tgtDim = mt.getTargetDimensions();
         final double[]      point  = new double[Math.max(tgtDim, SOURCE_DIMENSION)];
-        final Statistics[]  stats  = new Statistics[tgtDim];
-        final StringBuilder buffer = new StringBuilder(Vocabulary.format(Vocabulary.Keys.Error)).append(' ');
+        final Statistics[]  stats  = new Statistics[tgtDim + SOURCE_DIMENSION];
+        final StringBuilder buffer = new StringBuilder(Vocabulary.getResources(locale).getString(Vocabulary.Keys.Error)).append(' ');
         final int           spos   = buffer.length();
-        for (int i=0; i<tgtDim; i++) {
+        for (int i=0; i<stats.length; i++) {
             buffer.setLength(spos);
-            if (tgtDim < 3) {
-                buffer.append((char) ('x' + i));
+            if (i < tgtDim) {
+                buffer.append("P→");
+                if (i < 3) {
+                    buffer.append((char) ('x' + i));
+                } else {
+                    buffer.append('z').append(i - 1);       // After (x,y,z) continue with z2, z3, z4, etc.
+                }
             } else {
-                buffer.append(i + 1);
+                buffer.append((char) ('i' + (i - tgtDim))).append("←P");
             }
             stats[i] = new Statistics(buffer.toString());
         }
@@ -693,19 +699,36 @@ public class LocalizationGridBuilder extends TransformBuilder {
          */
         final Optional<MathTransform> linearizer = linear.linearizer();
         final MathTransform complete = linearizer.isPresent() ? linearizer.get().inverse() : null;
+        final MathTransform inverse = mt.inverse();
         final int width  = linear.gridSize(0);
         final int height = linear.gridSize(1);
         for (int y=0; y<height; y++) {
             for (int x=0; x<width; x++) {
                 point[0] = tmp[0] = x;
                 point[1] = tmp[1] = y;
-                mt.transform(point, 0, point, 0, 1);
-                final double[] expected = linear.getControlPoint(tmp);
-                if (complete != null) {
-                    complete.transform(expected, 0, expected, 0, 1);
+                final double[] expected;
+                try {
+                    mt.transform(point, 0, point, 0, 1);
+                    expected = linear.getControlPoint(tmp);
+                    if (complete != null) {
+                        complete.transform(expected, 0, expected, 0, 1);
+                    }
+                } catch (TransformException e) {
+                    continue;                           // Ignore the points that we fail to transform.
                 }
                 for (int i=0; i<tgtDim; i++) {
                     stats[i].accept(point[i] - expected[i]);
+                }
+                /*
+                 * Transform the geographic point back to grid indices and check error.
+                 */
+                try {
+                    inverse.transform(expected, 0, expected, 0, 1);
+                } catch (TransformException e) {
+                    continue;                           // Ignore the points that we fail to transform.
+                }
+                for (int i=0; i<SOURCE_DIMENSION; i++) {
+                    stats[tgtDim + i].accept(expected[i] - tmp[i]);
                 }
             }
         }
@@ -713,7 +736,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
-     * Returns a string representation of this builder for debugging purpose.
+     * Returns a string representation of this builder in the given locale.
      * Current implementation shows the following information:
      *
      * <ul>
@@ -724,19 +747,6 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * </ul>
      *
      * The string representation may change in any future version.
-     *
-     * @return a string representation of this builder.
-     *
-     * @since 1.0
-     */
-    @Override
-    public String toString() {
-        return toString(null);
-    }
-
-    /**
-     * Returns a string representation of this builder in the given locale.
-     * The string representation is for debugging purpose and may change in any future version.
      *
      * @param  locale  the locale for formatting messages and some numbers, or {@code null} for the default.
      * @return a string representation of this builder.
@@ -759,7 +769,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
                 } else {
                     sf = StatisticsFormat.getInstance();
                 }
-                sf.format(error(transform), buffer);
+                sf.format(error(transform, locale), buffer);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -768,5 +778,19 @@ public class LocalizationGridBuilder extends TransformBuilder {
         }
         Strings.insertLineInLeftMargin(buffer, lineSeparator);
         return buffer.toString();
+    }
+
+    /**
+     * Returns a string representation of this builder for debugging purpose.
+     * The string representation is for debugging purpose and may change in any future version.
+     * The default implementation delegates to {@link #toString(Locale)} with a null locale.
+     *
+     * @return a string representation of this builder.
+     *
+     * @since 1.0
+     */
+    @Override
+    public String toString() {
+        return toString(null);
     }
 }
