@@ -28,7 +28,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
  * The transform may be a linear approximation the minimize the errors in a <cite>least square</cite> sense,
  * or a more accurate transform using a localization grid.
  *
- * <p>Builders can be used only once;
+ * <p>Builders are not thread-safe. Builders can be used only once;
  * points can not be added or modified after {@link #create(MathTransformFactory)} has been invoked.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)

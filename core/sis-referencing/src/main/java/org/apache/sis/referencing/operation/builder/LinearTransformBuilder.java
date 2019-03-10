@@ -25,6 +25,7 @@ import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Locale;
 import java.text.NumberFormat;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -68,7 +69,7 @@ import org.apache.sis.util.Classes;
  * Otherwise a builder created by the {@link #LinearTransformBuilder()} constructor will be able to handle
  * randomly distributed coordinates.
  *
- * <p>Builders can be used only once;
+ * <p>Builders are not thread-safe. Builders can be used only once;
  * points can not be added or modified after {@link #create(MathTransformFactory)} has been invoked.
  * The transform coefficients are determined using a <cite>least squares</cite> estimation method,
  * with the assumption that source positions are exact and all the uncertainty is in the target positions.</p>
@@ -353,10 +354,26 @@ search: for (int j=numPoints; --j >= 0;) {
     }
 
     /**
+     * Returns {@code true} if {@link #create(MathTransformFactory)} has not yet been invoked.
+     */
+    final boolean isModifiable() {
+        return transform == null;
+    }
+
+    /**
+     * Throws {@link IllegalStateException} if this builder can not be modified anymore.
+     */
+    private void ensureModifiable() throws IllegalStateException {
+        if (transform != null) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.UnmodifiableObject_1, LinearTransformBuilder.class));
+        }
+    }
+
+    /**
      * Verifies that the given number of dimensions is equal to the expected value.
      * No verification are done if the source point is the first point of randomly distributed points.
      */
-    private void verifySourceDimension(final int actual) {
+    private void verifySourceDimension(final int actual) throws MismatchedDimensionException {
         final int expected;
         if (gridSize != null) {
             expected = gridSize.length;
@@ -385,14 +402,6 @@ search: for (int j=numPoints; --j >= 0;) {
      */
     private static String noData() {
         return Resources.format(Resources.Keys.MissingValuesInLocalizationGrid);
-    }
-
-    /**
-     * Returns the error message to be given to {@link IllegalStateException}
-     * when this builder can not be modified anymore.
-     */
-    private static String unmodifiable() {
-        return Errors.format(Errors.Keys.UnmodifiableObject_1, LinearTransformBuilder.class);
     }
 
     /**
@@ -544,9 +553,7 @@ search: for (int j=numPoints; --j >= 0;) {
     public void setControlPoints(final Map<? extends Position, ? extends Position> sourceToTarget)
             throws MismatchedDimensionException
     {
-        if (transform != null) {
-            throw new IllegalStateException(unmodifiable());
-        }
+        ensureModifiable();
         ArgumentChecks.ensureNonNull("sourceToTarget", sourceToTarget);
         sources    = null;
         targets    = null;
@@ -876,9 +883,7 @@ search:         for (int j=domain(); --j >= 0;) {
      * @since 0.8
      */
     public void setControlPoint(final int[] source, final double[] target) {
-        if (transform != null) {
-            throw new IllegalStateException(unmodifiable());
-        }
+        ensureModifiable();
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
         verifySourceDimension(source.length);
@@ -994,10 +999,8 @@ search:         for (int j=domain(); --j >= 0;) {
      * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      */
     final void setControlPoints(final Vector[] coordinates) {
+        // ensureModifiable() invoked by LocalizationGridBuilder; it does not need to be invoked again here.
         assert gridSize != null;
-        if (transform != null) {
-            throw new IllegalStateException(unmodifiable());
-        }
         final int tgtDim = coordinates.length;
         final double[][] result = new double[tgtDim][];
         for (int i=0; i<tgtDim; i++) {
@@ -1052,9 +1055,7 @@ search:         for (int j=domain(); --j >= 0;) {
      * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      */
     final void resolveWraparoundAxis(final int dimension, final int direction, final double period) {
-        if (transform != null) {
-            throw new IllegalStateException(unmodifiable());
-        }
+        // ensureModifiable() invoked by LocalizationGridBuilder; it does not need to be invoked again here.
         final double[] coordinates = targets[dimension];
         int stride = 1;
         for (int i=0; i<direction; i++) {
@@ -1121,7 +1122,7 @@ search:         for (int j=domain(); --j >= 0;) {
      *
      * <p>The linearizers are specified as {@link MathTransform}s from current target coordinates to other spaces
      * where <cite>sources to new targets</cite> transforms may be more linear. The keys in the map are arbitrary
-     * identifiers used in {@link #toString()} for analysis or debugging purpose.
+     * identifiers used in {@link #toString()} for debugging purpose.
      * The {@code dimensions} argument specifies which target dimensions to project and can be null or omitted
      * if the projections shall be applied on all target coordinates. It is possible to invoke this method many
      * times with different {@code dimensions} argument values.</p>
@@ -1138,9 +1139,7 @@ search:         for (int j=domain(); --j >= 0;) {
      * @since 1.0
      */
     public void addLinearizers(final Map<String,MathTransform> projections, int... dimensions) {
-        if (transform != null) {
-            throw new IllegalStateException(unmodifiable());
-        }
+        ensureModifiable();
         final int tgtDim = getTargetDimensions();
         if (dimensions == null || dimensions.length == 0) {
             dimensions = ArraysExt.range(0, tgtDim);
@@ -1157,11 +1156,23 @@ search:         for (int j=domain(); --j >= 0;) {
     }
 
     /**
+     * Sets the linearizers to a copy of those of the given builder.
+     */
+    final void setLinearizers(final LinearTransformBuilder other) {
+        if (other.linearizers != null) {
+            linearizers = new ArrayList<>(other.linearizers);
+            linearizers.replaceAll(ProjectedTransformTry::new);
+        }
+    }
+
+    /**
      * Creates a linear transform approximation from the source positions to the target positions.
      * This method assumes that source positions are precise and that all uncertainty is in the target positions.
      * If {@linkplain #addLinearizers linearizers have been specified}, then this method may project all target
      * coordinates using one of those linearizers in order to get a more linear transform.
      * If such projection is applied, then {@link #linearizer()} will return a non-empty value after this method call.
+     *
+     * <p>If this method is invoked more than once, the previously created transform instance is returned.</p>
      *
      * @param  factory  the factory to use for creating the transform, or {@code null} for the default factory.
      *                  The {@link MathTransformFactory#createAffineTransform(Matrix)} method of that factory
@@ -1184,7 +1195,8 @@ search:         for (int j=domain(); --j >= 0;) {
                  * values to this 'LinearTransformBuilder' directly (as we find them) in the loop because the checks
                  * for a better transform require the original values.
                  */
-                double     bestCorrelation   = average(correlations);
+                final double sqrtLength      = Math.sqrt(correlations.length);
+                double     bestCorrelation   = rms(correlations, sqrtLength);
                 double[]   bestCorrelations  = null;
                 MatrixSIS  bestTransform     = null;
                 double[][] transformedArrays = null;
@@ -1207,7 +1219,7 @@ search:         for (int j=domain(); --j >= 0;) {
                     if ((tmp.targets = alt.transform(targets, n, pool)) != null) {
                         final MatrixSIS altTransform    = tmp.fit();
                         final double[]  altCorrelations = alt.replace(correlations, tmp.correlations);
-                        final double    altCorrelation  = average(altCorrelations);
+                        final double    altCorrelation  = rms(altCorrelations, sqrtLength);
                         alt.correlation = (float) altCorrelation;
                         if (altCorrelation > bestCorrelation) {
                             ProjectedTransformTry.recycle(transformedArrays, pool);
@@ -1309,16 +1321,10 @@ search:         for (int j=domain(); --j >= 0;) {
     }
 
     /**
-     * Returns a global estimation of correlation by computing the average of absolute values.
-     * We don't use {@link org.apache.sis.math.MathFunctions#magnitude(double...)} because it
-     * would result in values greater than 1.
+     * Returns a global estimation of correlation by computing the root mean square of values.
      */
-    private static double average(final double[] correlations) {
-        double sum = 0;
-        for (int i=0; i<correlations.length; i++) {
-            sum += Math.abs(correlations[i]);
-        }
-        return sum / correlations.length;
+    private static double rms(final double[] correlations, final double sqrtLength) {
+        return org.apache.sis.math.MathFunctions.magnitude(correlations) / sqrtLength;
     }
 
     /**
@@ -1341,6 +1347,13 @@ search:         for (int j=domain(); --j >= 0;) {
      */
     public Optional<MathTransform> linearizer() {
         return (appliedLinearizer != null) ? Optional.of(appliedLinearizer.projection) : Optional.empty();
+    }
+
+    /**
+     * Returns the identifier of the linearizer, or {@code null} if none.
+     */
+    final String linearizerID() {
+        return (appliedLinearizer != null) ? appliedLinearizer.name() : null;
     }
 
     /**
@@ -1372,8 +1385,31 @@ search:         for (int j=domain(); --j >= 0;) {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this))
-                .append('[').append(numPoints).append(" points");
+        final StringBuilder buffer = new StringBuilder(400);
+        final String lineSeparator;
+        try {
+            lineSeparator = appendTo(buffer, getClass(), null, Vocabulary.Keys.Result);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        Strings.insertLineInLeftMargin(buffer, lineSeparator);
+        return buffer.toString();
+    }
+
+    /**
+     * Appends a string representation of this builder into the given buffer.
+     *
+     * @param  buffer     where to append the string representation.
+     * @param  caller     the class name to report.
+     * @param  locale     the locale for formatting messages and some numbers, or {@code null} for the default.
+     * @param  resultKey  either {@code Vocabulary.Keys.Result} or {@code Vocabulary.Keys.LinearTransformation}.
+     * @return the line separator, for convenience of callers who wants to append more content.
+     * @throws IOException should never happen because we write in a {@link StringBuilder}.
+     */
+    final String appendTo(final StringBuilder buffer, final Class<?> caller, final Locale locale, final short resultKey) throws IOException {
+        final String lineSeparator = System.lineSeparator();
+        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        buffer.append(Classes.getShortName(caller)).append('[').append(numPoints).append(" points");
         if (gridSize != null) {
             String separator = " on ";
             for (final int size : gridSize) {
@@ -1382,8 +1418,7 @@ search:         for (int j=domain(); --j >= 0;) {
             }
             buffer.append(" grid");
         }
-        buffer.append(']');
-        final String lineSeparator = System.lineSeparator();
+        buffer.append(']').append(lineSeparator);
         /*
          * Example (from LinearTransformBuilderTest):
          * ┌────────────┬─────────────┐
@@ -1395,23 +1430,21 @@ search:         for (int j=domain(); --j >= 0;) {
          * └────────────┴─────────────┘
          */
         if (linearizers != null) {
-            buffer.append(':').append(lineSeparator);
+            buffer.append(Strings.CONTINUATION_ITEM);
+            vocabulary.appendLabel(Vocabulary.Keys.Preprocessing, buffer);
+            buffer.append(lineSeparator);
             Collections.sort(linearizers);
             NumberFormat nf = null;
             final TableAppender table = new TableAppender(buffer, " │ ");
             table.appendHorizontalSeparator();
-            table.append(Vocabulary.format(Vocabulary.Keys.Conversion)).nextColumn();
-            table.append(Vocabulary.format(Vocabulary.Keys.Correlation)).nextLine();
+            table.append(vocabulary.getString(Vocabulary.Keys.Conversion)).nextColumn();
+            table.append(vocabulary.getString(Vocabulary.Keys.Correlation)).nextLine();
             table.appendHorizontalSeparator();
             for (final ProjectedTransformTry alt : linearizers) {
-                nf = alt.summarize(table, nf);
+                nf = alt.summarize(table, nf, locale);
             }
             table.appendHorizontalSeparator();
-            try {
-                table.flush();
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);      // Should never happen since we wrote into a StringBuilder.
-            }
+            table.flush();
         }
         /*
          * Example:
@@ -1423,23 +1456,17 @@ search:         for (int j=domain(); --j >= 0;) {
          * └               ┘
          */
         if (transform != null) {
-            if (linearizers != null) {
-                buffer.append(Vocabulary.format(Vocabulary.Keys.Result));
-            }
-            buffer.append(':').append(lineSeparator);
+            buffer.append(Strings.CONTINUATION_ITEM);
+            vocabulary.appendLabel(resultKey, buffer);
+            buffer.append(lineSeparator);
             final TableAppender table = new TableAppender(buffer, " ");
             table.setMultiLinesCells(true);
             table.append(Matrices.toString(transform.getMatrix())).nextColumn();
             table.append(lineSeparator).append("  ")
-                 .append(Vocabulary.format(Vocabulary.Keys.Correlation)).append(" =").nextColumn();
+                 .append(vocabulary.getString(Vocabulary.Keys.Correlation)).append(" =").nextColumn();
             table.append(Matrices.create(correlations.length, 1, correlations).toString());
-            try {
-                table.flush();
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);      // Should never happen since we wrote into a StringBuilder.
-            }
+            table.flush();
         }
-        Strings.insertLineInLeftMargin(buffer, lineSeparator);
-        return buffer.toString();
+        return lineSeparator;
     }
 }

@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.builder;
 
 import java.util.Queue;
 import java.util.Arrays;
+import java.util.Locale;
 import java.text.NumberFormat;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform;
@@ -26,6 +27,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -93,6 +95,15 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
     private TransformException error;
 
     /**
+     * Creates a new instance initialized to a copy of the given instance but without result.
+     */
+    ProjectedTransformTry(final ProjectedTransformTry other) {
+        name       = other.name;
+        projection = other.projection;
+        dimensions = other.dimensions;
+    }
+
+    /**
      * Creates a new instance with only the given correlation coefficient. This instance can not be used for
      * computation purpose. Its sole purpose is to hold the given coefficient when no projection is applied.
      */
@@ -129,6 +140,14 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
         }
         throw new MismatchedDimensionException(Resources.format(
                 Resources.Keys.MismatchedTransformDimension_3, side, expectedDimension, actual));
+    }
+
+    /**
+     * Returns the name of this object, or {@code null} if unspecified.
+     * This is used only for formatting error messages.
+     */
+    final String name() {
+        return name;
     }
 
     /**
@@ -285,24 +304,26 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
      *   <li>The corelation coefficient, or the error message if an error occurred.</li>
      * </ol>
      *
-     * @param  table  the table where to write a row.
-     * @param  nf     format to use for writing coefficients, or {@code null} if not yet created.
+     * @param  table   the table where to write a row.
+     * @param  nf      format to use for writing coefficients, or {@code null} if not yet created.
+     * @param  locale  the locale to use if a number format must be created.
      * @return format used for writing coefficients, or {@code null}.
      */
-    final NumberFormat summarize(final TableAppender table, NumberFormat nf) {
+    final NumberFormat summarize(final TableAppender table, NumberFormat nf, final Locale locale) {
         if (name == null) {
-            name = Vocabulary.format(projection == null ? Vocabulary.Keys.Identity : Vocabulary.Keys.Unnamed);
+            final short key = (projection == null) ? Vocabulary.Keys.Identity : Vocabulary.Keys.Unnamed;
+            name = Vocabulary.getResources(locale).getString(key);
         }
         table.append(name).nextColumn();
         String message = "";
         if (error != null) {
-            message = error.getMessage();
+            message = Exceptions.getLocalizedMessage(error, locale);
             if (message == null) {
                 message = error.getClass().getSimpleName();
             }
         } else if (correlation > 0) {
             if (nf == null) {
-                nf = NumberFormat.getInstance();
+                nf = (locale != null) ? NumberFormat.getInstance(locale) : NumberFormat.getInstance();
                 nf.setMinimumFractionDigits(6);         // Math.ulp(1f) ≈ 1.2E-7
                 nf.setMaximumFractionDigits(6);
             }
@@ -318,7 +339,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
     @Override
     public String toString() {
         final TableAppender buffer = new TableAppender("  ");
-        summarize(buffer, null);
+        summarize(buffer, null, null);
         return buffer.toString();
     }
 }

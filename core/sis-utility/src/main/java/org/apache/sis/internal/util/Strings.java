@@ -36,8 +36,15 @@ import org.apache.sis.util.CharSequences;
 public final class Strings extends Static {
     /**
      * The character to write at the beginning of lines that are continuation of a single log record.
+     * This constant is defined here only for a little bit more uniform {@code toString()} in SIS.
      */
     public static final char CONTINUATION_MARK = '┃', CONTINUATION_END = '╹';
+
+    /**
+     * Characters for a new item in a block illustrated by {@link #CONTINUATION_MARK}.
+     * This constant is defined here only for a little bit more uniform {@code toString()} in SIS.
+     */
+    public static final String CONTINUATION_ITEM = "▶ ";
 
     /**
      * Do not allow instantiation of this class.

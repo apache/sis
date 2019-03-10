@@ -347,6 +347,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Envelope = 151;
 
         /**
+         * Error
+         */
+        public static final short Error = 167;
+
+        /**
          * Exit
          */
         public static final short Exit = 143;
@@ -465,6 +470,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Libraries
          */
         public static final short Libraries = 60;
+
+        /**
+         * Linear transformation
+         */
+        public static final short LinearTransformation = 165;
 
         /**
          * Local configuration
@@ -650,6 +660,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Plug-ins
          */
         public static final short Plugins = 120;
+
+        /**
+         * Preprocessing
+         */
+        public static final short Preprocessing = 166;
 
         /**
          * “{0}”
