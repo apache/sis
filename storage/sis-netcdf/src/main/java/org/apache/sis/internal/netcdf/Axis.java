@@ -304,7 +304,7 @@ public final class Axis extends NamedElement {
         final int up;
         if (length >= 0) {
             if (length <= 1) return ArraysExt.EMPTY_INT;
-            if (length <= 4) return ArraysExt.sequence(0, length - 1);
+            if (length <= 4) return ArraysExt.range(0, length - 1);
             up = length - 2;
         } else {
             up = Integer.MAX_VALUE - 1;                 // For unsigned integers, < 0 means overflow.

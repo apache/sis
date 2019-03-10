@@ -115,7 +115,7 @@ final class TiledImageMock implements WritableRenderedImage {
         this.numYTiles   = (height + tileHeight - 1) / tileHeight;
         this.tiles       = new WritableRaster[numXTiles * numYTiles];
         this.sampleModel = new PixelInterleavedSampleModel(dataType, tileWidth, tileHeight,
-                                numBands, tileWidth * numBands, ArraysExt.sequence(0, numBands));
+                                numBands, tileWidth * numBands, ArraysExt.range(0, numBands));
     }
 
     /*

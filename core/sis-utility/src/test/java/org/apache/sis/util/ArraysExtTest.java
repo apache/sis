@@ -58,22 +58,16 @@ public final strictfp class ArraysExtTest extends TestCase {
     }
 
     /**
-     * Tests {@link ArraysExt#sequence(int, int)} and {@link ArraysExt#isSequence(int, int[])}.
+     * Tests {@link ArraysExt#range(int, int)} and {@link ArraysExt#isRange(int, int[])}.
      */
     @Test
-    public void testSequence() {
-        int[] sequence = ArraysExt.sequence(-1, 4);
-        assertArrayEquals("sequence", new int[] {-1, 0, 1, 2}, sequence);
-        assertTrue ("isSequence", ArraysExt.isSequence(-1, sequence));
-        assertFalse("isSequence", ArraysExt.isSequence(-2, sequence));
-        assertTrue ("isSequence", ArraysExt.isSequence(1, new int[] {1, 2, 3, 4}));
-        assertFalse("isSequence", ArraysExt.isSequence(1, new int[] {1, 2,    4}));
-        try {
-            ArraysExt.sequence(Integer.MAX_VALUE - 10, 12);
-            fail("Expected ArithmeticException.");
-        } catch (ArithmeticException e) {
-            assertNotNull(e.getMessage());
-        }
+    public void testRange() {
+        int[] sequence = ArraysExt.range(-1, 3);
+        assertArrayEquals("range", new int[] {-1, 0, 1, 2}, sequence);
+        assertTrue ("isRange", ArraysExt.isRange(-1, sequence));
+        assertFalse("isRange", ArraysExt.isRange(-2, sequence));
+        assertTrue ("isRange", ArraysExt.isRange(1, new int[] {1, 2, 3, 4}));
+        assertFalse("isRange", ArraysExt.isRange(1, new int[] {1, 2,    4}));
     }
 
     /**

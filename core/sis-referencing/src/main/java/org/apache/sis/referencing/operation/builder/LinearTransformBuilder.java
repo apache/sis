@@ -1143,7 +1143,7 @@ search:         for (int j=domain(); --j >= 0;) {
         }
         final int tgtDim = getTargetDimensions();
         if (dimensions == null || dimensions.length == 0) {
-            dimensions = ArraysExt.sequence(0, tgtDim);
+            dimensions = ArraysExt.range(0, tgtDim);
         }
         if (linearizers == null) {
             linearizers = new ArrayList<>();

@@ -224,7 +224,7 @@ public class TransformSeparator {
                     isOutOfRange ? "upper" : "lower", min, max-1, isOutOfRange ? upper : lower));
         }
         if (offset == 0) {
-            sequence = ArraysExt.sequence(lower, upper - lower);
+            sequence = ArraysExt.range(lower, upper);
         } else {
             sequence = Arrays.copyOf(sequence, (offset -= lower) + upper);
             for (int i=lower; i<upper; i++) {
@@ -413,10 +413,10 @@ public class TransformSeparator {
                 tr = filterTargetDimensions(tr, targetDimensions);
             }
             if (sourceDimensions == null) {
-                sourceDimensions = ArraysExt.sequence(0, transform.getSourceDimensions());
+                sourceDimensions = ArraysExt.range(0, transform.getSourceDimensions());
             }
             if (targetDimensions == null) {
-                targetDimensions = ArraysExt.sequence(0, transform.getTargetDimensions());
+                targetDimensions = ArraysExt.range(0, transform.getTargetDimensions());
             }
         } else {
             /*
@@ -503,7 +503,7 @@ public class TransformSeparator {
         final int lower  = dimensions[0];
         final int upper  = dimensions[dimensions.length - 1] + 1;
         if (lower == 0 && upper == numSrc && dimensions.length == numSrc) {
-            targetDimensions = ArraysExt.sequence(0, numTgt);
+            targetDimensions = ArraysExt.range(0, numTgt);
             return step;
         }
         if (step.isIdentity()) {

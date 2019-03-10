@@ -230,7 +230,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
      * @return a copy of the given {@code correlation} array with new values overwriting the old values.
      */
     final double[] replace(double[] correlations, final double[] newValues) {
-        if (newValues.length == correlations.length && ArraysExt.isSequence(0, dimensions)) {
+        if (newValues.length == correlations.length && ArraysExt.isRange(0, dimensions)) {
             return newValues;
         }
         correlations = correlations.clone();
@@ -255,7 +255,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
          * have a different number of rows since the number of target dimensions may differ.
          */
         assert newValues.getNumCol() == transform.getNumCol();
-        if (newValues.getNumRow() == transform.getNumRow() && ArraysExt.isSequence(0, dimensions)) {
+        if (newValues.getNumRow() == transform.getNumRow() && ArraysExt.isRange(0, dimensions)) {
             return newValues;
         }
         transform = transform.clone();
