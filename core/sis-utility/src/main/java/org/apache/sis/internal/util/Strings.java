@@ -35,6 +35,11 @@ import org.apache.sis.util.CharSequences;
  */
 public final class Strings extends Static {
     /**
+     * The character to write at the beginning of lines that are continuation of a single log record.
+     */
+    public static final char CONTINUATION_MARK = '┃', CONTINUATION_END = '╹';
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Strings() {
@@ -192,11 +197,11 @@ public final class Strings extends Static {
      * @param lineSeparator  the line separator.
      */
     public static void insertLineInLeftMargin(final StringBuilder buffer, final String lineSeparator) {
-        char c = '╹';
+        char c = CONTINUATION_END;
         int i = CharSequences.skipTrailingWhitespaces(buffer, 0, buffer.length());
         while ((i = buffer.lastIndexOf(lineSeparator, i - 1)) >= 0) {
             buffer.insert(i + lineSeparator.length(), c);
-            c = '┃';
+            c = CONTINUATION_MARK;
         }
     }
 

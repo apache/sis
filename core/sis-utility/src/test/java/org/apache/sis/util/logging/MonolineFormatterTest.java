@@ -18,6 +18,7 @@ package org.apache.sis.util.logging;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -66,14 +67,14 @@ public final strictfp class MonolineFormatterTest extends TestCase {
                 .append(levelLocalized)
                 .append(CharSequences.spaces(margin - levelLocalized.length()))
                 .append(expected, levelToReplace.length() + 1, expected.length());      // +1 is for skipping '\t'.
-        final String spaces = MonolineFormatter.CONTINUATION_MARK
+        final String spaces = Strings.CONTINUATION_MARK
                             + CharSequences.spaces(margin - 1).toString();
         int positionOfLast = -1;
         for (int i=margin; (i=buffer.indexOf("\n\t", i)) >= 0; i += margin) {
             buffer.replace(positionOfLast = ++i, i+1, spaces);                          // Replace only tabulation, leave new line.
         }
         if (positionOfLast >= 0) {
-            buffer.setCharAt(positionOfLast, MonolineFormatter.CONTINUATION_END);
+            buffer.setCharAt(positionOfLast, Strings.CONTINUATION_END);
         }
         return buffer.toString();
     }
