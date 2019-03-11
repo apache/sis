@@ -28,7 +28,10 @@ import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
 /**
@@ -66,15 +69,17 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
     private static final int BUFFER_CAPACITY = 512;
 
     /**
-     * A name by witch this projection attempt is identified.
+     * A name by witch this projection attempt is identified, or {@code null} for the identity transform.
      */
     private String name;
 
     /**
      * A conversion from a non-linear grid (typically with longitude and latitude values) to
      * something that may be more linear (typically, but not necessarily, a map projection).
+     *
+     * @see #projection()
      */
-    final MathTransform projection;
+    private final MathTransform projection;
 
     /**
      * Maps {@link #projection} dimensions to {@link LinearTransformBuilder} target dimensions.
@@ -123,6 +128,8 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
      * @param expectedDimension  number of {@link LinearTransformBuilder} target dimensions.
      */
     ProjectedTransformTry(final String name, final MathTransform projection, final int[] dimensions, int expectedDimension) {
+        ArgumentChecks.ensureNonNull("name", name);
+        ArgumentChecks.ensureNonNull("projection", projection);
         this.name       = name;
         this.projection = projection;
         this.dimensions = dimensions;
@@ -143,11 +150,19 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
     }
 
     /**
-     * Returns the name of this object, or {@code null} if unspecified.
-     * This is used only for formatting error messages.
+     * Returns the name of this object, or {@code null} if this is the identity transform created by
+     * {@link #ProjectedTransformTry(float)}. Should never be {@code null} for name returned to user.
      */
     final String name() {
         return name;
+    }
+
+    /**
+     * Returns the projection, taking in account axis swapping if {@link #dimensions} is not an arithmetic progression.
+     */
+    final MathTransform projection() {
+        MathTransform mt = MathTransforms.linear(Matrices.createDimensionSelect(dimensions.length, dimensions));
+        return MathTransforms.concatenate(mt, projection);
     }
 
     /**
@@ -306,13 +321,12 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
      *
      * @param  table   the table where to write a row.
      * @param  nf      format to use for writing coefficients, or {@code null} if not yet created.
-     * @param  locale  the locale to use if a number format must be created.
+     * @param  locale  the locale to use for messages or if a number format must be created.
      * @return format used for writing coefficients, or {@code null}.
      */
     final NumberFormat summarize(final TableAppender table, NumberFormat nf, final Locale locale) {
         if (name == null) {
-            final short key = (projection == null) ? Vocabulary.Keys.Identity : Vocabulary.Keys.Unnamed;
-            name = Vocabulary.getResources(locale).getString(key);
+            name = Vocabulary.getResources(locale).getString(Vocabulary.Keys.Identity);
         }
         table.append(name).nextColumn();
         String message = "";

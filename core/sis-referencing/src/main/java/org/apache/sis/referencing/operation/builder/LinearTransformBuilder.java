@@ -1121,8 +1121,9 @@ search:         for (int j=domain(); --j >= 0;) {
      * {@linkplain #correlation() correlation} coefficients. It may be none.
      *
      * <p>The linearizers are specified as {@link MathTransform}s from current target coordinates to other spaces
-     * where <cite>sources to new targets</cite> transforms may be more linear. The keys in the map are arbitrary
-     * identifiers used in {@link #toString()} for debugging purpose.
+     * where <cite>sources to new targets</cite> transforms may be more linear.
+     * Keys in the map are arbitrary identifiers used in {@link #toString()} for debugging purpose.
+     * Values in the map are non-{@link LinearTransform} (linear transforms are not forbidden, but are useless for this process).
      * The {@code dimensions} argument specifies which target dimensions to project and can be null or omitted
      * if the projections shall be applied on all target coordinates. It is possible to invoke this method many
      * times with different {@code dimensions} argument values.</p>
@@ -1148,10 +1149,7 @@ search:         for (int j=domain(); --j >= 0;) {
             linearizers = new ArrayList<>();
         }
         for (final Map.Entry<String,MathTransform> entry : projections.entrySet()) {
-            ProjectedTransformTry t = new ProjectedTransformTry(entry.getKey(), entry.getValue(), dimensions, tgtDim);
-            if (!t.projection.isIdentity()) {
-                linearizers.add(t);
-            }
+            linearizers.add(new ProjectedTransformTry(entry.getKey(), entry.getValue(), dimensions, tgtDim));
         }
     }
 
@@ -1328,7 +1326,7 @@ search:         for (int j=domain(); --j >= 0;) {
     }
 
     /**
-     * If all target coordinates have been projected to another space, returns the projection applied.
+     * If target coordinates have been projected to another space, returns that projection.
      * This method returns a non-empty value only if all the following conditions are met:
      *
      * <ol>
@@ -1340,13 +1338,15 @@ search:         for (int j=domain(); --j >= 0;) {
      *
      * If this method returns a non-empty value, then the envelope returned by {@link #getTargetEnvelope()}
      * and all control points returned by {@link #getControlPoint(int[])} are projected by this transform.
+     * The returned transform includes axes swapping specified by the {@code dimensions} argument given to
+     * <code>{@linkplain #addLinearizers(Map, int...) addLinearizers}(…, dimensions)</code>.
      *
      * @return the projection applied on target coordinates before to compute a linear transform.
      *
      * @since 1.0
      */
     public Optional<MathTransform> linearizer() {
-        return (appliedLinearizer != null) ? Optional.of(appliedLinearizer.projection) : Optional.empty();
+        return (appliedLinearizer != null) ? Optional.of(appliedLinearizer.projection()) : Optional.empty();
     }
 
     /**

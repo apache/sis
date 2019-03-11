@@ -664,7 +664,21 @@ public class LocalizationGridBuilder extends TransformBuilder {
     /**
      * Returns statistics of differences between values calculated by the given transform and actual values.
      * The given math transform is typically the transform computed by {@link #create(MathTransformFactory)},
-     * but not necessarily.
+     * but not necessarily. The returned statistics are:
+     *
+     * <ol class="verbose">
+     *   <li>One {@code Statistics} instance for each target dimension, containing statistics about the differences between
+     *     coordinates computed by the given transform and expected coordinates. For each (<var>i</var>,<var>j</var>) indices
+     *     in this grid, the indices are transformed by a call to {@code mt.transform(…)} and the result is compared with the
+     *     coordinates given by <code>{@linkplain #getControlPoint(int, int) getControlPoint}(i,j)</code>.
+     *     Those statistics are identified by labels like “P → x” and “P → y” where <var>P</var> stands for pixel coordinates.</li>
+     *   <li>One {@code Statistics} instance for each source dimension, containing statistics about the differences between
+     *     coordinates computed by the <em>inverse</em> of the transform and expected coordinates.
+     *     For each (<var>x</var>,<var>y</var>) control point in this grid, the points are transformed by a call
+     *     to {@code mt.inverse().transform(…)} and the result is compared with the pixel indices of that point.
+     *     Those statistics are identified by labels like “i ← P′” and “j ← P′” where <var>P′</var> stands for
+     *     the control point.</li>
+     * </ol>
      *
      * @param  mt  the transform to test.
      * @return statistics of difference between computed values and expected values for each target dimension.
@@ -741,7 +755,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *   <li>Number of points.</li>
      *   <li>Linearizers and their correlation coefficients (if available).</li>
      *   <li>The linear component of the transform.</li>
-     *   <li>Error statistics.</li>
+     *   <li>Error statistics, as documented in the {@link #error(MathTransform)} method.</li>
      * </ul>
      *
      * The string representation may change in any future version.

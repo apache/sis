@@ -430,12 +430,12 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
                 builder.setControlPoint(source, target);
             }
         }
-        final NonLinearTransform x2y3 = new NonLinearTransform();
-        final NonLinearTransform x3y2 = new NonLinearTransform();
-        builder.addLinearizers(Collections.singletonMap("x² y³", x2y3));
-        builder.addLinearizers(Collections.singletonMap("x³ y²", x3y2), 1, 0);
+        final NonLinearTransform tr = new NonLinearTransform();
+        builder.addLinearizers(Collections.singletonMap("x² y³", tr));
+        builder.addLinearizers(Collections.singletonMap("x³ y²", tr), 1, 0);
         final Matrix m = builder.create(null).getMatrix();
-        assertSame("linearizer", x3y2, builder.linearizer().get());
+        assertEquals("linearizer", "x³ y²", builder.linearizerID());
+        assertNotSame("linearizer", tr, builder.linearizer().get());    // Not same because axes should have been swapped.
         assertMatrixEquals("linear",
                 new Matrix3(2, 0, 3,
                             0, 1, 1,
