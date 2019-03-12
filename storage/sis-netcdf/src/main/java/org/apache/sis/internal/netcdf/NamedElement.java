@@ -51,6 +51,16 @@ public abstract class NamedElement {
     public abstract String getName();
 
     /**
+     * If this element is member of a group, returns the name of that group.
+     * Otherwise returns {@code null}. The default implementation always returns {@code null}.
+     *
+     * @return name of the group which contains this element, or {@code null}.
+     */
+    public String getGroupName() {
+        return null;
+    }
+
+    /**
      * Creates a name for a {@code NamedElement} made of other components.
      * Current implementation returns a separated list of component names.
      *
