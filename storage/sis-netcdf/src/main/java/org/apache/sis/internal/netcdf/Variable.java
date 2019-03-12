@@ -506,16 +506,20 @@ public abstract class Variable extends NamedElement {
                 }
             }
             if (needsResize) {
+                double[] dataToGridIndices = null;
                 if (gridToDataIndices != null) {
-                    for (final double s : gridToDataIndices) {
+                    dataToGridIndices = new double[gridToDataIndices.length];
+                    for (int i=0; i<dataToGridIndices.length; i++) {
+                        final double s = gridToDataIndices[i];
                         if (!(s > 0)) {
                             warning(Variable.class, "getGridGeometry", Resources.Keys.ResamplingIntervalNotFound_2, getFilename(), getName());
                             return null;
                         }
+                        dataToGridIndices[i] = 1 / s;
                     }
                 }
                 extent = extent.resize(sizes);
-                grid = grid.derive().resize(extent, gridToDataIndices).build();
+                grid = grid.derive().resize(extent, dataToGridIndices).build();
                 /*
                  * Note: the 'gridToDataIndices' array was computed as a side-effect of the call to 'getGrid(decoder)'.
                  * This is one reason why we keep the call to 'getGrid(…)' inside this 'getGridGeometry(…)' method.

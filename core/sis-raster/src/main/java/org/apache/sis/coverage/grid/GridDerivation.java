@@ -249,11 +249,18 @@ public class GridDerivation {
     }
 
     /**
-     * Requests a grid geometry having a different range of grid indices resulting from application of the given scale factors.
+     * Requests a grid geometry where cell sizes have been scaled by the given factors, which result in a change of grid size.
      * The new grid geometry is given a <cite>"grid to CRS"</cite> transform computed as the concatenation of given scale factors
      * (applied on grid indices) followed by the {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform of the
      * grid geometry specified at construction time. The resulting grid extent can be specified explicitly (typically as an extent
      * computed by {@link GridExtent#resize(long...)}) or computed automatically by this method.
+     *
+     * <div class="note"><b>Example:</b>
+     * if the original grid geometry had an extent of [0 … 5] in <var>x</var> and [0 … 8] in <var>y</var>, then a call to
+     * {@code resize(null, 0.1, 0.1)} will build a grid geometry with an extent of [0 … 50] in <var>x</var> and [0 … 80] in <var>y</var>.
+     * This new extent covers the same geographic area than the old extent but with pixels having a size of 0.1 times the old pixels size.
+     * The <cite>grid to CRS</cite> transform of the new grid geometry will be pre-concatenated with scale factors of 0.1 in compensation
+     * for the shrink in pixels size.</div>
      *
      * <p>Notes:</p>
      * <ul>
@@ -302,7 +309,7 @@ public class GridDerivation {
             Arrays.fill(scales, actual, n, 1);
         }
         this.toBase = MathTransforms.scale(scales);
-        this.scales = scales;
+        this.scales = scales;                           // No clone needed since the array has been copied above.
         /*
          * If the user did not specified explicitly the resulting grid extent, compute it now.
          * This operation should never fail since we use known implementation of MathTransform,
