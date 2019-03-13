@@ -31,6 +31,7 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.image.DefaultIteratorTest.class,
+    org.apache.sis.image.LinearIteratorTest.class,
     org.apache.sis.coverage.grid.PixelTranslationTest.class,
     org.apache.sis.coverage.grid.GridExtentTest.class,
     org.apache.sis.coverage.grid.GridGeometryTest.class,

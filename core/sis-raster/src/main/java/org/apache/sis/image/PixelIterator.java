@@ -295,7 +295,9 @@ public abstract class PixelIterator {
          */
         public PixelIterator create(final RenderedImage data) {
             ArgumentChecks.ensureNonNull("data", data);
-            if (order != null) {
+            if (order == SequenceType.LINEAR) {
+                return new LinearIterator(data, null, subArea, window);
+            } else if (order != null) {
                 throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
             }
             // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
@@ -348,7 +350,9 @@ public abstract class PixelIterator {
         public WritablePixelIterator createWritable(final RenderedImage input, final WritableRenderedImage output) {
             ArgumentChecks.ensureNonNull("input",  input);
             ArgumentChecks.ensureNonNull("output", output);
-            if (order != null) {
+            if (order == SequenceType.LINEAR) {
+                return new LinearIterator(input, output, subArea, window);
+            } else if (order != null) {
                 throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
             }
             // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
