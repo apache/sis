@@ -44,7 +44,7 @@ public class LinearIterator extends DefaultIterator {
     public SequenceType getIterationOrder() {
         return SequenceType.LINEAR;
     }
-    
+
     @Override
     public boolean next() {
 
