@@ -93,7 +93,7 @@ final class Proj4Parser {
                 if (!value.isEmpty()) {
                     final String old = parameters.put(keyword, value);
                     if (old != null && !old.equals(value)) {
-                        throw new InvalidGeodeticParameterException(Errors.format(Errors.Keys.DuplicatedElement_1, keyword));
+                        throw new InvalidGeodeticParameterException(Errors.format(Errors.Keys.KeyCollision_1, keyword));
                     }
                 }
             }

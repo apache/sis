@@ -58,6 +58,19 @@ public final strictfp class ArraysExtTest extends TestCase {
     }
 
     /**
+     * Tests {@link ArraysExt#range(int, int)} and {@link ArraysExt#isRange(int, int[])}.
+     */
+    @Test
+    public void testRange() {
+        int[] sequence = ArraysExt.range(-1, 3);
+        assertArrayEquals("range", new int[] {-1, 0, 1, 2}, sequence);
+        assertTrue ("isRange", ArraysExt.isRange(-1, sequence));
+        assertFalse("isRange", ArraysExt.isRange(-2, sequence));
+        assertTrue ("isRange", ArraysExt.isRange(1, new int[] {1, 2, 3, 4}));
+        assertFalse("isRange", ArraysExt.isRange(1, new int[] {1, 2,    4}));
+    }
+
+    /**
      * Tests {@link ArraysExt#unionOfSorted(int[], int[])}.
      */
     @Test

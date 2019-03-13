@@ -63,19 +63,22 @@ abstract class SequenceVector extends Vector implements Serializable {
     }
 
     /**
+     * Transforms the sequence. The result is always of {@code Double} type,
+     * regardless the type of elements in this vector.
+     */
+    @Override
+    final Vector createTransform(final double scale, final double offset) {
+        return new Doubles(Double.class,
+                doubleValue(0) * scale + offset,                // TODO: use Math.fma with JDK9.
+                increment(0).doubleValue() * scale, length);
+    }
+
+    /**
      * Returns the type of elements.
      */
     @Override
     public final Class<? extends Number> getElementType() {
         return type;
-    }
-
-    /**
-     * {@code SequenceVector} values are always interpreted as signed values.
-     */
-    @Override
-    public final boolean isUnsigned() {
-        return false;
     }
 
     /**
@@ -188,11 +191,6 @@ abstract class SequenceVector extends Vector implements Serializable {
             // TODO: use Math.fma with JDK9.
         }
 
-        /** Computes the value at the given index. */
-        @Override public final float floatValue(final int index) {
-            return (float) doubleValue(index);
-        }
-
         /** Returns the string representation of the value at the given index. */
         @Override public String stringValue(final int index) {
             return String.valueOf(doubleValue(index));
@@ -203,7 +201,7 @@ abstract class SequenceVector extends Vector implements Serializable {
             return Numbers.wrap(doubleValue(index), type);
         }
 
-        /** Returns the increment between all consecutive values */
+        /** Returns the increment between all consecutive values. */
         @Override public final Number increment(final double tolerance) {
             return Numerics.valueOf(increment);         // Always Double even if data type is Float.
         }

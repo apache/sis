@@ -8,6 +8,6 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 This software may contain geodetic dataset distributed under EPSG terms of use. You may not use the EPSG Facilities or any of them in whole or in part unless you agree to these Terms of Use. You may obtain a copy of EPSG terms of use at
 
-    http://www.epsg.org/termsofuse
+    http://www.epsg.org/TermsOfUse.aspx
 
 Data and information provided in the EPSG facilities are provided "as is" without warranty of any kind, either expressed or implied, including but not limited to the implied warranties of merchantability and/or fitness for a particular purpose.

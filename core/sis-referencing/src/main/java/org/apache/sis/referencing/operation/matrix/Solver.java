@@ -323,7 +323,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
     {
         final int errorLU = size * size;
         assert errorLU == GeneralMatrix.indexOfErrors(size, size, LU);
-        final int[] pivot = ArraysExt.sequence(0, size);
+        final int[] pivot = ArraysExt.range(0, size);
         final double[]  column = new double[size * 2];  // [0 … size-1] : column values; [size … 2*size-1] : error terms.
         final DoubleDouble acc = new DoubleDouble();    // Temporary variable for sum ("accumulator") and subtraction.
         final DoubleDouble rat = new DoubleDouble();    // Temporary variable for products and ratios.

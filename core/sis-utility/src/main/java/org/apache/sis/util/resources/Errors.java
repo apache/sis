@@ -231,9 +231,19 @@ public final class Errors extends IndexedResourceBundle {
         public static final short DuplicatedElement_1 = 24;
 
         /**
+         * File “{0}” is referenced more than once.
+         */
+        public static final short DuplicatedFileReference_1 = 186;
+
+        /**
          * Name or identifier “{0}” is used more than once.
          */
         public static final short DuplicatedIdentifier_1 = 25;
+
+        /**
+         * Value {0,number} is used more than once.
+         */
+        public static final short DuplicatedNumber_1 = 187;
 
         /**
          * Option “{0}” is duplicated.
@@ -279,11 +289,6 @@ public final class Errors extends IndexedResourceBundle {
          * Error in “{0}”: {1}
          */
         public static final short ErrorIn_2 = 34;
-
-        /**
-         * Argument ‘{0}’ shall not contain more than {1} elements. A number of {2} is excessive.
-         */
-        public static final short ExcessiveArgumentSize_3 = 35;
 
         /**
          * A size of {1} elements is excessive for the “{0}” list.
@@ -484,9 +489,9 @@ public final class Errors extends IndexedResourceBundle {
         public static final short InfiniteArgumentValue_1 = 73;
 
         /**
-         * Argument ‘{0}’ shall contain at least {1} elements. A number of {2} is insufficient.
+         * Integer overflow during {0} bits arithmetic operation.
          */
-        public static final short InsufficientArgumentSize_3 = 74;
+        public static final short IntegerOverflow_1 = 188;
 
         /**
          * “{0}” is an invalid version identifier.
@@ -494,7 +499,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short InvalidVersionIdentifier_1 = 179;
 
         /**
-         * A different value is already associated to the “{0}” key.
+         * Key “{0}” is associated twice to different values.
          */
         public static final short KeyCollision_1 = 75;
 
@@ -776,22 +781,34 @@ public final class Errors extends IndexedResourceBundle {
         public static final short TableNotFound_1 = 126;
 
         /**
-         * Expected at least {0} argument{0,choice,1#|2#s}, but got {1}.
+         * Expected at least {0,number} argument{0,choice,1#|2#s}, but got {1,number}.
          */
         public static final short TooFewArguments_2 = 127;
 
         /**
-         * Too few occurrences of “{1}”. Expected at least {0} of them.
+         * Collection “{0}” contains only {2,number} element{2,choice,1#|2#s} while at least {1,number}
+         * elements were expected.
+         */
+        public static final short TooFewCollectionElements_3 = 74;
+
+        /**
+         * Too few occurrences of “{1}”. Expected at least {0,number} of them.
          */
         public static final short TooFewOccurrences_2 = 128;
 
         /**
-         * Expected at most {0} argument{0,choice,1#|2#s}, but got {1}.
+         * Expected at most {0,number} argument{0,choice,1#|2#s}, but got {1,number}.
          */
         public static final short TooManyArguments_2 = 129;
 
         /**
-         * Too many occurrences of “{1}”. The maximum is {0}.
+         * Collection “{0}” contains {2,number} elements while at most {1,number} element{1,choice,1#
+         * was|2#s were} expected.
+         */
+        public static final short TooManyCollectionElements_3 = 35;
+
+        /**
+         * Too many occurrences of “{1,number}”. The maximum is {0,number}.
          */
         public static final short TooManyOccurrences_2 = 130;
 
@@ -806,7 +823,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UndefinedOrderingForElements_2 = 132;
 
         /**
-         * Expected an array of length {0}, but got {1}.
+         * Expected an array of length {0,number}, but got {1,number}.
          */
         public static final short UnexpectedArrayLength_2 = 133;
 

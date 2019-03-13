@@ -935,6 +935,7 @@ public class GridGeometry implements Serializable {
     /**
      * Verifies that this grid geometry defines an {@linkplain #extent} and a {@link #cornerToCRS} transform.
      * They are the information required for mapping the grid to a spatiotemporal envelope.
+     * Note that this implies that {@link #envelope} is non-null.
      *
      * @return {@link #cornerToCRS}.
      */

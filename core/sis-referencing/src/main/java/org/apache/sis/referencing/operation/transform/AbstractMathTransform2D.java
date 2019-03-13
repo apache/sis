@@ -186,8 +186,12 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
                     mt.transform(buffer, 0, buffer, 0, 1);
                     px = buffer[0];
                     py = buffer[1];
-                    path.moveTo(px, py);
-                    continue;
+                    if (Double.isFinite(px) && Double.isFinite(py)) {
+                        path.moveTo(px, py);
+                        continue;
+                    } else {
+                        throw new TransformException(Resources.format(Resources.Keys.CanNotTransformCoordinates_2, ax, ay));
+                    }
                 }
                 case PathIterator.SEG_LINETO: {
                     /*
@@ -254,10 +258,20 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
                     horizontal);
             px = buffer[2];
             py = buffer[3];
-            if (ctrlPoint != null) {
-                path.quadTo(ctrlPoint.getX(), ctrlPoint.getY(), px, py);
+            if (Double.isFinite(px) && Double.isFinite(py)) {
+                if (ctrlPoint == null) {
+                    path.lineTo(px, py);
+                } else {
+                    final double cx = ctrlPoint.getX();
+                    final double cy = ctrlPoint.getY();
+                    if (Double.isFinite(cx) && Double.isFinite(cy)) {
+                        path.quadTo(cx, cy, px, py);
+                    } else {
+                        throw new TransformException(Resources.format(Resources.Keys.CanNotTransformGeometry));
+                    }
+                }
             } else {
-                path.lineTo(px, py);
+                throw new TransformException(Resources.format(Resources.Keys.CanNotTransformCoordinates_2, ax, ay));
             }
         }
         /*

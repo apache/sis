@@ -64,6 +64,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.referencing.CRS;
@@ -87,6 +88,7 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.ReferencingServices;
@@ -151,22 +153,22 @@ public final class ServicesForMetadata extends ReferencingServices {
      * the horizontal extent. If the {@code crs} argument is null, then it is caller's responsibility
      * to ensure that the given envelope is two-dimensional.
      *
-     * <p>If {@code optional} is {@code true}, then this method will be executed in optional mode:
+     * <p>If {@code findOpCaller} is non-null, then this method will be executed in optional mode:
      * some failures will cause this method to return {@code null} instead than throwing an exception.
      * Note that {@link TransformException} may still be thrown but not directly by this method.
-     * Warning may be logged, but in such case this method presumes that public caller is
-     * {@link Envelopes#findOperation(Envelope, Envelope)}.</p>
+     * Warning may be logged, but in such case this method presumes that public caller is the named
+     * method from {@link Envelopes} — typically {@link Envelopes#findOperation(Envelope, Envelope)}.</p>
      *
      * @param  envelope       the source envelope.
      * @param  target         the target bounding box, or {@code null} for creating it automatically.
      * @param  crs            the envelope CRS, or {@code null} if unknown.
      * @param  normalizedCRS  the horizontal component of the given CRS, or null if the {@code crs} argument is null.
-     * @param  optional       {@code true} for replacing some (not all) exceptions by {@code null} return value.
-     * @return the bounding box or {@code null} on failure. Never {@code null} if {@code optional} argument is {@code false}.
+     * @param  findOpCaller   non-null for replacing some (not all) exceptions by {@code null} return value.
+     * @return the bounding box or {@code null} on failure. Never {@code null} if {@code findOpCaller} argument is {@code null}.
      * @throws TransformException if the given envelope can not be transformed.
      */
-    private DefaultGeographicBoundingBox setGeographicExtent(Envelope envelope, DefaultGeographicBoundingBox target,
-            final CoordinateReferenceSystem crs, final GeographicCRS normalizedCRS, final boolean optional) throws TransformException
+    private static DefaultGeographicBoundingBox setGeographicExtent(Envelope envelope, DefaultGeographicBoundingBox target,
+            final CoordinateReferenceSystem crs, final GeographicCRS normalizedCRS, final String findOpCaller) throws TransformException
     {
         if (normalizedCRS != null) {
             // No need to check for dimension, since GeodeticCRS can not have less than 2.
@@ -180,9 +182,9 @@ public final class ServicesForMetadata extends ReferencingServices {
                 try {
                     operation = factory.createOperation(crs, normalizedCRS);
                 } catch (FactoryException e) {
-                    if (optional) {
-                        // See javadoc for the assumption that optional mode is used only by Envelopes.findOperation(…).
-                        Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), Envelopes.class, "findOperation", e);
+                    if (findOpCaller != null) {
+                        // See javadoc for the assumption that optional mode is used by Envelopes.findOperation(…).
+                        Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), Envelopes.class, findOpCaller, e);
                         return null;
                     }
                     throw new TransformException(Resources.format(Resources.Keys.CanNotTransformEnvelopeToGeodetic), e);
@@ -192,23 +194,51 @@ public final class ServicesForMetadata extends ReferencingServices {
         }
         /*
          * At this point, the envelope should use (longitude, latitude) coordinates in degrees.
-         * However the prime meridian is not necessarily Greenwich.
+         * The envelope may cross the anti-meridian if the envelope implementation is an Apache SIS one.
+         * For other implementations, the longitude range may be conservatively expanded to [-180 … 180]°.
          */
-        double westBoundLongitude = envelope.getMinimum(0);
-        double eastBoundLongitude = envelope.getMaximum(0);
-        double southBoundLatitude = envelope.getMinimum(1);
-        double northBoundLatitude = envelope.getMaximum(1);
+        double westBoundLongitude, eastBoundLongitude;
+        double southBoundLatitude, northBoundLatitude;
+        if (envelope instanceof AbstractEnvelope) {
+            final AbstractEnvelope ae = (AbstractEnvelope) envelope;
+            westBoundLongitude = ae.getLower(0);
+            eastBoundLongitude = ae.getUpper(0);            // Cross anti-meridian if eastBoundLongitude < westBoundLongitude.
+            southBoundLatitude = ae.getLower(1);
+            northBoundLatitude = ae.getUpper(1);
+        } else {
+            westBoundLongitude = envelope.getMinimum(0);
+            eastBoundLongitude = envelope.getMaximum(0);    // Expanded to [-180 … 180]° if it was crossing the anti-meridian.
+            southBoundLatitude = envelope.getMinimum(1);
+            northBoundLatitude = envelope.getMaximum(1);
+        }
+        /*
+         * The envelope transformation at the beginning of this method intentionally avoided to apply datum shift.
+         * This implies that the prime meridian has not been changed and may be something else than Greenwich.
+         * We need to take it in account manually.
+         *
+         * Note that there is no need to normalize the longitudes back to the [-180 … +180]° range after the rotation, or
+         * to verify if the longitude span is 360°. Those verifications will be done automatically by target.setBounds(…).
+         */
         if (normalizedCRS != null) {
             final double rotation = CRS.getGreenwichLongitude(normalizedCRS);
             westBoundLongitude += rotation;
             eastBoundLongitude += rotation;
         }
-        if (eastBoundLongitude - westBoundLongitude >= (Longitude.MAX_VALUE - Longitude.MIN_VALUE)) {
-            westBoundLongitude = Longitude.MIN_VALUE;
-            eastBoundLongitude = Longitude.MAX_VALUE;
-        } else {
-            westBoundLongitude = Longitude.normalize(westBoundLongitude);
-            eastBoundLongitude = Longitude.normalize(eastBoundLongitude);
+        /*
+         * In the particular case where this method is invoked (indirectly) for Envelopes.findOperation(…) purposes,
+         * replace NaN values by the whole world.  We do that only for Envelopes.findOperation(…) since we know that
+         * the geographic bounding box will be used for choosing a CRS, and a conservative approach is to select the
+         * CRS valid in the widest area. If this method is invoked for other usages, then we keep NaN values because
+         * we don't know the context (union, intersection, something else?).
+         */
+        if (findOpCaller != null) {
+            if (Double.isNaN(southBoundLatitude)) southBoundLatitude = Latitude.MIN_VALUE;
+            if (Double.isNaN(northBoundLatitude)) northBoundLatitude = Latitude.MAX_VALUE;
+            if (Double.isNaN(eastBoundLongitude) || Double.isNaN(westBoundLongitude)) {
+                // Conservatively set the two bounds because may be spanning the anti-meridian.
+                eastBoundLongitude = Longitude.MIN_VALUE;
+                westBoundLongitude = Longitude.MAX_VALUE;
+            }
         }
         if (target == null) {
             target = new DefaultGeographicBoundingBox();
@@ -267,19 +297,19 @@ public final class ServicesForMetadata extends ReferencingServices {
      * Sets a geographic bounding box from the specified envelope.
      * If the envelope has no CRS, then (<var>longitude</var>, <var>latitude</var>) axis order is assumed.
      * If the envelope CRS is not geographic, then the envelope will be transformed to a geographic CRS.
-     * If {@code optional} is {@code true}, then some failures will cause this method to return {@code null}
-     * instead than throwing an exception, and warning may be logged with assumption that caller is
-     * {@link Envelopes#findOperation(Envelope, Envelope)}.
+     * If {@code findOpCaller} is {@code true}, then some failures will cause this method to return {@code null}
+     * instead than throwing an exception, and warning may be logged with assumption that caller is the named
+     * method from {@link Envelopes} — typically {@link Envelopes#findOperation(Envelope, Envelope)}.
      *
-     * @param  envelope  the source envelope.
-     * @param  target    the target bounding box, or {@code null} for creating it automatically.
-     * @param  optional  {@code true} for replacing some (not all) exceptions by {@code null} return value.
-     * @return the bounding box or {@code null} on failure. Never {@code null} if {@code optional} argument is {@code false}.
+     * @param  envelope      the source envelope.
+     * @param  target        the target bounding box, or {@code null} for creating it automatically.
+     * @param  findOpCaller  non-null for replacing some (not all) exceptions by {@code null} return value.
+     * @return the bounding box or {@code null} on failure. Never {@code null} if {@code findOpCaller} argument is {@code null}.
      * @throws TransformException if the given envelope can not be transformed.
      */
     @Override
     public DefaultGeographicBoundingBox setBounds(final Envelope envelope, final DefaultGeographicBoundingBox target,
-            final boolean optional) throws TransformException
+            final String findOpCaller) throws TransformException
     {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         GeographicCRS normalizedCRS = ReferencingUtilities.toNormalizedGeographicCRS(crs);
@@ -287,11 +317,11 @@ public final class ServicesForMetadata extends ReferencingServices {
             if (crs != null) {
                 normalizedCRS = CommonCRS.defaultGeographic();
             } else if (envelope.getDimension() != 2) {
-                if (optional) return null;
+                if (findOpCaller != null) return null;
                 throw new TransformException(dimensionNotFound(Resources.Keys.MissingHorizontalDimension_1, crs));
             }
         }
-        return setGeographicExtent(envelope, target, crs, normalizedCRS, optional);
+        return setGeographicExtent(envelope, target, crs, normalizedCRS, findOpCaller);
     }
 
     /**
@@ -377,7 +407,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             if (normalizedCRS == null) {
                 normalizedCRS = CommonCRS.defaultGeographic();
             }
-            setGeographicExtent(envelope, box, crs, normalizedCRS, false);
+            setGeographicExtent(envelope, box, crs, normalizedCRS, null);
         }
         /*
          * Other dimensions (vertical and temporal).
@@ -418,7 +448,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             throw new TransformException(dimensionNotFound(Resources.Keys.MissingSpatioTemporalDimension_1, crs));
         }
         if (horizontalCRS != null) {
-            target.getGeographicElements().add(setBounds(envelope, null, false));
+            target.getGeographicElements().add(setBounds(envelope, null, null));
         }
         if (verticalCRS != null) {
             final DefaultVerticalExtent extent = new DefaultVerticalExtent();

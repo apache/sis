@@ -475,7 +475,7 @@ public final class Shapes2D extends Static {
                 continue;
             }
             final double extremum = (border & 1) == 0 ? axis.getMinimumValue() : axis.getMaximumValue();
-            if (Double.isInfinite(extremum) || Double.isNaN(extremum)) {
+            if (!Double.isFinite(extremum)) {
                 continue;
             }
             if (targetPt == null) {

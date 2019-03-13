@@ -328,7 +328,8 @@ fill:   for (int i=0; ; i++) {
                                 .getMethod("providers", Locale.class, Vocabulary.class).invoke(null, locale, resources);
                         value = resources.getString(Vocabulary.Keys.EntryCount_1, children.length / 2);
                     } catch (ClassNotFoundException e) {
-                        recoverableException(Modules.STORAGE, e);       // sis-storage module not in the classpath.
+                        // sis-storage module not in the classpath.
+                        Logging.recoverableException(Logging.getLogger(Modules.STORAGE), About.class, "configuration", e);
                     } catch (ReflectiveOperationException e) {
                         value = Exceptions.unwrap(e).toString();
                     }
@@ -739,7 +740,7 @@ pathTree:   for (int j=0; ; j++) {
         try {
             return country ? locale.getCountry() : locale.getISO3Language();
         } catch (MissingResourceException e) {
-            recoverableException(Loggers.LOCALIZATION, e);
+            Logging.ignorableException(Logging.getLogger(Loggers.LOCALIZATION), About.class, "configuration", e);
             return null;
         }
     }
@@ -788,12 +789,5 @@ pathTree:   for (int j=0; ; j++) {
             }
         }
         return new File(parent, file.getName());
-    }
-
-    /**
-     * Logs a recoverable exception that happened (directly or indirectly) in the {@link #configuration()} method.
-     */
-    private static void recoverableException(final String logger, final Exception e) {
-        Logging.recoverableException(Logging.getLogger(logger), About.class, "configuration", e);
     }
 }

@@ -40,7 +40,7 @@ final class CoordinateOperationSorter implements Comparable<CoordinateOperationS
 
     /**
      * Intersection between the domain of validity of the operation and the area of interest,
-     * as a negative value for sorting widest area first. May be {@link Double#NaN}.
+     * as a negative value for sorting widest areas first and unknown areas ({@link Double#NaN}) last.
      */
     private final double area;
 

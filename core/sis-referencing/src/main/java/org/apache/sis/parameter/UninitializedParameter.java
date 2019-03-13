@@ -20,6 +20,7 @@ import java.io.Serializable;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.GeneralParameterValue;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -74,6 +75,6 @@ final class UninitializedParameter implements GeneralParameterValue, Serializabl
      */
     @Override
     public String toString() {
-        return "Parameter[\"" + IdentifiedObjects.toString(descriptor.getName()) + "\"]";
+        return Strings.bracket("Parameter", IdentifiedObjects.toString(descriptor.getName()));
     }
 }

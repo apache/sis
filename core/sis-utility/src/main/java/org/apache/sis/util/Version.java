@@ -18,7 +18,6 @@ package org.apache.sis.util;
 
 import java.io.Serializable;
 import java.util.StringTokenizer;
-import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.internal.system.Modules.MAJOR_VERSION;
 import static org.apache.sis.internal.system.Modules.MINOR_VERSION;
@@ -122,9 +121,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      * @since 0.4
      */
     public static Version valueOf(final int... components) {
-        if (components.length == 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "components"));
-        }
+        ArgumentChecks.ensureNonEmpty("components", components, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
         final Version version;
         final int major = components[0];
         if (components.length == 1) {

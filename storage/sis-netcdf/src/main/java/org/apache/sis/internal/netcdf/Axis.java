@@ -31,8 +31,11 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
+import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -44,7 +47,6 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
-import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants.CF;
 
@@ -258,23 +260,56 @@ public final class Axis extends NamedElement {
                 if (s) break;                       // Need swapping for avoiding collision.
             }
         }
+        /*
+         * Compute increments along x and y axes at the given location. We will compare averages of those increments in
+         * order to determine which axis increases faster. Note that we do not use formula like  (last - first) / count
+         * because such formula does not work if the coordinates to not increase or decrease monotonically.
+         *
+         * ┌────────────────┬────────────────┐
+         * │(0)             │(1)             │(2)
+         * │                │                │
+         * ├────────────────┼────────────────┤
+         * │(3)             │(4)             │(5)
+         * │                │                │
+         * └────────────────┴────────────────┘
+         *  (6)              (7)              (8)
+         */
         if (!s) {
-            int up0 = sourceSizes[0];
-            int up1 = sourceSizes[1];
-            final int mid0 = up0 >>> 1;             // Division by 2 of unsigned integers.
-            final int mid1 = up1 >>> 1;
-            if (up0 < 0) up0 = Integer.MAX_VALUE;   // For unsigned integers, < 0 means overflow.
-            if (up1 < 0) up1 = Integer.MAX_VALUE;
-            final double inc0 = (coordinates.coordinateForAxis(    0, mid1) -
-                                 coordinates.coordinateForAxis(up0-1, mid1)) / up0;
-            final double inc1 = (coordinates.coordinateForAxis(mid0,     0) -
-                                 coordinates.coordinateForAxis(mid0, up1-1)) / up1;
-            if (!(Math.abs(inc1) > Math.abs(inc0))) {
+            final int[] x = sampleIndices(sourceSizes[0]);
+            final int[] y = sampleIndices(sourceSizes[1]);
+            double xInc = 0, yInc = 0;
+            for (int c=x.length * y.length; --c >= 0;) {
+                final int i = x[c % y.length];
+                final int j = y[c / y.length];
+                final double vo = coordinates.coordinateForAxis(i, j);
+                xInc += coordinates.coordinateForAxis(i+1, j) - vo;
+                yInc += coordinates.coordinateForAxis(i, j+1) - vo;
+            }
+            if (!(Math.abs(yInc) > Math.abs(xInc))) {
                 return;
             }
         }
         ArraysExt.swap(sourceSizes,      0, 1);
         ArraysExt.swap(sourceDimensions, 0, 1);
+    }
+
+    /**
+     * Returns indices of sample values to use in a dimension of the given length.
+     * Current implementation returns indices at beginning, middle and end.
+     *
+     * @param  length  the dimension length.
+     * @return indices to use for subsampling in a dimension of the given length.
+     */
+    private static int[] sampleIndices(final int length) {
+        final int up;
+        if (length >= 0) {
+            if (length <= 1) return ArraysExt.EMPTY_INT;
+            if (length <= 4) return ArraysExt.range(0, length - 1);
+            up = length - 2;
+        } else {
+            up = Integer.MAX_VALUE - 1;                 // For unsigned integers, < 0 means overflow.
+        }
+        return new int[] {0, length >>> 1, up};
     }
 
     /**
@@ -314,7 +349,7 @@ public final class Axis extends NamedElement {
     private int getSize(final int i) {
         final int n = sourceSizes[i];
         if (n >= 0) return n;
-        throw new ArithmeticException("signed integer overflow");
+        throw new ArithmeticException(coordinates.errors().getString(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
     }
 
     /**
@@ -677,6 +712,14 @@ main:   switch (getDimension()) {
      * @throws DataStoreException if a logical error occurred.
      */
     final Vector read() throws IOException, DataStoreException {
-        return coordinates.read().subList(0, getSizeProduct(0));
+        final TransferFunction tr = coordinates.decoder.convention().transferFunction(coordinates);
+        if (TransferFunctionType.LINEAR.equals(tr.getType())) {
+            Vector data = coordinates.read();
+            data = data.subList(0, getSizeProduct(0));                  // Trim trailing NaN values.
+            data = data.transform(tr.getScale(), tr.getOffset());       // Apply scale and offset attributes, if any.
+            return data;
+        } else {
+            throw new DataStoreException(coordinates.resources().getString(Resources.Keys.CanNotUseAxis_1, getName()));
+        }
     }
 }

@@ -92,6 +92,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotRender_2 = 14;
 
         /**
+         * Can not use axis “{0}” in a grid geometry.
+         */
+        public static final short CanNotUseAxis_1 = 18;
+
+        /**
          * Can not use UCAR library for netCDF format. Fallback on Apache SIS implementation.
          */
         public static final short CanNotUseUCAR = 4;

@@ -28,6 +28,9 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
  * The transform may be a linear approximation the minimize the errors in a <cite>least square</cite> sense,
  * or a more accurate transform using a localization grid.
  *
+ * <p>Builders are not thread-safe. Builders can be used only once;
+ * points can not be added or modified after {@link #create(MathTransformFactory)} has been invoked.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
@@ -42,6 +45,9 @@ public abstract class TransformBuilder {
 
     /**
      * Creates a transform from the source points to the target points.
+     * Invoking this method puts the builder in an unmodifiable state.
+     * Invoking this method more than once returns the same transform
+     * (the transform is not recomputed).
      *
      * @param  factory  the factory to use for creating the transform, or {@code null} for the default factory.
      * @return the transform from source to target points.

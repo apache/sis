@@ -863,12 +863,7 @@ public class GridExtent implements Serializable {
     static int[] verifyDimensions(int[] dimensions, final int limit) {
         ArgumentChecks.ensureNonNull("dimensions", dimensions);
         final int n = dimensions.length;
-        if (n == 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "dimensions"));
-        }
-        if (n > limit) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.TooManyOccurrences_2, limit, "dimension"));
-        }
+        ArgumentChecks.ensureSizeBetween("dimensions", 1, limit, n);
         dimensions = dimensions.clone();
         if (!ArraysExt.isSorted(dimensions, true)) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.NotStrictlyOrderedDimensions));
@@ -1000,7 +995,9 @@ public class GridExtent implements Serializable {
                 final int j = i + m;
                 long low  = coordinates[i];
                 long size = coordinates[j] - low + 1;                                             // Result is an unsigned number.
-                if (size == 0) throw new ArithmeticException("long overflow");
+                if (size == 0) {
+                    throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
+                }
                 long r = Long.divideUnsigned(size, s);
                 if (r*s == size) r--;                           // Make inclusive if the division did not already rounded toward 0.
                 sub.coordinates[i] = low /= s;

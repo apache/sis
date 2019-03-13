@@ -16,6 +16,11 @@
  */
 package org.apache.sis.referencing.operation.builder;
 
+import java.util.Map;
+import java.util.Locale;
+import java.util.Optional;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -24,6 +29,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -33,10 +39,14 @@ import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.math.Vector;
 
 import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_DIMENSION;
@@ -45,7 +55,7 @@ import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_D
 /**
  * Creates an "almost linear" transform mapping the given source points to the given target points.
  * The transform is backed by a <cite>grid of localization</cite>, a two-dimensional array of coordinate points.
- * Grid size is {@code width} × {@code height} and input coordinates are (<var>i</var>,<var>j</var>) index in the grid,
+ * Grid size is {@code width} × {@code height} and input coordinates are (<var>i</var>,<var>j</var>) indices in the grid,
  * where <var>i</var> must be in the [0…{@code width}-1] range and <var>j</var> in the [0…{@code height}-1] range inclusive.
  * Output coordinates are the values stored in the grid of localization at the specified index.
  * After a {@code LocalizationGridBuilder} instance has been fully populated (i.e. real world coordinates have been
@@ -54,12 +64,24 @@ import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_D
  * then an instance of {@link LinearTransform} is returned.
  * Otherwise, a transform backed by the localization grid is returned.
  *
- * <p>This builder performs two steps:</p>
+ * <p>This builder performs the following steps:</p>
  * <ol>
  *   <li>Compute a linear approximation of the transformation using {@link LinearTransformBuilder}.</li>
  *   <li>Compute {@link DatumShiftGrid} with the residuals.</li>
  *   <li>Create a {@link InterpolatedTransform} with the above shift grid.</li>
+ *   <li>If a {@linkplain LinearTransformBuilder#linearizer() linearizer has been applied},
+ *       concatenate the inverse transform of that linearizer.</li>
  * </ol>
+ *
+ * Builders are not thread-safe. Builders can be used only once;
+ * points can not be added or modified after {@link #create(MathTransformFactory)} has been invoked.
+ *
+ * <div class="section">Linearizers</div>
+ * If the localization grid is not close enough to a linear transform, {@link InterpolatedTransform} may not converge.
+ * To improve the speed and reliability of the transform, a non-linear step can be {@linkplain #addLinearizers specified}.
+ * Many candidates can be specified in case the exact form of that non-linear step is unknown;
+ * {@code LocalizationGridBuilder} will select the non-linear step that provides the best improvement, if any.
+ * See the <cite>Linearizers</cite> section in {@link LinearTransformBuilder} for more discussion.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -110,6 +132,11 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * This default precision may change in any future SIS version.
      */
     static final double DEFAULT_PRECISION = 1E-7;
+
+    /**
+     * The transform created by {@link #create(MathTransformFactory)}.
+     */
+    private MathTransform transform;
 
     /**
      * Creates a new, initially empty, builder for a localization grid of the given size.
@@ -194,6 +221,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
                     } catch (NoninvertibleTransformException e) {
                         throw (ArithmeticException) new ArithmeticException(e.getLocalizedMessage()).initCause(e);
                     }
+                    linear.setLinearizers(localizations);
                     return;
                 }
             }
@@ -251,6 +279,15 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
+     * Throws {@link IllegalStateException} if this builder can not be modified anymore.
+     */
+    private void ensureModifiable() throws IllegalStateException {
+        if (!linear.isModifiable()) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.UnmodifiableObject_1, LocalizationGridBuilder.class));
+        }
+    }
+
+    /**
      * Sets the desired precision of <em>inverse</em> transformations, in units of source coordinates.
      * If a conversion from "real world" to grid coordinates {@linkplain #setSourceToGrid has been specified},
      * then the given precision is in "real world" units. Otherwise the precision is in units of grid cells
@@ -262,11 +299,13 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * forward and inverse transformations still limited by the accuracy of given control points and the grid resolution.
      * </div>
      *
-     * @param precision  desired precision of the results of inverse transformations.
+     * @param  precision  desired precision of the results of inverse transformations.
+     * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      *
      * @see DatumShiftGrid#getCellPrecision()
      */
     public void setDesiredPrecision(final double precision) {
+        ensureModifiable();
         ArgumentChecks.ensureStrictlyPositive("precision", precision);
         this.precision = precision;
     }
@@ -312,11 +351,13 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * If a {@linkplain #setDesiredPrecision(double) desired precision} has been specified before this method call,
      * it is caller's responsibility to convert that value to new source units if needed.
      *
-     * @param sourceToGrid  conversion from the "real world" source coordinates to grid indices including fractional parts.
+     * @param  sourceToGrid  conversion from the "real world" source coordinates to grid indices including fractional parts.
+     * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      *
      * @see DatumShiftGrid#getCoordinateToGrid()
      */
     public void setSourceToGrid(final LinearTransform sourceToGrid) {
+        ensureModifiable();
         ArgumentChecks.ensureNonNull("sourceToGrid", sourceToGrid);
         int isTarget = 0;
         int dim = sourceToGrid.getSourceDimensions();
@@ -351,10 +392,12 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * <i>etc.</i>. Coordinates are stored in row-major order (column index varies faster, followed by row index).
      *
      * @param  coordinates coordinates in each target dimensions, stored in row-major order.
+     * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      *
      * @since 1.0
      */
     public void setControlPoints(final Vector... coordinates) {
+        ensureModifiable();
         ArgumentChecks.ensureNonNull("coordinates", coordinates);
         linear.setControlPoints(coordinates);
     }
@@ -369,10 +412,12 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param  gridX   the column index in the grid where to store the given target position.
      * @param  gridY   the row index in the grid where to store the given target position.
      * @param  target  the target coordinates, assumed uncertain.
+     * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      * @throws IllegalArgumentException if the {@code x} or {@code y} coordinate value is out of grid range.
      * @throws MismatchedDimensionException if the target position does not have the expected number of dimensions.
      */
     public void setControlPoint(final int gridX, final int gridY, final double... target) {
+        ensureModifiable();
         tmp[0] = gridX;
         tmp[1] = gridY;
         linear.setControlPoint(tmp, target);
@@ -380,6 +425,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
 
     /**
      * Returns a single target coordinate for the given source coordinate, or {@code null} if none.
+     * If {@linkplain #addLinearizers linearizers} have been specified and {@link #create create(…)}
+     * has already been invoked, then the control points may be projected using one of the linearizers.
      *
      * @param  gridX  the column index in the grid where to read the target position.
      * @param  gridY  the row index in the grid where to read the target position.
@@ -410,7 +457,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *   <li>transformed by the inverse of {@linkplain #getSourceToGrid() source to grid} transform.</li>
      * </ol>
      *
-     * @param  fullArea whether the the envelope shall encompass the full cell surfaces instead than only their centers.
+     * @param  fullArea  whether the the envelope shall encompass the full cell surfaces instead than only their centers.
      * @return the envelope of grid points, from lower corner to upper corner.
      * @throws IllegalStateException if the grid points are not yet known.
      * @throws TransformException if the envelope can not be calculated.
@@ -469,10 +516,12 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param  direction  the direction to walk through: 0 for columns or 1 for rows.
      *                    The recommended direction is the direction of most stable values, typically 1 (rows) for longitudes.
      * @param  period     that wraparound range (typically 360° for longitudes).
+     * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      *
      * @since 1.0
      */
     public void resolveWraparoundAxis(final int dimension, final int direction, final double period) {
+        ensureModifiable();
         ArgumentChecks.ensureBetween("dimension", 0, linear.getTargetDimensions() - 1, dimension);
         ArgumentChecks.ensureBetween("direction", 0, linear.getSourceDimensions() - 1, direction);
         ArgumentChecks.ensureStrictlyPositive("period", period);
@@ -480,9 +529,41 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
+     * Adds transforms to potentially apply on target coordinates before to compute the transform.
+     * This method can be invoked if the departure from a linear transform is too large, resulting
+     * in {@link InterpolatedTransform} to fail with "no convergence error" messages.
+     * If linearizers have been specified, then the {@link #create(MathTransformFactory)} method
+     * will try to apply each transform on target coordinates and check which one results in the
+     * best correlation coefficients. It may be none.
+     *
+     * <p>The linearizers are specified as {@link MathTransform}s from current target coordinates
+     * to other spaces where <cite>sources to new targets</cite> transforms may be more linear.
+     * The keys in the map are arbitrary identifiers used in {@link #toString()} for debugging purpose.
+     * The {@code dimensions} argument specifies which target dimensions to project and can be null or omitted
+     * if the projections shall be applied on all target coordinates. It is possible to invoke this method many
+     * times with different {@code dimensions} argument values.</p>
+     *
+     * @param  projections  projections from current target coordinates to other spaces which may result in more linear transforms.
+     * @param  dimensions   the target dimensions to project, or null or omitted for projecting all target dimensions.
+     *                      If non-null and non-empty, then all transforms in the {@code projections} map shall have a
+     *                      number of source and target dimensions equals to the length of this array.
+     * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
+     *
+     * @see LinearTransformBuilder#addLinearizers(Map, int...)
+     *
+     * @since 1.0
+     */
+    public void addLinearizers(final Map<String,MathTransform> projections, int... dimensions) {
+        ensureModifiable();
+        linear.addLinearizers(projections, dimensions);
+    }
+
+    /**
      * Creates a transform from the source points to the target points.
      * This method assumes that source points are precise and all uncertainty is in the target points.
      * If this transform is close enough to an affine transform, then an instance of {@link LinearTransform} is returned.
+     *
+     * <p>If this method is invoked more than once, the previously created transform instance is returned.</p>
      *
      * @param  factory  the factory to use for creating the transform, or {@code null} for the default factory.
      *                  The {@link MathTransformFactory#createAffineTransform(Matrix)} method of that factory
@@ -493,102 +574,235 @@ public class LocalizationGridBuilder extends TransformBuilder {
      */
     @Override
     public MathTransform create(final MathTransformFactory factory) throws FactoryException {
-        final LinearTransform gridToCoord = linear.create(factory);
-        /*
-         * Make a first check about whether the result of above LinearTransformBuilder.create() call
-         * can be considered a good fit. If true, then we may return the linear transform directly.
-         */
-        boolean isExact  = true;
-        boolean isLinear = true;
-        for (final double c : linear.correlation()) {
-            isExact &= (c == 1);
-            if (!(c >= 0.9999)) {                           // Empirical threshold (may need to be revisited).
-                isLinear = false;
-                break;
-            }
-        }
-        if (isExact) {
-            return MathTransforms.concatenate(sourceToGrid, gridToCoord);
-        }
-        final int      width    = linear.gridSize(0);
-        final int      height   = linear.gridSize(1);
-        final double[] residual = new double[SOURCE_DIMENSION * linear.gridLength];
-        final double[] grid     = new double[SOURCE_DIMENSION * width];
-        double gridPrecision    = precision;
-        try {
+        if (transform == null) {
+            MathTransform step;
+            final LinearTransform gridToCoord = linear.create(factory);
             /*
-             * If the user specified a precision, we need to convert it from source units to grid units.
-             * We convert each dimension separately, then retain the largest magnitude of vector results.
+             * Make a first check about whether the result of above LinearTransformBuilder.create() call
+             * can be considered a good fit. If true, then we may return the linear transform directly.
              */
-            if (gridPrecision > 0 && !sourceToGrid.isIdentity()) {
-                final double[] vector = new double[sourceToGrid.getSourceDimensions()];
-                final double[] offset = new double[sourceToGrid.getTargetDimensions()];
-                double converted = 0;
-                for (int i=0; i<vector.length; i++) {
-                    vector[i] = precision;
-                    sourceToGrid.deltaTransform(vector, 0, offset, 0, 1);
-                    final double length = MathFunctions.magnitude(offset);
-                    if (length > converted) converted = length;
-                    vector[i] = 0;
-                }
-                gridPrecision = converted;
-            }
-            /*
-             * Compute the residuals, i.e. the differences between the coordinates that we get by a linear
-             * transformation and the coordinates that we want to get. If at least one residual is greater
-             * than the desired precision,  then the returned MathTransform will need to apply corrections
-             * after linear transforms. Those corrections will be done by InterpolatedTransform.
-             */
-            final MathTransform coordToGrid = gridToCoord.inverse();
-            for (int k=0,y=0; y<height; y++) {
-                tmp[0] = 0;
-                tmp[1] = y;
-                linear.getControlRow(tmp, grid);                                    // Expected positions.
-                coordToGrid.transform(grid, 0, residual, k, width);                 // As grid coordinate.
-                for (int x=0; x<width; x++) {
-                    isLinear &= (residual[k++] -= x) <= gridPrecision;
-                    isLinear &= (residual[k++] -= y) <= gridPrecision;
+            boolean isExact  = true;
+            boolean isLinear = true;
+            for (final double c : linear.correlation()) {
+                isExact &= (c == 1);
+                if (!(c >= 0.9999)) {                           // Empirical threshold (may need to be revisited).
+                    isLinear = false;
+                    break;
                 }
             }
-        } catch (TransformException e) {
-            throw new FactoryException(e);                                          // Should never happen.
+            if (isExact) {
+                step = MathTransforms.concatenate(sourceToGrid, gridToCoord);
+            } else {
+                final int      width    = linear.gridSize(0);
+                final int      height   = linear.gridSize(1);
+                final double[] residual = new double[SOURCE_DIMENSION * linear.gridLength];
+                final double[] grid     = new double[SOURCE_DIMENSION * width];
+                double gridPrecision    = precision;
+                try {
+                    /*
+                     * If the user specified a precision, we need to convert it from source units to grid units.
+                     * We convert each dimension separately, then retain the largest magnitude of vector results.
+                     */
+                    if (gridPrecision > 0 && !sourceToGrid.isIdentity()) {
+                        final double[] vector = new double[sourceToGrid.getSourceDimensions()];
+                        final double[] offset = new double[sourceToGrid.getTargetDimensions()];
+                        double converted = 0;
+                        for (int i=0; i<vector.length; i++) {
+                            vector[i] = precision;
+                            sourceToGrid.deltaTransform(vector, 0, offset, 0, 1);
+                            final double length = MathFunctions.magnitude(offset);
+                            if (length > converted) converted = length;
+                            vector[i] = 0;
+                        }
+                        gridPrecision = converted;
+                    }
+                    /*
+                     * Compute the residuals, i.e. the differences between the coordinates that we get by a linear
+                     * transformation and the coordinates that we want to get. If at least one residual is greater
+                     * than the desired precision,  then the returned MathTransform will need to apply corrections
+                     * after linear transforms. Those corrections will be done by InterpolatedTransform.
+                     */
+                    final MathTransform coordToGrid = gridToCoord.inverse();
+                    for (int k=0,y=0; y<height; y++) {
+                        tmp[0] = 0;
+                        tmp[1] = y;
+                        linear.getControlRow(tmp, grid);                                    // Expected positions.
+                        coordToGrid.transform(grid, 0, residual, k, width);                 // As grid coordinate.
+                        for (int x=0; x<width; x++) {
+                            isLinear &= (residual[k++] -= x) <= gridPrecision;
+                            isLinear &= (residual[k++] -= y) <= gridPrecision;
+                        }
+                    }
+                } catch (TransformException e) {
+                    throw new FactoryException(e);                                          // Should never happen.
+                }
+                if (isLinear) {
+                    step = MathTransforms.concatenate(sourceToGrid, gridToCoord);
+                } else {
+                    step = InterpolatedTransform.createGeodeticTransformation(nonNull(factory),
+                            new ResidualGrid(sourceToGrid, gridToCoord, width, height, residual,
+                            (gridPrecision > 0) ? gridPrecision : DEFAULT_PRECISION));
+                }
+            }
+            /*
+             * At this point we finished to compute the transformation to target coordinates.
+             * If those target coordinates have been modified in order to make that step more
+             * linear, apply the inverse transformation after the step.
+             */
+            final Optional<MathTransform> linearizer = linear.linearizer();
+            if (linearizer.isPresent()) try {
+                step = factory.createConcatenatedTransform(step, linearizer.get().inverse());
+            } catch (NoninvertibleTransformException e) {
+                throw new InvalidGeodeticParameterException(Resources.format(
+                        Resources.Keys.NonInvertibleOperation_1, linear.linearizerID()), e);
+            }
+            transform = step;
         }
-        if (isLinear) {
-            return MathTransforms.concatenate(sourceToGrid, gridToCoord);
-        }
-        return InterpolatedTransform.createGeodeticTransformation(nonNull(factory),
-                new ResidualGrid(sourceToGrid, gridToCoord, width, height, residual,
-                (gridPrecision > 0) ? gridPrecision : DEFAULT_PRECISION));
+        return transform;
     }
 
     /**
      * Returns statistics of differences between values calculated by the given transform and actual values.
      * The given math transform is typically the transform computed by {@link #create(MathTransformFactory)},
-     * but not necessarily.
+     * but not necessarily. The returned statistics are:
+     *
+     * <ol class="verbose">
+     *   <li>One {@code Statistics} instance for each target dimension, containing statistics about the differences between
+     *     coordinates computed by the given transform and expected coordinates. For each (<var>i</var>,<var>j</var>) indices
+     *     in this grid, the indices are transformed by a call to {@code mt.transform(…)} and the result is compared with the
+     *     coordinates given by <code>{@linkplain #getControlPoint(int, int) getControlPoint}(i,j)</code>.
+     *     Those statistics are identified by labels like “P → x” and “P → y” where <var>P</var> stands for pixel coordinates.</li>
+     *   <li>One {@code Statistics} instance for each source dimension, containing statistics about the differences between
+     *     coordinates computed by the <em>inverse</em> of the transform and expected coordinates.
+     *     For each (<var>x</var>,<var>y</var>) control point in this grid, the points are transformed by a call
+     *     to {@code mt.inverse().transform(…)} and the result is compared with the pixel indices of that point.
+     *     Those statistics are identified by labels like “i ← P′” and “j ← P′” where <var>P′</var> stands for
+     *     the control point.</li>
+     * </ol>
      *
      * @param  mt  the transform to test.
-     * @return statistics of difference between computed values and expected value.
-     * @throws TransformException if an error occurred while transforming a coordinate.
+     * @return statistics of difference between computed values and expected values for each target dimension.
+     * @throws NoninvertibleTransformException if an error occurred while inverting a transform.
      *
      * @since 1.0
      */
-    public Statistics error(final MathTransform mt) throws TransformException {
-        final Statistics s = new Statistics(null);
+    public Statistics[] error(final MathTransform mt) throws NoninvertibleTransformException {
+        final int           tgtDim = mt.getTargetDimensions();
+        final double[]      point  = new double[Math.max(tgtDim, SOURCE_DIMENSION)];
+        final Statistics[]  stats  = new Statistics[tgtDim + SOURCE_DIMENSION];
+        final StringBuilder buffer = new StringBuilder();
+        for (int i=0; i<stats.length; i++) {
+            buffer.setLength(0);
+            if (i < tgtDim) {
+                buffer.append("P → ");
+                if (i < 3) {
+                    buffer.append((char) ('x' + i));
+                } else {
+                    buffer.append('z').append(i - 1);       // After (x,y,z) continue with z2, z3, z4, etc.
+                }
+            } else {
+                buffer.append((char) ('i' + (i - tgtDim))).append(" ← P′");
+            }
+            stats[i] = new Statistics(buffer.toString());
+        }
+        /*
+         * If a linearizer has been applied, all target coordinates in this builder have been projected using
+         * that transform. We will need to apply the inverse transform in order to get back the original values.
+         */
+        final Optional<MathTransform> linearizer = linear.linearizer();
+        final MathTransform complete = linearizer.isPresent() ? linearizer.get().inverse() : null;
+        final MathTransform inverse = mt.inverse();
         final int width  = linear.gridSize(0);
         final int height = linear.gridSize(1);
-        final int tgtDim = Math.max(mt.getTargetDimensions(), SOURCE_DIMENSION);
-        final double[] t = new double[tgtDim];
         for (int y=0; y<height; y++) {
             for (int x=0; x<width; x++) {
-                t[0] = tmp[0] = x;
-                t[1] = tmp[1] = y;
-                mt.transform(t, 0, t, 0, 1);
-                final double[] expected = linear.getControlPoint(tmp);
+                point[0] = tmp[0] = x;
+                point[1] = tmp[1] = y;
+                final double[] expected;
+                try {
+                    mt.transform(point, 0, point, 0, 1);
+                    expected = linear.getControlPoint(tmp);
+                    if (complete != null) {
+                        complete.transform(expected, 0, expected, 0, 1);
+                    }
+                } catch (TransformException e) {
+                    continue;                           // Ignore the points that we fail to transform.
+                }
                 for (int i=0; i<tgtDim; i++) {
-                    s.accept(t[i] - expected[i]);
+                    stats[i].accept(point[i] - expected[i]);
+                }
+                /*
+                 * Transform the geographic point back to grid indices and check error.
+                 */
+                try {
+                    inverse.transform(expected, 0, expected, 0, 1);
+                } catch (TransformException e) {
+                    continue;                           // Ignore the points that we fail to transform.
+                }
+                for (int i=0; i<SOURCE_DIMENSION; i++) {
+                    stats[tgtDim + i].accept(expected[i] - tmp[i]);
                 }
             }
         }
-        return s;
+        return stats;
+    }
+
+    /**
+     * Returns a string representation of this builder in the given locale.
+     * Current implementation shows the following information:
+     *
+     * <ul>
+     *   <li>Number of points.</li>
+     *   <li>Linearizers and their correlation coefficients (if available).</li>
+     *   <li>The linear component of the transform.</li>
+     *   <li>Error statistics, as documented in the {@link #error(MathTransform)} method.</li>
+     * </ul>
+     *
+     * The string representation may change in any future version.
+     *
+     * @param  locale  the locale for formatting messages and some numbers, or {@code null} for the default.
+     * @return a string representation of this builder.
+     *
+     * @since 1.0
+     */
+    public String toString(final Locale locale) {
+        final StringBuilder buffer = new StringBuilder(400);
+        String lineSeparator = null;
+        try {
+            lineSeparator = linear.appendTo(buffer, getClass(), locale, Vocabulary.Keys.LinearTransformation);
+            if (transform != null) {
+                buffer.append(Strings.CONTINUATION_ITEM);
+                final Vocabulary vocabulary = Vocabulary.getResources(locale);
+                vocabulary.appendLabel(Vocabulary.Keys.Errors, buffer);
+                buffer.append(lineSeparator);
+                final StatisticsFormat sf;
+                if (locale != null) {
+                    sf = StatisticsFormat.getInstance(locale);
+                } else {
+                    sf = StatisticsFormat.getInstance();
+                }
+                sf.format(error(transform), buffer);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } catch (NoninvertibleTransformException e) {
+            // Ignore - we will not report error statistics.
+        }
+        Strings.insertLineInLeftMargin(buffer, lineSeparator);
+        return buffer.toString();
+    }
+
+    /**
+     * Returns a string representation of this builder for debugging purpose.
+     * The string representation is for debugging purpose and may change in any future version.
+     * The default implementation delegates to {@link #toString(Locale)} with a null locale.
+     *
+     * @return a string representation of this builder.
+     *
+     * @since 1.0
+     */
+    @Override
+    public String toString() {
+        return toString(null);
     }
 }

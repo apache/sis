@@ -34,6 +34,7 @@ import java.security.AccessController;
 import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
@@ -48,6 +49,7 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -647,6 +649,7 @@ appPow: if (unit == null) {
                     try {
                         label = names.getString(label);
                     } catch (MissingResourceException e) {
+                        Logging.ignorableException(Logging.getLogger(Loggers.MEASURE), UnitFormat.class, "format", e);
                         // Name not found; use the symbol as a fallback.
                     }
                     return toAppendTo.append(label);

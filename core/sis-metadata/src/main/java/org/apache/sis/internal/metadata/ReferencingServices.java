@@ -202,20 +202,20 @@ public class ReferencingServices extends OptionalDependency {
      * to a geographic CRS (without datum shift if possible). Otherwise, the envelope is assumed already
      * in a geographic CRS using (<var>longitude</var>, <var>latitude</var>) axis order.
      *
-     * <p>If {@code optional} is {@code true}, then this method will be executed in optional mode:
+     * <p>If {@code findOpCaller} is non-null, then this method will be executed in optional mode:
      * some failures will cause this method to return {@code null} instead than throwing an exception.
      * Note that {@link TransformException} may still be thrown but not directly by this method.
-     * Warning may be logged, but in such case this method presumes that public caller is
-     * {@link org.apache.sis.geometry.Envelopes#findOperation(Envelope, Envelope)}.</p>
+     * Warning may be logged, but in such case this method presumes that public caller is the named method from
+     * {@code Envelopes} — typically {@link org.apache.sis.geometry.Envelopes#findOperation(Envelope, Envelope)}.</p>
      *
-     * @param  envelope  the source envelope.
-     * @param  target    the target bounding box, or {@code null} for creating it automatically.
-     * @param  optional  {@code true} for replacing some (not all) exceptions by {@code null} return value.
-     * @return the bounding box or {@code null} on failure. Never {@code null} if {@code optional} argument is {@code false}.
+     * @param  envelope      the source envelope.
+     * @param  target        the target bounding box, or {@code null} for creating it automatically.
+     * @param  findOpCaller  non-null for replacing some (not all) exceptions by {@code null} return value.
+     * @return the bounding box or {@code null} on failure. Never {@code null} if {@code findOpCaller} argument is {@code null}.
      * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
      * @throws TransformException if the given envelope can not be transformed.
      */
-    public DefaultGeographicBoundingBox setBounds(Envelope envelope, DefaultGeographicBoundingBox target, boolean optional)
+    public DefaultGeographicBoundingBox setBounds(Envelope envelope, DefaultGeographicBoundingBox target, String findOpCaller)
             throws TransformException
     {
         throw moduleNotFound();

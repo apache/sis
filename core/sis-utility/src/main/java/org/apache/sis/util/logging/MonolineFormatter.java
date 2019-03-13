@@ -35,6 +35,7 @@ import java.util.logging.*;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.OS;
 import org.apache.sis.internal.util.X364;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.AutoMessageFormat;
 import org.apache.sis.io.IO;
 import org.apache.sis.io.LineAppender;
@@ -167,15 +168,10 @@ public class MonolineFormatter extends Formatter {
 
     /**
      * Number of characters or spaces to colorize at the beginning of lines that are continuation of a single log record.
-     * This count includes the {@link #CONTINUATION_MARK} character. Should not be smaller than 2 since the algorithm in
-     * this class needs one white space after {@link #CONTINUATION_MARK}.
+     * This count includes the {@link Strings#CONTINUATION_MARK} character. Should not be smaller than 2 since algorithm
+     * in this class needs one white space after {@link Strings#CONTINUATION_MARK}.
      */
     private static final int CONTINUATION_MARGIN = 4;
-
-    /**
-     * The character to write at the beginning of lines that are continuation of a single log record.
-     */
-    static final char CONTINUATION_MARK = '┃', CONTINUATION_END = '╹';
 
     /**
      * Minimal number of stack trace elements to print before and after the "interesting" elements.
@@ -736,8 +732,9 @@ loop:   for (int i=0; ; i++) {
             if (bodyLineSeparator.length() != lineSeparator.length() + margin + 1) {
                 if (CONTINUATION_MARGIN != 0) {
                     final int highlight = Math.min(CONTINUATION_MARGIN, margin);
-                    bodyLineSeparator = lineSeparator + levelColor + CONTINUATION_MARK + CharSequences.spaces(highlight - 1)
-                                                      + levelReset + CharSequences.spaces(margin - highlight + 1);
+                    bodyLineSeparator = lineSeparator
+                            + levelColor + Strings.CONTINUATION_MARK + CharSequences.spaces(highlight - 1)
+                            + levelReset + CharSequences.spaces(margin - highlight + 1);
                 } else {
                     bodyLineSeparator = lineSeparator;
                 }
@@ -797,11 +794,11 @@ loop:   for (int i=0; ; i++) {
              * If the message spans more than one line, there is CONTINUATION_MARK characters in the
              * margin. Replace the last occurrence of those characters by CONTINUATION_END.
              */
-            lastMargin = CharSequences.indexOf(buffer, CONTINUATION_MARK,
+            lastMargin = CharSequences.indexOf(buffer, Strings.CONTINUATION_MARK,
                             lastMargin + lineSeparator.length(),
                             lastMargin + bodyLineSeparator.length());
             if (lastMargin >= 0) {
-                buffer.setCharAt(lastMargin, CONTINUATION_END);
+                buffer.setCharAt(lastMargin, Strings.CONTINUATION_END);
             }
             return buffer.append(lineSeparator).toString();
         }
