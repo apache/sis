@@ -23,6 +23,7 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
 
@@ -48,6 +49,16 @@ public abstract class NamedElement {
      * @return the name of this element.
      */
     public abstract String getName();
+
+    /**
+     * If this element is member of a group, returns the name of that group.
+     * Otherwise returns {@code null}. The default implementation always returns {@code null}.
+     *
+     * @return name of the group which contains this element, or {@code null}.
+     */
+    public String getGroupName() {
+        return null;
+    }
 
     /**
      * Creates a name for a {@code NamedElement} made of other components.
@@ -114,6 +125,6 @@ public abstract class NamedElement {
      */
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[\"" + getName() + "\"]";
+        return Strings.bracket(getClass().getSimpleName(), getName());
     }
 }

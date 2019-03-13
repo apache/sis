@@ -32,9 +32,9 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.internal.metadata.ReferencingServices;
@@ -368,7 +368,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
                          * for meaning "no intersection".  We remember only the first value since we always create the
                          * same value for meaning "no intersection".
                          */
-                        if (empty == null && e != source && e != target && (e instanceof AbstractMetadata) && ((AbstractMetadata) e).isEmpty()) {
+                        if (empty == null && e != source && e != target && (e instanceof Emptiable) && ((Emptiable) e).isEmpty()) {
                             empty = e;
                         }
                     }

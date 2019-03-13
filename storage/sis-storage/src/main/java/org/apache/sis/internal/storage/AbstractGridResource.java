@@ -102,7 +102,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
     protected final int[] validateRangeArgument(final int numSampleDimensions, int[] range) {
         ArgumentChecks.ensureStrictlyPositive("numSampleDimensions", numSampleDimensions);
         if (range == null || range.length == 0) {
-            return ArraysExt.sequence(0, numSampleDimensions);
+            return ArraysExt.range(0, numSampleDimensions);
         }
         range = range.clone();
         for (int i=0; i<range.length; i++) {

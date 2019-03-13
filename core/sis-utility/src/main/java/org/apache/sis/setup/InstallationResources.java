@@ -33,7 +33,7 @@ import java.io.BufferedReader;
  *     But the weight of those files (about 2.4 Mb) is unnecessary for users who do not live in North America.</li>
  * <li>On the other hand, the <a href="http://www.epsg.org/">EPSG geodetic dataset</a> is important for most users.
  *     Codes like {@code "EPSG:4326"} became a <i>de-facto</i> standard in various places like <cite>Web Map Services</cite>,
- *     images encoded in GeoTIFF format, <i>etc</i>. But the <a href="http://www.epsg.org/TermsOfUse">EPSG terms of use</a>
+ *     images encoded in GeoTIFF format, <i>etc</i>. But the <a href="http://www.epsg.org/TermsOfUse.aspx">EPSG terms of use</a>
  *     are more restrictive than the Apache license and require that we inform the users about those conditions.</li>
  * </ul></div>
  *
@@ -111,7 +111,7 @@ public abstract class InstallationResources {
      *     <th>License</th>
      *   </tr><tr>
      *     <td>{@code "EPSG"}</td>
-     *     <td>A copy of the <a href="http://www.epsg.org/TermsOfUse">http://www.epsg.org/TermsOfUse</a> page.</td>
+     *     <td>A copy of the <a href="http://www.epsg.org/TermsOfUse.aspx">http://www.epsg.org/TermsOfUse.aspx</a> page.</td>
      *   </tr><tr>
      *     <td>{@code "Embedded"}</td>
      *     <td>Above EPSG license.</td>

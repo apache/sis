@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -87,6 +88,6 @@ final class NamedFeatureType implements FeatureType, Serializable {
      */
     @Override
     public String toString() {
-        return "FeatureType[“" + name + "”]";
+        return Strings.bracket("FeatureType", name);
     }
 }

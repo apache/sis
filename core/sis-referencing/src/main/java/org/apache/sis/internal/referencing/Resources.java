@@ -129,9 +129,19 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotSeparateTransform_3 = 83;
 
         /**
+         * Can not transform the ({0,number}, {1,number}) coordinates.
+         */
+        public static final short CanNotTransformCoordinates_2 = 85;
+
+        /**
          * Can not transform envelope to a geodetic reference system.
          */
         public static final short CanNotTransformEnvelopeToGeodetic = 8;
+
+        /**
+         * Can not transform the given geometry.
+         */
+        public static final short CanNotTransformGeometry = 86;
 
         /**
          * Can not use the {0} geodetic parameters: {1}

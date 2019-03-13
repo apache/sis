@@ -257,7 +257,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @see org.apache.sis.referencing.operation.DefaultPassThroughOperation#getModifiedCoordinates()
      */
     public final int[] getModifiedCoordinates() {
-        return ArraysExt.sequence(firstAffectedCoordinate, subTransform.getSourceDimensions());
+        return ArraysExt.range(firstAffectedCoordinate, firstAffectedCoordinate + subTransform.getSourceDimensions());
     }
 
     /**

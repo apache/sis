@@ -120,7 +120,7 @@ public final class RasterFactory extends Static {
             }
         } else {
             if (bankIndices == null) {
-                bankIndices = ArraysExt.sequence(0, bandOffsets.length);
+                bankIndices = ArraysExt.range(0, bandOffsets.length);
             }
             if (pixelStride == 1) {
                 /*

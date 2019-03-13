@@ -47,14 +47,14 @@ class EnvelopeReducer {
      *
      * @see Envelopes#union(Envelope...)
      */
-    static final EnvelopeReducer UNION = new EnvelopeReducer();
+    static final EnvelopeReducer UNION = new EnvelopeReducer("union");
 
     /**
      * A reducer performing the {@linkplain GeneralEnvelope#intersect(Envelope) intersection} operation.
      *
      * @see Envelopes#intersect(Envelope...)
      */
-    static final EnvelopeReducer INTERSECT = new EnvelopeReducer() {
+    static final EnvelopeReducer INTERSECT = new EnvelopeReducer("intersect") {
         @Override void reduce(GeneralEnvelope result, Envelope other) {
             result.intersect(other);
         }
@@ -65,9 +65,15 @@ class EnvelopeReducer {
     };
 
     /**
+     * The public method from {@link Envelopes} which is using this envelope reducer.
+     */
+    private final String caller;
+
+    /**
      * Creates a new reducer. We should have a singleton instance for each type of reduce operation.
      */
-    EnvelopeReducer() {
+    EnvelopeReducer(final String caller) {
+        this.caller = caller;
     }
 
     /**
@@ -125,8 +131,8 @@ merge:  for (final Envelope envelope : envelopes) {
         /*
          * Compute the geographic bounding box of all remaining elements to reduce. This will be used for
          * choosing a common CRS. Note that if a warning is logged, ReferencingServices.setBounds(…) will
-         * pretend that warning come from Envelopes.findOperation(…). This is not true but not completely
-         * false neither since the purpose of this bounding box is to find a coordinate operation.
+         * pretend that warning come from Envelopes.<caller>. This is related to Envelopes.findOperation(…)
+         * since the purpose of this bounding box is to find a coordinate operation.
          */
         final ReferencingServices converter = ReferencingServices.getInstance();
         CoordinateReferenceSystem[]  crs  = new CoordinateReferenceSystem[count];
@@ -135,7 +141,7 @@ merge:  for (final Envelope envelope : envelopes) {
         for (int i=0; i<count; i++) {
             final GeneralEnvelope e = reduced[i];
             crs[i] = e.getCoordinateReferenceSystem();
-            if (converter.setBounds(e, more, true) != null) {           // See above comment about logging.
+            if (converter.setBounds(e, more, caller) != null) {         // See above comment about logging.
                 if (bbox == null) {
                     bbox = more;
                     more = new DefaultGeographicBoundingBox();

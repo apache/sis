@@ -443,7 +443,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
          *
          * @see #tryAgain(int, double, double)
          */
-        private static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS * 2;
+        private static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS * 4;
 
         /**
          * The enclosing transform.
@@ -609,26 +609,30 @@ nextPoint:  while (--numPts >= 0) {
 
         /**
          * If iteration did not converge, tells whether we should perform another try with a more permissive threshold.
-         * We allow relaxed tolerance threshold only for extrapolations; if the point was inside the grid and the grid
-         * is well-formed, we assume that iteration should have converged. But during extrapolations since there is no
-         * authoritative results, we consider that a more approximate result is okay. In particular it does not make
-         * sense to require a 1E-7 accuracy (relative to cell size) if we don't really know what the answer should be.
-         * We nevertheless aim for an accuracy of 0.5 of cell size in order to keep some consistency with forward transform.
+         * We start relaxing threshold only in last resort, and nevertheless aim for an accuracy of 0.5 of cell size in
+         * order to keep some consistency with forward transform. We may relax more in case of extrapolations.
          *
          * @param  it  the iteration counter. Should be negative since we exhausted the normal number of iterations.
          * @param  xi  best <var>x</var> estimation so far.
          * @param  yi  best <var>y</var> estimation so far.
-         * @return the new tolerance threshold, or 0 if no more try should be allowed.
+         * @return the new tolerance threshold, or {@link Double#NaN} if no more try should be allowed.
          *
          * @see #MAXIMUM_ITERATIONS
          */
         private double tryAgain(final int it, final double xi, final double yi) {
-            if (!forward.grid.isCellInGrid(xi, yi)) {
-                if (it >= -3) {                         // Arbitrary limit.
-                    return Math.scalb(0.5, ~it);        // Progressive relax from 0.5 to 2 for each additional iteration.
+            double tol = Math.scalb(tolerance, -it);
+            if (tol >= 0.5) {
+                /*
+                 * If the point was inside the grid and the grid is well-formed, we assume that iteration should have converged.
+                 * But during extrapolations since there is no authoritative results, we consider that a more approximate result
+                 * is okay. In particular it does not make sense to require a 1E-7 accuracy (relative to cell size) if we don't
+                 * really know what the answer should be.
+                 */
+                if (forward.grid.isCellInGrid(xi, yi) || tol > 2) {
+                    return Double.NaN;                                      // No more iteration - caller will throw an exception.
                 }
             }
-            return 0;                                   // No more iteration - caller will throw an exception.
+            return tol;
         }
     }
 }

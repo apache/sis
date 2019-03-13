@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso.identification;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -48,7 +49,7 @@ final class OperationName extends DefaultOperationMetadata {
      */
     @Override
     public String toString() {
-        return "OperationMetadata[“" + getOperationName() + "”]";
+        return Strings.bracket("OperationMetadata", getOperationName());
     }
 
     /**

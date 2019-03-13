@@ -23,6 +23,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 
@@ -116,7 +117,7 @@ final class CRSPair {
                 }
                 name = CharSequences.trimWhitespaces(name, 0, i).toString() + '…';
             }
-            label = label + "[“" + name + "”]";
+            label = Strings.bracket(label, name);
         }
         return label;
     }

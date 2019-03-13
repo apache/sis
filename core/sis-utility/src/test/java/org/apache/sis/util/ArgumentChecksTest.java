@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
  * Tests the {@link ArgumentChecks} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -49,6 +49,20 @@ public final strictfp class ArgumentChecksTest extends TestCase {
             fail("Expected a NullArgumentException.");
         } catch (NullArgumentException e) {
             assertTrue(e.getMessage().contains("axes[2].unit"));
+        }
+    }
+
+    /**
+     * Tests {@link ArgumentChecks#ensureNonEmpty(String, int[], int, int, boolean)}.
+     */
+    @Test
+    public void testEnsureBetweenAndDistinct() {
+        ArgumentChecks.ensureNonEmpty("dimensions", new int[] {2, 3, 0, 1}, 0, 4, true);
+        try {
+            ArgumentChecks.ensureNonEmpty("dimensions", new int[] {2, 3, 3, 1}, 0, 4, true);
+            fail("Expected an IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            assertNotNull(e.getMessage());
         }
     }
 }

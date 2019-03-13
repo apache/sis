@@ -102,7 +102,7 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
     }
 
     /**
-     * Tests (indirectly) {@link ServicesForMetadata#setBounds(Envelope, DefaultGeographicBoundingBox, boolean)}
+     * Tests (indirectly) {@link ServicesForMetadata#setBounds(Envelope, DefaultGeographicBoundingBox, String)}
      * from a three-dimensional envelope.
      *
      * @throws TransformException should never happen.
@@ -115,7 +115,7 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
     }
 
     /**
-     * Tests (indirectly) {@link ServicesForMetadata#setBounds(Envelope, DefaultGeographicBoundingBox, boolean)}
+     * Tests (indirectly) {@link ServicesForMetadata#setBounds(Envelope, DefaultGeographicBoundingBox, String)}
      * from a for-dimensional envelope.
      *
      * @throws TransformException should never happen.
@@ -168,7 +168,7 @@ public final strictfp class ServicesForMetadataTest extends TestCase {
     }
 
     /**
-     * Tests (indirectly) {@link ServicesForMetadata#setBounds(Envelope, DefaultGeographicBoundingBox, boolean)}
+     * Tests (indirectly) {@link ServicesForMetadata#setBounds(Envelope, DefaultGeographicBoundingBox, String)}
      * from an envelope spanning the antimeridian.
      *
      * @throws TransformException should never happen.

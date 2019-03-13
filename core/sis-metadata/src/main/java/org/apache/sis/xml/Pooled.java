@@ -37,6 +37,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.TypeRegistration;
@@ -323,7 +324,7 @@ abstract class Pooled {
                             if (schema != null) {
                                 if (!(schema instanceof String)) {
                                     throw new PropertyException(Errors.format(Errors.Keys.IllegalPropertyValueClass_2,
-                                            name + "[\"" + key + "\"]", value.getClass()));
+                                            Strings.bracket(name, key), value.getClass()));
                                 }
                                 copy.put(key, (String) schema);
                             }

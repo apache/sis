@@ -699,7 +699,8 @@ public class AttributeNames {
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
-     * {@link DataIdentification#getCitation() citation} with {@link Role#ORIGINATOR}</li></ul>
+     * {@link DataIdentification#getCitation() citation} /
+     * {@link Citation#getCitedResponsibleParties() citedResponsibleParty} with {@link Role#ORIGINATOR}</li></ul>
      *
      * @see #CONTRIBUTOR
      * @see #PUBLISHER

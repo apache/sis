@@ -35,6 +35,18 @@ import org.apache.sis.util.CharSequences;
  */
 public final class Strings extends Static {
     /**
+     * The character to write at the beginning of lines that are continuation of a single log record.
+     * This constant is defined here only for a little bit more uniform {@code toString()} in SIS.
+     */
+    public static final char CONTINUATION_MARK = '┃', CONTINUATION_END = '╹';
+
+    /**
+     * Characters for a new item in a block illustrated by {@link #CONTINUATION_MARK}.
+     * This constant is defined here only for a little bit more uniform {@code toString()} in SIS.
+     */
+    public static final String CONTINUATION_ITEM = "▶ ";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Strings() {
@@ -184,9 +196,30 @@ public final class Strings extends Static {
     }
 
     /**
+     * Inserts a continuation character after each line separator except the last one.
+     * The intent is to show that a block of lines are part of the same element.
+     * The characters are the same than {@link org.apache.sis.util.logging.MonolineFormatter}.
+     *
+     * @param buffer         the buffer where to insert a continuation character in the left margin.
+     * @param lineSeparator  the line separator.
+     */
+    public static void insertLineInLeftMargin(final StringBuilder buffer, final String lineSeparator) {
+        char c = CONTINUATION_END;
+        int i = CharSequences.skipTrailingWhitespaces(buffer, 0, buffer.length());
+        while ((i = buffer.lastIndexOf(lineSeparator, i - 1)) >= 0) {
+            buffer.insert(i + lineSeparator.length(), c);
+            c = CONTINUATION_MARK;
+        }
+    }
+
+    /**
      * Returns a string representation of an instance of the given class having the given properties.
      * This is a convenience method for implementation of {@link Object#toString()} methods that are
      * used mostly for debugging purpose.
+     *
+     * <p>The content is specified by (<var>key</var>=<var>value</var>) pairs. If a value is {@code null},
+     * the whole entry is omitted. If a key is {@code null}, the value is written without the {@code "key="}
+     * part. The later happens typically when the first value is the object name.</p>
      *
      * @param  classe      the class to format.
      * @param  properties  the (<var>key</var>=<var>value</var>) pairs.
@@ -201,7 +234,10 @@ public final class Strings extends Static {
                 if (isNext) {
                     buffer.append(", ");
                 }
-                buffer.append(properties[i-1]).append('=');
+                final Object name = properties[i-1];
+                if (name != null) {
+                    buffer.append(name).append('=');
+                }
                 final boolean isText = (value instanceof CharSequence);
                 if (isText) buffer.append('“');
                 buffer.append(value);

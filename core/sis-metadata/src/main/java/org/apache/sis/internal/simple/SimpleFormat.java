@@ -21,6 +21,7 @@ import java.util.Collections;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.Format;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -136,6 +137,6 @@ public class SimpleFormat extends SimpleCitation implements Format {
      */
     @Override
     public String toString() {
-        return "Format[“" + title + "”]";
+        return Strings.bracket("Format", title);
     }
 }

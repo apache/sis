@@ -37,6 +37,7 @@ import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.simple.SimpleAttributeType;
 import org.apache.sis.internal.converter.SurjectiveConverter;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -250,6 +251,6 @@ public class DefaultRecordSchema implements RecordSchema {
      */
     @Override
     public String toString() {
-        return "RecordSchema[“" + getSchemaName() + "”]";
+        return Strings.bracket("RecordSchema", getSchemaName());
     }
 }

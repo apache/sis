@@ -1258,22 +1258,90 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns a sequence of increasing values of the given length. Each value is increased by 1.
-     * For example {@code sequence(-1, 4)} returns {@code {-1, 0, 1, 2}}. This method is a convenience for
-     * enumerating a subset of dimensions in a coordinate reference system or a subset of bands in an image.
+     * Returns the ordered values in the range from {@code start} inclusive to {@code end} exclusive.
+     * This method performs the same work than {@link java.util.stream.IntStream#range(int, int)} but
+     * returning values in an array instead than in a stream. This method is okay for small sequences;
+     * for large sequences the stream approach should be preferred.
      *
-     * @param  start   first value in the array to return.
-     * @param  length  number of values to return.
-     * @return a sequence of increasing integers starting at {@code start} and having {@code length} values.
+     * <div class="note"><b>Purpose:</b>
+     * this method is convenient for enumerating dimensions in a coordinate reference system or bands in an image.
+     * Some methods in the Java library or in Apache SIS want dimensions or bands to be specified by their indices.
+     * An example from the Java library is the {@code bankIndices} argument in
+     * <code>{@linkplain java.awt.image.Raster#createBandedRaster(int, int, int, int, int[], int[], java.awt.Point)
+     * Raster.createBandedRaster}(…, bankIndices, …)</code>.
+     * An example from Apache SIS is the {@code range} argument in
+     * <code>{@linkplain org.apache.sis.storage.GridCoverageResource#read GridCoverageResource.read}(…, range)</code>.
+     * This {@code range(start, end)} method can be used in the common case where all bands are wanted in order.</div>
+     *
+     * For any array returned by this method, <code>{@link #isRange(int, int[]) isRange}(start, array)</code>
+     * is guaranteed to return {@code true}.
+     *
+     * @param  start  first value (inclusive) in the array to return.
+     * @param  end    upper bound (exclusive) of values in the array to return.
+     * @return a finite arithmetic progression of common difference of 1 with all values in the specified range.
+     * @throws ArithmeticException if the sequence length is greater than {@link Integer#MAX_VALUE}.
+     *
+     * @see java.util.stream.IntStream#range(int, int)
+     * @see <a href="https://en.wikipedia.org/wiki/Arithmetic_progression">Arithmetic progression on Wikipedia</a>
      *
      * @since 1.0
      */
-    public static int[] sequence(final int start, final int length) {
-        final int[] array = new int[length];
-        for (int i=0; i<length; i++) {
-            array[i] = start + i;
+    public static int[] range(final int start, final int end) {
+        if (end > start) {
+            final int[] array = new int[Math.subtractExact(end, start)];
+            for (int i=0; i<array.length; i++) {
+                array[i] = start + i;
+            }
+            return array;
+        } else {
+            return EMPTY_INT;
         }
-        return array;
+    }
+
+    /**
+     * Returns {@code true} if the given array is a finite arithmetic progression starting at the given value
+     * and having a common difference of 1.
+     * More specifically:
+     *
+     * <ul>
+     *   <li>If {@code array} is {@code null}, then return {@code false}.</li>
+     *   <li>Otherwise if {@code array} is empty, then return {@code true} for consistency with {@link #range}.</li>
+     *   <li>Otherwise for any index 0 ≦ <var>i</var> {@literal <} {@code array.length}, if {@code array[i]}
+     *       is equal to {@code start + i} (computed as if no overflow occurs), then return {@code true}.</li>
+     *   <li>Otherwise return {@code false}.</li>
+     * </ul>
+     *
+     * <div class="note"><b>Example:</b>
+     * {@code isRange(1, array)} returns {@code true} if the given array is {@code {1, 2, 3, 4}}
+     * but {@code false} if the array is {@code {1, 2, 4}} (missing 3).</div>
+     *
+     * This method is useful when {@code array} is an argument specified to another method, and determining that the
+     * argument values are {@code start}, {@code start}+1, {@code start}+2, <i>etc.</i> allows some optimizations.
+     *
+     * @param  start  first value expected in the given {@code array}.
+     * @param  array  the array to test, or {@code null}.
+     * @return {@code true} if the given array is non-null and equal to
+     *         <code>{@linkplain #range(int, int) range}(start, start + array.length)</code>.
+     *
+     * @see #range(int, int)
+     *
+     * @since 1.0
+     */
+    public static boolean isRange(final int start, final int[] array) {
+        if (array == null) {
+            return false;
+        }
+        if (array.length != 0) {
+            if (start + (array.length - 1) < 0) {
+                return false;                               // Overflow.
+            }
+            for (int i=0; i<array.length; i++) {
+                if (array[i] != start + i) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

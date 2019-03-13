@@ -32,7 +32,6 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
-import org.junit.Ignore;
 
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
@@ -255,7 +254,6 @@ public final strictfp class GridDerivationTest extends TestCase {
      * Tests deriving a grid geometry with an envelope crossing the antimeridian.
      */
     @Test
-    @Ignore("TODO: not yet fixed.")
     public void testSubgridCrossingAntiMeridian() {
         final GridGeometry grid = new GridGeometry(
                 new GridExtent(200, 180), PixelInCell.CELL_CORNER,
@@ -264,12 +262,82 @@ public final strictfp class GridDerivationTest extends TestCase {
                         0, -1, 90,
                         0,  0,  1)), HardCodedCRS.WGS84);
 
-        final GeneralEnvelope aoi = new GeneralEnvelope(HardCodedCRS.WGS84);
-        aoi.setRange(0, 140, -179);
-        aoi.setRange(1, -90,   90);
+        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
+        areaOfInterest.setRange(0, 140, -179);                 // Cross anti-meridian.
+        areaOfInterest.setRange(1, -90,   90);
 
-        final GridGeometry subgrid = grid.derive().subgrid(aoi).build();
-        Envelope subEnv = subgrid.getEnvelope();
-        assertEquals(aoi, subEnv);
+        final GridGeometry subgrid = grid.derive().subgrid(areaOfInterest).build();
+        final Envelope subEnv = subgrid.getEnvelope();
+        areaOfInterest.setRange(0, 140, 181);
+        assertEnvelopeEquals(areaOfInterest, subEnv);
+    }
+
+    /**
+     * Tests deriving a grid geometry from an area of interest shifted by 360° before or after the grid valid area.
+     */
+    @Test
+    public void testSubgridFromShiftedAOI() {
+        final GridGeometry grid = new GridGeometry(
+                new GridExtent(20, 140), PixelInCell.CELL_CORNER,
+                MathTransforms.linear(new Matrix3(
+                        1,  0, 80,
+                        0, -1, 70,
+                        0,  0,  1)), HardCodedCRS.WGS84);
+
+        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
+        areaOfInterest.setRange(0,  70,  90);
+        areaOfInterest.setRange(1, -80,  60);
+
+        final GeneralEnvelope expected = new GeneralEnvelope(HardCodedCRS.WGS84);
+        expected.setRange(0,  80,  90);
+        expected.setRange(1, -70,  60);
+        GridGeometry subgrid;
+        /*
+         * Area of interest of the left side.
+         */
+        areaOfInterest.setRange(0, -290, -270);                    // [70 … 90] - 360
+        subgrid = grid.derive().subgrid(areaOfInterest).build();
+        assertEnvelopeEquals(expected, subgrid.getEnvelope());
+        /*
+         * Area of interest on the right side.
+         */
+        areaOfInterest.setRange(0, 430, 450);                      // [70 … 90] + 360
+        subgrid = grid.derive().subgrid(areaOfInterest).build();
+        assertEnvelopeEquals(expected, subgrid.getEnvelope());
+    }
+
+    /**
+     * Tests deriving a grid geometry from an area of interest overlapping the grid in such a way
+     * that we have to overlap the AOI to the full grid extent. Illustration:
+     *
+     * {@preformat text
+     *                  ┌────────────────────────────────────────────┐
+     *                  │             Domain of validity             │
+     *                  └────────────────────────────────────────────┘
+     *   ┌────────────────────┐                                ┌─────
+     *   │  Area of interest  │                                │  AOI
+     *   └────────────────────┘                                └─────
+     *    ↖………………………………………………………360° period……………………………………………………↗︎
+     * }
+     */
+    @Test
+    public void testAreaOfInterestExpansion() {
+        final GridGeometry grid = new GridGeometry(
+                new GridExtent(340, 140), PixelInCell.CELL_CORNER,
+                MathTransforms.linear(new Matrix3(
+                        1,  0, 5,
+                        0, -1, 70,
+                        0,  0,  1)), HardCodedCRS.WGS84);
+
+        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
+        areaOfInterest.setRange(0, -30,  40);
+        areaOfInterest.setRange(1, -60,  60);
+
+        final GeneralEnvelope expected = new GeneralEnvelope(HardCodedCRS.WGS84);
+        expected.setRange(0,   5, 345);
+        expected.setRange(1, -60,  60);
+
+        GridGeometry subgrid = grid.derive().subgrid(areaOfInterest).build();
+        assertEnvelopeEquals(expected, subgrid.getEnvelope());
     }
 }

@@ -18,7 +18,8 @@ package org.apache.sis.internal.netcdf.ucar;
 
 
 /**
- * Utility methods and workaround for UCAR library methods having a different behavior than what we would expect.
+ * Utility methods completing UCAR library for Apache SIS needs.
+ * Some methods are workarounds for UCAR library methods having a different behavior than what we would expect.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

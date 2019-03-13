@@ -74,6 +74,7 @@ import org.apache.sis.internal.metadata.TransformationAccuracy;
 import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.DefaultNameSpace;
@@ -1111,7 +1112,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         if (axisOrder.put(axis, n) != null) {   // Opportunist check, effective for instances created by SIS factory.
             throw new UnparsableObjectException(errorLocale, Errors.Keys.DuplicatedElement_1,
-                    new Object[] {WKTKeywords.Axis + "[“" + name + "”]"}, element.offset);
+                    new Object[] {Strings.bracket(WKTKeywords.Axis, name)}, element.offset);
         }
         return axis;
     }

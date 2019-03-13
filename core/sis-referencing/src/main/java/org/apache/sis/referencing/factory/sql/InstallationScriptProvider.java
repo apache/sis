@@ -332,8 +332,8 @@ public abstract class InstallationScriptProvider extends InstallationResources {
                                 if (name.contains(part)) {
                                     if (found[i] != null) {
                                         log(Errors.getResources(locale)
-                                                  .getLogRecord(Level.WARNING, Errors.Keys.DuplicatedElement_1, part));
-                                        return;                         // Stop the search because of duplicated file.
+                                                  .getLogRecord(Level.WARNING, Errors.Keys.DuplicatedFileReference_1, part));
+                                        return;   // Stop the search because of duplicated file.
                                     }
                                     found[i] = name;
                                 }

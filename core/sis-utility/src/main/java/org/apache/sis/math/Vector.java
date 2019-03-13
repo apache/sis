@@ -243,7 +243,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * not {@link Float#TYPE}.
      *
      * <p>The information returned by this method is only indicative; it is not guaranteed to specify accurately
-     * this kind of objects returned by the {@link #get(int)} method. There is various situation where the types
+     * this kind of objects returned by the {@link #get(int)} method. There is various situations where the types
      * may not match:</p>
      *
      * <ul>
@@ -300,13 +300,16 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * Returns {@code true} if integer values shall be interpreted as unsigned values.
      * This method may return {@code true} for data stored in {@code byte[]}, {@code short[]}, {@code int[]}
      * or {@code long[]} arrays, but never for data stored in {@code float[]} and {@code double[]} arrays.
+     * The default implementation returns {@code false}.
      *
      * <p>Unless otherwise noticed in Javadoc, users do not need to care about this information since
      * {@code Vector} methods will perform automatically the operations needed for unsigned integers.</p>
      *
      * @return {@code true} if the integer values shall be interpreted as unsigned values.
      */
-    public abstract boolean isUnsigned();
+    public boolean isUnsigned() {
+        return false;
+    }
 
     /**
      * Returns the number of elements in this vector.
@@ -345,6 +348,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * This method may result in a lost of precision if this vector
      * stores or computes its values with the {@code double} type.
      *
+     * <p>The default implementation delegates to {@link #doubleValue(int)} and cast the result to {@code float}.</p>
+     *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
@@ -353,7 +358,9 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *
      * @see #floatValues()
      */
-    public abstract float floatValue(int index);
+    public float floatValue(int index) {
+        return (float) doubleValue(index);
+    }
 
     /**
      * Returns the value at the given index as a {@code long}.
@@ -680,7 +687,7 @@ search:     for (;;) {
         final long inc = a - b;
         // The sign of the difference shall be the same than the sign of Long.compare(…).
         if ((((isUnsigned() ? Long.compareUnsigned(a, b) : Long.compare(a, b)) ^ inc) & Long.MIN_VALUE) != 0) {
-            throw new ArithmeticException();
+            throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
         }
         return inc;
     }
@@ -691,7 +698,7 @@ search:     for (;;) {
      * the [0 … {@link #size()} - 1] range:
      *
      * <blockquote><code>{@linkplain Math#abs(double) abs}({@linkplain #doubleValue(int) doubleValue}(<var>i</var>)
-     * - (doubleValue(0) + increment*<var>i</var>)) &lt;= tolerance</code></blockquote>
+     * - (doubleValue(0) + increment*<var>i</var>)) ≦ tolerance</code></blockquote>
      *
      * The tolerance threshold can be zero if exact matches are desired.
      * The return value (if non-null) is always a signed value,
@@ -712,7 +719,7 @@ search:     for (;;) {
              * The result will be converted to the same type than the vector element type if possible,
              * or the next wider type if the increment is an unsigned value too big for the element type.
              */
-            if (type >= Numbers.BYTE && type <= Numbers.LONG && tolerance < 1) {
+            if (type >= Numbers.BYTE && type <= Numbers.LONG && tolerance < 0.5) {
                 long p;
                 final long inc = subtract(longValue(--i), p = longValue(--i));
                 while (i != 0) {
@@ -736,38 +743,38 @@ search:     for (;;) {
              * this vector by an instance of SequenceVector should produce exactly the same double values,
              * in the limit of the accuracy allowed by the floating point values.
              */
-            if (type >= Numbers.FLOAT && type <= Numbers.DOUBLE) {
-                final double first = doubleValue(0);
-                double inc = (doubleValue(--i) - first) / i;                              // First estimation of increment.
+            final double first = doubleValue(0);
+            double inc = (doubleValue(--i) - first) / i;                              // First estimation of increment.
+            if (type == Numbers.DOUBLE || type == Numbers.BIG_DECIMAL) {
                 final int pz = Math.max(0, Math.min(i, (int) Math.rint(-first / inc)));   // Presumed index of value zero.
                 if (doubleValue(pz) == 0) {
-                    final Number value = (pz == i) ? get(pz-1) : get(pz+1);               // Value adjacent to zero.
-                    if (!(value instanceof Float)) {
+                    final Number value = (pz == i) ? get(pz-1) : get(pz+1);     // Value adjacent to zero.
+                    if (value != null && !(value instanceof Float)) {           // Float type is not accurate enough.
                         inc = value.doubleValue();                              // Presumed less subject to rounding errors.
                         if (pz == i) inc = -inc;
                     }
                 }
-                if (type == Numbers.FLOAT) {
-                    while (i >= 1) {
-                        final float  value = floatValue(i);
-                        final double delta = Math.abs(first + inc*i-- - value);
-                        final double accur = Math.ulp(value);
-                        if (!((accur > tolerance) ? (delta < accur) : (delta <= tolerance))) {  // Use '!' for catching NaN.
-                            return null;
-                        }
-                    }
-                    final float f = (float) inc;
-                    if (f == inc) return f;                            // Use the java.lang.Float wrapper class if possible.
-                } else {
-                    while (i >= 1) {
-                        final double delta = Math.abs(first + inc*i - doubleValue(i--));
-                        if (!(delta <= tolerance)) {                   // Use '!' for catching NaN.
-                            return null;
-                        }
+            }
+            if (type == Numbers.FLOAT) {
+                while (i >= 1) {
+                    final float  value = floatValue(i);
+                    final double delta = Math.abs(first + inc*i-- - value);
+                    final double accur = Math.ulp(value);
+                    if (!((accur > tolerance) ? (delta < accur) : (delta <= tolerance))) {  // Use '!' for catching NaN.
+                        return null;
                     }
                 }
-                return inc;
+                final float f = (float) inc;
+                if (f == inc) return f;                            // Use the java.lang.Float wrapper class if possible.
+            } else {
+                while (i >= 1) {
+                    final double delta = Math.abs(first + inc*i - doubleValue(i--));
+                    if (!(delta <= tolerance)) {                   // Use '!' for catching NaN.
+                        return null;
+                    }
+                }
             }
+            return inc;
         } catch (ArithmeticException e) {
             warning("increment", e);
         }
@@ -947,6 +954,11 @@ search:     for (;;) {
         }
 
         /** Delegates to the enclosing vector. */
+        @Override Vector createTransform(final double scale, final double offset) {
+            return Vector.this.transform(scale, offset).subSampling(first, step, length);
+        }
+
+        /** Delegates to the enclosing vector. */
         @Override Vector createSubSampling(int first, int step, final int length) {
             first = toBacking(first);
             step *= this.step;
@@ -1007,9 +1019,10 @@ search:     for (;;) {
     }
 
     /**
-     * If this vector is a view over another vector, returns the backing vector.
-     * Otherwise returns {@code this}. If this method is overridden, it should be
-     * together with the {@link #toBacking(int[])} method.
+     * If this vector is a view over a subset of another vector, returns the backing vector.
+     * Otherwise returns {@code this}. If this method is overridden, it should be together
+     * with the {@link #toBacking(int[])} method. This method shall not be overridden when
+     * the view transform the values.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     Vector backingVector() {
@@ -1021,7 +1034,7 @@ search:     for (;;) {
      * If there is no such backing vector, then returns a clone of the given array.
      * This method must also check index validity.
      *
-     * <p>Only subclasses that are views of this vector will override this method.</p>
+     * <p>Only subclasses that are views over a subset of this vector will override this method.</p>
      *
      * @param  indices  the indexes given by the user.
      * @return the indexes to use. Must be a new array in order to protect it from user changes.
@@ -1138,6 +1151,11 @@ search:     for (;;) {
         }
 
         /** Delegates to the enclosing vector. */
+        @Override Vector createTransform(final double scale, final double offset) {
+            return Vector.this.transform(scale, offset).pick(indices);
+        }
+
+        /** Delegates to the enclosing vector. */
         @Override Vector createSubSampling(int first, final int step, final int length) {
             final int[] ni = new int[length];
             if (step == 1) {
@@ -1206,7 +1224,8 @@ search:     for (;;) {
     }
 
     /**
-     * Implementation of {@link #concatenate(Vector)} to be overridden by subclasses.
+     * Implementation of {@link #concatenate(Vector)} after argument has been validated.
+     * Provides a more convenient (but non-essential) overriding point for subclasses.
      */
     Vector createConcatenate(final Vector toAppend) {
         return new ConcatenatedVector(this, toAppend);
@@ -1224,6 +1243,41 @@ search:     for (;;) {
     public final Vector reverse() {
         final int length = size();
         return (length > 1) ? subSampling(length-1, -1, length) : this;
+    }
+
+    /**
+     * Returns a view of this vector with all values transformed by the given linear equation.
+     * If {@code scale} = 1 and {@code offset} = 0, then this method returns {@code this}.
+     * Otherwise this method returns a vector where each value at index <var>i</var> is computed
+     * by {@code doubleValue(i)} × {@code scale} + {@code offset}.
+     * The values are computed on-the-fly; they are not copied.
+     *
+     * @param  scale   the scale factor to apply on each value, or 1 if none.
+     * @param  offset  the offset to apply on each value, or 0 if none.
+     * @return a vector with values computed by {@code doubleValue(i)} × {@code scale} + {@code offset}.
+     * @throws IllegalArgumentException if an argument is NaN or infinite.
+     *
+     * @since 1.0
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Vector transform(final double scale, final double offset) {
+        if (scale == 1 && offset == 0) {
+            return this;
+        }
+        ArgumentChecks.ensureFinite("scale",  scale);
+        ArgumentChecks.ensureFinite("offset", offset);
+        if (scale == 0) {
+            return new SequenceVector.Doubles(Double.class, 0, 0, size());
+        }
+        return createTransform(scale, offset);
+    }
+
+    /**
+     * Implementation of {@link #createTransform(double, double)} after arguments have been validated.
+     * Provides a more convenient (but non-essential) overriding point for subclasses.
+     */
+    Vector createTransform(final double scale, final double offset) {
+        return new LinearlyDerivedVector(this, scale, offset);
     }
 
     /**

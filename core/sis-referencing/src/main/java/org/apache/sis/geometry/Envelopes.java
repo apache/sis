@@ -214,15 +214,15 @@ public final class Envelopes extends Static {
                  *
                  *     !Utilities.deepEquals(sourceCRS, targetCRS, ComparisonMode.ALLOW_VARIANT)
                  *
-                 * but it would not be very advantageous if testing the condition is almost as long as computing
-                 * the AOI. For now we keep != as a very cheap test which will work quite often.
+                 * but it would not be very advantageous if testing the condition is almost as long as computing the AOI.
+                 * For now we keep != as a very cheap test which will work quite often.
                  */
                 DefaultGeographicBoundingBox areaOfInterest = null;
                 if (sourceCRS != targetCRS) try {
                     final DefaultGeographicBoundingBox targetAOI;
                     final ReferencingServices converter = ReferencingServices.getInstance();
-                    areaOfInterest = converter.setBounds(source, null, true);      // Should be first.
-                    targetAOI      = converter.setBounds(target, null, true);
+                    areaOfInterest = converter.setBounds(source, null, "findOperation");                // Should be first.
+                    targetAOI      = converter.setBounds(target, null, "findOperation");
                     if (areaOfInterest == null) {
                         areaOfInterest = targetAOI;
                     } else {
@@ -742,7 +742,7 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
             boolean testMax = false;            // Tells if we are testing the minimal or maximal value.
             do {
                 final double extremum = testMax ? axis.getMaximumValue() : axis.getMinimumValue();
-                if (Double.isInfinite(extremum) || Double.isNaN(extremum)) {
+                if (!Double.isFinite(extremum)) {
                     /*
                      * The axis is unbounded. It should always be the case when the target CRS is
                      * a map projection, in which case this loop will finish soon and this method
@@ -983,7 +983,7 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
         int dimension = envelope.getDimension();
         while (dimension != 0) {
             final double length = envelope.getSpan(dimension - 1);
-            if (!Double.isNaN(length) && !Double.isInfinite(length)) {
+            if (Double.isFinite(length)) {
                 break;
             }
             dimension--;

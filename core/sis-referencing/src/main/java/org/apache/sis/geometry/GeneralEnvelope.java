@@ -972,7 +972,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     }
 
     /**
-     * Ensures that <var>lower</var> &lt;= <var>upper</var> for every dimensions.
+     * Ensures that <var>lower</var> ≦ <var>upper</var> for every dimensions.
      * If a {@linkplain #getUpper(int) upper ordinate value} is less than a
      * {@linkplain #getLower(int) lower ordinate value}, then there is a choice:
      *
@@ -1004,7 +1004,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             final int iUpper = iLower + d;
             final double lower = ordinates[iLower];
             final double upper = ordinates[iUpper];
-            if (isNegative(upper - lower)) {
+            if (isNegative(upper - lower)) {                            // Use 'isNegative' for catching [+0 … -0] range.
                 final CoordinateSystemAxis axis = getAxis(crs, i);
                 if (isWrapAround(axis)) {
                     ordinates[iLower] = axis.getMinimumValue();

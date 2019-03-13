@@ -412,7 +412,7 @@ public final class NTv2 extends AbstractProvider {
                 }
                 final Object old = header.put(key, value);
                 if (old != null && !old.equals(value)) {
-                    throw new FactoryException(Errors.format(Errors.Keys.DuplicatedElement_1, key));
+                    throw new FactoryException(Errors.format(Errors.Keys.KeyCollision_1, key));
                 }
                 buffer.position(position += RECORD_LENGTH - KEY_LENGTH);
             }

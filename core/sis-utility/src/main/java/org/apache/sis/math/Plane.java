@@ -242,6 +242,7 @@ public class Plane implements Cloneable, Serializable {
      * @param  y  vector of <var>y</var> coordinates.
      * @param  z  vector of <var>z</var> values.
      * @return an estimation of the Pearson correlation coefficient.
+     *         The closer this coefficient is to +1 or -1, the better the fit.
      * @throws IllegalArgumentException if <var>x</var>, <var>y</var> and <var>z</var> do not have the same length.
      */
     public double fit(final double[] x, final double[] y, final double[] z) {
@@ -263,6 +264,7 @@ public class Plane implements Cloneable, Serializable {
      * @param  y  vector of <var>y</var> coordinates.
      * @param  z  vector of <var>z</var> values.
      * @return an estimation of the Pearson correlation coefficient.
+     *         The closer this coefficient is to +1 or -1, the better the fit.
      * @throws IllegalArgumentException if <var>x</var>, <var>y</var> and <var>z</var> do not have the same length.
      *
      * @since 0.8
@@ -311,6 +313,7 @@ public class Plane implements Cloneable, Serializable {
      * @param  ny  number of rows.
      * @param  z   values of a matrix of {@code nx} columns by {@code ny} rows organized in a row-major fashion.
      * @return an estimation of the Pearson correlation coefficient.
+     *         The closer this coefficient is to +1 or -1, the better the fit.
      * @throws IllegalArgumentException if <var>z</var> does not have the expected length or if a <var>z</var>
      *         value is {@link Double#NaN}.
      *
@@ -340,6 +343,7 @@ public class Plane implements Cloneable, Serializable {
      *
      * @param  points  the three-dimensional points.
      * @return an estimation of the Pearson correlation coefficient.
+     *         The closer this coefficient is to +1 or -1, the better the fit.
      * @throws MismatchedDimensionException if a point is not three-dimensional.
      */
     public double fit(final Iterable<? extends DirectPosition> points) {

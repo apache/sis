@@ -385,7 +385,7 @@ public final class Types extends Static {
             try {
                 return super.toString(locale);
             } catch (MissingResourceException e) {
-                Logging.recoverableException(Logging.getLogger(Loggers.LOCALIZATION), ResourceInternationalString.class, "toString", e);
+                Logging.ignorableException(Logging.getLogger(Loggers.LOCALIZATION), ResourceInternationalString.class, "toString", e);
                 return fallback();
             }
         }

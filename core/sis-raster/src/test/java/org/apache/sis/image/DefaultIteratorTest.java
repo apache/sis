@@ -154,7 +154,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         }
         expected = new float[StrictMath.max(subMaxX - subMinX, 0) * StrictMath.max(subMaxY - subMinY, 0) * numBands];
         final WritableRaster raster = Raster.createWritableRaster(new PixelInterleavedSampleModel(dataType,
-                width, height, numBands, width * numBands, ArraysExt.sequence(0, numBands)), new Point(xmin, ymin));
+                width, height, numBands, width * numBands, ArraysExt.range(0, numBands)), new Point(xmin, ymin));
         /*
          * At this point, all data structures have been created an initialized to zero sample values.
          * Now fill the data structures with arbitrary values.

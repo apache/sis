@@ -267,9 +267,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         if (columns == null) {
             columnIndices = null;
         } else {
-            if (columns.length == 0) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "columns"));
-            }
+            ArgumentChecks.ensureNonEmpty("columns", columns);
             columnIndices = DefaultTreeTable.createColumnIndices(columns);
         }
     }

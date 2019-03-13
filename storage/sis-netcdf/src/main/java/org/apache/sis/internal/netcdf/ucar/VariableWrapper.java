@@ -24,6 +24,7 @@ import javax.measure.Unit;
 import ucar.ma2.Array;
 import ucar.ma2.Section;
 import ucar.ma2.InvalidRangeException;
+import ucar.nc2.Group;
 import ucar.nc2.Attribute;
 import ucar.nc2.VariableIF;
 import ucar.nc2.dataset.Enhancements;
@@ -123,6 +124,16 @@ final class VariableWrapper extends Variable {
             }
         }
         return super.getFilename();
+    }
+
+    /**
+     * If this element is member of a group, returns the name of that group.
+     * Otherwise returns {@code null}.
+     */
+    @Override
+    public String getGroupName() {
+        final Group parent = variable.getParentGroup();
+        return (parent != null) ? parent.getShortName() : null;
     }
 
     /**
