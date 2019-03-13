@@ -244,6 +244,13 @@
         <include name="*/*/src/main/resources/META-INF/services/org.apache.sis.storage.DataStoreProvider"/>
       </fileset>
     </concat>
+
+    <!-- NetCDF conventions to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.internal.netcdf.Convention" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.apache.sis.internal.netcdf.Convention"/>
+      </fileset>
+    </concat>
   </target>
 
   <!--
