@@ -174,14 +174,14 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             final DataType type = variable.getDataType();
             /*
              * At this point we found a variable for which to create a resource. Most of the time, there is nothing else to do;
-             * the resource will have a single variable and the same name than that unique variable. However in some cases, the
-             * we should put other variables together with the one we just found. Example:
+             * the resource will have a single variable and the same name than that unique variable.  However in some cases, we
+             * should put other variables together with the one we just found. Example:
              *
              *    1) baroclinic_eastward_sea_water_velocity
              *    2) baroclinic_northward_sea_water_velocity
              *
              * We use the "eastward" and "northward" keywords for recognizing such pairs, providing that everything else in the
-             * name is the same and the grid geometry are the same.
+             * name is the same and the grid geometries are the same.
              */
             for (final String keyword : VECTOR_COMPONENT_NAMES) {
                 final int prefixLength = name.indexOf(keyword);
@@ -276,21 +276,21 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
      * Creates a single sample dimension for the given variable.
      *
      * @param  builder  the builder to use for creating the sample dimension.
-     * @param  data     the data for which to create a sample dimension.
+     * @param  band     the data for which to create a sample dimension.
      * @throws TransformException if an error occurred while using the transfer function.
      */
-    private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable data) throws TransformException {
+    private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable band) throws TransformException {
         /*
          * Take the minimum and maximum values as determined by Apache SIS through the Convention class.  The UCAR library
          * is used only as a fallback. We give precedence to the range computed by Apache SIS instead than the range given
          * by UCAR because we need the range of packed values instead than the range of converted values.
          */
-        NumberRange<?> range = convention.validRange(data);
+        NumberRange<?> range = convention.validRange(band);
         if (range == null) {
-            range = data.getRangeFallback();                                // Fallback to UCAR library may happen here.
+            range = band.getRangeFallback();                                // Fallback to UCAR library may happen here.
         }
         if (range != null) {
-            final MathTransform1D mt = convention.transferFunction(data).getTransform();
+            final MathTransform1D mt = convention.transferFunction(band).getTransform();
             if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
                 /*
                  * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
@@ -311,7 +311,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                     isMaxIncluded = isMinIncluded;
                     isMinIncluded = sb;
                 }
-                if (data.getDataType().number < Numbers.FLOAT && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
+                if (band.getDataType().number < Numbers.FLOAT && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
                     range = NumberRange.create(Math.round(minimum), isMinIncluded, Math.round(maximum), isMaxIncluded);
                 } else {
                     range = NumberRange.create(minimum, isMinIncluded, maximum, isMaxIncluded);
@@ -323,12 +323,12 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
              * unsigned integer with a signed one).
              */
             if (range.isEmpty()) {
-                data.warning(GridResource.class, "getSampleDimensions", Resources.Keys.IllegalValueRange_4,
-                        data.getFilename(), data.getName(), range.getMinValue(), range.getMaxValue());
+                band.warning(GridResource.class, "getSampleDimensions", Resources.Keys.IllegalValueRange_4,
+                        band.getFilename(), band.getName(), range.getMinValue(), range.getMaxValue());
             } else {
-                String name = data.getDescription();
-                if (name == null) name = data.getName();
-                builder.addQuantitative(name, range, mt, data.getUnit());
+                String name = band.getDescription();
+                if (name == null) name = band.getName();
+                builder.addQuantitative(name, range, mt, band.getUnit());
             }
         }
         /*
@@ -338,9 +338,9 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
          * values created by 'replaceNaN'.
          */
         boolean setBackground = true;
-        int ordinal = data.hasRealValues() ? 0 : -1;
+        int ordinal = band.hasRealValues() ? 0 : -1;
         final CharSequence[] names = new CharSequence[2];
-        for (final Map.Entry<Number,Object> entry : data.getNodataValues().entrySet()) {
+        for (final Map.Entry<Number,Object> entry : band.getNodataValues().entrySet()) {
             final Number n;
             if (ordinal >= 0) {
                 n = MathFunctions.toNanFloat(ordinal++);        // Must be consistent with Variable.replaceNaN(Object).
@@ -367,7 +367,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
             }
             builder.addQualitative(name, n, n);
         }
-        return builder.setName(data.getName()).build();
+        return builder.setName(band.getName()).build();
     }
 
     /**

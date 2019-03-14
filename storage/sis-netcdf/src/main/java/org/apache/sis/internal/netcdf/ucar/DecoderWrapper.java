@@ -40,6 +40,7 @@ import ucar.nc2.ft.FeatureDatasetFactoryManager;
 import ucar.nc2.ft.FeatureCollection;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Grid;
@@ -453,6 +454,16 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                     ds.enhance(mode);
                 }
                 systems = ds.getCoordinateSystems();
+                /*
+                 * If the UCAR library does not see any coordinate system in the file, verify if there is
+                 * a custom convention recognizing the axes. CSBuilderFallback uses the mechanism defined
+                 * by Apache SIS for determining variable role.
+                 */
+                if (systems.isEmpty() && convention() != Convention.DEFAULT) {
+                    final CSBuilderFallback builder = new CSBuilderFallback(this);
+                    builder.buildCoordinateSystems(ds);
+                    systems = ds.getCoordinateSystems();
+                }
             }
             geometries = new Grid[(systems != null) ? systems.size() : 0];
             for (int i=0; i<geometries.length; i++) {

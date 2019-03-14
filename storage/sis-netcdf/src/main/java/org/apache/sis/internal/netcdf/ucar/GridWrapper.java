@@ -17,8 +17,10 @@
 package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Objects;
 import java.io.IOException;
 import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
@@ -115,12 +117,12 @@ final class GridWrapper extends Grid {
      * @return localization grid with given dimension order (may be {@code this}), or {@code null}.
      */
     private GridWrapper derive(final List<Dimension> dimensions) {
-        if (domain.equals(dimensions)) {
+        if (containsAll(dimensions, true)) {
             return this;
         }
         return reordered.computeIfAbsent(dimensions, k -> {
             // Want same set of dimensions in different order.
-            if (domain.size() == k.size() && domain.containsAll(k)) {
+            if (containsAll(k, false)) {
                 return new GridWrapper(this, k);
             }
             return null;
@@ -140,6 +142,48 @@ final class GridWrapper extends Grid {
             return derive(variable.getDimensions());
         }
         return null;
+    }
+
+    /**
+     * Returns {@code true} if this grid contains all given dimensions. The {@code ordered} argument
+     * specifies whether the dimensions must be in exact same order or can be in any order.
+     */
+    private boolean containsAll(List<Dimension> dimensions, final boolean ordered) {
+        final int n = domain.size();
+        if (dimensions.size() != n) {
+            return false;
+        }
+        boolean copied = false;
+next:   for (int i=n; --i >= 0;) {
+            final Dimension d1 = domain.get(i);
+            if (ordered) {
+                if (equals(d1, dimensions.get(i))) {
+                    continue;
+                }
+            } else {
+                for (int j = dimensions.size(); --j >= 0;) {
+                    if (equals(d1, dimensions.get(j))) {
+                        if (!copied) {
+                            dimensions = new ArrayList<>(dimensions);
+                            copied = true;
+                        }
+                        dimensions.remove(j);
+                        continue next;
+                    }
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Returns {@code true} if the given dimensions are equal, comparing only names and lengths.
+     * This is different than {@link Dimension#equals(Object)} which compares more aspects like
+     * whether the dimension are unlimited.
+     */
+    private static boolean equals(final Dimension d1, final Dimension d2) {
+        return Objects.equals(d1.getShortName(), d2.getShortName()) && d1.getLength() == d2.getLength();
     }
 
     /**
