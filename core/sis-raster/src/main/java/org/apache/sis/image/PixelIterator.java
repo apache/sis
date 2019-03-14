@@ -25,14 +25,17 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
+import java.awt.image.SampleModel;
+import java.awt.image.SinglePixelPackedSampleModel;
+import java.awt.image.MultiPixelPackedSampleModel;
 import java.util.NoSuchElementException;
 import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.measure.NumberRange;
 
 import static java.lang.Math.floorDiv;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
-import org.apache.sis.measure.NumberRange;
 
 
 /**
@@ -56,6 +59,7 @@ import org.apache.sis.measure.NumberRange;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -80,11 +84,6 @@ public abstract class PixelIterator {
      * The {@link #currentRaster} shall always have this number of bands.
      */
     final int numBands;
-
-    /**
-     * Value range supported by storage.
-     */
-    final NumberRange sampleRange;
 
     /**
      * The domain, in pixel coordinates, of the region traversed by this pixel iterator.
@@ -131,7 +130,6 @@ public abstract class PixelIterator {
         image           = null;
         currentRaster   = data;
         numBands        = data.getNumBands();
-        sampleRange     = rangeForDataType(data.getSampleModel().getDataType());
         tileWidth       = data.getWidth();
         tileHeight      = data.getHeight();
         tileGridXOffset = data.getMinX();
@@ -161,7 +159,6 @@ public abstract class PixelIterator {
         final Rectangle bounds;
         image           = data;
         numBands        = data.getSampleModel().getNumBands();
-        sampleRange     = rangeForDataType(data.getSampleModel().getDataType());
         tileWidth       = data.getTileWidth();
         tileHeight      = data.getTileHeight();
         tileGridXOffset = data.getTileGridXOffset();
@@ -177,16 +174,6 @@ public abstract class PixelIterator {
         tileUpperY      =  ceilDiv(Math.subtractExact(upperY, tileGridYOffset), tileHeight);
         windowWidth     = (window != null) ? window.width  : 0;
         windowHeight    = (window != null) ? window.height : 0;
-    }
-
-    private static NumberRange<?> rangeForDataType(int dataType) {
-        switch (dataType) {
-            case DataBuffer.TYPE_BYTE : return NumberRange.create(0, true, 255, true);
-            case DataBuffer.TYPE_SHORT : return NumberRange.create(Short.MIN_VALUE, true, Short.MAX_VALUE, true);
-            case DataBuffer.TYPE_USHORT : return NumberRange.create(0, true, 65535, true);
-            case DataBuffer.TYPE_INT : return NumberRange.create(Integer.MIN_VALUE, true, Integer.MAX_VALUE, true);
-            default : return NumberRange.create(Double.NEGATIVE_INFINITY, true, Double.POSITIVE_INFINITY, true);
-        }
     }
 
     /**
@@ -420,6 +407,57 @@ public abstract class PixelIterator {
     }
 
     /**
+     * Returns the range of sample values that can be stored in each band of the rendered image or raster.
+     * The range depends on the data type (byte, integer, <i>etc.</i>) and the number of bits per sample.
+     * If the samples are stored as floating point values, then the range is infinite (unbounded).
+     *
+     * <p>{@linkplain SinglePixelPackedSampleModel Some models} do not allow the same range of values for all bands.
+     * In such case, this method returns the largest range allowed by the model.</p>
+     *
+     * @return the range of valid sample values. May be unbounded.
+     */
+    public NumberRange<?> getSampleRange() {
+        final SampleModel model = (currentRaster != null) ? currentRaster.getSampleModel() : image.getSampleModel();
+        int numBits;
+        if (model instanceof MultiPixelPackedSampleModel) {
+            /*
+             * This model supports only unsigned integer types: DataBuffer.TYPE_BYTE, DataBuffer.TYPE_USHORT
+             * or DataBuffer.TYPE_INT (considered unsigned in the context of this sample model).  The number
+             * of bits per sample is defined by the "pixel bit stride".
+             */
+            numBits = ((MultiPixelPackedSampleModel) model).getPixelBitStride();
+        } else if (model instanceof SinglePixelPackedSampleModel) {
+            /*
+             * This model supports only unsigned integer types: TYPE_BYTE, TYPE_USHORT, TYPE_INT (considered
+             * unsigned in the context of this sample model). The number of bits may vary for each band.
+             */
+            numBits = 0;
+            for (int mask : ((SinglePixelPackedSampleModel) model).getBitMasks()) {
+                final int n = Integer.bitCount(mask);
+                if (n > numBits) numBits = n;
+            }
+        } else {
+            /*
+             * For all other sample models, the range is determined by the data type.
+             * The following cases invoke the NumberRange constructor which best fit the data type.
+             */
+            int type = DataBuffer.TYPE_UNDEFINED;
+            if (model != null) {
+                switch (type = model.getDataType()) {
+                    case DataBuffer.TYPE_BYTE:   return NumberRange.create((short) 0,                 true,  (short)   0xFF,            true);
+                    case DataBuffer.TYPE_USHORT: return NumberRange.create(        0,                 true,          0xFFFF,            true);
+                    case DataBuffer.TYPE_SHORT:  return NumberRange.create(Short.  MIN_VALUE,         true,  Short.  MAX_VALUE,         true);
+                    case DataBuffer.TYPE_INT:    return NumberRange.create(Integer.MIN_VALUE,         true,  Integer.MAX_VALUE,         true);
+                    case DataBuffer.TYPE_FLOAT:  return NumberRange.create(Float.  NEGATIVE_INFINITY, false, Float.  POSITIVE_INFINITY, false);
+                    case DataBuffer.TYPE_DOUBLE: return NumberRange.create(Double. NEGATIVE_INFINITY, false, Double. POSITIVE_INFINITY, false);
+                }
+            }
+            throw new IllegalStateException(Errors.format(Errors.Keys.UnknownType_1, type));
+        }
+        return NumberRange.create(0, true, (1 << numBits) - 1, true);
+    }
+
+    /**
      * Returns the order in which pixels are traversed. {@link SequenceType#LINEAR} means that pixels on the first
      * row are traversed from left to right, then pixels on the second row from left to right, <i>etc.</i>
      * A {@code null} value means that the iteration order is unspecified.
@@ -429,17 +467,7 @@ public abstract class PixelIterator {
     public abstract SequenceType getIterationOrder();
 
     /**
-     * Returns the pixel coordinates of the region where this iterator is doing the iteration.
-     * If no region was specified at construction time, then this method returns the image or raster bounds.
-     *
-     * @return pixel coordinates of the iteration region.
-     */
-    public Rectangle getDomain() {
-        return new Rectangle(lowerX, lowerY, upperX - lowerX, upperY - lowerY);
-    }
-
-    /**
-     * Returns the number of bands (samples per pixel) from Image or Raster within this Iterator.
+     * Returns the number of bands (samples per pixel) in the image or raster.
      *
      * @return number of bands.
      */
@@ -448,12 +476,13 @@ public abstract class PixelIterator {
     }
 
     /**
-     * Returns the numeric range supported by datas from Image or Raster within this Iterator.
+     * Returns the pixel coordinates of the region where this iterator is doing the iteration.
+     * If no region was specified at construction time, then this method returns the image or raster bounds.
      *
-     * @return primitive samples range.
+     * @return pixel coordinates of the iteration region.
      */
-    public NumberRange<?> getSampleRange() {
-        return sampleRange;
+    public Rectangle getDomain() {
+        return new Rectangle(lowerX, lowerY, upperX - lowerX, upperY - lowerY);
     }
 
     /**

@@ -25,18 +25,16 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.nio.FloatBuffer;
+import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.ArraysExt;
 import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.opengis.coverage.grid.SequenceType;
+
+import static org.junit.Assert.*;
+
 
 /**
  * This base class tests the linear read-write iterator
@@ -47,7 +45,7 @@ import org.opengis.coverage.grid.SequenceType;
  * @version 1.0
  * @since   1.0
  */
-public class LinearIteratorTest extends TestCase {
+public final strictfp class LinearIteratorTest extends TestCase {
     /**
      * The pixel iterator being tested.
      * This field is initialized by a call to one of the {@code createPixelIterator(…)} methods.
@@ -230,7 +228,7 @@ public class LinearIteratorTest extends TestCase {
             }
             value += 7;             // Arbitrary offset.
         }
-        
+
         assertEquals("Number of expected values", expected.length, n);
         return image;
     }
