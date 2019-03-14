@@ -20,6 +20,7 @@ import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -31,6 +32,7 @@ import org.apache.sis.util.ArgumentChecks;
 
 import static java.lang.Math.floorDiv;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
+import org.apache.sis.measure.NumberRange;
 
 
 /**
@@ -80,6 +82,11 @@ public abstract class PixelIterator {
     final int numBands;
 
     /**
+     * Value range supported by storage.
+     */
+    final NumberRange sampleRange;
+
+    /**
      * The domain, in pixel coordinates, of the region traversed by this pixel iterator.
      * This may be smaller than the image or raster bounds, but not greater.
      * The lower values are inclusive and the upper values exclusive.
@@ -124,6 +131,7 @@ public abstract class PixelIterator {
         image           = null;
         currentRaster   = data;
         numBands        = data.getNumBands();
+        sampleRange     = rangeForDataType(data.getSampleModel().getDataType());
         tileWidth       = data.getWidth();
         tileHeight      = data.getHeight();
         tileGridXOffset = data.getMinX();
@@ -153,6 +161,7 @@ public abstract class PixelIterator {
         final Rectangle bounds;
         image           = data;
         numBands        = data.getSampleModel().getNumBands();
+        sampleRange     = rangeForDataType(data.getSampleModel().getDataType());
         tileWidth       = data.getTileWidth();
         tileHeight      = data.getTileHeight();
         tileGridXOffset = data.getTileGridXOffset();
@@ -168,6 +177,16 @@ public abstract class PixelIterator {
         tileUpperY      =  ceilDiv(Math.subtractExact(upperY, tileGridYOffset), tileHeight);
         windowWidth     = (window != null) ? window.width  : 0;
         windowHeight    = (window != null) ? window.height : 0;
+    }
+
+    private static NumberRange<?> rangeForDataType(int dataType) {
+        switch (dataType) {
+            case DataBuffer.TYPE_BYTE : return NumberRange.create(0, true, 255, true);
+            case DataBuffer.TYPE_SHORT : return NumberRange.create(Short.MIN_VALUE, true, Short.MAX_VALUE, true);
+            case DataBuffer.TYPE_USHORT : return NumberRange.create(0, true, 65535, true);
+            case DataBuffer.TYPE_INT : return NumberRange.create(Integer.MIN_VALUE, true, Integer.MAX_VALUE, true);
+            default : return NumberRange.create(Double.NEGATIVE_INFINITY, true, Double.POSITIVE_INFINITY, true);
+        }
     }
 
     /**
@@ -417,6 +436,24 @@ public abstract class PixelIterator {
      */
     public Rectangle getDomain() {
         return new Rectangle(lowerX, lowerY, upperX - lowerX, upperY - lowerY);
+    }
+
+    /**
+     * Returns the number of bands (samples per pixel) from Image or Raster within this Iterator.
+     *
+     * @return number of bands.
+     */
+    public int getNumBands() {
+        return numBands;
+    }
+
+    /**
+     * Returns the numeric range supported by datas from Image or Raster within this Iterator.
+     *
+     * @return primitive samples range.
+     */
+    public NumberRange<?> getSampleRange() {
+        return sampleRange;
     }
 
     /**
