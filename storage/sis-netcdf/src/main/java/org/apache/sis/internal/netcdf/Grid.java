@@ -44,7 +44,10 @@ import org.apache.sis.util.NullArgumentException;
 
 /**
  * Information about the grid geometry and the conversion from grid coordinates to geodetic coordinates.
- * More than one variable may share the same grid.
+ * A grid is associated to all variables that are georeferenced coverages and the same grid may be shared
+ * by many variables. The {@linkplain #getSourceDimensions() number of source dimensions} is normally the
+ * number of {@linkplain Variable#getGridDimensions() netCDF dimensions in the variable}, but may be less
+ * if a variable dimensions should considered as bands instead than spatio-temporal dimensions.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -106,27 +109,32 @@ public abstract class Grid extends NamedElement {
 
     /**
      * Returns a localization grid having the same dimensions than this grid but in a different order.
-     * This method is invoked by {@link Variable#getGrid()} when the localization grids created by
+     * This method is invoked by {@link Variable#getGrid} when the localization grids created by
      * {@link Decoder} subclasses are not sufficient and must be tailored for a particular variable.
-     * Subclasses should verify that the given {@code dimensions} array meets the following conditions:
+     * Subclasses shall verify that the given {@code dimensions} array met the following conditions:
      *
      * <ul>
-     *   <li>The length of the given array should be equal to {@link #getSourceDimensions()}.</li>
-     *   <li>The array should contain all elements contained in {@link #getDimensions()}.</li>
+     *   <li>The length of the given array is equal or greater than {@link #getSourceDimensions()}.</li>
+     *   <li>The array contains all elements contained in {@link #getDimensions()}.
+     *       Additional elements, if any, are ignored (they may be considered as bands by the caller).</li>
      * </ul>
      *
      * If elements in the given array are in same order than elements in {@link #getDimensions()} list,
-     * then this method returns {@code this}. If the given dimensions are unknown to this grid,
-     * then this method returns {@code null}. Otherwise a grid with the given dimensions is returned.
+     * then this method returns {@code this}. If the given array does not contain all grid dimensions,
+     * then this method returns {@code null}. Otherwise a grid with reordered dimensions is returned.
+     * It is caller's responsibility to verify if the grid has less dimensions than the given argument.
      *
-     * @param  dimensions  the dimensions of this grid but potentially in a different order.
-     * @return localization grid with given dimension order (may be {@code this}), or {@code null}.
+     * @param  dimensions  the desired dimensions, in order. May contain more dimensions than this grid.
+     * @return localization grid with the exact same set of dimensions than this grid (no more and no less),
+     *         but in the order specified by the given array (ignoring dimensions not in this grid).
+     *         May be {@code this} or {@code null}.
      */
-    protected abstract Grid derive(Dimension[] dimensions);
+    protected abstract Grid forDimensions(Dimension[] dimensions);
 
     /**
      * Returns the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>grid</em>.
+     * It should be equal to the size of {@link #getDimensions()} list.
      *
      * @return number of grid dimensions.
      */
@@ -135,7 +143,7 @@ public abstract class Grid extends NamedElement {
     /**
      * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>coordinate reference system</em>.
-     * It should be equal to the size of the array returned by {@link #getAxes(Decoder)},
+     * It should be equal to the length of the array returned by {@link #getAxes(Decoder)},
      * but caller should be robust to inconsistencies.
      *
      * @return number of CRS dimensions.
@@ -146,6 +154,18 @@ public abstract class Grid extends NamedElement {
      * Returns the dimensions of this grid, in netCDF (reverse of "natural") order. Each element in the list
      * contains the number of cells in the dimension, together with implementation-specific information.
      * The list length should be equal to {@link #getSourceDimensions()}.
+     *
+     * <p>This list is usually equal to the {@link Variable#getGridDimensions()} list for all variables
+     * that are {@linkplain Variable#getGrid associated to this grid}. But those lists can also differ
+     * in the following aspects:</p>
+     *
+     * <ul>
+     *   <li>This grid may have less dimensions than the variable using this grid. In such case the additional
+     *       dimensions in the variable can be considered as bands instead than spatiotemporal dimensions.</li>
+     *   <li>The dimensions in this grid may have a different {@linkplain Dimension#length() length} than the
+     *       dimensions in the variable. In such case {@link Variable#getGridGeometry()} is responsible for
+     *       concatenating a scale factor to the "grid to CRS" transform.</li>
+     * </ul>
      *
      * @return the source dimensions of this grid, in netCDF order.
      *
@@ -303,7 +323,7 @@ public abstract class Grid extends NamedElement {
     /**
      * Returns an object containing the grid size, the CRS and the conversion from grid indices to CRS coordinates.
      * {@code GridGeometry} is the public object exposed to users. It uses the dimensions given by axes, which are
-     * usually the same dimensions that the ones of the variable using this grid geometry but not always.
+     * usually the same dimensions than the ones of the variable using this grid geometry but not always.
      * Caller may need to call {@link GridExtent#resize(long...)} for adjusting.
      *
      * @param   decoder   the decoder for which grid geometries are constructed.

@@ -228,7 +228,10 @@ public class Convention {
      * This happen for example if a netCDF file defines two grids for the same dimensions.
      * The order in returned array will be the axis order in the Coordinate Reference System.
      *
-     * <p>The default implementation returns {@code null}.</p>
+     * <p>This information is normally provided by the {@value ucar.nc2.constants.CF#COORDINATES} attribute,
+     * which is processed by the UCAR library (which is why we do not read this attribute ourselves here).
+     * This method is provided as a fallback when no such attribute is found.
+     * The default implementation returns {@code null}.</p>
      *
      * @param  data  the variable for which the list of axis variables are desired, in CRS order.
      * @return names of the variables containing axis values, or {@code null} if this

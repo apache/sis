@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Objects;
 import java.io.IOException;
 import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
@@ -84,7 +83,7 @@ final class GridWrapper extends Grid {
     GridWrapper(final CoordinateSystem cs) {
         netcdfCS  = cs;
         domain    = cs.getDomain();
-        reordered = new HashMap<>();
+        reordered = new HashMap<>(4);               // Will typically contain 0 or 1 entry.
     }
 
     /**
@@ -99,30 +98,35 @@ final class GridWrapper extends Grid {
 
     /**
      * Returns a localization grid having the same dimensions than this grid but in a different order.
-     * This method is invoked by {@link VariableWrapper#getGrid()} when the localization grids created
-     * by {@link Decoder} subclasses are not sufficient and must be tailored for a particular variable.
-     * Returns {@code null} the the given dimensions are not members of this grid.
+     * This method is invoked by {@link VariableWrapper#getGrid} when the localization grids created
+     * by {@link DecoderWrapper} are not sufficient and must be tailored for a particular variable.
+     * Returns {@code null} if this grid contains a dimension not in the given list.
      */
     @Override
-    protected Grid derive(final org.apache.sis.internal.netcdf.Dimension[] dimensions) {
-        return derive(UnmodifiableArrayList.wrap(DimensionWrapper.unwrap(dimensions)));
+    protected Grid forDimensions(final org.apache.sis.internal.netcdf.Dimension[] dimensions) {
+        return forDimensions(UnmodifiableArrayList.wrap(DimensionWrapper.unwrap(dimensions)));
     }
 
     /**
-     * Returns a localization grid wrapping the same coordinate system than this grid but with dimensions in different order.
-     * This is the implementation of {@link #derive(org.apache.sis.internal.netcdf.Dimension[])} after the Apache SIS objects
-     * have been unwrapped into UCAR objects. Returns {@code null} the the given dimensions are not members of this grid.
+     * Implementation of {@link #forDimensions(org.apache.sis.internal.netcdf.Dimension[])} after the Apache SIS objects
+     * have been unwrapped into UCAR objects.
      *
-     * @param  dimensions  the dimensions of this grid but potentially in a different order.
-     * @return localization grid with given dimension order (may be {@code this}), or {@code null}.
+     * @param  dimensions  the desired dimensions, in order. May contain more dimensions than this grid.
+     * @return localization grid with the exact same set of dimensions than this grid (no more and no less),
+     *         but in the order specified by the given array (ignoring dimensions not in this grid).
+     *         May be {@code this} or {@code null}.
      */
-    private GridWrapper derive(final List<Dimension> dimensions) {
-        if (containsAll(dimensions, true)) {
+    private GridWrapper forDimensions(List<Dimension> dimensions) {
+        if (dimensions.size() > domain.size()) {
+            dimensions = new ArrayList<>(dimensions);
+            dimensions.retainAll(domain);
+        }
+        if (domain.equals(dimensions)) {
             return this;
         }
         return reordered.computeIfAbsent(dimensions, k -> {
             // Want same set of dimensions in different order.
-            if (containsAll(k, false)) {
+            if (domain.size() == k.size() && domain.containsAll(k)) {
                 return new GridWrapper(this, k);
             }
             return null;
@@ -139,51 +143,9 @@ final class GridWrapper extends Grid {
      */
     final GridWrapper forVariable(final VariableIF variable, final List<CoordinateSystem> systems, final String[] axisNames) {
         if (systems.contains(netcdfCS) && containsAllNamedAxes(axisNames)) {
-            return derive(variable.getDimensions());
+            return forDimensions(variable.getDimensions());
         }
         return null;
-    }
-
-    /**
-     * Returns {@code true} if this grid contains all given dimensions. The {@code ordered} argument
-     * specifies whether the dimensions must be in exact same order or can be in any order.
-     */
-    private boolean containsAll(List<Dimension> dimensions, final boolean ordered) {
-        final int n = domain.size();
-        if (dimensions.size() != n) {
-            return false;
-        }
-        boolean copied = false;
-next:   for (int i=n; --i >= 0;) {
-            final Dimension d1 = domain.get(i);
-            if (ordered) {
-                if (equals(d1, dimensions.get(i))) {
-                    continue;
-                }
-            } else {
-                for (int j = dimensions.size(); --j >= 0;) {
-                    if (equals(d1, dimensions.get(j))) {
-                        if (!copied) {
-                            dimensions = new ArrayList<>(dimensions);
-                            copied = true;
-                        }
-                        dimensions.remove(j);
-                        continue next;
-                    }
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Returns {@code true} if the given dimensions are equal, comparing only names and lengths.
-     * This is different than {@link Dimension#equals(Object)} which compares more aspects like
-     * whether the dimension are unlimited.
-     */
-    private static boolean equals(final Dimension d1, final Dimension d2) {
-        return Objects.equals(d1.getShortName(), d2.getShortName()) && d1.getLength() == d2.getLength();
     }
 
     /**
@@ -197,6 +159,7 @@ next:   for (int i=n; --i >= 0;) {
     /**
      * Returns the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>grid</em>.
+     * It should be equal to the size of {@link #getDimensions()} list.
      */
     @Override
     public int getSourceDimensions() {
@@ -206,7 +169,7 @@ next:   for (int i=n; --i >= 0;) {
     /**
      * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>coordinate reference system</em>.
-     * It should be equal to the size of the array returned by {@link #getAxes(Decoder)},
+     * It should be equal to the length of the array returned by {@link #getAxes(Decoder)},
      * but caller should be robust to inconsistencies.
      */
     @Override
