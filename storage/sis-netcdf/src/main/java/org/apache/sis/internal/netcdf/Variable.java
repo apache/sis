@@ -30,6 +30,7 @@ import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
@@ -350,9 +351,17 @@ public abstract class Variable extends NamedElement {
         private double[] gridToDataIndices;
 
         /**
+         * Maps grid dimensions to variable dimensions when those dimensions are not the same. This map should always be empty,
+         * except in the case described in {@link #mapLabelToGridDimensions mapLabelToGridDimensions(…)} method. If non-empty,
+         * then the keys are dimensions in the {@link Grid} and values are corresponding dimensions in the {@link Variable}.
+         */
+        final Map<Dimension,Dimension> gridToVariable;
+
+        /**
          * Only {@link Variable#getGridGeometry()} should instantiate this class.
          */
         private Adjustment() {
+            gridToVariable = new HashMap<>();
         }
 
         /**
@@ -537,7 +546,8 @@ public abstract class Variable extends NamedElement {
          * loop and all dimensions should be the same than the values returned by 'Variable.getGridDimensions()'.
          */
         boolean isIncomplete = false;
-        final Dimension[] dimensions = CollectionsExt.toArray(getGridDimensions(), Dimension.class);
+        final List<Dimension> fromVariable = getGridDimensions();
+        final Dimension[] dimensions = fromVariable.toArray(new Dimension[fromVariable.size()]);
         for (int i=0; i<dimensions.length; i++) {
             isIncomplete |= ((dimensions[i] = domain.remove(dimensions[i])) == null);
         }
@@ -565,10 +575,21 @@ public abstract class Variable extends NamedElement {
                             return null;                               // Warning message already emitted by Adjustment.
                         }
                     }
-                    if ((dimensions[i] = domain.remove(label)) == null) {
+                    /*
+                     * Remembers which dimension from the variable corresponds to a dimension from the grid.
+                     * Those dimensions would have been the same if we were not in a situation where size of
+                     * localization grid is not the same than the data variable size.
+                     */
+                    final Dimension  varDimension = fromVariable.get(i);
+                    final Dimension gridDimension = domain.remove(label);
+                    dimensions[i] = gridDimension;
+                    if (gridDimension == null) {
                         warning(Variable.class, "getGridGeometry",        // Caller (indirectly) for this method.
                                 Resources.Keys.CanNotRelateVariableDimension_3, getFilename(), getName(), label);
                         return null;
+                    }
+                    if (adjustment.gridToVariable.put(gridDimension, varDimension) != null) {
+                        throw new InternalDataStoreException(errors().getString(Errors.Keys.ElementAlreadyPresent_1, gridDimension));
                     }
                 }
             }
@@ -633,16 +654,34 @@ public abstract class Variable extends NamedElement {
                  */
                 List<Dimension> dimensions = getGridDimensions();                       // In netCDF order.
                 if (dimensions.size() > info.getSourceDimensions()) {
-                    dimensions = new ArrayList<>(dimensions);
+                    boolean copied = false;
                     final List<Dimension> toKeep = info.getDimensions();                // Also in netCDF order.
-                    for (int i=0; i<dimensions.size(); i++) {
-                        // TODO: check for indices out of bounds.
-                        final Dimension expected = toKeep.get(i);
-                        // TODO: map grid dimention -> data dimension here.
+                    final int numToKeep = toKeep.size();
+                    for (int i=0; i<numToKeep; i++) {
+                        Dimension expected = toKeep.get(i);
+                        expected = adjustment.gridToVariable.getOrDefault(expected, expected);
+                        /*
+                         * At this point, 'expected' is a dimension of the variable that we expect to find at
+                         * current index 'i'. If we do not find that dimension, then the unexpected dimension
+                         * is assumed to be a band. We usually remove at most one element. If removal results
+                         * in a list too short, it would be a bug in the way we computed 'toKeep'.
+                         */
                         while (!expected.equals(dimensions.get(i))) {
+                            if (!copied) {
+                                copied = true;
+                                dimensions = new ArrayList<>(dimensions);
+                            }
                             dimensions.remove(i);
+                            if (dimensions.size() < numToKeep) {
+                                throw new InternalDataStoreException();     // Should not happen (see above comment).
+                            }
                         }
                     }
+                    /*
+                     * At this point 'dimensions' may still be longer than 'toKeep' but it does not matter.
+                     * We only need that for any index i < numToKeep, dimensions.get(i) corresponds to the
+                     * dimension at the same index in the grid.
+                     */
                 }
                 /*
                  * Compare the size of the variable with the size of the localization grid.
