@@ -36,6 +36,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.j2d.ShapeUtilitiesTest.class,
     org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
     org.apache.sis.internal.referencing.ReferencingUtilitiesTest.class,
+    org.apache.sis.internal.referencing.WraparoundAdjustmentTest.class,
     org.apache.sis.internal.referencing.WKTUtilitiesTest.class,
     org.apache.sis.internal.jaxb.referencing.CodeTest.class,
     org.apache.sis.internal.jaxb.referencing.SecondDefiningParameterTest.class,

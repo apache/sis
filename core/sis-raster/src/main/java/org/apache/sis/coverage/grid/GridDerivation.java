@@ -32,7 +32,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.WraparoundAdjustment;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -473,7 +473,7 @@ public class GridDerivation {
      *
      * @see GridExtent#subsample(int[])
      */
-    public GridDerivation subgrid(Envelope areaOfInterest, double... resolution) {
+    public GridDerivation subgrid(final Envelope areaOfInterest, double... resolution) {
         ensureSubgridNotSet();
         MathTransform cornerToCRS = base.requireGridToCRS();
         subGridSetter = "subgrid";
@@ -502,8 +502,9 @@ public class GridDerivation {
             dimension = baseExtent.getDimension();      // Non-null since 'base.requireGridToCRS()' succeed.
             GeneralEnvelope indices = null;
             if (areaOfInterest != null) {
-                areaOfInterest = ReferencingUtilities.adjustWraparoundAxes(areaOfInterest, base.envelope, baseToAOI);
-                indices = Envelopes.transform(cornerToCRS.inverse(), areaOfInterest);
+                final WraparoundAdjustment adj = new WraparoundAdjustment(areaOfInterest);
+                adj.shiftInto(base.envelope, baseToAOI);
+                indices = adj.result(cornerToCRS.inverse());
                 clipExtent(indices);
             }
             if (indices == null || indices.getDimension() != dimension) {
