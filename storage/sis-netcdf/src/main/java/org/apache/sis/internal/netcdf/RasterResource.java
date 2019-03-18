@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.netcdf;
+package org.apache.sis.internal.netcdf;
 
 import java.util.Map;
 import java.util.List;
@@ -26,19 +26,13 @@ import java.awt.image.DataBuffer;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.internal.netcdf.Decoder;
-import org.apache.sis.internal.netcdf.DataType;
-import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.netcdf.Resources;
-import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
+import org.apache.sis.internal.raster.RasterFactory;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridDerivation;
-import org.apache.sis.internal.netcdf.Convention;
-import org.apache.sis.internal.raster.RasterFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -64,7 +58,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @since   1.0
  * @module
  */
-final class GridResource extends AbstractGridResource implements ResourceOnFileSystem {
+public final class RasterResource extends AbstractGridResource implements ResourceOnFileSystem {
     /**
      * Words used in standard (preferred) or long (if no standard) variable names which suggest
      * that the variable is a component of a vector. Those words are used in heuristic rules
@@ -139,7 +133,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
      * @param  grid     the grid geometry (size, CRS…) of the {@linkplain #data} cube.
      * @param  bands    the variables providing actual data. Shall contain at least one variable.
      */
-    private GridResource(final Decoder decoder, final String name, final GridGeometry grid, final List<Variable> bands)
+    private RasterResource(final Decoder decoder, final String name, final GridGeometry grid, final List<Variable> bands)
             throws IOException, DataStoreException
     {
         super(decoder.listeners);
@@ -152,11 +146,14 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
     }
 
     /**
-     * Creates all grid resources from the given decoder.
+     * Creates all grid coverage resources from the given decoder.
      *
      * @param  decoder  the implementation used for decoding the netCDF file.
+     * @return all grid coverage resources.
+     * @throws IOException if an I/O operation was required and failed.
+     * @throws DataStoreException if a logical error occurred.
      */
-    static List<Resource> create(final Decoder decoder) throws IOException, DataStoreException {
+    public static List<Resource> create(final Decoder decoder) throws IOException, DataStoreException {
         final Variable[]     variables = decoder.getVariables().clone();        // Needs a clone because may be modified.
         final List<Variable> siblings  = new ArrayList<>(4);
         final List<Resource> resources = new ArrayList<>();
@@ -229,7 +226,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
                     }
                 }
             }
-            resources.add(new GridResource(decoder, name.trim(), grid, siblings));
+            resources.add(new RasterResource(decoder, name.trim(), grid, siblings));
             siblings.clear();
         }
         return resources;
@@ -245,6 +242,8 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
 
     /**
      * Returns an object containing the grid size, the CRS and the conversion from grid indices to CRS coordinates.
+     *
+     * @return extent of grid coordinates together with their mapping to "real world" coordinates.
      */
     @Override
     public GridGeometry getGridGeometry() {
@@ -253,6 +252,9 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
 
     /**
      * Returns the ranges of sample values together with the conversion from samples to real values.
+     *
+     * @return ranges of sample values together with their mapping to "real values".
+     * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -323,7 +325,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
              * unsigned integer with a signed one).
              */
             if (range.isEmpty()) {
-                band.warning(GridResource.class, "getSampleDimensions", Resources.Keys.IllegalValueRange_4,
+                band.warning(RasterResource.class, "getSampleDimensions", Resources.Keys.IllegalValueRange_4,
                         band.getFilename(), band.getName(), range.getMinValue(), range.getMaxValue());
             } else {
                 String name = band.getDescription();
@@ -446,7 +448,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
         if (imageBuffer == null) {
             throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
-        return new Image(domain, UnmodifiableArrayList.wrap(selected), imageBuffer, first.getName());
+        return new Raster(domain, UnmodifiableArrayList.wrap(selected), imageBuffer, first.getName());
     }
 
     /**
@@ -464,7 +466,7 @@ final class GridResource extends AbstractGridResource implements ResourceOnFileS
      * Gets the paths to files used by this resource, or an empty array if unknown.
      */
     @Override
-    public Path[] getComponentFiles() throws DataStoreException {
+    public Path[] getComponentFiles() {
         return (location != null) ? new Path[] {location} : new Path[0];
     }
 }

@@ -32,6 +32,7 @@ import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.internal.netcdf.RasterResource;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Strings;
@@ -200,7 +201,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
     public synchronized Collection<Resource> components() throws DataStoreException {
         if (components == null) try {
             Resource[] resources = decoder.getDiscreteSampling();
-            final List<Resource> grids = GridResource.create(decoder);
+            final List<Resource> grids = RasterResource.create(decoder);
             if (!grids.isEmpty()) {
                 grids.addAll(UnmodifiableArrayList.wrap(resources));
                 resources = grids.toArray(new Resource[grids.size()]);

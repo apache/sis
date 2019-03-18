@@ -257,13 +257,13 @@ public abstract class Variable extends NamedElement {
      * {@link #getUnit()}, except for the fill/missing values. If {@code true}, then replacing fill/missing values by
      * {@code NaN} is the only action needed for having converted values.
      *
-     * <p>This method is for detecting when {@link org.apache.sis.storage.netcdf.GridResource#getSampleDimensions()}
-     * should return sample dimensions for already converted values. But to be consistent with {@code SampleDimension}
-     * contract, it requires fill/missing values to be replaced by NaN. This is done by {@link #replaceNaN(Object)}.</p>
+     * <p>This method is for detecting when {@link RasterResource#getSampleDimensions()} should return sample dimensions
+     * for already converted values. But to be consistent with {@code SampleDimension} contract, it requires fill/missing
+     * values to be replaced by NaN. This is done by {@link #replaceNaN(Object)}.</p>
      *
      * @return whether this variable contains values in unit of measurement, ignoring fill and missing values.
      */
-    public final boolean hasRealValues() {
+    final boolean hasRealValues() {
         final int n = getDataType().number;
         if (n == Numbers.FLOAT | n == Numbers.DOUBLE) {
             final Convention convention = decoder.convention();
@@ -846,7 +846,7 @@ public abstract class Variable extends NamedElement {
      *
      * @see Convention#validRange(Variable)
      */
-    public NumberRange<?> getRangeFallback() {
+    protected NumberRange<?> getRangeFallback() {
         final DataType dataType = getDataType();
         if (dataType.isInteger) {
             final int size = dataType.size() * Byte.SIZE;
@@ -900,7 +900,7 @@ public abstract class Variable extends NamedElement {
      * @see Convention#nodataValues(Variable)
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public final Map<Number,Object> getNodataValues() {
+    final Map<Number,Object> getNodataValues() {
         if (nodataValues == null) {
             nodataValues = CollectionsExt.unmodifiableOrCopy(decoder.convention().nodataValues(this));
         }
@@ -987,7 +987,7 @@ public abstract class Variable extends NamedElement {
      * Maybe replaces fill values and missing values by {@code NaN} values in the given array.
      * This method does nothing if {@link #hasRealValues()} returns {@code false}.
      * The NaN values used by this method must be consistent with the NaN values declared in
-     * the sample dimensions created by {@link org.apache.sis.storage.netcdf.GridResource}.
+     * the sample dimensions created by {@link RasterResource}.
      *
      * @param  array  the array in which to replace fill and missing values.
      */
@@ -995,7 +995,7 @@ public abstract class Variable extends NamedElement {
         if (hasRealValues()) {
             int ordinal = 0;
             for (final Number value : getNodataValues().keySet()) {
-                final float pad = MathFunctions.toNanFloat(ordinal++);      // Must be consistent with GridResource.createSampleDimension(…).
+                final float pad = MathFunctions.toNanFloat(ordinal++);      // Must be consistent with RasterResource.createSampleDimension(…).
                 if (array instanceof float[]) {
                     ArraysExt.replace((float[]) array, value.floatValue(), pad);
                 } else if (array instanceof double[]) {
@@ -1100,7 +1100,7 @@ public abstract class Variable extends NamedElement {
      * @param  key        one or {@link Resources.Keys} constants.
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
-    public final void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
+    protected final void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
         warning(decoder.listeners, caller, method, null, null, key, arguments);
     }
 

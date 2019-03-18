@@ -369,7 +369,7 @@ final class VariableWrapper extends Variable {
      * if Apache SIS can not determine that range, that method is invoked.
      */
     @Override
-    public NumberRange<?> getRangeFallback() {
+    protected NumberRange<?> getRangeFallback() {
         if (variable instanceof EnhanceScaleMissing) {
             final EnhanceScaleMissing ev = (EnhanceScaleMissing) variable;
             if (ev.hasInvalidData()) {

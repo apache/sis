@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.netcdf;
+package org.apache.sis.internal.netcdf;
 
 import java.util.List;
 import java.awt.image.DataBuffer;
@@ -26,18 +26,17 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.ImageRenderer;
-import org.apache.sis.internal.netcdf.Resources;
 
 
 /**
- * Data loaded from a {@link GridResource}.
+ * Data loaded from a {@link RasterResource}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-final class Image extends GridCoverage {
+final class Raster extends GridCoverage {
     /**
      * The sample values.
      */
@@ -51,7 +50,7 @@ final class Image extends GridCoverage {
     /**
      * Creates a new raster from the given resource.
      */
-    Image(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data, final String label) {
+    Raster(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data, final String label) {
         super(domain, range);
         this.data  = data;
         this.label = label;
