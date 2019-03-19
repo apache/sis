@@ -1196,9 +1196,7 @@ public final class CRS extends Static {
      *
      * @category information
      */
-    public static VerticalCRS getVerticalComponent(final CoordinateReferenceSystem crs,
-            final boolean allowCreateEllipsoidal)
-    {
+    public static VerticalCRS getVerticalComponent(final CoordinateReferenceSystem crs, final boolean allowCreateEllipsoidal) {
         if (crs instanceof VerticalCRS) {
             return (VerticalCRS) crs;
         }
