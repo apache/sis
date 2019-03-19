@@ -503,7 +503,7 @@ public class GridDerivation {
             GeneralEnvelope indices = null;
             if (areaOfInterest != null) {
                 final WraparoundAdjustment adj = new WraparoundAdjustment(areaOfInterest);
-                adj.shiftInto(base.envelope, baseToAOI);
+                adj.shiftInto(base.envelope, (baseToAOI != null) ? baseToAOI.getMathTransform() : null);
                 indices = adj.result(cornerToCRS.inverse());
                 clipExtent(indices);
             }

@@ -16,14 +16,16 @@
  */
 package org.apache.sis.internal.referencing;
 
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.cs.*;
-import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
+import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -53,7 +55,7 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
     /**
      * Convenience method for the tests.
      */
-    private static Envelope adjustWraparoundAxes(Envelope areaOfInterest, Envelope domainOfValidity, CoordinateOperation validToAOI)
+    private static Envelope adjustWraparoundAxes(Envelope areaOfInterest, Envelope domainOfValidity, MathTransform validToAOI)
             throws TransformException
     {
         WraparoundAdjustment adj = new WraparoundAdjustment(areaOfInterest);
@@ -62,7 +64,7 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
     }
 
     /**
-     * Tests {@link WraparoundAdjustment#shiftInto(Envelope, CoordinateOperation)}
+     * Tests {@link WraparoundAdjustment#shiftInto(Envelope, MathTransform)}
      * with an envelope crossing the anti-meridian.
      *
      * @throws TransformException should never happen since this test does not transform coordinates.
@@ -86,7 +88,7 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
     }
 
     /**
-     * Tests {@link WraparoundAdjustment#shiftInto(Envelope, CoordinateOperation)}
+     * Tests {@link WraparoundAdjustment#shiftInto(Envelope, MathTransform)}
      * with an envelope shifted by 360° before or after the grid valid area.
      *
      * @throws TransformException should never happen since this test does not transform coordinates.
@@ -117,7 +119,7 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
     }
 
     /**
-     * Tests {@link WraparoundAdjustment#shiftInto(Envelope, CoordinateOperation)}
+     * Tests {@link WraparoundAdjustment#shiftInto(Envelope, MathTransform)}
      * with an envelope that cause the method to expand the area of interest. Illustration:
      *
      * {@preformat text
@@ -148,5 +150,24 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
 
         final Envelope actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
         assertEnvelopeEquals(expected, actual);
+    }
+
+    /**
+     * Tests {@link WraparoundAdjustment#shiftInto(Envelope, MathTransform)} with a projected envelope.
+     *
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    public void testWithProjection() throws TransformException {
+        final GeneralEnvelope domainOfValidity = new GeneralEnvelope(HardCodedCRS.WGS84);
+        domainOfValidity.setRange(0,  80, 100);
+        domainOfValidity.setRange(1, -70, +70);
+
+        final DefaultProjectedCRS mercator = HardCodedConversions.mercator();
+        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(mercator);
+        areaOfInterest.setRange(0,   5000000,  7000000);                        // About 45°E to 63°E
+        areaOfInterest.setRange(1, -10000000, 10000000);                        // About 66.6°S to 66.6°N
+
+        // TODO: complete test.
     }
 }

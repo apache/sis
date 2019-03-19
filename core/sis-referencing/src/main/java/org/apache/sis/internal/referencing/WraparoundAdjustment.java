@@ -27,7 +27,6 @@ import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.metadata.AxisDirections;
@@ -122,7 +121,7 @@ public final class WraparoundAdjustment {
      *
      * @see GeneralEnvelope#simplify()
      */
-    public void shiftInto(Envelope domainOfValidity, CoordinateOperation validToAOI) throws TransformException {
+    public void shiftInto(Envelope domainOfValidity, MathTransform validToAOI) throws TransformException {
         CoordinateReferenceSystem crs = areaOfInterest.getCoordinateReferenceSystem();
         if (crs == null) {
             crs = domainOfValidity.getCoordinateReferenceSystem();      // Assumed to apply to AOI too.
@@ -135,19 +134,29 @@ public final class WraparoundAdjustment {
          * We need to perform the verification in its base geographic CRS instead, and remember that we
          * may need to transform the result later.
          */
+        final MathTransform  projection;
+        final DirectPosition lowerCorner;
+        final DirectPosition upperCorner;
         GeneralEnvelope shifted = null;         // To be initialized to a copy of 'areaOfInterest' when first needed.
         if (crs instanceof ProjectedCRS) {
             final ProjectedCRS p = (ProjectedCRS) crs;
             crs = p.getBaseCRS();
-            geographicToAOI = p.getConversionFromBase().getMathTransform();
-            areaOfInterest = shifted = Envelopes.transform(geographicToAOI.inverse(), areaOfInterest);
+            projection  = p.getConversionFromBase().getMathTransform();
+            shifted     = Envelopes.transform(projection.inverse(), areaOfInterest);
+            lowerCorner = shifted.getLowerCorner();
+            upperCorner = shifted.getUpperCorner();
+            if (validToAOI == null) {
+                validToAOI = MathTransforms.identity(projection.getTargetDimensions());
+            }
+        } else {
+            projection  = null;
+            lowerCorner = areaOfInterest.getLowerCorner();
+            upperCorner = areaOfInterest.getUpperCorner();
         }
         /*
-         * We will not reference 'areaOfInterest' anymore after we got its two corner points.
+         * We will not read 'areaOfInterest' anymore after we got its two corner points.
          * The following loop search for "wraparound" axis.
          */
-        final DirectPosition lowerCorner = areaOfInterest.getLowerCorner();
-        final DirectPosition upperCorner = areaOfInterest.getUpperCorner();
         final CoordinateSystem cs = crs.getCoordinateSystem();
         for (int i=cs.getDimension(); --i >= 0;) {
             final double period = range(cs, i);
@@ -158,14 +167,13 @@ public final class WraparoundAdjustment {
                  * Transform that envelope when first needed.
                  */
                 if (validToAOI != null) {
-                    MathTransform mt = validToAOI.getMathTransform();
-                    if (geographicToAOI != null) {
-                        mt = MathTransforms.concatenate(mt, geographicToAOI.inverse());
+                    if (projection != null) {
+                        validToAOI = MathTransforms.concatenate(validToAOI, projection.inverse());
+                    }
+                    if (!validToAOI.isIdentity()) {
+                        domainOfValidity = Envelopes.transform(validToAOI, domainOfValidity);
                     }
                     validToAOI = null;
-                    if (!mt.isIdentity()) {
-                        domainOfValidity = Envelopes.transform(mt, domainOfValidity);
-                    }
                 }
                 /*
                  * "Unroll" the range. For example if we have [+160 … -170]° of longitude, we can replace by [160 … 190]°.
@@ -268,12 +276,16 @@ public final class WraparoundAdjustment {
                     }
                 }
                 /*
-                 * If there is change to apply, copy the envelope when first needed.
+                 * If there is change to apply, copy the envelope when first needed and set the fields.
+                 * If we never enter in this block, then 'areaOfInterest' will stay the envelope given
+                 * at construction time.
                  */
                 if (lowerCycles != 0 || upperCycles != 0) {
                     if (shifted == null) {
-                        areaOfInterest = shifted = new GeneralEnvelope(areaOfInterest);
+                        shifted = new GeneralEnvelope(areaOfInterest);
                     }
+                    areaOfInterest  = shifted;                          // 'shifted' may have been set before the loop.
+                    geographicToAOI = projection;
                     shifted.setRange(i, lower + lowerCycles * period,       // TODO: use Math.fma in JDK9.
                                         upper + upperCycles * period);
                 }
