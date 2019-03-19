@@ -494,6 +494,10 @@ public final class AxisDirections extends Static {
      *   <li>Otherwise the index of the first sequence if returned, regardless axis names.</li>
      * </ol>
      *
+     * Note that colinear axes are normally not allowed, except if the case of {@link org.opengis.referencing.crs.TemporalCRS}
+     * when one time axis is the runtime (the date where a numerical model has been executed) and the other time axis is the
+     * forecast time (the date at which a prevision is made).
+     *
      * @param  cs     the coordinate system which contains all axes, or {@code null}.
      * @param  subCS  the coordinate system to search into {@code cs}.
      * @return the first dimension of a sequence of axes colinear with {@code subCS} axes, or {@code -1} if none.
