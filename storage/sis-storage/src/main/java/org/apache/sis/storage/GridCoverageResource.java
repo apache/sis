@@ -90,9 +90,10 @@ public interface GridCoverageResource extends DataSet {
      * <i>etc</i>. The general contract is that the returned coverage should not contain less data than a coverage
      * matching exactly the given geometry.
      *
-     * <p>The returned coverage shall contain the exact set of sample dimensions specified by the {@code range}
-     * argument, in the specified order. The "best-effort basis" flexibility applies only to the grid geometry,
-     * not to the range.</p>
+     * <p>The returned coverage shall contain the exact set of sample dimensions specified by the {@code range} argument,
+     * in the specified order (the "best-effort basis" flexibility applies only to the grid geometry, not to the range).
+     * All {@code range} values shall be between 0 inclusive and <code>{@linkplain #getSampleDimensions()}.size()</code>
+     * exclusive, without duplicated values.</p>
      *
      * <p>While this method name suggests an immediate reading, some implementations may defer the actual reading
      * at a later stage.</p>

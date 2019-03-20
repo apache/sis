@@ -195,13 +195,10 @@ public class Convention {
      *       to confuse them with images.</li>
      * </ul>
      *
-     * @param  variable  the variable for which to get the role, or {@code null}.
-     * @return role of the given variable, or {@code null} if the given variable was null.
+     * @param  variable  the variable for which to get the role.
+     * @return role of the given variable.
      */
     public VariableRole roleOf(final Variable variable) {
-        if (variable == null) {
-            return null;
-        }
         if (variable.isCoordinateSystemAxis()) {
             return VariableRole.AXIS;
         }

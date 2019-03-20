@@ -712,7 +712,7 @@ main:   switch (getDimension()) {
      * @throws DataStoreException if a logical error occurred.
      */
     final Vector read() throws IOException, DataStoreException {
-        final TransferFunction tr = coordinates.decoder.convention().transferFunction(coordinates);
+        final TransferFunction tr = coordinates.getTransferFunction();
         if (TransferFunctionType.LINEAR.equals(tr.getType())) {
             Vector data = coordinates.read();
             data = data.subList(0, getSizeProduct(0));                  // Trim trailing NaN values.

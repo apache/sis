@@ -109,8 +109,15 @@ public final class RasterResource extends AbstractGridResource implements Resour
 
     /**
      * The netCDF variable wrapped by this resource.
+     * The same variable may be repeated if one of its dimension shall be interpreted as bands.
      */
     private final Variable[] data;
+
+    /**
+     * If one of {@link #data} dimension provides values for different bands, that dimension index.
+     * Otherwise -1.
+     */
+    private final int bandDimension;
 
     /**
      * Path to the netCDF file for information purpose, or {@code null} if unknown.
@@ -118,12 +125,6 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * @see #getComponentFiles()
      */
     private final Path location;
-
-    /**
-     * Allows to fetch referencing information from source variables. It's mostly useful for handling netCDF files
-     * structured in ways different than CF-convention (for example GCOM, <i>etc.</i>).
-     */
-    private final Convention convention;
 
     /**
      * Creates a new resource. All variables in the {@code data} list shall have the same domain and the same grid geometry.
@@ -141,8 +142,8 @@ public final class RasterResource extends AbstractGridResource implements Resour
         ranges       = new SampleDimension[data.length];
         identifier   = decoder.nameFactory.createLocalName(decoder.namespace, name);
         location     = decoder.location;
-        convention   = decoder.convention();
         gridGeometry = grid;
+        bandDimension = -1;
     }
 
     /**
@@ -159,7 +160,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
         final List<Resource> resources = new ArrayList<>();
         for (int i=0; i<variables.length; i++) {
             final Variable variable = variables[i];
-            if (decoder.convention().roleOf(variable) != VariableRole.COVERAGE) {                 // Variable may be null.
+            if (variable == null || variable.getRole() != VariableRole.COVERAGE) {
                 continue;                                                   // Skip variables that are not grid coverages.
             }
             final GridGeometry grid = variable.getGridGeometry();
@@ -187,7 +188,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
                     int suffixLength = name.length() - suffixStart;
                     for (int j=i; ++j < variables.length;) {
                         final Variable candidate = variables[j];
-                        if (decoder.convention().roleOf(candidate) != VariableRole.COVERAGE) {        // Variable may be null.
+                        if (candidate == null || candidate.getRole() != VariableRole.COVERAGE) {
                             variables[j] = null;                                // For avoiding to revisit that variable again.
                             continue;
                         }
@@ -287,12 +288,9 @@ public final class RasterResource extends AbstractGridResource implements Resour
          * is used only as a fallback. We give precedence to the range computed by Apache SIS instead than the range given
          * by UCAR because we need the range of packed values instead than the range of converted values.
          */
-        NumberRange<?> range = convention.validRange(band);
-        if (range == null) {
-            range = band.getRangeFallback();                                // Fallback to UCAR library may happen here.
-        }
+        NumberRange<?> range = band.getValidRange();
         if (range != null) {
-            final MathTransform1D mt = convention.transferFunction(band).getTransform();
+            final MathTransform1D mt = band.getTransferFunction().getTransform();
             if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
                 /*
                  * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
@@ -382,7 +380,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
      */
     @Override
     public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
-        range = validateRangeArgument(data.length, range);
+        range = validateRangeArgument(ranges.length, range);
         if (domain == null) {
             domain = gridGeometry;
         }
@@ -405,19 +403,15 @@ public final class RasterResource extends AbstractGridResource implements Resour
             /*
              * Iterate over netCDF variables in the order they appear in the file, not in the order requested
              * by the 'range' argument.  The intent is to perform sequential I/O as much as possible, without
-             * seeking backward.
+             * seeking backward. A side effect is that even if the same sample dimension were requested many
+             * times, the data would still be loaded at most once.
              */
             for (int i=0; i<data.length; i++) {
                 final Variable variable = data[i];
                 SampleDimension def = ranges[i];
                 Buffer values = null;
                 for (int j=0; j<range.length; j++) {
-                    /*
-                     * Check if the current variable is a sample dimension specified in the 'range' argument.
-                     * Note that the same sample dimension may be requested an arbitrary amount of time, but
-                     * the data will be loaded at most once.
-                     */
-                    if (range[j] == i) {
+                    if (range[j] == i) {                // Search sample dimensions specified in the 'range' argument.
                         if (def == null) {
                             if (builder == null) builder = new SampleDimension.Builder();
                             ranges[i] = def = createSampleDimension(builder, variable);
@@ -448,7 +442,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
         if (imageBuffer == null) {
             throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
-        return new Raster(domain, UnmodifiableArrayList.wrap(selected), imageBuffer, first.getName());
+        return new Raster(domain, UnmodifiableArrayList.wrap(selected), imageBuffer, first.getStandardName());
     }
 
     /**

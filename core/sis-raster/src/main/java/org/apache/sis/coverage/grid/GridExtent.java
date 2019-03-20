@@ -267,7 +267,7 @@ public class GridExtent implements Serializable {
      *
      * @see #getLow()
      * @see #getHigh()
-     * @see #append(DimensionNameType, long, long, boolean)
+     * @see #insert(int, DimensionNameType, long, long, boolean)
      */
     public GridExtent(final DimensionNameType[] axisTypes, final long[] low, final long[] high, final boolean isHighIncluded) {
         ArgumentChecks.ensureNonNull("high", high);
@@ -824,8 +824,10 @@ public class GridExtent implements Serializable {
     }
 
     /**
-     * Returns a new grid envelope with the specified dimension added after this grid envelope dimensions.
+     * Returns a new grid envelope with the specified dimension inserted at the given index in this grid envelope.
+     * To append a new dimension after all existing dimensions, set {@code offset} to {@link #getDimension()}.
      *
+     * @param  offset          where to insert the new dimension, from 0 to {@link #getDimension()} inclusive.
      * @param  axisType        the type of the grid axis to add, or {@code null} if unspecified.
      * @param  low             the valid minimum grid coordinate (always inclusive).
      * @param  high            the valid maximum grid coordinate, inclusive or exclusive depending on the next argument.
@@ -835,26 +837,29 @@ public class GridExtent implements Serializable {
      * @return a new grid envelope with the specified dimension added.
      * @throws IllegalArgumentException if the low coordinate value is greater than the high coordinate value.
      */
-    public GridExtent append(final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
+    public GridExtent insert(final int offset, final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
+        final int dimension = getDimension();
+        ArgumentChecks.ensureBetween("offset", 0, dimension, offset);
         if (!isHighIncluded) {
             high = Math.decrementExact(high);
         }
-        final int dimension = getDimension();
-        final int newDim    = dimension + 1;
+        final int newDim = dimension + 1;
         DimensionNameType[] axisTypes = null;
         if (types != null || axisType != null) {
             if (types != null) {
-                axisTypes = Arrays.copyOf(types, newDim);
+                axisTypes = ArraysExt.insert(types, offset, 1);
             } else {
                 axisTypes = new DimensionNameType[newDim];
             }
-            axisTypes[dimension] = axisType;
+            axisTypes[offset] = axisType;
         }
         final GridExtent ex = new GridExtent(newDim, axisTypes);
-        System.arraycopy(coordinates, 0,         ex.coordinates, 0,      dimension);
-        System.arraycopy(coordinates, dimension, ex.coordinates, newDim, dimension);
-        ex.coordinates[dimension]          = low;
-        ex.coordinates[dimension + newDim] = high;
+        System.arraycopy(coordinates, 0,                  ex.coordinates, 0,                   offset);
+        System.arraycopy(coordinates, offset,             ex.coordinates, offset + 1,          dimension - offset);
+        System.arraycopy(coordinates, dimension,          ex.coordinates, newDim,              offset);
+        System.arraycopy(coordinates, dimension + offset, ex.coordinates, newDim + offset + 1, dimension - offset);
+        ex.coordinates[offset]          = low;
+        ex.coordinates[offset + newDim] = high;
         ex.validateCoordinates();
         return ex;
     }
@@ -935,7 +940,7 @@ public class GridExtent implements Serializable {
      * The number of dimensions of the sub grid envelope will be {@code dimensions.length}.
      *
      * <p>This method performs a <cite>dimensionality reduction</cite> and can be used as the
-     * converse of {@link #append(DimensionNameType, long, long, boolean)}.
+     * converse of {@link #insert(int, DimensionNameType, long, long, boolean)}.
      * This method can not be used for changing dimension order.</p>
      *
      * @param  dimensions  the dimensions to select, in strictly increasing order.

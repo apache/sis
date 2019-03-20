@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.BitSet;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -91,8 +92,12 @@ public abstract class AbstractGridResource extends AbstractResource implements G
 
     /**
      * Validate the {@code range} argument given to {@link #read(GridGeometry, int...)}.
-     * This method verifies that all indices are between 0 and {@code numSampleDimensions},
-     * but does not verify if there is duplicated indices since such duplication is allowed.
+     * This method verifies that all indices are between 0 and {@code numSampleDimensions}
+     * and that there is no duplicated index.
+     *
+     * <p>On success, this method always returns a non-null array with the same content than the user argument.
+     * The user specified array is not returned directly in order to allow the caller to perform modifications,
+     * and also as a paranoiac safety against concurrent changes.</p>
      *
      * @param  numSampleDimensions  number of sample dimensions.
      * @param  range  the {@code range} argument given by the user. May be null or empty.
@@ -105,11 +110,28 @@ public abstract class AbstractGridResource extends AbstractResource implements G
             return ArraysExt.range(0, numSampleDimensions);
         }
         range = range.clone();
+        long previous = 0;                          // Cheap way to remember previous dimensions.
+        BitSet extra = null;                        // Used only if there is more than 64 dimensions.
         for (int i=0; i<range.length; i++) {
             final int r = range[i];
             if (r < 0 || r >= numSampleDimensions) {
                 throw new IllegalArgumentException(Resources.forLocale(getLocale()).getString(
                         Resources.Keys.InvalidSampleDimensionIndex_2, i, numSampleDimensions - 1));
+            }
+            final boolean duplicated;
+            if (r < Long.SIZE) {
+                duplicated = (previous == (previous |= (1L << r)));
+            } else {
+                if (extra == null) {
+                    extra = new BitSet();
+                }
+                final int j = r - Long.SIZE;
+                duplicated = extra.get(j);
+                extra.set(j);
+            }
+            if (duplicated) {
+                throw new IllegalArgumentException(Resources.forLocale(getLocale()).getString(
+                        Resources.Keys.DuplicatedSampleDimensionIndex_1, i));
             }
         }
         return range;

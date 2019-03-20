@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -149,7 +150,7 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
-     * Returns the name of this variable.
+     * Returns the name of this variable. May be used as sample dimension name in a raster.
      *
      * @return the name of this variable.
      */
@@ -158,6 +159,7 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns the standard name if available, or the long name other, or the ordinary name otherwise.
+     * May be used as the label of a {@link Raster} as a whole (including all bands).
      *
      * @return the standard name, or a fallback if there is no standard name.
      */
@@ -174,6 +176,7 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns the description of this variable, or {@code null} if none.
+     * May be used as a category name in a sample dimension of a {@link Raster}.
      * This information may be encoded in different attributes like {@code "description"}, {@code "title"},
      * {@code "long_name"} or {@code "standard_name"}. If the return value is non-null, then it should also
      * be non-empty.
@@ -832,6 +835,22 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
+     * Returns the range of valid values, or {@code null} if unknown. This is a shortcut for
+     * {@link Convention#validRange(Variable)} with a fallback on {@link #getRangeFallback()}.
+     *
+     * @return the range of valid values, or {@code null} if unknown.
+     *
+     * @see Convention#validRange(Variable)
+     */
+    final NumberRange<?> getValidRange() {
+        NumberRange<?> range = decoder.convention().validRange(this);
+        if (range == null) {
+            range = getRangeFallback();
+        }
+        return range;
+    }
+
+    /**
      * Returns the range of values as determined by the data type or other means, or {@code null} if unknown.
      * This method is invoked only as a fallback if {@link Convention#validRange(Variable)} did not found a
      * range of values by application of CF conventions. The returned range may be a range of packed values
@@ -905,6 +924,13 @@ public abstract class Variable extends NamedElement {
             nodataValues = CollectionsExt.unmodifiableOrCopy(decoder.convention().nodataValues(this));
         }
         return nodataValues;
+    }
+
+    /**
+     * Builds the function converting values from their packed formats in the variable to "real" values.
+     */
+    final TransferFunction getTransferFunction() {
+        return decoder.convention().transferFunction(this);
     }
 
     /**
