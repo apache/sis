@@ -383,6 +383,7 @@ public class GridDerivation {
      *
      * @param  gridOfInterest  the area of interest and desired resolution as a grid geometry.
      * @return {@code this} for method call chaining.
+     * @throws DisjointExtentException if the given grid of interest does not intersect the grid extent.
      * @throws IncompleteGridGeometryException if a mandatory property of a grid geometry is absent.
      * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
      * @throws IllegalStateException if a {@link #subgrid(Envelope, double...) subgrid(…)} or {@link #slice(DirectPosition) slice(…)}
@@ -466,6 +467,7 @@ public class GridDerivation {
      *                         be equal to the {@code areaOfInterest} dimension, but this is not mandatory
      *                         (zero or missing values mean no sub-sampling, extraneous values are ignored).
      * @return {@code this} for method call chaining.
+     * @throws DisjointExtentException if the given area of interest does not intersect the grid extent.
      * @throws IncompleteGridGeometryException if the base grid geometry has no extent or no "grid to CRS" transform.
      * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
      * @throws IllegalStateException if a {@link #subgrid(GridGeometry) subgrid(…)} or {@link #slice(DirectPosition) slice(…)}
@@ -621,6 +623,7 @@ public class GridDerivation {
      * This method shall be invoked for clipping only, without any subsampling applied.
      *
      * @param  indices  the envelope to intersect in units of {@link #base} grid coordinates.
+     * @throws DisjointExtentException if the given envelope does not intersect the grid extent.
      */
     private void clipExtent(final GeneralEnvelope indices) {
         final GridExtent sub = new GridExtent(indices, rounding, margin, baseExtent, modifiedDimensions);

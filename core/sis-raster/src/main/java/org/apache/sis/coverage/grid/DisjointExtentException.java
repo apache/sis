@@ -16,6 +16,9 @@
  */
 package org.apache.sis.coverage.grid;
 
+import org.apache.sis.internal.raster.Resources;
+
+
 /**
  * Thrown when operations on a {@link GridGeometry} result in an area which
  * do not intersect anymore the {@link GridExtent} of the {@link GridGeometry}.
@@ -26,7 +29,6 @@ package org.apache.sis.coverage.grid;
  * @module
  */
 public class DisjointExtentException extends IllegalGridGeometryException {
-
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -55,5 +57,20 @@ public class DisjointExtentException extends IllegalGridGeometryException {
      */
     public DisjointExtentException(final String message, final Throwable cause) {
         super(message, cause);
+    }
+
+    /**
+     * Creates an exception with an error message built from the given argument.
+     * Current implementation creates the error message immediately, but we may
+     * change to deferred creation later if it is a performance issue.
+     *
+     * @param dim    identification of the dimension having an invalid value.
+     * @param min    the lower bound of valid area.
+     * @param max    the upper bound of valid area.
+     * @param lower  the lower bound specified by user, which is invalid.
+     * @param upper  the upper bound specified by user, which is invalid.
+     */
+    DisjointExtentException(final Object dim, final long min, final long max, final long lower, final long upper) {
+        super(Resources.format(Resources.Keys.GridEnvelopeOutsideCoverage_5, new Object[] {dim, min, max, lower, upper}));
     }
 }

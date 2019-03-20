@@ -308,6 +308,7 @@ public class GridExtent implements Serializable {
      * @param  modifiedDimensions  if {@code enclosing} is non-null, the grid dimensions to set from the envelope.
      *                             The length of this array shall be equal to the {@code envelope} dimension.
      *                             This argument is ignored if {@code enclosing} is null.
+     * @throws DisjointExtentException if the given envelope does not intersect the enclosing grid extent.
      *
      * @see #toCRS(MathTransform, MathTransform)
      * @see #slice(DirectPosition, int[])
@@ -405,10 +406,13 @@ public class GridExtent implements Serializable {
             if (enclosing != null) {
                 final int lo = (modifiedDimensions != null) ? modifiedDimensions[i] : i;
                 final int hi = lo + m;
-                if (lower > coordinates[hi]) throw new DisjointExtentException();
-                if (upper < coordinates[lo]) throw new DisjointExtentException();
-                if (lower > coordinates[lo]) coordinates[lo] = Math.min(coordinates[hi], lower);
-                if (upper < coordinates[hi]) coordinates[hi] = Math.max(coordinates[lo], upper);
+                final long validMin = coordinates[lo];
+                final long validMax = coordinates[hi];
+                if (lower > validMin) coordinates[lo] = lower;
+                if (upper < validMax) coordinates[hi] = upper;
+                if (lower > validMax || upper < validMin) {
+                    throw new DisjointExtentException(enclosing.getAxisIdentification(lo, i), validMin, validMax, lower, upper);
+                }
             } else {
                 coordinates[i]   = lower;
                 coordinates[i+m] = upper;

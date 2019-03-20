@@ -48,7 +48,8 @@ import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
 @DependsOn(GridGeometryTest.class)
 public final strictfp class GridDerivationTest extends TestCase {
     /**
-     * Tests {@link GridDerivation#subgrid(Envelope, double...)}.
+     * Tests {@link GridDerivation#subgrid(Envelope, double...)} using only the
+     * {@link GridExtent} result provided by {@link GridDerivation#getIntersection()}.
      */
     @Test
     public void testSubExtent() {
@@ -167,6 +168,7 @@ public final strictfp class GridDerivationTest extends TestCase {
 
     /**
      * Tests {@link GridDerivation#subgrid(Envelope, double...)}.
+     * Contrarily to {@link #testSubExtent()}, this method checks the full {@link GridGeometry}.
      *
      * @throws TransformException if an error occurred during computation.
      */
@@ -339,5 +341,28 @@ public final strictfp class GridDerivationTest extends TestCase {
 
         GridGeometry subgrid = grid.derive().subgrid(areaOfInterest).build();
         assertEnvelopeEquals(expected, subgrid.getEnvelope());
+    }
+
+    /**
+     * Verifies the exception thrown when we specify an envelope outside the grid extent.
+     */
+    @Test
+    public void testOutsideDomain() {
+        final GridGeometry grid = new GridGeometry(
+                new GridExtent(10, 20), PixelInCell.CELL_CORNER,
+                MathTransforms.linear(new Matrix3(
+                        2, 0, 0,
+                        0, 2, 0,
+                        0, 0, 1)), HardCodedCRS.WGS84);
+
+        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
+        areaOfInterest.setRange(0, 60, 85);
+        areaOfInterest.setRange(1, 15, 30);
+        try {
+            grid.derive().subgrid(areaOfInterest);
+            fail("Should not have accepted the given AOI.");
+        } catch (DisjointExtentException e) {
+            assertNotNull(e.getMessage());
+        }
     }
 }
