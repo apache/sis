@@ -405,6 +405,8 @@ public class GridExtent implements Serializable {
             if (enclosing != null) {
                 final int lo = (modifiedDimensions != null) ? modifiedDimensions[i] : i;
                 final int hi = lo + m;
+                if (lower > coordinates[hi]) throw new DisjointExtentException();
+                if (upper < coordinates[lo]) throw new DisjointExtentException();
                 if (lower > coordinates[lo]) coordinates[lo] = Math.min(coordinates[hi], lower);
                 if (upper < coordinates[hi]) coordinates[hi] = Math.max(coordinates[lo], upper);
             } else {
