@@ -224,6 +224,8 @@ public final class WraparoundAdjustment {
                     final double lowerToValidEnd   = ((validEnd   - lower) / period) - lowerCycles;
                     if (lowerIsBefore) {
                         /*
+                         * Notation: ⎣x⎦=floor(x) and ⎡x⎤=ceil(x).
+                         *
                          * We need to add an integer amount of 'period' to both sides in order to move the range
                          * inside the valid area. We need  ⎣lowerToValidStart⎦  for reaching the point where:
                          *
@@ -233,9 +235,15 @@ public final class WraparoundAdjustment {
                          *
                          *     (new upper) ≧ validStart
                          *
-                         * That second condition is met by  ⎡upperToValidStart⎤. Note: ⎣x⎦=floor(x) and ⎡x⎤=ceil(x).
+                         * That second condition is met by  ⎡upperToValidStart⎤. However adding more may cause the
+                         * range to move the AOI completely on the right side of the domain of validity. We prevent
+                         * that with a third condition:
+                         *
+                         *     (new lower) < validEnd
                          */
-                        final double cycles = Math.max(Math.floor(lowerToValidStart), Math.ceil(upperToValidStart));
+                        final double cycles = Math.min(Math.floor(lowerToValidEnd),
+                                              Math.max(Math.floor(lowerToValidStart),
+                                                       Math.ceil (upperToValidStart)));
                         /*
                          * If after the shift we see that the following condition hold:
                          *
@@ -266,7 +274,9 @@ public final class WraparoundAdjustment {
                          * In this block, 'upperToValidEnd' and 'lowerToValidEnd' are negative, contrarily to
                          * above block where they were positive.
                          */
-                        final double cycles = Math.min(Math.ceil(upperToValidEnd), Math.floor(lowerToValidEnd));
+                        final double cycles = Math.max(Math.ceil (upperToValidStart),
+                                              Math.min(Math.ceil (upperToValidEnd),
+                                                       Math.floor(lowerToValidEnd)));
                         if (cycles - 1 > upperToValidStart) {
                             lowerCycles += Math.floor(lowerToValidStart);
                         } else {

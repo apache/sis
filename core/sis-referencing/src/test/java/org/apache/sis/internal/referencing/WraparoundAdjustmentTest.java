@@ -89,6 +89,26 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
 
     /**
      * Tests {@link WraparoundAdjustment#shiftInto(Envelope, MathTransform)}
+     * with an envelope which is outside the grid valid area.
+     *
+     * @throws TransformException should never happen since this test does not transform coordinates.
+     */
+    @Test
+    public void testDisjointAOI() throws TransformException {
+        final GeneralEnvelope domainOfValidity = new GeneralEnvelope(HardCodedCRS.WGS84);
+        domainOfValidity.setRange(0,  80, 100);
+        domainOfValidity.setRange(1, -70, +70);
+
+        final GeneralEnvelope areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
+        areaOfInterest.setRange(0,  50, 70);
+        areaOfInterest.setRange(1, -80, 60);
+
+        Envelope actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
+        assertEnvelopeEquals(areaOfInterest, actual);              // Expect no change.
+    }
+
+    /**
+     * Tests {@link WraparoundAdjustment#shiftInto(Envelope, MathTransform)}
      * with an envelope shifted by 360° before or after the grid valid area.
      *
      * @throws TransformException should never happen since this test does not transform coordinates.
@@ -103,16 +123,21 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
         final GeneralEnvelope areaOfInterest = new GeneralEnvelope(HardCodedCRS.WGS84);
         areaOfInterest.setRange(0,  70, 90);
         areaOfInterest.setRange(1, -80, 60);
-
+        /*
+         * AOI intersects the domain of validity: expected result is identical to given AOI.
+         */
         final GeneralEnvelope expected = new GeneralEnvelope(areaOfInterest);
-
         Envelope actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
         assertEnvelopeEquals(expected, actual);
-
+        /*
+         * AOI is on the left side of domain of validity. Expect a 360° shift to the right.
+         */
         areaOfInterest.setRange(0, -290, -270);                    // [70 … 90] - 360
         actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
         assertEnvelopeEquals(expected, actual);
-
+        /*
+         * AOI is on the right side of domain of validity. Expect a 360° shift to the left.
+         */
         areaOfInterest.setRange(0, 430, 450);                      // [70 … 90] + 360
         actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, null);
         assertEnvelopeEquals(expected, actual);
@@ -160,14 +185,26 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
     @Test
     public void testWithProjection() throws TransformException {
         final GeneralEnvelope domainOfValidity = new GeneralEnvelope(HardCodedCRS.WGS84);
-        domainOfValidity.setRange(0,  80, 100);
+        domainOfValidity.setRange(0,  50,  60);
         domainOfValidity.setRange(1, -70, +70);
 
         final DefaultProjectedCRS mercator = HardCodedConversions.mercator();
         final GeneralEnvelope areaOfInterest = new GeneralEnvelope(mercator);
         areaOfInterest.setRange(0,   5000000,  7000000);                        // About 45°E to 63°E
         areaOfInterest.setRange(1, -10000000, 10000000);                        // About 66.6°S to 66.6°N
-
-        // TODO: complete test.
+        /*
+         * AOI intersects the domain of validity: expected result is identical to given AOI.
+         */
+        final GeneralEnvelope expected = new GeneralEnvelope(areaOfInterest);
+        final MathTransform validToAOI = mercator.getConversionFromBase().getMathTransform();
+        Envelope actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, validToAOI);
+        assertEnvelopeEquals(expected, actual);
+        /*
+         * AOI is on the right side of domain of validity. Expect a 360° shift to the left.
+         * We add 40000 km to AOI, which is approximately the Earth circumference.
+         */
+        areaOfInterest.setRange(0, 45000000, 47000000);
+        actual = adjustWraparoundAxes(areaOfInterest, domainOfValidity, validToAOI);
+        assertEnvelopeEquals(expected, actual, 1E+5, Formulas.LINEAR_TOLERANCE);
     }
 }
