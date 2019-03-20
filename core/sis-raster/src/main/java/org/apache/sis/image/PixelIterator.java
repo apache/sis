@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.util.Arrays;
 import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.Dimension;
@@ -408,53 +409,56 @@ public abstract class PixelIterator {
 
     /**
      * Returns the range of sample values that can be stored in each band of the rendered image or raster.
-     * The range depends on the data type (byte, integer, <i>etc.</i>) and the number of bits per sample.
-     * If the samples are stored as floating point values, then the range is infinite (unbounded).
+     * The ranges depend on the data type (byte, integer, <i>etc.</i>) and the number of bits per sample.
+     * If the samples are stored as floating point values, then the ranges are infinite (unbounded).
      *
-     * <p>{@linkplain SinglePixelPackedSampleModel Some models} do not allow the same range of values for all bands.
-     * In such case, this method returns the largest range allowed by the model.</p>
+     * <p>Usually, the range is the same for all bands. A situation where the ranges may differ is when an
+     * image uses {@link SinglePixelPackedSampleModel}, in which case the number of bits per pixel may vary
+     * for different bands.</p>
      *
-     * @return the range of valid sample values. May be unbounded.
+     * @return the ranges of valid sample values for each band. Ranges may be {@linkplain NumberRange#isBounded() unbounded}.
      */
-    public NumberRange<?> getSampleRange() {
+    public NumberRange<?>[] getSampleRanges() {
         final SampleModel model = (currentRaster != null) ? currentRaster.getSampleModel() : image.getSampleModel();
-        int numBits;
+        final NumberRange<?>[] ranges = new NumberRange<?>[model.getNumBands()];
+        final NumberRange<?> range;
         if (model instanceof MultiPixelPackedSampleModel) {
             /*
              * This model supports only unsigned integer types: DataBuffer.TYPE_BYTE, DataBuffer.TYPE_USHORT
              * or DataBuffer.TYPE_INT (considered unsigned in the context of this sample model).  The number
              * of bits per sample is defined by the "pixel bit stride".
              */
-            numBits = ((MultiPixelPackedSampleModel) model).getPixelBitStride();
+            final int numBits = ((MultiPixelPackedSampleModel) model).getPixelBitStride();
+            range = NumberRange.create(0, true, (1 << numBits) - 1, true);
         } else if (model instanceof SinglePixelPackedSampleModel) {
             /*
              * This model supports only unsigned integer types: TYPE_BYTE, TYPE_USHORT, TYPE_INT (considered
              * unsigned in the context of this sample model). The number of bits may vary for each band.
              */
-            numBits = 0;
-            for (int mask : ((SinglePixelPackedSampleModel) model).getBitMasks()) {
-                final int n = Integer.bitCount(mask);
-                if (n > numBits) numBits = n;
+            final int[] masks = ((SinglePixelPackedSampleModel) model).getBitMasks();
+            for (int i=0; i<masks.length; i++) {
+                final int numBits = Integer.bitCount(masks[i]);
+                ranges[i] = NumberRange.create(0, true, (1 << numBits) - 1, true);
             }
+            return ranges;
         } else {
             /*
              * For all other sample models, the range is determined by the data type.
              * The following cases invoke the NumberRange constructor which best fit the data type.
              */
-            int type = DataBuffer.TYPE_UNDEFINED;
-            if (model != null) {
-                switch (type = model.getDataType()) {
-                    case DataBuffer.TYPE_BYTE:   return NumberRange.create((short) 0,                 true,  (short)   0xFF,            true);
-                    case DataBuffer.TYPE_USHORT: return NumberRange.create(        0,                 true,          0xFFFF,            true);
-                    case DataBuffer.TYPE_SHORT:  return NumberRange.create(Short.  MIN_VALUE,         true,  Short.  MAX_VALUE,         true);
-                    case DataBuffer.TYPE_INT:    return NumberRange.create(Integer.MIN_VALUE,         true,  Integer.MAX_VALUE,         true);
-                    case DataBuffer.TYPE_FLOAT:  return NumberRange.create(Float.  NEGATIVE_INFINITY, false, Float.  POSITIVE_INFINITY, false);
-                    case DataBuffer.TYPE_DOUBLE: return NumberRange.create(Double. NEGATIVE_INFINITY, false, Double. POSITIVE_INFINITY, false);
-                }
+            final int type = model.getDataType();
+            switch (type) {
+                case DataBuffer.TYPE_BYTE:   range = NumberRange.create((short) 0,                 true,  (short)   0xFF,            true);  break;
+                case DataBuffer.TYPE_USHORT: range = NumberRange.create(        0,                 true,          0xFFFF,            true);  break;
+                case DataBuffer.TYPE_SHORT:  range = NumberRange.create(Short.  MIN_VALUE,         true,  Short.  MAX_VALUE,         true);  break;
+                case DataBuffer.TYPE_INT:    range = NumberRange.create(Integer.MIN_VALUE,         true,  Integer.MAX_VALUE,         true);  break;
+                case DataBuffer.TYPE_FLOAT:  range = NumberRange.create(Float.  NEGATIVE_INFINITY, false, Float.  POSITIVE_INFINITY, false); break;
+                case DataBuffer.TYPE_DOUBLE: range = NumberRange.create(Double. NEGATIVE_INFINITY, false, Double. POSITIVE_INFINITY, false); break;
+                default: throw new IllegalStateException(Errors.format(Errors.Keys.UnknownType_1, type));
             }
-            throw new IllegalStateException(Errors.format(Errors.Keys.UnknownType_1, type));
         }
-        return NumberRange.create(0, true, (1 << numBits) - 1, true);
+        Arrays.fill(ranges, range);
+        return ranges;
     }
 
     /**
