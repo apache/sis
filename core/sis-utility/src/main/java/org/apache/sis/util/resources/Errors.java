@@ -808,7 +808,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short TooManyCollectionElements_3 = 35;
 
         /**
-         * Too many occurrences of “{1,number}”. The maximum is {0,number}.
+         * Too many occurrences of “{1}”. The maximum is {0,number}.
          */
         public static final short TooManyOccurrences_2 = 130;
 
