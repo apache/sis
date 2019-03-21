@@ -129,15 +129,22 @@ public final class RasterResource extends AbstractGridResource implements Resour
     private final Path location;
 
     /**
+     * The object to use for synchronization. For now we use a {@code synchronized} statement,
+     * but it may be changed to {@link java.util.concurrent.locks.Lock} in a future version.
+     */
+    private final Object lock;
+
+    /**
      * Creates a new resource. All variables in the {@code data} list shall have the same domain and the same grid geometry.
      *
      * @param  decoder  the implementation used for decoding the netCDF file.
      * @param  name     the name for the resource.
      * @param  grid     the grid geometry (size, CRS…) of the {@linkplain #data} cube.
      * @param  bands    the variables providing actual data. Shall contain at least one variable.
+     * @param  lock     the lock to use in {@code synchronized(lock)} statements.
      */
-    private RasterResource(final Decoder decoder, final String name, final GridGeometry grid, final List<Variable> bands)
-            throws IOException, DataStoreException
+    private RasterResource(final Decoder decoder, final String name, final GridGeometry grid, final List<Variable> bands,
+            final Object lock) throws IOException, DataStoreException
     {
         super(decoder.listeners);
         data         = bands.toArray(new Variable[bands.size()]);
@@ -145,6 +152,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
         identifier   = decoder.nameFactory.createLocalName(decoder.namespace, name);
         location     = decoder.location;
         gridGeometry = grid;
+        this.lock    = lock;
         switch (data[0].getDimension() - grid.getDimension()) {
             case 0: {
                 // All dimensions are in the CRS. This is the usual case.
@@ -165,13 +173,16 @@ public final class RasterResource extends AbstractGridResource implements Resour
 
     /**
      * Creates all grid coverage resources from the given decoder.
+     * This method shall be invoked in a method synchronized on {@link #lock}.
      *
      * @param  decoder  the implementation used for decoding the netCDF file.
+     * @param  lock     the lock to use in {@code synchronized(lock)} statements.
      * @return all grid coverage resources.
      * @throws IOException if an I/O operation was required and failed.
      * @throws DataStoreException if a logical error occurred.
      */
-    public static List<Resource> create(final Decoder decoder) throws IOException, DataStoreException {
+    public static List<Resource> create(final Decoder decoder, final Object lock) throws IOException, DataStoreException {
+        assert Thread.holdsLock(lock);
         final Variable[]     variables = decoder.getVariables().clone();        // Needs a clone because may be modified.
         final List<Variable> siblings  = new ArrayList<>(4);
         final List<Resource> resources = new ArrayList<>();
@@ -244,7 +255,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
                     }
                 }
             }
-            resources.add(new RasterResource(decoder, name.trim(), grid, siblings));
+            resources.add(new RasterResource(decoder, name.trim(), grid, siblings, lock));
             siblings.clear();
         }
         return resources;
@@ -279,11 +290,13 @@ public final class RasterResource extends AbstractGridResource implements Resour
     public List<SampleDimension> getSampleDimensions() throws DataStoreException {
         SampleDimension.Builder builder = null;
         try {
-            for (int i=0; i<ranges.length; i++) {
-                if (ranges[i] == null) {
-                    if (builder == null) builder = new SampleDimension.Builder();
-                    ranges[i] = createSampleDimension(builder, data[i]);
-                    builder.clear();
+            synchronized (lock) {
+                for (int i=0; i<ranges.length; i++) {
+                    if (ranges[i] == null) {
+                        if (builder == null) builder = new SampleDimension.Builder();
+                        ranges[i] = createSampleDimension(builder, data[i]);
+                        builder.clear();
+                    }
                 }
             }
         } catch (TransformException e) {
@@ -439,27 +452,29 @@ public final class RasterResource extends AbstractGridResource implements Resour
              * seeking backward.
              */
             Buffer values = null;
-            for (int i=0; i<bands.length; i++) {
-                final int r = rangeIndices.getSourceIndex(i);                   // In strictly increasing order.
-                final Variable variable = data[bandDimension >= 0 ? 0 : r];     // Only one variable if bandDimension ≧ 0.
-                SampleDimension sd = ranges[r];
-                if (sd == null) {
-                    ranges[r] = sd = createSampleDimension(rangeIndices.builder(), variable);
+            synchronized (lock) {
+                for (int i=0; i<bands.length; i++) {
+                    final int r = rangeIndices.getSourceIndex(i);                   // In strictly increasing order.
+                    final Variable variable = data[bandDimension >= 0 ? 0 : r];     // Only one variable if bandDimension ≧ 0.
+                    SampleDimension sd = ranges[r];
+                    if (sd == null) {
+                        ranges[r] = sd = createSampleDimension(rangeIndices.builder(), variable);
+                    }
+                    if (bandDimension > 0) {
+                        // TODO: adjust 'areaOfInterest'.
+                        throw new UnsupportedOperationException();
+                    }
+                    if (bandDimension != 0 || values == null) {
+                        // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
+                        values = variable.read(areaOfInterest, subsamplings).buffer().get();
+                    }
+                    if (bandDimension == 0) {
+                        values.position(r);
+                    }
+                    final int p = rangeIndices.getTargetIndex(i);
+                    sampleValues[p] = values;
+                    bands[p] = sd;
                 }
-                if (bandDimension > 0) {
-                    // TODO: adjust 'areaOfInterest'.
-                    throw new UnsupportedOperationException();
-                }
-                if (bandDimension != 0 || values == null) {
-                    // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
-                    values = variable.read(areaOfInterest, subsamplings).buffer().get();
-                }
-                if (bandDimension == 0) {
-                    values.position(r);
-                }
-                final int p = rangeIndices.getTargetIndex(i);
-                sampleValues[p] = values;
-                bands[p] = sd;
             }
             domain = targetGeometry.subsample(scales).build();
             imageBuffer = RasterFactory.wrap(dataType.rasterDataType, sampleValues);

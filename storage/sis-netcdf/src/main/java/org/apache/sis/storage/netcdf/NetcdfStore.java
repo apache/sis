@@ -201,7 +201,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
     public synchronized Collection<Resource> components() throws DataStoreException {
         if (components == null) try {
             Resource[] resources = decoder.getDiscreteSampling();
-            final List<Resource> grids = RasterResource.create(decoder);
+            final List<Resource> grids = RasterResource.create(decoder, this);
             if (!grids.isEmpty()) {
                 grids.addAll(UnmodifiableArrayList.wrap(resources));
                 resources = grids.toArray(new Resource[grids.size()]);
