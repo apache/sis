@@ -133,6 +133,8 @@ public abstract class Variable extends NamedElement {
     /**
      * If {@link #gridGeometry} has less dimensions than this variable, index of a grid dimension to take as raster bands.
      * Otherwise this field is left uninitialized. If set, the index is relative to "natural" order (reverse of netCDF order).
+     *
+     * @see RasterResource#bandDimension
      */
     int bandDimension;
 
@@ -640,13 +642,6 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
-     * Returns the number of grid dimension. This is the length of the array returned by {@link #getGridDimensions()}.
-     *
-     * @return number of grid dimensions.
-     */
-    public abstract int getDimension();
-
-    /**
      * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
      * Not all variables have a grid geometry. For example collections of features do not have such grid.
      * The same grid geometry may be shared by many variables.
@@ -669,7 +664,8 @@ public abstract class Variable extends NamedElement {
                  * those dimensions may not have the same length (this mismatch is handled in the next block).
                  */
                 List<Dimension> dimensions = getGridDimensions();                       // In netCDF order.
-                if (dimensions.size() > info.getSourceDimensions()) {
+                final int dataDimension = dimensions.size();
+                if (dataDimension > info.getSourceDimensions()) {
                     boolean copied = false;
                     final List<Dimension> toKeep = info.getDimensions();                // Also in netCDF order.
                     final int numToKeep = toKeep.size();
@@ -687,7 +683,13 @@ public abstract class Variable extends NamedElement {
                                 copied = true;
                                 dimensions = new ArrayList<>(dimensions);
                             }
-                            bandDimension = getDimension() - i - 1;         // Convert netCDF order to "natural" order.
+                            /*
+                             * It is possible that we never reach this point if the unexpected dimension is last.
+                             * However in such case the dimension to declare is the last one in netCDF order,
+                             * which corresponds to the first dimension (i.e. dimension 0) in "natural" order.
+                             * Since the 'bandDimension' field is initialized to zero, its value is correct.
+                             */
+                            bandDimension = dataDimension - 1 - i;          // Convert netCDF order to "natural" order.
                             dimensions.remove(i);
                             if (dimensions.size() < numToKeep) {
                                 throw new InternalDataStoreException();     // Should not happen (see above comment).

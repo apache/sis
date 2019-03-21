@@ -404,7 +404,7 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
                             switch (srcDim - otherDim) {
                                 case -1: grid = axis.createLocalizationGrid(other); break;
                                 case +1: grid = other.createLocalizationGrid(axis); break;
-                                default: continue;  // Needs axes at consecutive source dimensions.
+                                default: continue;            // Needs axes at consecutive source dimensions.
                             }
                             if (grid != null) {
                                 /*

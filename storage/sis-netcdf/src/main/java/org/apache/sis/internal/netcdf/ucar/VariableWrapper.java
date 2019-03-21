@@ -287,14 +287,6 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the number of grid dimension. This is the length of the array returned by {@link #getGridDimensions()}.
-     */
-    @Override
-    public int getDimension() {
-        return variable.getRank();
-    }
-
-    /**
      * Returns the names of all attributes associated to this variable.
      *
      * @return names of all attributes associated to this variable.

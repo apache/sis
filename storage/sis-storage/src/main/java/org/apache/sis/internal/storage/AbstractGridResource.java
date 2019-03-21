@@ -141,7 +141,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
         /**
          * Name of the extent dimension for bands.
          */
-        private static DimensionNameType BAND = DimensionNameType.valueOf("BAND");
+        private static final DimensionNameType BAND = DimensionNameType.valueOf("BAND");
 
         /**
          * The user-specified range indices in high bits, together with indices order in the low bits.

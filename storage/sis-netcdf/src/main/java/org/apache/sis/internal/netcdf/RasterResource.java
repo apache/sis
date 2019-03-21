@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -110,14 +111,24 @@ public final class RasterResource extends AbstractGridResource implements Resour
     private final SampleDimension[] ranges;
 
     /**
-     * The netCDF variable wrapped by this resource. The length of this array shall be equal to {@code ranges.length},
-     * except if a variable dimension represents bands. In the later case, this array should contain only one element.
+     * The netCDF variable wrapped by this resource. The length of this array shall be equal to {@code ranges.length}.
+     * The same variable may be repeated if it contains many bands, in which case the bands are in dimension at index
+     * {@link #bandDimension}.
      */
     private final Variable[] data;
 
     /**
-     * If one of {@link #data} dimension provides values for different bands, that dimension index.
-     * Otherwise -1.
+     * If one of {@link #data} dimension provides values for different bands, that dimension index. Otherwise -1.
+     * This is an index in a list of dimensions in "natural" order (reverse of netCDF order).
+     * There is three ways to read the data, determined by the {@code bandDimension} value:
+     *
+     * <ul>
+     *   <li>{@code (bandDimension < 0)}: one variable per band (usual case).</li>
+     *   <li>{@code (bandDimension = 0)}: one variable containing all bands, with bands in the first dimension.</li>
+     *   <li>{@code (bandDimension > 0)}: one variable containing all bands, with bands in the last dimension.</li>
+     * </ul>
+     *
+     * @see Variable#bandDimension
      */
     private final int bandDimension;
 
@@ -137,38 +148,31 @@ public final class RasterResource extends AbstractGridResource implements Resour
     /**
      * Creates a new resource. All variables in the {@code data} list shall have the same domain and the same grid geometry.
      *
-     * @param  decoder  the implementation used for decoding the netCDF file.
-     * @param  name     the name for the resource.
-     * @param  grid     the grid geometry (size, CRS…) of the {@linkplain #data} cube.
-     * @param  bands    the variables providing actual data. Shall contain at least one variable.
-     * @param  lock     the lock to use in {@code synchronized(lock)} statements.
+     * @param  decoder   the implementation used for decoding the netCDF file.
+     * @param  name      the name for the resource.
+     * @param  grid      the grid geometry (size, CRS…) of the {@linkplain #data} cube.
+     * @param  bands     the variables providing actual data. Shall contain at least one variable.
+     * @param  numBands  the number of bands, or -1 for using {@code bands.length}.
+     * @param  inner     if one of {@link #data} dimension provides values for different bands, that dimension index. Otherwise -1.
+     * @param  lock      the lock to use in {@code synchronized(lock)} statements.
      */
     private RasterResource(final Decoder decoder, final String name, final GridGeometry grid, final List<Variable> bands,
-            final Object lock) throws IOException, DataStoreException
+            final int numBands, final int inner, final Object lock) throws IOException, DataStoreException
     {
         super(decoder.listeners);
-        data         = bands.toArray(new Variable[bands.size()]);
-        ranges       = new SampleDimension[data.length];
-        identifier   = decoder.nameFactory.createLocalName(decoder.namespace, name);
-        location     = decoder.location;
-        gridGeometry = grid;
-        this.lock    = lock;
-        switch (data[0].getDimension() - grid.getDimension()) {
-            case 0: {
-                // All dimensions are in the CRS. This is the usual case.
-                bandDimension = -1;
+        data = bands.toArray(new Variable[numBands >= 0 ? numBands : bands.size()]);
+        for (int i=data.length; --i >= 0;) {
+            if (data[i] != null) {
+                Arrays.fill(data, i+1, data.length, data[i]);                   // Repeat the last variable for all bands.
                 break;
-            }
-            case 1: {
-                // One dimension is interpreted as bands.
-                bandDimension = data[0].bandDimension;
-                break;
-            }
-            default: {
-                // Too many missing dimensions.
-                throw new DataStoreException();
             }
         }
+        ranges        = new SampleDimension[data.length];
+        identifier    = decoder.nameFactory.createLocalName(decoder.namespace, name);
+        location      = decoder.location;
+        gridGeometry  = grid;
+        bandDimension = inner;
+        this.lock     = lock;
     }
 
     /**
@@ -195,67 +199,93 @@ public final class RasterResource extends AbstractGridResource implements Resour
             if (grid == null) {
                 continue;                                                   // Skip variables that are not grid coverages.
             }
-            siblings.add(variable);
+            siblings.add(variable);                                         // Variable will the first band of raster.
             String name = variable.getStandardName();
-            final DataType type = variable.getDataType();
             /*
              * At this point we found a variable for which to create a resource. Most of the time, there is nothing else to do;
-             * the resource will have a single variable and the same name than that unique variable.  However in some cases, we
-             * should put other variables together with the one we just found. Example:
+             * the resource will have a single variable and the same name than that unique variable. The resulting raster will
+             * have only one band (sample dimension). However in some cases the raster should have more than one band:
              *
-             *    1) baroclinic_eastward_sea_water_velocity
-             *    2) baroclinic_northward_sea_water_velocity
+             *   1) if the variable has an extra dimension compared to the grid geometry;
+             *   2) of if two or more variables should be grouped together.
              *
-             * We use the "eastward" and "northward" keywords for recognizing such pairs, providing that everything else in the
-             * name is the same and the grid geometries are the same.
+             * The following  if {…} else {…}  blocks implement those two cases.
              */
-            for (final String keyword : VECTOR_COMPONENT_NAMES) {
-                final int prefixLength = name.indexOf(keyword);
-                if (prefixLength >= 0) {
-                    int suffixStart  = prefixLength + keyword.length();
-                    int suffixLength = name.length() - suffixStart;
-                    for (int j=i; ++j < variables.length;) {
-                        final Variable candidate = variables[j];
-                        if (candidate == null || candidate.getRole() != VariableRole.COVERAGE) {
-                            variables[j] = null;                                // For avoiding to revisit that variable again.
-                            continue;
-                        }
-                        final String cn = candidate.getStandardName();
-                        if (cn.regionMatches(cn.length() - suffixLength, name, suffixStart, suffixLength) &&
-                            cn.regionMatches(0, name, 0, prefixLength) && candidate.getDataType() == type &&
-                            grid.equals(candidate.getGridGeometry()))
-                        {
-                            /*
-                             * Found another variable with the same name except for the keyword. Verify that the
-                             * keyword is replaced by another word in the vector component keyword list. If this
-                             * is the case, then we consider that those two variables should be kept together.
-                             */
-                            for (final String k : VECTOR_COMPONENT_NAMES) {
-                                if (cn.regionMatches(prefixLength, k, 0, k.length())) {
-                                    siblings.add(candidate);
-                                    variables[j] = null;
-                                    break;
+            final List<Dimension> gridDimensions = variable.getGridDimensions();
+            final int dataDimension = gridDimensions.size();
+            final int gridDimension = grid.getDimension();
+            final int bandDimension, numBands;
+            if (dataDimension != gridDimension) {
+                if (dataDimension != gridDimension + 1) {
+                    throw new DataStoreContentException(Resources.forLocale(decoder.listeners.getLocale())
+                            .getString(Resources.Keys.UnmappedDimensions_4, name, decoder.getFilename(), dataDimension, gridDimension));
+                }
+                bandDimension = variable.bandDimension;                            // One variable dimension is interpreted as bands.
+                Dimension dim = gridDimensions.get(dataDimension - 1 - bandDimension);  // Note: "natural" → netCDF index conversion.
+                numBands = Math.toIntExact(dim.length());
+            } else {
+                /*
+                 * At this point we found a variable where all dimensions are in the CRS. This is the usual case;
+                 * there is no band explicitly declared in the netCDF file. However in some cases, we should put
+                 * other variables together with the one we just found. Example:
+                 *
+                 *    1) baroclinic_eastward_sea_water_velocity
+                 *    2) baroclinic_northward_sea_water_velocity
+                 *
+                 * We use the "eastward" and "northward" keywords for recognizing such pairs, providing that everything else in the
+                 * name is the same and the grid geometries are the same.
+                 */
+                bandDimension = -1;                                                 // No dimension to be interpreted as bands.
+                numBands = -1;                                                      // To be determined by siblings.size().
+                final DataType type = variable.getDataType();
+                for (final String keyword : VECTOR_COMPONENT_NAMES) {
+                    final int prefixLength = name.indexOf(keyword);
+                    if (prefixLength >= 0) {
+                        int suffixStart  = prefixLength + keyword.length();
+                        int suffixLength = name.length() - suffixStart;
+                        for (int j=i; ++j < variables.length;) {
+                            final Variable candidate = variables[j];
+                            if (candidate == null || candidate.getRole() != VariableRole.COVERAGE) {
+                                variables[j] = null;                                // For avoiding to revisit that variable again.
+                                continue;
+                            }
+                            final String cn = candidate.getStandardName();
+                            if (cn.regionMatches(cn.length() - suffixLength, name, suffixStart, suffixLength) &&
+                                cn.regionMatches(0, name, 0, prefixLength) && candidate.getDataType() == type &&
+                                grid.equals(candidate.getGridGeometry()))
+                            {
+                                /*
+                                 * Found another variable with the same name except for the keyword. Verify that the
+                                 * keyword is replaced by another word in the vector component keyword list. If this
+                                 * is the case, then we consider that those two variables should be kept together.
+                                 */
+                                for (final String k : VECTOR_COMPONENT_NAMES) {
+                                    if (cn.regionMatches(prefixLength, k, 0, k.length())) {
+                                        siblings.add(candidate);
+                                        variables[j] = null;
+                                        break;
+                                    }
                                 }
                             }
                         }
-                    }
-                    /*
-                     * If we have more than one variable, omit the keyword from the name. For example instead
-                     * of "baroclinic_eastward_sea_water_velocity", construct "baroclinic_sea_water_velocity".
-                     * Note that we may need to remove duplicated '_' character after keyword removal.
-                     */
-                    if (siblings.size() > 1) {
-                        if (suffixLength != 0) {
-                            final int c = name.codePointAt(suffixStart);
-                            if ((prefixLength != 0) ? (c == name.codePointBefore(prefixLength)) : (c == '_')) {
-                                suffixStart += Character.charCount(c);
+                        /*
+                         * If we have more than one variable, omit the keyword from the name. For example instead
+                         * of "baroclinic_eastward_sea_water_velocity", construct "baroclinic_sea_water_velocity".
+                         * Note that we may need to remove duplicated '_' character after keyword removal.
+                         */
+                        if (siblings.size() > 1) {
+                            if (suffixLength != 0) {
+                                final int c = name.codePointAt(suffixStart);
+                                if ((prefixLength != 0) ? (c == name.codePointBefore(prefixLength)) : (c == '_')) {
+                                    suffixStart += Character.charCount(c);
+                                }
                             }
+                            name = new StringBuilder(name).delete(prefixLength, suffixStart).toString();
                         }
-                        name = new StringBuilder(name).delete(prefixLength, suffixStart).toString();
                     }
                 }
             }
-            resources.add(new RasterResource(decoder, name.trim(), grid, siblings, lock));
+            resources.add(new RasterResource(decoder, name.trim(), grid, siblings, numBands, bandDimension, lock));
             siblings.clear();
         }
         return resources;
@@ -414,7 +444,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
         if (domain == null) {
             domain = gridGeometry;
         }
-        final Variable first = data[bandDimension >= 0 ? 0 : rangeIndices.first()];     // Only one variable if bandDimension ≧ 0.
+        final Variable first = data[rangeIndices.first()];
         final DataType dataType = first.getDataType();
         if (bandDimension < 0) {
             for (int i=0; i<rangeIndices.getNumBands(); i++) {
@@ -455,7 +485,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
             synchronized (lock) {
                 for (int i=0; i<bands.length; i++) {
                     final int r = rangeIndices.getSourceIndex(i);                   // In strictly increasing order.
-                    final Variable variable = data[bandDimension >= 0 ? 0 : r];     // Only one variable if bandDimension ≧ 0.
+                    final Variable variable = data[r];
                     SampleDimension sd = ranges[r];
                     if (sd == null) {
                         ranges[r] = sd = createSampleDimension(rangeIndices.builder(), variable);
@@ -490,7 +520,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
             throw new DataStoreContentException(e);
         }
         if (imageBuffer == null) {
-            throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, dataType.name()));
+            throw new DataStoreContentException(Errors.getResources(getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
         return new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer, first.getStandardName());
     }
