@@ -118,7 +118,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
                 final int r = range[i];
                 if (r < 0 || r >= numSampleDimensions) {
                     throw new IllegalArgumentException(Resources.forLocale(getLocale()).getString(
-                            Resources.Keys.InvalidSampleDimensionIndex_2, r, numSampleDimensions - 1));
+                            Resources.Keys.InvalidSampleDimensionIndex_2, numSampleDimensions - 1, r));
                 }
                 packed[i] = (((long) r) << Integer.SIZE) | i;
             }
@@ -241,13 +241,15 @@ public abstract class AbstractGridResource extends AbstractResource implements G
         }
 
         /**
-         * Returns the increment to apply on index for moving to the next pixel in the same band.
-         * If the {@code insert} methods have never been invoked, then this method returns the number of bands.
+         * Returns the increment to apply on index for moving to the same band of the next pixel.
+         * If the {@code insert} methods have never been invoked, then this method returns 1.
          *
          * @return the increment to apply on index for moving to the next pixel in the same band.
+         *
+         * @see java.awt.image.PixelInterleavedSampleModel#getPixelStride()
          */
-        public int getBandStride() {
-            return (1 + last - first) / interval;
+        public int getPixelStride() {
+            return (last - first) / interval + 1;
         }
 
         /**

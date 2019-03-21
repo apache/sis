@@ -118,7 +118,7 @@ public class ImageRenderer {
      *
      * @see java.awt.image.ComponentSampleModel#pixelStride
      */
-    private final int pixelStride;
+    private int pixelStride;
 
     /**
      * Number of data elements between a given sample and the corresponding sample in the same column of the next line.
@@ -127,7 +127,7 @@ public class ImageRenderer {
      *
      * @see java.awt.image.ComponentSampleModel#scanlineStride
      */
-    private final int scanlineStride;
+    private int scanlineStride;
 
     /**
      * The sample dimensions, to be used for defining the bands.
@@ -340,6 +340,19 @@ public class ImageRenderer {
             buffers[i] = v.buffer().orElseThrow(UnsupportedOperationException::new);
         }
         setData(dataType, buffers);
+    }
+
+    /**
+     * Applies a subsampling between pixels. Invoking this method multiplies the <cite>pixel stride</cite>
+     * by the given amount. This method is cumulative: invoking it many times is equivalent to invoking it
+     * once with the product of all argument values.
+     *
+     * @param  subsampling   the subsampling between pixels in each row.
+     */
+    public void subsampleX(final int subsampling) {
+        ArgumentChecks.ensureStrictlyPositive("subsampling", subsampling);
+        scanlineStride = Math.multiplyExact(scanlineStride, subsampling);
+        pixelStride *= subsampling;       // If above operation did not fail, then this operation can not fail.
     }
 
     /**

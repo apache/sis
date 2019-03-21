@@ -46,6 +46,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -499,11 +500,14 @@ public final class RasterResource extends AbstractGridResource implements Resour
                     if (bandDimension == 0) {
                         /*
                          * This block is executed only if the band dimension is first, in which case we have interleaved
-                         * values like (band0, band1) for each pixel. Those values are read only once in above block.
-                         * This block sets the offset of the first value to read. The pixel stride is not specified here;
-                         * it will be specified later, at java.awt.image.SampleModel construction time.
+                         * values like (band0, band1) for each pixel. Those values were read once for all in above block.
+                         * This block sets the offset of the first value to read, together with the buffer limit in order
+                         * to ensure that all buffers have the same number of remaining elements. The pixel stride is not
+                         * specified here; it will be specified later, at java.awt.image.SampleModel construction time.
                          */
-                        values.position(rangeIndices.getSubsampledIndex(i));
+                        if (i != 0) values = JDK9.duplicate(values);
+                        final int p = rangeIndices.getSubsampledIndex(i);
+                        values.position(p).limit(values.capacity() - bands.length + p + 1);
                     }
                     final int p = rangeIndices.getTargetIndex(i);
                     sampleValues[p] = values;
@@ -526,7 +530,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
         if (imageBuffer == null) {
             throw new DataStoreContentException(Errors.getResources(getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
-        return new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer, rangeIndices.getBandStride(), first.getStandardName());
+        return new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer, rangeIndices.getPixelStride(), first.getStandardName());
     }
 
     /**

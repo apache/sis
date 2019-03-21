@@ -43,6 +43,11 @@ final class Raster extends GridCoverage {
     private final DataBuffer data;
 
     /**
+     * Increment to apply on index for moving to the next pixel in the same band.
+     */
+    private final int pixelStride;
+
+    /**
      * Name to display in error messages. Not to be used for processing.
      */
     private final String label;
@@ -50,10 +55,13 @@ final class Raster extends GridCoverage {
     /**
      * Creates a new raster from the given resource.
      */
-    Raster(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data, final int bandStride, final String label) {
+    Raster(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data, final int pixelStride,
+            final String label)
+    {
         super(domain, range);
-        this.data  = data;
-        this.label = label;
+        this.data        = data;
+        this.label       = label;
+        this.pixelStride = pixelStride;
     }
 
     /**
@@ -65,6 +73,7 @@ final class Raster extends GridCoverage {
         try {
             final ImageRenderer renderer = new ImageRenderer(this, target);
             renderer.setData(data);
+            renderer.subsampleX(pixelStride);
             return renderer.image();
         } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
             throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotRender_2, label, e), e);

@@ -39,6 +39,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.io.HyperRectangleReaderTest.class,
     org.apache.sis.internal.storage.io.RewindableLineReaderTest.class,
     org.apache.sis.internal.storage.MetadataBuilderTest.class,
+    org.apache.sis.internal.storage.AbstractGridResourceTest.class,
     org.apache.sis.storage.FeatureNamingTest.class,
     org.apache.sis.storage.ProbeResultTest.class,
     org.apache.sis.storage.StorageConnectorTest.class,
