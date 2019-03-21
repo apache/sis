@@ -50,7 +50,7 @@ final class Raster extends GridCoverage {
     /**
      * Creates a new raster from the given resource.
      */
-    Raster(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data, final String label) {
+    Raster(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data, final int bandStride, final String label) {
         super(domain, range);
         this.data  = data;
         this.label = label;

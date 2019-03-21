@@ -44,7 +44,6 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -444,7 +443,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
         if (domain == null) {
             domain = gridGeometry;
         }
-        final Variable first = data[rangeIndices.first()];
+        final Variable first = data[rangeIndices.getFirstSpecified()];
         final DataType dataType = first.getDataType();
         if (bandDimension < 0) {
             for (int i=0; i<rangeIndices.getNumBands(); i++) {
@@ -473,8 +472,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
             int[] subsamplings = scales;
             if (bandDimension >= 0) {
                 areaOfInterest = rangeIndices.insertBandDimension(areaOfInterest, bandDimension);
-                subsamplings   = ArraysExt.insert(subsamplings, bandDimension, 1);
-                subsamplings[bandDimension] = 1;
+                subsamplings   = rangeIndices.insertSubsampling  (subsamplings,   bandDimension);
             }
             /*
              * Iterate over netCDF variables in the order they appear in the file, not in the order requested
@@ -499,7 +497,13 @@ public final class RasterResource extends AbstractGridResource implements Resour
                         values = variable.read(areaOfInterest, subsamplings).buffer().get();
                     }
                     if (bandDimension == 0) {
-                        values.position(r);
+                        /*
+                         * This block is executed only if the band dimension is first, in which case we have interleaved
+                         * values like (band0, band1) for each pixel. Those values are read only once in above block.
+                         * This block sets the offset of the first value to read. The pixel stride is not specified here;
+                         * it will be specified later, at java.awt.image.SampleModel construction time.
+                         */
+                        values.position(rangeIndices.getSubsampledIndex(i));
                     }
                     final int p = rangeIndices.getTargetIndex(i);
                     sampleValues[p] = values;
@@ -522,7 +526,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
         if (imageBuffer == null) {
             throw new DataStoreContentException(Errors.getResources(getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
-        return new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer, first.getStandardName());
+        return new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer, rangeIndices.getBandStride(), first.getStandardName());
     }
 
     /**

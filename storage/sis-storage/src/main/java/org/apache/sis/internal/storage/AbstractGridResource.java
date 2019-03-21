@@ -24,9 +24,11 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 import org.opengis.metadata.spatial.DimensionNameType;
 
 
@@ -150,6 +152,13 @@ public abstract class AbstractGridResource extends AbstractResource implements G
         private final long[] packed;
 
         /**
+         * If a {@linkplain #insertSubsampling subsampling} has been applied, indices of the first and last band
+         * to read, together with the interval (stride) between bands.  Those information are computed only when
+         * the {@code insertFoo(…)} methods are invoked.
+         */
+        private int first, last, interval;
+
+        /**
          * A builder for sample dimensions, created when first needed.
          */
         private SampleDimension.Builder builder;
@@ -159,6 +168,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
          */
         RangeArgument(final long[] packed) {
             this.packed = packed;
+            interval = 1;
         }
 
         /**
@@ -168,6 +178,21 @@ public abstract class AbstractGridResource extends AbstractResource implements G
          */
         public int getNumBands() {
             return packed.length;
+        }
+
+        /**
+         * Returns the value of the first index specified by the user. This is not necessarily equal to
+         * {@code getBandIndex(0)} if the user specified the bands out of order.
+         *
+         * @return index of the first value in the user-specified {@code range} array.
+         */
+        public int getFirstSpecified() {
+            for (final long p : packed) {
+                if (((int) p) == 0) {
+                    return (int) (p >>> Integer.SIZE);
+                }
+            }
+            throw new IllegalStateException();              // Should never happen.
         }
 
         /**
@@ -193,30 +218,72 @@ public abstract class AbstractGridResource extends AbstractResource implements G
         }
 
         /**
-         * Returns the value of the first index specified by the user. This is not necessarily equal to
-         * {@code getBandIndex(0)} if the user specified bands out of order.
+         * Returns the i<sup>th</sup> index of the band to read from the resource, after subsampling has been applied.
+         * The subsampling results from calls to {@link #insertBandDimension(GridExtent, int)} and
+         * {@link #insertSubsampling(int[], int)} methods.
          *
-         * @return index of the first value in the user-specified {@code range} array.
+         * {@preformat java
+         *     areaOfInterest = rangeIndices.insertBandDimension(areaOfInterest, bandDimension);
+         *     subsamplings   = rangeIndices.insertSubsampling  (subsamplings,   bandDimension);
+         *     data = myReadMethod(areaOfInterest, subsamplings);
+         *     for (int i=0; i<numBands; i++) {
+         *         int bandIndexInTheDataWeJustRead = getSubsampledIndex(i);
+         *     }
+         * }
+         *
+         * If the {@code insert} methods have never been invoked, then this method is equivalent to {@link #getSourceIndex(int)}.
+         *
+         * @param  i  index of the range index to get, from 0 inclusive to {@link #getNumBands()} exclusive.
+         * @return index of the i<sup>th</sup> band to read from the resource, after subsampling.
          */
-        public int first() {
-            for (final long p : packed) {
-                if (((int) p) == 0) {
-                    return (int) (p >>> Integer.SIZE);
-                }
-            }
-            throw new IllegalStateException();              // Should never happen.
+        public int getSubsampledIndex(final int i) {
+            return (getSourceIndex(i) - first) / interval;
+        }
+
+        /**
+         * Returns the increment to apply on index for moving to the next pixel in the same band.
+         * If the {@code insert} methods have never been invoked, then this method returns the number of bands.
+         *
+         * @return the increment to apply on index for moving to the next pixel in the same band.
+         */
+        public int getBandStride() {
+            return (1 + last - first) / interval;
         }
 
         /**
          * Returns the given extent with a new dimension added for the bands. The extent in the new dimension
          * will range from the minimum {@code range} value to the maximum {@code range} value inclusive.
+         * This method should be used together with {@link #insertSubsampling(int[], int)}.
          *
          * @param  areaOfInterest  the extent to which to add a new dimension for bands.
          * @param  bandDimension   index of the band dimension.
-         * @return a new extent with the same value than the given extent plus one dimension for bands.
+         * @return a new extent with the same values than the given extent plus one dimension for bands.
          */
         public GridExtent insertBandDimension(final GridExtent areaOfInterest, final int bandDimension) {
-            return areaOfInterest.insert(bandDimension, BAND, getSourceIndex(0), getSourceIndex(packed.length - 1), true);
+            first = getSourceIndex(0);
+            last  = getSourceIndex(packed.length - 1);
+            return areaOfInterest.insert(bandDimension, BAND, first, last, true);
+        }
+
+        /**
+         * Returns the given subsampling with a new dimension added for the bands. The subsampling in the new
+         * dimension will be the greatest common divisor of the difference between all user-specified values.
+         * This method should be used together with {@link #insertBandDimension(GridExtent, int)}.
+         *
+         * @param  subsamplings   the subsampling to which to add a new dimension for bands.
+         * @param  bandDimension  index of the band dimension.
+         * @return a new subsampling array with the same values than the given array plus one dimension for bands.
+         */
+        public int[] insertSubsampling(int[] subsamplings, final int bandDimension) {
+            final int[] delta = new int[packed.length - 1];
+            for (int i=0; i<delta.length; i++) {
+                delta[i] = getSourceIndex(i+1) - getSourceIndex(i);
+            }
+            final int[] divisors = MathFunctions.commonDivisors(delta);
+            interval = (divisors.length != 0) ? divisors[divisors.length - 1] : 1;
+            subsamplings = ArraysExt.insert(subsamplings, bandDimension, 1);
+            subsamplings[bandDimension] = interval;
+            return subsamplings;
         }
 
         /**

@@ -861,9 +861,11 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
     }
 
     /**
-     * Returns the divisors which are common to all the specified numbers.
+     * Returns the positive divisors which are common to all the specified numbers.
+     * The returned array always starts with value 1, unless the given value is 0
+     * in which case this method returns an empty array.
      *
-     * @param  numbers  the numbers for which to compute the divisors.
+     * @param  numbers  the numbers for which to compute the divisors, in any order.
      * @return the divisors common to all the given numbers, in strictly increasing order.
      */
     public static int[] commonDivisors(final int... numbers) {
