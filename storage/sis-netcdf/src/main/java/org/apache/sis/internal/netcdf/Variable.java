@@ -131,6 +131,12 @@ public abstract class Variable extends NamedElement {
     private boolean gridDetermined;
 
     /**
+     * If {@link #gridGeometry} has less dimensions than this variable, index of a grid dimension to take as raster bands.
+     * Otherwise this field is left uninitialized. If set, the index is relative to "natural" order (reverse of netCDF order).
+     */
+    int bandDimension;
+
+    /**
      * Creates a new variable.
      *
      * @param decoder  the netCDF file where this variable is stored.
@@ -634,6 +640,13 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
+     * Returns the number of grid dimension. This is the length of the array returned by {@link #getGridDimensions()}.
+     *
+     * @return number of grid dimensions.
+     */
+    public abstract int getDimension();
+
+    /**
      * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
      * Not all variables have a grid geometry. For example collections of features do not have such grid.
      * The same grid geometry may be shared by many variables.
@@ -674,6 +687,7 @@ public abstract class Variable extends NamedElement {
                                 copied = true;
                                 dimensions = new ArrayList<>(dimensions);
                             }
+                            bandDimension = getDimension() - i - 1;         // Convert netCDF order to "natural" order.
                             dimensions.remove(i);
                             if (dimensions.size() < numToKeep) {
                                 throw new InternalDataStoreException();     // Should not happen (see above comment).

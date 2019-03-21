@@ -168,7 +168,7 @@ public final class RasterFactory extends Static {
      * Wraps the backing arrays of given NIO buffers into Java2D buffers.
      * This method wraps the underlying array of primitive types; data are not copied.
      * For each buffer, the data starts at {@linkplain Buffer#position() buffer position}
-     * and ends at the position + {@linkplain Buffer#remaining() remaining}.
+     * and ends at {@linkplain Buffer#limit() limit}.
      *
      * @param  dataType  type of buffer to create as one of {@link DataBuffer} constants.
      * @param  data      the data, one for each band.

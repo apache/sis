@@ -500,6 +500,14 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
+     * Returns the number of grid dimension. This is the length of the array returned by {@link #getGridDimensions()}.
+     */
+    @Override
+    public int getDimension() {
+        return dimensions.length;
+    }
+
+    /**
      * Returns the names of all attributes associated to this variable.
      *
      * @return names of all attributes associated to this variable.

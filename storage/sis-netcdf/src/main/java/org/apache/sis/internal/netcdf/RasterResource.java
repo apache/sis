@@ -28,8 +28,10 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.raster.RasterFactory;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridDerivation;
@@ -41,9 +43,9 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
@@ -108,8 +110,8 @@ public final class RasterResource extends AbstractGridResource implements Resour
     private final SampleDimension[] ranges;
 
     /**
-     * The netCDF variable wrapped by this resource.
-     * The same variable may be repeated if one of its dimension shall be interpreted as bands.
+     * The netCDF variable wrapped by this resource. The length of this array shall be equal to {@code ranges.length},
+     * except if a variable dimension represents bands. In the later case, this array should contain only one element.
      */
     private final Variable[] data;
 
@@ -143,7 +145,22 @@ public final class RasterResource extends AbstractGridResource implements Resour
         identifier   = decoder.nameFactory.createLocalName(decoder.namespace, name);
         location     = decoder.location;
         gridGeometry = grid;
-        bandDimension = -1;
+        switch (data[0].getDimension() - grid.getDimension()) {
+            case 0: {
+                // All dimensions are in the CRS. This is the usual case.
+                bandDimension = -1;
+                break;
+            }
+            case 1: {
+                // One dimension is interpreted as bands.
+                bandDimension = data[0].bandDimension;
+                break;
+            }
+            default: {
+                // Too many missing dimensions.
+                throw new DataStoreException();
+            }
+        }
     }
 
     /**
@@ -379,60 +396,78 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
-    public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
-        range = validateRangeArgument(ranges.length, range);
+    public GridCoverage read(GridGeometry domain, final int... range) throws DataStoreException {
+        final RangeArgument rangeIndices = validateRangeArgument(ranges.length, range);
         if (domain == null) {
             domain = gridGeometry;
         }
-        final Variable first = data[range[0]];
+        final Variable first = data[bandDimension >= 0 ? 0 : rangeIndices.first()];     // Only one variable if bandDimension ≧ 0.
         final DataType dataType = first.getDataType();
-        for (int i=1; i<data.length; i++) {
-            final Variable variable = data[range[i]];
-            if (!dataType.equals(variable.getDataType())) {
-                throw new DataStoreContentException(Resources.forLocale(getLocale()).getString(
-                        Resources.Keys.MismatchedVariableType_3, getFilename(), first.getName(), variable.getName()));
+        if (bandDimension < 0) {
+            for (int i=0; i<rangeIndices.getNumBands(); i++) {
+                final Variable variable = data[rangeIndices.getSourceIndex(i)];
+                if (!dataType.equals(variable.getDataType())) {
+                    throw new DataStoreContentException(Resources.forLocale(getLocale()).getString(
+                            Resources.Keys.MismatchedVariableType_3, getFilename(), first.getName(), variable.getName()));
+                }
             }
         }
+        /*
+         * At this point the arguments and the state of this resource have been validated.
+         * There is three ways to read the data, determined by 'bandDimension' value:
+         *
+         *   • (bandDimension < 0): one variable per band (usual case).
+         *   • (bandDimension = 0): one variable containing all bands, with bands in the first dimension.
+         *   • (bandDimension > 0): one variable containing all bands, with bands in the last dimension.
+         */
         final DataBuffer imageBuffer;
-        final SampleDimension[] selected = new SampleDimension[range.length];
+        final SampleDimension[] bands = new SampleDimension[rangeIndices.getNumBands()];
         try {
-            final Buffer[] samples = new Buffer[range.length];
-            final GridDerivation change = gridGeometry.derive().subgrid(domain);
-            final int[] subsamplings = change.getSubsamplings();
-            SampleDimension.Builder builder = null;
+            final Buffer[] sampleValues = new Buffer[bands.length];
+            final GridDerivation targetGeometry = gridGeometry.derive().subgrid(domain);
+            GridExtent areaOfInterest = targetGeometry.getIntersection();
+            final int[] scales = targetGeometry.getSubsamplings();
+            int[] subsamplings = scales;
+            if (bandDimension >= 0) {
+                areaOfInterest = rangeIndices.insertBandDimension(areaOfInterest, bandDimension);
+                subsamplings   = ArraysExt.insert(subsamplings, bandDimension, 1);
+                subsamplings[bandDimension] = 1;
+            }
             /*
              * Iterate over netCDF variables in the order they appear in the file, not in the order requested
              * by the 'range' argument.  The intent is to perform sequential I/O as much as possible, without
-             * seeking backward. A side effect is that even if the same sample dimension were requested many
-             * times, the data would still be loaded at most once.
+             * seeking backward.
              */
-            for (int i=0; i<data.length; i++) {
-                final Variable variable = data[i];
-                SampleDimension def = ranges[i];
-                Buffer values = null;
-                for (int j=0; j<range.length; j++) {
-                    if (range[j] == i) {                // Search sample dimensions specified in the 'range' argument.
-                        if (def == null) {
-                            if (builder == null) builder = new SampleDimension.Builder();
-                            ranges[i] = def = createSampleDimension(builder, variable);
-                            builder.clear();
-                        }
-                        if (values == null) {
-                            // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
-                            values = variable.read(change.getIntersection(), subsamplings).buffer().get();
-                        }
-                        selected[j] = def;
-                        samples[j] = values;
-                    }
+            Buffer values = null;
+            for (int i=0; i<bands.length; i++) {
+                final int r = rangeIndices.getSourceIndex(i);                   // In strictly increasing order.
+                final Variable variable = data[bandDimension >= 0 ? 0 : r];     // Only one variable if bandDimension ≧ 0.
+                SampleDimension sd = ranges[r];
+                if (sd == null) {
+                    ranges[r] = sd = createSampleDimension(rangeIndices.builder(), variable);
                 }
+                if (bandDimension > 0) {
+                    // TODO: adjust 'areaOfInterest'.
+                    throw new UnsupportedOperationException();
+                }
+                if (bandDimension != 0 || values == null) {
+                    // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
+                    values = variable.read(areaOfInterest, subsamplings).buffer().get();
+                }
+                if (bandDimension == 0) {
+                    values.position(r);
+                }
+                final int p = rangeIndices.getTargetIndex(i);
+                sampleValues[p] = values;
+                bands[p] = sd;
             }
-            domain = change.subsample(subsamplings).build();
-            imageBuffer = RasterFactory.wrap(dataType.rasterDataType, samples);
+            domain = targetGeometry.subsample(scales).build();
+            imageBuffer = RasterFactory.wrap(dataType.rasterDataType, sampleValues);
         } catch (IOException e) {
             throw new DataStoreException(e);
         } catch (TransformException e) {
             throw new DataStoreReferencingException(e);
-        } catch (RuntimeException e) {                  // Many exceptions thrown by RasterFactory.wrap(…).
+        } catch (RuntimeException e) {                          // Many exceptions thrown by RasterFactory.wrap(…).
             final Throwable cause = e.getCause();
             if (cause instanceof TransformException) {
                 throw new DataStoreReferencingException(cause);
@@ -442,7 +477,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
         if (imageBuffer == null) {
             throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
-        return new Raster(domain, UnmodifiableArrayList.wrap(selected), imageBuffer, first.getStandardName());
+        return new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer, first.getStandardName());
     }
 
     /**
