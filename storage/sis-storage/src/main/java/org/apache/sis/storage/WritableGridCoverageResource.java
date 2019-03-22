@@ -35,12 +35,12 @@ public interface WritableGridCoverageResource extends GridCoverageResource {
      * Different {@linkplain DataStoreProvider} may declare specific options
      * for example : compression, version, encryption.
      */
-    static interface Option {}
+    interface Option {}
 
     /**
      * Common writing options.
      */
-    static enum CommonOption implements Option {
+    enum CommonOption implements Option {
         /**
          * <ul>
          * <li>If a coverage already exist it will erase and replace existing datas
@@ -69,7 +69,8 @@ public interface WritableGridCoverageResource extends GridCoverageResource {
      *
      * @param coverage new datas to write, should not be null
      * @param options specific writing options
+     * @throws org.apache.sis.storage.DataStoreException if an error occurred while writing datas in the underlying data store.
      */
-    void write(GridCoverage coverage, Option ... options);
+    void write(GridCoverage coverage, Option... options) throws DataStoreException;
 
 }
