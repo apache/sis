@@ -251,11 +251,12 @@ final class VariableWrapper extends Variable {
          * the file. Note that those coordinate systems may have been set by the user.
          */
         if (variable instanceof Enhancements) {
+            final Grid[] grids = decoder.getGrids();    // Must be first for forcing some UCAR CS constructions.
             final List<CoordinateSystem> systems = ((Enhancements) variable).getCoordinateSystems();
-            if (!systems.isEmpty()) {           // For avoiding useless call to decoder.getGrids().
+            if (!systems.isEmpty()) {
                 GridWrapper grid = null;
                 final String[] axisNames = decoder.convention().namesOfAxisVariables(this);
-                for (final Grid candidate : decoder.getGrids()) {
+                for (final Grid candidate : grids) {
                     final GridWrapper ordered = ((GridWrapper) candidate).forVariable(variable, systems, axisNames);
                     if (ordered != null && (grid == null || ordered.getSourceDimensions() > grid.getSourceDimensions())) {
                         grid = ordered;
