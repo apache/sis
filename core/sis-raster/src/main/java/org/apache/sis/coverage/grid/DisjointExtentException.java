@@ -21,7 +21,7 @@ import org.apache.sis.internal.raster.Resources;
 
 /**
  * Thrown when operations on a {@link GridGeometry} result in an area which
- * do not intersect anymore the {@link GridExtent} of the {@link GridGeometry}.
+ * does not intersect anymore the {@link GridExtent} of the {@link GridGeometry}.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0

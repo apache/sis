@@ -734,7 +734,7 @@ public class GridExtent implements Serializable {
      * @param  index       index of the dimension as stored in this grid extent.
      * @param  indexShown  index to write in the message. Often the same as {@code index}.
      */
-    private Object getAxisIdentification(final int index, final int indexShown) {
+    final Object getAxisIdentification(final int index, final int indexShown) {
         if (types != null) {
             final DimensionNameType type = types[index];
             if (type != null) {

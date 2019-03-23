@@ -19,8 +19,10 @@ package org.apache.sis.coverage.grid;
 import java.util.Arrays;
 import java.nio.Buffer;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.SampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -86,12 +88,24 @@ import org.apache.sis.math.Vector;
  */
 public class ImageRenderer {
     /**
-     * Pixel coordinates of the image upper-left location.
-     * This is often left to zero since {@link BufferedImage} has this constraint.
+     * Location of the first image pixel relative to the grid coverage extent. The (0,0) offset means that the first pixel
+     * in the {@code sliceExtent} (specified at construction time) is the first pixel in the whole {@link GridCoverage}.
      *
-     * @see #setLocation(int, int)
+     * <div class="note"><b>Note:</b> if those offsets exceed 32 bits integer capacity, then it may not be possible to build
+     * an image for given {@code sliceExtent} from a single {@link DataBuffer}, because accessing sample values would exceed
+     * the* capacity of index in Java arrays. In those cases the image needs to be tiled.</div>
      */
-    private int x, y;
+    private final long offsetX, offsetY;
+
+    /**
+     * Pixel coordinates of the image upper-left corner, as an offset relative to the {@code sliceExtent}.
+     * This is initially zero (unless {@code sliceExtent} is partially outside the grid coverage extent),
+     * but a different value may be used if the given data are tiled.
+     *
+     * @see RenderedImage#getMinX()
+     * @see RenderedImage#getMinY()
+     */
+    private final int imageX, imageY;
 
     /**
      * Width (number of pixels in a row) of the image to render.
@@ -110,6 +124,15 @@ public class ImageRenderer {
      * @see RenderedImage#getHeight()
      */
     private final int height;
+
+    /**
+     * Number of data elements between two samples in the data {@link #buffer}. This value is implicitly 1 in Java2D since
+     * {@link java.awt.image} supports <cite>pixel stride</cite> and <cite>scanline stride</cite> in {@link SampleModel},
+     * but does not support stride at the {@link DataBuffer} level. This is theoretically not needed since "sample stride"
+     * can be represented as {@link #pixelStride}. We allow this concept for the convenience of this builder, but at the
+     * end this value is incorporated into the pixel stride.
+     */
+    private int sampleStride;
 
     /**
      * Number of data elements between two samples for the same band on the same line.
@@ -141,12 +164,6 @@ public class ImageRenderer {
     private int[] bankIndices;
 
     /**
-     * Number of data elements from the first element of the bank to the first sample of the band, or {@code null} for all 0.
-     * If non-null, this array length must be equal to {@link #bands} array length.
-     */
-    private final int[] bandOffsets;
-
-    /**
      * The band to be made visible (usually 0). All other bands, if any will be ignored.
      */
     private int visibleBand;
@@ -158,11 +175,12 @@ public class ImageRenderer {
     private DataBuffer buffer;
 
     /**
-     * Creates a new image renderer for the given slice extent. The image will have only one tile.
+     * Creates a new image renderer for the given slice extent.
      *
      * @param  coverage     the grid coverage for which to build an image.
      * @param  sliceExtent  the grid geometry from which to create an image, or {@code null} for the {@code coverage} extent.
      * @throws SubspaceNotSpecifiedException if this method can not infer a two-dimensional slice from {@code sliceExtent}.
+     * @throws DisjointExtentException if the given extent does not intersect this grid coverage.
      * @throws ArithmeticException if a stride calculation overflows the 32 bits integer capacity.
      */
     public ImageRenderer(final GridCoverage coverage, GridExtent sliceExtent) {
@@ -179,19 +197,33 @@ public class ImageRenderer {
             sliceExtent = source;
         }
         final int[] dimensions = sliceExtent.getSubspaceDimensions(2);
-        int  xd = dimensions[0];
-        int  yd = dimensions[1];
-        long xo = sliceExtent.getLow(xd);
-        long yo = sliceExtent.getLow(yd);
-        width  = Math.toIntExact(sliceExtent.getSize(xd));
-        height = Math.toIntExact(sliceExtent.getSize(yd));
+        final int  xd   = dimensions[0];
+        final int  yd   = dimensions[1];
+        final long xcov = source.getLow(xd);
+        final long ycov = source.getLow(yd);
+        final long xreq = sliceExtent.getLow(xd);
+        final long yreq = sliceExtent.getLow(yd);
+        final long xmin = Math.max(xreq, xcov);
+        final long ymin = Math.max(yreq, ycov);
+        final long xmax = Math.min(sliceExtent.getHigh(xd), source.getHigh(xd));
+        final long ymax = Math.min(sliceExtent.getHigh(yd), source.getHigh(yd));
+        if (xmax <= xmin || ymax <= ymin) {
+            final int d = (xmax <= xmin) ? xd : yd;
+            throw new DisjointExtentException(source.getAxisIdentification(d, d),
+                    source.getLow(d), source.getHigh(d), sliceExtent.getLow(d), sliceExtent.getHigh(d));
+        }
+        width   = Math.incrementExact(Math.toIntExact(xmax - xmin));
+        height  = Math.incrementExact(Math.toIntExact(ymax - ymin));
+        imageX  = Math.toIntExact(Math.subtractExact(xreq, xmin));
+        imageY  = Math.toIntExact(Math.subtractExact(yreq, ymin));
+        offsetX = Math.subtractExact(xmin, xcov);
+        offsetY = Math.subtractExact(ymin, ycov);
         /*
-         * After this point, xd and yd should be indices relative to source extent.
-         * For now we keep them unchanged on the assumption that the two grid extents have the same dimensions.
+         * At this point, the RenderedImage properties have been computed on the assumption
+         * that the returned image will be a single tile. Now compute SampleModel properties.
          */
-        xo = Math.subtractExact(xo, source.getLow(xd));
-        yo = Math.subtractExact(yo, source.getLow(yd));
-        long pixelStride = 1;
+        this.sampleStride = 1;
+        long pixelStride  = 1;
         for (int i=0; i<xd; i++) {
             pixelStride = Math.multiplyExact(pixelStride, source.getSize(i));
         }
@@ -201,8 +233,6 @@ public class ImageRenderer {
         }
         this.pixelStride    = Math.toIntExact(pixelStride);
         this.scanlineStride = Math.toIntExact(scanlineStride);
-        this.bandOffsets    = new int[getNumBands()];
-        Arrays.fill(bandOffsets, Math.toIntExact(xo + Math.multiplyExact(yo, scanlineStride)));
     }
 
     /**
@@ -226,30 +256,12 @@ public class ImageRenderer {
     }
 
     /**
-     * Sets the pixel coordinates of the upper-left corner of the rendered image to create.
-     * If this method is not invoked, then the default value is (0,0).
-     * That default value is often suitable since {@link BufferedImage} constraints that corner to (0,0).
+     * Returns the location of the image upper-left corner together with the image size.
      *
-     * @param  x  the minimum <var>x</var> coordinate (inclusive) of the rendered image.
-     * @param  y  the minimum <var>y</var> coordinate (inclusive) of the rendered image.
-     *
-     * @see RenderedImage#getMinX()
-     * @see RenderedImage#getMinY()
+     * @return the rendered image location and size (never null).
      */
-    public void setLocation(final int x, final int y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    /**
-     * Returns the location of the image upper-left corner.
-     * This is the last value set by a call to {@link #setLocation(int, int)}.
-     * The default value is (0,0).
-     *
-     * @return the image location (never null).
-     */
-    public final Point getLocation() {
-        return new Point(x,y);
+    public final Rectangle getBounds() {
+        return new Rectangle(imageX, imageY, width, height);
     }
 
     /**
@@ -343,41 +355,59 @@ public class ImageRenderer {
     }
 
     /**
-     * Applies a subsampling between pixels. Invoking this method multiplies the <cite>pixel stride</cite>
-     * by the given amount. This method is cumulative: invoking it many times is equivalent to invoking it
-     * once with the product of all argument values.
+     * Specifies the number of data elements between two samples in the vectors specified by {@code setData(…)} methods.
+     * The default value is 1. A value of 2 (for example) instructs {@code ImageRenderer} to use the first value of the
+     * given data vectors, skip a value, use the next value, <i>etc.</i> In other words, this method applies a subsampling
+     * on the vectors specified to {@link #setData(Vector...)} or {@link #setData(int, Buffer...)}.
      *
-     * @param  subsampling   the subsampling between pixels in each row.
+     * @param  stride  the number of data elements between each sample values in the data vectors.
+     * @throws ArithmeticException if the given stride is too large.
+     *
+     * @see java.awt.image.ComponentSampleModel#pixelStride
+     * @see java.awt.image.ComponentSampleModel#scanlineStride
      */
-    public void subsampleX(final int subsampling) {
-        ArgumentChecks.ensureStrictlyPositive("subsampling", subsampling);
-        scanlineStride = Math.multiplyExact(scanlineStride, subsampling);
-        pixelStride *= subsampling;       // If above operation did not fail, then this operation can not fail.
+    public void setSampleStride(final int stride) {
+        if (stride != sampleStride) {
+            ArgumentChecks.ensureStrictlyPositive("stride", stride);
+            // Division by 'dataStride' is for cancelling effect of previous calls.
+            scanlineStride = Math.multiplyExact(scanlineStride / sampleStride, stride);
+            // If above operation did not fail, then following operation can not fail.
+            pixelStride = (pixelStride / sampleStride) * stride;
+            sampleStride = stride;
+        }
     }
 
     /**
      * Creates a raster with the data specified by the last call to a {@code setData(…)} method.
-     * The raster upper-left corner is located at the position given by {@link #getLocation()}.
+     * The raster upper-left corner is located at the position given by {@link #getBounds()}.
      *
      * @return the raster.
      * @throws IllegalStateException if no {@code setData(…)} method has been invoked before this method call.
      * @throws RasterFormatException if a call to a {@link WritableRaster} factory method failed.
+     * @throws ArithmeticException if a property of the raster to construct exceeds the capacity of 32 bits integers.
      */
     public WritableRaster raster() {
         if (buffer == null) {
             throw new IllegalStateException(Resources.format(Resources.Keys.UnspecifiedRasterData));
         }
-        final Point location = ((x | y) != 0) ? new Point(x,y) : null;
+        // Number of data elements from the first element of the bank to the first sample of the band.
+        final int[] bandOffsets = new int[getNumBands()];
+        Arrays.fill(bandOffsets, Math.toIntExact(Math.addExact(
+                Math.multiplyExact(offsetX, pixelStride),
+                Math.multiplyExact(offsetY, scanlineStride))));
+
+        final Point location = new Point(imageX, imageY);
         return RasterFactory.createRaster(buffer, width, height, pixelStride, scanlineStride, bankIndices, bandOffsets, location);
     }
 
     /**
      * Creates an image with the data specified by the last call to a {@code setData(…)} method.
-     * The image upper-left corner is located at the position given by {@link #getLocation()}.
+     * The image upper-left corner is located at the position given by {@link #getBounds()}.
      *
      * @return the image.
      * @throws IllegalStateException if no {@code setData(…)} method has been invoked before this method call.
      * @throws RasterFormatException if a call to a {@link WritableRaster} factory method failed.
+     * @throws ArithmeticException if a property of the image to construct exceeds the capacity of 32 bits integers.
      */
     public RenderedImage image() {
         WritableRaster raster = raster();

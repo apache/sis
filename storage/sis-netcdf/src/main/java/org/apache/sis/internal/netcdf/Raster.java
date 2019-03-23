@@ -29,7 +29,9 @@ import org.apache.sis.coverage.grid.ImageRenderer;
 
 
 /**
- * Data loaded from a {@link RasterResource}.
+ * Data loaded from a {@link RasterResource} and potentially shown as {@link RenderedImage}.
+ * The rendered image is usually mono-banded, but may be multi-banded in some special cases
+ * handled by {@link RasterResource#read(GridGeometry, int...)}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
@@ -38,7 +40,12 @@ import org.apache.sis.coverage.grid.ImageRenderer;
  */
 final class Raster extends GridCoverage {
     /**
-     * The sample values.
+     * The sample values, potentially multi-banded. If there is more than one band to put in the rendered image,
+     * then each band is a {@linkplain DataBuffer#getNumBanks() separated bank} in the buffer, even if two banks
+     * are actually wrapping the same arrays with different offsets.
+     *
+     * <div class="note">The later case is better represented by {@link java.awt.image.PixelInterleavedSampleModel},
+     * but it is {@link ImageRenderer} responsibility to perform this substitution as an optimization.</div>
      */
     private final DataBuffer data;
 
@@ -73,7 +80,7 @@ final class Raster extends GridCoverage {
         try {
             final ImageRenderer renderer = new ImageRenderer(this, target);
             renderer.setData(data);
-            renderer.subsampleX(pixelStride);
+            renderer.setSampleStride(pixelStride);
             return renderer.image();
         } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
             throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotRender_2, label, e), e);

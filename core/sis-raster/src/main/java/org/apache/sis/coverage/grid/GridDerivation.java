@@ -803,6 +803,8 @@ public class GridDerivation {
      * Builds a grid geometry with the configuration specified by the other methods in this {@code GridDerivation} class.
      *
      * @return the modified grid geometry. May be the {@link #base} grid geometry if no change apply.
+     *
+     * @see #getIntersection()
      */
     public GridGeometry build() {
         /*
