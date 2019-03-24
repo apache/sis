@@ -23,6 +23,9 @@ import org.opengis.util.GenericName;
 
 /**
  * Thrown when a store can not write the given feature because its type is not one of the supported types.
+ * The {@link org.opengis.feature.FeatureType} is given by {@link org.opengis.feature.Feature#getType()},
+ * and the type expected by the data store is given by {@link FeatureSet#getType()}. Those two values must
+ * match, except when the type of the feature set is {@linkplain WritableFeatureSet#updateType updated}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

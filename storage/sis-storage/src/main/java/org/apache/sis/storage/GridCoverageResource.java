@@ -24,7 +24,16 @@ import org.apache.sis.coverage.grid.GridCoverage;
 
 /**
  * Access to data values in a <var>n</var>-dimensional grid.
- * A coverage resource may be a member of {@link Aggregate} if a single file can provide many images.
+ * A coverage is a kind of function with the following properties:
+ *
+ * <ul class="verbose">
+ *   <li>The function input is a position valid in the coverage <cite>domain</cite>. In the particular case of
+ *       {@link GridCoverage}, the domain is described by a {@linkplain #getGridGeometry() grid geometry}.</li>
+ *   <li>The function output is a record of values in the coverage <cite>range</cite>. In the particular case of
+ *       {@link GridCoverage}, the range is described by a list of {@linkplain #getSampleDimensions() sample dimensions}.</li>
+ * </ul>
+ *
+ * A coverage resource may be a member of {@link Aggregate} if a single file can provide many rasters.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

@@ -19,58 +19,88 @@ package org.apache.sis.storage;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 
+
 /**
- * Subtype of {@linkplain GridCoverageResource} with writing capabilities.
+ * A {@link GridCoverageResource} with writing capabilities. {@code WritableGridCoverageResource} inherits the reading
+ * capabilities from its parent and adds a {@linkplain #write write} operation. Some aspects of the write operation can
+ * be controlled by options, which may be {@link DataStore}-specific.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 public interface WritableGridCoverageResource extends GridCoverageResource {
-
     /**
-     * Coverage writing options.
-     * Common options can be found in {@link CommonOption}.
-     * Different {@linkplain DataStoreProvider} may declare specific options
-     * for example : compression, version, encryption.
+     * Configuration of the process of writing a coverage in a data store.
+     * By default, the {@linkplain #write write operation} is conservative: no operation is executed
+     * if it would result in data lost. {@code Option} allows to modify this behavior for example by
+     * allowing the {@linkplain CommonOption#TRUNCATE replacement} of previous data.
+     * Options can also configure other aspects like compression, version or encryption.
+     *
+     * <p>Some options may be {@link DataStore}-specific.
+     * Options that may apply to any data store are provided in the {@link CommonOption} enumeration.
+     * Other options may be defined by the {@linkplain DataStoreProvider} of specific formats.</p>
+     *
+     * @author  Johann Sorel (Geomatys)
+     * @version 1.0
+     * @since   1.0
+     * @module
      */
     interface Option {}
 
     /**
-     * Common writing options.
+     * Write options that may apply to any data store. The coverage {@linkplain #write write operation}
+     * is configured by instances of {@link Option}, sometime in a {@link DataStore}-specific basis.
+     * This {@code CommonOption} enumeration provides options that do not depend on the data store.
+     *
+     * @author  Johann Sorel (Geomatys)
+     * @version 1.0
+     * @since   1.0
+     * @module
      */
     enum CommonOption implements Option {
         /**
+         * Instructs the write operation to replace existing coverage if one exists.
+         * By default the {@linkplain #write write operation} does not overwrite existing data.
+         * If this option is specified, then there is a choice:
+         *
          * <ul>
-         * <li>If a coverage already exist it will erase and replace existing datas
-         * by the new coverage.</li>
-         * <li>If there are no previous datas the new datas are inserted
-         * as if this option wasn't defined.</li>
+         *   <li>If a coverage already exists in the {@link GridCoverageResource}, then it will be erased.
+         *       The existing data will be replaced by the new coverage.</li>
+         *   <li>If there are no existing coverage in the {@link GridCoverageResource},
+         *       then the new coverage will be inserted as if this option was not provided.</li>
          * </ul>
          */
         TRUNCATE,
+
         /**
-         * Update or append existing coverage with new datas.
+         * Updates or appends existing coverage with new data.
+         * If a coverage already exists when the {@linkplain #write write operation} is executed with this option, then:
+         *
          * <ul>
-         * <li>Areas of the provided {@linkplain GridCoverage} that are within the exisintg {@linkplain GridGeometry}
-         * will overwrite the existing datas.</li>
-         * <li>Areas outside the existing {@linkplain GridGeometry} will result in expanding the
-         * {@linkplain GridGeometry} with the new datas.</li>
-         * <li>If there are no previous datas the new datas are inserted
-         * as if this option wasn't defined.</li>
+         *   <li>Areas of the provided {@link GridCoverage} that are within the existing {@link GridGeometry}
+         *       will overwrite the existing data.</li>
+         *   <li>Areas outside the existing {@link GridGeometry} will result in expanding the grid geometry
+         *       with the new data.</li>
          * </ul>
+         *
+         * If there are no previous coverage, then the new coverage is inserted as if this option was not provided.
          */
         UPDATE
     }
 
     /**
-     * Write new datas in the resource.
+     * Writes a new coverage in the data store for this resource. If a coverage already exists for this resource,
+     * then the behavior of this method is determined by the given options. If no option is specified, the default
+     * behavior is to fail if writing a coverage would cause an existing coverage to be overwritten.
+     * This behavior can be modified by requesting the {@linkplain CommonOption#TRUNCATE replacement}
+     * or {@linkplain CommonOption#UPDATE update} of existing coverages.
      *
-     * @param coverage new datas to write, should not be null
-     * @param options specific writing options
-     * @throws org.apache.sis.storage.DataStoreException if an error occurred while writing datas in the underlying data store.
+     * @param  coverage  new data to write in the data store for this resource.
+     * @param  options   configuration of the write operation. May be {@link DataStore}-specific options
+     *                   (e.g. for compression, encryption, <i>etc</i>).
+     * @throws DataStoreException if an error occurred while writing data in the underlying data store.
      */
     void write(GridCoverage coverage, Option... options) throws DataStoreException;
-
 }

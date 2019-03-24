@@ -18,7 +18,8 @@ package org.apache.sis.storage;
 
 
 /**
- * An {@linkplain Aggregate} with writing capabilities.
+ * An {@link Aggregate} with writing capabilities. {@code WritableAggregate} inherits the reading capabilities from its
+ * parent and adds the capabilities to {@linkplain #add(Resource) add} or {@linplain #remove(Resource) remove} resources.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
@@ -31,6 +32,7 @@ public interface WritableAggregate extends Aggregate {
      * The given {@link Resource} will be copied, and the <cite>effectively added</cite> resource returned.
      * The effectively added resource may differ from the given resource in many aspects.
      * The possible changes may include the followings but not only:
+     *
      * <ul>
      *  <li>types and properties names</li>
      *  <li>{@link org.opengis.referencing.crs.CoordinateReferenceSystem}</li>
