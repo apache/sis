@@ -57,6 +57,13 @@ public final class RasterFactory extends Static {
     /**
      * Wraps the given data buffer in a raster.
      * The sample model type is selected according the number of bands and the pixel stride.
+     * The number of bands is determined by {@code bandOffsets.length}, which should be one of followings:
+     *
+     * <ul>
+     *   <li>For banded sample model, all {@code bandOffsets} can be zero.</li>
+     *   <li>For interleaved sample model ({@code buffer.getNumBanks()} = 1), each band needs a different offset.
+     *       They may be 0, 1, 2, 3….</li>
+     * </ul>
      *
      * @param  buffer          buffer that contains the sample values.
      * @param  width           raster width in pixels.
@@ -64,7 +71,7 @@ public final class RasterFactory extends Static {
      * @param  pixelStride     number of data elements between two samples for the same band on the same line.
      * @param  scanlineStride  number of data elements between a given sample and the corresponding sample in the same column of the next line.
      * @param  bankIndices     bank indices for each band, or {@code null} for 0, 1, 2, 3….
-     * @param  bandOffsets     number of data elements from the first element of the bank to the first sample of the band, or {@code null} for all 0.
+     * @param  bandOffsets     number of data elements from the first element of the bank to the first sample of the band.
      * @param  location        the upper-left corner of the raster, or {@code null} for (0,0).
      * @return a raster built from given properties.
      * @throws NullPointerException if {@code buffer} is {@code null}.
@@ -76,15 +83,12 @@ public final class RasterFactory extends Static {
     @SuppressWarnings("fallthrough")
     public static WritableRaster createRaster(final DataBuffer buffer,
             final int width, final int height, final int pixelStride, final int scanlineStride,
-            int[] bankIndices, int[] bandOffsets, final Point location)
+            int[] bankIndices, final int[] bandOffsets, final Point location)
     {
         /*
          * We do not verify the argument validity. Since this class is internal, caller should have done verification
          * itself. Furthermore those arguments are verified by WritableRaster constructors anyway.
          */
-        if (bandOffsets == null) {
-            bandOffsets = new int[buffer.getNumBanks()];
-        }
         final int dataType = buffer.getDataType();
         /*
          * This SampleModel variable is a workaround for WritableRaster static methods not supporting all data types.
@@ -96,9 +100,9 @@ public final class RasterFactory extends Static {
         final SampleModel model;
         if (buffer.getNumBanks() == 1 && (bankIndices == null || bankIndices[0] == 0)) {
             /*
-             * Sample data are stored for all bands in a single bank of the DataBuffer.
-             * Each sample of a pixel occupies one data element of the DataBuffer.
-             * The number of bands is inferred from bandOffsets.length.
+             * Sample data are stored for all bands in a single bank of the DataBuffer, in an interleaved fashion.
+             * Each sample of a pixel occupies one data element of the DataBuffer, with a different offset since
+             * the buffer beginning. The number of bands is inferred from bandOffsets.length.
              */
             switch (dataType) {
                 case DataBuffer.TYPE_BYTE:
@@ -119,13 +123,14 @@ public final class RasterFactory extends Static {
                 }
             }
         } else {
+            /*
+             * Sample data are stored in different banks (arrays) for each band. If all pixels are consecutive (pixelStride = 1),
+             * we have the classical banded sample model. Otherwise the type is not well identified; neither interleaved or banded.
+             */
             if (bankIndices == null) {
                 bankIndices = ArraysExt.range(0, bandOffsets.length);
             }
             if (pixelStride == 1) {
-                /*
-                 * All pixels are consecutive (pixelStride = 1) but may be on many bands.
-                 */
                 switch (dataType) {
                     case DataBuffer.TYPE_BYTE:
                     case DataBuffer.TYPE_USHORT:

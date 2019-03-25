@@ -93,7 +93,7 @@ public class ImageRenderer {
      *
      * <div class="note"><b>Note:</b> if those offsets exceed 32 bits integer capacity, then it may not be possible to build
      * an image for given {@code sliceExtent} from a single {@link DataBuffer}, because accessing sample values would exceed
-     * the* capacity of index in Java arrays. In those cases the image needs to be tiled.</div>
+     * the capacity of index in Java arrays. In those cases the image needs to be tiled.</div>
      */
     private final long offsetX, offsetY;
 
@@ -126,11 +126,19 @@ public class ImageRenderer {
     private final int height;
 
     /**
-     * Number of data elements between two samples in the data {@link #buffer}. This value is implicitly 1 in Java2D since
-     * {@link java.awt.image} supports <cite>pixel stride</cite> and <cite>scanline stride</cite> in {@link SampleModel},
-     * but does not support stride at the {@link DataBuffer} level. This is theoretically not needed since "sample stride"
-     * can be represented as {@link #pixelStride}. We allow this concept for the convenience of this builder, but at the
-     * end this value is incorporated into the pixel stride.
+     * Number of data elements between two samples in the data {@link #buffer}. A <cite>sample stride</cite> is defined
+     * in this class as the number of data elements between two samples in the data {@link #buffer}. This is implicitly
+     * 1 in Java2D because {@link java.awt.image} supports <cite>pixel stride</cite> and <cite>scanline stride</cite>
+     * in {@link SampleModel}, but does not support stride in {@link DataBuffer} banks. This is theoretically not needed
+     * because "sample stride" can be represented as {@link #pixelStride}. This is what we do in the end, but the concept
+     * of "sample stride" needs to exist temporarily in this builder before the final pixel stride is computed.
+     *
+     * <div class="note"><b>Note:</b>
+     * this stride is <strong>not</strong> equivalent to applying a subsampling on the image, because we do not divide
+     * the image width or height by the given stride. This field should be used only for describing a particular layout
+     * of data in the buffers.</div>
+     *
+     * @see #setInterleavedPixelOffsets(int, int[])
      */
     private int sampleStride;
 
@@ -141,7 +149,7 @@ public class ImageRenderer {
      *
      * @see java.awt.image.ComponentSampleModel#pixelStride
      */
-    private int pixelStride;
+    private final int pixelStride;
 
     /**
      * Number of data elements between a given sample and the corresponding sample in the same column of the next line.
@@ -150,12 +158,28 @@ public class ImageRenderer {
      *
      * @see java.awt.image.ComponentSampleModel#scanlineStride
      */
-    private int scanlineStride;
+    private final int scanlineStride;
 
     /**
      * The sample dimensions, to be used for defining the bands.
      */
     private final SampleDimension[] bands;
+
+    /**
+     * Offset to add to index of sample values in each band in order to reach the value in the {@link DataBuffer} bank.
+     * This is closely related to {@link java.awt.image.ComponentSampleModel#bandOffsets} but not identical, because of
+     * the following differences:
+     *
+     * <ul>
+     *   <li>Another offset for {@link #offsetX} and {@link #offsetY} may need to be added
+     *       before to give the {@code bandOffsets} to {@link SampleModel} constructor.</li>
+     *   <li>If null, a default value is inferred depending on whether the {@link SampleModel}
+     *       to construct is banded or interleaved.</li>
+     * </ul>
+     *
+     * @see #setInterleavedPixelOffsets(int, int[])
+     */
+    private int[] bandOffsets;
 
     /**
      * Bank indices for each band, or {@code null} for 0, 1, 2, 3….
@@ -222,7 +246,6 @@ public class ImageRenderer {
          * At this point, the RenderedImage properties have been computed on the assumption
          * that the returned image will be a single tile. Now compute SampleModel properties.
          */
-        this.sampleStride = 1;
         long pixelStride  = 1;
         for (int i=0; i<xd; i++) {
             pixelStride = Math.multiplyExact(pixelStride, source.getSize(i));
@@ -247,11 +270,15 @@ public class ImageRenderer {
 
     /**
      * Ensures that the given number is equals to the expected number of bands.
+     * The given number shall be either 1 (case of interleaved sample model) or
+     * {@link #getNumBands()} (case of banded sample model).
      */
-    private void ensureExpectedBandCount(final int n) {
-        final int e = getNumBands();
-        if (n != e) {
-            throw new MismatchedCoverageRangeException(Resources.format(Resources.Keys.UnexpectedNumberOfBands_2, e, n));
+    private void ensureExpectedBandCount(final int n, final boolean acceptOne) {
+        if (!(n == 1 & acceptOne)) {
+            final int e = getNumBands();
+            if (n != e) {
+                throw new MismatchedCoverageRangeException(Resources.format(Resources.Keys.UnexpectedNumberOfBands_2, e, n));
+            }
         }
     }
 
@@ -277,7 +304,7 @@ public class ImageRenderer {
      */
     public void setData(final DataBuffer data) {
         ArgumentChecks.ensureNonNull("data", data);
-        ensureExpectedBandCount(data.getNumBanks());
+        ensureExpectedBandCount(data.getNumBanks(), true);
         buffer = data;
     }
 
@@ -310,7 +337,7 @@ public class ImageRenderer {
      */
     public void setData(final int dataType, final Buffer... data) {
         ArgumentChecks.ensureNonNull("data", data);
-        ensureExpectedBandCount(data.length);
+        ensureExpectedBandCount(data.length, true);
         final DataBuffer banks = RasterFactory.wrap(dataType, data);
         if (banks == null) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownDataType_1, dataType));
@@ -336,7 +363,7 @@ public class ImageRenderer {
      */
     public void setData(final Vector... data) {
         ArgumentChecks.ensureNonNull("data", data);
-        ensureExpectedBandCount(data.length);
+        ensureExpectedBandCount(data.length, true);
         final Buffer[] buffers = new Buffer[data.length];
         int dataType = DataBuffer.TYPE_UNDEFINED;
         for (int i=0; i<data.length; i++) {
@@ -355,26 +382,28 @@ public class ImageRenderer {
     }
 
     /**
-     * Specifies the number of data elements between two samples in the vectors specified by {@code setData(…)} methods.
-     * The default value is 1. A value of 2 (for example) instructs {@code ImageRenderer} to use the first value of the
-     * given data vectors, skip a value, use the next value, <i>etc.</i> In other words, this method applies a subsampling
-     * on the vectors specified to {@link #setData(Vector...)} or {@link #setData(int, Buffer...)}.
+     * Specifies the offsets to add to sample index in each band in order to reach the sample value in the {@link DataBuffer} bank.
+     * This method should be invoked when the data given to {@code setData(…)} contains only one {@link Vector}, {@link Buffer} or
+     * {@link DataBuffer} bank, and the bands in that unique bank are interleaved.
      *
-     * @param  stride  the number of data elements between each sample values in the data vectors.
-     * @throws ArithmeticException if the given stride is too large.
+     * <div class="note"><b>Example:</b>
+     * for an image having three bands named Red (R), Green (G) and Blue (B), if the sample values are stored in a single bank in a
+     * R₀,G₀,B₀, R₁,G₁,B₁, R₂,G₂,B₂, R₃,G₃,B₃, <i>etc.</i> fashion, then this method should be invoked as below:
      *
-     * @see java.awt.image.ComponentSampleModel#pixelStride
-     * @see java.awt.image.ComponentSampleModel#scanlineStride
+     * {@preformat java
+     *     setInterleavedPixelOffsets(3, new int[] {0, 1, 2});
+     * }
+     * </div>
+     *
+     * @param  pixelStride  the number of data elements between each pixel in the data vector or buffer.
+     * @param  bandOffsets  offsets to add to sample index in each band. This is typically {0, 1, 2, …}.
      */
-    public void setSampleStride(final int stride) {
-        if (stride != sampleStride) {
-            ArgumentChecks.ensureStrictlyPositive("stride", stride);
-            // Division by 'dataStride' is for cancelling effect of previous calls.
-            scanlineStride = Math.multiplyExact(scanlineStride / sampleStride, stride);
-            // If above operation did not fail, then following operation can not fail.
-            pixelStride = (pixelStride / sampleStride) * stride;
-            sampleStride = stride;
-        }
+    public void setInterleavedPixelOffsets(final int pixelStride, final int[] bandOffsets) {
+        ArgumentChecks.ensureStrictlyPositive("pixelStride", pixelStride);
+        ArgumentChecks.ensureNonNull("bandOffsets", bandOffsets);
+        ensureExpectedBandCount(bandOffsets.length, false);
+        this.sampleStride = pixelStride;
+        this.bandOffsets = bandOffsets.clone();
     }
 
     /**
@@ -390,14 +419,35 @@ public class ImageRenderer {
         if (buffer == null) {
             throw new IllegalStateException(Resources.format(Resources.Keys.UnspecifiedRasterData));
         }
-        // Number of data elements from the first element of the bank to the first sample of the band.
-        final int[] bandOffsets = new int[getNumBands()];
-        Arrays.fill(bandOffsets, Math.toIntExact(Math.addExact(
-                Math.multiplyExact(offsetX, pixelStride),
-                Math.multiplyExact(offsetY, scanlineStride))));
-
+        int ps = pixelStride;
+        int ls = scanlineStride;
+        if (bandOffsets != null) {
+            ls = Math.multiplyExact(ls, sampleStride);
+            ps *= sampleStride;                         // Can not fail if above operation did not fail.
+        }
+        /*
+         * Number of data elements from the first element of the bank to the first sample of the band.
+         * This is usually 0 for all bands, unless the upper-left corner (minX, minY) is not (0,0).
+         */
+        final int[] offsets = new int[getNumBands()];
+        Arrays.fill(offsets, Math.toIntExact(Math.addExact(
+                Math.multiplyExact(offsetX, ps),
+                Math.multiplyExact(offsetY, ls))));
+        /*
+         * Add the offset specified by the user (if any), or the default offset. The default is 0, 1, 2…
+         * for interleaved sample model (all bands in one bank) and 0, 0, 0… for banded sample model.
+         */
+        if (bandOffsets != null) {
+            for (int i=0; i<offsets.length; i++) {
+                offsets[i] = Math.addExact(offsets[i], bandOffsets[i]);
+            }
+        } else if (buffer.getNumBanks() == 1) {
+            for (int i=1; i<offsets.length; i++) {
+                offsets[i] = Math.addExact(offsets[i], i);
+            }
+        }
         final Point location = new Point(imageX, imageY);
-        return RasterFactory.createRaster(buffer, width, height, pixelStride, scanlineStride, bankIndices, bandOffsets, location);
+        return RasterFactory.createRaster(buffer, width, height, ps, ls, bankIndices, offsets, location);
     }
 
     /**

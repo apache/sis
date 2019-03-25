@@ -134,6 +134,7 @@ public abstract class Variable extends NamedElement {
      * If {@link #gridGeometry} has less dimensions than this variable, index of a grid dimension to take as raster bands.
      * Otherwise this field is left uninitialized. If set, the index is relative to "natural" order (reverse of netCDF order).
      *
+     * @see #getBandStride()
      * @see RasterResource#bandDimension
      */
     int bandDimension;
@@ -733,6 +734,19 @@ public abstract class Variable extends NamedElement {
             }
         }
         return gridGeometry;
+    }
+
+    /**
+     * Returns the number of sample values between two bands.
+     * This method is meaningful only if {@link #bandDimension} ≧ 0.
+     */
+    final long getBandStride() throws IOException, DataStoreException {
+        long length = 1;
+        final GridExtent extent = getGridGeometry().getExtent();
+        for (int i=bandDimension; --i >= 0;) {
+            length = Math.multiplyExact(length, extent.getSize(i));
+        }
+        return length;
     }
 
     /**

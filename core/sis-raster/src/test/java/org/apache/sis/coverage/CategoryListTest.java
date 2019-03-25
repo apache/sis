@@ -82,7 +82,7 @@ public final strictfp class CategoryListTest extends TestCase {
             new Category("Again",   NumberRange.create(10, true, 10, true), null, null, toNaN)       // Range overlaps.
         };
         try {
-            assertNotConverted(new CategoryList(categories.clone(), null));
+            assertNotConverted(CategoryList.create(categories.clone()));
             fail("Should not have accepted range overlap.");
         } catch (IllegalArgumentException exception) {
             // This is the expected exception.
@@ -92,7 +92,7 @@ public final strictfp class CategoryListTest extends TestCase {
         }
         // Removes the wrong category. Now, construction should succeed.
         categories = Arrays.copyOf(categories, categories.length - 1);
-        assertNotConverted(new CategoryList(categories, null));
+        assertNotConverted(CategoryList.create(categories));
         assertSorted(Arrays.asList(categories));
     }
 
@@ -182,7 +182,7 @@ public final strictfp class CategoryListTest extends TestCase {
      */
     @Test
     public void testRanges() {
-        final CategoryList list = new CategoryList(categories(), null);
+        final CategoryList list = CategoryList.create(categories());
         assertSorted(list);
         assertTrue  ("isMinIncluded",           list.range.isMinIncluded());
         assertFalse ("isMaxIncluded",           list.range.isMaxIncluded());
@@ -205,7 +205,7 @@ public final strictfp class CategoryListTest extends TestCase {
     @DependsOnMethod("testBinarySearch")
     public void testSearch() {
         final Category[] categories = categories();
-        final CategoryList list = new CategoryList(categories.clone(), null);
+        final CategoryList list = CategoryList.create(categories.clone());
         assertTrue("containsAll", list.containsAll(Arrays.asList(categories)));
         /*
          * Checks category searches for values that are insides the range of a category.
@@ -253,7 +253,7 @@ public final strictfp class CategoryListTest extends TestCase {
     @DependsOnMethod("testSearch")
     public void testTransform() throws TransformException {
         final Random random = TestUtilities.createRandomNumberGenerator();
-        final CategoryList list = new CategoryList(categories(), null);
+        final CategoryList list = CategoryList.create(categories());
         /*
          * Checks conversions. We verified in 'testSearch()' that correct categories are found for those values.
          */
@@ -340,7 +340,7 @@ public final strictfp class CategoryListTest extends TestCase {
         for (int i=0; i<categories.length; i++) {
             categories[i] = categories[i].converse;
         }
-        final CategoryList list = new CategoryList(categories, null);
+        final CategoryList list = CategoryList.create(categories);
         assertSorted(list);
         for (int i=list.size(); --i >= 0;) {
             final Category category = list.get(i);

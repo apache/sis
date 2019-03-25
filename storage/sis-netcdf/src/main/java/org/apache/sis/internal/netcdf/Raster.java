@@ -55,6 +55,12 @@ final class Raster extends GridCoverage {
     private final int pixelStride;
 
     /**
+     * Offsets to add to sample index in each band, or {@code null} if none.
+     * This is non-null only if a variable dimension is used for the bands.
+     */
+    private final int[] bandOffsets;
+
+    /**
      * Name to display in error messages. Not to be used for processing.
      */
     private final String label;
@@ -62,13 +68,14 @@ final class Raster extends GridCoverage {
     /**
      * Creates a new raster from the given resource.
      */
-    Raster(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data, final int pixelStride,
-            final String label)
+    Raster(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data,
+            final int pixelStride, final int[] bandOffsets, final String label)
     {
         super(domain, range);
         this.data        = data;
         this.label       = label;
         this.pixelStride = pixelStride;
+        this.bandOffsets = bandOffsets;
     }
 
     /**
@@ -80,7 +87,9 @@ final class Raster extends GridCoverage {
         try {
             final ImageRenderer renderer = new ImageRenderer(this, target);
             renderer.setData(data);
-            renderer.setSampleStride(pixelStride);
+            if (bandOffsets != null) {
+                renderer.setInterleavedPixelOffsets(pixelStride, bandOffsets);
+            }
             return renderer.image();
         } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
             throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotRender_2, label, e), e);

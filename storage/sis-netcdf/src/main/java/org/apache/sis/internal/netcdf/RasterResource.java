@@ -18,7 +18,6 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -30,6 +29,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.raster.RasterFactory;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -111,16 +111,20 @@ public final class RasterResource extends AbstractGridResource implements Resour
     private final SampleDimension[] ranges;
 
     /**
-     * The netCDF variable wrapped by this resource. The length of this array shall be equal to {@code ranges.length}.
-     * The same variable may be repeated if it contains many bands, in which case the bands are in dimension at index
-     * {@link #bandDimension}.
+     * The netCDF variables for each sample dimensions. The length of this array shall be equal to {@code ranges.length},
+     * except if bands are stored as one variable dimension ({@link #bandDimension} ≧ 0) in which case the length shall
+     * be exactly 1. Accesses to this array need to take in account that the length may be only 1. Example:
+     *
+     * {@preformat java
+     *     Variable v = data[bandDimension >= 0 ? 0 : index];
+     * }
      */
     private final Variable[] data;
 
     /**
      * If one of {@link #data} dimension provides values for different bands, that dimension index. Otherwise -1.
      * This is an index in a list of dimensions in "natural" order (reverse of netCDF order).
-     * There is three ways to read the data, determined by the {@code bandDimension} value:
+     * There is three ways to read the data, determined by this {@code bandDimension} value:
      *
      * <ul>
      *   <li>{@code (bandDimension < 0)}: one variable per band (usual case).</li>
@@ -152,27 +156,22 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * @param  name      the name for the resource.
      * @param  grid      the grid geometry (size, CRS…) of the {@linkplain #data} cube.
      * @param  bands     the variables providing actual data. Shall contain at least one variable.
-     * @param  numBands  the number of bands, or -1 for using {@code bands.length}.
-     * @param  inner     if one of {@link #data} dimension provides values for different bands, that dimension index. Otherwise -1.
+     * @param  numBands  the number of bands. Shall be {@code bands.size()} except if {@code bandsDimension} ≧ 0.
+     * @param  bandDim   if one of {@link #data} dimension provides values for different bands, that dimension index. Otherwise -1.
      * @param  lock      the lock to use in {@code synchronized(lock)} statements.
      */
     private RasterResource(final Decoder decoder, final String name, final GridGeometry grid, final List<Variable> bands,
-            final int numBands, final int inner, final Object lock) throws IOException, DataStoreException
+            final int numBands, final int bandDim, final Object lock)
     {
         super(decoder.listeners);
-        data = bands.toArray(new Variable[numBands >= 0 ? numBands : bands.size()]);
-        for (int i=data.length; --i >= 0;) {
-            if (data[i] != null) {
-                Arrays.fill(data, i+1, data.length, data[i]);                   // Repeat the last variable for all bands.
-                break;
-            }
-        }
-        ranges        = new SampleDimension[data.length];
+        data          = bands.toArray(new Variable[bands.size()]);
+        ranges        = new SampleDimension[numBands];
         identifier    = decoder.nameFactory.createLocalName(decoder.namespace, name);
         location      = decoder.location;
         gridGeometry  = grid;
-        bandDimension = inner;
+        bandDimension = bandDim;
         this.lock     = lock;
+        assert data.length == (bandDimension >= 0 ? 1 : ranges.length);
     }
 
     /**
@@ -216,13 +215,19 @@ public final class RasterResource extends AbstractGridResource implements Resour
             final int gridDimension = grid.getDimension();
             final int bandDimension, numBands;
             if (dataDimension != gridDimension) {
-                if (dataDimension != gridDimension + 1) {
-                    throw new DataStoreContentException(Resources.forLocale(decoder.listeners.getLocale())
-                            .getString(Resources.Keys.UnmappedDimensions_4, name, decoder.getFilename(), dataDimension, gridDimension));
-                }
                 bandDimension = variable.bandDimension;                            // One variable dimension is interpreted as bands.
                 Dimension dim = gridDimensions.get(dataDimension - 1 - bandDimension);  // Note: "natural" → netCDF index conversion.
                 numBands = Math.toIntExact(dim.length());
+                if (dataDimension != gridDimension + 1 || (bandDimension > 0 && bandDimension != gridDimension)) {
+                    /*
+                     * One of the following restrictions it not met for the requested data:
+                     *
+                     *   - Only 1 dimension can be used for bands. Variables with 2 or more band dimensions are not supported.
+                     *   - The dimension for bands shall be either the first or the last dimension; it can not be in the middle.
+                     */
+                    throw new DataStoreContentException(Resources.forLocale(decoder.listeners.getLocale())
+                            .getString(Resources.Keys.UnmappedDimensions_4, name, decoder.getFilename(), dataDimension, gridDimension));
+                }
             } else {
                 /*
                  * At this point we found a variable where all dimensions are in the CRS. This is the usual case;
@@ -236,7 +241,6 @@ public final class RasterResource extends AbstractGridResource implements Resour
                  * name is the same and the grid geometries are the same.
                  */
                 bandDimension = -1;                                                 // No dimension to be interpreted as bands.
-                numBands = -1;                                                      // To be determined by siblings.size().
                 final DataType type = variable.getDataType();
                 for (final String keyword : VECTOR_COMPONENT_NAMES) {
                     final int prefixLength = name.indexOf(keyword);
@@ -284,6 +288,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
                         }
                     }
                 }
+                numBands = siblings.size();
             }
             resources.add(new RasterResource(decoder, name.trim(), grid, siblings, numBands, bandDimension, lock));
             siblings.clear();
@@ -310,6 +315,14 @@ public final class RasterResource extends AbstractGridResource implements Resour
     }
 
     /**
+     * Returns the variable at the given index. This method can be invoked when the caller has not verified
+     * if we are in the special case where all bands are in the same variable ({@link #bandDimension} ≧ 0).
+     */
+    private Variable getVariable(final int i) {
+        return data[bandDimension >= 0 ? 0 : i];
+    }
+
+    /**
      * Returns the ranges of sample values together with the conversion from samples to real values.
      *
      * @return ranges of sample values together with their mapping to "real values".
@@ -324,7 +337,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
                 for (int i=0; i<ranges.length; i++) {
                     if (ranges[i] == null) {
                         if (builder == null) builder = new SampleDimension.Builder();
-                        ranges[i] = createSampleDimension(builder, data[i]);
+                        ranges[i] = createSampleDimension(builder, getVariable(i), i);
                         builder.clear();
                     }
                 }
@@ -340,9 +353,12 @@ public final class RasterResource extends AbstractGridResource implements Resour
      *
      * @param  builder  the builder to use for creating the sample dimension.
      * @param  band     the data for which to create a sample dimension.
+     * @param  index    index in the variable dimension identified by {@link #bandDimension}.
      * @throws TransformException if an error occurred while using the transfer function.
      */
-    private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable band) throws TransformException {
+    private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable band, final int index)
+            throws TransformException
+    {
         /*
          * Take the minimum and maximum values as determined by Apache SIS through the Convention class.  The UCAR library
          * is used only as a fallback. We give precedence to the range computed by Apache SIS instead than the range given
@@ -427,7 +443,16 @@ public final class RasterResource extends AbstractGridResource implements Resour
             }
             builder.addQualitative(name, n, n);
         }
-        return builder.setName(band.getName()).build();
+        /*
+         * At this point we have the list of all categories to put in the sample dimension.
+         * Now create the sample dimension using the variable short name as dimension name.
+         * The index is appended to the name only if bands are all in the same variable.
+         */
+        String name = band.getName();
+        if (bandDimension >= 0) {
+            name = Strings.toIndexed(name, index);
+        }
+        return builder.setName(name).build();
     }
 
     /**
@@ -444,7 +469,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
         if (domain == null) {
             domain = gridGeometry;
         }
-        final Variable first = data[rangeIndices.getFirstSpecified()];
+        final Variable first = data[bandDimension >= 0 ? 0 : rangeIndices.getFirstSpecified()];
         final DataType dataType = first.getDataType();
         if (bandDimension < 0) {
             for (int i=0; i<rangeIndices.getNumBands(); i++) {
@@ -465,56 +490,70 @@ public final class RasterResource extends AbstractGridResource implements Resour
          */
         final DataBuffer imageBuffer;
         final SampleDimension[] bands = new SampleDimension[rangeIndices.getNumBands()];
+        int[] bandOffsets = null;                                                   // By default, all bands start at index 0.
         try {
-            final Buffer[] sampleValues = new Buffer[bands.length];
-            final GridDerivation targetGeometry = gridGeometry.derive().subgrid(domain);
-            GridExtent areaOfInterest = targetGeometry.getIntersection();
-            final int[] scales = targetGeometry.getSubsamplings();
-            int[] subsamplings = scales;
+            GridDerivation targetGeometry = gridGeometry.derive().subgrid(domain);
+            GridExtent     areaOfInterest = targetGeometry.getIntersection();       // Pixel indices of data to read.
+            int[]          subsamplings   = targetGeometry.getSubsamplings();       // Slice to read or subsampling to apply.
+            int            numBuffers     = bands.length;                           // By default, one variable per band.
+            domain = targetGeometry.subsample(subsamplings).build();                // Adjust user-specified domain to data geometry.
             if (bandDimension >= 0) {
                 areaOfInterest = rangeIndices.insertBandDimension(areaOfInterest, bandDimension);
                 subsamplings   = rangeIndices.insertSubsampling  (subsamplings,   bandDimension);
+                if (bandDimension == 0) {
+                    bandOffsets = new int[numBuffers];          // Will be set to non-zero values later.
+                }
+                numBuffers = 1;                                 // One variable for all bands.
             }
             /*
              * Iterate over netCDF variables in the order they appear in the file, not in the order requested
              * by the 'range' argument.  The intent is to perform sequential I/O as much as possible, without
-             * seeking backward.
+             * seeking backward. In the (uncommon) case where bands are one of the variable dimension instead
+             * than different variables, the reading of the whole variable occurs during the first iteration.
              */
-            Buffer values = null;
+            Buffer[] sampleValues = new Buffer[numBuffers];
             synchronized (lock) {
                 for (int i=0; i<bands.length; i++) {
-                    final int r = rangeIndices.getSourceIndex(i);                   // In strictly increasing order.
-                    final Variable variable = data[r];
-                    SampleDimension sd = ranges[r];
-                    if (sd == null) {
-                        ranges[r] = sd = createSampleDimension(rangeIndices.builder(), variable);
+                    int indexInResource = rangeIndices.getSourceIndex(i);     // In strictly increasing order.
+                    int indexInRaster   = rangeIndices.getTargetIndex(i);
+                    Variable variable   = getVariable(indexInResource);
+                    SampleDimension b   = ranges[indexInResource];
+                    if (b == null) {
+                        ranges[indexInResource] = b = createSampleDimension(rangeIndices.builder(), variable, i);
                     }
-                    if (bandDimension > 0) {
-                        // TODO: adjust 'areaOfInterest'.
-                        throw new UnsupportedOperationException();
+                    bands[indexInRaster] = b;
+                    if (bandOffsets != null) {
+                        bandOffsets[indexInRaster] = i;
+                        indexInRaster = 0;                  // Pixels interleaved in one bank: sampleValues.length = 1.
                     }
-                    if (bandDimension != 0 || values == null) {
+                    if (i < numBuffers) {
                         // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
-                        values = variable.read(areaOfInterest, subsamplings).buffer().get();
+                        sampleValues[indexInRaster] = variable.read(areaOfInterest, subsamplings).buffer().get();
                     }
-                    if (bandDimension == 0) {
-                        /*
-                         * This block is executed only if the band dimension is first, in which case we have interleaved
-                         * values like (band0, band1) for each pixel. Those values were read once for all in above block.
-                         * This block sets the offset of the first value to read, together with the buffer limit in order
-                         * to ensure that all buffers have the same number of remaining elements. The pixel stride is not
-                         * specified here; it will be specified later, at java.awt.image.SampleModel construction time.
-                         */
-                        if (i != 0) values = JDK9.duplicate(values);
-                        final int p = rangeIndices.getSubsampledIndex(i);
-                        values.position(p).limit(values.capacity() - bands.length + p + 1);
-                    }
-                    final int p = rangeIndices.getTargetIndex(i);
-                    sampleValues[p] = values;
-                    bands[p] = sd;
                 }
             }
-            domain = targetGeometry.subsample(scales).build();
+            /*
+             * The following block is executed only if all bands are in a single variable, and the bands dimension is
+             * the last one (in "natural" order). In such case, the sample model to construct is a BandedSampleModel.
+             * Contrarily to PixelInterleavedSampleModel (the case when the band dimension is first), banded sample
+             * model force us to split the buffer in a buffer for each band.
+             */
+            if (bandDimension > 0) {                // Really > 0, not >= 0.
+                final int stride = Math.toIntExact(data[0].getBandStride());
+                Buffer values = sampleValues[0].limit(stride);
+                sampleValues = new Buffer[bands.length];
+                for (int i=0; i<sampleValues.length; i++) {
+                    if (i != 0) {
+                        values = JDK9.duplicate(values);
+                        final int p = values.limit();
+                        values.position(p).limit(Math.addExact(p, stride));
+                    }
+                    sampleValues[i] = values;
+                }
+            }
+            /*
+             * Convert NIO Buffer into Java2D DataBuffer. May throw various RuntimeException.
+             */
             imageBuffer = RasterFactory.wrap(dataType.rasterDataType, sampleValues);
         } catch (IOException e) {
             throw new DataStoreException(e);
@@ -524,13 +563,15 @@ public final class RasterResource extends AbstractGridResource implements Resour
             final Throwable cause = e.getCause();
             if (cause instanceof TransformException) {
                 throw new DataStoreReferencingException(cause);
+            } else {
+                throw new DataStoreContentException(e);
             }
-            throw new DataStoreContentException(e);
         }
         if (imageBuffer == null) {
             throw new DataStoreContentException(Errors.getResources(getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
-        return new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer, rangeIndices.getPixelStride(), first.getStandardName());
+        return new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer,
+                rangeIndices.getPixelStride(), bandOffsets, first.getStandardName());
     }
 
     /**

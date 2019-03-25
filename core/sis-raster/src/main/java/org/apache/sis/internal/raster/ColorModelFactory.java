@@ -231,16 +231,21 @@ public final class ColorModelFactory {
          * Interpolates the colors in the color palette. Colors that do not fall
          * in the range of a category will be set to a transparent color.
          */
-        final int[] colorMap = new int[pieceStarts[categoryCount]];
+        final int[] colorMap;
         int transparent = -1;
-        for (int i=0; i<categoryCount; i++) {
-            final int[] colors = ARGB[i];
-            final int   lower  = pieceStarts[i  ];
-            final int   upper  = pieceStarts[i+1];
-            if (transparent < 0 && colors.length == 0) {
-                transparent = lower;
+        if (categoryCount <= 0) {
+            colorMap = ArraysExt.range(0, 256);
+        } else {
+            colorMap = new int[pieceStarts[categoryCount]];
+            for (int i=0; i<categoryCount; i++) {
+                final int[] colors = ARGB[i];
+                final int   lower  = pieceStarts[i  ];
+                final int   upper  = pieceStarts[i+1];
+                if (transparent < 0 && colors.length == 0) {
+                    transparent = lower;
+                }
+                expand(colors, colorMap, lower, upper);
             }
-            expand(colors, colorMap, lower, upper);
         }
         return createIndexColorModel(colorMap, numBands, visibleBand, transparent);
     }

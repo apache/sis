@@ -227,7 +227,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
          *     subsamplings   = rangeIndices.insertSubsampling  (subsamplings,   bandDimension);
          *     data = myReadMethod(areaOfInterest, subsamplings);
          *     for (int i=0; i<numBands; i++) {
-         *         int bandIndexInTheDataWeJustRead = getSubsampledIndex(i);
+         *         int bandIndexInTheDataWeJustRead = rangeIndices.getSubsampledIndex(i);
          *     }
          * }
          *

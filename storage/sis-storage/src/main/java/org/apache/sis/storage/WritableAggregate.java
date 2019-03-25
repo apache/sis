@@ -54,9 +54,15 @@ public interface WritableAggregate extends Aggregate {
 
     /**
      * Removes a {@code Resource} from this {@code Aggregate}.
-     * This operation is destructive: the {@link Resource} and it's related data will be removed.
+     * The given resource should be one of the instances returned by {@link #components()}.
+     * This operation is destructive in two aspects:
      *
-     * @param  resource  child resource to remove, should not be null.
+     * <ul>
+     *   <li>The {@link Resource} and it's data will be deleted from the {@link DataStore}.</li>
+     *   <li>The given resource may become invalid and should not be used anymore after this method call.</li>
+     * </ul>
+     *
+     * @param  resource  child resource to remove from this {@code Aggregate}.
      * @throws DataStoreException if the given resource could not be removed.
      */
     void remove(Resource resource) throws DataStoreException;
