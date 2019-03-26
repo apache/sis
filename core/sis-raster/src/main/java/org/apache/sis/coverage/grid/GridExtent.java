@@ -890,6 +890,29 @@ public class GridExtent implements Serializable {
     }
 
     /**
+     * Expands or shrinks this grid extent by the given amount of cells along each dimension.
+     * This method adds the given margins to the {@linkplain #getHigh(int) high coordinates}
+     * and subtracts the same margins to the {@linkplain #getLow(int) low coordinates}.
+     *
+     * @param  margins amount of cells to add or subtract.
+     * @return a grid extent expanded by the given amount, or {@code this} if there is no change.
+     * @throws ArithmeticException if expanding this extent by the given margins overflows {@code long} capacity.
+     */
+    public GridExtent expand(final long... margins) {
+        ArgumentChecks.ensureNonNull("margins", margins);
+        final int m = getDimension();
+        final int length = Math.min(m, margins.length);
+        final GridExtent resize = new GridExtent(this);
+        final long[] c = resize.coordinates;
+        for (int i=0; i<length; i++) {
+            final long margin = margins[i];
+            c[i] = Math.subtractExact(c[i], margin);
+            c[i+m] = Math.addExact(c[i+m], margin);
+        }
+        return Arrays.equals(c, coordinates) ? this : resize;
+    }
+
+    /**
      * Sets the size of this grid extent to the given values. This method modifies grid coordinates as if they were multiplied
      * by (given size) / ({@linkplain #getSize(int) current size}), rounded toward zero and with the value farthest from zero
      * adjusted by ±1 for having a size exactly equals to the specified value.
@@ -901,7 +924,8 @@ public class GridExtent implements Serializable {
      * If the array is longer, extra sizes are ignored.</p>
      *
      * @param  sizes  the new grid sizes for each dimension.
-     * @return a grid extent having the given sizes (may be {@code this}).
+     * @return a grid extent having the given sizes, or {@code this} if there is no change.
+     * @throws ArithmeticException if resizing this extent to the given size overflows {@code long} capacity.
      *
      * @see GridDerivation#resize(GridExtent, double...)
      */
