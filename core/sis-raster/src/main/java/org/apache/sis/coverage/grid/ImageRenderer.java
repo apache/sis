@@ -231,8 +231,8 @@ public class ImageRenderer {
         final long ymin = Math.max(yreq, ycov);
         final long xmax = Math.min(sliceExtent.getHigh(xd), source.getHigh(xd));
         final long ymax = Math.min(sliceExtent.getHigh(yd), source.getHigh(yd));
-        if (xmax <= xmin || ymax <= ymin) {
-            final int d = (xmax <= xmin) ? xd : yd;
+        if (xmax < xmin || ymax < ymin) {                                           // max are inclusive.
+            final int d = (xmax < xmin) ? xd : yd;
             throw new DisjointExtentException(source.getAxisIdentification(d, d),
                     source.getLow(d), source.getHigh(d), sliceExtent.getLow(d), sliceExtent.getHigh(d));
         }
