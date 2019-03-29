@@ -113,7 +113,7 @@ public class GridDerivation {
      *
      * <p>This extent is initialized to {@code base.extent} if no slice, scale or sub-grid has been requested.
      * This field may be {@code null} if the base grid geometry does not define any extent.
-     * A successful call to {@link GridGeometry#requireGridToCRS()} guarantees that this field is non-null.</p>
+     * A successful call to {@link GridGeometry#requireGridToCRS(boolean)} guarantees that this field is non-null.</p>
      *
      * @see #getIntersection()
      */
@@ -477,7 +477,7 @@ public class GridDerivation {
      */
     public GridDerivation subgrid(final Envelope areaOfInterest, double... resolution) {
         ensureSubgridNotSet();
-        MathTransform cornerToCRS = base.requireGridToCRS();
+        MathTransform cornerToCRS = base.requireGridToCRS(false);
         subGridSetter = "subgrid";
         try {
             /*
@@ -731,11 +731,11 @@ public class GridDerivation {
      */
     public GridDerivation slice(final DirectPosition slicePoint) {
         ArgumentChecks.ensureNonNull("slicePoint", slicePoint);
-        MathTransform cornerToCRS = base.requireGridToCRS();
+        MathTransform gridToCRS = base.requireGridToCRS(true);
         subGridSetter = "slice";
         try {
             if (toBase != null) {
-                cornerToCRS = MathTransforms.concatenate(toBase, cornerToCRS);
+                gridToCRS = MathTransforms.concatenate(toBase, gridToCRS);
             }
             if (base.envelope != null) {
                 final CoordinateReferenceSystem sourceCRS = base.envelope.getCoordinateReferenceSystem();
@@ -743,14 +743,14 @@ public class GridDerivation {
                     final CoordinateReferenceSystem targetCRS = slicePoint.getCoordinateReferenceSystem();
                     if (targetCRS != null) {
                         final CoordinateOperation operation = CRS.findOperation(sourceCRS, targetCRS, null);
-                        cornerToCRS = MathTransforms.concatenate(cornerToCRS, operation.getMathTransform());
+                        gridToCRS = MathTransforms.concatenate(gridToCRS, operation.getMathTransform());
                     }
                 }
             }
-            final int dimension = cornerToCRS.getTargetDimensions();
+            final int dimension = gridToCRS.getTargetDimensions();
             ArgumentChecks.ensureDimensionMatches("slicePoint", dimension, slicePoint);
-            cornerToCRS = dropUnusedDimensions(cornerToCRS, dimension);
-            DirectPosition gridPoint = cornerToCRS.inverse().transform(slicePoint, null);
+            gridToCRS = dropUnusedDimensions(gridToCRS, dimension);
+            DirectPosition gridPoint = gridToCRS.inverse().transform(slicePoint, null);
             if (scaledExtent != null) {
                 scaledExtent = scaledExtent.slice(gridPoint, modifiedDimensions);
             }

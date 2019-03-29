@@ -934,19 +934,21 @@ public class GridGeometry implements Serializable {
 
     /**
      * Verifies that this grid geometry defines an {@linkplain #extent} and a {@link #cornerToCRS} transform.
-     * They are the information required for mapping the grid to a spatiotemporal envelope.
+     * They are the information required for mapping the grid to a spatiotemporal envelope or position.
      * Note that this implies that {@link #envelope} is non-null.
      *
-     * @return {@link #cornerToCRS}.
+     * @param  center  {@code true} for "center to CRS" transform, {@code false} for "corner to CRS" transform.
+     * @return {@link #gridToCRS} or {@link #cornerToCRS}.
      */
-    final MathTransform requireGridToCRS() throws IncompleteGridGeometryException {
+    final MathTransform requireGridToCRS(final boolean center) throws IncompleteGridGeometryException {
         if (extent == null) {
             throw incomplete(EXTENT, Resources.Keys.UnspecifiedGridExtent);
         }
-        if (cornerToCRS == null) {
+        final MathTransform mt = center ? gridToCRS : cornerToCRS;
+        if (mt == null) {
             throw incomplete(GRID_TO_CRS, Resources.Keys.UnspecifiedTransform);
         }
-        return cornerToCRS;
+        return mt;
     }
 
     /**
