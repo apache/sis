@@ -634,6 +634,11 @@ main:   switch (getDimension()) {
      * This method is invoked as a fallback when {@link #trySetTransform(Matrix, int, int, List)}
      * could not set coefficients in the matrix of an affine transform.
      *
+     * <p>The <em>source</em> dimensions (pixel indices) are insensitive to variables order: invoking {@code A.f(B)}
+     * or {@code B.f(A)} are equivalent. However the <em>target</em> dimensions ("real world" coordinates) depend on
+     * the order: values of this variable will be stored in the first target dimension of the localization grid, and
+     * values of the other variable will be in the second target dimension.</p>
+     *
      * @param  other  the other axis to use for creating a localization grid.
      * @return the localization grid, or {@code null} if none can be built.
      * @throws IOException if an error occurred while reading the data.

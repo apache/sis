@@ -40,6 +40,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -374,7 +375,7 @@ public abstract class Grid extends NamedElement {
             for (int i=0; i<sourceDimensions.length; i++) {
                 final int tgtDim = deferred[i];
                 final Axis axis = axes[tgtDim];
-findFree:       for (int srcDim : axis.sourceDimensions) {
+findFree:       for (int srcDim : axis.sourceDimensions) {                      // In preference order (will take only one).
                     srcDim = lastSrcDim - srcDim;                               // Convert netCDF order to "natural" order.
                     for (int j=affine.getNumRow(); --j>=0;) {
                         if (affine.getElement(j, srcDim) != 0) {
@@ -394,23 +395,26 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
             final MathTransformFactory factory = decoder.getMathTransformFactory();
             for (int i=0; i<nonLinears.size(); i++) {         // Length of 'nonLinears' may change in this loop.
                 if (nonLinears.get(i) == null) {
-                    final Axis axis = axes[deferred[i]];
                     for (int j=i; ++j < nonLinears.size();) {
                         if (nonLinears.get(j) == null) {
-                            final Axis other   = axes[deferred[j]];
+                            final Axis[] gridAxes = new Axis[] {
+                                axes[deferred[i]],
+                                axes[deferred[j]]
+                            };
                             final int srcDim   = sourceDimensions[i];
                             final int otherDim = sourceDimensions[j];
-                            final LocalizationGridBuilder grid;
                             switch (srcDim - otherDim) {
-                                case -1: grid = axis.createLocalizationGrid(other); break;
-                                case +1: grid = other.createLocalizationGrid(axis); break;
+                                case -1: break;
+                                case +1: ArraysExt.swap(gridAxes, 0, 1); break;
                                 default: continue;            // Needs axes at consecutive source dimensions.
                             }
+                            final LocalizationGridBuilder grid = gridAxes[0].createLocalizationGrid(gridAxes[1]);
                             if (grid != null) {
                                 /*
                                  * Replace the first transform by the two-dimensional localization grid and
                                  * remove the other transform. Removals need to be done in arrays too.
                                  */
+                                Linearizer.applyTo(grid, gridAxes);
                                 nonLinears.set(i, grid.create(factory));
                                 nonLinears.remove(j);
                                 final int n = nonLinears.size() - j;

@@ -416,7 +416,10 @@ search: for (int j=numPoints; --j >= 0;) {
     }
 
     /**
-     * Returns the number of dimensions in source positions.
+     * Returns the number of dimensions in source positions. This is the length of the {@code source} array given in argument
+     * to {@link #getControlPoint(int[]) get}/{@link #setControlPoint(int[], double[]) setControlPoint(int[], …)} methods.
+     * This is also the number of dimensions of the {@link DirectPosition} <em>keys</em> in the {@link Map} exchanged by
+     * {@link #getControlPoints() get}/{@link #setControlPoints(Map)} methods.
      *
      * @return the dimension of source points.
      * @throws IllegalStateException if the number of source dimensions is not yet known.
@@ -432,7 +435,10 @@ search: for (int j=numPoints; --j >= 0;) {
     }
 
     /**
-     * Returns the number of dimensions in target positions.
+     * Returns the number of dimensions in target positions. This is the length of the {@code target} array exchanged by
+     * {@link #getControlPoint(int[]) get}/{@link #setControlPoint(int[], double[]) setControlPoint(…, double[])} methods.
+     * This is also the number of dimensions of the {@link DirectPosition} <em>values</em> in the {@link Map} exchanged by
+     * {@link #getControlPoints() get}/{@link #setControlPoints(Map)} methods.
      *
      * @return the dimension of target points.
      * @throws IllegalStateException if the number of target dimensions is not yet known.
@@ -447,7 +453,9 @@ search: for (int j=numPoints; --j >= 0;) {
     }
 
     /**
-     * Returns the envelope of source points. This method returns the known minimum and maximum values for each dimension,
+     * Returns the envelope of source points (<em>keys</em> of the map returned by {@link #getControlPoints()}).
+     * The number of dimensions is equal to {@link #getSourceDimensions()}.
+     * This method returns the known minimum and maximum values (inclusive) for each dimension,
      * <strong>not</strong> expanded to encompass full cell surfaces. In other words, the returned envelope encompasses only
      * {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER cell centers}.
      *
@@ -475,7 +483,8 @@ search: for (int j=numPoints; --j >= 0;) {
     }
 
     /**
-     * Returns the envelope of target points. The lower and upper values are inclusive.
+     * Returns the envelope of target points (<em>values</em> of the map returned by {@link #getControlPoints()}).
+     * The number of dimensions is equal to {@link #getTargetDimensions()}. The lower and upper values are inclusive.
      * If a {@linkplain #linearizer() linearizer has been applied}, then coordinates of
      * the returned envelope are projected by that linearizer.
      *
@@ -1120,18 +1129,20 @@ search:         for (int j=domain(); --j >= 0;) {
      * method will try to apply each transform on target coordinates and check which one results in the best
      * {@linkplain #correlation() correlation} coefficients. It may be none.
      *
-     * <p>The linearizers are specified as {@link MathTransform}s from current target coordinates to other spaces
-     * where <cite>sources to new targets</cite> transforms may be more linear.
+     * <p>The linearizers are specified as {@link MathTransform}s from current {@linkplain #getTargetEnvelope()
+     * target coordinates} to other spaces where <cite>sources to new targets</cite> transforms may be more linear.
      * Keys in the map are arbitrary identifiers used in {@link #toString()} for debugging purpose.
-     * Values in the map are non-{@link LinearTransform} (linear transforms are not forbidden, but are useless for this process).
-     * The {@code dimensions} argument specifies which target dimensions to project and can be null or omitted
-     * if the projections shall be applied on all target coordinates. It is possible to invoke this method many
-     * times with different {@code dimensions} argument values.</p>
+     * Values in the map are non-{@link LinearTransform}s (linear transforms are not forbidden, but are useless for this process).</p>
+     *
+     * <p>The {@code projToGrid} argument maps {@code projections} dimensions to this builder target dimensions.
+     * For example if {@code projToGrid} array is {@code {2,1}}, then dimensions 0 and 1 of given {@code projections}
+     * (both source and target dimensions) will map to dimensions 2 and 1 of this builder target dimensions, respectively.
+     * The {@code projToGrid} argument can be omitted or null, in which {0, 1, 2 … {@link #getTargetDimensions()} - 1} is assumed.
+     * All given {@code projections} shall have a number of source and target dimensions equals to the length of the given or assumed
+     * {@code projToGrid} array. It is possible to invoke this method many times with different {@code projToGrid} argument values.</p>
      *
      * @param  projections  projections from current target coordinates to other spaces which may result in more linear transforms.
-     * @param  dimensions   the target dimensions to project, or null or omitted for projecting all target dimensions.
-     *                      If non-null and non-empty, then all transforms in the {@code projections} map shall have a
-     *                      number of source and target dimensions equals to the length of this array.
+     * @param  projToGrid   the target dimensions to project, or null or omitted for projecting all target dimensions.
      * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      *
      * @see #linearizer()
@@ -1139,17 +1150,17 @@ search:         for (int j=domain(); --j >= 0;) {
      *
      * @since 1.0
      */
-    public void addLinearizers(final Map<String,MathTransform> projections, int... dimensions) {
+    public void addLinearizers(final Map<String,MathTransform> projections, int... projToGrid) {
         ensureModifiable();
         final int tgtDim = getTargetDimensions();
-        if (dimensions == null || dimensions.length == 0) {
-            dimensions = ArraysExt.range(0, tgtDim);
+        if (projToGrid == null || projToGrid.length == 0) {
+            projToGrid = ArraysExt.range(0, tgtDim);
         }
         if (linearizers == null) {
             linearizers = new ArrayList<>();
         }
         for (final Map.Entry<String,MathTransform> entry : projections.entrySet()) {
-            linearizers.add(new ProjectedTransformTry(entry.getKey(), entry.getValue(), dimensions, tgtDim));
+            linearizers.add(new ProjectedTransformTry(entry.getKey(), entry.getValue(), projToGrid, tgtDim));
         }
     }
 
