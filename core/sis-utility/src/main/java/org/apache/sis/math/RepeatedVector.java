@@ -97,7 +97,7 @@ final class RepeatedVector extends Vector implements Serializable {
      * @param cycleLength  length of the sequence of values to repeat.
      * @param size         this vector size, usually {@code base.size() * repetition}.
      */
-    private RepeatedVector(final Vector base, final int occurrences, final int cycleLength, final int size) {
+    RepeatedVector(final Vector base, final int occurrences, final int cycleLength, final int size) {
         this.base        = base;
         this.occurrences = occurrences;
         this.cycleLength = cycleLength;
@@ -186,6 +186,26 @@ final class RepeatedVector extends Vector implements Serializable {
         } else {
             return new int[] {occurrences, cycleLength};
         }
+    }
+
+    /**
+     * Returns a vector whose value is the content of this vector repeated <var>count</var> times.
+     */
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Vector repeat(final boolean eachValue, final int count) {
+opti:   if (count > 1 && cycleLength * occurrences >= size) {
+            final int n;
+            if (eachValue) {
+                if (cycleLength < base.size()) break opti;
+                n = occurrences;
+            } else {
+                if (occurrences != 1) break opti;
+                n = cycleLength;
+            }
+            return base.repeat(eachValue, Math.multiplyExact(n, count));
+        }
+        return super.repeat(eachValue, count);
     }
 
     /**

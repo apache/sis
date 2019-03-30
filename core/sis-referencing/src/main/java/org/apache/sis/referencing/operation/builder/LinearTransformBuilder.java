@@ -37,6 +37,7 @@ import org.opengis.geometry.coordinate.Position;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Line;
@@ -178,6 +179,16 @@ public class LinearTransformBuilder extends TransformBuilder {
      * This is {@code null} if not yet computed.
      */
     private transient double[] correlations;
+
+    /**
+     * Whether to compute <cite>target to source</cite> transform instead than <cite>source to target</cite>.
+     * This flag can be set before the first invocation of {@link #create(MathTransformFactory)}. Note that
+     * if this flag is set, then the {@linkplain #correlations} are values for each source dimensions instead
+     * than target dimensions.
+     *
+     * @see #requestReverseCalculation()
+     */
+    private boolean reverseCalculation;
 
     /**
      * Creates a temporary builder with all source fields from the given builder and no target arrays.
@@ -1175,6 +1186,34 @@ search:         for (int j=domain(); --j >= 0;) {
     }
 
     /**
+     * Requests {@link #fit()} to compute <cite>target to source</cite> transform instead than <cite>source to target</cite>.
+     * This flag can be set before the first invocation of {@link #create(MathTransformFactory)}. Note that if this flag is
+     * set, then the {@linkplain #correlation() correlation coefficients} will be values for each source dimensions instead
+     * than target dimensions. However the transform returned by {@code create(…)} is still the <cite>source to target</cite>
+     * transform; only the linear regression has been computed in the reverse way.
+     *
+     * <div class="section">Why reverse calculation</div>
+     * In forward transformation, the linear regression algorithm assumes that grid indices are exact and all errors
+     * are in geospatial coordinates. This is a reasonable assumption if the linear regression is used directly. But
+     * in {@link LocalizationGridBuilder}, having the smallest errors on geospatial coordinates is not so important,
+     * because errors are corrected by the residual grids anyway. However it is important than during inverse operation,
+     * the grid indices estimated by the linear regression is as close as possible to the real grid indices, otherwise
+     * we get "no convergence" problem. For that reason, {@link LocalizationGridBuilder} needs to minimize errors on
+     * the grid indices instead than on the geospatial coordinates.
+     *
+     * <div class="section">Constraints</div>
+     * This method is only for {@link LocalizationGridBuilder} purpose.
+     * Current {@code LinearTransformBuilder} implementation has the following restrictions:
+     * <ul>
+     *   <li>Source coordinates must be a two-dimensional grid.</li>
+     *   <li>Source and target dimensions must be equal (in order to have a square matrix).</li>
+     * </ul>
+     */
+    final void requestReverseCalculation() {
+        reverseCalculation = (getGridDimensions() == 2) && (targets != null && targets.length == 2);
+    }
+
+    /**
      * Creates a linear transform approximation from the source positions to the target positions.
      * This method assumes that source positions are precise and that all uncertainty is in the target positions.
      * If {@linkplain #addLinearizers linearizers have been specified}, then this method may project all target
@@ -1235,7 +1274,7 @@ search:         for (int j=domain(); --j >= 0;) {
                             transformedArrays = tmp.targets;
                             bestCorrelation   = altCorrelation;
                             bestCorrelations  = altCorrelations;
-                            bestTransform     = alt.replace(matrix, altTransform);
+                            bestTransform     = alt.replace(matrix, altTransform, reverseCalculation);
                             appliedLinearizer = alt;
                         } else {
                             ProjectedTransformTry.recycle(tmp.targets, pool);
@@ -1248,7 +1287,13 @@ search:         for (int j=domain(); --j >= 0;) {
                     correlations = bestCorrelations;
                 }
             }
-            transform = (LinearTransform) nonNull(factory).createAffineTransform(matrix);
+            LinearTransform mt = (LinearTransform) nonNull(factory).createAffineTransform(matrix);
+            if (reverseCalculation) try {
+                mt = mt.inverse();
+            } catch (NoninvertibleTransformException e) {
+                throw new FactoryException(e);
+            }
+            transform = mt;                                                 // Set only on success.
         }
         return transform;
     }
@@ -1303,7 +1348,12 @@ search:         for (int j=domain(); --j >= 0;) {
                     if (sources != null) {
                         c = plan.fit(vector(sources[0]), vector(sources[1]), vector(targets[j]));
                     } else try {
-                        c = plan.fit(gridSize[0], gridSize[1], Vector.create(targets[j]));
+                        if (reverseCalculation) {
+                            Vector vz = Vector.createSequence(0, 1, gridSize[j]).repeat(j != 0, gridSize[j ^ 1]);
+                            c = plan.fit(Vector.create(targets[0]), Vector.create(targets[1]), vz);
+                        } else {
+                            c = plan.fit(gridSize[0], gridSize[1], Vector.create(targets[j]));
+                        }
                     } catch (IllegalArgumentException e) {
                         // This may happen if the z vector still contain some "NaN" values.
                         throw new InvalidGeodeticParameterException(noData(), e);

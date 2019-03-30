@@ -575,7 +575,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
     @Override
     public MathTransform create(final MathTransformFactory factory) throws FactoryException {
         if (transform == null) {
-            MathTransform step;
+            linear.requestReverseCalculation();                 // Minimize errors in inverse transform.
             final LinearTransform gridToCoord = linear.create(factory);
             /*
              * Make a first check about whether the result of above LinearTransformBuilder.create() call
@@ -590,6 +590,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
                     break;
                 }
             }
+            MathTransform step;
             if (isExact) {
                 step = MathTransforms.concatenate(sourceToGrid, gridToCoord);
             } else {

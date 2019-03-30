@@ -582,6 +582,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *         If no such repetition is found, an empty array.
      *
      * @since 1.0
+     *
+     * @see #repeat(boolean, int)
      */
     public int[] repetitions(int... candidates) {
         if (candidates != null && candidates.length == 0) {
@@ -1229,6 +1231,46 @@ search:     for (;;) {
      */
     Vector createConcatenate(final Vector toAppend) {
         return new ConcatenatedVector(this, toAppend);
+    }
+
+    /**
+     * Returns a vector whose value is the content of this vector repeated <var>count</var> times.
+     * The content can be repeated in two different ways:
+     *
+     * <ul>
+     *   <li>If {@code eachValue} is {@code true}, then each value is repeated {@code count} times
+     *       before to move to the next value.</li>
+     *   <li>If {@code eachValue} is {@code false}, then whole vector is repeated {@code count} times.</li>
+     * </ul>
+     *
+     * <div class="note"><b>Example:</b>
+     * if {@code vec} contains {@code {1, 2, 3}}, then:
+     * <ul>
+     *   <li>{@code vec.repeat(true,  4)} returns {@code {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}}.</li>
+     *   <li>{@code vec.repeat(false, 4)} returns {@code {1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3}}.</li>
+     * </ul></div>
+     *
+     * This method returns an empty vector if {@code count} is zero and returns {@code this} if {@code count} is one.
+     * For other positive {@code count} values, this method returns an unmodifiable view of this vector:
+     * changes in this vector are reflected in the repeated vector.
+     *
+     * @param  eachValue  whether to apply the repetition on each value ({@code true}) or on the whole vector ({@code false}).
+     * @param  count      number of repetitions as a positive number (including zero).
+     * @return this vector repeated <var>count</var> time.
+     *
+     * @since 1.0
+     *
+     * @see #repetitions(int...)
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Vector repeat(final boolean eachValue, final int count) {
+        switch (count) {
+            case 0: return subList(0, 0);
+            case 1: return this;
+        }
+        ArgumentChecks.ensurePositive("count", count);
+        final int size = size();
+        return new RepeatedVector(this, eachValue ? count : 1, size, Math.multiplyExact(size, count));
     }
 
     /**
