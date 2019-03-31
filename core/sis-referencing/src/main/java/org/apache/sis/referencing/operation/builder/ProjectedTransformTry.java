@@ -314,7 +314,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
     }
 
     /**
-     * Order by the inverse of correlation coefficients. Highest coefficients (best correlations)
+     * Orders by the inverse of correlation coefficients. Highest coefficients (best correlations)
      * are first, lower coefficients are next, {@link Float#NaN} values are last.
      */
     @Override

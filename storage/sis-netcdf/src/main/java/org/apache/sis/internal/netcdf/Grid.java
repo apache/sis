@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.Set;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -397,6 +398,12 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
                 if (nonLinears.get(i) == null) {
                     for (int j=i; ++j < nonLinears.size();) {
                         if (nonLinears.get(j) == null) {
+                            /*
+                             * Found a pair of axes.  Prepare an array of length 2, to be reordered later in the
+                             * axis order declared in 'sourceDimensions'. This is not necessarily the same order
+                             * than iteration order because it depends on values of 'axis.sourceDimensions[0]'.
+                             * Those values take in account what is the "main" dimension of each axis.
+                             */
                             final Axis[] gridAxes = new Axis[] {
                                 axes[deferred[i]],
                                 axes[deferred[j]]
@@ -410,11 +417,14 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
                             }
                             final LocalizationGridBuilder grid = gridAxes[0].createLocalizationGrid(gridAxes[1]);
                             if (grid != null) {
+                                final Set<Linearizer> linearizers = decoder.convention().linearizers(decoder);
+                                if (!linearizers.isEmpty()) {
+                                    Linearizer.applyTo(linearizers, grid, gridAxes);
+                                }
                                 /*
                                  * Replace the first transform by the two-dimensional localization grid and
                                  * remove the other transform. Removals need to be done in arrays too.
                                  */
-                                Linearizer.applyTo(grid, gridAxes);
                                 nonLinears.set(i, grid.create(factory));
                                 nonLinears.remove(j);
                                 final int n = nonLinears.size() - j;

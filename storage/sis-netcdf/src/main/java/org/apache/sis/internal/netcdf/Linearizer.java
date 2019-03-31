@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import org.opengis.util.FactoryException;
@@ -32,13 +33,13 @@ import org.apache.sis.util.logging.Logging;
 
 /**
  * Two-dimensional non-linear transforms to try in attempts to make a localization grid more linear.
- * We use spherical formulas instead than ellipsoidal formulas because the spherical ones are faster
- * and more stable (the inverse transforms are exact, up to rounding errors). Non-linear transforms
- * are tested in "trials and errors" and the one resulting in the best correlation coefficients is
- * selected.
+ * Non-linear transforms are tested in "trials and errors" and the one resulting in best correlation
+ * coefficients is selected. This enumeration identifies which linearizers to try for a given file.
  *
- * <p>Current implementation provides a hard-coded list of linearized, but future version may allow
- * customization depending on the netCDF file being decoded.</p>
+ * <p>When a non-linear transform exists in spherical or ellipsoidal variants, we use the spherical
+ * formulas instead than ellipsoidal formulas because the spherical ones are faster and more stable
+ * (because the inverse transforms are exact, up to rounding errors).  The errors caused by the use
+ * of spherical formulas are compensated by the localization grid used after the linearizer.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -48,29 +49,52 @@ import org.apache.sis.util.logging.Logging;
  * @since 1.0
  * @module
  */
-final class Linearizer {
+public enum Linearizer {
     /**
-     * Hard-coded set of transforms that may help in making localization grids more linear.
-     * Operations defined in this map require (<var>longitude</var>, <var>latitude</var>) axis order.
+     * Mercator (Spherical) projection. Inputs are latitude and longitude in any order (axis order will
+     * be detected by inspection of {@link Axis} elements). Outputs are projected coordinates.
      */
-    private static final Map<String,MathTransform> PROJECTIONS = new HashMap<>(4);
-    static {
-        final MathTransformFactory factory = DefaultFactories.forClass(MathTransformFactory.class);
-        if (factory != null) {    // Should never be null, but be tolerant to configuration oddity.
-            final String[] projections = new String[] {
-                "Mercator (Spherical)"
-                // More projections may be added in the future.
-            };
-            /*
-             * The exact value of sphere radius does not matter because a linear regression will
-             * be applied anyway. However it matter to define a sphere instead than an ellipsoid
-             * because the spherical equations are simpler (consequently faster and more stable).
-             */
-            for (final String operation : projections) try {
-                final ParameterValueGroup pg = factory.getDefaultParameters(operation);
+    MERCATOR("Mercator (Spherical)");
+
+    /**
+     * The map projection method to use for constructing {@link #transform}, or {@code null} if the operation
+     * is not a map projection or has already be constructed.  If non-null, the identified operation requires
+     * (<var>longitude</var>, <var>latitude</var>) axis order.
+     */
+    private String projection;
+
+    /**
+     * The transform to apply, or {@code null} if none or not yet created. This is created by {@link #transform()}
+     * when first needed. The value after initialization may still be {@code null} if initialization failed.
+     */
+    private MathTransform transform;
+
+    /**
+     * Creates a new linearizer for the given projection method.
+     */
+    private Linearizer(final String projection) {
+        this.projection = projection;
+    }
+
+    /**
+     * Returns the hard-coded transform represented by this enumeration that may help to make a localization grid
+     * more linear.
+     */
+    private synchronized MathTransform transform() {
+        final String p = projection;
+        if (p != null) {
+            projection = null;                              // Set to null now in case of failure.
+            final MathTransformFactory factory = DefaultFactories.forClass(MathTransformFactory.class);
+            if (factory != null) try {    // Should never be null, but be tolerant to configuration oddity.
+                /*
+                 * The exact value of sphere radius does not matter because a linear regression will
+                 * be applied anyway. However it matter to define a sphere instead than an ellipsoid
+                 * because the spherical equations are simpler (consequently faster and more stable).
+                 */
+                final ParameterValueGroup pg = factory.getDefaultParameters(p);
                 pg.parameter(Constants.SEMI_MAJOR).setValue(ReferencingServices.AUTHALIC_RADIUS);
                 pg.parameter(Constants.SEMI_MINOR).setValue(ReferencingServices.AUTHALIC_RADIUS);
-                PROJECTIONS.put(operation, factory.createParameterizedTransform(pg));
+                transform = factory.createParameterizedTransform(pg);
             } catch (FactoryException e) {
                 /*
                  * Should never happen. But if it happens anyway, do not cause the whole netCDF reader
@@ -80,21 +104,17 @@ final class Linearizer {
                 Logging.unexpectedException(Logging.getLogger(Modules.NETCDF), Variable.class, "getGridGeometry", e);
             }
         }
-    }
-
-    /**
-     * Do not allow instantiation of this class.
-     */
-    private Linearizer() {
+        return transform;
     }
 
     /**
      * Applies non-linear transform candidates to the given localization grid.
      *
-     * @param  grid  the grid on which to add non-linear transform candidates.
-     * @param  axes  coordinate system axes in CRS order.
+     * @param  linearizers  the linearizers to apply.
+     * @param  grid         the grid on which to add non-linear transform candidates.
+     * @param  axes         coordinate system axes in CRS order.
      */
-    static void applyTo(final LocalizationGridBuilder grid, final Axis[] axes) {
+    static void applyTo(final Set<Linearizer> linearizers, final LocalizationGridBuilder grid, final Axis[] axes) {
         int xdim = -1, ydim = -1;
         for (int i=axes.length; --i >= 0;) {
             switch (axes[i].abbreviation) {
@@ -103,7 +123,13 @@ final class Linearizer {
             }
         }
         if (xdim >= 0 && ydim >= 0) {
-            grid.addLinearizers(PROJECTIONS, xdim, ydim);
+            final Map<String,MathTransform> projections = new HashMap<>();
+            for (final Linearizer linearizer : linearizers) {
+                if (linearizer.transform != null) {
+                    projections.put(linearizer.name(), linearizer.transform());
+                }
+            }
+            grid.addLinearizers(projections, xdim, ydim);
         }
     }
 }

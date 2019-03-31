@@ -17,7 +17,9 @@
 package org.apache.sis.internal.netcdf;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.Iterator;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.awt.image.DataBuffer;
 import org.apache.sis.internal.referencing.LazySet;
@@ -448,5 +450,18 @@ public class Convention {
         if (!Double.isNaN(scale))  tr.setScale (scale);
         if (!Double.isNaN(offset)) tr.setOffset(offset);
         return tr;
+    }
+
+    /**
+     * Returns an enumeration of two-dimensional non-linear transforms that may be tried in attempts to make
+     * localization grid more linear. Default implementation returns an empty set. If this method is overridden,
+     * the enumerated transforms will be tested in "trials and errors" and the one resulting in best correlation
+     * coefficients will be selected.
+     *
+     * @param  decoder  the netCDF file for which to determine linearizers that may possibly apply.
+     * @return enumeration of two-dimensional non-linear transforms to try.
+     */
+    public Set<Linearizer> linearizers(final Decoder decoder) {
+        return Collections.emptySet();
     }
 }
