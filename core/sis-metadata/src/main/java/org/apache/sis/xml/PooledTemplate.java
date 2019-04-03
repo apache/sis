@@ -45,7 +45,7 @@ final class PooledTemplate extends Pooled {
      *                        file in the endorsed directory.
      */
     PooledTemplate(final Map<String,?> properties, final Implementation implementation) throws PropertyException {
-        super(implementation == Implementation.INTERNAL);
+        super(false);
         if (properties != null) {
             for (final Map.Entry<String,?> entry : properties.entrySet()) {
                 final String key = entry.getKey();

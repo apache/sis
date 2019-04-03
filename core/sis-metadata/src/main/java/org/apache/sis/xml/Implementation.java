@@ -30,13 +30,6 @@ import javax.xml.bind.JAXBContext;
  */
 enum Implementation {
     /**
-     * JAXB implementation bundled in the JDK.
-     */
-    INTERNAL("com.sun.xml.internal.bind.indentString",
-             "com.sun.xml.internal.bind.namespacePrefixMapper",
-             "org.apache.sis.xml.OGCNamespacePrefixMapper"),
-
-    /**
      * JAXB implementation provided in a separated JAR, used for instance by Glassfish.
      */
     ENDORSED("com.sun.xml.bind.indentString",
@@ -100,9 +93,7 @@ enum Implementation {
     public static Implementation detect(final JAXBContext context) {
         if (context != null) {
             final String classname = context.getClass().getName();
-            if (classname.startsWith(INTERNAL_PREFIX)) {
-                return INTERNAL;
-            } else if (classname.startsWith(ENDORSED_PREFIX)) {
+            if (classname.startsWith(ENDORSED_PREFIX)) {
                 return ENDORSED;
             }
         }
@@ -115,7 +106,7 @@ enum Implementation {
      * but that the caller should either support the property or throw an exception.
      *
      * <p>This method excludes the {@code "com.sun.xml.bind.*"} properties if the implementation
-     * is not {@link #ENDORSED} or {@link #INTERNAL}. We do not distinguish between the endorsed
+     * is not {@link #ENDORSED}. We do not distinguish between the endorsed
      * and internal namespaces since Apache SIS use only the endorsed namespace and let
      * {@code org.apache.sis.xml.Pooled} do the conversion to internal namespace if needed.</p>
      *
@@ -129,7 +120,7 @@ enum Implementation {
 
     /**
      * Converts the given key from {@code "com.sun.xml.bind.*"} to {@code "com.sun.xml.internal.bind.*"} namespace.
-     * This method is invoked when the JAXB implementation is known to be the {@link #INTERNAL} one. We perform this
+     * This method is invoked when the JAXB implementation is known to be the internal one. We perform this
      * conversion for allowing Apache SIS to ignore the difference between internal and endorsed JAXB.
      *
      * @param  key  the key that may potentially a endorsed JAXB key.

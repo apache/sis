@@ -142,14 +142,6 @@
       <version>${project.version}</version>
     </dependency>
 
-    <!-- Allows compiler to use a JAXB class which should exist on the JVM. -->
-    <dependency>
-      <groupId>com.googlecode.jaxb-namespaceprefixmapper-interfaces</groupId>
-      <artifactId>JAXBNamespacePrefixMapper</artifactId>
-      <version>2.2.4</version>
-      <scope>provided</scope>
-    </dependency>
-
     <!-- Test dependencies -->
     <dependency>
       <groupId>org.apache.sis.core</groupId>
@@ -172,6 +164,17 @@
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <!--scope>runtime</scope-->
     </dependency>
   </dependencies>
 

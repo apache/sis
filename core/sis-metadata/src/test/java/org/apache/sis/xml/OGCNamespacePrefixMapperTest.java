@@ -27,13 +27,13 @@ import static org.junit.Assume.assumeTrue;
 
 
 /**
- * Tests the {@link OGCNamespacePrefixMapper}.
+ * Tests the {@link OGCNamespacePrefixMapper_Endorsed}.
  * This class performs two kind of tests:
  *
  * <ul>
  *   <li>Invoke every public methods from the {@code NamespacePrefixMapper} class.
  *       If we failed to override an abstract method, we will get an {@link AbstractMethodError}.</li>
- *   <li>For specific methods like {@link OGCNamespacePrefixMapper#getPreferredPrefix(String, String,
+ *   <li>For specific methods like {@link OGCNamespacePrefixMapper_Endorsed#getPreferredPrefix(String, String,
  *       boolean)}, use some value which will prove us that the overridden method has been invoked.</li>
  * </ul>
  *
@@ -43,22 +43,6 @@ import static org.junit.Assume.assumeTrue;
  * @module
  */
 public final strictfp class OGCNamespacePrefixMapperTest extends TestCase {
-    /**
-     * Ensures that the {@link OGCNamespacePrefixMapper} class overrides all abstract methods
-     * defined in the JDK class. This test is ignored if the Java framework running this test
-     * is not the Oracle one (i.e. if it does not bundle the Sun internal JAXB implementation).
-     *
-     * @throws ReflectiveOperationException if an error occurred while invoking a method by
-     *         the reflection API.
-     */
-    @Test
-    public void testInternalJAXB() throws ReflectiveOperationException {
-        try {
-            ensureOverrideMethods(new OGCNamespacePrefixMapper(null));
-        } catch (NoClassDefFoundError e) {
-            // Ignore the exception, since it may be normal.
-        }
-    }
 
     /**
      * Ensures that the {@link OGCNamespacePrefixMapper_Endorsed} class overrides all abstract
@@ -82,7 +66,7 @@ public final strictfp class OGCNamespacePrefixMapperTest extends TestCase {
      * This test invokes every public methods declared in {@code NamespacePrefixMapper},
      * which will throw {@link AbstractMethodError} if we forgot to override an abstract
      * method. Additionally, this test checks the result of some method calls in order to
-     * ensure that the invoked method was the one defined in {@link OGCNamespacePrefixMapper}.
+     * ensure that the invoked method was the one defined in {@link OGCNamespacePrefixMapper_Endorsed}.
      *
      * @param  mapper the {@code OGCNamespacePrefixMapper} or {@code OGCNamespacePrefixMapper_Endorsed}
      *         instance to check.

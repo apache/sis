@@ -458,6 +458,16 @@
         <artifactId>commons-compress</artifactId>
         <version>1.18</version>
       </dependency>
+      <dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>${jaxb.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>${jaxb.version}</version>
+      </dependency>
 
       <!-- Databases -->
       <dependency>
@@ -532,6 +542,7 @@
     <sis.plugin.version>${project.version}</sis.plugin.version>
     <sis.non-free.version>1.0-M1</sis.non-free.version>                 <!-- Used only if "non-free" profile is enabled. -->
     <geoapi.version>4.0-SNAPSHOT</geoapi.version>
+    <jaxb.version>2.3.2</jaxb.version>
   </properties>
 
   <profiles>
@@ -650,7 +661,6 @@
               <value>${project.build.directory}/derby.log</value>
             </property>
           </systemProperties>
-          <argLine>--add-modules java.xml.bind,java.xml.ws.annotation,javafx.graphics</argLine>
         </configuration>
       </plugin>
 
