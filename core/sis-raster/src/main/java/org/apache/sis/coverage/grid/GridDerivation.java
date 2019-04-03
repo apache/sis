@@ -504,9 +504,9 @@ public class GridDerivation {
             dimension = baseExtent.getDimension();      // Non-null since 'base.requireGridToCRS()' succeed.
             GeneralEnvelope indices = null;
             if (areaOfInterest != null) {
-                final WraparoundAdjustment adj = new WraparoundAdjustment(areaOfInterest);
-                adj.shiftInto(base.envelope, (baseToAOI != null) ? baseToAOI.getMathTransform() : null);
-                indices = adj.result(cornerToCRS.inverse());
+                indices = new WraparoundAdjustment(areaOfInterest)
+                        .shiftInto(base.envelope, (baseToAOI != null) ? baseToAOI.getMathTransform() : null)
+                        .result(cornerToCRS.inverse());
                 clipExtent(indices);
             }
             if (indices == null || indices.getDimension() != dimension) {
@@ -723,9 +723,13 @@ public class GridDerivation {
      *       For dimensionality reduction, see {@link GridGeometry#reduce(int...)}.</li>
      * </ul>
      *
-     * @param  slicePoint   the coordinates where to get a slice.
+     * @param  slicePoint   the coordinates where to get a slice. If no coordinate reference system is attached to it,
+     *                      we consider it's the same as base grid geometry.
      * @return {@code this} for method call chaining.
-     * @throws IncompleteGridGeometryException if the base grid geometry has no extent or no "grid to CRS" transform.
+     * @throws IncompleteGridGeometryException if the base grid geometry has no extent, no "grid to CRS" transform, or
+     * if its coordinate reference system is unknown while input point one is (in which case we're unable to find a
+     * transform between base CRS and input point CRS). Note that if you're sure that your point is expressed in base
+     * CRS, you can give a point without any CRS, to avoid this check.
      * @throws IllegalGridGeometryException if an error occurred while converting the point coordinates to grid coordinates.
      * @throws PointOutsideCoverageException if the given point is outside the grid extent.
      */
@@ -737,23 +741,36 @@ public class GridDerivation {
             if (toBase != null) {
                 gridToCRS = MathTransforms.concatenate(toBase, gridToCRS);
             }
-            if (base.envelope != null) {
-                final CoordinateReferenceSystem sourceCRS = base.envelope.getCoordinateReferenceSystem();
-                if (sourceCRS != null) {
-                    final CoordinateReferenceSystem targetCRS = slicePoint.getCoordinateReferenceSystem();
-                    if (targetCRS != null) {
-                        final CoordinateOperation operation = CRS.findOperation(sourceCRS, targetCRS, null);
-                        gridToCRS = MathTransforms.concatenate(gridToCRS, operation.getMathTransform());
-                    }
-                }
+
+            /* We'll try to find a link between base coordinate system and input point one. Note that we allow unknown
+             * CRS on slice point, in which case we consider it to be expressed in base geometry system. However, if the
+             * point CRS is known, but base geometry one is not, too much ambiguity resides, and we'll throw an error.
+             */
+            final MathTransform baseToSlice;
+            final CoordinateReferenceSystem targetCRS = slicePoint.getCoordinateReferenceSystem();
+            if (targetCRS != null) {
+                final CoordinateReferenceSystem sourceCRS = base.getCoordinateReferenceSystem();
+                baseToSlice = CRS.findOperation(sourceCRS, targetCRS, null)
+                        .getMathTransform();
+                gridToCRS = MathTransforms.concatenate(gridToCRS, baseToSlice);
+            } else {
+                baseToSlice = null;
             }
+
             final int dimension = gridToCRS.getTargetDimensions();
             ArgumentChecks.ensureDimensionMatches("slicePoint", dimension, slicePoint);
             gridToCRS = dropUnusedDimensions(gridToCRS, dimension);
-            DirectPosition gridPoint = gridToCRS.inverse().transform(slicePoint, null);
+
+            GeneralEnvelope sliceEnvelope = new GeneralEnvelope(slicePoint, slicePoint);
+            sliceEnvelope = new WraparoundAdjustment(sliceEnvelope)
+                    .shiftInto(base.envelope, baseToSlice)
+                    .result(gridToCRS.inverse());
+            DirectPosition gridPoint = sliceEnvelope.getMedian();
             if (scaledExtent != null) {
                 scaledExtent = scaledExtent.slice(gridPoint, modifiedDimensions);
             }
+
+            // Rebuild the extent without scaling
             if (toBase != null) {
                 gridPoint = toBase.transform(gridPoint, gridPoint);
             }

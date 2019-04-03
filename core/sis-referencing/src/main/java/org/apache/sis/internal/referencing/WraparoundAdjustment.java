@@ -117,16 +117,17 @@ public final class WraparoundAdjustment {
      * @param  validToAOI        if the envelopes do not use the same CRS, the transformation from {@code domainOfValidity}
      *                           to {@code areaOfInterest}. Otherwise {@code null}. This method does not check by itself if
      *                           a coordinate operation is needed; it must be supplied.
+     * @return this object, allowing to chain {@link #result(MathTransform)} operation.
      * @throws TransformException if an envelope transformation was required but failed.
      *
      * @see GeneralEnvelope#simplify()
      */
-    public void shiftInto(Envelope domainOfValidity, MathTransform validToAOI) throws TransformException {
+    public WraparoundAdjustment shiftInto(Envelope domainOfValidity, MathTransform validToAOI) throws TransformException {
         CoordinateReferenceSystem crs = areaOfInterest.getCoordinateReferenceSystem();
         if (crs == null) {
             crs = domainOfValidity.getCoordinateReferenceSystem();      // Assumed to apply to AOI too.
             if (crs == null) {
-                return;
+                return this;
             }
         }
         /*
@@ -301,6 +302,7 @@ public final class WraparoundAdjustment {
                 }
             }
         }
+        return this;
     }
 
     /**
