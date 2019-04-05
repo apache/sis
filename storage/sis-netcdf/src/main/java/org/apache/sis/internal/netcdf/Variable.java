@@ -656,6 +656,7 @@ public abstract class Variable extends NamedElement {
     public final GridGeometry getGridGeometry() throws IOException, DataStoreException {
         if (!gridDetermined) {
             gridDetermined = true;                      // Set first so we don't try twice in case of failure.
+            final GridMapping gridMapping = GridMapping.forVariable(this);
             final Adjustment adjustment = new Adjustment();
             final Grid info = getGrid(adjustment);
             if (info != null) {
@@ -730,7 +731,18 @@ public abstract class Variable extends NamedElement {
                         grid = grid.derive().resize(extent, dataToGridIndices).build();
                     }
                 }
+                /*
+                 * At this point we finished to build a grid geometry from the information provided by axes.
+                 * If there is grid mapping attributes (e.g. "EPSG_code", "ESRI_pe_string", "GeoTransform",
+                 * "spatial_ref", etc.), substitute some parts of the grid geometry by the parts built from
+                 * those attributes.
+                 */
+                if (gridMapping != null) {
+                    grid = gridMapping.adaptGridCRS(this, grid, info.getAnchor());
+                }
                 gridGeometry = grid;
+            } else if (gridMapping != null) {
+                gridGeometry = gridMapping.createGridCRS(this);
             }
         }
         return gridGeometry;

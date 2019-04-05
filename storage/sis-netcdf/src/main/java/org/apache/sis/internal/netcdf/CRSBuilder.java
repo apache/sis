@@ -51,9 +51,11 @@ import org.apache.sis.math.Vector;
 
 /**
  * Temporary object for building a coordinate reference system from the variables in a netCDF file.
- * Different instances are required for the geographic, vertical and temporal components of a CRS,
- * or if a netCDF file uses different CRS for different variables.
- * This builder is used as below:
+ * This class proceeds by inspecting the coordinate system axes. This is a different approach than
+ * {@link GridMapping}, which parses Well Known Text or EPSG codes declared in variable attributes.
+ *
+ * <p>Different instances are required for the geographic, vertical and temporal components of a CRS,
+ * or if a netCDF file uses different CRS for different variables. This builder is used as below:</p>
  *
  * <ol>
  *   <li>Invoke {@link #dispatch(List, Axis)} for all axes in a grid.

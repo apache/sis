@@ -16,9 +16,12 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import java.util.Date;
-import java.util.Objects;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Collection;
+import java.util.Objects;
+import java.util.Date;
+import java.util.TimeZone;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -29,6 +32,7 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 
@@ -88,8 +92,19 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     /**
      * The geodetic datum, created when first needed. The datum are generally not specified in netCDF files.
      * To make that clearer, we will build datum with names like "Unknown datum presumably based on WGS 84".
+     *
+     * @see CRSBuilder#build(Decoder)
      */
     final Datum[] datumCache;
+
+    /**
+     * The CRS and <cite>grid to CRS</cite> transform defined by attributes in a variable. For example GDAL uses
+     * {@code "spatial_ref_sys"} and {@code "GeoTransform"} attributes associated to a variable having the name
+     * specified by the {@code "grid_mapping"} attribute.
+     *
+     * @see GridMapping#forVariable(Variable)
+     */
+    final Map<String,GridMapping> gridMapping;
 
     /**
      * Where to send the warnings.
@@ -114,6 +129,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
         this.listeners   = listeners;
         this.nameFactory = DefaultFactories.forBuildin(NameFactory.class);
         this.datumCache  = new Datum[CRSBuilder.DATUM_CACHE_SIZE];
+        this.gridMapping = new HashMap<>();
     }
 
     /**
@@ -242,6 +258,15 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @return the converted values. May contains {@code null} elements.
      */
     public abstract Date[] numberToDate(String symbol, Number... values);
+
+    /**
+     * Returns the timezone for decoding dates. Currently fixed to UTC.
+     *
+     * @return the timezone for dates.
+     */
+    public TimeZone getTimeZone() {
+        return TimeZone.getTimeZone(StandardDateFormat.UTC);
+    }
 
     /**
      * Returns the value of the {@code "_Id"} global attribute. The UCAR library defines a

@@ -104,6 +104,16 @@ public abstract class Grid extends NamedElement {
     private boolean isGeometryDetermined;
 
     /**
+     * Whether we computed a "grid to CRS" transform relative to pixel center or pixel corner.
+     * CF-Convention said: "If bounds are not provided, an application might reasonably assume
+     * the grid points to be at the centers of the cells, but we do not require that in this
+     * standard".
+     *
+     * @see #getAnchor()
+     */
+    private PixelInCell anchor = PixelInCell.CELL_CENTER;
+
+    /**
      * Constructs a new grid geometry information.
      */
     protected Grid() {
@@ -462,7 +472,6 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
              * to be at the centers of the cells, but we do not require that in this standard". We nevertheless check
              * if an axis thinks otherwise.
              */
-            PixelInCell anchor = PixelInCell.CELL_CENTER;
             final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(decoder);
             if (CRS.getHorizontalComponent(crs) instanceof GeographicCRS) {
                 for (final Axis axis : axes) {
@@ -480,7 +489,19 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
     }
 
     /**
+     * Returns whether we computed a "grid to CRS" transform relative to pixel center or pixel corner.
+     * The default value is {@link PixelInCell#CELL_CENTER}, but may be modified after invocation of
+     * {@link #getGridGeometry(Decoder)}.
+     */
+    final PixelInCell getAnchor() {
+        return anchor;
+    }
+
+    /**
      * Logs a warning about a CRS or grid geometry that can not be created.
+     *
+     * @param  caller  one of {@code "getCoordinateReferenceSystem"} or {@code "getGridGeometry"}.
+     * @param  key     one of {@link Resources.Keys#CanNotCreateCRS_3} or {@link Resources.Keys#CanNotCreateGridGeometry_3}.
      */
     private void canNotCreate(final Decoder decoder, final String caller, final short key, final Exception ex) {
         warning(decoder.listeners, Grid.class, caller, ex, null, key, decoder.getFilename(), getName(), ex.getLocalizedMessage());
