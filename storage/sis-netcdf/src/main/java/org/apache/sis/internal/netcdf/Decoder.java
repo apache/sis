@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
@@ -28,9 +30,12 @@ import java.nio.file.Path;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -324,4 +329,44 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @throws DataStoreException if a logical error occurred.
      */
     public abstract Grid[] getGrids() throws IOException, DataStoreException;
+
+    /**
+     * Returns for information purpose only the Coordinate Reference Systems present in this file.
+     * The CRS returned by this method may not be exactly the CRS to be used by variables.
+     * This method is provided for metadata purposes.
+     *
+     * @return coordinate reference systems present in this file.
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    public final List<CoordinateReferenceSystem> getReferenceSystemInfo() throws IOException, DataStoreException {
+        final List<CoordinateReferenceSystem> list = new ArrayList<>();
+        for (final Variable variable : getVariables()) {
+            final GridMapping m = GridMapping.forVariable(variable);
+            if (m != null) {
+                addIfNotPresent(list, m.crs);
+            }
+        }
+        if (list.isEmpty()) {
+            for (final Grid grid : getGrids()) {
+                addIfNotPresent(list, grid.getCoordinateReferenceSystem(this));
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Adds the given coordinate reference system to the given list, provided that an equivalent CRS
+     * (ignoring axes) is not already present.
+     */
+    private static void addIfNotPresent(final List<CoordinateReferenceSystem> list, final CoordinateReferenceSystem crs) {
+        if (crs != null) {
+            for (int i=list.size(); --i >= 0;) {
+                if (Utilities.deepEquals(crs, list.get(i), ComparisonMode.ALLOW_VARIANT)) {
+                    return;
+                }
+            }
+            list.add(crs);
+        }
+    }
 }

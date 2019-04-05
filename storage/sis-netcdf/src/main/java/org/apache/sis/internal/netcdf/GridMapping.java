@@ -69,7 +69,7 @@ final class GridMapping {
      * <div class="note"><b>Note:</b> this come from different information than the one used by {@link CRSBuilder},
      * which creates CRS by inspection of coordinate system axes.</div>
      */
-    private final CoordinateReferenceSystem crs;
+    final CoordinateReferenceSystem crs;
 
     /**
      * The <cite>grid to CRS</cite> transform, or {@code null} if none. This information is usually not specified
