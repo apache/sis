@@ -68,11 +68,11 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(PrimeMeridian.class));
         assertSetEquals(Arrays.asList("7030", "7043", "7019", "7008", "7022", "7048"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(Ellipsoid.class));
-        assertSetEquals(Arrays.asList("6326", "6322", "6269", "6267", "6258", "6230", "6047", "5100", "5103"),
+        assertSetEquals(Arrays.asList("6326", "6322", "6269", "6267", "6258", "6230", "6019", "6047", "5100", "5103"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(Datum.class));
         assertSetEquals(Arrays.asList("4978", "4984", "4936"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(GeocentricCRS.class));
-        assertSetEquals(Arrays.asList("4326", "4322", "4047", "4269", "4267", "4258", "4230", "4979", "4985", "4937"),
+        assertSetEquals(Arrays.asList("4326", "4322", "4019", "4047", "4269", "4267", "4258", "4230", "4979", "4985", "4937"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(GeographicCRS.class));
         assertSetEquals(Arrays.asList("5714", "5715", "5703"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(VerticalCRS.class));

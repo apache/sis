@@ -112,7 +112,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  *   <tr><td>European Terrestrial Reference Frame (ETRS) 1989</td>  <td>CRS, datum</td>            <td>{@link #ETRS89}</td></tr>
  *   <tr><td>European Terrestrial Reference System (ETRF) 1989</td> <td>CRS, datum</td>            <td>{@link #ETRS89}</td></tr>
  *   <tr><td>Greenwich</td>                                         <td>Prime meridian</td>        <td>{@link #WGS84}, {@link #WGS72}, {@link #ETRS89}, {@link #NAD83}, {@link #NAD27}, {@link #ED50}, {@link #SPHERE}</td></tr>
- *   <tr><td>GRS 1980</td>                                          <td>Ellipsoid</td>             <td>{@link #ETRS89}, {@link #NAD83}</td></tr>
+ *   <tr><td>GRS 1980</td>                                          <td>Ellipsoid</td>             <td>{@link #GRS1980}, {@link #ETRS89}, {@link #NAD83}</td></tr>
  *   <tr><td>GRS 1980 Authalic Sphere</td>                          <td>Ellipsoid</td>             <td>{@link #SPHERE}</td></tr>
  *   <tr><td>Hayford 1909</td>                                      <td>Ellipsoid</td>             <td>{@link #ED50}</td></tr>
  *   <tr><td>International 1924</td>                                <td>Ellipsoid</td>             <td>{@link #ED50}</td></tr>
@@ -125,7 +125,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
  *
@@ -258,6 +258,25 @@ public enum CommonCRS {
      */
     ED50((short) 4230, (short) 0, (short) 0, (short) 6230, (short) 7022,                    // Geodetic info
          (short) 0, (short) 0, (short) 23000, (short) 0, (byte) 28, (byte) 38),             // UPS and UTM info
+
+    /**
+     * Unknown datum based upon the GRS 1980 ellipsoid.
+     * Use only in cases where geodetic datum is unknown.
+     *
+     * <blockquote><table class="compact" summary="Sphere properties.">
+     *   <tr><th>EPSG identifiers:</th>        <td>4019 &nbsp;(<i>datum:</i> 6019, &nbsp;<i>ellipsoid:</i> 7019)</td></tr>
+     *   <tr><th>Primary names:</th>           <td>"Unknown datum based upon the GRS 1980 ellipsoid."</td></tr>
+     *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
+     *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximated)</i></td></tr>
+     *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
+     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
+     * </table></blockquote>
+     *
+     * @since 1.0
+     */
+    GRS1980((short) 4019, (short) 0, (short) 0, (short) 6019, (short) 7019,                  // Geodetic info
+            (short) 0, (short) 0, (short) 0, (short) 0, (byte) 0, (byte) 0),                 // UPS and UTM info
 
     /**
      * Unspecified datum based upon the GRS 1980 Authalic Sphere. Spheres use a simpler algorithm for
@@ -554,6 +573,7 @@ public enum CommonCRS {
      *   <tr><td>ETRS89</td>                   <td>{@link #ETRS89}</td> <td></td></tr>
      *   <tr><td>NAD27</td>                    <td>{@link #NAD27}</td>  <td>CRS:27</td></tr>
      *   <tr><td>NAD83</td>                    <td>{@link #NAD83}</td>  <td>CRS:83</td></tr>
+     *   <tr><td>GRS 1980</td>                 <td>{@link #GRS1980}</td><td></td></tr>
      *   <tr><td>GRS 1980 Authalic Sphere</td> <td>{@link #SPHERE}</td> <td></td></tr>
      *   <tr><td>WGS 72</td>                   <td>{@link #WGS72}</td>  <td></td></tr>
      *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>CRS:84</td></tr>
@@ -594,6 +614,7 @@ public enum CommonCRS {
      *   <tr><td>ETRS89</td>                   <td>{@link #ETRS89}</td> <td>4258</td></tr>
      *   <tr><td>NAD27</td>                    <td>{@link #NAD27}</td>  <td>4267</td></tr>
      *   <tr><td>NAD83</td>                    <td>{@link #NAD83}</td>  <td>4269</td></tr>
+     *   <tr><td>GRS 1980</td>                 <td>{@link #GRS1980}</td><td>4019</td></tr>
      *   <tr><td>GRS 1980 Authalic Sphere</td> <td>{@link #SPHERE}</td> <td>4047</td></tr>
      *   <tr><td>WGS 72</td>                   <td>{@link #WGS72}</td>  <td>4322</td></tr>
      *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>4326</td></tr>
@@ -649,6 +670,7 @@ public enum CommonCRS {
      *   <tr><td>ETRS89</td>                   <td>{@link #ETRS89}</td> <td>4937</td></tr>
      *   <tr><td>NAD27</td>                    <td>{@link #NAD27}</td>  <td></td></tr>
      *   <tr><td>NAD83</td>                    <td>{@link #NAD83}</td>  <td></td></tr>
+     *   <tr><td>GRS 1980</td>                 <td>{@link #GRS1980}</td><td></td></tr>
      *   <tr><td>GRS 1980 Authalic Sphere</td> <td>{@link #SPHERE}</td> <td></td></tr>
      *   <tr><td>WGS 72</td>                   <td>{@link #WGS72}</td>  <td>4985</td></tr>
      *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>4979</td></tr>
@@ -707,6 +729,7 @@ public enum CommonCRS {
      *   <tr><td>ETRS89</td>                   <td>{@link #ETRS89}</td> <td>4936</td></tr>
      *   <tr><td>NAD27</td>                    <td>{@link #NAD27}</td>  <td></td></tr>
      *   <tr><td>NAD83</td>                    <td>{@link #NAD83}</td>  <td></td></tr>
+     *   <tr><td>GRS 1980</td>                 <td>{@link #GRS1980}</td><td></td></tr>
      *   <tr><td>GRS 1980 Authalic Sphere</td> <td>{@link #SPHERE}</td> <td></td></tr>
      *   <tr><td>WGS 72</td>                   <td>{@link #WGS72}</td>  <td>4984</td></tr>
      *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>4978</td></tr>
@@ -815,6 +838,7 @@ public enum CommonCRS {
      *   <tr><td>European Terrestrial Reference System 1989</td>        <td>{@link #ETRS89}</td> <td>6258</td></tr>
      *   <tr><td>North American Datum 1927</td>                         <td>{@link #NAD27}</td>  <td>6267</td></tr>
      *   <tr><td>North American Datum 1983</td>                         <td>{@link #NAD83}</td>  <td>6269</td></tr>
+     *   <tr><td>Not specified (based on GRS 1980 ellipsoid)</td>       <td>{@link #GRS1980}</td><td>6019</td></tr>
      *   <tr><td>Not specified (based on GRS 1980 Authalic Sphere)</td> <td>{@link #SPHERE}</td> <td>6047</td></tr>
      *   <tr><td>World Geodetic System 1972</td>                        <td>{@link #WGS72}</td>  <td>6322</td></tr>
      *   <tr><td>World Geodetic System 1984</td>                        <td>{@link #WGS84}</td>  <td>6326</td></tr>
