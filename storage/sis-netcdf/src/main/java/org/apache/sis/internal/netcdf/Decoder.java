@@ -96,7 +96,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
 
     /**
      * The geodetic datum, created when first needed. The datum are generally not specified in netCDF files.
-     * To make that clearer, we will build datum with names like "Unknown datum presumably based on WGS 84".
+     * To make that clearer, we will build datum with names like "Unknown datum presumably based on GRS 1980".
      *
      * @see CRSBuilder#build(Decoder)
      */
@@ -332,8 +332,8 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
 
     /**
      * Returns for information purpose only the Coordinate Reference Systems present in this file.
-     * The CRS returned by this method may not be exactly the CRS to be used by variables.
-     * This method is provided for metadata purposes.
+     * The CRS returned by this method may not be exactly the same than the ones used by variables.
+     * For example, axis order is not guaranteed. This method is provided for metadata purposes.
      *
      * @return coordinate reference systems present in this file.
      * @throws IOException if an I/O operation was necessary but failed.
@@ -347,6 +347,11 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
                 addIfNotPresent(list, m.crs);
             }
         }
+        /*
+         * Add the CRS computed by grids only if we did not found any grid mapping information.
+         * This is because grid mapping information override the CRS inferred by Grid from axes.
+         * Consequently if such information is present, grid CRS may be inaccurate.
+         */
         if (list.isEmpty()) {
             for (final Grid grid : getGrids()) {
                 addIfNotPresent(list, grid.getCoordinateReferenceSystem(this));
@@ -357,7 +362,9 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
 
     /**
      * Adds the given coordinate reference system to the given list, provided that an equivalent CRS
-     * (ignoring axes) is not already present.
+     * (ignoring axes) is not already present. We ignore axes because the same CRS may be repeated
+     * with different axis order if values in the localization grid do not vary at the same speed in
+     * the same directions.
      */
     private static void addIfNotPresent(final List<CoordinateReferenceSystem> list, final CoordinateReferenceSystem crs) {
         if (crs != null) {

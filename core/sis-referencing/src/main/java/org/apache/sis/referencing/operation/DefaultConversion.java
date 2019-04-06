@@ -190,7 +190,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * The semi-major and semi-minor parameter values will be set automatically when the
      * {@link #specialize specialize(…)} method will be invoked.</p>
      *
-     * <p>If both the {@code transform} and {@code parameters} arguments are non-null, then the later should describes
+     * <p>If both the {@code transform} and {@code parameters} arguments are non-null, then the later should describe
      * the parameters used for creating the transform. Those parameters will be stored for information purpose and can
      * be given back by the {@link #getParameterValues()} method.</p>
      *

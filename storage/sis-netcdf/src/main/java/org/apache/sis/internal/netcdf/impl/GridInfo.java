@@ -54,18 +54,24 @@ final class GridInfo extends Grid {
      * Mapping from values of the {@code "_CoordinateAxisType"} attribute or axis name to the abbreviation.
      * Keys are lower cases and values are controlled vocabulary documented in {@link Axis#abbreviation}.
      *
+     * <div class="note">"GeoX" and "GeoY" stands for projected coordinates, not geocentric coordinates
+     * (<a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/CoordinateAttributes.html#AxisTypes">source</a>).
+     * </div>
+     *
      * @see #getAxisType(String)
      */
     private static final Map<String,Character> AXIS_TYPES = new HashMap<>(26);
     static {
         addAxisTypes('λ', "longitude", "lon", "long");
         addAxisTypes('φ', "latitude",  "lat");
-        addAxisTypes('H', "pressure", "height", "altitude", "elevation", "elev");
+        addAxisTypes('H', "pressure", "height", "altitude", "elevation", "elev", "geoz");
         addAxisTypes('D', "depth");
+        addAxisTypes('E', "geox");
+        addAxisTypes('N', "geoy");
         addAxisTypes('t', "t", "time", "runtime");
-        addAxisTypes('x', "x", "geox");
-        addAxisTypes('y', "y", "geoy");
-        addAxisTypes('z', "z", "geoz");
+        addAxisTypes('x', "x");
+        addAxisTypes('y', "y");
+        addAxisTypes('z', "z");
     }
 
     /**

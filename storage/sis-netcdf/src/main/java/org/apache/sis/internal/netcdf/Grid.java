@@ -260,8 +260,15 @@ public abstract class Grid extends NamedElement {
     protected abstract boolean containsAllNamedAxes(String[] axisNames);
 
     /**
-     * Returns the coordinate reference system, or {@code null} if none.
-     * This method creates the CRS the first time it is invoked and cache the result.
+     * Returns the coordinate reference system inferred from axes, or {@code null} if none.
+     * This method creates the CRS the first time it is invoked and caches the result,
+     * for allowing {@link Decoder#getReferenceSystemInfo()} to be cheaper.
+     *
+     * <p>This CRS is inferred only from analysis of grid axes. It does not take in account {@link GridMapping} information.
+     * This CRS may be overwritten by another CRS parsed from Well Known Text or other attributes. This overwriting is done
+     * by {@link Variable#getGridGeometry()}. But even if the CRS is going to be overwritten, we still need to create it in
+     * this method because this CRS will be used for adjusting axis order or for completion if grid mapping does not include
+     * information for all dimensions.</p>
      *
      * @param   decoder  the decoder for which CRS are constructed.
      * @return  the CRS for this grid geometry, or {@code null}.

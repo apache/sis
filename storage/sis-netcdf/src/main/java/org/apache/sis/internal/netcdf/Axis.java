@@ -384,7 +384,7 @@ public final class Axis extends NamedElement {
 
     /**
      * Returns {@code true} if the given axis specifies the same direction and unit of measurement than this axis.
-     * This is used for testing is a predefined axis can be used instead than invoking {@link #toISO(CSFactory)}.
+     * This is used for testing if a predefined axis can be used instead than invoking {@link #toISO(CSFactory, int)}.
      */
     final boolean isSameUnitAndDirection(final CoordinateSystemAxis axis) {
         if (!axis.getDirection().equals(direction)) {
@@ -467,9 +467,10 @@ public final class Axis extends NamedElement {
      * Creates an ISO 19111 axis from the information stored in this netCDF axis.
      *
      * @param  factory  the factory to use for creating the coordinate system axis.
+     * @param  order    0 if creating the first axis, 1 if creating the second axis, <i>etc</i>.
      * @return the ISO axis.
      */
-    final CoordinateSystemAxis toISO(final CSFactory factory) throws FactoryException {
+    final CoordinateSystemAxis toISO(final CSFactory factory, final int order) throws FactoryException {
         /*
          * The axis name is stored without namespace, because the variable name in a netCDF file can be anything;
          * this is not controlled vocabulary. However the standard name, if any, is stored with "NetCDF" namespace
@@ -505,28 +506,40 @@ public final class Axis extends NamedElement {
         /*
          * Axis abbreviation, direction and unit of measurement are mandatory. If any of them is null,
          * creation of CoordinateSystemAxis is likely to fail with an InvalidGeodeticParameterException.
-         * We provide default values for the most well-accepted values and leave other values to null.
+         * We provide default values for the most well-identified axes and leave other values to null.
          * Those null values can be accepted if users specify their own factory.
+         *
+         * The default values are SI base units except degrees, which is the usually angular units for netCDF files.
+         * Providing default units is a little bit dangerous, but we can not create CRS otherwise. Note that wrong
+         * defaults become harmless if the CRS is overwritten by GridMapping attributes in Variable.getGridGeometry().
          */
         Unit<?> unit = getUnit();
         if (unit == null) {
             switch (abbreviation) {
-                /*
-                 * TODO: consider moving those default values in a separated class,
-                 * for example a netCDF-specific CSFactory, for allowing users to override.
-                 */
-                case 'λ': case 'φ': unit = Units.DEGREE; break;
+                case 'λ': case 'φ':                                 // Geodetic longitude and latitude.
+                case 'θ': case 'Ω': unit = Units.DEGREE; break;     // Spherical longitude and latitude.
+                case 'r': case 'D':                                 // Depth and radius.
+                case 'H': case 'h':                                 // Gravity-related and ellipsoidal height.
+                case 'E': case 'N': unit = Units.METRE;  break;     // Projected easting and northing.
+                case 't':           unit = Units.SECOND; break;     // Time.
+            }
+        }
+        AxisDirection dir = direction;
+        if (dir == null) {
+            switch (order) {
+                case 0: dir = AxisDirection.COLUMN_POSITIVE; break;
+                case 1: dir = AxisDirection.ROW_POSITIVE; break;
             }
         }
         final String abbr;
         if (abbreviation != 0) {
             abbr = Character.toString(abbreviation).intern();
-        } else if (direction != null && unit != null) {
-            abbr = AxisDirections.suggestAbbreviation(name, direction, unit);
+        } else if (dir != null && unit != null) {
+            abbr = AxisDirections.suggestAbbreviation(name, dir, unit);
         } else {
             abbr = null;
         }
-        return factory.createCoordinateSystemAxis(properties, abbr, direction, unit);
+        return factory.createCoordinateSystemAxis(properties, abbr, dir, unit);
     }
 
     /**

@@ -241,9 +241,9 @@ next:       for (final String name : axisNames) {
             char abbreviation = 0;
             final AxisType type = axis.getAxisType();
             if (type != null) switch (type) {
-                case GeoX:            abbreviation = 'x'; break;
-                case GeoY:            abbreviation = 'y'; break;
-                case GeoZ:            abbreviation = 'z'; break;
+                case GeoX:            abbreviation = netcdfCS.isGeoXY() ? 'E' : 'x'; break;
+                case GeoY:            abbreviation = netcdfCS.isGeoXY() ? 'N' : 'y'; break;
+                case GeoZ:            abbreviation = netcdfCS.isGeoXY() ? 'H' : 'z'; break;
                 case Lon:             abbreviation = 'λ'; break;
                 case Lat:             abbreviation = 'φ'; break;
                 case Pressure:        // Fallthrough: consider as Height

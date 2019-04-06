@@ -61,7 +61,7 @@ import static java.lang.Math.*;
  *
  * @author  John Grange
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see PseudoPlateCarre
  * @see <a href="http://geotiff.maptools.org/proj_list/equirectangular.html">GeoTIFF parameters for Equirectangular</a>
@@ -75,6 +75,13 @@ public final class Equirectangular extends AbstractProvider {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -278288251842178001L;
+
+    /**
+     * Name of this projection in EPSG geodetic dataset.
+     *
+     * @todo Remove with JDK9 after we introduce {@code getInstance()} method.
+     */
+    public static final String NAME = "Equidistant Cylindrical (Spherical)";
 
     /*
      * ACCESS POLICY: Only formal EPSG parameters shall be public.
@@ -182,7 +189,7 @@ public final class Equirectangular extends AbstractProvider {
         // Do not declare the ESRI "Equidistant_Cylindrical" projection name below,
         // for avoiding confusion with EPSG "Equidistant Cylindrical" ellipsoidal projection.
         PARAMETERS = addIdentifierAndLegacy(builder, "1029", "9823")  // 9823 uses deprecated parameter names
-                .addName(                   "Equidistant Cylindrical (Spherical)")
+                .addName(                   NAME)
                 .addName(                   "Plate Carrée")  // Not formally defined by EPSG, but cited in documentation.
                 .addName(Citations.OGC,     "Equirectangular")
                 .addName(Citations.ESRI,    "Plate_Carree")

@@ -58,7 +58,10 @@ import ucar.nc2.constants.CF;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   1.0
+ *
+ * @see <a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/StandardCoordinateTransforms.html">UCAR projections</a>
+ *
+ * @since 1.0
  * @module
  */
 final class GridMapping {
