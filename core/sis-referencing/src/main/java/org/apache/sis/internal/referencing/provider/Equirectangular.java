@@ -49,10 +49,6 @@ import static java.lang.Math.*;
  * because it does not create non-liner kernel. Instead, the projection created by this class is implemented
  * by an affine transform.</p>
  *
- * <p>We do not provide <cite>"Pseudo Plate Carrée"</cite> projection (EPSG:9825) at this time because that
- * pseudo-projection is only the identity transform. Even the semi-major and semi-minor axis lengths are set
- * to 1.</p>
- *
  * <p>This provider is <strong>not</strong> suitable for the <cite>Equidistant Cylindrical</cite> projection
  * (EPSG:1028, <span class="deprecated">EPSG:9842</span>). EPSG defines Equidistant Cylindrical projection as
  * the ellipsoidal case of this projection, which uses a more complicated formula than the affine transform
@@ -67,6 +63,7 @@ import static java.lang.Math.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  *
+ * @see PseudoPlateCarre
  * @see <a href="http://geotiff.maptools.org/proj_list/equirectangular.html">GeoTIFF parameters for Equirectangular</a>
  *
  * @since 0.6
