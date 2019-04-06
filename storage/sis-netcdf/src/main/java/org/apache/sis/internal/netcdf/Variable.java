@@ -1217,4 +1217,9 @@ public abstract class Variable extends NamedElement {
         }
         return buffer.toString();
     }
+
+    /*
+     * Do not override Object.equals(Object) and Object.hashCode(),
+     * because Variables are used as keys by GridMapping.forVariable(…).
+     */
 }

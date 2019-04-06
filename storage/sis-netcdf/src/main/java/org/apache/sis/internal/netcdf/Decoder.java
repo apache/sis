@@ -107,9 +107,12 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * {@code "spatial_ref_sys"} and {@code "GeoTransform"} attributes associated to a variable having the name
      * specified by the {@code "grid_mapping"} attribute.
      *
+     * <p>Keys are either {@link Variable} instance for which we found a grid mapping, or {@link String} instances
+     * if we found some variables with {@code "grid_mapping"} attribute values.</p>
+     *
      * @see GridMapping#forVariable(Variable)
      */
-    final Map<String,GridMapping> gridMapping;
+    final Map<Object,GridMapping> gridMapping;
 
     /**
      * Where to send the warnings.

@@ -100,9 +100,9 @@ final class GridMapping {
      * @param  variable  the variable for which to create a grid geometry.
      */
     static GridMapping forVariable(final Variable variable) {
+        final Map<Object,GridMapping> gridMapping = variable.decoder.gridMapping;
         final String name = variable.getAttributeAsString(CF.GRID_MAPPING);
         if (name != null) {
-            final Map<String,GridMapping> gridMapping = variable.decoder.gridMapping;
             GridMapping gm = gridMapping.get(name);
             if (gm != null) {
                 return gm;
@@ -117,7 +117,18 @@ final class GridMapping {
                 }
             }
         }
-        return parseNonStandard(variable);
+        /*
+         * Found no "grid_mapping" attribute. The block below is not CF-compliant,
+         * but we find some use of this non-standard approach in practice.
+         */
+        GridMapping gm = gridMapping.get(variable);
+        if (gm == null) {
+            gm = parseNonStandard(variable);
+            if (gm != null) {
+                gridMapping.put(variable, gm);
+            }
+        }
+        return gm;
     }
 
     /**
@@ -145,7 +156,7 @@ final class GridMapping {
         MathTransform gridToCRS = null;
         try {
             if (wkt != null) {
-                crs = CRS.fromWKT(wkt);
+                crs = createFromWKT(mapping, wkt);
             }
             if (gtr != null) {
                 message = Resources.Keys.CanNotCreateGridGeometry_3;
@@ -158,7 +169,7 @@ final class GridMapping {
                                   .getString(Errors.Keys.UnexpectedArrayLength_2, 6, c.length)));
                 }
             }
-        } catch (FactoryException | NumberFormatException e) {
+        } catch (ParseException | NumberFormatException e) {
             canNotCreate(mapping, message, e);
         }
         return new GridMapping(crs, gridToCRS, false);
@@ -193,23 +204,32 @@ final class GridMapping {
             if (isEPSG) {
                 crs = CRS.forCode(Constants.EPSG + ':' + isEPSG);
             } else {
-                final WKTFormat f = new WKTFormat(variable.getLocale(), variable.decoder.getTimeZone());
-                f.setConvention(org.apache.sis.io.wkt.Convention.WKT1_COMMON_UNITS);
-                crs = (CoordinateReferenceSystem) f.parseObject(code);
-                final Warnings warnings = f.getWarnings();
-                if (warnings != null) {
-                    final LogRecord record = new LogRecord(Level.WARNING, warnings.toString());
-                    record.setLoggerName(Modules.NETCDF);
-                    record.setSourceClassName(Variable.class.getCanonicalName());
-                    record.setSourceMethodName("getGridGeometry");
-                    variable.decoder.listeners.warning(record);
-                }
+                crs = createFromWKT(variable, code);
             }
         } catch (FactoryException | ParseException | ClassCastException e) {
             canNotCreate(variable, Resources.Keys.CanNotCreateCRS_3, e);
             crs = null;
         }
         return new GridMapping(crs, null, isEPSG);
+    }
+
+    /**
+     * Creates a coordinate reference system by parsing a Well Known Text (WKT) string. The WKT is presumed
+     * to use the GDAL flavor of WKT 1, and warnings are redirected to decoder listeners.
+     */
+    private static CoordinateReferenceSystem createFromWKT(final Variable variable, final String wkt) throws ParseException {
+        final WKTFormat f = new WKTFormat(variable.getLocale(), variable.decoder.getTimeZone());
+        f.setConvention(org.apache.sis.io.wkt.Convention.WKT1_COMMON_UNITS);
+        final CoordinateReferenceSystem crs = (CoordinateReferenceSystem) f.parseObject(wkt);
+        final Warnings warnings = f.getWarnings();
+        if (warnings != null) {
+            final LogRecord record = new LogRecord(Level.WARNING, warnings.toString());
+            record.setLoggerName(Modules.NETCDF);
+            record.setSourceClassName(Variable.class.getCanonicalName());
+            record.setSourceMethodName("getGridGeometry");
+            variable.decoder.listeners.warning(record);
+        }
+        return crs;
     }
 
     /**
