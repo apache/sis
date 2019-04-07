@@ -16,18 +16,19 @@
  */
 package org.apache.sis.coverage.grid;
 
-import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.crs.DefaultCompoundCRS;
-import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.junit.Assert;
+import java.util.Collections;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.referencing.crs.DefaultCompoundCRS;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -40,10 +41,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
-
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
 
@@ -52,6 +49,7 @@ import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
  * Tests the {@link GridDerivation} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -264,16 +262,15 @@ public final strictfp class GridDerivationTest extends TestCase {
     }
 
     /**
-     * Check that wrap-around is well applied when using {@link GridDerivation#slice(DirectPosition)}.
+     * Checks that wraparound is well applied when using {@link GridDerivation#slice(DirectPosition)}.
      */
     @Test
-    public void testSliceWrapAround() {
+    public void testSliceWithWrapAround() {
         final GridGeometry base = new GridGeometry(
                 PixelInCell.CELL_CORNER,
                 new AffineTransform2D(-0.02, 0, 0, 0.1, 55, 172),
-                new Envelope2D(CommonCRS.WGS84.geographic(), 42, 172, 13, 51),
-                GridRoundingMode.NEAREST
-        );
+                new Envelope2D(HardCodedCRS.WGS84_φλ, 42, 172, 13, 51),
+                GridRoundingMode.NEAREST);
 
         final GridGeometry expectedResult = base.derive()
                 .slice(new DirectPosition2D(51, 187))
@@ -283,28 +280,27 @@ public final strictfp class GridDerivationTest extends TestCase {
                 .slice(new DirectPosition2D(51, -173))
                 .build();
 
-        Assert.assertEquals("Slice with wrap-around", expectedResult, fromWrapAround);
-        assertBetween(
-                "Wrapped Y coordinate",
-                base.envelope.getMinimum(1),
-                base.envelope.getMaximum(1),
-                fromWrapAround.envelope.getMedian(1)
-        );
+        assertEquals("Slice with wrap-around", expectedResult, fromWrapAround);
+        assertBetween("Wrapped Y coordinate",
+                      base.envelope.getMinimum(1),
+                      base.envelope.getMaximum(1),
+                      fromWrapAround.envelope.getMedian(1));
     }
 
     /**
-     * Ensure that slicing on a corner point does not fail, but gives back a geometry centered on a pixel corner.
-     * @throws TransformException If we cannot build our test point.
+     * Ensures that slicing on a corner point does not fail, but gives back a grid geometry centered on a pixel corner.
+     *
+     * @throws TransformException if we cannot build our test point.
      */
     @Test
-    public void testSliceCorner() throws TransformException {
+    public void testSliceOnCorner() throws TransformException {
         GridGeometry base = grid(-132, 327, 986, 597, 2, 3);
-
-        // First of all, we'll try by focusing on the last pixel.
+        /*
+         * First of all, we'll try by focusing on the last pixel.
+         */
         final DirectPosition2D gridUpperCorner = new DirectPosition2D(
                 base.extent.getHigh(0),
-                base.extent.getLow(1)
-        );
+                base.extent.getLow(1));
 
         final DirectPosition geoUpperCorner = base.getGridToCRS(PixelInCell.CELL_CENTER)
                 .transform(gridUpperCorner, null);
@@ -315,27 +311,26 @@ public final strictfp class GridDerivationTest extends TestCase {
 
         long[] expectedGridPoint = {(long) gridUpperCorner.x, (long) gridUpperCorner.y};
         assertExtentEquals(expectedGridPoint, expectedGridPoint, slice.extent);
-
-        /* We will now try to focus on a point near the envelope edge. Note that slicing ensures to return a valid grid
-         * for any point INSIDE the envelope, it's non-deterministic about points perfectly aligned on the edge. So,
-         * here we will test a point very near to the envelope edge, but still into it.
+        /*
+         * We will now try to focus on a point near the envelope edge. Note that slicing ensures to return a valid grid
+         * for any point INSIDE the envelope, it's non-determinist about points perfectly aligned on the edge.
+         * So, here we will test a point very near to the envelope edge, but still into it.
          */
         final GeneralEnvelope grid3d = new GeneralEnvelope(3);
         grid3d.setEnvelope(0, 0, 0, 1920, 1080, 4);
 
         final DefaultCompoundCRS crs3d = new DefaultCompoundCRS(
                 Collections.singletonMap("name", "geo3d"),
-                CommonCRS.defaultGeographic(),
-                CommonCRS.Temporal.JULIAN.crs()
-        );
+                HardCodedCRS.WGS84,
+                HardCodedCRS.TIME);
+
         final GeneralEnvelope geo3d = new GeneralEnvelope(crs3d);
         geo3d.setEnvelope(-180, -90, 1865.128, 180, 90, 1865.256);
         base = new GridGeometry(
                 PixelInCell.CELL_CORNER,
                 MathTransforms.linear(Matrices.createTransform(grid3d, geo3d)),
                 geo3d,
-                GridRoundingMode.NEAREST
-        );
+                GridRoundingMode.NEAREST);
 
         final GeneralDirectPosition geo3dUpperCorner = new GeneralDirectPosition(geo3d.getUpperCorner());
         IntStream.range(0, geo3dUpperCorner.getDimension())
@@ -348,7 +343,7 @@ public final strictfp class GridDerivationTest extends TestCase {
         // Build expected grid point focused after slicing. We expect it to be upper corner.
         expectedGridPoint = DoubleStream.of(grid3d.getUpperCorner().getCoordinate())
                 .mapToLong(value -> (long) value)
-                .map(exclusiveValue -> exclusiveValue -1)// Exclusive to inclusive
+                .map(exclusiveValue -> exclusiveValue - 1)        // Exclusive to inclusive.
                 .toArray();
 
         assertExtentEquals(expectedGridPoint, expectedGridPoint, slice.extent);

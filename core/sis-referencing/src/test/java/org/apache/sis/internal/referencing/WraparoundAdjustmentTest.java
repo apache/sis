@@ -58,13 +58,12 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
     private static Envelope adjustWraparoundAxes(Envelope areaOfInterest, Envelope domainOfValidity, MathTransform validToAOI)
             throws TransformException
     {
-        WraparoundAdjustment adj = new WraparoundAdjustment(areaOfInterest);
-        adj.shiftInto(domainOfValidity, validToAOI);
-        return adj.result(MathTransforms.identity(2));
+        WraparoundAdjustment adj = new WraparoundAdjustment(domainOfValidity, validToAOI, MathTransforms.identity(2));
+        return adj.shift(areaOfInterest);
     }
 
     /**
-     * Tests {@link WraparoundAdjustment#shiftInto(Envelope, MathTransform)}
+     * Tests {@link WraparoundAdjustment#shift(Envelope)}
      * with an envelope crossing the anti-meridian.
      *
      * @throws TransformException should never happen since this test does not transform coordinates.
@@ -88,7 +87,7 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
     }
 
     /**
-     * Tests {@link WraparoundAdjustment#shiftInto(Envelope, MathTransform)}
+     * Tests {@link WraparoundAdjustment#shift(Envelope)}
      * with an envelope which is outside the grid valid area.
      *
      * @throws TransformException should never happen since this test does not transform coordinates.
@@ -108,7 +107,7 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
     }
 
     /**
-     * Tests {@link WraparoundAdjustment#shiftInto(Envelope, MathTransform)}
+     * Tests {@link WraparoundAdjustment#shift(Envelope)}
      * with an envelope shifted by 360° before or after the grid valid area.
      *
      * @throws TransformException should never happen since this test does not transform coordinates.
@@ -144,7 +143,7 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
     }
 
     /**
-     * Tests {@link WraparoundAdjustment#shiftInto(Envelope, MathTransform)}
+     * Tests {@link WraparoundAdjustment#shift(Envelope)}
      * with an envelope that cause the method to expand the area of interest. Illustration:
      *
      * {@preformat text
@@ -178,7 +177,7 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
     }
 
     /**
-     * Tests {@link WraparoundAdjustment#shiftInto(Envelope, MathTransform)} with a projected envelope.
+     * Tests {@link WraparoundAdjustment#shift(Envelope)} with a projected envelope.
      *
      * @throws TransformException if an error occurred while projecting a coordinate.
      */

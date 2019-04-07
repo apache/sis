@@ -76,6 +76,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * For dimensionality reduction, see {@link GridGeometry#reduce(int...)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.0
  *
  * @see GridGeometry#derive()
@@ -490,7 +491,7 @@ public class GridDerivation {
                 cornerToCRS = MathTransforms.concatenate(cornerToCRS, baseToAOI.getMathTransform());
             }
             /*
-             * If the envelope dimensions does not encompass all grid dimensions, the envelope is probably non-invertible.
+             * If the envelope dimensions do not encompass all grid dimensions, the transform is probably non-invertible.
              * We need to reduce the number of grid dimensions in the transform for having a one-to-one relationship.
              */
             int dimension = cornerToCRS.getTargetDimensions();
@@ -504,9 +505,8 @@ public class GridDerivation {
             dimension = baseExtent.getDimension();      // Non-null since 'base.requireGridToCRS()' succeed.
             GeneralEnvelope indices = null;
             if (areaOfInterest != null) {
-                indices = new WraparoundAdjustment(areaOfInterest)
-                        .shiftInto(base.envelope, (baseToAOI != null) ? baseToAOI.getMathTransform() : null)
-                        .result(cornerToCRS.inverse());
+                final MathTransform domainToAOI = (baseToAOI != null) ? baseToAOI.getMathTransform() : null;
+                indices = new WraparoundAdjustment(base.envelope, domainToAOI, cornerToCRS.inverse()).shift(areaOfInterest);
                 clipExtent(indices);
             }
             if (indices == null || indices.getDimension() != dimension) {
@@ -721,15 +721,17 @@ public class GridDerivation {
      *       before to invoke this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
      *       For dimensionality reduction, see {@link GridGeometry#reduce(int...)}.</li>
+     *   <li>If the given point is known to be expressed in the same CRS than the grid geometry,
+     *       then the {@linkplain DirectPosition#getCoordinateReferenceSystem() CRS of the point}
+     *       can be left unspecified ({@code null}). It may give a slight performance improvement
+     *       by avoiding the check for coordinate transformation.</li>
      * </ul>
      *
      * @param  slicePoint   the coordinates where to get a slice. If no coordinate reference system is attached to it,
      *                      we consider it's the same as base grid geometry.
      * @return {@code this} for method call chaining.
-     * @throws IncompleteGridGeometryException if the base grid geometry has no extent, no "grid to CRS" transform, or
-     * if its coordinate reference system is unknown while input point one is (in which case we're unable to find a
-     * transform between base CRS and input point CRS). Note that if you're sure that your point is expressed in base
-     * CRS, you can give a point without any CRS, to avoid this check.
+     * @throws IncompleteGridGeometryException if the base grid geometry has no extent, no "grid to CRS" transform,
+     *         or no CRS (unless {@code slicePoint} has no CRS neither, in which case the CRS are assumed the same).
      * @throws IllegalGridGeometryException if an error occurred while converting the point coordinates to grid coordinates.
      * @throws PointOutsideCoverageException if the given point is outside the grid extent.
      */
@@ -741,40 +743,47 @@ public class GridDerivation {
             if (toBase != null) {
                 gridToCRS = MathTransforms.concatenate(toBase, gridToCRS);
             }
-
-            /* We'll try to find a link between base coordinate system and input point one. Note that we allow unknown
-             * CRS on slice point, in which case we consider it to be expressed in base geometry system. However, if the
-             * point CRS is known, but base geometry one is not, too much ambiguity resides, and we'll throw an error.
+            /*
+             * We will try to find a path between grid coordinate reference system (CRS) and given point CRS. Note that we
+             * allow unknown CRS on the slice point, in which case we consider it to be expressed in grid reference system.
+             * However, if the point CRS is specified while the base grid CRS is unknown, we are at risk of ambiguity,
+             * in which case we throw (indirectly) an IncompleteGridGeometryException.
              */
-            final MathTransform baseToSlice;
-            final CoordinateReferenceSystem targetCRS = slicePoint.getCoordinateReferenceSystem();
-            if (targetCRS != null) {
-                final CoordinateReferenceSystem sourceCRS = base.getCoordinateReferenceSystem();
-                baseToSlice = CRS.findOperation(sourceCRS, targetCRS, null)
-                        .getMathTransform();
-                gridToCRS = MathTransforms.concatenate(gridToCRS, baseToSlice);
+            final CoordinateReferenceSystem sliceCRS = slicePoint.getCoordinateReferenceSystem();
+            final MathTransform baseToPOI;
+            if (sliceCRS == null) {
+                baseToPOI = null;
             } else {
-                baseToSlice = null;
+                final CoordinateReferenceSystem gridCRS = base.getCoordinateReferenceSystem();      // May throw exception.
+                baseToPOI = CRS.findOperation(gridCRS, sliceCRS, null).getMathTransform();
+                gridToCRS = MathTransforms.concatenate(gridToCRS, baseToPOI);
             }
-
+            /*
+             * If the point dimensions do not encompass all grid dimensions, the transform is probably non-invertible.
+             * We need to reduce the number of grid dimensions in the transform for having a one-to-one relationship.
+             */
             final int dimension = gridToCRS.getTargetDimensions();
             ArgumentChecks.ensureDimensionMatches("slicePoint", dimension, slicePoint);
             gridToCRS = dropUnusedDimensions(gridToCRS, dimension);
-
-            GeneralEnvelope sliceEnvelope = new GeneralEnvelope(slicePoint, slicePoint);
-            sliceEnvelope = new WraparoundAdjustment(sliceEnvelope)
-                    .shiftInto(base.envelope, baseToSlice)
-                    .result(gridToCRS.inverse());
-            DirectPosition gridPoint = sliceEnvelope.getMedian();
+            /*
+             * Take in account the case where the point could be inside the grid if we apply a ±360° longitude shift.
+             * This is the same adjustment than for `subgrid(Envelope)`, but applied on a DirectPosition. Calculation
+             * is done in units of cells of the GridGeometry to be created by GridDerivation.
+             */
+            DirectPosition gridPoint = new WraparoundAdjustment(base.envelope, baseToPOI, gridToCRS.inverse()).shift(slicePoint);
             if (scaledExtent != null) {
                 scaledExtent = scaledExtent.slice(gridPoint, modifiedDimensions);
             }
-
-            // Rebuild the extent without scaling
+            /*
+             * Above `scaledExtent` is non-null only if a scale or subsampling has been applied before this `slice`
+             * method has been invoked. The `baseExtent` below contains same information, but without subsampling.
+             * The subsampling effect is removed by applying the "scaled to base" transform. Accuracy matter less
+             * here than for `scaledExtent` since the extent to be returned to user is the later.
+             */
             if (toBase != null) {
                 gridPoint = toBase.transform(gridPoint, gridPoint);
             }
-            baseExtent = baseExtent.slice(gridPoint, modifiedDimensions);   // Non-null check by 'base.requireGridToCRS()'.
+            baseExtent = baseExtent.slice(gridPoint, modifiedDimensions);       // Non-null check by 'base.requireGridToCRS()'.
         } catch (FactoryException e) {
             throw new IllegalGridGeometryException(Resources.format(Resources.Keys.CanNotMapToGridDimensions), e);
         } catch (TransformException e) {
