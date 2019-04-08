@@ -39,7 +39,8 @@ import org.junit.BeforeClass;
     org.apache.sis.coverage.CategoryTest.class,
     org.apache.sis.coverage.CategoryListTest.class,
     org.apache.sis.coverage.SampleDimensionTest.class,
-    org.apache.sis.internal.raster.ScaledColorSpaceTest.class
+    org.apache.sis.internal.raster.ScaledColorSpaceTest.class,
+    org.apache.sis.internal.coverage.BufferedGridCoverageTest.class
 })
 public final strictfp class RasterTestSuite extends TestSuite {
     /**

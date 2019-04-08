@@ -125,6 +125,20 @@ public abstract class GridCoverage {
     }
 
     /**
+     * Returns a grid coverage that describes real values or sample values, depending if {@code converted} is {@code true}
+     * or {@code false} respectively.  If there are no converted values defined by sample dimensions, then this method
+     * returns {@code this}.
+     * As a result the {@linkplain RenderedImage} produced by {@linkplain GridCoverage#render(org.apache.sis.coverage.grid.GridExtent) }
+     * will be changed to contain the real or sample values.
+     *
+     * @param  converted  {@code true} for a coverage representing converted values,
+     *                    or {@code false} for a coverage representing sample values.
+     * @return a coverage representing converted or sample values, depending on {@code converted} argument value.
+     *         May be {@code this} but never {@code null}.
+     */
+    public abstract GridCoverage forConvertedValues(boolean converted);
+
+    /**
      * Returns a two-dimensional slice of grid data as a rendered image. The given {@code sliceExtent} argument specifies
      * the coordinates of the slice in all dimensions that are not in the two-dimensional image. For example if this grid
      * coverage has <i>(<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)</i> dimensions and we want to render an image

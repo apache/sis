@@ -26,6 +26,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.ImageRenderer;
+import org.apache.sis.internal.coverage.ConvertedGridCoverage;
 
 
 /**
@@ -95,4 +96,10 @@ final class Raster extends GridCoverage {
             throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotRender_2, label, e), e);
         }
     }
+
+    @Override
+    public GridCoverage forConvertedValues(boolean converted) {
+        return converted ? ConvertedGridCoverage.convert(this) : this;
+    }
+
 }
