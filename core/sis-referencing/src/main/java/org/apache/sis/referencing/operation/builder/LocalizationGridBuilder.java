@@ -515,7 +515,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *                    This is 0 for longitude dimension in a (<var>longitudes</var>, <var>latitudes</var>) grid.
      * @param  direction  the direction to walk through: 0 for columns or 1 for rows.
      *                    The recommended direction is the direction of most stable values, typically 1 (rows) for longitudes.
-     * @param  period     that wraparound range (typically 360° for longitudes).
+     * @param  period     that wraparound range (typically 360° for longitudes). Must be strictly positive.
      * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      *
      * @since 1.0

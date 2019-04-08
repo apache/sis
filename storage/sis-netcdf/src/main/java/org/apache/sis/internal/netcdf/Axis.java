@@ -412,7 +412,7 @@ public final class Axis extends NamedElement {
     @SuppressWarnings("fallthrough")
     private double wraparoundRange() {
         if (isWraparound()) {
-            double period = 360;
+            double period = Longitude.MAX_VALUE - Longitude.MIN_VALUE;
             final Unit<?> unit = getUnit();
             if (unit != null) try {
                 period = unit.getConverterToAny(Units.DEGREE).convert(period);

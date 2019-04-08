@@ -1071,7 +1071,7 @@ search:         for (int j=domain(); --j >= 0;) {
      * @param  direction  the direction to walk through: 0 for columns or 1 for rows (higher dimensions are also possible).
      *                    Value can be from 0 inclusive to {@link #getSourceDimensions()} exclusive.
      *                    The recommended direction is the direction of most stable values, typically 1 (rows) for longitudes.
-     * @param  period     that wraparound range (typically 360° for longitudes).
+     * @param  period     that wraparound range (typically 360° for longitudes). Must be strictly positive.
      * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      */
     final void resolveWraparoundAxis(final int dimension, final int direction, final double period) {
@@ -1083,12 +1083,18 @@ search:         for (int j=domain(); --j >= 0;) {
         }
         final int page = stride * gridSize[direction];          // Index offset for moving to next row or whatever is the next dimension.
         final double threshold = period / 2;
+        double minValue = Double.POSITIVE_INFINITY;
+        double maxValue = Double.NEGATIVE_INFINITY;
+        double minAfter = Double.POSITIVE_INFINITY;
+        double maxAfter = Double.NEGATIVE_INFINITY;
         double previous = coordinates[0];
         for (int x=0; x<stride; x++) {                          // For iterating over dimensions lower than 'dimension'.
             for (int y=0; y<gridLength; y += page) {            // For iterating over dimensions greater than 'dimension'.
                 final int stop = y + page;
                 for (int i = x+y; i<stop; i += stride) {
                     double value = coordinates[i];
+                    if (value < minValue) minValue = value;
+                    if (value > maxValue) maxValue = value;
                     double delta = value - previous;
                     if (Math.abs(delta) > threshold) {
                         delta = Math.rint(delta / period) * period;
@@ -1096,6 +1102,8 @@ search:         for (int j=domain(); --j >= 0;) {
                         coordinates[i] = value;
                     }
                     previous = value;
+                    if (value < minAfter) minAfter = value;
+                    if (value > maxAfter) maxAfter = value;
                 }
                 /*
                  * For the next scan, use as a reference the first value of this scan. If our scan direction is 0
@@ -1113,6 +1121,32 @@ search:         for (int j=domain(); --j >= 0;) {
                  * still small enough for taking that nearby value as a reference.
                  */
                 previous = coordinates[x];
+            }
+        }
+        /*
+         * If some coordinates have been shifted, the range may become unreasonable. For example we may get a
+         * range of [-440 … -160]° of longitude. Shift again in the direction that provide the best intersection
+         * with original range.
+         */
+        final double Δmin = minValue - minAfter;
+        final double Δmax = maxValue - maxAfter;
+        if (Δmin != 0 || Δmax != 0) {
+            double shift = 0;
+            double intersection = 0;
+            final double minCycles = Math.floor(Math.min(Δmin, Δmax) / period);
+            final double maxCycles = Math.ceil (Math.max(Δmin, Δmax) / period);
+            for (double cycles = minCycles; cycles <= maxCycles; cycles++) {
+                final double s = cycles * period;
+                final double p = Math.min(maxValue, maxAfter + s) - Math.max(minValue, minAfter + s);
+                if (p > intersection) {
+                    intersection = p;
+                    shift = s;
+                }
+            }
+            if (shift != 0) {
+                for (int i=0; i<coordinates.length; i++) {
+                    coordinates[i] += shift;
+                }
             }
         }
     }

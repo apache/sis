@@ -309,7 +309,7 @@ public final class WraparoundAdjustment {
                     final double  lowerToValidStart = ((validStart - lower) / period) - lowerCycles;    // In number of periods.
                     final double  upperToValidEnd   = ((validEnd   - upper) / period) - upperCycles;
                     final boolean lowerIsBefore     = (lowerToValidStart > 0);
-                    final boolean upperIsAfter      = (upperToValidEnd < 0);
+                    final boolean upperIsAfter      = (upperToValidEnd   < 0);
                     if (lowerIsBefore != upperIsAfter) {
                         final double upperToValidStart = ((validStart - upper) / period) - upperCycles;
                         final double lowerToValidEnd   = ((validEnd   - lower) / period) - lowerCycles;
