@@ -459,6 +459,10 @@ public class GridDerivation {
      *       before to invoke this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
      *       For dimensionality reduction, see {@link GridGeometry#reduce(int...)}.</li>
+     *   <li>If the given envelope is known to be expressed in the same CRS than the grid geometry,
+     *       then the {@linkplain Envelope#getCoordinateReferenceSystem() CRS of the envelope}
+     *       can be left unspecified ({@code null}). It may give a slight performance improvement
+     *       by avoiding the check for coordinate transformation.</li>
      * </ul>
      *
      * @param  areaOfInterest  the desired spatiotemporal region in any CRS (transformations will be applied as needed),
@@ -469,7 +473,8 @@ public class GridDerivation {
      *                         (zero or missing values mean no sub-sampling, extraneous values are ignored).
      * @return {@code this} for method call chaining.
      * @throws DisjointExtentException if the given area of interest does not intersect the grid extent.
-     * @throws IncompleteGridGeometryException if the base grid geometry has no extent or no "grid to CRS" transform.
+     * @throws IncompleteGridGeometryException if the base grid geometry has no extent, no "grid to CRS" transform,
+     *         or no CRS (unless {@code areaOfInterest} has no CRS neither, in which case the CRS are assumed the same).
      * @throws IllegalGridGeometryException if an error occurred while converting the envelope coordinates to grid coordinates.
      * @throws IllegalStateException if a {@link #subgrid(GridGeometry) subgrid(…)} or {@link #slice(DirectPosition) slice(…)}
      *         method has already been invoked.
@@ -486,9 +491,22 @@ public class GridDerivation {
              * to the 'gridToCRS' transform.  We should not transform the envelope here - only concatenate the
              * transforms - because transforming envelopes twice would add errors.
              */
-            final CoordinateOperation baseToAOI = Envelopes.findOperation(base.envelope, areaOfInterest);
-            if (baseToAOI != null) {
-                cornerToCRS = MathTransforms.concatenate(cornerToCRS, baseToAOI.getMathTransform());
+            MathTransform baseToAOI = null;
+            if (areaOfInterest != null) {
+                final CoordinateReferenceSystem crs = areaOfInterest.getCoordinateReferenceSystem();
+                if (crs != null) {
+                    CoordinateOperation op = Envelopes.findOperation(base.envelope, areaOfInterest);
+                    if (op == null) {
+                        /*
+                         * If above call to `Envelopes.findOperation(…)` failed, then `base.envelope` CRS is probably null.
+                         * Try with a call to `getCoordinateReferenceSystem()` for throwing IncompleteGridGeometryException,
+                         * unless the user overrode that method in which case we will use its value.
+                         */
+                        op = CRS.findOperation(base.getCoordinateReferenceSystem(), crs, null);
+                    }
+                    baseToAOI = op.getMathTransform();
+                    cornerToCRS = MathTransforms.concatenate(cornerToCRS, baseToAOI);
+                }
             }
             /*
              * If the envelope dimensions do not encompass all grid dimensions, the transform is probably non-invertible.
@@ -505,8 +523,7 @@ public class GridDerivation {
             dimension = baseExtent.getDimension();      // Non-null since 'base.requireGridToCRS()' succeed.
             GeneralEnvelope indices = null;
             if (areaOfInterest != null) {
-                final MathTransform domainToAOI = (baseToAOI != null) ? baseToAOI.getMathTransform() : null;
-                indices = new WraparoundAdjustment(base.envelope, domainToAOI, cornerToCRS.inverse()).shift(areaOfInterest);
+                indices = new WraparoundAdjustment(base.envelope, baseToAOI, cornerToCRS.inverse()).shift(areaOfInterest);
                 clipExtent(indices);
             }
             if (indices == null || indices.getDimension() != dimension) {
