@@ -19,77 +19,99 @@ package org.apache.sis.internal.coverage;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.util.Arrays;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.test.TestCase;
+import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.MathTransform1D;
 import org.junit.Assert;
 import org.junit.Test;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransform1D;
+
 
 /**
  * Tests the {@link BufferedGridCoverage} implementation.
- * 
- * @author Johann Sorel (Geomatys)
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
+ * @module
  */
 public class BufferedGridCoverageTest extends TestCase {
-
+    /**
+     * Tests with a two-dimensional coverage.
+     */
     @Test
     public void testCoverage2D() {
-
-        //create coverage
-        final GridExtent extent = new GridExtent(null, new long[]{0,0}, new long[]{1,1}, true);
-        final MathTransform gridToCrs = new AffineTransform2D(1, 0, 0, 1, 0, 0);
-        final CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
-        final GridGeometry gridgeom = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCrs, crs);
+        /*
+         * Create coverage of 2×2 pixels with an identity "grid to CRS" transform.
+         * The range of sample values will be [-10 … +10]°C.
+         */
+        final GridGeometry grid = new GridGeometry(new GridExtent(2, 2),
+                PixelInCell.CELL_CENTER, MathTransforms.identity(2), HardCodedCRS.WGS84);
 
         final MathTransform1D toUnits = (MathTransform1D) MathTransforms.linear(0.5, 100);
-        final SampleDimension sd = new SampleDimension.Builder().setName("t").addQuantitative("data", NumberRange.create(-10, true, 10, true), toUnits, Units.CELSIUS).build();
-
-        final BufferedGridCoverage coverage = new BufferedGridCoverage(gridgeom, Arrays.asList(sd), DataBuffer.TYPE_SHORT);
-
-        BufferedImage img = (BufferedImage) coverage.render(null);
-        img.getRaster().setSample(0, 0, 0, 0);
-        img.getRaster().setSample(1, 0, 0, 5);
-        img.getRaster().setSample(0, 1, 0, -5);
-        img.getRaster().setSample(1, 1, 0, -10);
-
-        //test not converted values
-        RenderedImage notConverted = (BufferedImage) coverage.render(null);
-        testSamples(notConverted, new double[][]{{0,5},{-5,-10}});
-
-        //test converted values
-        org.apache.sis.coverage.grid.GridCoverage convertedCoverage = coverage.forConvertedValues(true);
-        BufferedImage converted = (BufferedImage) convertedCoverage.render(null);
-        testSamples(converted, new double[][]{{100,102.5},{97.5,95}});
-
-        //test writing in geophysic
-        converted.getRaster().setSample(0, 0, 0, 70); // 70 = x * 0.5 + 100 // (70-100)/0.5 = x // x = -60
-        converted.getRaster().setSample(1, 0, 0, 2.5);
-        converted.getRaster().setSample(0, 1, 0, -8);
-        converted.getRaster().setSample(1, 1, 0, -90);
-        testSamples(notConverted, new double[][]{{-60,-195},{-216,-380}});
-
+        final SampleDimension sd = new SampleDimension.Builder().setName("t")
+                .addQuantitative("data", NumberRange.create(-10, true, 10, true), toUnits, Units.CELSIUS)
+                .build();
+        /*
+         * Create the grid coverage, gets its image and set values directly as short integers.
+         */
+        GridCoverage   coverage = new BufferedGridCoverage(grid, Arrays.asList(sd), DataBuffer.TYPE_SHORT);
+        WritableRaster raster = ((BufferedImage) coverage.render(null)).getRaster();
+        raster.setSample(0, 0, 0,   0);
+        raster.setSample(1, 0, 0,   5);
+        raster.setSample(0, 1, 0,  -5);
+        raster.setSample(1, 1, 0, -10);
+        /*
+         * Verify packed values.
+         */
+        assertSamplesEqual(coverage, new double[][] {
+            { 0,   5},
+            {-5, -10}
+        });
+        /*
+         * Verify converted values.
+         */
+        coverage = coverage.forConvertedValues(true);
+        assertSamplesEqual(coverage, new double[][] {
+            {100.0, 102.5},
+            { 97.5,  95.0}
+        });
+        /*
+         * Test writing converted values and verify the result in the packed coverage.
+         * For example for the sample value at (0,0), we have (x is the packed value):
+         *
+         *   70 = x * 0.5 + 100   →   (70-100)/0.5 = x   →   x = -60
+         */
+        raster = ((BufferedImage) coverage.render(null)).getRaster();
+        raster.setSample(0, 0, 0,  70);
+        raster.setSample(1, 0, 0,   2.5);
+        raster.setSample(0, 1, 0,  -8);
+        raster.setSample(1, 1, 0, -90);
+        assertSamplesEqual(coverage.forConvertedValues(false), new double[][] {
+            { -60, -195},
+            {-216, -380}
+        });
     }
 
-    private void testSamples(RenderedImage image, double[][] values) {
-        final Raster raster = image.getData();
-        for (int y=0;y<values.length;y++) {
-            for (int x=0;x<values[0].length;x++) {
+    /**
+     * assert that the sample values in the given coverage are equal to the expected values.
+     */
+    private static void assertSamplesEqual(final GridCoverage coverage, final double[][] expected) {
+        final Raster raster = coverage.render(null).getData();
+        for (int y=0; y<expected.length; y++) {
+            for (int x=0; x<expected[y].length; x++) {
                 double value = raster.getSampleDouble(x, y, 0);
-                Assert.assertEquals(values[y][x], value, 0.0);
+                Assert.assertEquals(expected[y][x], value, STRICT);
             }
         }
     }
-
 }

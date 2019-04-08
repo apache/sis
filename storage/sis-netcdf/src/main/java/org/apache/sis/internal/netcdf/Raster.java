@@ -22,11 +22,10 @@ import java.awt.image.RenderedImage;
 import java.awt.image.RasterFormatException;
 import org.opengis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.ImageRenderer;
-import org.apache.sis.internal.coverage.ConvertedGridCoverage;
+import org.apache.sis.internal.coverage.BufferedGridCoverage;
 
 
 /**
@@ -34,22 +33,18 @@ import org.apache.sis.internal.coverage.ConvertedGridCoverage;
  * The rendered image is usually mono-banded, but may be multi-banded in some special cases
  * handled by {@link RasterResource#read(GridGeometry, int...)}.
  *
+ * <p>The inherited {@link #data} buffer contains the sample values, potentially multi-banded. If there is more than
+ * one band to put in the rendered image, then each band is a {@linkplain DataBuffer#getNumBanks() separated bank}
+ * in the buffer, even if two banks are actually wrapping the same arrays with different offsets.
+ * The later case is better represented by {@link java.awt.image.PixelInterleavedSampleModel},
+ * but it is {@link ImageRenderer} responsibility to perform this substitution as an optimization.</p>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-final class Raster extends GridCoverage {
-    /**
-     * The sample values, potentially multi-banded. If there is more than one band to put in the rendered image,
-     * then each band is a {@linkplain DataBuffer#getNumBanks() separated bank} in the buffer, even if two banks
-     * are actually wrapping the same arrays with different offsets.
-     *
-     * <div class="note">The later case is better represented by {@link java.awt.image.PixelInterleavedSampleModel},
-     * but it is {@link ImageRenderer} responsibility to perform this substitution as an optimization.</div>
-     */
-    private final DataBuffer data;
-
+final class Raster extends BufferedGridCoverage {
     /**
      * Increment to apply on index for moving to the next pixel in the same band.
      */
@@ -72,8 +67,7 @@ final class Raster extends GridCoverage {
     Raster(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data,
             final int pixelStride, final int[] bandOffsets, final String label)
     {
-        super(domain, range);
-        this.data        = data;
+        super(domain, range, data);
         this.label       = label;
         this.pixelStride = pixelStride;
         this.bandOffsets = bandOffsets;
@@ -96,10 +90,4 @@ final class Raster extends GridCoverage {
             throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotRender_2, label, e), e);
         }
     }
-
-    @Override
-    public GridCoverage forConvertedValues(boolean converted) {
-        return converted ? ConvertedGridCoverage.convert(this) : this;
-    }
-
 }

@@ -44,6 +44,7 @@ import org.opengis.coverage.CannotEvaluateException;
  * is that of the grid value whose location is nearest the point.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -125,16 +126,27 @@ public abstract class GridCoverage {
     }
 
     /**
-     * Returns a grid coverage that describes real values or sample values, depending if {@code converted} is {@code true}
-     * or {@code false} respectively.  If there are no converted values defined by sample dimensions, then this method
-     * returns {@code this}.
-     * As a result the {@linkplain RenderedImage} produced by {@linkplain GridCoverage#render(org.apache.sis.coverage.grid.GridExtent) }
-     * will be changed to contain the real or sample values.
+     * Returns a grid coverage that contains real values or sample values, depending if {@code converted} is {@code true}
+     * or {@code false} respectively. If there is no {@linkplain SampleDimension#getTransferFunction() transfer function}
+     * defined by the {@linkplain #getSampleDimensions() sample dimensions}, then this method returns {@code this}.
+     * In all cases, the returned grid coverage <var>r</var> has the following properties:
      *
-     * @param  converted  {@code true} for a coverage representing converted values,
-     *                    or {@code false} for a coverage representing sample values.
-     * @return a coverage representing converted or sample values, depending on {@code converted} argument value.
+     * <ul>
+     *   <li>The list returned by {@code r.getSampleDimensions()} is equal to the list returned by
+     *       <code>this.{@linkplain #getSampleDimensions()}</code> with each element <var>e</var> replaced by
+     *       <code>e.{@linkplain SampleDimension#forConvertedValues(boolean) forConvertedValues}(converted)</code>.</li>
+     *   <li>The {@link RenderedImage} produced by {@code r.render(extent)} is equivalent to the image returned by
+     *       <code>this.{@linkplain #render(GridExtent) render}(extent)</code> with all sample values converted
+     *       using the transfer function if {@code converted} is {@code true}, or the inverse of transfer function
+     *       if {@code converted} is {@code false}.</li>
+     * </ul>
+     *
+     * @param  converted  {@code true} for a coverage containing converted values,
+     *                    or {@code false} for a coverage containing packed values.
+     * @return a coverage containing converted or packed values, depending on {@code converted} argument value.
      *         May be {@code this} but never {@code null}.
+     *
+     * @see SampleDimension#forConvertedValues(boolean)
      */
     public abstract GridCoverage forConvertedValues(boolean converted);
 

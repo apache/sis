@@ -403,10 +403,12 @@ public class SampleDimension implements Serializable {
      * or {@code false} respectively.  If there is no {@linkplain #getTransferFunction() transfer function}, then this method
      * returns {@code this}.
      *
-     * @param  converted  {@code true} for a sample dimension representing converted values,
-     *                    or {@code false} for a sample dimension representing sample values.
-     * @return a sample dimension representing converted or sample values, depending on {@code converted} argument value.
+     * @param  converted  {@code true} for a sample dimension describing converted values,
+     *                    or {@code false} for a sample dimension describing packed values.
+     * @return a sample dimension describing converted or packed values, depending on {@code converted} argument value.
      *         May be {@code this} but never {@code null}.
+     *
+     * @see org.apache.sis.coverage.grid.GridCoverage#forConvertedValues(boolean)
      */
     public SampleDimension forConvertedValues(final boolean converted) {
         // Transfer function shall never be null if 'converse' is non-null.
