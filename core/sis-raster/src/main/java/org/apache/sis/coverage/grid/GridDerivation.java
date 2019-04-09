@@ -412,6 +412,14 @@ public class GridDerivation {
             if (baseExtent != base.extent && baseExtent.equals(gridOfInterest.extent)) {
                 baseExtent = gridOfInterest.extent;                                                 // Share common instance.
             }
+            /*
+             * The subsampling will be determined by scale factors of the transform from the given desired grid geometry to
+             * the current (base) grid geometry. For example a scale of 10 means that every time we advance by one pixel in
+             * `gridOfInterest`, we will advance by 10 pixels in `base`.  We compute the scales (indirectly, because of the
+             * way transforms are concatenated) as the ratio between `gridOfInterest` resolution and `base` resolution,
+             * computed in the center of the area of interest (may be different than base grid center). In the following
+             * call to `resolution(…)`, the domain must be the source of the `mapCenters` transform.
+             */
             scales = GridGeometry.resolution(mapCenters, domain);
         }
         return this;

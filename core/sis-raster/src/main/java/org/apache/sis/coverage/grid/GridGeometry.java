@@ -762,6 +762,10 @@ public class GridGeometry implements Serializable {
      *
      * <p>Note that for this computation, it does not matter if {@code gridToCRS} is the user-specified
      * transform or the {@code this.gridToCRS} field value; both should produce equivalent results.</p>
+     *
+     * @param  gridToCRS  a transform for which to compute the resolution, or {@code null} if none.
+     * @param  domain     the domain for which to get a resolution, or {@code null} if none.
+     *                    If non-null, must be the source of {@code gridToCRS}.
      */
     static double[] resolution(final MathTransform gridToCRS, final GridExtent domain) {
         final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
@@ -778,6 +782,7 @@ public class GridGeometry implements Serializable {
     /**
      * Computes the resolutions from the given matrix. This is the magnitude of each row vector.
      *
+     * @param  gridToCRS    Jacobian matrix or affine transform for which to compute the resolution.
      * @param  numToIgnore  number of rows and columns to ignore at the end of the matrix.
      *         This is 0 if the matrix is a derivative (i.e. we ignore nothing), or 1 if the matrix
      *         is an affine transform (i.e. we ignore the translation column and the [0 0 … 1] row).
