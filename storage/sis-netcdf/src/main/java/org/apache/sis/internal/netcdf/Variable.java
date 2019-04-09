@@ -168,9 +168,13 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns the standard name if available, or the long name other, or the ordinary name otherwise.
-     * May be used as the label of a {@link Raster} as a whole (including all bands).
+     * May be used as the {@link RasterResource} label, or the label of a {@link Raster} as a whole
+     * (including all bands). Standard name is preferred to variable name when controlled vocabulary
+     * is desired, for example for more stable identifier or more consistency between similar data.
      *
      * @return the standard name, or a fallback if there is no standard name.
+     *
+     * @see RasterResource#identifier
      */
     public final String getStandardName() {
         String name = getAttributeAsString(CF.STANDARD_NAME);

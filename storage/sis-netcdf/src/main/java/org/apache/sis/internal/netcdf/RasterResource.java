@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Map;
 import java.util.List;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -87,11 +88,16 @@ public final class RasterResource extends AbstractGridResource implements Resour
     };
 
     /**
-     * The identifier of this grid resource. This is the variable name.
+     * The identifier of this grid resource. This is {@link Variable#getStandardName()}. We prefer netCDF standard name instead
+     * than variable name because the former is controlled vocabulary. The use of controlled vocabulary for identifiers increases
+     * the chances of stability or consistency between similar products.
+     *
+     * <p>The value set by constructor may be updated by {@link #resolveNameCollision(RasterResource, Decoder)},
+     * but should not be modified after that point.</p>
      *
      * @see #getIdentifier()
      */
-    private final GenericName identifier;
+    private GenericName identifier;
 
     /**
      * The grid geometry (size, CRS…) of the {@linkplain #data} cube.
@@ -187,8 +193,9 @@ public final class RasterResource extends AbstractGridResource implements Resour
     public static List<Resource> create(final Decoder decoder, final Object lock) throws IOException, DataStoreException {
         assert Thread.holdsLock(lock);
         final Variable[]     variables = decoder.getVariables().clone();        // Needs a clone because may be modified.
-        final List<Variable> siblings  = new ArrayList<>(4);
-        final List<Resource> resources = new ArrayList<>();
+        final List<Variable> siblings  = new ArrayList<>(4);                    // Usually has only 1 element, sometime 2.
+        final List<Resource> resources = new ArrayList<>(variables.length);     // The raster resources to be returned.
+        final Map<GenericName,RasterResource> firstOfName = new HashMap<>();    // For detecting name collisions.
         for (int i=0; i<variables.length; i++) {
             final Variable variable = variables[i];
             if (variable == null || variable.getRole() != VariableRole.COVERAGE) {
@@ -290,10 +297,37 @@ public final class RasterResource extends AbstractGridResource implements Resour
                 }
                 numBands = siblings.size();
             }
-            resources.add(new RasterResource(decoder, name.trim(), grid, siblings, numBands, bandDimension, lock));
+            final RasterResource r = new RasterResource(decoder, name.trim(), grid, siblings, numBands, bandDimension, lock);
+            r.resolveNameCollision(firstOfName.putIfAbsent(r.identifier, r), decoder);
+            resources.add(r);
             siblings.clear();
         }
         return resources;
+    }
+
+    /**
+     * If the given resource is non-null, modifies the name of this resource for avoiding name collision.
+     * The {@code other} resource shall be non-null when the caller detected that there is a name collision
+     * with that resource.
+     *
+     * @param  other  the other resource for which there is a name collision, or {@code null} if no collision.
+     */
+    private void resolveNameCollision(final RasterResource other, final Decoder decoder) {
+        if (other != null) {
+            if (identifier.equals(other.identifier)) {
+                other.resolveNameCollision(decoder);
+            }
+            resolveNameCollision(decoder);
+        }
+    }
+
+    /**
+     * Invoked when the name of this resource needs to be changed because it collides with the name of another resource.
+     * This method appends the variable name, which should be unique in each netCDF file.
+     */
+    private void resolveNameCollision(final Decoder decoder) {
+        String name = identifier + " (" + data[0].getName() + ')';
+        identifier = decoder.nameFactory.createLocalName(decoder.namespace, name);
     }
 
     /**
@@ -571,7 +605,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
             throw new DataStoreContentException(Errors.getResources(getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
         return new Raster(domain, UnmodifiableArrayList.wrap(bands), imageBuffer,
-                rangeIndices.getPixelStride(), bandOffsets, first.getStandardName());
+                rangeIndices.getPixelStride(), bandOffsets, String.valueOf(identifier));
     }
 
     /**
