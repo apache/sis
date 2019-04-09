@@ -63,7 +63,7 @@ import static java.lang.Math.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
- * @see PseudoPlateCarre
+ * @see PseudoPlateCarree
  * @see <a href="http://geotiff.maptools.org/proj_list/equirectangular.html">GeoTIFF parameters for Equirectangular</a>
  *
  * @since 0.6

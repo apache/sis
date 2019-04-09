@@ -59,7 +59,7 @@ final class ConvertedGridCoverage extends GridCoverage {
      * @param  packed  the coverage containing packed values to convert.
      * @return the converted coverage. May be {@code coverage}.
      */
-    public static GridCoverage convert(final GridCoverage packed) {
+    public static GridCoverage create(final GridCoverage packed) {
         final List<SampleDimension> sds = packed.getSampleDimensions();
         final List<SampleDimension> cfs = new ArrayList<>(sds.size());
         for (SampleDimension sd : sds) {
@@ -136,14 +136,14 @@ final class ConvertedGridCoverage extends GridCoverage {
         }
         final SampleModel baseSm = raster.getSampleModel();
         final DataBuffer dataBuffer = raster.getDataBuffer();
-        final ConvertedSampleModel convSm = new ConvertedSampleModel(baseSm, toConverted, toPacked);
+        final SampleConverter convSm = new SampleConverter(baseSm, toConverted, toPacked);
         final WritableRaster convRaster = WritableRaster.createWritableRaster(convSm, dataBuffer, null);
         /*
          * The default color models have a lot of constraints. Use a custom model with relaxed rules instead.
          * We arbitrarily use the range of values of the first band only; a future Apache SIS version will
          * need to perform another calculation.
          */
-        final ColorModel cm = new ConvertedColorModel(getSampleDimensions().get(0).getSampleRange().get());
+        final ColorModel cm = new ScaledColorModel(getSampleDimensions().get(0).getSampleRange().get());
         return new BufferedImage(cm, convRaster, false, null);
     }
 
@@ -163,14 +163,14 @@ final class ConvertedGridCoverage extends GridCoverage {
      * also converts the sample values. This may be an issue for optimized pipelines accessing {@link DataBuffer}
      * directly. This class may be replaced by another mechanism (creating new tiles) in a future SIS version.</p>
      */
-    private static final class ConvertedSampleModel extends SampleModel {
+    private static final class SampleConverter extends SampleModel {
 
         private final SampleModel base;
         private final int baseDataType;
         private final MathTransform1D[] toConverted;
         private final MathTransform1D[] toPacked;
 
-        ConvertedSampleModel(SampleModel base, MathTransform1D[] toConverted, MathTransform1D[] toPacked) {
+        SampleConverter(SampleModel base, MathTransform1D[] toConverted, MathTransform1D[] toPacked) {
             super(DataBuffer.TYPE_FLOAT, base.getWidth(), base.getHeight(), base.getNumBands());
             this.base         = base;
             this.baseDataType = base.getDataType();
@@ -342,7 +342,7 @@ final class ConvertedGridCoverage extends GridCoverage {
         @Override
         public SampleModel createCompatibleSampleModel(int w, int h) {
             final SampleModel cp = base.createCompatibleSampleModel(w, h);
-            return new ConvertedSampleModel(cp, toConverted, toPacked);
+            return new SampleConverter(cp, toConverted, toPacked);
         }
 
         @Override
@@ -354,7 +354,7 @@ final class ConvertedGridCoverage extends GridCoverage {
                 trs[i] = toConverted[bands[i]];
                 ivtrs[i] = toPacked[bands[i]];
             }
-            return new ConvertedSampleModel(cp, trs, ivtrs);
+            return new SampleConverter(cp, trs, ivtrs);
         }
 
         @Override
@@ -376,15 +376,17 @@ final class ConvertedGridCoverage extends GridCoverage {
     }
 
     /**
-     * Color model for working with {@link ConvertedSampleModel}.
+     * Color model for working with {@link SampleConverter}.
      * Defined as a workaround for the validations normally performed by {@link ColorModel}.
      *
      * <p><b>WARNING: this is a temporary class.</b>
      * This color model disable validations normally performed by {@link ColorModel}, in order to enable the use
-     * of {@link ConvertedSampleModel}. This class may be replaced by another mechanism (creating new tiles) in
+     * of {@link SampleConverter}. This class may be replaced by another mechanism (creating new tiles) in
      * a future SIS version.</p>
+     *
+     * @see org.apache.sis.internal.raster.ScaledColorSpace
      */
-    private static final class ConvertedColorModel extends ColorModel {
+    private static final class ScaledColorModel extends ColorModel {
 
         private final float scale;
         private final float offset;
@@ -392,7 +394,7 @@ final class ConvertedGridCoverage extends GridCoverage {
         /**
          * Creates a new color model for the given of converted values.
          */
-        ConvertedColorModel(final NumberRange<?> range){
+        ScaledColorModel(final NumberRange<?> range){
             super(Float.SIZE);
             final double scale  = (255.0) / (range.getMaxDouble() - range.getMinDouble());
             this.scale  = (float) scale;
@@ -406,7 +408,7 @@ final class ConvertedGridCoverage extends GridCoverage {
 
         @Override
         public boolean isCompatibleSampleModel(SampleModel sm) {
-            return sm instanceof ConvertedSampleModel;
+            return sm instanceof SampleConverter;
         }
 
         @Override

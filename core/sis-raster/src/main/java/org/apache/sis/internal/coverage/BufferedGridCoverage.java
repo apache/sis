@@ -159,6 +159,6 @@ public class BufferedGridCoverage extends GridCoverage {
      * @return the converted coverage. May be {@code coverage}.
      */
     public static GridCoverage convert(final GridCoverage packed) {
-        return ConvertedGridCoverage.convert(packed);
+        return ConvertedGridCoverage.create(packed);
     }
 }
