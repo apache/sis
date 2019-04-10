@@ -111,9 +111,13 @@ public final class RasterFactory extends Static {
                     return WritableRaster.createInterleavedRaster(buffer, width, height, scanlineStride, pixelStride, bandOffsets, location);
                 }
                 case DataBuffer.TYPE_INT: {
-                    if (bandOffsets.length == 1) {
-                        // From JDK javadoc: "To create a 1-band Raster of type TYPE_INT, use createPackedRaster()".
-                        return WritableRaster.createPackedRaster(buffer, width, height, Integer.SIZE, location);
+                    if (bandOffsets.length == 1 && pixelStride == 1) {
+                        /*
+                         * From JDK javadoc: "To create a 1-band Raster of type TYPE_INT, use createPackedRaster()".
+                         * However this would require the creation of a PackedColorModel subclass. For SIS purposes,
+                         * it is easier to create a banded sample model.
+                         */
+                        return WritableRaster.createBandedRaster(buffer, width, width, scanlineStride, new int[1], bandOffsets, location);
                     }
                     // else fallthrough.
                 }

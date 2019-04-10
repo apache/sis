@@ -21,19 +21,19 @@ import org.apache.sis.internal.util.Strings;
 
 
 /**
- * Color space for images storing pixels as real numbers. The color model can have an
+ * Color space for images storing pixels as real numbers. The color space can have an
  * arbitrary number of bands, but in current implementation only one band is used.
  * Current implementation create a gray scale.
  *
- * <p>The use of this color model is very slow.
- * It should be used only when no standard color model can be used.</p>
+ * <p>The use of this color space is very slow.
+ * It should be used only when no standard color space can be used.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public final class ScaledColorSpace extends ColorSpace {
+final class ScaledColorSpace extends ColorSpace {
     /**
      * For cross-version compatibility.
      */
@@ -72,7 +72,7 @@ public final class ScaledColorSpace extends ColorSpace {
      * @param  minimum        the minimal sample value expected.
      * @param  maximum        the maximal sample value expected.
      */
-    public ScaledColorSpace(final int numComponents, final int visibleBand, final double minimum, final double maximum) {
+    ScaledColorSpace(final int numComponents, final int visibleBand, final double minimum, final double maximum) {
         super(TYPE_GRAY, numComponents);
         this.visibleBand = visibleBand;
         final double scale  = (MAX_VALUE - MIN_VALUE) / (maximum - minimum);
