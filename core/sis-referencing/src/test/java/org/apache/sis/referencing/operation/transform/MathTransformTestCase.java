@@ -77,7 +77,7 @@ import org.opengis.test.CalculationType;
  */
 public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     /**
-     * The number of ordinates to use for stressing the math transform. We use a number that
+     * The number of coordinates to use for stressing the math transform. We use a number that
      * encompass at least 2 time the default buffer size in order to test the code that use
      * the buffer. We add an arbitrary number just for making the transform job harder.
      */
@@ -85,7 +85,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
 
     /**
      * The dimension of longitude, or {@code null} if none. If non-null, then the comparison of
-     * ordinate values along that dimension will ignore 360° offsets.
+     * coordinate values along that dimension will ignore 360° offsets.
      *
      * <p>The first array element is the dimension during forward transforms, and the second
      * array element is the dimension during inverse transforms (can be omitted if the later
@@ -105,7 +105,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
 
     /**
      * The tolerance level for height above the ellipsoid. This tolerance is usually higher
-     * than the {@linkplain #tolerance tolerance} level for horizontal ordinate values.
+     * than the {@linkplain #tolerance tolerance} level for horizontal coordinate values.
      */
     protected double zTolerance;
 
@@ -158,8 +158,8 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
      * The SIS implementation ensures that longitude values are contained in the ±180° range,
      * applying 360° shifts if needed.
      *
-     * @param  expected  the expected ordinate value provided by the test case.
-     * @param  actual    the ordinate value computed by the {@linkplain #transform transform} being tested.
+     * @param  expected  the expected coordinate values provided by the test case.
+     * @param  actual    the coordinate values computed by the {@linkplain #transform transform} being tested.
      * @param  mode      indicates if the coordinates being compared are the result of a direct
      *                   or inverse transform, or if strict equality is requested.
      */
@@ -219,18 +219,17 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
 
     /**
      * Transforms the given coordinates and verifies that the result is equals (within a positive delta)
-     * to the expected ones. If the difference between an expected and actual ordinate value is greater
+     * to the expected ones. If the difference between an expected and actual coordinate value is greater
      * than the {@linkplain #tolerance tolerance} threshold, then the assertion fails.
      *
      * <p>If {@link #isInverseTransformSupported} is {@code true}, then this method will also transform
-     * the expected coordinate points using the {@linkplain MathTransform#inverse() inverse transform} and
-     * compare with the source coordinates.</p>
+     * the expected points using the {@linkplain MathTransform#inverse() inverse transform} and compare
+     * with the source coordinates.</p>
      *
      * <p>This method verifies also the consistency of {@code MathTransform.transform(…)} method variants.</p>
      *
-     * @param  coordinates  the coordinate points to transform.
-     * @param  expected     the expect result of the transformation, or
-     *         {@code null} if {@code coordinates} is expected to be null.
+     * @param  coordinates  the points to transform.
+     * @param  expected     the expected transformation results, or {@code null} if {@code coordinates} is expected to be null.
      * @throws TransformException if the transformation failed.
      */
     @Override
@@ -250,10 +249,10 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
         }
         /*
          * The comparison below needs a higher tolerance threshold, because we converted the source
-         * ordinates to floating points which induce a lost of precision. The multiplication factor
+         * coordinates to floating points which induce a lost of precision. The multiplication factor
          * used here has been determined empirically. The value is quite high, but this is only an
          * oportunist check anyway. The "real" test is the one performed by 'verifyConsistency'.
-         * We do not perform this check for non-linear transforms, because the difference in input
+         * We do not perform this check for non-linear transforms, because the differences in input
          * have too unpredictable consequences on the output.
          */
         if (transform instanceof LinearTransform) {
@@ -269,7 +268,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
-     * Stress the current {@linkplain #transform transform} using random ordinates in the given domain.
+     * Stress the current {@linkplain #transform transform} using random coordinates in the given domain.
      * First, this method creates a grid of regularly spaced points along all dimensions in the given domain.
      * Next, this method adds small random displacements to every points and shuffle the coordinates in random order.
      * Finally this method delegates the resulting array of coordinates to the following methods:

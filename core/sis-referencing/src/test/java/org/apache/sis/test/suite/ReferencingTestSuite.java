@@ -148,6 +148,8 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.provider.PositionVector7ParamTest.class,
     org.apache.sis.internal.referencing.provider.CoordinateFrameRotationTest.class,
     org.apache.sis.internal.referencing.provider.MolodenskyTest.class,
+    org.apache.sis.internal.referencing.provider.DatumShiftGridFileTest.class,
+    org.apache.sis.internal.referencing.provider.DatumShiftGridCompressedTest.class,
     org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest.class,
     org.apache.sis.internal.referencing.provider.NTv2Test.class,
     org.apache.sis.internal.referencing.provider.NADCONTest.class,

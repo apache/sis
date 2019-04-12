@@ -196,15 +196,34 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
             iy = ymax;
             gridY = 1;
         }
-        final int p0 = nx*iy + ix;
-        final int p1 = nx + p0;
-        for (int dim = 0; dim < data.length; dim++) {
+        final int p00 = nx*iy + ix;
+        final int p10 = nx + p00;
+        final int n   = data.length;
+        boolean derivative = (vector.length >= n + 4);
+        for (int dim = 0; dim < n; dim++) {
+            double dx;
             final short[] values = data[dim];
-            double r0 = values[p0];
-            double r1 = values[p1];
-            r0 +=  gridX * (values[p0+1] - r0);
-            r1 +=  gridX * (values[p1+1] - r1);
-            vector[dim] = (gridY * (r1 - r0) + r0) * scale + averages[dim];
+            final double r00 = values[p00    ];
+            final double r01 = values[p00 + 1];         // Naming convention: ryx (row index first, like matrix).
+            final double r10 = values[p10    ];
+            final double r11 = values[p10 + 1];
+            final double r0x = r00 + gridX * (dx = r01 - r00);           // TODO: use Math.fma on JDK9.
+            final double r1x = r10 + gridX * (     r11 - r10);
+            vector[dim] = (gridY * (r1x - r0x) + r0x) * scale + averages[dim];
+            if (derivative) {
+                double dy = (r10 - r00) * scale;
+                dx *= scale;
+                int i = n;
+                if (dim == 0) {
+                    dx++;
+                } else {
+                    dy++;
+                    i += 2;
+                    derivative = false;
+                }
+                vector[i  ] = dx;
+                vector[i+1] = dy;
+            }
         }
     }
 

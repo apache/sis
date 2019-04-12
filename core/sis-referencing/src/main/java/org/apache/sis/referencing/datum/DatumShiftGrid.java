@@ -141,6 +141,12 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     private static final long serialVersionUID = 8405276545243175808L;
 
     /**
+     * Number of dimensions in which interpolations are applied. The grid may have more dimensions,
+     * but only this number of dimensions will be used in interpolations.
+     */
+    private static final int INTERPOLATED_DIMENSIONS = 2;
+
+    /**
      * The unit of measurements of input values, before conversion to grid indices by {@link #coordinateToGrid}.
      * The coordinate unit is typically {@link org.apache.sis.measure.Units#DEGREE}.
      *
@@ -174,8 +180,8 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     private final boolean isCellValueRatio;
 
     /**
-     * Number of grid cells in along each dimension. This is usually an array of length 2 containing
-     * the number of grid cells along the <var>x</var> and <var>y</var> axes.
+     * Number of grid cells along each dimension. This is usually an array of length {@value #INTERPOLATED_DIMENSIONS}
+     * containing the number of grid cells along the <var>x</var> and <var>y</var> axes.
      */
     private final int[] gridSize;
 
@@ -232,8 +238,8 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
 
     /**
      * Computes the conversion factors needed by {@link #interpolateInCell(double, double, double[])}.
-     * This method takes only the 2 first dimensions. If a conversion factor can not be computed,
-     * then it is set to NaN.
+     * This method takes only the {@value #INTERPOLATED_DIMENSIONS} first dimensions. If a conversion
+     * factor can not be computed, then it is set to NaN.
      */
     @SuppressWarnings("fallthrough")
     private void computeConversionFactors() {
@@ -466,10 +472,24 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * the given {@code vector} array, which shall have a length of at least {@link #getTranslationDimensions()}.
      * The output unit of measurement is the same than the one documented in {@link #getCellValue(int, int, int)}.
      *
-     * <p>If the given coordinates are outside this grid, then this method computes the translation vector at the
+     * <div class="section">Extrapolations</div>
+     * If the given coordinates are outside this grid, then this method computes the translation vector at the
      * closest position in the grid. Applying translations on points outside the grid is a kind of extrapolation,
      * but some amount of extrapolations are necessary for operations like transforming an envelope before to compute
-     * its intersection with another envelope.</p>
+     * its intersection with another envelope.
+     *
+     * <div class="section">Derivative (Jacobian matrix)</div>
+     * If the length of the given array is at least <var>n</var> + 4 where <var>n</var> = {@link #getTranslationDimensions()},
+     * then this method appends the derivative (approximated) at the given grid indices. This is the same derivative than the
+     * one computed by {@link #derivativeInCell(double, double)}, opportunistically computed here for performance reasons.
+     * The matrix layout is as below, where <var>u</var> and <var>v</var> are the coordinates after translation.
+     *
+     * {@preformat math
+     *   ┌                 ┐         ┌                             ┐
+     *   │  ∂u/∂x   ∂u/∂y  │    =    │  vector[n+0]   vector[n+1]  │
+     *   │  ∂v/∂x   ∂v/∂y  │         │  vector[n+2]   vector[n+3]  │
+     *   └                 ┘         └                             ┘
+     * }
      *
      * <div class="section">Default implementation</div>
      * The default implementation performs the following steps for each dimension <var>dim</var>,
@@ -480,6 +500,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *   <li>Clamp the {@code gridY} index into the [0 … {@code gridSize[1]} - 1] range, inclusive.</li>
      *   <li>Using {@link #getCellValue}, get the cell values around the given indices.</li>
      *   <li>Apply a bilinear interpolation and store the result in {@code vector[dim]}.</li>
+     *   <li>Appends Jacobian matrix coefficients if the {@code vector} length is sufficient.</li>
      * </ol>
      *
      * @param  gridX   first grid coordinate of the point for which to get the translation.
@@ -503,12 +524,33 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
             gridY = 1;
         }
         n = getTranslationDimensions();
+        boolean derivative = (vector.length >= n + INTERPOLATED_DIMENSIONS * INTERPOLATED_DIMENSIONS);
         for (int dim = 0; dim < n; dim++) {
-            double r0 = getCellValue(dim, ix, iy  );
-            double r1 = getCellValue(dim, ix, iy+1);
-            r0 +=  gridX * (getCellValue(dim, ix+1, iy  ) - r0);
-            r1 +=  gridX * (getCellValue(dim, ix+1, iy+1) - r1);
-            vector[dim] = gridY * (r1 - r0) + r0;
+            double dx;
+            final double r00 = getCellValue(dim, ix,   iy  );
+            final double r01 = getCellValue(dim, ix+1, iy  );       // Naming convention: ryx (row index first, like matrix).
+            final double r10 = getCellValue(dim, ix,   iy+1);
+            final double r11 = getCellValue(dim, ix+1, iy+1);
+            final double r0x = r00 + gridX * (dx = r01 - r00);                          // TODO: use Math.fma on JDK9.
+            final double r1x = r10 + gridX * (     r11 - r10);
+            vector[dim] = gridY * (r1x - r0x) + r0x;
+            if (derivative) {
+                /*
+                 * Following code appends the same values than the ones computed by derivativeInCell(gridX, gridY),
+                 * but reusing some of the values that we already fetched for computing the interpolation.
+                 */
+                double dy = r10 - r00;
+                int i = n;
+                if (dim == 0) {
+                    dx++;
+                } else {
+                    dy++;
+                    i += INTERPOLATED_DIMENSIONS;
+                    derivative = false;
+                }
+                vector[i  ] = dx;
+                vector[i+1] = dy;
+            }
         }
     }
 
@@ -534,9 +576,11 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
         final int iy = Math.max(0, Math.min(gridSize[1] - 2, (int) gridY));
         final Matrix derivative = Matrices.createDiagonal(getTranslationDimensions(), gridSize.length);
         for (int j=derivative.getNumRow(); --j>=0;) {
-            final double orig = getCellValue(j, ix, iy);
-            derivative.setElement(j, 0, derivative.getElement(j, 0) + (getCellValue(j, ix+1, iy) - orig));
-            derivative.setElement(j, 1, derivative.getElement(j, 1) + (getCellValue(j, ix, iy+1) - orig));
+            final double r00 = getCellValue(j, ix,   iy  );
+            final double dx  = getCellValue(j, ix+1, iy  ) - r00;
+            final double dy  = getCellValue(j, ix,   iy+1) - r00;
+            derivative.setElement(j, 0, derivative.getElement(j, 0) + dx);
+            derivative.setElement(j, 1, derivative.getElement(j, 1) + dy);
         }
         return derivative;
     }

@@ -70,7 +70,7 @@ import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Simon Reynard (Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 0.8
+ * @version 1.0
  *
  * @see DatumShiftGrid
  * @see org.apache.sis.referencing.operation.builder.LocalizationGridBuilder
@@ -432,6 +432,20 @@ public class InterpolatedTransform extends DatumShiftTransform {
         private static final long serialVersionUID = 4335801994727826360L;
 
         /**
+         * Set to {@code true} for debugging.
+         */
+        private static final boolean DEBUG = false;
+
+        /**
+         * Whether to use a simple version of this inverse transform (where the Jacobian matrix is close to identity
+         * in every points) or a more complex version using derivatives (Jacobian matrices) for adjusting the errors.
+         * The simple mode is okay for transformations based on e.g. NADCON or NTv2 grids, but is not sufficient for
+         * more curved grids like the ones read from netCDF files. We provide this switch for allowing performance
+         * comparisons.
+         */
+        private static final boolean SIMPLE = true;
+
+        /**
          * Maximum number of iterations. This is set to a higher value than {@link Formulas#MAXIMUM_ITERATIONS} because
          * the data used in {@link InterpolatedTransform} grid may come from anywhere, in particular localization grids
          * in netCDF files. Deformations in those grids may be much higher than e.g. {@link DatumShiftTransform} grids.
@@ -490,51 +504,12 @@ public class InterpolatedTransform extends DatumShiftTransform {
                 dstPts = new double[dimension];
                 dstOff = 0;
             }
-            double xi, yi;
-            final double x = xi = srcPts[srcOff  ];
-            final double y = yi = srcPts[srcOff+1];
-            final double[] vector = new double[dimension];
-            int it = MAXIMUM_ITERATIONS;
-            double tol = tolerance;
-            do {
-                /*
-                 * We want (xi, yi) such as the following conditions hold:
-                 *
-                 *     xi + vector[0] ≈ x      ⟶      xi ≈ x - vector[0]
-                 *     yi + vector[1] ≈ y      ⟶      yi ≈ y - vector[1]
-                 */
-                forward.grid.interpolateInCell(xi, yi, vector);
-                final double ox = xi;
-                final double oy = yi;
-                xi = x - vector[0];
-                yi = y - vector[1];
-                if (!(Math.abs(xi - ox) > tol ||                // Use '!' for catching NaN.
-                      Math.abs(yi - oy) > tol))
-                {
-                    if (dimension > GRID_DIMENSION) {
-                        System.arraycopy(srcPts, srcOff + GRID_DIMENSION,
-                                         dstPts, dstOff + GRID_DIMENSION,
-                                              dimension - GRID_DIMENSION);
-                        /*
-                         * We can not use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
-                         * because the arrays may overlap. The contract said that this method
-                         * must behave as if all input coordinate values have been read before
-                         * we write outputs, which is the reason for System.arraycopy(…) call.
-                         */
-                        int i = dimension;
-                        do dstPts[dstOff + --i] -= vector[i];
-                        while (i > GRID_DIMENSION);
-                    }
-                    dstPts[dstOff  ] = xi;      // Shall not be done before above loop.
-                    dstPts[dstOff+1] = yi;
-                    if (derivate) {
-                        return Matrices.inverse(forward.derivative(
-                                new DirectPositionView.Double(dstPts, dstOff, dimension)));
-                    }
-                    return null;
-                }
-            } while (--it >= 0 || (tol = tryAgain(it, xi, yi)) > 0);
-            throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
+            transform(srcPts, srcOff, dstPts, dstOff, 1);
+            if (derivate) {
+                return Matrices.inverse(forward.derivative(new DirectPositionView.Double(dstPts, dstOff, dimension)));
+            } else {
+                return null;
+            }
         }
 
         /**
@@ -543,6 +518,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
          * @throws TransformException if a point can not be transformed.
          */
         @Override
+        @SuppressWarnings("UseOfSystemOutOrSystemErr")                            // Used if DEBUG = true only.
         public final void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts)
                 throws TransformException
         {
@@ -566,22 +542,76 @@ public class InterpolatedTransform extends DatumShiftTransform {
                     }
                 }
             }
-            final double[] vector = new double[dimension];
+            final double[] vector = new double[SIMPLE ? dimension : dimension + 4];         // +4 is for derivate coefficients.
 nextPoint:  while (--numPts >= 0) {
-                double xi, yi;
+                double xi, yi;                                                              // (x,y) values at iteration i.
                 final double x = xi = srcPts[srcOff  ];
                 final double y = yi = srcPts[srcOff+1];
+                if (DEBUG) {
+                    System.out.format("Searching source coordinates for target = (%g %g)%n", x, y);
+                }
                 int it = MAXIMUM_ITERATIONS;
                 double tol = tolerance;
                 do {
                     forward.grid.interpolateInCell(xi, yi, vector);
-                    final double ox = xi;
-                    final double oy = yi;
-                    xi = x - vector[0];
-                    yi = y - vector[1];
-                    if (!(Math.abs(xi - ox) > tol ||                // Use '!' for catching NaN.
-                          Math.abs(yi - oy) > tol))
-                    {
+                    final boolean more;
+                    if (SIMPLE) {
+                        /*
+                         * We want (xi, yi) such as the following conditions hold
+                         * (see next commnt for the simplification applied here):
+                         *
+                         *     xi + vector[0] ≈ x      ⟶      xi ≈ x - vector[0]
+                         *     yi + vector[1] ≈ y      ⟶      yi ≈ y - vector[1]
+                         */
+                        final double ox = xi;
+                        final double oy = yi;
+                        xi = x - vector[0];
+                        yi = y - vector[1];
+                        more = Math.abs(xi - ox) > tol || Math.abs(yi - oy) > tol;
+                    } else {
+                        /*
+                         * The error between the new position (xi + tx) and the desired position x is measured
+                         * in target units.   In order to apply a correction in opposite direction, we need to
+                         * convert the translation vector from target units to source units.  The above simple
+                         * case was assuming that this conversion is close to identity transform,  allowing us
+                         * to write   xi = xi - ex   with the error   ex = (xi + tx) - x,  which simplified as
+                         * xi = x - tx.   But if the grid is more curved, we can not assume anymore that error
+                         * ex in target units is approximately equal to error dx in source units. A conversion
+                         * needs to be applied,  by multiplying the translation error by the derivative of the
+                         * "target to source" transform.  Since we do not know that derivative, we use inverse
+                         * of the "source to target" transform derivative.
+                         */
+                        final double tx  = vector[0];
+                        final double ty  = vector[1];
+                        final double m00 = vector[dimension    ];
+                        final double m01 = vector[dimension + 1];
+                        final double m10 = vector[dimension + 2];
+                        final double m11 = vector[dimension + 3];
+                        final double det = m00 * m11 - m01 * m10;
+                        final double ex  = (xi + tx) - x;                       // Errors in target units.
+                        final double ey  = (yi + ty) - y;
+                        final double dx  = (ex * m11 - ey * m01) / det;         // Errors in source units.
+                        final double dy  = (ey * m00 - ex * m10) / det;
+                        if (DEBUG) {
+                            Matrix m = forward.grid.derivativeInCell(xi, yi);
+                            assert m.getElement(0,0) == m00;
+                            assert m.getElement(0,1) == m01;
+                            assert m.getElement(1,0) == m10;
+                            assert m.getElement(1,1) == m11;
+
+                            m = Matrices.inverse(m);
+                            double[] c = ((MatrixSIS) m).multiply(new double[] {ex, ey});
+                            assert Math.abs(dx - c[0]) < 1E-5 : Arrays.toString(c) + "  :  " + dx;
+                            assert Math.abs(dy - c[1]) < 1E-5 : Arrays.toString(c) + "  :  " + dy;
+
+                            System.out.printf("  source=(%8.2f %8.2f) target=(%8.2f %8.2f) error=(%8.2f %8.2f) → (%7.2f %7.2f)%n",
+                                                 xi, yi, (xi+tx), (yi+ty), ex, ey, dx, dy);
+                        }
+                        xi -= dx;
+                        yi -= dy;
+                        more = Math.abs(ex) > tol || Math.abs(ey) > tol;
+                    }
+                    if (!more) {                                                            // Use '!' for catching NaN.
                         if (dimension > GRID_DIMENSION) {
                             System.arraycopy(srcPts, srcOff + GRID_DIMENSION,
                                              dstPts, dstOff + GRID_DIMENSION,
