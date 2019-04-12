@@ -284,10 +284,9 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
      *
      * @param  transform  the original affine transform. This matrix will not be modified.
      * @param  newValues  coefficients computed by {@link LinearTransformBuilder} for the dimensions specified at construction time.
-     * @param  reverseCalculation  value of {@link LinearTransformBuilder#reverseCalculation}.
      * @return a copy of the given {@code transform} matrix with new coefficients overwriting the old values.
      */
-    final MatrixSIS replace(MatrixSIS transform, final MatrixSIS newValues, final boolean reverseCalculation) {
+    final MatrixSIS replace(MatrixSIS transform, final MatrixSIS newValues) {
         /*
          * The two matrices shall have the same number of columns because they were computed with
          * LinearTransformBuilder instances having the same sources. However the two matrices may
@@ -300,14 +299,8 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
         transform = transform.clone();
         for (int j=0; j<projToGrid.length; j++) {
             final int d = projToGrid[j];
-            if (reverseCalculation) {
-                for (int i=transform.getNumRow(); --i >= 0;) {
-                    transform.setNumber(i, d, newValues.getNumber(i, j));
-                }
-            } else {
-                for (int i=transform.getNumCol(); --i >= 0;) {
-                    transform.setNumber(d, i, newValues.getNumber(j, i));
-                }
+            for (int i=transform.getNumCol(); --i >= 0;) {
+                transform.setNumber(d, i, newValues.getNumber(j, i));
             }
         }
         return transform;
