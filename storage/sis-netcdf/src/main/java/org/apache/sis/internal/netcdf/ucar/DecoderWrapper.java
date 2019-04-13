@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.EnumSet;
 import java.util.Formatter;
 import java.util.Collection;
+import java.util.Collections;
 import java.io.IOException;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
@@ -126,7 +127,9 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             throws IOException
     {
         super(geomlib, listeners);
-        file = NetcdfDataset.openDataset(filename, false, this);
+        final NetcdfDataset ds = NetcdfDataset.openDataset(filename, false, this);
+        ds.enhance(Collections.singleton(NetcdfDataset.Enhance.CoordSystems));
+        file = ds;
         groups = new Group[1];
         initialize();
     }
@@ -451,6 +454,13 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                 final NetcdfDataset ds = (NetcdfDataset) file;
                 final EnumSet<NetcdfDataset.Enhance> mode = EnumSet.copyOf(ds.getEnhanceMode());
                 if (mode.add(NetcdfDataset.Enhance.CoordSystems)) {
+                    /*
+                     * Should not happen with NetcdfDataset opened by the constructor expecting a filename,
+                     * because that constructor already enhanced the dataset. It may happen however if the
+                     * NetcdfDataset was given explicitly by the user. We try to increase the chances to
+                     * get information we need, but it is not guaranteed to work; it may be too late if we
+                     * already started to use the NetcdfDataset before this point.
+                     */
                     ds.enhance(mode);
                 }
                 systems = ds.getCoordinateSystems();
