@@ -28,7 +28,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
 import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
 import org.apache.sis.internal.referencing.provider.Molodensky;
 import org.apache.sis.internal.util.Constants;
@@ -79,7 +78,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see InterpolatedMolodenskyTransform
  *
@@ -235,9 +234,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
         semiMinor = source.getSemiMinorAxis();
         setContextParameters(semiMajor, semiMinor, unit, target);
         context.getOrCreate(Molodensky.DIMENSION).setValue(isSource3D ? 3 : 2);
-        if (grid instanceof DatumShiftGridFile<?,?>) {
-            ((DatumShiftGridFile<?,?>) grid).setGridParameters(context);
-        }
+        grid.getParameterValues(context);
         /*
          * The above setContextParameters(…) method converted the axis lengths of target ellipsoid in the same units
          * than source ellipsoid. Opportunistically fetch that value, so we don't have to convert the values ourselves.
@@ -375,8 +372,8 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
          * The translation that we got is in metres, which we convert into normalized units.
          */
         final double[] vector = new double[3];
-        grid.interpolateInCell(grid.normalizedToGridX(srcPts[srcOff]),              // In radians
-                               grid.normalizedToGridY(srcPts[srcOff+1]), vector);
+        grid.interpolateInCell(normalizedToGridX(srcPts[srcOff]),              // In radians
+                               normalizedToGridY(srcPts[srcOff+1]), vector);
         final double tX = vector[0] / semiMajor;
         final double tY = vector[1] / semiMajor;
         final double tZ = vector[2] / semiMajor;
@@ -522,8 +519,8 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
              * geocentric interpolation at that location and get the (λ,φ) again. In theory, we just
              * iterate until we got the desired precision. But in practice a single interation is enough.
              */
-            grid.interpolateInCell(grid.normalizedToGridX(vector[0]),
-                                   grid.normalizedToGridY(vector[1]), vector);
+            grid.interpolateInCell(normalizedToGridX(vector[0]),
+                                   normalizedToGridY(vector[1]), vector);
             vector[0] = (x - vector[0] / semiMajor) * scale;
             vector[1] = (y - vector[1] / semiMajor) * scale;
             vector[2] = (z - vector[2] / semiMajor) * scale;

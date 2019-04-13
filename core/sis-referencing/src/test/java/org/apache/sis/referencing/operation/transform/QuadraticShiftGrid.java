@@ -16,10 +16,14 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Collections;
 import java.awt.geom.AffineTransform;
 import javax.measure.quantity.Dimensionless;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.measure.Units;
+import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
+import org.apache.sis.parameter.Parameters;
 
 
 /**
@@ -146,5 +150,21 @@ final strictfp class QuadraticShiftGrid extends DatumShiftGrid<Dimensionless,Dim
     @Override
     public double getCellPrecision() {
         return PRECISION;
+    }
+
+    /**
+     * Returns a dummy parameter descriptor for this test.
+     */
+    @Override
+    public ParameterDescriptorGroup getParameterDescriptors() {
+        return new DefaultParameterDescriptorGroup(
+                Collections.singletonMap(DefaultParameterDescriptorGroup.NAME_KEY, "Test grid"), 0, 1);
+    }
+
+    /**
+     * No parameter to set for this test.
+     */
+    @Override
+    public void getParameterValues(Parameters parameters) {
     }
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.util;
 
+import java.lang.reflect.Array;
 import java.util.Formatter;
 import java.util.FormattableFlags;
 import org.apache.sis.util.Static;
@@ -226,7 +227,7 @@ public final class Strings extends Static {
      * @return a string representation of an instance of the given class having the given properties.
      */
     public static String toString(final Class<?> classe, final Object... properties) {
-        final StringBuffer buffer = new StringBuffer(32).append(Classes.getShortName(classe)).append('[');
+        final StringBuilder buffer = new StringBuilder(32).append(Classes.getShortName(classe)).append('[');
         boolean isNext = false;
         for (int i=0; i<properties.length; i++) {
             final Object value = properties[++i];
@@ -238,14 +239,31 @@ public final class Strings extends Static {
                 if (name != null) {
                     buffer.append(name).append('=');
                 }
-                final boolean isText = (value instanceof CharSequence);
-                if (isText) buffer.append('“');
-                buffer.append(value);
-                if (isText) buffer.append('”');
+                if (value.getClass().isArray()) {
+                    final int n = Array.getLength(value);
+                    if (n != 1) buffer.append('{');
+                    for (int j=0; j<n; j++) {
+                        if (j != 0) buffer.append(", ");
+                        append(Array.get(value, j), buffer);
+                    }
+                    if (n != 1) buffer.append('}');
+                } else {
+                    append(value, buffer);
+                }
                 isNext = true;
             }
         }
         return buffer.append(']').toString();
+    }
+
+    /**
+     * Appends the given value in the given buffer, using quotes if the value is a character sequence.
+     */
+    private static void append(final Object value, final StringBuilder buffer) {
+        final boolean isText = (value instanceof CharSequence);
+        if (isText) buffer.append('“');
+        buffer.append(value);
+        if (isText) buffer.append('”');
     }
 
     /**

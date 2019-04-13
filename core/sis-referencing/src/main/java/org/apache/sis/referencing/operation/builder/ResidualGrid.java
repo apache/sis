@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.builder;
 
+import java.util.Arrays;
 import java.util.function.Function;
 import javax.measure.quantity.Dimensionless;
 import org.opengis.parameter.ParameterDescriptor;
@@ -23,10 +24,10 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.referencing.datum.DatumShiftGrid;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
-import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
@@ -45,27 +46,29 @@ import org.apache.sis.measure.Units;
  * @since   0.8
  * @module
  */
-final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless> {
+final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 1445697681304159019L;
+    private static final long serialVersionUID = -713276314000661839L;
 
     /**
      * Number of source dimensions of the residual grid.
+     *
+     * @see #INTERPOLATED_DIMENSIONS
      */
     static final int SOURCE_DIMENSION = 2;
 
     /**
      * The parameter descriptors for the "Localization grid" operation.
-     * Current implementation is fixed to 2 dimensions. This is not a committed set of parameters and they
-     * may change in any future SIS version. We define them mostly for {@code toString()} implementation.
+     * Current implementation is fixed to {@value #SOURCE_DIMENSION} dimensions.
+     *
+     * @see #getParameterDescriptors()
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = new ParameterBuilder().setRequired(true);
-        @SuppressWarnings("rawtypes")
-        final ParameterDescriptor<?>[] grids = new ParameterDescriptor[] {
+        final ParameterDescriptor<?>[] grids = new ParameterDescriptor<?>[] {
             builder.addName(Constants.NUM_ROW).createBounded(Integer.class, 2, null, null),
             builder.addName(Constants.NUM_COL).createBounded(Integer.class, 2, null, null),
             builder.addName("grid_x").create(Matrix.class, null),
@@ -80,13 +83,17 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
      * This method sets the matrix parameters using views over the {@link #offsets} array.
      */
     @Override
-    public void setGridParameters(final Parameters parameters) {
-        super.setGridParameters(parameters);
-        final Matrix denormalization;
+    public void getParameterValues(final Parameters parameters) {
+        final Matrix denormalization = gridToTarget.getMatrix();
         if (parameters instanceof ContextualParameters) {
-            denormalization = ((ContextualParameters) parameters).getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-        } else {
-            denormalization = new Matrix3();            // Identity.
+            /*
+             * The denormalization matrix computed by InterpolatedTransform is the inverse of the normalization matrix.
+             * This inverse is not suitable for the transform created by LocalizationGridBuilder; we need to replace it
+             * by the linear regression. We do not want to define a public API in `DatumShiftGrid` for that purpose yet
+             * because it would complexify that class (we would have to define API contract, etc.).
+             */
+            MatrixSIS m = ((ContextualParameters) parameters).getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
+            m.setMatrix(denormalization);
         }
         final int[] size = getGridSize();
         parameters.parameter(Constants.NUM_ROW).setValue(size[1]);
@@ -96,17 +103,32 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
     }
 
     /**
+     * Number of grid cells along the <var>x</var> axis.
+     * This is <code>{@linkplain #getGridSize()}[0]</code> as a field for performance reasons.
+     */
+    private final int nx;
+
+    /**
      * The residual data, as translations to apply on the result of affine transform.
      * In this flat array, index of target dimension varies fastest, then column index, then row index.
      */
     private final double[] offsets;
 
     /**
-     * Conversion from grid coordinates to the final "real world" coordinates.
-     *
-     * @see #gridToTarget()
+     * Conversion from translated coordinates (after the datum shift has been applied) to "real world" coordinates.
+     * If we were doing NADCON or NTv2 transformations with {@link #isCellValueRatio()} = {@code true} (source and
+     * target coordinates in the same coordinate system with axis units in degrees), that conversion would be the
+     * inverse of {@link #getCoordinateToGrid()}. But in this {@code ResidualGrid} case, we need to override with
+     * the linear regression computed by {@link LocalizationGridBuilder}.
      */
-    private final LinearTransform gridToTarget;
+    final LinearTransform gridToTarget;
+
+    /**
+     * The best translation accuracy that we can expect from this file.
+     *
+     * @see #getCellPrecision()
+     */
+    private final double accuracy;
 
     /**
      * Creates a new residual grid.
@@ -119,46 +141,29 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
     ResidualGrid(final LinearTransform sourceToGrid, final LinearTransform gridToTarget,
             final int nx, final int ny, final double[] residuals, final double precision)
     {
-        super(Units.UNITY, Units.UNITY, true, sourceToGrid, nx, ny, PARAMETERS);
+        super(Units.UNITY, sourceToGrid, new int[] {nx, ny}, true, Units.UNITY);
         this.gridToTarget = gridToTarget;
         this.offsets      = residuals;
         this.accuracy     = precision;
+        this.nx           = nx;
     }
 
     /**
-     * Creates a new datum shift grid with the same grid geometry than the given grid
-     * but a reference to a different data array.
-     */
-    private ResidualGrid(final ResidualGrid other, final double[] data) {
-        super(other);
-        gridToTarget = other.gridToTarget;
-        accuracy     = other.accuracy;
-        offsets      = data;
-    }
-
-    /**
-     * Returns a new grid with the same geometry than this grid but different data array.
-     */
-    @Override
-    protected DatumShiftGridFile<Dimensionless, Dimensionless> setData(final Object[] other) {
-        return new ResidualGrid(this, (double[]) other[0]);
-    }
-
-    /**
-     * Returns reference to the data array. This method is for cache management, {@link #equals(Object)}
-     * and {@link #hashCode()} implementations only and should not be invoked in other context.
+     * Returns a description of the values in this grid. Grid values may be given as matrices or tensors.
+     * Current implementation provides values in the form of {@link Matrix} objects on the assumption
+     * that the number of {@linkplain #getGridSize() grid} dimensions is {@value #SOURCE_DIMENSION}.
+     *
+     * <div class="note"><b>Note:</b>
+     * the number of {@linkplain #getGridSize() grid} dimensions determines the parameter type: if that number
+     * is greater than {@value #SOURCE_DIMENSION}, then parameters would need to be represented by tensors instead
+     * than matrices. By contrast, the {@linkplain #getTranslationDimensions() number of dimensions of translation
+     * vectors} only determines how many matrix or tensor parameters appear.</div>
+     *
+     * @return a description of the values in this grid.
      */
     @Override
-    protected Object[] getData() {
-        return new Object[] {offsets};
-    }
-
-    /**
-     * Returns the transform from grid coordinates to "real world" coordinates after the datum shift has been applied.
-     */
-    @Override
-    public Matrix gridToTarget() {
-        return gridToTarget.getMatrix();
+    public ParameterDescriptorGroup getParameterDescriptors() {
+        return PARAMETERS;
     }
 
     /**
@@ -189,8 +194,19 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
     }
 
     /**
-     * View over one dimension of the offset vectors. This is used for populating the {@link ParameterDescriptorGroup}
+     * View over one target dimension of the localization grid. Used for populating the {@link ParameterDescriptorGroup}
      * that describes the {@code MathTransform}. Those parameters are themselves used for formatting Well Known Text.
+     * Current implementation can be used only when the number of grid dimensions is {@value #INTERPOLATED_DIMENSIONS}.
+     * If a grid has more dimensions, then tensors would need to be used instead than matrices.
+     *
+     * <p>This implementation can not be moved to the {@link DatumShiftGrid} parent class because this class assumes
+     * that the translation vectors are added to the source coordinates. This is not always true; for example France
+     * Geocentric interpolations add the translation to coordinates converted to geocentric coordinates.</p>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.0
+     * @since   1.0
+     * @module
      */
     private final class Data extends FormattableObject implements Matrix, Function<int[],Number> {
         /** Coefficients from the denormalization matrix for the row corresponding to this dimension. */
@@ -273,5 +289,30 @@ final class ResidualGrid extends DatumShiftGridFile<Dimensionless,Dimensionless>
             formatter.setInvalidWKT(Matrix.class, null);
             return "Matrix";
         }
+    }
+
+    /**
+     * Returns {@code true} if the given object is a grid containing the same data than this grid.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {                        // Optimization for a common case.
+            return true;
+        }
+        if (super.equals(other)) {
+            final ResidualGrid that = (ResidualGrid) other;
+            return Numerics.equals(accuracy, that.accuracy) &&
+                    gridToTarget.equals(that.gridToTarget) &&
+                    Arrays.equals(offsets, that.offsets);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this datum shift grid.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + Arrays.hashCode(offsets) + 37 * gridToTarget.hashCode();
     }
 }

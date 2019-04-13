@@ -65,7 +65,7 @@ class DatumShiftGridLoader {
     static final double SECOND_PRECISION = 1E-4;
 
     /**
-     * The file to load, used only if we have errors to report.
+     * The file to load, used for parameter declaration and if we have errors to report.
      */
     final Path file;
 
@@ -84,7 +84,7 @@ class DatumShiftGridLoader {
      *
      * @param  channel  where to read data from.
      * @param  buffer   the buffer to use.
-     * @param  file     path to the longitude or latitude difference file. Used only for error reporting.
+     * @param  file     path to the longitude or latitude difference file. Used for parameter declaration and error reporting.
      */
     DatumShiftGridLoader(final ReadableByteChannel channel, final ByteBuffer buffer, final Path file) throws IOException {
         this.file    = file;

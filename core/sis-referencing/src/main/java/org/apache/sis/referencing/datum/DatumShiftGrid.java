@@ -18,18 +18,18 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.ObjectInputStream;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
@@ -41,7 +41,7 @@ import org.apache.sis.measure.Units;
  * Small but non-constant translations to apply on coordinates for datum shifts or other transformation process.
  * The main purpose of this class is to encapsulate the data provided by <cite>datum shift grid files</cite>
  * like NTv2, NADCON or RGF93. But this class could also be used for other kind of transformations,
- * provided that the shifts are <strong>small</strong> (otherwise algorithms may not converge).
+ * provided that the shifts are relatively small (otherwise algorithms may not converge).
  *
  * <p>{@linkplain DefaultGeodeticDatum Geodetic datum} changes can be implemented by translations in geographic
  * or geocentric coordinates. Translations given by {@code DatumShiftGrid} instances are often, but not always,
@@ -101,13 +101,14 @@ import org.apache.sis.measure.Units;
  * <div class="section">Number of dimensions</div>
  * Input coordinates and translation vectors can have any number of dimensions. However in the current implementation,
  * only the two first dimensions are used for interpolating the translation vectors. This restriction appears in the
- * following method signatures:
+ * following field and method signatures:
  *
  * <ul>
- *   <li>{@link #interpolateInCell(double, double, double[])}
- *       where the two first {@code double} values are (<var>x</var>,<var>y</var>) grid indices.</li>
+ *   <li>{@link #INTERPOLATED_DIMENSIONS}.</li>
  *   <li>{@link #getCellValue(int, int, int)}
  *       where the two last {@code int} values are (<var>x</var>,<var>y</var>) grid indices.</li>
+ *   <li>{@link #interpolateInCell(double, double, double[])}
+ *       where the two first {@code double} values are (<var>x</var>,<var>y</var>) grid indices.</li>
  *   <li>{@link #derivativeInCell(double, double)}
  *       where the values are (<var>x</var>,<var>y</var>) grid indices.</li>
  * </ul>
@@ -141,10 +142,22 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     private static final long serialVersionUID = 8405276545243175808L;
 
     /**
-     * Number of dimensions in which interpolations are applied. The grid may have more dimensions,
-     * but only this number of dimensions will be used in interpolations.
+     * Number of source dimensions in which interpolations are applied. The grids may have more dimensions,
+     * but only this number of dimensions will be used in interpolations. The value of this field is set to
+     * {@value}. That value is hard-coded not only in this field, but also in signature of various methods
+     * expecting a two-dimensional (<var>x</var>, <var>y</var>) position:
+     * <code>{@linkplain #getCellValue(int, int, int) getCellValue}(…, x, y)</code>,
+     * <code>{@linkplain #interpolateInCell(double, double, double[]) interpolateInCell}(x, y, …)</code>,
+     * <code>{@linkplain #derivativeInCell(double, double) derivativeInCell}(x, y)</code>.
+     *
+     * <div class="note"><b>Future evolution:</b>
+     * if this class is generalized to more source dimensions in a future Apache SIS version, then this field
+     * may be deprecated or its value changed. That change would be accompanied by new methods with different
+     * signature. This field can be used as a way to detect that such change occurred.</div>
+     *
+     * @since 1.0
      */
-    private static final int INTERPOLATED_DIMENSIONS = 2;
+    protected static final int INTERPOLATED_DIMENSIONS = 2;
 
     /**
      * The unit of measurements of input values, before conversion to grid indices by {@link #coordinateToGrid}.
@@ -186,18 +199,6 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     private final int[] gridSize;
 
     /**
-     * Conversion from (λ,φ) coordinates in radians to grid indices (x,y).
-     *
-     * <ul>
-     *   <li>x  =  (λ - λ₀) ⋅ {@code scaleX}  =  λ ⋅ {@code scaleX} + x₀</li>
-     *   <li>y  =  (φ - φ₀) ⋅ {@code scaleY}  =  φ ⋅ {@code scaleY} + y₀</li>
-     * </ul>
-     *
-     * Those factors are extracted from the {@link #coordinateToGrid} transform for performance purposes.
-     */
-    private transient double scaleX, scaleY, x0, y0;
-
-    /**
      * Creates a new datum shift grid for the given size and units.
      * The actual cell values need to be provided by subclasses.
      *
@@ -233,49 +234,6 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
                         : Errors.Keys.IllegalArgumentValue_2, Strings.toIndexed("gridSize", i), n));
             }
         }
-        computeConversionFactors();
-    }
-
-    /**
-     * Computes the conversion factors needed by {@link #interpolateInCell(double, double, double[])}.
-     * This method takes only the {@value #INTERPOLATED_DIMENSIONS} first dimensions. If a conversion
-     * factor can not be computed, then it is set to NaN.
-     */
-    @SuppressWarnings("fallthrough")
-    private void computeConversionFactors() {
-        scaleX = Double.NaN;
-        scaleY = Double.NaN;
-        x0     = Double.NaN;
-        y0     = Double.NaN;
-        final double toStandardUnit = Units.toStandardUnit(coordinateUnit);
-        if (!Double.isNaN(toStandardUnit)) {
-            final Matrix m = coordinateToGrid.getMatrix();
-            if (Matrices.isAffine(m)) {
-                final int n = m.getNumCol() - 1;
-                switch (m.getNumRow()) {
-                    default: y0 = m.getElement(1,n); scaleY = diagonal(m, 1, n) / toStandardUnit;   // Fall through
-                    case 1:  x0 = m.getElement(0,n); scaleX = diagonal(m, 0, n) / toStandardUnit;
-                    case 0:  break;
-                }
-            }
-        }
-    }
-
-    /**
-     * Returns the value on the diagonal of the given matrix, provided that all other non-translation terms are 0.
-     *
-     * @param  m  the matrix from which to get the scale factor on a row.
-     * @param  j  the row for which to get the scale factor.
-     * @param  n  index of the last column.
-     * @return the scale factor on the diagonal, or NaN.
-     */
-    private static double diagonal(final Matrix m, final int j, int n) {
-        while (--n >= 0) {
-            if (j != n && m.getElement(j, n) != 0) {
-                return Double.NaN;
-            }
-        }
-        return m.getElement(j, j);
     }
 
     /**
@@ -290,15 +248,15 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
         isCellValueRatio = other.isCellValueRatio;
         translationUnit  = other.translationUnit;
         gridSize         = other.gridSize;
-        scaleX           = other.scaleX;
-        scaleY           = other.scaleY;
-        x0               = other.x0;
-        y0               = other.y0;
     }
 
     /**
      * Returns the number of cells along each axis in the grid.
-     * The length of this array is equal to {@code coordinateToGrid} target dimensions.
+     * The length of this array is the number of grid dimensions, which is typically {@value #INTERPOLATED_DIMENSIONS}.
+     * The grid dimensions shall be equal to {@link #getCoordinateToGrid() coordinateToGrid} target dimensions.
+     *
+     * <div class="note"><b>Note:</b> the number of grid dimensions is not necessarily equal to the
+     * {@linkplain #getTranslationDimensions() number of dimension of the translation vectors}.</div>
      *
      * @return the number of cells along each axis in the grid.
      */
@@ -339,10 +297,11 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     }
 
     /**
-     * Conversion from the "real world" coordinates to grid indices including fractional parts.
-     * The input points given to the {@code MathTransform} shall be in the unit of measurement
-     * given by {@link #getCoordinateUnit()}.
-     * The output points are grid indices with integer values in the center of grid cells.
+     * Returns the conversion from the source coordinates (in "real world" units) to grid indices.
+     * The input coordinates given to the {@link LinearTransform} shall be in the unit of measurement
+     * given by {@link #getCoordinateUnit()}. The output coordinates are grid indices as real numbers
+     * (i.e. can have a fractional part). Integer grid indices are located in the center of grid cells,
+     * i.e. the transform uses {@link org.opengis.referencing.datum.PixelInCell#CELL_CENTER} convention.
      *
      * <p>This transform is usually two-dimensional, in which case conversions from (<var>x</var>,<var>y</var>)
      * coordinates to ({@code gridX}, {@code gridY}) indices can be done with the following formulas:</p>
@@ -372,30 +331,6 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      */
     public LinearTransform getCoordinateToGrid() {
         return coordinateToGrid;
-    }
-
-    /**
-     * Converts the given normalized <var>x</var> coordinate to grid index.
-     * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#getSystemUnit()}.
-     * For angular coordinates, this is radians. For linear coordinates, this is metres.
-     *
-     * @param  x  the "real world" coordinate (often longitude in radians) of the point for which to get the translation.
-     * @return the grid index for the given coordinate. May be out of bounds.
-     */
-    public final double normalizedToGridX(final double x) {
-        return x * scaleX + x0;
-    }
-
-    /**
-     * Converts the given normalized <var>x</var> coordinate to grid index.
-     * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#getSystemUnit()}.
-     * For angular coordinates, this is radians. For linear coordinates, this is metres.
-     *
-     * @param  y  the "real world" coordinate (often latitude in radians) of the point for which to get the translation.
-     * @return the grid index for the given coordinate. May be out of bounds.
-     */
-    public final double normalizedToGridY(final double y) {
-        return y * scaleY + y0;
     }
 
     /**
@@ -688,7 +623,78 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     }
 
     /**
+     * Returns a description of the values in this grid. Grid values may be given directly as matrices or tensors,
+     * or indirectly as name of file from which data were loaded. If grid values are given directly, then:
+     *
+     * <ul>
+     *   <li>The number of {@linkplain #getGridSize() grid} dimensions determines the parameter type:
+     *       one-dimensional grids are represented by {@link org.apache.sis.math.Vector} instances,
+     *       two-dimensional grids are represented by {@link Matrix} instances,
+     *       and grids with more than {@value #INTERPOLATED_DIMENSIONS} are represented by tensors.</li>
+     *   <li>The {@linkplain #getTranslationDimensions() number of dimensions of translation vectors}
+     *       determines how many matrix or tensor parameters appear.</li>
+     * </ul>
+     *
+     * <div class="note"><b>Example 1:</b>
+     * if this {@code DatumShiftGrid} instance has been created for performing NADCON datum shifts,
+     * then this method returns a group named "NADCON" with two parameters:
+     * <ul>
+     *   <li>A parameter of type {@link java.nio.file.Path} named “Latitude difference file”.</li>
+     *   <li>A parameter of type {@link java.nio.file.Path} named “Longitude difference file”.</li>
+     * </ul></div>
+     *
+     * <div class="note"><b>Example 2:</b>
+     * if this {@code DatumShiftGrid} instance has been created by
+     * {@link org.apache.sis.referencing.operation.builder.LocalizationGridBuilder},
+     * then this method returns a group named "Localization grid" with four parameters:
+     * <ul>
+     *   <li>A parameter of type {@link Integer} named “num_row” for the number of rows in each matrix.</li>
+     *   <li>A parameter of type {@link Integer} named “num_col” for the number of columns in each matrix.</li>
+     *   <li>A parameter of type {@link Matrix} named “grid_x”.</li>
+     *   <li>A parameter of type {@link Matrix} named “grid_y”.</li>
+     * </ul></div>
+     *
+     * @return a description of the values in this grid.
+     *
+     * @since 1.0
+     */
+    public abstract ParameterDescriptorGroup getParameterDescriptors();
+
+    /**
+     * Gets the parameter values for the grids and stores them in the provided {@code parameters} group.
+     * The given {@code parameters} must have the descriptor returned by {@link #getParameterDescriptors()}.
+     * The matrices, tensors or file names are stored in the given {@code parameters} instance.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * this method is invoked by {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform}
+     * and other transforms for initializing the values of their parameter group.</div>
+     *
+     * @param  parameters  the parameter group where to set the values.
+     *
+     * @since 1.0
+     */
+    public abstract void getParameterValues(Parameters parameters);
+
+    /**
+     * Returns a string representation of this {@code DatumShiftGrid}. The default implementation
+     * formats the {@linkplain #getParameterValues(Parameters) parameter values}.
+     *
+     * @return a string representation of the grid parameters.
+     *
+     * @since 1.0
+     */
+    @Override
+    public String toString() {
+        final Parameters p = Parameters.castOrWrap(getParameterDescriptors().createValue());
+        getParameterValues(p);
+        return p.toString();
+    }
+
+    /**
      * Returns {@code true} if the given object is a grid containing the same data than this grid.
+     * Default implementation compares only the properties known to this abstract class like
+     * {@linkplain #getGridSize() grid size}, {@linkplain #getCoordinateUnit() coordinate unit}, <i>etc.</i>
+     * Subclasses need to override for adding comparison of the actual values.
      *
      * @param  other  the other object to compare with this datum shift grid.
      * @return {@code true} if the given object is non-null, of the same class than this {@code DatumShiftGrid}
@@ -717,17 +723,5 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     @Override
     public int hashCode() {
         return Objects.hashCode(coordinateToGrid) + 37 * Arrays.hashCode(gridSize);
-    }
-
-    /**
-     * Invoked after deserialization. This method computes the transient fields.
-     *
-     * @param  in  the input stream from which to deserialize the datum shift grid.
-     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
-     */
-    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        computeConversionFactors();
     }
 }

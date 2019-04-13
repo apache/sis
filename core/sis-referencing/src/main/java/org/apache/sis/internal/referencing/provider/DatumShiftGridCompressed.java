@@ -199,7 +199,7 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
         final int p00 = nx*iy + ix;
         final int p10 = nx + p00;
         final int n   = data.length;
-        boolean derivative = (vector.length >= n + 4);
+        boolean derivative = (vector.length >= n + INTERPOLATED_DIMENSIONS*INTERPOLATED_DIMENSIONS);
         for (int dim = 0; dim < n; dim++) {
             double dx;
             final short[] values = data[dim];
@@ -218,7 +218,7 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
                     dx++;
                 } else {
                     dy++;
-                    i += 2;
+                    i += INTERPOLATED_DIMENSIONS;
                     derivative = false;
                 }
                 vector[i  ] = dx;

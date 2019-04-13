@@ -61,7 +61,7 @@ public final strictfp class ResidualGridTest extends TestCase {
     public void verifyGlobalProperties() {
         assertEquals("translationDimensions", 2,  grid.getTranslationDimensions());
         assertTrue("coordinateToGrid.isIdentity", grid.getCoordinateToGrid().isIdentity());
-        assertTrue("gridToTarget.isIdentity",     grid.gridToTarget().isIdentity());
+        assertTrue("gridToTarget.isIdentity",     grid.gridToTarget.isIdentity());
     }
 
     /**

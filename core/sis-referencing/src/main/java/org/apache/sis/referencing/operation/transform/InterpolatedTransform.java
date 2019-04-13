@@ -37,8 +37,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.DirectPositionView;
-import org.apache.sis.internal.referencing.provider.NTv2;
-import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
 
 
 /**
@@ -132,14 +130,11 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * @see #createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
     @SuppressWarnings( {"OverridableMethodCallDuringObjectConstruction", "fallthrough"})
-    protected <T extends Quantity<T>> InterpolatedTransform(final DatumShiftGrid<T,T> grid)
-            throws NoninvertibleMatrixException
-    {
+    protected <T extends Quantity<T>> InterpolatedTransform(final DatumShiftGrid<T,T> grid) throws NoninvertibleMatrixException {
         /*
          * Create the contextual parameters using the descriptor of the provider that created the datum shift grid.
-         * If that provider is unknown, default (for now) to NTv2. This default may change in any future SIS version.
          */
-        super((grid instanceof DatumShiftGridFile<?,?>) ? ((DatumShiftGridFile<?,?>) grid).descriptor : NTv2.PARAMETERS, grid);
+        super(grid.getParameterDescriptors(), grid);
         if (!grid.isCellValueRatio()) {
             throw new IllegalArgumentException(Resources.format(
                     Resources.Keys.IllegalParameterValue_2, "isCellValueRatio", Boolean.FALSE));
@@ -181,26 +176,15 @@ public class InterpolatedTransform extends DatumShiftTransform {
         /*
          * Denormalization is the inverse of all above conversions in the usual case (NADCON and NTv2) where the
          * source coordinate system is the same than the target coordinate system, for example with axis unit in
-         * degrees. However we also use this InterpolatedTransform implementation for other operation, like the
+         * degrees. However we also use this InterpolatedTransform implementation for other operations, like the
          * one created by LocalizationGridBuilder. Those later operations may require a different denormalization
-         * matrix.
+         * matrix. Consequently the call to `getParameterValues(…)` may overwrite the denormalization matrix as
+         * a non-documented side effect.
          */
-        Matrix denormalize = null;
-        if (grid instanceof DatumShiftGridFile<?,?>) {
-            denormalize = ((DatumShiftGridFile<?,?>) grid).gridToTarget();
-        }
-        if (denormalize == null) {
-            denormalize = normalize.inverse();                      // Normal NACDON and NTv2 case.
-        }
+        Matrix denormalize = normalize.inverse();                   // Normal NACDON and NTv2 case.
         context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).setMatrix(denormalize);
+        grid.getParameterValues(context);       // May overwrite `denormalize` (see above comment).
         inverse = createInverse();
-        /*
-         * Parameters completed last because some DatumShiftGridFile subclasses (e.g. ResidualGrid) needs the
-         * (de)normalization matrices.
-         */
-        if (grid instanceof DatumShiftGridFile<?,?>) {
-            ((DatumShiftGridFile<?,?>) grid).setGridParameters(context);
-        }
     }
 
     /**

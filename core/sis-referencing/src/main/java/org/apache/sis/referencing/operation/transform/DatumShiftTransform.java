@@ -18,16 +18,21 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Objects;
 import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import javax.measure.UnitConverter;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.provider.Molodensky;
+import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
@@ -68,7 +73,7 @@ import org.apache.sis.util.Debug;
  * SIS handles those datum shifts with the {@link InterpolatedTransform} subclass.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see DatumShiftGrid
  *
@@ -96,6 +101,19 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
     final DatumShiftGrid<?,?> grid;
 
     /**
+     * Conversion from (λ,φ) coordinates in radians to grid indices (x,y).
+     *
+     * <ul>
+     *   <li>x  =  (λ - λ₀) ⋅ {@code scaleX}  =  λ ⋅ {@code scaleX} + x₀</li>
+     *   <li>y  =  (φ - φ₀) ⋅ {@code scaleY}  =  φ ⋅ {@code scaleY} + y₀</li>
+     * </ul>
+     *
+     * Those factors are extracted from the {@link DatumShiftGrid#getCoordinateToGrid()}
+     * transform for performance reasons.
+     */
+    private transient double scaleX, scaleY, x0, y0;
+
+    /**
      * Creates a datum shift transform for direct interpolations in a grid.
      * It is caller responsibility to initialize the {@link #context} parameters.
      *
@@ -106,6 +124,7 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
         final int size = grid.getTranslationDimensions() + 1;
         context = new ContextualParameters(descriptor, size, size);
         this.grid = grid;
+        computeConversionFactors();
     }
 
     /**
@@ -122,6 +141,64 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
     {
         context = new ContextualParameters(descriptor, isSource3D ? 4 : 3, isTarget3D ? 4 : 3);
         this.grid = grid;
+        computeConversionFactors();
+    }
+
+    /**
+     * Invoked after deserialization. This method computes the transient fields.
+     *
+     * @param  in  the input stream from which to deserialize the datum shift grid.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        computeConversionFactors();
+    }
+
+    /**
+     * Computes the conversion factors needed for calls to {@link DatumShiftGrid#interpolateInCell(double, double, double[])}.
+     * This method takes only the {@value DatumShiftGrid#INTERPOLATED_DIMENSIONS} first dimensions. If a conversion factor can
+     * not be computed, then it is set to NaN.
+     */
+    @SuppressWarnings("fallthrough")
+    private void computeConversionFactors() {
+        scaleX = Double.NaN;
+        scaleY = Double.NaN;
+        x0     = Double.NaN;
+        y0     = Double.NaN;
+        if (grid != null) {
+            final LinearTransform coordinateToGrid = grid.getCoordinateToGrid();
+            final double toStandardUnit = Units.toStandardUnit(grid.getCoordinateUnit());
+            if (!Double.isNaN(toStandardUnit)) {
+                final Matrix m = coordinateToGrid.getMatrix();
+                if (Matrices.isAffine(m)) {
+                    final int n = m.getNumCol() - 1;
+                    switch (m.getNumRow()) {
+                        default: y0 = m.getElement(1,n); scaleY = diagonal(m, 1, n) / toStandardUnit;   // Fall through
+                        case 1:  x0 = m.getElement(0,n); scaleX = diagonal(m, 0, n) / toStandardUnit;
+                        case 0:  break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the value on the diagonal of the given matrix, provided that all other non-translation terms are 0.
+     *
+     * @param  m  the matrix from which to get the scale factor on a row.
+     * @param  j  the row for which to get the scale factor.
+     * @param  n  index of the last column.
+     * @return the scale factor on the diagonal, or NaN.
+     */
+    private static double diagonal(final Matrix m, final int j, int n) {
+        while (--n >= 0) {
+            if (j != n && m.getElement(j, n) != 0) {
+                return Double.NaN;
+            }
+        }
+        return m.getElement(j, j);
     }
 
     /**
@@ -218,6 +295,30 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
     @Override
     protected ContextualParameters getContextualParameters() {
         return context;
+    }
+
+    /**
+     * Converts the given normalized <var>x</var> coordinate to grid index.
+     * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#getSystemUnit()}.
+     * For angular coordinates, this is radians. For linear coordinates, this is metres.
+     *
+     * @param  x  the "real world" coordinate (often longitude in radians) of the point for which to get the translation.
+     * @return the grid index for the given coordinate. May be out of bounds.
+     */
+    final double normalizedToGridX(final double x) {
+        return x * scaleX + x0;
+    }
+
+    /**
+     * Converts the given normalized <var>x</var> coordinate to grid index.
+     * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#getSystemUnit()}.
+     * For angular coordinates, this is radians. For linear coordinates, this is metres.
+     *
+     * @param  y  the "real world" coordinate (often latitude in radians) of the point for which to get the translation.
+     * @return the grid index for the given coordinate. May be out of bounds.
+     */
+    final double normalizedToGridY(final double y) {
+        return y * scaleY + y0;
     }
 
     /**
