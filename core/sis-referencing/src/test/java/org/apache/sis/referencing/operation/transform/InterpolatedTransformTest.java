@@ -57,16 +57,16 @@ import org.junit.Test;
 })
 public final strictfp class InterpolatedTransformTest extends MathTransformTestCase {
     /**
-     * Creates an {@link InterpolatedTransform} derived from a quadratic formula.
-     * We do not really need {@code InterpolatedTransform} for quadratic formulas,
+     * Creates an {@link InterpolatedTransform} derived from a sinusoidal formula.
+     * We do not really need {@code InterpolatedTransform} for sinusoidal formulas,
      * but we use them for testing purpose since they are easier to debug.
      *
      * @param  rotation  rotation angle, in degrees. Use 0 for debugging a simple case.
      * @return suggested points to use for testing purposes as an array of length 2,
      *         with source coordinates in the first array and target coordinates in the second array.
      */
-    private double[][] createQuadratic(final double rotation) throws TransformException {
-        final QuadraticShiftGrid grid = new QuadraticShiftGrid(rotation);
+    private double[][] createSinusoidal(final double rotation) throws TransformException {
+        final SinusoidalShiftGrid grid = new SinusoidalShiftGrid(rotation);
         transform = new InterpolatedTransform(grid);
         return grid.samplePoints();
     }
@@ -112,12 +112,16 @@ public final strictfp class InterpolatedTransformTest extends MathTransformTestC
     @Test
     public void testForwardTransform() throws TransformException {
         isInverseTransformSupported = false;                                            // For focusing on a single aspect.
-        final double[][] samplePoints = createQuadratic(-15);
+        final double[][] samplePoints = createSinusoidal(-15);
         tolerance = 1E-10;
-        verifyTransform(Arrays.copyOf(samplePoints[0], QuadraticShiftGrid.FIRST_FRACTIONAL_COORDINATE),
-                        Arrays.copyOf(samplePoints[1], QuadraticShiftGrid.FIRST_FRACTIONAL_COORDINATE));
-
-        tolerance = 0.003;                                          // Because of interpolations in fractional coordinates.
+        verifyTransform(Arrays.copyOf(samplePoints[0], SinusoidalShiftGrid.FIRST_FRACTIONAL_COORDINATE),
+                        Arrays.copyOf(samplePoints[1], SinusoidalShiftGrid.FIRST_FRACTIONAL_COORDINATE));
+        /*
+         * For non-integer coordinates, we need to relax the tolerance threshold because the linear interpolations
+         * computed by InterpolatedTransform do not give the same results than the calculation done with cosine by
+         * SinudoisalShiftGrid. The result of tested point is about (81.96 22.89).
+         */
+        tolerance = 0.01;
         verifyTransform(samplePoints[0], samplePoints[1]);
     }
 
@@ -128,13 +132,20 @@ public final strictfp class InterpolatedTransformTest extends MathTransformTestC
      * @throws TransformException if an error occurred while transforming a coordinate.
      */
     @Test
-    @org.junit.Ignore("Debugging still in progress")
     @DependsOnMethod({"testForwardTransform", "testDerivative"})
     public void testInverseTransform() throws TransformException {
         isInverseTransformSupported = false;                                            // For focusing on a single aspect.
-        final double[][] samplePoints = createQuadratic(-20);
+        final double[][] samplePoints = createSinusoidal(-20);
         transform = transform.inverse();
-        tolerance = QuadraticShiftGrid.PRECISION;
+        tolerance = SinusoidalShiftGrid.PRECISION;
+        verifyTransform(Arrays.copyOf(samplePoints[1], SinusoidalShiftGrid.FIRST_FRACTIONAL_COORDINATE),
+                        Arrays.copyOf(samplePoints[0], SinusoidalShiftGrid.FIRST_FRACTIONAL_COORDINATE));
+        /*
+         * For non-integer coordinates, we need to relax the tolerance threshold because the linear interpolations
+         * computed by InterpolatedTransform do not give the same results than the calculation done with cosine by
+         * SinudoisalShiftGrid.
+         */
+        tolerance = 0.01;
         verifyTransform(samplePoints[1], samplePoints[0]);
     }
 
@@ -147,17 +158,17 @@ public final strictfp class InterpolatedTransformTest extends MathTransformTestC
     @Test
     @DependsOnMethod("testForwardTransform")
     public void testDerivative() throws TransformException {
-        final double[][] samplePoints = createQuadratic(-40);
-        final double[] point = new double[QuadraticShiftGrid.DIMENSION];                    // A single point from 'samplePoints'
+        final double[][] samplePoints = createSinusoidal(-40);
+        final double[] point = new double[SinusoidalShiftGrid.DIMENSION];                   // A single point from 'samplePoints'
         derivativeDeltas = new double[] {0.002, 0.002};
         isInverseTransformSupported = false;                                                // For focusing on a single aspect.
-        for (int i=0; i < samplePoints[0].length; i += QuadraticShiftGrid.DIMENSION) {
-            System.arraycopy(samplePoints[0], i, point, 0, QuadraticShiftGrid.DIMENSION);
-            if (i < QuadraticShiftGrid.FIRST_FRACTIONAL_COORDINATE) {
-                tolerance = 1E-10;                                                          // Empirical value.
-            } else {
-                tolerance = 0.003;                       // Because current implementation does not yet interpolate derivatives.
-            }
+        for (int i=0; i < samplePoints[0].length; i += SinusoidalShiftGrid.DIMENSION) {
+            /*
+             * The tolerance threshold must be relaxed for derivative at a position having factional digits
+             * for the same reason than in `testForwardTransform()`. The matrix values are close to ±1.
+             */
+            System.arraycopy(samplePoints[0], i, point, 0, SinusoidalShiftGrid.DIMENSION);
+            tolerance = (i < SinusoidalShiftGrid.FIRST_FRACTIONAL_COORDINATE) ? 1E-10 : 0.02;
             verifyDerivative(point);
             /*
              * Verify derivative at the same point but using inverse transform,
@@ -165,7 +176,7 @@ public final strictfp class InterpolatedTransformTest extends MathTransformTestC
              */
             if (isInverseTransformSupported) {
                 transform = transform.inverse();
-                System.arraycopy(samplePoints[1], i, point, 0, QuadraticShiftGrid.DIMENSION);
+                System.arraycopy(samplePoints[1], i, point, 0, SinusoidalShiftGrid.DIMENSION);
                 verifyDerivative(point);
                 transform = transform.inverse();            // Back to forward transform.
             }

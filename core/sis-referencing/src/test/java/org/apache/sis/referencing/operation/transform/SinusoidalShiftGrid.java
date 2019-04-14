@@ -27,8 +27,8 @@ import org.apache.sis.parameter.Parameters;
 
 
 /**
- * Dummy implementation of {@link DatumShiftGrid} containing translation vectors that are computed by a quadratic function.
- * This class has no computational interest compared to a direct implementation of quadratic formulas, but is convenient
+ * Dummy implementation of {@link DatumShiftGrid} containing translation vectors that are computed by a sinusoidal function.
+ * This class has no computational interest compared to a direct implementation of sinusoidal formulas, but is convenient
  * for debugging {@link InterpolatedTransform} because of its predictable behavior (easier to see with rotation of 0°).
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -37,7 +37,7 @@ import org.apache.sis.parameter.Parameters;
  * @module
  */
 @SuppressWarnings("serial")                             // Not intended to be serialized.
-final strictfp class QuadraticShiftGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
+final strictfp class SinusoidalShiftGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     /**
      * Number of source and target dimensions of the grid.
      */
@@ -60,8 +60,9 @@ final strictfp class QuadraticShiftGrid extends DatumShiftGrid<Dimensionless,Dim
 
     /**
      * Grid size in number of pixels. The translation vectors in the middle of this grid will be (0,0).
+     * We simulate a grid spanning from 80°S to 80°N.
      */
-    private static final int WIDTH = 200, HEIGHT = 2000;
+    private static final int WIDTH = 100, HEIGHT = 160;
 
     /**
      * An internal step performed during computation of translation vectors at a given point.
@@ -80,11 +81,11 @@ final strictfp class QuadraticShiftGrid extends DatumShiftGrid<Dimensionless,Dim
      *
      * @param  rotation  the rotation angle, in degrees.
      */
-    QuadraticShiftGrid(final double rotation) {
+    SinusoidalShiftGrid(final double rotation) {
         super(Units.UNITY, MathTransforms.identity(DIMENSION), new int[] {WIDTH, HEIGHT}, true, Units.UNITY);
-        offsets = AffineTransform.getRotateInstance(StrictMath.toRadians(rotation));
-        offsets.scale(-0.1, 0.025);
-        offsets.translate(-0.5*WIDTH, -0.5*HEIGHT);
+        offsets = AffineTransform.getTranslateInstance(0.5*WIDTH, 0.5*HEIGHT);
+        offsets.rotate(StrictMath.toRadians(rotation));
+        offsets.scale(-0.75, 0.95);
         buffer = new double[DIMENSION];
     }
 
@@ -105,8 +106,8 @@ final strictfp class QuadraticShiftGrid extends DatumShiftGrid<Dimensionless,Dim
     final double[][] samplePoints() {
         final double[] sources = {
             /*[0]*/ WIDTH/2, HEIGHT/2,
-            /*[1]*/      50,     1400,
-            /*[2]*/     175,      200,
+            /*[1]*/      30,      120,
+            /*[2]*/      75,       40,
             /*[3]*/      10.356,   30.642               // FIRST_FRACTIONAL_COORDINATE must point here.
         };
         final double[] targets = new double[sources.length];
@@ -119,15 +120,14 @@ final strictfp class QuadraticShiftGrid extends DatumShiftGrid<Dimensionless,Dim
      * and stores the results in the given target array.
      */
     private void transform(final double[] sources, final double[] targets) {
-        offsets.transform(sources, 0, targets, 0, sources.length / DIMENSION);
-        for (int i=0; i<targets.length; i++) {
-            final double t = targets[i];
-            targets[i] = StrictMath.copySign(t*t, t);
+        for (int i=0; i<sources.length;) {
+            double x = sources[i  ] - WIDTH  / 2;
+            double y = sources[i+1] - HEIGHT / 2;
+            x /= StrictMath.max(0.1, StrictMath.cos(StrictMath.toRadians(y)));
+            targets[i++] = x;
+            targets[i++] = y;
         }
-        for (int i=0; i<targets.length;) {
-            targets[i++] += WIDTH  / 2;
-            targets[i++] += HEIGHT / 2;
-        }
+        offsets.transform(targets, 0, targets, 0, targets.length / DIMENSION);
     }
 
     /**

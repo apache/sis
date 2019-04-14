@@ -427,7 +427,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
          * more curved grids like the ones read from netCDF files. We provide this switch for allowing performance
          * comparisons.
          */
-        private static final boolean SIMPLE = true;
+        private static final boolean SIMPLE = false;
 
         /**
          * Maximum number of iterations. This is set to a higher value than {@link Formulas#MAXIMUM_ITERATIONS} because
@@ -438,8 +438,6 @@ public class InterpolatedTransform extends DatumShiftTransform {
          * values, for example close to 1000 while we usually expect values smaller than 1. Behavior with such grids may
          * be unpredictable, sometime with the {@code abs(xi - ox)} or {@code abs(yi - oy)} errors staying high for a
          * long time before to suddenly fall to zero.
-         *
-         * @see #tryAgain(int, double, double)
          */
         private static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS * 4;
 
@@ -527,18 +525,16 @@ public class InterpolatedTransform extends DatumShiftTransform {
                 }
             }
             final double[] vector = new double[SIMPLE ? dimension : dimension + 4];         // +4 is for derivate coefficients.
-nextPoint:  while (--numPts >= 0) {
+            while (--numPts >= 0) {
                 double xi, yi;                                                              // (x,y) values at iteration i.
                 final double x = xi = srcPts[srcOff  ];
                 final double y = yi = srcPts[srcOff+1];
+                double tol = tolerance;
                 if (DEBUG) {
                     System.out.format("Searching source coordinates for target = (%g %g)%n", x, y);
                 }
-                int it = MAXIMUM_ITERATIONS;
-                double tol = tolerance;
-                do {
+                for (int it = MAXIMUM_ITERATIONS;;) {
                     forward.grid.interpolateInCell(xi, yi, vector);
-                    final boolean more;
                     if (SIMPLE) {
                         /*
                          * We want (xi, yi) such as the following conditions hold
@@ -551,7 +547,7 @@ nextPoint:  while (--numPts >= 0) {
                         final double oy = yi;
                         xi = x - vector[0];
                         yi = y - vector[1];
-                        more = Math.abs(xi - ox) > tol || Math.abs(yi - oy) > tol;
+                        if (!(Math.abs(xi - ox) > tol || Math.abs(yi - oy) > tol)) break;       // Use '!' for catching NaN.
                     } else {
                         /*
                          * The error between the new position (xi + tx) and the desired position x is measured
@@ -588,65 +584,63 @@ nextPoint:  while (--numPts >= 0) {
                             assert Math.abs(dx - c[0]) < 1E-5 : Arrays.toString(c) + "  :  " + dx;
                             assert Math.abs(dy - c[1]) < 1E-5 : Arrays.toString(c) + "  :  " + dy;
 
-                            System.out.printf("  source=(%8.2f %8.2f) target=(%8.2f %8.2f) error=(%8.2f %8.2f) → (%7.2f %7.2f)%n",
+                            System.out.printf("  source=(%9.3f %9.3f) target=(%9.3f %9.3f) error=(%11.6f %11.6f) → (%11.6f %11.6f)%n",
                                                  xi, yi, (xi+tx), (yi+ty), ex, ey, dx, dy);
                         }
                         xi -= dx;
                         yi -= dy;
-                        more = Math.abs(ex) > tol || Math.abs(ey) > tol;
+                        if (!(Math.abs(ex) > tol || Math.abs(ey) > tol)) break;     // Use '!' for catching NaN.
                     }
-                    if (!more) {                                                            // Use '!' for catching NaN.
-                        if (dimension > GRID_DIMENSION) {
-                            System.arraycopy(srcPts, srcOff + GRID_DIMENSION,
-                                             dstPts, dstOff + GRID_DIMENSION,
-                                                  dimension - GRID_DIMENSION);
-                            /*
-                             * We can not use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
-                             * because the arrays may overlap. The contract said that this method
-                             * must behave as if all input coordinate values have been read before
-                             * we write outputs, which is the reason for System.arraycopy(…) call.
-                             */
-                            int i = dimension;
-                            do dstPts[dstOff + --i] -= vector[i];
-                            while (i > GRID_DIMENSION);
+                    /*
+                     * At this point we determined that we need to iterate more. If iteration does not converge, we may relaxe
+                     * threshold in last resort but nevertheless aim for an accuracy of 0.5 of cell size in order to keep some
+                     * consistency with forward transform. If the point was inside the grid, we assume (for well-formed grid)
+                     * that iteration should have converged. But during extrapolations since there is no authoritative results,
+                     * we consider that a more approximate result is okay. In particular it does not make sense to require a
+                     * 1E-7 accuracy (relative to cell size) if we don't really know what the answer should be.
+                     */
+                    if (--it < 0) {
+                        if (it < -1) {
+                            xi = yi = Double.NaN;
+                            break;
                         }
-                        dstPts[dstOff  ] = xi;          // Shall not be done before above loop.
-                        dstPts[dstOff+1] = yi;
-                        dstOff += inc;
-                        srcOff += inc;
-                        continue nextPoint;
+                        if (forward.grid.isCellInGrid(xi, yi)) {
+                            throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
+                        }
+                        tol = 0.5;
                     }
-                } while (--it >= 0 || (tol = tryAgain(it, xi, yi)) > 0);
-                throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
-            }
-        }
-
-        /**
-         * If iteration did not converge, tells whether we should perform another try with a more permissive threshold.
-         * We start relaxing threshold only in last resort, and nevertheless aim for an accuracy of 0.5 of cell size in
-         * order to keep some consistency with forward transform. We may relax more in case of extrapolations.
-         *
-         * @param  it  the iteration counter. Should be negative since we exhausted the normal number of iterations.
-         * @param  xi  best <var>x</var> estimation so far.
-         * @param  yi  best <var>y</var> estimation so far.
-         * @return the new tolerance threshold, or {@link Double#NaN} if no more try should be allowed.
-         *
-         * @see #MAXIMUM_ITERATIONS
-         */
-        private double tryAgain(final int it, final double xi, final double yi) {
-            double tol = Math.scalb(tolerance, -it);
-            if (tol >= 0.5) {
-                /*
-                 * If the point was inside the grid and the grid is well-formed, we assume that iteration should have converged.
-                 * But during extrapolations since there is no authoritative results, we consider that a more approximate result
-                 * is okay. In particular it does not make sense to require a 1E-7 accuracy (relative to cell size) if we don't
-                 * really know what the answer should be.
-                 */
-                if (forward.grid.isCellInGrid(xi, yi) || tol > 2) {
-                    return Double.NaN;                                      // No more iteration - caller will throw an exception.
                 }
+                /*
+                 * At this point iteration converged. Store the result before to continue with next point.
+                 */
+                if (DEBUG) {
+                    if (!Double.isNaN(xi) && !Double.isNaN(yi)) {
+                        forward.grid.interpolateInCell(xi, yi, vector);
+                        final double xf = xi + vector[0];
+                        final double yf = yi + vector[1];
+                        assert Math.abs(xf - x) <= tol : xf;
+                        assert Math.abs(yf - y) <= tol : yf;
+                    }
+                }
+                if (dimension > GRID_DIMENSION) {
+                    System.arraycopy(srcPts, srcOff + GRID_DIMENSION,
+                                     dstPts, dstOff + GRID_DIMENSION,
+                                          dimension - GRID_DIMENSION);
+                    /*
+                     * We can not use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
+                     * because the arrays may overlap. The contract said that this method
+                     * must behave as if all input coordinate values have been read before
+                     * we write outputs, which is the reason for System.arraycopy(…) call.
+                     */
+                    int i = dimension;
+                    do dstPts[dstOff + --i] -= vector[i];
+                    while (i > GRID_DIMENSION);
+                }
+                dstPts[dstOff  ] = xi;          // Shall not be done before above loop.
+                dstPts[dstOff+1] = yi;
+                dstOff += inc;
+                srcOff += inc;
             }
-            return tol;
         }
     }
 }
