@@ -387,6 +387,46 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
+     * Returns the envelope of source coordinates. The {@code fullArea} argument control whether
+     * the returned envelope shall encompass full surface of every cells or only their centers:
+     * <ul>
+     *   <li>If {@code true}, then the returned envelope encompasses full cell surfaces,
+     *       from lower border to upper border. In other words, the returned envelope encompasses all
+     *       {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CORNER cell corners}.</li>
+     *   <li>If {@code false}, then the returned envelope encompasses only
+     *       {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER cell centers}, inclusive.</li>
+     * </ul>
+     *
+     * This is the envelope of the grid domain (i.e. the ranges of valid {@code gridX} and {@code gridY} argument
+     * values in calls to {@code get/setControlPoint(…)} methods) transformed as below:
+     * <ol>
+     *   <li>expanded by ½ cell on each side if {@code fullArea} is {@code true}</li>
+     *   <li>transformed by the inverse of {@linkplain #getSourceToGrid() source to grid} transform.</li>
+     * </ol>
+     *
+     * @param  fullArea  whether the the envelope shall encompass the full cell surfaces instead than only their centers.
+     * @return the envelope of grid points, from lower corner to upper corner.
+     * @throws IllegalStateException if the grid points are not yet known.
+     * @throws TransformException if the envelope can not be calculated.
+     *
+     * @see LinearTransformBuilder#getSourceEnvelope()
+     *
+     * @since 1.0
+     */
+    public Envelope getSourceEnvelope(final boolean fullArea) throws TransformException {
+        Envelope envelope = linear.getSourceEnvelope();
+        if (fullArea) {
+            for (int i = envelope.getDimension(); --i >= 0;) {
+                final GeneralEnvelope ge = GeneralEnvelope.castOrCopy(envelope);
+                ge.setRange(i, ge.getLower(i) - 0.5,
+                               ge.getUpper(i) + 0.5);
+                envelope = ge;
+            }
+        }
+        return Envelopes.transform(sourceToGrid.inverse(), envelope);
+    }
+
+    /**
      * Sets all control points. The length of given vectors must be equal to the total number of cells in the grid.
      * The first vector provides the <var>x</var> coordinates; the second vector provides the <var>y</var> coordinates,
      * <i>etc.</i>. Coordinates are stored in row-major order (column index varies faster, followed by row index).
@@ -440,43 +480,35 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
-     * Returns the envelope of source coordinates. The {@code fullArea} argument control whether
-     * the returned envelope shall encompass full surface of every cells or only their centers:
-     * <ul>
-     *   <li>If {@code true}, then the returned envelope encompasses full cell surfaces,
-     *       from lower border to upper border. In other words, the returned envelope encompasses all
-     *       {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CORNER cell corners}.</li>
-     *   <li>If {@code false}, then the returned envelope encompasses only
-     *       {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER cell centers}, inclusive.</li>
-     * </ul>
+     * Returns a row of coordinate values in the given dimension.
+     * The returned vector is a view; changes in the returned vector will be reflected in this builder.
      *
-     * This is the envelope of the grid domain (i.e. the ranges of valid {@code gridX} and {@code gridY} argument
-     * values in calls to {@code get/setControlPoint(…)} methods) transformed as below:
-     * <ol>
-     *   <li>expanded by ½ cell on each side if {@code fullArea} is {@code true}</li>
-     *   <li>transformed by the inverse of {@linkplain #getSourceToGrid() source to grid} transform.</li>
-     * </ol>
-     *
-     * @param  fullArea  whether the the envelope shall encompass the full cell surfaces instead than only their centers.
-     * @return the envelope of grid points, from lower corner to upper corner.
-     * @throws IllegalStateException if the grid points are not yet known.
-     * @throws TransformException if the envelope can not be calculated.
-     *
-     * @see LinearTransformBuilder#getSourceEnvelope()
+     * @param  dimension  the target dimension for which to get coordinate values.
+     * @param  row        index of the row to get.
+     * @return coordinate values of the specified row in the specified dimension.
      *
      * @since 1.0
      */
-    public Envelope getSourceEnvelope(final boolean fullArea) throws TransformException {
-        Envelope envelope = linear.getSourceEnvelope();
-        if (fullArea) {
-            for (int i = envelope.getDimension(); --i >= 0;) {
-                final GeneralEnvelope ge = GeneralEnvelope.castOrCopy(envelope);
-                ge.setRange(i, ge.getLower(i) - 0.5,
-                               ge.getUpper(i) + 0.5);
-                envelope = ge;
-            }
-        }
-        return Envelopes.transform(sourceToGrid.inverse(), envelope);
+    public Vector getRow(final int dimension, final int row) {
+        tmp[0] = 0;
+        tmp[1] = row;
+        return linear.getTransect(dimension, tmp, 0);
+    }
+
+    /**
+     * Returns a column of coordinate values in the given dimension.
+     * The returned vector is a view; changes in the returned vector will be reflected in this builder.
+     *
+     * @param  dimension  the target dimension for which to get coordinate values.
+     * @param  column     index of the column to get.
+     * @return coordinate values of the specified column in the specified dimension.
+     *
+     * @since 1.0
+     */
+    public Vector getColumn(final int dimension, final int column) {
+        tmp[0] = column;
+        tmp[1] = 0;
+        return linear.getTransect(dimension, tmp, 1);
     }
 
     /**

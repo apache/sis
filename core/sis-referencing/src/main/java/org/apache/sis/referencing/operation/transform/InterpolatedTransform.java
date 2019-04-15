@@ -164,8 +164,8 @@ public class InterpolatedTransform extends DatumShiftTransform {
             Number offset = 0.0;
             final Number[] coefficients = Units.coefficients(normalized.getConverterTo(unit));
             switch (coefficients != null ? coefficients.length : -1) {
-                case 2:  scale  = coefficients[1];       // Fall through
-                case 1:  offset = coefficients[0];       // Fall through
+                case 2:  scale  = coefficients[1];                                      // Fall through
+                case 1:  offset = coefficients[0];                                      // Fall through
                 case 0:  break;
                 default: throw new IllegalArgumentException(Resources.format(Resources.Keys.NonLinearUnitConversion_2, normalized, unit));
             }

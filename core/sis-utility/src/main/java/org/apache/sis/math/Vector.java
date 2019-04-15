@@ -842,10 +842,10 @@ search:     for (;;) {
      * <p>This method does not copy the values. Consequently any modification to the
      * values of this vector will be reflected in the returned view and vice-versa.</p>
      *
-     * @param  first   index of the first value to be included in the returned view.
-     * @param  step    the index increment in this vector between two consecutive values
-     *                 in the returned vector. Can be positive, zero or negative.
-     * @param  length  the length of the vector to be returned. Can not be greater than
+     * @param  first   index of the first value in this vector to be included in the returned view.
+     * @param  step    the index increment between values in this vector to be included in the returned view.
+     *                 Can be positive, zero or negative.
+     * @param  length  the length of the view to be returned. Can not be greater than
      *                 the length of this vector, except if the {@code step} is zero.
      * @return a view of this vector containing values in the given index range.
      * @throws IndexOutOfBoundsException if {@code first} or {@code first + step*(length-1)}

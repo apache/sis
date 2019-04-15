@@ -138,5 +138,10 @@ public final strictfp class LocalizationGridBuilderTest extends TransformTestCas
         assertArrayEquals(new double[] {  0.4,  -21.7}, builder.getControlPoint(1, 0), STRICT);
         assertArrayEquals(new double[] {  1.3,   -8.5}, builder.getControlPoint(0, 2), STRICT);
         assertArrayEquals(new double[] { 87.7, -123.7}, builder.getControlPoint(1, 2), STRICT);
+        /*
+         * Verify getting a row and a column.
+         */
+        assertArrayEquals(new double[] {-8.5, -123.7}, builder.getRow(1, 2).doubleValues(), STRICT);
+        assertArrayEquals(new double[] {-21.7, -26.2, -123.7}, builder.getColumn(1, 1).doubleValues(), STRICT);
     }
 }

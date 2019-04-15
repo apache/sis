@@ -23,6 +23,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -54,7 +55,12 @@ public enum Linearizer {
      * Mercator (Spherical) projection. Inputs are latitude and longitude in any order (axis order will
      * be detected by inspection of {@link Axis} elements). Outputs are projected coordinates.
      */
-    MERCATOR("Mercator (Spherical)");
+    MERCATOR("Mercator (Spherical)"),
+
+    /**
+     * Satellite ground track.
+     */
+    GROUND_TRACK(null);
 
     /**
      * The map projection method to use for constructing {@link #transform}, or {@code null} if the operation
@@ -79,6 +85,8 @@ public enum Linearizer {
     /**
      * Returns the hard-coded transform represented by this enumeration that may help to make a localization grid
      * more linear.
+     *
+     * @return the transform, or {@code null} if it can not be built.
      */
     private synchronized MathTransform transform() {
         final String p = projection;
@@ -96,12 +104,7 @@ public enum Linearizer {
                 pg.parameter(Constants.SEMI_MINOR).setValue(ReferencingServices.AUTHALIC_RADIUS);
                 transform = factory.createParameterizedTransform(pg);
             } catch (FactoryException e) {
-                /*
-                 * Should never happen. But if it happens anyway, do not cause the whole netCDF reader
-                 * to fail for all files because of this error. Declare this error as originating from
-                 * Variable.getGridGeometry() because it is the caller (indirectly) for this class.
-                 */
-                Logging.unexpectedException(Logging.getLogger(Modules.NETCDF), Variable.class, "getGridGeometry", e);
+                warning(e);
             }
         }
         return transform;
@@ -110,11 +113,14 @@ public enum Linearizer {
     /**
      * Applies non-linear transform candidates to the given localization grid.
      *
+     * @param  factory      the factory to use for creating transforms.
      * @param  linearizers  the linearizers to apply.
      * @param  grid         the grid on which to add non-linear transform candidates.
      * @param  axes         coordinate system axes in CRS order.
      */
-    static void applyTo(final Set<Linearizer> linearizers, final LocalizationGridBuilder grid, final Axis[] axes) {
+    static void applyTo(final Set<Linearizer> linearizers, final MathTransformFactory factory,
+                        final LocalizationGridBuilder grid, final Axis[] axes)
+    {
         int xdim = -1, ydim = -1;
         for (int i=axes.length; --i >= 0;) {
             switch (axes[i].abbreviation) {
@@ -125,11 +131,42 @@ public enum Linearizer {
         if (xdim >= 0 && ydim >= 0) {
             final Map<String,MathTransform> projections = new HashMap<>();
             for (final Linearizer linearizer : linearizers) {
-                if (linearizer.transform != null) {
-                    projections.put(linearizer.name(), linearizer.transform());
+                MathTransform transform;
+                switch (linearizer) {
+                    default: {
+                        transform = linearizer.transform();
+                        break;
+                    }
+                    /*
+                     * Some special cases require information about the particular grid we have at hand.
+                     * Only one case for now, but more cases may be added here in the future.
+                     */
+                    case GROUND_TRACK: {
+                        int direction = axes[ydim].getMainDirection();  // Fastest varying dimension (in netCDF order) of latitude.
+                        direction ^= 1;                                 // Convert netCDF order to CRS order.
+                        try {
+                            transform = SatelliteGroundTrack.create(factory, grid, xdim, direction);
+                        } catch (FactoryException | TransformException e) {
+                            transform = null;
+                            warning(e);
+                        }
+                        break;
+                    }
+                }
+                if (transform != null) {
+                    projections.put(linearizer.name(), transform);
                 }
             }
             grid.addLinearizers(projections, xdim, ydim);
         }
+    }
+
+    /**
+     * Reports a warning as originating from {@link Variable#getGridGeometry()}, because it is the caller
+     * (indirectly) for this class. The warning reported to this method should never happen. But if one
+     * happens anyway, do not cause the whole netCDF reader to fail for all files because of this error.
+     */
+    private static void warning(final Exception e) {
+        Logging.unexpectedException(Logging.getLogger(Modules.NETCDF), Variable.class, "getGridGeometry", e);
     }
 }

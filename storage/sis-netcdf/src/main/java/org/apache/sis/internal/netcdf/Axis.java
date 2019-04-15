@@ -109,6 +109,8 @@ public final class Axis extends NamedElement {
      * <p>A given {@link Grid} should not have two {@code Axis} instances with equal {@code sourceDimensions} array.
      * When {@code sourceDimensions.length} ≧ 2 we may have two {@code Axis} instances with the same indices in their
      * {@code sourceDimensions} arrays, but those indices should be in different order.</p>
+     *
+     * @see #getMainDirection()
      */
     final int[] sourceDimensions;
 
@@ -245,7 +247,7 @@ public final class Axis extends NamedElement {
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      *
-     * @see #getDimension()
+     * @see #getMainDirection()
      */
     final void mainDimensionFirst(final Axis[] axes, final int count) throws IOException, DataStoreException {
         final int d0 = sourceDimensions[0];
@@ -313,6 +315,26 @@ public final class Axis extends NamedElement {
     }
 
     /**
+     * Returns the fastest varying dimension of this "two-dimensional" axis.
+     *
+     * <ul>
+     *   <li>If this method returns 0, then axis coordinates vary mostly in columns.
+     *       Or to be more accurate, in first grid dimension (in netCDF order) associated to this axis.</li>
+     *   <li>If this method returns 1, then axis coordinates vary mostly in rows.
+     *       Or to be more accurate, in second grid dimension (in netCDF order) associated to this axis.</li>
+     * </ul>
+     *
+     * If a grid has <var>n</var> dimensions but we copy in an array of length 2 the dimensions used by this
+     * {@code Axis} instance, while preserving the dimension order as declared in the netCDF file, then the
+     * value returned by this method is the index of the "main" dimension in this array of length 2.
+     *
+     * @return 0 or 1, depending on whether coordinates vary mostly on columns or on rows respectively.
+     */
+    final int getMainDirection() {
+        return (sourceDimensions.length < 2 || sourceDimensions[0] <= sourceDimensions[1]) ? 0 : 1;
+    }
+
+    /**
      * Returns the number of dimension of the localization grid used by this axis.
      * This method returns 2 if this axis if backed by a localization grid having 2 or more dimensions.
      * In the netCDF UCAR library, such axes are handled by a {@link ucar.nc2.dataset.CoordinateAxis2D}.
@@ -344,6 +366,7 @@ public final class Axis extends NamedElement {
      * Returns the {@link #sourceSizes} value at the given index, making sure it is representable as a
      * signed integer value. This method is invoked by operations not designed for unsigned integers.
      *
+     * @param  i  index of the desired dimension, in the same order than {@link #sourceDimensions}.
      * @throws ArithmeticException if the size can not be represented as a signed 32 bits integer.
      */
     private int getSize(final int i) {
@@ -564,7 +587,7 @@ public final class Axis extends NamedElement {
     final boolean trySetTransform(final Matrix gridToCRS, final int lastSrcDim, final int tgtDim,
             final List<MathTransform> nonLinears) throws IOException, DataStoreException
     {
-main:   switch (getDimension()) {
+        switch (getDimension()) {
             /*
              * Defined as a matter of principle, but should never happen.
              */
@@ -609,7 +632,7 @@ main:   switch (getDimension()) {
                 for (int r : repetitions) {
                     repetitionLength = Math.multiplyExact(repetitionLength, r);
                 }
-                final int ri = (sourceDimensions[0] <= sourceDimensions[1]) ? 0 : 1;
+                final int ri = getMainDirection();
                 for (int i=0; i<=1; i++) {
                     final int width  = getSize(ri ^ i    );
                     final int height = getSize(ri ^ i ^ 1);
@@ -672,8 +695,8 @@ main:   switch (getDimension()) {
                  */
                 final int ri = (xd <= yd) ? 0 : 1;      // Take in account that mainDimensionFirst(…) may have reordered values.
                 final int ro = (xo <= yo) ? 0 : 1;
-                final int width  = getSize(ri ^ 1);     // Fastest varying is right-most dimension.
-                final int height = getSize(ri    );     // Slowest varying if left-most dimension.
+                final int width  = getSize(ri ^ 1);     // Fastest varying is right-most dimension (when in netCDF order).
+                final int height = getSize(ri    );     // Slowest varying is left-most dimension (when in netCDF order).
                 if (other.sourceSizes[ro ^ 1] == width &&
                     other.sourceSizes[ro    ] == height)
                 {

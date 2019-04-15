@@ -121,8 +121,8 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
      * @param grid        interpolation grid.
      */
     DatumShiftTransform(ParameterDescriptorGroup descriptor, final DatumShiftGrid<?,?> grid) {
-        final int size = grid.getTranslationDimensions() + 1;
-        context = new ContextualParameters(descriptor, size, size);
+        final int dim = grid.getTranslationDimensions();
+        context = new ContextualParameters(descriptor, dim, dim);
         this.grid = grid;
         computeConversionFactors();
     }
@@ -139,7 +139,7 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
     DatumShiftTransform(final ParameterDescriptorGroup descriptor,
             final boolean isSource3D, final boolean isTarget3D, final DatumShiftGrid<?,?> grid)
     {
-        context = new ContextualParameters(descriptor, isSource3D ? 4 : 3, isTarget3D ? 4 : 3);
+        context = new ContextualParameters(descriptor, isSource3D ? 3 : 2, isTarget3D ? 3 : 2);
         this.grid = grid;
         computeConversionFactors();
     }

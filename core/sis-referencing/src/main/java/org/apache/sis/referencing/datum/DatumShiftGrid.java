@@ -417,13 +417,13 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * If the length of the given array is at least <var>n</var> + 4 where <var>n</var> = {@link #getTranslationDimensions()},
      * then this method appends the derivative (approximated) at the given grid indices. This is the same derivative than the
      * one computed by {@link #derivativeInCell(double, double)}, opportunistically computed here for performance reasons.
-     * The matrix layout is as below, where <var>u</var> and <var>v</var> are the coordinates after translation.
+     * The matrix layout is as below, where <var>t₀</var> and <var>t₁</var> are the coordinates after translation.
      *
      * {@preformat math
-     *   ┌                 ┐         ┌                             ┐
-     *   │  ∂u/∂x   ∂u/∂y  │    =    │  vector[n+0]   vector[n+1]  │
-     *   │  ∂v/∂x   ∂v/∂y  │         │  vector[n+2]   vector[n+3]  │
-     *   └                 ┘         └                             ┘
+     *   ┌                   ┐         ┌                             ┐
+     *   │  ∂t₀/∂x   ∂t₀/∂y  │    =    │  vector[n+0]   vector[n+1]  │
+     *   │  ∂t₁/∂x   ∂t₁/∂y  │         │  vector[n+2]   vector[n+3]  │
+     *   └                   ┘         └                             ┘
      * }
      *
      * <div class="section">Default implementation</div>
@@ -504,10 +504,24 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     }
 
     /**
-     * Estimates the derivative at the given grid indices.
+     * Estimates the derivative at the given grid indices. Derivatives must be consistent with values given by
+     * {@link #interpolateInCell(double, double, double[])} at adjacent positions. For a two-dimensional grid,
+     * {@code tₐ(x,y)} an abbreviation for {@code interpolateInCell(gridX, gridY, …)[a]} and for <var>x</var>
+     * and <var>y</var> integers, the derivative is:
+     *
+     * {@preformat math
+     *   ┌                   ┐         ┌                                                        ┐
+     *   │  ∂t₀/∂x   ∂t₀/∂y  │    =    │  t₀(x+1,y) - t₀(x,y) + 1      t₀(x,y+1) - t₀(x,y)      │
+     *   │  ∂t₁/∂x   ∂t₁/∂y  │         │  t₁(x+1,y) - t₁(x,y)          t₁(x,y+1) - t₁(x,y) + 1  │
+     *   └                   ┘         └                                                        ┘
+     * }
      *
      * <div class="section">Extrapolations</div>
-     * If the given coordinates is outside the grid, then the derivative will have some columns set to identity.
+     * Derivatives must be consistent with {@link #interpolateInCell(double, double, double[])} even when the
+     * given coordinates are outside the grid. The {@code interpolateInCell(…)} contract in such cases is to
+     * compute the translation vector at the closest position in the grid. A consequence of this contract is
+     * that translation vectors stay constant when moving along at least one direction outside the grid.
+     * Consequences on the derivative matrix are as below:
      *
      * <ul>
      *   <li>If both {@code gridX} and {@code gridY} are outside the grid, then the derivative is the identity matrix.</li>

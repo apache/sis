@@ -279,7 +279,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
          * Copy parameters to the ContextualParameter. Those parameters are not used directly by
          * EllipsoidToCentricTransform, but we need to store them in case the user asks for them.
          */
-        context = new ContextualParameters(GeographicToGeocentric.PARAMETERS, withHeight ? 4 : 3, 4);
+        context = new ContextualParameters(GeographicToGeocentric.PARAMETERS, withHeight ? 3 : 2, 3);
         context.getOrCreate(SEMI_MAJOR).setValue(semiMajor, unit);
         context.getOrCreate(SEMI_MINOR).setValue(semiMinor, unit);
         /*

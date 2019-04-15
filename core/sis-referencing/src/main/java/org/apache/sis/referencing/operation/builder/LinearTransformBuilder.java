@@ -1052,6 +1052,29 @@ search:         for (int j=domain(); --j >= 0;) {
     }
 
     /**
+     * Returns the coordinates of a single row or column in the given dimension. This method can be invoked
+     * only when this {@code LinearTransformBuilder} is known to have been built for grid source coordinates.
+     *
+     * <div class="note"><b>Note:</b>
+     * while this method is primarily for row and columns, it can be generalized to more dimensions.</div>
+     *
+     * The returned vector is a view; changes in the returned vector will be reflected in this builder.
+     *
+     * @param  dimension  the dimension of source point for which to get coordinate values.
+     * @param  start      index of the first coordinate value to get.
+     * @param  direction  0 for getting a row, 1 for getting a column.
+     * @return coordinate values for specified row or column in the given dimension.
+     */
+    final Vector getTransect(final int dimension, final int[] start, final int direction) {
+        final int first = flatIndex(start);
+        int step = 1;
+        for (int i=0; i<direction; i++) {
+            step *= gridSize[i];
+        }
+        return Vector.create(targets[dimension]).subSampling(first, step, gridSize[direction] - start[direction]);
+    }
+
+    /**
      * Tries to remove discontinuities in coordinates values caused by anti-meridian crossing. This is the implementation of
      * {@link LocalizationGridBuilder#resolveWraparoundAxis(int, int, double)} public method. See that method for javadoc.
      *

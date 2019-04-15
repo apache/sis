@@ -16,14 +16,17 @@
  */
 package org.apache.sis.internal.earth.netcdf;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
 import java.util.regex.Pattern;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.VariableRole;
+import org.apache.sis.internal.netcdf.Linearizer;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 
 
@@ -203,5 +206,17 @@ public final class GCOM_W extends Convention {
             if (Double.isFinite(offset)) tr.setOffset(offset);
         }
         return tr;
+    }
+
+    /**
+     * Returns an enumeration of two-dimensional non-linear transforms that may be tried in attempts to make
+     * localization grid more linear.
+     *
+     * @param  decoder  the netCDF file for which to determine linearizers that may possibly apply.
+     * @return enumeration of two-dimensional non-linear transforms to try.
+     */
+    @Override
+    public Set<Linearizer> linearizers(final Decoder decoder) {
+        return Collections.singleton(Linearizer.GROUND_TRACK);
     }
 }

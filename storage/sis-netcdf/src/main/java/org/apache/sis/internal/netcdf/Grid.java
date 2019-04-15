@@ -436,7 +436,7 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
                             if (grid != null) {
                                 final Set<Linearizer> linearizers = decoder.convention().linearizers(decoder);
                                 if (!linearizers.isEmpty()) {
-                                    Linearizer.applyTo(linearizers, grid, gridAxes);
+                                    Linearizer.applyTo(linearizers, factory, grid, gridAxes);
                                 }
                                 /*
                                  * Replace the first transform by the two-dimensional localization grid and
