@@ -445,36 +445,50 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * @see #isCellInGrid(double, double)
      */
     public void interpolateInCell(double gridX, double gridY, final double[] vector) {
-        if (gridX < 0) gridX = 0;
-        if (gridY < 0) gridY = 0;
+        boolean skipX = false;
+        boolean skipY = false;                          // Whether to skip derivative calculation for X or Y.
+        if (gridX < 0) {gridX = 0; skipX = true;}
+        if (gridY < 0) {gridY = 0; skipY = true;}
         int ix = (int) gridX;  gridX -= ix;
         int iy = (int) gridY;  gridY -= iy;
         int n;
         if (ix > (n = gridSize[0] - 2)) {
-            ix = n;
-            gridX = 1;
+            skipX |= (ix != n+1 || gridX != 0);         // Keep value 'false' if gridX == gridSize[0] - 1.
+            ix     = n;
+            gridX  = 1;
         }
         if (iy > (n = gridSize[1] - 2)) {
-            iy = n;
-            gridY = 1;
+            skipY |= (iy != n+1 || gridY != 0);         // Keep value 'false' if gridY == gridSize[1] - 1.
+            iy     = n;
+            gridY  = 1;
         }
         n = getTranslationDimensions();
         boolean derivative = (vector.length >= n + INTERPOLATED_DIMENSIONS * INTERPOLATED_DIMENSIONS);
         for (int dim = 0; dim < n; dim++) {
-            double dx;
+            double dx, dy;
             final double r00 = getCellValue(dim, ix,   iy  );
             final double r01 = getCellValue(dim, ix+1, iy  );       // Naming convention: ryx (row index first, like matrix).
             final double r10 = getCellValue(dim, ix,   iy+1);
             final double r11 = getCellValue(dim, ix+1, iy+1);
-            final double r0x = r00 + gridX * (dx = r01 - r00);                          // TODO: use Math.fma on JDK9.
-            final double r1x = r10 + gridX * (     r11 - r10);
+            final double r0x = r00 + gridX * (dx = r01 - r00);      // TODO: use Math.fma on JDK9.
+            final double r1x = r10 + gridX * (dy = r11 - r10);      // Not really "dy" measurement yet, will become dy later.
             vector[dim] = gridY * (r1x - r0x) + r0x;
             if (derivative) {
                 /*
                  * Following code appends the same values than the ones computed by derivativeInCell(gridX, gridY),
                  * but reusing some of the values that we already fetched for computing the interpolation.
                  */
-                double dy = r10 - r00;
+                if (skipX) {
+                    dx = 0;
+                } else {
+                    dx += (dy - dx) * gridX;
+                }
+                if (skipY) {
+                    dy = 0;
+                } else {
+                    dy  =  r10 - r00;
+                    dy += (r11 - r01 - dy) * gridY;
+                }
                 int i = n;
                 if (dim == 0) {
                     dx++;
@@ -490,14 +504,18 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     }
 
     /**
-     * Returns the derivative at the given grid indices.
-     * If the given coordinates is outside the grid, then this method returns the derivative at the closest cell.
+     * Estimates the derivative at the given grid indices.
      *
-     * <div class="section">Default implementation</div>
-     * The current implementation assumes that the derivative is constant everywhere in the cell
-     * at the given indices. It does not yet take in account the fractional part of {@code gridX}
-     * and {@code gridY}, because empirical tests suggest that the accuracy of such interpolation
-     * is uncertain.
+     * <div class="section">Extrapolations</div>
+     * If the given coordinates is outside the grid, then the derivative will have some columns set to identity.
+     *
+     * <ul>
+     *   <li>If both {@code gridX} and {@code gridY} are outside the grid, then the derivative is the identity matrix.</li>
+     *   <li>If only {@code gridX} is outside the grid, then only the first column is set to [1, 0, …].
+     *       The second column is set to the derivative of the closest cell at {@code gridY} position.</li>
+     *   <li>If only {@code gridY} is outside the grid, then only the second column is set to [0, 1, …].
+     *       The first column is set to the derivative of the closest cell at {@code gridX} position.</li>
+     * </ul>
      *
      * @param  gridX  first grid coordinate of the point for which to get the translation.
      * @param  gridY  second grid coordinate of the point for which to get the translation.
@@ -506,16 +524,29 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * @see #isCellInGrid(double, double)
      * @see #interpolateInCell(double, double, double[])
      */
-    public Matrix derivativeInCell(final double gridX, final double gridY) {
+    public Matrix derivativeInCell(double gridX, double gridY) {
         final int ix = Math.max(0, Math.min(gridSize[0] - 2, (int) gridX));
         final int iy = Math.max(0, Math.min(gridSize[1] - 2, (int) gridY));
+        gridX -= ix;
+        gridY -= iy;
+        final boolean skipX = (gridX < 0 || gridX > 1);
+        final boolean skipY = (gridY < 0 || gridY > 1);
         final Matrix derivative = Matrices.createDiagonal(getTranslationDimensions(), gridSize.length);
         for (int j=derivative.getNumRow(); --j>=0;) {
             final double r00 = getCellValue(j, ix,   iy  );
-            final double dx  = getCellValue(j, ix+1, iy  ) - r00;
-            final double dy  = getCellValue(j, ix,   iy+1) - r00;
-            derivative.setElement(j, 0, derivative.getElement(j, 0) + dx);
-            derivative.setElement(j, 1, derivative.getElement(j, 1) + dy);
+            final double r01 = getCellValue(j, ix+1, iy  );       // Naming convention: ryx (row index first, like matrix).
+            final double r10 = getCellValue(j, ix,   iy+1);
+            final double r11 = getCellValue(j, ix+1, iy+1);
+            if (!skipX) {
+                double dx = r01 - r00;
+                dx += (r11 - r10 - dx) * gridX;
+                derivative.setElement(j, 0, derivative.getElement(j, 0) + dx);
+            }
+            if (!skipY) {
+                double dy = r10 - r00;
+                dy += (r11 - r01 - dy) * gridY;
+                derivative.setElement(j, 1, derivative.getElement(j, 1) + dy);
+            }
         }
         return derivative;
     }
@@ -533,11 +564,16 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *       {@linkplain #DatumShiftGrid(Unit, LinearTransform, int[], boolean, Unit) constructor javadoc}).</li>
      * </ul>
      *
+     * Caller must ensure that all arguments given to this method are in their expected ranges.
+     * The behavior of this method is undefined if any argument value is out-of-range.
+     * (this method is not required to validate arguments, for performance reasons).
+     *
      * @param  dim    the dimension of the translation vector component to get,
      *                from 0 inclusive to {@link #getTranslationDimensions()} exclusive.
      * @param  gridX  the grid index on the <var>x</var> axis, from 0 inclusive to {@code gridSize[0]} exclusive.
      * @param  gridY  the grid index on the <var>y</var> axis, from 0 inclusive to {@code gridSize[1]} exclusive.
      * @return the translation for the given dimension in the grid cell at the given index.
+     * @throws IndexOutOfBoundsException may be thrown (but is not guaranteed to be throw) if an argument is out of range.
      */
     public abstract double getCellValue(int dim, int gridX, int gridY);
 
@@ -685,9 +721,13 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      */
     @Override
     public String toString() {
-        final Parameters p = Parameters.castOrWrap(getParameterDescriptors().createValue());
-        getParameterValues(p);
-        return p.toString();
+        final ParameterDescriptorGroup d = getParameterDescriptors();
+        if (d != null) {
+            final Parameters p = Parameters.castOrWrap(d.createValue());
+            getParameterValues(p);
+            return p.toString();
+        }
+        return super.toString();
     }
 
     /**

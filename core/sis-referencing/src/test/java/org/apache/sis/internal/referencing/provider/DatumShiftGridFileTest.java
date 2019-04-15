@@ -20,6 +20,7 @@ import java.util.Random;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
 import javax.measure.quantity.Dimensionless;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.measure.Units;
@@ -172,10 +173,11 @@ public strictfp class DatumShiftGridFileTest extends TestCase {
         init(30);
         for (int i=0; i<NUM_TESTS; i++) {
             /*
-             * Compute the reference point.
+             * Compute the reference point. We need to avoid points outside the grid because derivates at those
+             * locations are partially fixed to identity, which is different than affine transform coefficients.
              */
-            final int x = random.nextInt(WIDTH);
-            final int y = random.nextInt(HEIGHT);
+            final int x = random.nextInt(WIDTH  - 1);
+            final int y = random.nextInt(HEIGHT - 1);
             point.x = x;
             point.y = y;
             assertSame(point, reference.transform(point, point));
@@ -189,6 +191,50 @@ public strictfp class DatumShiftGridFileTest extends TestCase {
             assertEquals("m01", reference.getShearX(), vector[3], TOLERANCE);
             assertEquals("m10", reference.getShearY(), vector[4], TOLERANCE);
             assertEquals("m11", reference.getScaleY(), vector[5], TOLERANCE);
+            assertSameDerivative(x, y, vector);
         }
+    }
+
+    /**
+     * Tests {@link DatumShiftGridFile#interpolateAt(double...)} with some values outside the grid.
+     * Derivatives outside the grid have different coefficients than derivatives inside the grid.
+     * This test verifies that methods computing derivatives are self-consistent.
+     *
+     * @throws TransformException if an error occurred while transforming a coordinates.
+     */
+    @Test
+    @DependsOnMethod("testInterpolateAndDerivative")
+    public void testExtrapolation() throws TransformException {
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        final Point2D.Float point = new Point2D.Float();
+        final double[] vector = new double[6];
+        init(50);
+        for (int i=0; i<NUM_TESTS; i++) {
+            final int x = random.nextInt(WIDTH  * 2) - WIDTH  / 4;
+            final int y = random.nextInt(HEIGHT * 2) - HEIGHT / 4;
+            point.x = x;
+            point.y = y;
+            grid.interpolateInCell(x, y, vector);
+            if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT) {
+                assertSame(point, reference.transform(point, point));
+                assertEquals("x", point.x, (float) (vector[0] + x), TOLERANCE);
+                assertEquals("y", point.y, (float) (vector[1] + y), TOLERANCE);
+            }
+            assertSameDerivative(x, y, vector);
+        }
+    }
+
+    /**
+     * Verifies that the matrix returned by {@link DatumShiftGridFile#derivativeInCell(double, double)}
+     * contains coefficients identical to the ones in the given vector.
+     */
+    private void assertSameDerivative(final int x, final int y, final double[] vector) {
+        Matrix m = grid.derivativeInCell(x, y);
+        assertEquals("numRow", 2, m.getNumRow());
+        assertEquals("numCol", 2, m.getNumCol());
+        assertEquals("m00", m.getElement(0,0), vector[2], STRICT);
+        assertEquals("m01", m.getElement(0,1), vector[3], STRICT);
+        assertEquals("m10", m.getElement(1,0), vector[4], STRICT);
+        assertEquals("m11", m.getElement(1,1), vector[5], STRICT);
     }
 }

@@ -25,6 +25,8 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameters;
 
+import static org.junit.Assert.*;
+
 
 /**
  * Dummy implementation of {@link DatumShiftGrid} containing translation vectors that are computed by a sinusoidal function.
@@ -136,6 +138,9 @@ final strictfp class SinusoidalShiftGrid extends DatumShiftGrid<Dimensionless,Di
      */
     @Override
     public double getCellValue(int dim, int gridX, int gridY) {
+        assertTrue(dim   >= 0 && dim < DIMENSION);
+        assertTrue(gridX >= 0 && gridX < WIDTH);
+        assertTrue(gridY >= 0 && gridY < HEIGHT);
         buffer[0] = gridX;
         buffer[1] = gridY;
         transform(buffer, buffer);

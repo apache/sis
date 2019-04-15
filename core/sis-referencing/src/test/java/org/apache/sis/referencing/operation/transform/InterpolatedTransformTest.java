@@ -150,7 +150,7 @@ public final strictfp class InterpolatedTransformTest extends MathTransformTestC
     }
 
     /**
-     * Tests the derivatives at the sample point. This method compares the derivatives computed by
+     * Tests the derivatives at the sample points. This method compares the derivatives computed by
      * the transform with an estimation of derivatives computed by the finite differences method.
      *
      * @throws TransformException if an error occurred while transforming the coordinate.
@@ -168,7 +168,7 @@ public final strictfp class InterpolatedTransformTest extends MathTransformTestC
              * for the same reason than in `testForwardTransform()`. The matrix values are close to ±1.
              */
             System.arraycopy(samplePoints[0], i, point, 0, SinusoidalShiftGrid.DIMENSION);
-            tolerance = (i < SinusoidalShiftGrid.FIRST_FRACTIONAL_COORDINATE) ? 1E-10 : 0.02;
+            tolerance = (i < SinusoidalShiftGrid.FIRST_FRACTIONAL_COORDINATE) ? 1E-10 : 0.01;
             verifyDerivative(point);
             /*
              * Verify derivative at the same point but using inverse transform,
@@ -180,6 +180,34 @@ public final strictfp class InterpolatedTransformTest extends MathTransformTestC
                 verifyDerivative(point);
                 transform = transform.inverse();            // Back to forward transform.
             }
+        }
+    }
+
+    /**
+     * Tests the derivatives at sample points outside the grid. Those derivatives must be consistent
+     * in order to allow inverse transformation to work when the initial point is outside the grid.
+     *
+     * @throws TransformException if an error occurred while transforming the coordinate.
+     */
+    @Test
+    @DependsOnMethod("testDerivative")
+    public void testExtrapolations() throws TransformException {
+        createSinusoidal(-50);
+        final double[] point = new double[SinusoidalShiftGrid.DIMENSION];
+        derivativeDeltas = new double[] {0.002, 0.002};
+        isInverseTransformSupported = false;                                                // For focusing on a single aspect.
+        tolerance = 1E-10;
+        for (int i=0; i<=4; i++) {
+            switch (i) {
+                default: throw new AssertionError(i);
+                case 0: point[0] = -50; point[1] =  40; break;       // Point outside grid on the left.
+                case 1: point[0] = 200; point[1] =  60; break;       // Point outside grid on the right.
+                case 2: point[0] =  20; point[1] = -50; break;       // Point outside grid on the top.
+                case 3: point[0] = -80; point[1] = 230; break;       // Point outside grid two sides.
+                case 4: point[0] =  80; point[1] = 185;              // Point outside grid on the bottom.
+                        tolerance = 0.3; break;
+            }
+            verifyDerivative(point);
         }
     }
 
@@ -209,7 +237,6 @@ public final strictfp class InterpolatedTransformTest extends MathTransformTestC
         // Forward derivative
         transform        = transform.inverse();
         derivativeDeltas = new double[] {0.2, 0.2};
-        tolerance        = 5E-6;                        // Empirical value.
         verifyDerivative(FranceGeocentricInterpolationTest.samplePoint(1));
 
         // Inverse derivative

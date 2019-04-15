@@ -184,35 +184,50 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
      */
     @Override
     public void interpolateInCell(double gridX, double gridY, double[] vector) {
-        if (gridX < 0) gridX = 0;
-        if (gridY < 0) gridY = 0;
+        boolean skipX = false;
+        boolean skipY = false;                          // Whether to skip derivative calculation for X or Y.
+        if (gridX < 0) {gridX = 0; skipX = true;}
+        if (gridY < 0) {gridY = 0; skipY = true;}
         int ix = (int) gridX;  gridX -= ix;
         int iy = (int) gridY;  gridY -= iy;
         if (ix > nx - 2) {
-            ix = nx - 2;
-            gridX = 1;
+            skipX |= (ix != nx-1 || gridX != 0);        // Keep value 'false' if gridX == gridSize[0] - 1.
+            ix     = nx - 2;
+            gridX  = 1;
         }
-        if (iy > ymax) {             // Subtraction of 2 already done by the constructor.
-            iy = ymax;
-            gridY = 1;
+        if (iy > ymax) {                                // Subtraction of 2 already done by the constructor.
+            skipY |= (iy != ymax+1 || gridY != 0);      // Keep value 'false' if gridY == gridSize[1] - 1.
+            iy     = ymax;
+            gridY  = 1;
         }
         final int p00 = nx*iy + ix;
         final int p10 = nx + p00;
         final int n   = data.length;
-        boolean derivative = (vector.length >= n + INTERPOLATED_DIMENSIONS*INTERPOLATED_DIMENSIONS);
+        boolean derivative = (vector.length >= n + INTERPOLATED_DIMENSIONS * INTERPOLATED_DIMENSIONS);
         for (int dim = 0; dim < n; dim++) {
-            double dx;
+            double dx, dy;
             final short[] values = data[dim];
             final double r00 = values[p00    ];
-            final double r01 = values[p00 + 1];         // Naming convention: ryx (row index first, like matrix).
+            final double r01 = values[p00 + 1];                     // Naming convention: ryx (row index first, like matrix).
             final double r10 = values[p10    ];
             final double r11 = values[p10 + 1];
-            final double r0x = r00 + gridX * (dx = r01 - r00);           // TODO: use Math.fma on JDK9.
-            final double r1x = r10 + gridX * (     r11 - r10);
+            final double r0x = r00 + gridX * (dx = r01 - r00);      // TODO: use Math.fma on JDK9.
+            final double r1x = r10 + gridX * (dy = r11 - r10);      // Not really "dy" measurement yet, will become dy later.
             vector[dim] = (gridY * (r1x - r0x) + r0x) * scale + averages[dim];
             if (derivative) {
-                double dy = (r10 - r00) * scale;
-                dx *= scale;
+                if (skipX) {
+                    dx = 0;
+                } else {
+                    dx += (dy - dx) * gridX;
+                    dx *= scale;
+                }
+                if (skipY) {
+                    dy = 0;
+                } else {
+                    dy  =  r10 - r00;
+                    dy += (r11 - r01 - dy) * gridY;
+                    dy *= scale;
+                }
                 int i = n;
                 if (dim == 0) {
                     dx++;
