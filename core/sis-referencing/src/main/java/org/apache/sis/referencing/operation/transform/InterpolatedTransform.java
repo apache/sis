@@ -416,7 +416,9 @@ public class InterpolatedTransform extends DatumShiftTransform {
         private static final long serialVersionUID = 4335801994727826360L;
 
         /**
-         * Set to {@code true} for debugging.
+         * Whether to enable debugging. If {@code true}, additional but very costly {@code assert} statements will
+         * be enabled, and some information will be printed to the standard output stream. Enabling debugging slows
+         * down considerably the transformations; it should be done only for small set of test data.
          */
         private static final boolean DEBUG = false;
 
@@ -569,19 +571,18 @@ public class InterpolatedTransform extends DatumShiftTransform {
                         final double dx  = (ex * m11 - ey * m01) / det;         // Errors in source units.
                         final double dy  = (ey * m00 - ex * m10) / det;
                         if (DEBUG) {
-                            Matrix m = forward.grid.derivativeInCell(xi, yi);
-                            assert m.getElement(0,0) == m00;
-                            assert m.getElement(0,1) == m01;
-                            assert m.getElement(1,0) == m10;
-                            assert m.getElement(1,1) == m11;
-
-                            m = Matrices.inverse(m);
-                            double[] c = ((MatrixSIS) m).multiply(new double[] {ex, ey});
-                            assert Math.abs(dx - c[0]) < 1E-5 : Arrays.toString(c) + "  :  " + dx;
-                            assert Math.abs(dy - c[1]) < 1E-5 : Arrays.toString(c) + "  :  " + dy;
-
                             System.out.printf("  source=(%9.3f %9.3f) target=(%9.3f %9.3f) error=(%11.6f %11.6f) → (%11.6f %11.6f)%n",
                                                  xi, yi, (xi+tx), (yi+ty), ex, ey, dx, dy);
+
+                            Matrix m = forward.grid.derivativeInCell(xi, yi);
+                            assert m.getElement(0,0) == m00 &                   // Expect `m` computed in exact same way.
+                                   m.getElement(0,1) == m01 &
+                                   m.getElement(1,0) == m10 &
+                                   m.getElement(1,1) == m11 : m;
+
+                            final double[] d = Matrices.inverse(m).multiply(new double[] {ex, ey});
+                            assert Math.abs(dx - d[0]) < tol &
+                                   Math.abs(dy - d[1]) < tol : Arrays.toString(d) + " versus [" + dx + ", " + dy + "]";
                         }
                         xi -= dx;
                         yi -= dy;
