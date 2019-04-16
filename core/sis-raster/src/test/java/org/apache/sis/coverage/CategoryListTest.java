@@ -275,7 +275,7 @@ public final strictfp class CategoryListTest extends TestCase {
             final Category c = list.get(random.nextInt(list.size()));
             final int lower  =  (int) c.range.getMinDouble(true);
             final int span   = ((int) c.range.getMaxDouble(false)) - lower;
-            int count = Math.min(random.nextInt(span + 5) + 1, input.length - i);
+            int count = StrictMath.min(random.nextInt(span + 5) + 1, input.length - i);
             while (--count >= 0) {
                 input  [i] = random.nextInt(span) + lower;
                 output0[i] = list.transform(input[i]);
