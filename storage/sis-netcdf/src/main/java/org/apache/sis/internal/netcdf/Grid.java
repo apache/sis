@@ -439,6 +439,15 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
                                     Linearizer.applyTo(linearizers, factory, grid, gridAxes);
                                 }
                                 /*
+                                 * There is usually a one-to-one relationship between localization grid cells and image pixels.
+                                 * Consequently an accuracy set to a fraction of cell should be enough.
+                                 *
+                                 * TODO: take in account the case where Variable.Adjustment.dataToGridIndices() returns a value
+                                 * smaller than 1. For now we set the desired precision to a value 10 times smaller in order to
+                                 * take in account the case where dataToGridIndices() returns 0.1.
+                                 */
+                                grid.setDesiredPrecision(0.001);
+                                /*
                                  * Replace the first transform by the two-dimensional localization grid and
                                  * remove the other transform. Removals need to be done in arrays too.
                                  */

@@ -433,13 +433,9 @@ public class InterpolatedTransform extends DatumShiftTransform {
          * Maximum number of iterations. This is set to a higher value than {@link Formulas#MAXIMUM_ITERATIONS} because
          * the data used in {@link InterpolatedTransform} grid may come from anywhere, in particular localization grids
          * in netCDF files. Deformations in those grids may be much higher than e.g. {@link DatumShiftTransform} grids.
-         * We observed that inverse transformations may converge slowly if the grid is far from a linear approximation.
-         * It happens when the grids have very high {@link DatumShiftGrid#interpolateInCell(double, double, double[])}
-         * values, for example close to 1000 while we usually expect values smaller than 1. Behavior with such grids may
-         * be unpredictable, sometime with the {@code abs(xi - ox)} or {@code abs(yi - oy)} errors staying high for a
-         * long time before to suddenly fall to zero.
+         * The algorithm in this class converges more slowly in area with very strong curvature.
          */
-        private static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS * 4;
+        private static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS * 2;
 
         /**
          * The enclosing transform.
@@ -600,14 +596,15 @@ public class InterpolatedTransform extends DatumShiftTransform {
                      * 1E-7 accuracy (relative to cell size) if we don't really know what the answer should be.
                      */
                     if (--it < 0) {
-                        if (it < -1) {
+                        if (it == -1) {
+                            if (forward.grid.isCellInGrid(xi, yi)) {
+                                throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
+                            }
+                            tol = 0.5;
+                        } else {
                             xi = yi = Double.NaN;
                             break;
                         }
-                        if (forward.grid.isCellInGrid(xi, yi)) {
-                            throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
-                        }
-                        tol = 0.5;
                     }
                 }
                 /*

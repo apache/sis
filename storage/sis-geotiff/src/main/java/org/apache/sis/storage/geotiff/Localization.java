@@ -52,6 +52,8 @@ final class Localization {
     /**
      * The desired precision of coordinate transformations in units of pixels.
      * This is an arbitrary value that may be adjusted in any future SIS version.
+     *
+     * @todo compute the value based on the cell size in order to have an accuracy of about 1 cm on Earth.
      */
     private static final double PRECISION = 1E-6;
 
