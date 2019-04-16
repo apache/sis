@@ -84,15 +84,17 @@ public final strictfp class LocalizationGridBuilderTest extends TransformTestCas
     public void testQuadratic() throws FactoryException, TransformException {
         final AffineTransform reference = new AffineTransform(20, -30, 5, -4, -20, 8);
         final LocalizationGridBuilder builder = builder(reference, 5, 4);
+        builder.setDesiredPrecision(1E-6);
         transform = builder.create(null);
 
-        tolerance = 1E-13;
+        tolerance = 2E-7;
         isInverseTransformSupported = false;
         verifyQuadratic();
         /*
          * The tolerance value specified here should be approximately equal to ResidualGrid.accuracy.
+         * That value was specified in the call to builder.setDesiredPrecision(1E-6).
          */
-        tolerance = LocalizationGridBuilder.DEFAULT_PRECISION;
+        tolerance = 1E-6;
         isInverseTransformSupported = true;
         verifyQuadratic();
     }

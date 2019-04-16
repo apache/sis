@@ -131,7 +131,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * precision has been specified. The {@code sourceToGrid} transform shall not be applied on this value.
      * This default precision may change in any future SIS version.
      */
-    static final double DEFAULT_PRECISION = 1E-7;
+    private static final double DEFAULT_PRECISION = 1E-7;
 
     /**
      * The transform created by {@link #create(MathTransformFactory)}.
@@ -627,7 +627,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
             } else {
                 final int      width    = linear.gridSize(0);
                 final int      height   = linear.gridSize(1);
-                final double[] residual = new double[SOURCE_DIMENSION * linear.gridLength];
+                final float[]  residual = new float [SOURCE_DIMENSION * linear.gridLength];
                 final double[] grid     = new double[SOURCE_DIMENSION * width];
                 double gridPrecision    = precision;
                 try {
@@ -659,10 +659,14 @@ public class LocalizationGridBuilder extends TransformBuilder {
                         tmp[0] = 0;
                         tmp[1] = y;
                         linear.getControlRow(tmp, grid);                                    // Expected positions.
-                        coordToGrid.transform(grid, 0, residual, k, width);                 // As grid coordinate.
-                        for (int x=0; x<width; x++) {
-                            isLinear &= (residual[k++] -= x) <= gridPrecision;
-                            isLinear &= (residual[k++] -= y) <= gridPrecision;
+                        coordToGrid.transform(grid, 0, grid, 0, width);                     // As grid coordinate.
+                        for (int i=0,x=0; x<width; x++) {
+                            final double dx = grid[i++] - x;
+                            final double dy = grid[i++] - y;
+                            isLinear &= (dx <= gridPrecision);
+                            isLinear &= (dy <= gridPrecision);
+                            residual[k++] = (float) dx;
+                            residual[k++] = (float) dy;
                         }
                     }
                 } catch (TransformException e) {

@@ -50,7 +50,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -713276314000661839L;
+    private static final long serialVersionUID = 5207799661806374259L;
 
     /**
      * Number of source dimensions of the residual grid.
@@ -111,8 +111,10 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     /**
      * The residual data, as translations to apply on the result of affine transform.
      * In this flat array, index of target dimension varies fastest, then column index, then row index.
+     * Single precision instead of double is presumed sufficient because this array contains only differences,
+     * not absolute positions. Absolute positions will be computed by adding {@code double} values to those offsets.
      */
-    private final double[] offsets;
+    private final float[] offsets;
 
     /**
      * Conversion from translated coordinates (after the datum shift has been applied) to "real world" coordinates.
@@ -139,7 +141,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * @param precision     desired precision of inverse transformations in unit of grid cells.
      */
     ResidualGrid(final LinearTransform sourceToGrid, final LinearTransform gridToTarget,
-            final int nx, final int ny, final double[] residuals, final double precision)
+            final int nx, final int ny, final float[] residuals, final double precision)
     {
         super(Units.UNITY, sourceToGrid, new int[] {nx, ny}, true, Units.UNITY);
         this.gridToTarget = gridToTarget;
