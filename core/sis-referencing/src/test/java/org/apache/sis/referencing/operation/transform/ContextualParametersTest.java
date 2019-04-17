@@ -16,14 +16,12 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroupTest;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.test.DependsOnMethod;
@@ -40,7 +38,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link ContextualParameters}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -50,9 +48,7 @@ public final strictfp class ContextualParametersTest extends TestCase {
      * Creates an instance to use for testing purpose.
      */
     private static ContextualParameters create(final int srcDim, final int dstDim) {
-        return new ContextualParameters(new DefaultOperationMethod(
-                Collections.singletonMap(DefaultOperationMethod.NAME_KEY, "Test method"),
-                srcDim, dstDim, DefaultParameterDescriptorGroupTest.M1_M1_O1_O2));
+        return new ContextualParameters(DefaultParameterDescriptorGroupTest.M1_M1_O1_O2, srcDim, dstDim);
     }
 
     /**

@@ -762,6 +762,10 @@ public class GridGeometry implements Serializable {
      *
      * <p>Note that for this computation, it does not matter if {@code gridToCRS} is the user-specified
      * transform or the {@code this.gridToCRS} field value; both should produce equivalent results.</p>
+     *
+     * @param  gridToCRS  a transform for which to compute the resolution, or {@code null} if none.
+     * @param  domain     the domain for which to get a resolution, or {@code null} if none.
+     *                    If non-null, must be the source of {@code gridToCRS}.
      */
     static double[] resolution(final MathTransform gridToCRS, final GridExtent domain) {
         final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
@@ -778,6 +782,7 @@ public class GridGeometry implements Serializable {
     /**
      * Computes the resolutions from the given matrix. This is the magnitude of each row vector.
      *
+     * @param  gridToCRS    Jacobian matrix or affine transform for which to compute the resolution.
      * @param  numToIgnore  number of rows and columns to ignore at the end of the matrix.
      *         This is 0 if the matrix is a derivative (i.e. we ignore nothing), or 1 if the matrix
      *         is an affine transform (i.e. we ignore the translation column and the [0 0 … 1] row).
@@ -934,19 +939,21 @@ public class GridGeometry implements Serializable {
 
     /**
      * Verifies that this grid geometry defines an {@linkplain #extent} and a {@link #cornerToCRS} transform.
-     * They are the information required for mapping the grid to a spatiotemporal envelope.
-     * Note that this implies that {@link #envelope} is non-null.
+     * They are the information required for mapping the grid to a spatiotemporal envelope or position.
+     * Note that this implies that {@link #envelope} is non-null (but not necessarily that its CRS is non-null).
      *
-     * @return {@link #cornerToCRS}.
+     * @param  center  {@code true} for "center to CRS" transform, {@code false} for "corner to CRS" transform.
+     * @return {@link #gridToCRS} or {@link #cornerToCRS}.
      */
-    final MathTransform requireGridToCRS() throws IncompleteGridGeometryException {
+    final MathTransform requireGridToCRS(final boolean center) throws IncompleteGridGeometryException {
         if (extent == null) {
             throw incomplete(EXTENT, Resources.Keys.UnspecifiedGridExtent);
         }
-        if (cornerToCRS == null) {
+        final MathTransform mt = center ? gridToCRS : cornerToCRS;
+        if (mt == null) {
             throw incomplete(GRID_TO_CRS, Resources.Keys.UnspecifiedTransform);
         }
-        return cornerToCRS;
+        return mt;
     }
 
     /**

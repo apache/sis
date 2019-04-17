@@ -147,22 +147,14 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     private final DataType dataType;
 
     /**
-     * The grid geometry associated to this variable,
-     * computed by {@link ChannelDecoder#getGrids()} when first needed.
-     * May stay {@code null} if the variable is not a data cube.
+     * The grid geometry associated to this variable, computed by {@link ChannelDecoder#getGrids()} when first needed.
+     * May stay {@code null} if the variable is not a data cube. We do not need disambiguation between the case where
+     * the grid has not yet been computed and the case where the computation has been done with {@code null} result,
+     * because {@link #getGrid(Adjustment)} should be invoked only once per variable.
      *
-     * @see #getGrid()
+     * @see #getGrid(Adjustment)
      */
     GridInfo grid;
-
-    /**
-     * For disambiguation of the case where {@link #grid} has been computed and the result still null.
-     * Note that {@link #grid} may be determined and non-null even if this flag is {@code false}.
-     *
-     * @see #grid
-     * @see #getGrid()
-     */
-    private transient boolean gridDetermined;
 
     /**
      * {@code true} if this variable seems to be a coordinate system axis, as determined by comparing its name
@@ -478,20 +470,19 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
-     * The grid geometries are opportunistically cached in {@code VariableInfo} instances after they have
-     * been computed by {@link ChannelDecoder#getGrids()}.
-     * The same grid geometry may be shared by many variables.
+     * Returns a builder for the grid geometry of this variable, or {@code null} if this variable is not a data cube.
+     * The grid geometry builders are opportunistically cached in {@code VariableInfo} instances after they have been
+     * computed by {@link ChannelDecoder#getGrids()}. This method delegates to the super-class method only if the grid
+     * requires more analysis than the one performed by {@link ChannelDecoder}.
      *
      * @see ChannelDecoder#getGrids()
      */
     @Override
-    protected Grid getGrid() throws IOException, DataStoreException {
-        if (grid == null && !gridDetermined) {
-            gridDetermined = true;                            // Set first for avoiding other attempts in case of failure.
+    protected Grid getGrid(final Adjustment adjustment) throws IOException, DataStoreException {
+        if (grid == null) {
             decoder.getGrids();                               // Force calculation of grid geometries if not already done.
             if (grid == null) {                               // May have been computed as a side-effect of decoder.getGrids().
-                grid = (GridInfo) super.getGrid();            // Non-null if grid dimensions are different than this variable.
+                grid = (GridInfo) super.getGrid(adjustment);  // Non-null if grid dimensions are different than this variable.
             }
         }
         return grid;

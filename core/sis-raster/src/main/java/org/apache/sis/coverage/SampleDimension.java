@@ -102,7 +102,7 @@ public class SampleDimension implements Serializable {
 
     /**
      * The transform from samples to real values. May be {@code null} if this sample dimension
-     * does not define any transform (which is not the same that defining an identity transform).
+     * does not define any transform (which is not the same than defining an identity transform).
      *
      * @see #getTransferFunction()
      */
@@ -165,7 +165,7 @@ public class SampleDimension implements Serializable {
         if (categories.isEmpty()) {
             list = CategoryList.EMPTY;
         } else {
-            list = new CategoryList(categories.toArray(new Category[categories.size()]), null);
+            list = CategoryList.create(categories.toArray(new Category[categories.size()]));
         }
         this.name       = name;
         this.background = background;
@@ -224,7 +224,7 @@ public class SampleDimension implements Serializable {
      * Returns the background value. If this sample dimensions has quantitative categories, then the background
      * value should be one of the value returned by {@link #getNoDataValues()}. However this is not mandatory.
      *
-     * @return the background value.
+     * @return the background value, typically (but not necessarily) one of {@link #getNoDataValues()}.
      */
     public Optional<Number> getBackground() {
         return Optional.ofNullable(background);
@@ -241,12 +241,13 @@ public class SampleDimension implements Serializable {
      */
     public Set<Number> getNoDataValues() {
         if (converse != null) {             // Null if SampleDimension does not contain at least one quantitative category.
+            final boolean isConverted = transferFunction.isIdentity();
             final NumberRange<?>[] ranges = new NumberRange<?>[categories.size()];
             Class<? extends Number> widestClass = Byte.class;
             int count = 0;
             for (final Category category : categories) {
                 final Category converted = category.converted();
-                if (category != converted && converted.isConvertedQualitative()) {
+                if ((isConverted || category != converted) && converted.isConvertedQualitative()) {
                     final NumberRange<?> range = category.range;
                     if (!range.isBounded()) {
                         throw new IllegalStateException(Resources.format(Resources.Keys.CanNotEnumerateValuesInRange_1, range));
@@ -256,7 +257,7 @@ public class SampleDimension implements Serializable {
                 }
             }
             if (count != 0) {
-                final Set<Number> noDataValues = new TreeSet<>();
+                final Set<Number> noDataValues = new TreeSet<>(SampleDimension::compare);
                 for (int i=0; i<count; i++) {
                     final NumberRange<?> range = ranges[i];
                     final Number minimum = range.getMinValue();
@@ -277,6 +278,14 @@ public class SampleDimension implements Serializable {
             }
         }
         return Collections.emptySet();
+    }
+
+    /**
+     * Compares as {@code double} values. This method is similar to {@link Double#compare(double,double)}
+     * except that it also orders NaN values from raw bit patterns. Reminder: NaN values are sorted last.
+     */
+    private static int compare(final Number n1, final Number n2) {
+        return Category.compare(n1.doubleValue(), n2.doubleValue());
     }
 
     /**
@@ -391,10 +400,12 @@ public class SampleDimension implements Serializable {
      * or {@code false} respectively.  If there is no {@linkplain #getTransferFunction() transfer function}, then this method
      * returns {@code this}.
      *
-     * @param  converted  {@code true} for a sample dimension representing converted values,
-     *                    or {@code false} for a sample dimension representing sample values.
-     * @return a sample dimension representing converted or sample values, depending on {@code converted} argument value.
+     * @param  converted  {@code true} for a sample dimension describing converted values,
+     *                    or {@code false} for a sample dimension describing packed values.
+     * @return a sample dimension describing converted or packed values, depending on {@code converted} argument value.
      *         May be {@code this} but never {@code null}.
+     *
+     * @see org.apache.sis.coverage.grid.GridCoverage#forConvertedValues(boolean)
      */
     public SampleDimension forConvertedValues(final boolean converted) {
         // Transfer function shall never be null if 'converse' is non-null.

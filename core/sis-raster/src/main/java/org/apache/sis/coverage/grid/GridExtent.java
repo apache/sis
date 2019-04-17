@@ -262,7 +262,7 @@ public class GridExtent implements Serializable {
      *
      * @see #getLow()
      * @see #getHigh()
-     * @see #append(DimensionNameType, long, long, boolean)
+     * @see #insert(int, DimensionNameType, long, long, boolean)
      */
     public GridExtent(final DimensionNameType[] axisTypes, final long[] low, final long[] high, final boolean isHighIncluded) {
         ArgumentChecks.ensureNonNull("high", high);
@@ -303,6 +303,7 @@ public class GridExtent implements Serializable {
      * @param  modifiedDimensions  if {@code enclosing} is non-null, the grid dimensions to set from the envelope.
      *                             The length of this array shall be equal to the {@code envelope} dimension.
      *                             This argument is ignored if {@code enclosing} is null.
+     * @throws DisjointExtentException if the given envelope does not intersect the enclosing grid extent.
      *
      * @see #toCRS(MathTransform, MathTransform)
      * @see #slice(DirectPosition, int[])
@@ -400,8 +401,13 @@ public class GridExtent implements Serializable {
             if (enclosing != null) {
                 final int lo = (modifiedDimensions != null) ? modifiedDimensions[i] : i;
                 final int hi = lo + m;
-                if (lower > coordinates[lo]) coordinates[lo] = Math.min(coordinates[hi], lower);
-                if (upper < coordinates[hi]) coordinates[hi] = Math.max(coordinates[lo], upper);
+                final long validMin = coordinates[lo];
+                final long validMax = coordinates[hi];
+                if (lower > validMin) coordinates[lo] = lower;
+                if (upper < validMax) coordinates[hi] = upper;
+                if (lower > validMax || upper < validMin) {
+                    throw new DisjointExtentException(enclosing.getAxisIdentification(lo, i), validMin, validMax, lower, upper);
+                }
             } else {
                 coordinates[i]   = lower;
                 coordinates[i+m] = upper;
@@ -686,7 +692,7 @@ public class GridExtent implements Serializable {
      * @param  index       index of the dimension as stored in this grid extent.
      * @param  indexShown  index to write in the message. Often the same as {@code index}.
      */
-    private Object getAxisIdentification(final int index, final int indexShown) {
+    final Object getAxisIdentification(final int index, final int indexShown) {
         if (types != null) {
             final DimensionNameType type = types[index];
             if (type != null) {
@@ -776,8 +782,10 @@ public class GridExtent implements Serializable {
     }
 
     /**
-     * Returns a new grid envelope with the specified dimension added after this grid envelope dimensions.
+     * Returns a new grid envelope with the specified dimension inserted at the given index in this grid envelope.
+     * To append a new dimension after all existing dimensions, set {@code offset} to {@link #getDimension()}.
      *
+     * @param  offset          where to insert the new dimension, from 0 to {@link #getDimension()} inclusive.
      * @param  axisType        the type of the grid axis to add, or {@code null} if unspecified.
      * @param  low             the valid minimum grid coordinate (always inclusive).
      * @param  high            the valid maximum grid coordinate, inclusive or exclusive depending on the next argument.
@@ -787,26 +795,29 @@ public class GridExtent implements Serializable {
      * @return a new grid envelope with the specified dimension added.
      * @throws IllegalArgumentException if the low coordinate value is greater than the high coordinate value.
      */
-    public GridExtent append(final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
+    public GridExtent insert(final int offset, final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
+        final int dimension = getDimension();
+        ArgumentChecks.ensureBetween("offset", 0, dimension, offset);
         if (!isHighIncluded) {
             high = Math.decrementExact(high);
         }
-        final int dimension = getDimension();
-        final int newDim    = dimension + 1;
+        final int newDim = dimension + 1;
         DimensionNameType[] axisTypes = null;
         if (types != null || axisType != null) {
             if (types != null) {
-                axisTypes = Arrays.copyOf(types, newDim);
+                axisTypes = ArraysExt.insert(types, offset, 1);
             } else {
                 axisTypes = new DimensionNameType[newDim];
             }
-            axisTypes[dimension] = axisType;
+            axisTypes[offset] = axisType;
         }
         final GridExtent ex = new GridExtent(newDim, axisTypes);
-        System.arraycopy(coordinates, 0,         ex.coordinates, 0,      dimension);
-        System.arraycopy(coordinates, dimension, ex.coordinates, newDim, dimension);
-        ex.coordinates[dimension]          = low;
-        ex.coordinates[dimension + newDim] = high;
+        System.arraycopy(coordinates, 0,                  ex.coordinates, 0,                   offset);
+        System.arraycopy(coordinates, offset,             ex.coordinates, offset + 1,          dimension - offset);
+        System.arraycopy(coordinates, dimension,          ex.coordinates, newDim,              offset);
+        System.arraycopy(coordinates, dimension + offset, ex.coordinates, newDim + offset + 1, dimension - offset);
+        ex.coordinates[offset]          = low;
+        ex.coordinates[offset + newDim] = high;
         ex.validateCoordinates();
         return ex;
     }
@@ -837,6 +848,29 @@ public class GridExtent implements Serializable {
     }
 
     /**
+     * Expands or shrinks this grid extent by the given amount of cells along each dimension.
+     * This method adds the given margins to the {@linkplain #getHigh(int) high coordinates}
+     * and subtracts the same margins to the {@linkplain #getLow(int) low coordinates}.
+     *
+     * @param  margins amount of cells to add or subtract.
+     * @return a grid extent expanded by the given amount, or {@code this} if there is no change.
+     * @throws ArithmeticException if expanding this extent by the given margins overflows {@code long} capacity.
+     */
+    public GridExtent expand(final long... margins) {
+        ArgumentChecks.ensureNonNull("margins", margins);
+        final int m = getDimension();
+        final int length = Math.min(m, margins.length);
+        final GridExtent resize = new GridExtent(this);
+        final long[] c = resize.coordinates;
+        for (int i=0; i<length; i++) {
+            final long margin = margins[i];
+            c[i] = Math.subtractExact(c[i], margin);
+            c[i+m] = Math.addExact(c[i+m], margin);
+        }
+        return Arrays.equals(c, coordinates) ? this : resize;
+    }
+
+    /**
      * Sets the size of this grid extent to the given values. This method modifies grid coordinates as if they were multiplied
      * by (given size) / ({@linkplain #getSize(int) current size}), rounded toward zero and with the value farthest from zero
      * adjusted by ±1 for having a size exactly equals to the specified value.
@@ -848,7 +882,8 @@ public class GridExtent implements Serializable {
      * If the array is longer, extra sizes are ignored.</p>
      *
      * @param  sizes  the new grid sizes for each dimension.
-     * @return a grid extent having the given sizes (may be {@code this}).
+     * @return a grid extent having the given sizes, or {@code this} if there is no change.
+     * @throws ArithmeticException if resizing this extent to the given size overflows {@code long} capacity.
      *
      * @see GridDerivation#resize(GridExtent, double...)
      */
@@ -887,7 +922,7 @@ public class GridExtent implements Serializable {
      * The number of dimensions of the sub grid envelope will be {@code dimensions.length}.
      *
      * <p>This method performs a <cite>dimensionality reduction</cite> and can be used as the
-     * converse of {@link #append(DimensionNameType, long, long, boolean)}.
+     * converse of {@link #insert(int, DimensionNameType, long, long, boolean)}.
      * This method can not be used for changing dimension order.</p>
      *
      * @param  dimensions  the dimensions to select, in strictly increasing order.

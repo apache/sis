@@ -47,7 +47,7 @@ public final strictfp class ResidualGridTest extends TestCase {
      * The grid has no "source to grid" or "grid to CRS" transformations.
      */
     public ResidualGridTest() {
-        grid = new ResidualGrid(MathTransforms.identity(2), MathTransforms.identity(2), 3, 4, new double[] {
+        grid = new ResidualGrid(MathTransforms.identity(2), MathTransforms.identity(2), 3, 4, new float[] {
                 0,2  ,  1,2  ,  2,1,
                 1,3  ,  2,2  ,  1,1,
                 0,4  ,  2,3  ,  3,2,
@@ -61,7 +61,7 @@ public final strictfp class ResidualGridTest extends TestCase {
     public void verifyGlobalProperties() {
         assertEquals("translationDimensions", 2,  grid.getTranslationDimensions());
         assertTrue("coordinateToGrid.isIdentity", grid.getCoordinateToGrid().isIdentity());
-        assertTrue("gridToTarget.isIdentity",     grid.gridToTarget().isIdentity());
+        assertTrue("gridToTarget.isIdentity",     grid.gridToTarget.isIdentity());
     }
 
     /**

@@ -25,7 +25,9 @@ import org.opengis.annotation.UML;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
@@ -481,28 +483,60 @@ public final class AxisDirections extends Static {
 
     /**
      * Returns the index of the first dimension in {@code cs} where axes are colinear with the {@code subCS} axes.
-     * If no such dimension is found, returns -1.
+     * If no such dimension is found, returns -1. If more than one sequence of {@code cs} axes are colinear with
+     * all {@code subCS} axes, then the following rules apply:
      *
-     * @param  cs     the coordinate system which contains all axes.
+     * <ol>
+     *   <li>If a sequence of {@code cs} axes are equal to the {@code subCS} axes, that sequence has precedence.</li>
+     *   <li>Otherwise if a sequence of {@code cs} axes have similar names than the {@code subCS} axes (as determined
+     *       by {@linkplain org.apache.sis.referencing.IdentifiedObjects#isHeuristicMatchForName heuristic match},
+     *       that sequence has precedence.</li>
+     *   <li>Otherwise the index of the first sequence if returned, regardless axis names.</li>
+     * </ol>
+     *
+     * Note that colinear axes are normally not allowed, except if the case of {@link org.opengis.referencing.crs.TemporalCRS}
+     * when one time axis is the runtime (the date where a numerical model has been executed) and the other time axis is the
+     * forecast time (the date at which a prevision is made).
+     *
+     * @param  cs     the coordinate system which contains all axes, or {@code null}.
      * @param  subCS  the coordinate system to search into {@code cs}.
      * @return the first dimension of a sequence of axes colinear with {@code subCS} axes, or {@code -1} if none.
      *
      * @since 0.5
      */
     public static int indexOfColinear(final CoordinateSystem cs, final CoordinateSystem subCS) {
-        final int dim = indexOfColinear(cs, subCS.getAxis(0).getDirection());
-        if (dim >= 0) {
-            int i = subCS.getDimension();
-            if (dim + i > cs.getDimension()) {
-                return -1;
-            }
-            while (--i > 0) {               // Intentionally exclude 0.
-                if (!isColinear(subCS.getAxis(i).getDirection(), cs.getAxis(i + dim).getDirection())) {
-                    return -1;
+        int fallback = -1;
+        if (cs != null) {
+            boolean fallbackMatches = false;
+            final int subDim = subCS.getDimension();
+            final int limit = cs.getDimension() - subDim;
+next:       for (int i=0; i <= limit; i++) {
+                boolean equal = true;
+                boolean match = true;
+                for (int j=0; j<subDim; j++) {
+                    final CoordinateSystemAxis expected = subCS.getAxis(j);
+                    final CoordinateSystemAxis actual = cs.getAxis(i + j);
+                    if (!isColinear(expected.getDirection(), actual.getDirection())) {
+                        continue next;
+                    }
+                    if (equal) {
+                        equal = Utilities.deepEquals(expected, actual, ComparisonMode.BY_CONTRACT);
+                        if (equal) continue;
+                    }
+                    if (match) {
+                        match = ReferencingServices.getInstance().isHeuristicMatchForName(actual, expected.getName().getCode());
+                    }
+                }
+                if (equal) {
+                    return i;
+                }
+                if (fallback < 0 | (match & !fallbackMatches)) {
+                    fallbackMatches = match;
+                    fallback = i;
                 }
             }
         }
-        return dim;
+        return fallback;
     }
 
     /**

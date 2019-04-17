@@ -17,13 +17,14 @@
 package org.apache.sis.storage;
 
 import java.util.Locale;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.TransformException;
 
 
 /**
  * Thrown when a data store failed to construct the coordinate reference system (CRS)
  * or other positioning information. This exception is typically (but not necessarily)
- * caused by {@link org.opengis.util.FactoryException} or
- * {@link org.opengis.referencing.operation.TransformException}.
+ * caused by {@link FactoryException} or {@link TransformException}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -47,6 +48,7 @@ public class DataStoreReferencingException extends DataStoreException {
 
     /**
      * Creates an exception with the specified cause and no details message.
+     * The given cause should (but is not required to) be a {@link FactoryException} or {@link TransformException}.
      *
      * @param cause  the cause for this exception.
      */
@@ -56,6 +58,7 @@ public class DataStoreReferencingException extends DataStoreException {
 
     /**
      * Creates an exception with the specified details message and cause.
+     * The given cause should (but is not required to) be a {@link FactoryException} or {@link TransformException}.
      *
      * @param message  the detail message.
      * @param cause    the cause for this exception.
@@ -68,6 +71,9 @@ public class DataStoreReferencingException extends DataStoreException {
      * Creates a localized exception with a message saying that the given store can not be read.
      * Location in the file where the error occurred while be fetched from the given {@code store}
      * argument if possible. If the given store is not recognized, then it will be ignored.
+     *
+     * <p>This constructor should be followed by a call to {@link #initCause(Throwable)}
+     * with a {@link FactoryException} or {@link TransformException} cause.</p>
      *
      * @param locale    the locale of the message to be returned by {@link #getLocalizedMessage()}, or {@code null}.
      * @param format    short name or abbreviation of the data format (e.g. "CSV", "GML", "WKT", <i>etc</i>).

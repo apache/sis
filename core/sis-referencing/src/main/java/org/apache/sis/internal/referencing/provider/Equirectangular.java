@@ -49,10 +49,6 @@ import static java.lang.Math.*;
  * because it does not create non-liner kernel. Instead, the projection created by this class is implemented
  * by an affine transform.</p>
  *
- * <p>We do not provide <cite>"Pseudo Plate Carrée"</cite> projection (EPSG:9825) at this time because that
- * pseudo-projection is only the identity transform. Even the semi-major and semi-minor axis lengths are set
- * to 1.</p>
- *
  * <p>This provider is <strong>not</strong> suitable for the <cite>Equidistant Cylindrical</cite> projection
  * (EPSG:1028, <span class="deprecated">EPSG:9842</span>). EPSG defines Equidistant Cylindrical projection as
  * the ellipsoidal case of this projection, which uses a more complicated formula than the affine transform
@@ -65,8 +61,9 @@ import static java.lang.Math.*;
  *
  * @author  John Grange
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
+ * @see PseudoPlateCarree
  * @see <a href="http://geotiff.maptools.org/proj_list/equirectangular.html">GeoTIFF parameters for Equirectangular</a>
  *
  * @since 0.6
@@ -78,6 +75,13 @@ public final class Equirectangular extends AbstractProvider {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -278288251842178001L;
+
+    /**
+     * Name of this projection in EPSG geodetic dataset.
+     *
+     * @todo Remove with JDK9 after we introduce {@code getInstance()} method.
+     */
+    public static final String NAME = "Equidistant Cylindrical (Spherical)";
 
     /*
      * ACCESS POLICY: Only formal EPSG parameters shall be public.
@@ -185,7 +189,7 @@ public final class Equirectangular extends AbstractProvider {
         // Do not declare the ESRI "Equidistant_Cylindrical" projection name below,
         // for avoiding confusion with EPSG "Equidistant Cylindrical" ellipsoidal projection.
         PARAMETERS = addIdentifierAndLegacy(builder, "1029", "9823")  // 9823 uses deprecated parameter names
-                .addName(                   "Equidistant Cylindrical (Spherical)")
+                .addName(                   NAME)
                 .addName(                   "Plate Carrée")  // Not formally defined by EPSG, but cited in documentation.
                 .addName(Citations.OGC,     "Equirectangular")
                 .addName(Citations.ESRI,    "Plate_Carree")

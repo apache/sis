@@ -47,7 +47,7 @@ import static java.lang.Math.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -367,7 +367,7 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
             /*
              * Following is executed only in InterpolatedMolodenskyTransform case.
              */
-            grid.interpolateInCell(grid.normalizedToGridX(λt), grid.normalizedToGridY(φt), offset);
+            grid.interpolateInCell(normalizedToGridX(λt), normalizedToGridY(φt), offset);
             tX = -offset[0];
             tY = -offset[1];
             tZ = -offset[2];

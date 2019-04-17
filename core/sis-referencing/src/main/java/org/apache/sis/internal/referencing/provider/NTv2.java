@@ -247,7 +247,7 @@ public final class NTv2 extends AbstractProvider {
          * This constructor parses the header immediately, but does not read any grid.
          *
          * @param  channel  where to read data from.
-         * @param  file     path to the longitude and latitude difference file. Used only for error reporting.
+         * @param  file     path to the longitude and latitude difference file. Used for parameter declaration and error reporting.
          * @throws FactoryException if a data record can not be parsed.
          */
         Loader(final ReadableByteChannel channel, final Path file) throws IOException, FactoryException {

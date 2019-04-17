@@ -19,8 +19,10 @@ package org.apache.sis.coverage.grid;
 import java.util.Arrays;
 import java.nio.Buffer;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.SampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -86,12 +88,24 @@ import org.apache.sis.math.Vector;
  */
 public class ImageRenderer {
     /**
-     * Pixel coordinates of the image upper-left location.
-     * This is often left to zero since {@link BufferedImage} has this constraint.
+     * Location of the first image pixel relative to the grid coverage extent. The (0,0) offset means that the first pixel
+     * in the {@code sliceExtent} (specified at construction time) is the first pixel in the whole {@link GridCoverage}.
      *
-     * @see #setLocation(int, int)
+     * <div class="note"><b>Note:</b> if those offsets exceed 32 bits integer capacity, then it may not be possible to build
+     * an image for given {@code sliceExtent} from a single {@link DataBuffer}, because accessing sample values would exceed
+     * the capacity of index in Java arrays. In those cases the image needs to be tiled.</div>
      */
-    private int x, y;
+    private final long offsetX, offsetY;
+
+    /**
+     * Pixel coordinates of the image upper-left corner, as an offset relative to the {@code sliceExtent}.
+     * This is initially zero (unless {@code sliceExtent} is partially outside the grid coverage extent),
+     * but a different value may be used if the given data are tiled.
+     *
+     * @see RenderedImage#getMinX()
+     * @see RenderedImage#getMinY()
+     */
+    private final int imageX, imageY;
 
     /**
      * Width (number of pixels in a row) of the image to render.
@@ -110,6 +124,23 @@ public class ImageRenderer {
      * @see RenderedImage#getHeight()
      */
     private final int height;
+
+    /**
+     * Number of data elements between two samples in the data {@link #buffer}. A <cite>sample stride</cite> is defined
+     * in this class as the number of data elements between two samples in the data {@link #buffer}. This is implicitly
+     * 1 in Java2D because {@link java.awt.image} supports <cite>pixel stride</cite> and <cite>scanline stride</cite>
+     * in {@link SampleModel}, but does not support stride in {@link DataBuffer} banks. This is theoretically not needed
+     * because "sample stride" can be represented as {@link #pixelStride}. This is what we do in the end, but the concept
+     * of "sample stride" needs to exist temporarily in this builder before the final pixel stride is computed.
+     *
+     * <div class="note"><b>Note:</b>
+     * this stride is <strong>not</strong> equivalent to applying a subsampling on the image, because we do not divide
+     * the image width or height by the given stride. This field should be used only for describing a particular layout
+     * of data in the buffers.</div>
+     *
+     * @see #setInterleavedPixelOffsets(int, int[])
+     */
+    private int sampleStride;
 
     /**
      * Number of data elements between two samples for the same band on the same line.
@@ -135,16 +166,26 @@ public class ImageRenderer {
     private final SampleDimension[] bands;
 
     /**
+     * Offset to add to index of sample values in each band in order to reach the value in the {@link DataBuffer} bank.
+     * This is closely related to {@link java.awt.image.ComponentSampleModel#bandOffsets} but not identical, because of
+     * the following differences:
+     *
+     * <ul>
+     *   <li>Another offset for {@link #offsetX} and {@link #offsetY} may need to be added
+     *       before to give the {@code bandOffsets} to {@link SampleModel} constructor.</li>
+     *   <li>If null, a default value is inferred depending on whether the {@link SampleModel}
+     *       to construct is banded or interleaved.</li>
+     * </ul>
+     *
+     * @see #setInterleavedPixelOffsets(int, int[])
+     */
+    private int[] bandOffsets;
+
+    /**
      * Bank indices for each band, or {@code null} for 0, 1, 2, 3….
      * If non-null, this array length must be equal to {@link #bands} array length.
      */
     private int[] bankIndices;
-
-    /**
-     * Number of data elements from the first element of the bank to the first sample of the band, or {@code null} for all 0.
-     * If non-null, this array length must be equal to {@link #bands} array length.
-     */
-    private final int[] bandOffsets;
 
     /**
      * The band to be made visible (usually 0). All other bands, if any will be ignored.
@@ -158,11 +199,12 @@ public class ImageRenderer {
     private DataBuffer buffer;
 
     /**
-     * Creates a new image renderer for the given slice extent. The image will have only one tile.
+     * Creates a new image renderer for the given slice extent.
      *
      * @param  coverage     the grid coverage for which to build an image.
      * @param  sliceExtent  the grid geometry from which to create an image, or {@code null} for the {@code coverage} extent.
      * @throws SubspaceNotSpecifiedException if this method can not infer a two-dimensional slice from {@code sliceExtent}.
+     * @throws DisjointExtentException if the given extent does not intersect this grid coverage.
      * @throws ArithmeticException if a stride calculation overflows the 32 bits integer capacity.
      */
     public ImageRenderer(final GridCoverage coverage, GridExtent sliceExtent) {
@@ -179,19 +221,32 @@ public class ImageRenderer {
             sliceExtent = source;
         }
         final int[] dimensions = sliceExtent.getSubspaceDimensions(2);
-        int  xd = dimensions[0];
-        int  yd = dimensions[1];
-        long xo = sliceExtent.getLow(xd);
-        long yo = sliceExtent.getLow(yd);
-        width  = Math.toIntExact(sliceExtent.getSize(xd));
-        height = Math.toIntExact(sliceExtent.getSize(yd));
+        final int  xd   = dimensions[0];
+        final int  yd   = dimensions[1];
+        final long xcov = source.getLow(xd);
+        final long ycov = source.getLow(yd);
+        final long xreq = sliceExtent.getLow(xd);
+        final long yreq = sliceExtent.getLow(yd);
+        final long xmin = Math.max(xreq, xcov);
+        final long ymin = Math.max(yreq, ycov);
+        final long xmax = Math.min(sliceExtent.getHigh(xd), source.getHigh(xd));
+        final long ymax = Math.min(sliceExtent.getHigh(yd), source.getHigh(yd));
+        if (xmax < xmin || ymax < ymin) {                                           // max are inclusive.
+            final int d = (xmax < xmin) ? xd : yd;
+            throw new DisjointExtentException(source.getAxisIdentification(d, d),
+                    source.getLow(d), source.getHigh(d), sliceExtent.getLow(d), sliceExtent.getHigh(d));
+        }
+        width   = Math.incrementExact(Math.toIntExact(xmax - xmin));
+        height  = Math.incrementExact(Math.toIntExact(ymax - ymin));
+        imageX  = Math.toIntExact(Math.subtractExact(xreq, xmin));
+        imageY  = Math.toIntExact(Math.subtractExact(yreq, ymin));
+        offsetX = Math.subtractExact(xmin, xcov);
+        offsetY = Math.subtractExact(ymin, ycov);
         /*
-         * After this point, xd and yd should be indices relative to source extent.
-         * For now we keep them unchanged on the assumption that the two grid extents have the same dimensions.
+         * At this point, the RenderedImage properties have been computed on the assumption
+         * that the returned image will be a single tile. Now compute SampleModel properties.
          */
-        xo = Math.subtractExact(xo, source.getLow(xd));
-        yo = Math.subtractExact(yo, source.getLow(yd));
-        long pixelStride = 1;
+        long pixelStride  = 1;
         for (int i=0; i<xd; i++) {
             pixelStride = Math.multiplyExact(pixelStride, source.getSize(i));
         }
@@ -201,8 +256,6 @@ public class ImageRenderer {
         }
         this.pixelStride    = Math.toIntExact(pixelStride);
         this.scanlineStride = Math.toIntExact(scanlineStride);
-        this.bandOffsets    = new int[getNumBands()];
-        Arrays.fill(bandOffsets, Math.toIntExact(xo + Math.multiplyExact(yo, scanlineStride)));
     }
 
     /**
@@ -217,39 +270,25 @@ public class ImageRenderer {
 
     /**
      * Ensures that the given number is equals to the expected number of bands.
+     * The given number shall be either 1 (case of interleaved sample model) or
+     * {@link #getNumBands()} (case of banded sample model).
      */
-    private void ensureExpectedBandCount(final int n) {
-        final int e = getNumBands();
-        if (n != e) {
-            throw new MismatchedCoverageRangeException(Resources.format(Resources.Keys.UnexpectedNumberOfBands_2, e, n));
+    private void ensureExpectedBandCount(final int n, final boolean acceptOne) {
+        if (!(n == 1 & acceptOne)) {
+            final int e = getNumBands();
+            if (n != e) {
+                throw new MismatchedCoverageRangeException(Resources.format(Resources.Keys.UnexpectedNumberOfBands_2, e, n));
+            }
         }
     }
 
     /**
-     * Sets the pixel coordinates of the upper-left corner of the rendered image to create.
-     * If this method is not invoked, then the default value is (0,0).
-     * That default value is often suitable since {@link BufferedImage} constraints that corner to (0,0).
+     * Returns the location of the image upper-left corner together with the image size.
      *
-     * @param  x  the minimum <var>x</var> coordinate (inclusive) of the rendered image.
-     * @param  y  the minimum <var>y</var> coordinate (inclusive) of the rendered image.
-     *
-     * @see RenderedImage#getMinX()
-     * @see RenderedImage#getMinY()
+     * @return the rendered image location and size (never null).
      */
-    public void setLocation(final int x, final int y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    /**
-     * Returns the location of the image upper-left corner.
-     * This is the last value set by a call to {@link #setLocation(int, int)}.
-     * The default value is (0,0).
-     *
-     * @return the image location (never null).
-     */
-    public final Point getLocation() {
-        return new Point(x,y);
+    public final Rectangle getBounds() {
+        return new Rectangle(imageX, imageY, width, height);
     }
 
     /**
@@ -265,7 +304,7 @@ public class ImageRenderer {
      */
     public void setData(final DataBuffer data) {
         ArgumentChecks.ensureNonNull("data", data);
-        ensureExpectedBandCount(data.getNumBanks());
+        ensureExpectedBandCount(data.getNumBanks(), true);
         buffer = data;
     }
 
@@ -298,7 +337,7 @@ public class ImageRenderer {
      */
     public void setData(final int dataType, final Buffer... data) {
         ArgumentChecks.ensureNonNull("data", data);
-        ensureExpectedBandCount(data.length);
+        ensureExpectedBandCount(data.length, true);
         final DataBuffer banks = RasterFactory.wrap(dataType, data);
         if (banks == null) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownDataType_1, dataType));
@@ -324,7 +363,7 @@ public class ImageRenderer {
      */
     public void setData(final Vector... data) {
         ArgumentChecks.ensureNonNull("data", data);
-        ensureExpectedBandCount(data.length);
+        ensureExpectedBandCount(data.length, true);
         final Buffer[] buffers = new Buffer[data.length];
         int dataType = DataBuffer.TYPE_UNDEFINED;
         for (int i=0; i<data.length; i++) {
@@ -343,28 +382,82 @@ public class ImageRenderer {
     }
 
     /**
+     * Specifies the offsets to add to sample index in each band in order to reach the sample value in the {@link DataBuffer} bank.
+     * This method should be invoked when the data given to {@code setData(…)} contains only one {@link Vector}, {@link Buffer} or
+     * {@link DataBuffer} bank, and the bands in that unique bank are interleaved.
+     *
+     * <div class="note"><b>Example:</b>
+     * for an image having three bands named Red (R), Green (G) and Blue (B), if the sample values are stored in a single bank in a
+     * R₀,G₀,B₀, R₁,G₁,B₁, R₂,G₂,B₂, R₃,G₃,B₃, <i>etc.</i> fashion, then this method should be invoked as below:
+     *
+     * {@preformat java
+     *     setInterleavedPixelOffsets(3, new int[] {0, 1, 2});
+     * }
+     * </div>
+     *
+     * @param  pixelStride  the number of data elements between each pixel in the data vector or buffer.
+     * @param  bandOffsets  offsets to add to sample index in each band. This is typically {0, 1, 2, …}.
+     */
+    public void setInterleavedPixelOffsets(final int pixelStride, final int[] bandOffsets) {
+        ArgumentChecks.ensureStrictlyPositive("pixelStride", pixelStride);
+        ArgumentChecks.ensureNonNull("bandOffsets", bandOffsets);
+        ensureExpectedBandCount(bandOffsets.length, false);
+        this.sampleStride = pixelStride;
+        this.bandOffsets = bandOffsets.clone();
+    }
+
+    /**
      * Creates a raster with the data specified by the last call to a {@code setData(…)} method.
-     * The raster upper-left corner is located at the position given by {@link #getLocation()}.
+     * The raster upper-left corner is located at the position given by {@link #getBounds()}.
      *
      * @return the raster.
      * @throws IllegalStateException if no {@code setData(…)} method has been invoked before this method call.
      * @throws RasterFormatException if a call to a {@link WritableRaster} factory method failed.
+     * @throws ArithmeticException if a property of the raster to construct exceeds the capacity of 32 bits integers.
      */
     public WritableRaster raster() {
         if (buffer == null) {
             throw new IllegalStateException(Resources.format(Resources.Keys.UnspecifiedRasterData));
         }
-        final Point location = ((x | y) != 0) ? new Point(x,y) : null;
-        return RasterFactory.createRaster(buffer, width, height, pixelStride, scanlineStride, bankIndices, bandOffsets, location);
+        int ps = pixelStride;
+        int ls = scanlineStride;
+        if (bandOffsets != null) {
+            ls = Math.multiplyExact(ls, sampleStride);
+            ps *= sampleStride;                         // Can not fail if above operation did not fail.
+        }
+        /*
+         * Number of data elements from the first element of the bank to the first sample of the band.
+         * This is usually 0 for all bands, unless the upper-left corner (minX, minY) is not (0,0).
+         */
+        final int[] offsets = new int[getNumBands()];
+        Arrays.fill(offsets, Math.toIntExact(Math.addExact(
+                Math.multiplyExact(offsetX, ps),
+                Math.multiplyExact(offsetY, ls))));
+        /*
+         * Add the offset specified by the user (if any), or the default offset. The default is 0, 1, 2…
+         * for interleaved sample model (all bands in one bank) and 0, 0, 0… for banded sample model.
+         */
+        if (bandOffsets != null) {
+            for (int i=0; i<offsets.length; i++) {
+                offsets[i] = Math.addExact(offsets[i], bandOffsets[i]);
+            }
+        } else if (buffer.getNumBanks() == 1) {
+            for (int i=1; i<offsets.length; i++) {
+                offsets[i] = Math.addExact(offsets[i], i);
+            }
+        }
+        final Point location = new Point(imageX, imageY);
+        return RasterFactory.createRaster(buffer, width, height, ps, ls, bankIndices, offsets, location);
     }
 
     /**
      * Creates an image with the data specified by the last call to a {@code setData(…)} method.
-     * The image upper-left corner is located at the position given by {@link #getLocation()}.
+     * The image upper-left corner is located at the position given by {@link #getBounds()}.
      *
      * @return the image.
      * @throws IllegalStateException if no {@code setData(…)} method has been invoked before this method call.
      * @throws RasterFormatException if a call to a {@link WritableRaster} factory method failed.
+     * @throws ArithmeticException if a property of the image to construct exceeds the capacity of 32 bits integers.
      */
     public RenderedImage image() {
         WritableRaster raster = raster();

@@ -117,7 +117,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalValueRange_4 = 16;
 
         /**
-         * The declared size of variable “{1}” in netCDF file “{0}” is {2,number}} bytes greater than
+         * The declared size of variable “{1}” in netCDF file “{0}” is {2,number} bytes greater than
          * expected.
          */
         public static final short MismatchedVariableSize_3 = 8;
@@ -143,6 +143,12 @@ public final class Resources extends IndexedResourceBundle {
          * Variable “{1}” in file “{0}” has a dimension “{3}” while we expected “{2}”.
          */
         public static final short UnexpectedDimensionForVariable_4 = 2;
+
+        /**
+         * Variable “{1}” in file “{0}” has {2,number} dimensions but only {3,number} can be associated
+         * to a coordinate reference system.
+         */
+        public static final short UnmappedDimensions_4 = 19;
 
         /**
          * NetCDF file “{0}” uses unsupported data type {2} for variable “{1}”.

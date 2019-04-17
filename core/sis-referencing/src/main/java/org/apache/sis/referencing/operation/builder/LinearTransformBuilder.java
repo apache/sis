@@ -416,7 +416,10 @@ search: for (int j=numPoints; --j >= 0;) {
     }
 
     /**
-     * Returns the number of dimensions in source positions.
+     * Returns the number of dimensions in source positions. This is the length of the {@code source} array given in argument
+     * to {@link #getControlPoint(int[]) get}/{@link #setControlPoint(int[], double[]) setControlPoint(int[], …)} methods.
+     * This is also the number of dimensions of the {@link DirectPosition} <em>keys</em> in the {@link Map} exchanged by
+     * {@link #getControlPoints() get}/{@link #setControlPoints(Map)} methods.
      *
      * @return the dimension of source points.
      * @throws IllegalStateException if the number of source dimensions is not yet known.
@@ -432,7 +435,10 @@ search: for (int j=numPoints; --j >= 0;) {
     }
 
     /**
-     * Returns the number of dimensions in target positions.
+     * Returns the number of dimensions in target positions. This is the length of the {@code target} array exchanged by
+     * {@link #getControlPoint(int[]) get}/{@link #setControlPoint(int[], double[]) setControlPoint(…, double[])} methods.
+     * This is also the number of dimensions of the {@link DirectPosition} <em>values</em> in the {@link Map} exchanged by
+     * {@link #getControlPoints() get}/{@link #setControlPoints(Map)} methods.
      *
      * @return the dimension of target points.
      * @throws IllegalStateException if the number of target dimensions is not yet known.
@@ -447,7 +453,9 @@ search: for (int j=numPoints; --j >= 0;) {
     }
 
     /**
-     * Returns the envelope of source points. This method returns the known minimum and maximum values for each dimension,
+     * Returns the envelope of source points (<em>keys</em> of the map returned by {@link #getControlPoints()}).
+     * The number of dimensions is equal to {@link #getSourceDimensions()}.
+     * This method returns the known minimum and maximum values (inclusive) for each dimension,
      * <strong>not</strong> expanded to encompass full cell surfaces. In other words, the returned envelope encompasses only
      * {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER cell centers}.
      *
@@ -475,7 +483,8 @@ search: for (int j=numPoints; --j >= 0;) {
     }
 
     /**
-     * Returns the envelope of target points. The lower and upper values are inclusive.
+     * Returns the envelope of target points (<em>values</em> of the map returned by {@link #getControlPoints()}).
+     * The number of dimensions is equal to {@link #getTargetDimensions()}. The lower and upper values are inclusive.
      * If a {@linkplain #linearizer() linearizer has been applied}, then coordinates of
      * the returned envelope are projected by that linearizer.
      *
@@ -1043,6 +1052,29 @@ search:         for (int j=domain(); --j >= 0;) {
     }
 
     /**
+     * Returns the coordinates of a single row or column in the given dimension. This method can be invoked
+     * only when this {@code LinearTransformBuilder} is known to have been built for grid source coordinates.
+     *
+     * <div class="note"><b>Note:</b>
+     * while this method is primarily for row and columns, it can be generalized to more dimensions.</div>
+     *
+     * The returned vector is a view; changes in the returned vector will be reflected in this builder.
+     *
+     * @param  dimension  the dimension of source point for which to get coordinate values.
+     * @param  start      index of the first coordinate value to get.
+     * @param  direction  0 for getting a row, 1 for getting a column.
+     * @return coordinate values for specified row or column in the given dimension.
+     */
+    final Vector getTransect(final int dimension, final int[] start, final int direction) {
+        final int first = flatIndex(start);
+        int step = 1;
+        for (int i=0; i<direction; i++) {
+            step *= gridSize[i];
+        }
+        return Vector.create(targets[dimension]).subSampling(first, step, gridSize[direction] - start[direction]);
+    }
+
+    /**
      * Tries to remove discontinuities in coordinates values caused by anti-meridian crossing. This is the implementation of
      * {@link LocalizationGridBuilder#resolveWraparoundAxis(int, int, double)} public method. See that method for javadoc.
      *
@@ -1051,7 +1083,7 @@ search:         for (int j=domain(); --j >= 0;) {
      * @param  direction  the direction to walk through: 0 for columns or 1 for rows (higher dimensions are also possible).
      *                    Value can be from 0 inclusive to {@link #getSourceDimensions()} exclusive.
      *                    The recommended direction is the direction of most stable values, typically 1 (rows) for longitudes.
-     * @param  period     that wraparound range (typically 360° for longitudes).
+     * @param  period     that wraparound range (typically 360° for longitudes). Must be strictly positive.
      * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      */
     final void resolveWraparoundAxis(final int dimension, final int direction, final double period) {
@@ -1063,12 +1095,18 @@ search:         for (int j=domain(); --j >= 0;) {
         }
         final int page = stride * gridSize[direction];          // Index offset for moving to next row or whatever is the next dimension.
         final double threshold = period / 2;
+        double minValue = Double.POSITIVE_INFINITY;
+        double maxValue = Double.NEGATIVE_INFINITY;
+        double minAfter = Double.POSITIVE_INFINITY;
+        double maxAfter = Double.NEGATIVE_INFINITY;
         double previous = coordinates[0];
         for (int x=0; x<stride; x++) {                          // For iterating over dimensions lower than 'dimension'.
             for (int y=0; y<gridLength; y += page) {            // For iterating over dimensions greater than 'dimension'.
                 final int stop = y + page;
                 for (int i = x+y; i<stop; i += stride) {
                     double value = coordinates[i];
+                    if (value < minValue) minValue = value;
+                    if (value > maxValue) maxValue = value;
                     double delta = value - previous;
                     if (Math.abs(delta) > threshold) {
                         delta = Math.rint(delta / period) * period;
@@ -1076,6 +1114,8 @@ search:         for (int j=domain(); --j >= 0;) {
                         coordinates[i] = value;
                     }
                     previous = value;
+                    if (value < minAfter) minAfter = value;
+                    if (value > maxAfter) maxAfter = value;
                 }
                 /*
                  * For the next scan, use as a reference the first value of this scan. If our scan direction is 0
@@ -1093,6 +1133,32 @@ search:         for (int j=domain(); --j >= 0;) {
                  * still small enough for taking that nearby value as a reference.
                  */
                 previous = coordinates[x];
+            }
+        }
+        /*
+         * If some coordinates have been shifted, the range may become unreasonable. For example we may get a
+         * range of [-440 … -160]° of longitude. Shift again in the direction that provide the best intersection
+         * with original range.
+         */
+        final double Δmin = minValue - minAfter;
+        final double Δmax = maxValue - maxAfter;
+        if (Δmin != 0 || Δmax != 0) {
+            double shift = 0;
+            double intersection = 0;
+            final double minCycles = Math.floor(Math.min(Δmin, Δmax) / period);
+            final double maxCycles = Math.ceil (Math.max(Δmin, Δmax) / period);
+            for (double cycles = minCycles; cycles <= maxCycles; cycles++) {
+                final double s = cycles * period;
+                final double p = Math.min(maxValue, maxAfter + s) - Math.max(minValue, minAfter + s);
+                if (p > intersection) {
+                    intersection = p;
+                    shift = s;
+                }
+            }
+            if (shift != 0) {
+                for (int i=0; i<coordinates.length; i++) {
+                    coordinates[i] += shift;
+                }
             }
         }
     }
@@ -1120,18 +1186,20 @@ search:         for (int j=domain(); --j >= 0;) {
      * method will try to apply each transform on target coordinates and check which one results in the best
      * {@linkplain #correlation() correlation} coefficients. It may be none.
      *
-     * <p>The linearizers are specified as {@link MathTransform}s from current target coordinates to other spaces
-     * where <cite>sources to new targets</cite> transforms may be more linear.
+     * <p>The linearizers are specified as {@link MathTransform}s from current {@linkplain #getTargetEnvelope()
+     * target coordinates} to other spaces where <cite>sources to new targets</cite> transforms may be more linear.
      * Keys in the map are arbitrary identifiers used in {@link #toString()} for debugging purpose.
-     * Values in the map are non-{@link LinearTransform} (linear transforms are not forbidden, but are useless for this process).
-     * The {@code dimensions} argument specifies which target dimensions to project and can be null or omitted
-     * if the projections shall be applied on all target coordinates. It is possible to invoke this method many
-     * times with different {@code dimensions} argument values.</p>
+     * Values in the map are non-{@link LinearTransform}s (linear transforms are not forbidden, but are useless for this process).</p>
+     *
+     * <p>The {@code projToGrid} argument maps {@code projections} dimensions to this builder target dimensions.
+     * For example if {@code projToGrid} array is {@code {2,1}}, then dimensions 0 and 1 of given {@code projections}
+     * (both source and target dimensions) will map to dimensions 2 and 1 of this builder target dimensions, respectively.
+     * The {@code projToGrid} argument can be omitted or null, in which {0, 1, 2 … {@link #getTargetDimensions()} - 1} is assumed.
+     * All given {@code projections} shall have a number of source and target dimensions equals to the length of the given or assumed
+     * {@code projToGrid} array. It is possible to invoke this method many times with different {@code projToGrid} argument values.</p>
      *
      * @param  projections  projections from current target coordinates to other spaces which may result in more linear transforms.
-     * @param  dimensions   the target dimensions to project, or null or omitted for projecting all target dimensions.
-     *                      If non-null and non-empty, then all transforms in the {@code projections} map shall have a
-     *                      number of source and target dimensions equals to the length of this array.
+     * @param  projToGrid   the target dimensions to project, or null or omitted for projecting all target dimensions.
      * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      *
      * @see #linearizer()
@@ -1139,17 +1207,17 @@ search:         for (int j=domain(); --j >= 0;) {
      *
      * @since 1.0
      */
-    public void addLinearizers(final Map<String,MathTransform> projections, int... dimensions) {
+    public void addLinearizers(final Map<String,MathTransform> projections, int... projToGrid) {
         ensureModifiable();
         final int tgtDim = getTargetDimensions();
-        if (dimensions == null || dimensions.length == 0) {
-            dimensions = ArraysExt.range(0, tgtDim);
+        if (projToGrid == null || projToGrid.length == 0) {
+            projToGrid = ArraysExt.range(0, tgtDim);
         }
         if (linearizers == null) {
             linearizers = new ArrayList<>();
         }
         for (final Map.Entry<String,MathTransform> entry : projections.entrySet()) {
-            linearizers.add(new ProjectedTransformTry(entry.getKey(), entry.getValue(), dimensions, tgtDim));
+            linearizers.add(new ProjectedTransformTry(entry.getKey(), entry.getValue(), projToGrid, tgtDim));
         }
     }
 
@@ -1237,6 +1305,7 @@ search:         for (int j=domain(); --j >= 0;) {
                     correlations = bestCorrelations;
                 }
             }
+            // Set only on success.
             transform = (LinearTransform) nonNull(factory).createAffineTransform(matrix);
         }
         return transform;

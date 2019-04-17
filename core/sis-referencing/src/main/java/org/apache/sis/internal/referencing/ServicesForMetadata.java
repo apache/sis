@@ -275,7 +275,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             dim = 0;
         } else {
             dim = AxisDirections.indexOfColinear(crs.getCoordinateSystem(), verticalCRS.getCoordinateSystem());
-            assert dim >= 0 : crs; // Should not fail since 'verticalCRS' has been extracted from 'crs' by the caller.
+            assert dim >= 0 : crs;      // Should not fail since 'verticalCRS' has been extracted from 'crs' by the caller.
         }
         target.setMinimumValue(envelope.getMinimum(dim));
         target.setMaximumValue(envelope.getMaximum(dim));
@@ -296,7 +296,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             final CoordinateReferenceSystem crs, final TemporalCRS temporalCRS)
     {
         final int dim = AxisDirections.indexOfColinear(crs.getCoordinateSystem(), temporalCRS.getCoordinateSystem());
-        assert dim >= 0 : crs; // Should not fail since 'temporalCRS' has been extracted from 'crs' by the caller.
+        assert dim >= 0 : crs;      // Should not fail since 'temporalCRS' has been extracted from 'crs' by the caller.
         final DefaultTemporalCRS converter = DefaultTemporalCRS.castOrCopy(temporalCRS);
         target.setBounds(TemporalUtilities.toDate(converter.toInstant(envelope.getMinimum(dim))),
                          TemporalUtilities.toDate(converter.toInstant(envelope.getMaximum(dim))));
@@ -363,7 +363,7 @@ public final class ServicesForMetadata extends ReferencingServices {
     public void setBounds(final Envelope envelope, final DefaultTemporalExtent target) throws TransformException {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
         final TemporalCRS temporalCRS = CRS.getTemporalComponent(crs);
-        if (temporalCRS == null) { // Mandatory for the conversion from numbers to dates.
+        if (temporalCRS == null) {                          // Mandatory for the conversion from numbers to dates.
             throw new TransformException(dimensionNotFound(Resources.Keys.MissingTemporalDimension_1, crs));
         }
         setTemporalExtent(envelope, target, crs, temporalCRS);

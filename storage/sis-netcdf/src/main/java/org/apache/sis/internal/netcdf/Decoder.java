@@ -16,19 +16,28 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import java.util.Date;
-import java.util.Objects;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Collection;
+import java.util.Objects;
+import java.util.Date;
+import java.util.TimeZone;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 
@@ -90,9 +99,23 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
 
     /**
      * The geodetic datum, created when first needed. The datum are generally not specified in netCDF files.
-     * To make that clearer, we will build datum with names like "Unknown datum presumably based on WGS 84".
+     * To make that clearer, we will build datum with names like "Unknown datum presumably based on GRS 1980".
+     *
+     * @see CRSBuilder#build(Decoder)
      */
     final Datum[] datumCache;
+
+    /**
+     * The CRS and <cite>grid to CRS</cite> transform defined by attributes in a variable. For example GDAL uses
+     * {@code "spatial_ref_sys"} and {@code "GeoTransform"} attributes associated to a variable having the name
+     * specified by the {@code "grid_mapping"} attribute.
+     *
+     * <p>Keys are either {@link Variable} instance for which we found a grid mapping, or {@link String} instances
+     * if we found some variables with {@code "grid_mapping"} attribute values.</p>
+     *
+     * @see GridMapping#forVariable(Variable)
+     */
+    final Map<Object,GridMapping> gridMapping;
 
     /**
      * Where to send the warnings.
@@ -117,6 +140,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
         this.listeners   = listeners;
         this.nameFactory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
         this.datumCache  = new Datum[CRSBuilder.DATUM_CACHE_SIZE];
+        this.gridMapping = new HashMap<>();
     }
 
     /**
@@ -247,6 +271,15 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     public abstract Date[] numberToDate(String symbol, Number... values);
 
     /**
+     * Returns the timezone for decoding dates. Currently fixed to UTC.
+     *
+     * @return the timezone for dates.
+     */
+    public TimeZone getTimeZone() {
+        return TimeZone.getTimeZone(StandardDateFormat.UTC);
+    }
+
+    /**
      * Returns the value of the {@code "_Id"} global attribute. The UCAR library defines a
      * {@link ucar.nc2.NetcdfFile#getId()} method for that purpose, which we will use when
      * possible in case that {@code getId()} method is defined in an other way.
@@ -302,4 +335,51 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @throws DataStoreException if a logical error occurred.
      */
     public abstract Grid[] getGrids() throws IOException, DataStoreException;
+
+    /**
+     * Returns for information purpose only the Coordinate Reference Systems present in this file.
+     * The CRS returned by this method may not be exactly the same than the ones used by variables.
+     * For example, axis order is not guaranteed. This method is provided for metadata purposes.
+     *
+     * @return coordinate reference systems present in this file.
+     * @throws IOException if an I/O operation was necessary but failed.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    public final List<CoordinateReferenceSystem> getReferenceSystemInfo() throws IOException, DataStoreException {
+        final List<CoordinateReferenceSystem> list = new ArrayList<>();
+        for (final Variable variable : getVariables()) {
+            final GridMapping m = GridMapping.forVariable(variable);
+            if (m != null) {
+                addIfNotPresent(list, m.crs);
+            }
+        }
+        /*
+         * Add the CRS computed by grids only if we did not found any grid mapping information.
+         * This is because grid mapping information override the CRS inferred by Grid from axes.
+         * Consequently if such information is present, grid CRS may be inaccurate.
+         */
+        if (list.isEmpty()) {
+            for (final Grid grid : getGrids()) {
+                addIfNotPresent(list, grid.getCoordinateReferenceSystem(this));
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Adds the given coordinate reference system to the given list, provided that an equivalent CRS
+     * (ignoring axes) is not already present. We ignore axes because the same CRS may be repeated
+     * with different axis order if values in the localization grid do not vary at the same speed in
+     * the same directions.
+     */
+    private static void addIfNotPresent(final List<CoordinateReferenceSystem> list, final CoordinateReferenceSystem crs) {
+        if (crs != null) {
+            for (int i=list.size(); --i >= 0;) {
+                if (Utilities.deepEquals(crs, list.get(i), ComparisonMode.ALLOW_VARIANT)) {
+                    return;
+                }
+            }
+            list.add(crs);
+        }
+    }
 }

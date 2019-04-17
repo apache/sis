@@ -53,8 +53,7 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -126,7 +125,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.referencing.operation.projection.NormalizedProjection
  * @see AbstractMathTransform#getContextualParameters()
@@ -247,7 +246,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @param  method  the non-linear operation method for which to define the parameter values.
      */
     public ContextualParameters(final OperationMethod method) {
-        ensureNonNull("method", method);
+        ArgumentChecks.ensureNonNull("method", method);
         descriptor  = method.getParameters();
         normalize   = linear("sourceDimensions", method.getSourceDimensions());
         denormalize = linear("targetDimensions", method.getTargetDimensions());
@@ -255,16 +254,22 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
-     * Equivalent to the public constructor, but avoid the need for an {@link OperationMethod} instance.
+     * Creates a new group of parameters with the given descriptor. This constructor performs the same construction than
+     * {@link #ContextualParameters(OperationMethod)} but without the need to specify an {@code OperationMethod} instance.
      *
      * @param  descriptor  the parameter descriptor.
-     * @param  srcSize     size of the normalization matrix: source dimensions + 1.
-     * @param  tgtSize     size of the denormalization matrix: target dimensions + 1.
+     * @param  srcDim      number of source dimensions.
+     * @param  tgtDim      number of target dimensions.
+     *
+     * @since 1.0
      */
-    ContextualParameters(final ParameterDescriptorGroup descriptor, final int srcSize, final int tgtSize) {
+    public ContextualParameters(final ParameterDescriptorGroup descriptor, int srcDim, int tgtDim) {
+        ArgumentChecks.ensureNonNull("descriptor", descriptor);
+        ArgumentChecks.ensureStrictlyPositive("srcDim", srcDim);
+        ArgumentChecks.ensureStrictlyPositive("tgtDim", tgtDim);
         this.descriptor  = descriptor;
-        this.normalize   = Matrices.create(srcSize, srcSize, ExtendedPrecisionMatrix.IDENTITY);
-        this.denormalize = Matrices.create(tgtSize, tgtSize, ExtendedPrecisionMatrix.IDENTITY);
+        this.normalize   = Matrices.create(++srcDim, srcDim, ExtendedPrecisionMatrix.IDENTITY);
+        this.denormalize = Matrices.create(++tgtDim, tgtDim, ExtendedPrecisionMatrix.IDENTITY);
         this.values      = new ParameterValue<?>[descriptor.descriptors().size()];
     }
 

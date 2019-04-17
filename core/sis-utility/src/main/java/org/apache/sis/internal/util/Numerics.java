@@ -172,7 +172,7 @@ public final class Numerics extends Static {
     }
 
     /**
-     * Returns the smallest (closest to negative infinity) long value that is greater than or equals to x/y.
+     * Returns the smallest (closest to negative infinity) integer value that is greater than or equals to x/y.
      *
      * @param  x  the dividend.
      * @param  y  the divisor.

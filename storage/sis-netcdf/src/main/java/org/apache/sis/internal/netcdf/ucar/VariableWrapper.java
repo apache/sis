@@ -81,23 +81,6 @@ final class VariableWrapper extends Variable {
     private transient Vector values;
 
     /**
-     * The grid associated to this variable, or {@code null} if none or not yet computed.
-     * The grid needs to be computed if {@link #gridDetermined} is {@code false}.
-     *
-     * @see #gridDetermined
-     * @see #getGrid()
-     */
-    private transient GridWrapper grid;
-
-    /**
-     * Whether {@link #grid} has been computed. Note that the result may still null.
-     *
-     * @see #grid
-     * @see #getGrid()
-     */
-    private transient boolean gridDetermined;
-
-    /**
      * Creates a new variable wrapping the given netCDF interface.
      */
     VariableWrapper(final Decoder decoder, VariableIF v) {
@@ -244,42 +227,53 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
-     * This method searches for a grid previously computed by {@link DecoderWrapper#getGrids()}.
-     * The same grid geometry may be shared by many variables.
+     * Returns a builder for the grid geometry of this variable, or {@code null} if this variable is not a data cube.
+     * This method searches for a grid previously computed by {@link DecoderWrapper#getGrids()}, keeping in mind that
+     * the UCAR library sometime builds {@link CoordinateSystem} instances with axes in different order than what we
+     * would expect. This method delegates to the super-class method only if the grid requires a different analysis
+     * than the one performed by UCAR library.
+     *
+     * <p>This method should be invoked by {@link #getGridGeometry()} only once.
+     * For that reason, it does not need to cache the value.</p>
      *
      * @see DecoderWrapper#getGrids()
      */
     @Override
-    protected Grid getGrid() throws IOException, DataStoreException {
-        if (!gridDetermined) {
-            gridDetermined = true;                      // Set first so we don't try twice in case of failure.
-            /*
-             * In some netCDF files, more than one grid could be associated to a variable. If the names of the
-             * variables to use as coordinate system axes have been specified, use those names for filtering.
-             * Otherwise take the first grid.
-             */
-            if (variable instanceof Enhancements) {
-                final List<CoordinateSystem> systems = ((Enhancements) variable).getCoordinateSystems();
-                if (!systems.isEmpty()) {           // For avoiding useless call to decoder.getGrids().
-                    final String[] axisNames = decoder.convention().namesOfAxisVariables(this);
-                    for (final Grid candidate : decoder.getGrids()) {
-                        grid = ((GridWrapper) candidate).forVariable(variable, systems, axisNames);
-                        if (grid != null) {
-                            return grid;
-                        }
+    protected Grid getGrid(final Adjustment adjustment) throws IOException, DataStoreException {
+        /*
+         * In some netCDF files, more than one grid could be associated to a variable. If the names of the
+         * variables to use as coordinate system axes have been specified, use those names for filtering.
+         * Otherwise no filtering is applied (which is the common case). If more than one grid fit, take
+         * the first grid having the largest number of dimensions.
+         *
+         * This block duplicates work done in super.getGrid(…), except that it focuses on the set of coordinate
+         * systems identified by UCAR for this variable while super.getGrid(…) inspects all dimensions found in
+         * the file. Note that those coordinate systems may have been set by the user.
+         */
+        if (variable instanceof Enhancements) {
+            final Grid[] grids = decoder.getGrids();    // Must be first for forcing some UCAR CS constructions.
+            final List<CoordinateSystem> systems = ((Enhancements) variable).getCoordinateSystems();
+            if (!systems.isEmpty()) {
+                GridWrapper grid = null;
+                final String[] axisNames = decoder.convention().namesOfAxisVariables(this);
+                for (final Grid candidate : grids) {
+                    final GridWrapper ordered = ((GridWrapper) candidate).forVariable(variable, systems, axisNames);
+                    if (ordered != null && (grid == null || ordered.getSourceDimensions() > grid.getSourceDimensions())) {
+                        grid = ordered;
                     }
                 }
+                if (grid != null) {
+                    return grid;
+                }
             }
-            /*
-             * If we reach this point, we did not found a grid using the dimensions of this variable.
-             * But maybe there is a grid using other dimensions (typically with a decimation) that we
-             * can map to the variable dimension using attribute values. This mechanism is described
-             * in Convention.nameOfDimension(…).
-             */
-            grid = (GridWrapper) super.getGrid();
         }
-        return grid;
+        /*
+         * If we reach this point, we did not found a grid using the dimensions of this variable.
+         * But maybe there is a grid using other dimensions (typically with a decimation) that we
+         * can map to the variable dimension using attribute values. This mechanism is described
+         * in Convention.nameOfDimension(…).
+         */
+        return (GridWrapper) super.getGrid(adjustment);
     }
 
     /**
@@ -376,7 +370,7 @@ final class VariableWrapper extends Variable {
      * if Apache SIS can not determine that range, that method is invoked.
      */
     @Override
-    public NumberRange<?> getRangeFallback() {
+    protected NumberRange<?> getRangeFallback() {
         if (variable instanceof EnhanceScaleMissing) {
             final EnhanceScaleMissing ev = (EnhanceScaleMissing) variable;
             if (ev.hasInvalidData()) {

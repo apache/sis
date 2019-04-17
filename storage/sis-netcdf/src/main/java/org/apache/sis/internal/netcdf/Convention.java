@@ -17,7 +17,9 @@
 package org.apache.sis.internal.netcdf;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.Iterator;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.awt.image.DataBuffer;
 import org.apache.sis.internal.referencing.LazySet;
@@ -66,7 +68,7 @@ public class Convention {
     /**
      * The convention to use when no specific conventions were found.
      */
-    static final Convention DEFAULT = new Convention();
+    public static final Convention DEFAULT = new Convention();
 
     /**
      * Names of groups where to search for metadata, in precedence order.
@@ -195,13 +197,10 @@ public class Convention {
      *       to confuse them with images.</li>
      * </ul>
      *
-     * @param  variable  the variable for which to get the role, or {@code null}.
-     * @return role of the given variable, or {@code null} if the given variable was null.
+     * @param  variable  the variable for which to get the role.
+     * @return role of the given variable.
      */
     public VariableRole roleOf(final Variable variable) {
-        if (variable == null) {
-            return null;
-        }
         if (variable.isCoordinateSystemAxis()) {
             return VariableRole.AXIS;
         }
@@ -228,7 +227,10 @@ public class Convention {
      * This happen for example if a netCDF file defines two grids for the same dimensions.
      * The order in returned array will be the axis order in the Coordinate Reference System.
      *
-     * <p>The default implementation returns {@code null}.</p>
+     * <p>This information is normally provided by the {@value ucar.nc2.constants.CF#COORDINATES} attribute,
+     * which is processed by the UCAR library (which is why we do not read this attribute ourselves here).
+     * This method is provided as a fallback when no such attribute is found.
+     * The default implementation returns {@code null}.</p>
      *
      * @param  data  the variable for which the list of axis variables are desired, in CRS order.
      * @return names of the variables containing axis values, or {@code null} if this
@@ -448,5 +450,18 @@ public class Convention {
         if (!Double.isNaN(scale))  tr.setScale (scale);
         if (!Double.isNaN(offset)) tr.setOffset(offset);
         return tr;
+    }
+
+    /**
+     * Returns an enumeration of two-dimensional non-linear transforms that may be tried in attempts to make
+     * localization grid more linear. Default implementation returns an empty set. If this method is overridden,
+     * the enumerated transforms will be tested in "trials and errors" and the one resulting in best correlation
+     * coefficients will be selected.
+     *
+     * @param  decoder  the netCDF file for which to determine linearizers that may possibly apply.
+     * @return enumeration of two-dimensional non-linear transforms to try.
+     */
+    public Set<Linearizer> linearizers(final Decoder decoder) {
+        return Collections.emptySet();
     }
 }

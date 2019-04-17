@@ -68,8 +68,20 @@
       <roles>
         <role>developer</role>
       </roles>
-   </developer>
+    </developer>
   </developers>
+  <contributors>
+    <contributor>
+      <name>Alexis manin</name>
+      <email>alexis.manin@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+  </contributors>
 
 
   <!-- ===========================================================

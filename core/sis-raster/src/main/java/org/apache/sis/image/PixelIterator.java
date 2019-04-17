@@ -16,16 +16,23 @@
  */
 package org.apache.sis.image;
 
+import java.util.Arrays;
 import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
+import java.awt.image.SampleModel;
+import java.awt.image.SinglePixelPackedSampleModel;
+import java.awt.image.MultiPixelPackedSampleModel;
 import java.util.NoSuchElementException;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.measure.NumberRange;
 
 import static java.lang.Math.floorDiv;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
@@ -34,8 +41,8 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
 /**
  * An iterator over sample values in a raster or an image.  This iterator makes easier to read and write efficiently
  * pixel or sample values. The iterator {@linkplain RenderedImage#getTile(int,int) acquires tiles} and releases them
- * automatically. Unless otherwise specified, iterators are free to use an iteration order
- * that minimize the "acquire / release tile" operations (in other words, iterations are not necessarily from
+ * automatically. Unless otherwise specified, iterators are free to use an {@linkplain #getIterationOrder() iteration
+ * order} that minimize the "acquire / release tile" operations (in other words, iterations are not necessarily from
  * left to right). Iteration can be performed on a complete image or only a sub-region of it. Some optimized iterator
  * implementations exist for a few commonly used {@linkplain java.awt.image.SampleModel sample models}.
  *
@@ -52,6 +59,7 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -213,6 +221,11 @@ public abstract class PixelIterator {
         private Dimension window;
 
         /**
+         * The desired iteration order, or {@code null} for a default order.
+         */
+        private SequenceType order;
+
+        /**
          * Creates a new iterator builder with no region of interest, no window size and default iterator order.
          */
         public Builder() {
@@ -243,6 +256,32 @@ public abstract class PixelIterator {
         }
 
         /**
+         * Sets the desired iteration order.
+         * The {@code order} argument can have the following values:
+         *
+         * <table class="sis">
+         *   <caption>Supported iteration order</caption>
+         *   <tr><th>Value</th>                         <th>Iteration order</th>                                <th>Supported on</th></tr>
+         *   <tr><td>{@code null}</td>                  <td>Most efficient iteration order.</td>                <td>Image and raster</td></tr>
+         *   <tr><td>{@link SequenceType#LINEAR}</td>   <td>From left to right, then from top to bottom.</td>   <td>Raster only</td></tr>
+         * </table>
+         *
+         * Any other {@code order} value will cause an {@link IllegalArgumentException} to be thrown.
+         * More iteration orders may be supported in future Apache SIS versions.
+         *
+         * @param  order  the desired iteration order, or {@code null} for a default order.
+         * @return {@code this} for method call chaining.
+         */
+        final Builder setIteratorOrder(final SequenceType order) {
+            if (order == null || order.equals(SequenceType.LINEAR)) {
+                this.order = order;
+            } else {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, order));
+            }
+            return this;
+        }
+
+        /**
          * Creates a read-only iterator for the given raster.
          *
          * @param  data  the raster which contains the sample values on which to iterate.
@@ -262,6 +301,11 @@ public abstract class PixelIterator {
          */
         public PixelIterator create(final RenderedImage data) {
             ArgumentChecks.ensureNonNull("data", data);
+            if (order == SequenceType.LINEAR) {
+                return new LinearIterator(data, null, subArea, window);
+            } else if (order != null) {
+                throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
+            }
             // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
             return new DefaultIterator(data, null, subArea, window);
         }
@@ -312,6 +356,11 @@ public abstract class PixelIterator {
         public WritablePixelIterator createWritable(final RenderedImage input, final WritableRenderedImage output) {
             ArgumentChecks.ensureNonNull("input",  input);
             ArgumentChecks.ensureNonNull("output", output);
+            if (order == SequenceType.LINEAR) {
+                return new LinearIterator(input, output, subArea, window);
+            } else if (order != null) {
+                throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
+            }
             // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
             return new DefaultIterator(input, output, subArea, window);
         }
@@ -355,6 +404,78 @@ public abstract class PixelIterator {
      */
     public TransferType<?> getTransferType() {
         return TransferType.valueOf(image != null ? image.getSampleModel().getTransferType() : currentRaster.getTransferType());
+    }
+
+    /**
+     * Returns the range of sample values that can be stored in each band of the rendered image or raster.
+     * The ranges depend on the data type (byte, integer, <i>etc.</i>) and the number of bits per sample.
+     * If the samples are stored as floating point values, then the ranges are infinite (unbounded).
+     *
+     * <p>Usually, the range is the same for all bands. A situation where the ranges may differ is when an
+     * image uses {@link SinglePixelPackedSampleModel}, in which case the number of bits per pixel may vary
+     * for different bands.</p>
+     *
+     * @return the ranges of valid sample values for each band. Ranges may be {@linkplain NumberRange#isBounded() unbounded}.
+     */
+    public NumberRange<?>[] getSampleRanges() {
+        final SampleModel model = (currentRaster != null) ? currentRaster.getSampleModel() : image.getSampleModel();
+        final NumberRange<?>[] ranges = new NumberRange<?>[model.getNumBands()];
+        final NumberRange<?> range;
+        if (model instanceof MultiPixelPackedSampleModel) {
+            /*
+             * This model supports only unsigned integer types: DataBuffer.TYPE_BYTE, DataBuffer.TYPE_USHORT
+             * or DataBuffer.TYPE_INT (considered unsigned in the context of this sample model).  The number
+             * of bits per sample is defined by the "pixel bit stride".
+             */
+            final int numBits = ((MultiPixelPackedSampleModel) model).getPixelBitStride();
+            range = NumberRange.create(0, true, (1 << numBits) - 1, true);
+        } else if (model instanceof SinglePixelPackedSampleModel) {
+            /*
+             * This model supports only unsigned integer types: TYPE_BYTE, TYPE_USHORT, TYPE_INT (considered
+             * unsigned in the context of this sample model). The number of bits may vary for each band.
+             */
+            final int[] masks = ((SinglePixelPackedSampleModel) model).getBitMasks();
+            for (int i=0; i<masks.length; i++) {
+                final int numBits = Integer.bitCount(masks[i]);
+                ranges[i] = NumberRange.create(0, true, (1 << numBits) - 1, true);
+            }
+            return ranges;
+        } else {
+            /*
+             * For all other sample models, the range is determined by the data type.
+             * The following cases invoke the NumberRange constructor which best fit the data type.
+             */
+            final int type = model.getDataType();
+            switch (type) {
+                case DataBuffer.TYPE_BYTE:   range = NumberRange.create((short) 0,                 true,  (short)   0xFF,            true);  break;
+                case DataBuffer.TYPE_USHORT: range = NumberRange.create(        0,                 true,          0xFFFF,            true);  break;
+                case DataBuffer.TYPE_SHORT:  range = NumberRange.create(Short.  MIN_VALUE,         true,  Short.  MAX_VALUE,         true);  break;
+                case DataBuffer.TYPE_INT:    range = NumberRange.create(Integer.MIN_VALUE,         true,  Integer.MAX_VALUE,         true);  break;
+                case DataBuffer.TYPE_FLOAT:  range = NumberRange.create(Float.  NEGATIVE_INFINITY, false, Float.  POSITIVE_INFINITY, false); break;
+                case DataBuffer.TYPE_DOUBLE: range = NumberRange.create(Double. NEGATIVE_INFINITY, false, Double. POSITIVE_INFINITY, false); break;
+                default: throw new IllegalStateException(Errors.format(Errors.Keys.UnknownType_1, type));
+            }
+        }
+        Arrays.fill(ranges, range);
+        return ranges;
+    }
+
+    /**
+     * Returns the order in which pixels are traversed. {@link SequenceType#LINEAR} means that pixels on the first
+     * row are traversed from left to right, then pixels on the second row from left to right, <i>etc.</i>
+     * A {@code null} value means that the iteration order is unspecified.
+     *
+     * @return order in which pixels are traversed, or {@code null} if unspecified.
+     */
+    abstract SequenceType getIterationOrder();
+
+    /**
+     * Returns the number of bands (samples per pixel) in the image or raster.
+     *
+     * @return number of bands.
+     */
+    public int getNumBands() {
+        return numBands;
     }
 
     /**
@@ -507,7 +628,7 @@ public abstract class PixelIterator {
      * Values are always stored with band index varying fastest, then column index, then row index.
      * Columns are traversed from left to right and rows are traversed from top to bottom
      * (linear iteration order).
-     * That order is the same regardless the iteration order of this iterator.
+     * That order is the same regardless the {@linkplain #getIterationOrder() iteration order} of this iterator.
      *
      * <div class="note"><b>Example:</b>
      * for an RGB image, the 3 first values are the red, green and blue components of the pixel at

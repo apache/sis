@@ -24,33 +24,21 @@ import javax.measure.Quantity;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
-import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
-import org.apache.sis.internal.util.Strings;
 
 
 /**
  * A datum shift grid loaded from a file.
  * The filename is usually a parameter defined in the EPSG database.
  * This class should not be in public API because it requires implementation to expose internal mechanic:
- *
- * <ul>
- *   <li>Subclasses need to give an access to their internal data (not a copy) through the {@link #getData()}
- *       and {@link #setData(Object[])} methods. We use that for managing the cache, reducing memory usage by
- *       sharing data and for {@link #equals(Object)} and {@link #hashCode()} implementations.</li>
- *   <li>{@link #descriptor}, {@link #gridToTarget()} and {@link #setGridParameters(Parameters)} are convenience
- *       members for {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform} constructor.
- *       What they do are closely related to how {@code InterpolatedTransform} works, and trying to document that
- *       in a public API would probably be too distracting for the users.</li>
- * </ul>
- *
- * The main concrete subclass is {@link DatumShiftGridFile.Float}.
+ * Subclasses need to give an access to their internal data (not a copy) through the {@link #getData()}
+ * and {@link #setData(Object[])} methods. We use that for managing the cache, reducing memory usage by
+ * sharing data and for {@link #equals(Object)} and {@link #hashCode()} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -64,7 +52,7 @@ import org.apache.sis.internal.util.Strings;
  * @since 0.7
  * @module
  */
-public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGrid<C,T> {
+abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGrid<C,T> {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -88,18 +76,18 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
     /**
      * The parameter descriptor of the provider that created this grid.
      */
-    public final ParameterDescriptorGroup descriptor;
+    private final ParameterDescriptorGroup descriptor;
 
     /**
      * The files from which the grid has been loaded. This is not used directly by this class
      * (except for {@link #equals(Object)} and {@link #hashCode()}), but can be used by math
-     * transform for setting the parameter values. Never empty but may be null if the grid is
-     * computed instead than loaded from file(s).
+     * transform for setting the parameter values. Shall never be null and never empty.
      */
     private final Path[] files;
 
     /**
      * Number of grid cells along the <var>x</var> axis.
+     * This is <code>{@linkplain #getGridSize()}[0]</code> as a field for performance reasons.
      */
     protected final int nx;
 
@@ -112,48 +100,23 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
      *
      * @see #getCellPrecision()
      */
-    protected double accuracy;
+    double accuracy;
 
     /**
      * Creates a new datum shift grid for the given grid geometry.
      * The actual offset values need to be provided by subclasses.
      *
-     * @param  coordinateUnit    the unit of measurement of input values, before conversion to grid indices by {@code coordinateToGrid}.
-     * @param  translationUnit   the unit of measurement of output values.
-     * @param  isCellValueRatio  {@code true} if results of {@link #interpolateInCell interpolateInCell(…)} are divided by grid cell size.
-     * @param  coordinateToGrid  conversion from the "real world" coordinates to grid indices including fractional parts.
-     * @param  nx                number of cells along the <var>x</var> axis in the grid.
-     * @param  ny                number of cells along the <var>y</var> axis in the grid.
-     * @param  descriptor        the parameter descriptor of the provider that created this grid.
-     * @param  files             the file(s) from which the grid has been loaded.
-     *
-     * @since 0.8
-     */
-    protected DatumShiftGridFile(final Unit<C> coordinateUnit,
-                                 final Unit<T> translationUnit,
-                                 final boolean isCellValueRatio,
-                                 final LinearTransform coordinateToGrid,
-                                 final int nx, final int ny,
-                                 final ParameterDescriptorGroup descriptor,
-                                 final Path... files)
-    {
-        super(coordinateUnit, coordinateToGrid, new int[] {nx, ny}, isCellValueRatio, translationUnit);
-        this.descriptor = descriptor;
-        this.files      = (files.length != 0) ? files : null;
-        this.nx         = nx;
-        this.accuracy   = Double.NaN;
-    }
-
-    /**
-     * Creates a new datum shift grid for the given grid geometry.
-     * The actual offset values need to be provided by subclasses.
-     *
-     * @param x0  longitude in degrees of the center of the cell at grid index (0,0).
-     * @param y0  latitude in degrees of the center of the cell at grid index (0,0).
-     * @param Δx  increment in <var>x</var> value between cells at index <var>gridX</var> and <var>gridX</var> + 1.
-     * @param Δy  increment in <var>y</var> value between cells at index <var>gridY</var> and <var>gridY</var> + 1.
-     * @param nx  number of cells along the <var>x</var> axis in the grid.
-     * @param ny  number of cells along the <var>y</var> axis in the grid.
+     * @param coordinateUnit    the unit of measurement of input values, before conversion to grid indices by {@code coordinateToGrid}.
+     * @param translationUnit   the unit of measurement of output values.
+     * @param isCellValueRatio  {@code true} if results of {@link #interpolateInCell interpolateInCell(…)} are divided by grid cell size.
+     * @param x0                longitude in degrees of the center of the cell at grid index (0,0).
+     * @param y0                latitude in degrees of the center of the cell at grid index (0,0).
+     * @param Δx                increment in <var>x</var> value between cells at index <var>gridX</var> and <var>gridX</var> + 1.
+     * @param Δy                increment in <var>y</var> value between cells at index <var>gridY</var> and <var>gridY</var> + 1.
+     * @param nx                number of cells along the <var>x</var> axis in the grid.
+     * @param ny                number of cells along the <var>y</var> axis in the grid.
+     * @param descriptor        the parameter descriptor of the provider that created this grid.
+     * @param files             the file(s) from which the grid has been loaded. This array is not cloned.
      */
     DatumShiftGridFile(final Unit<C> coordinateUnit,
                        final Unit<T> translationUnit,
@@ -164,8 +127,12 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
                        final ParameterDescriptorGroup descriptor,
                        final Path... files) throws NoninvertibleTransformException
     {
-        this(coordinateUnit, translationUnit, isCellValueRatio,
-                new AffineTransform2D(Δx, 0, 0, Δy, x0, y0).inverse(), nx, ny, descriptor, files);
+        super(coordinateUnit, new AffineTransform2D(Δx, 0, 0, Δy, x0, y0).inverse(),
+              new int[] {nx, ny}, isCellValueRatio, translationUnit);
+        this.descriptor = descriptor;
+        this.files      = files;
+        this.nx         = nx;
+        this.accuracy   = Double.NaN;
     }
 
     /**
@@ -248,17 +215,13 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
     }
 
     /**
-     * Returns the transform from grid coordinates to "real world" coordinates after the datum shift has been applied,
-     * or {@code null} for the default. This is usually the inverse of the transform from "real world" coordinates to
-     * grid coordinates before datum shift, since NADCON and NTv2 transformations have source and target coordinates
-     * in the same coordinate system (with axis units in degrees). But this method may be overridden by subclasses that
-     * use {@code DatumShiftGridFile} for other kind of transformations.
+     * Returns the descriptor specified at construction time.
      *
-     * @return the transformation from grid coordinates to "real world" coordinates after datum shift,
-     *         or {@code null} for the default (namely the inverse of the "source to grid" transformation).
+     * @return a description of the values in this grid.
      */
-    public Matrix gridToTarget() {
-        return null;
+    @Override
+    public final ParameterDescriptorGroup getParameterDescriptors() {
+        return descriptor;
     }
 
     /**
@@ -267,16 +230,15 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
      *
      * @param  parameters  the parameter group where to set the values.
      */
-    public void setGridParameters(final Parameters parameters) {
-        if (files != null) {
-            int i = 0;
-            for (final GeneralParameterDescriptor gd : descriptor.descriptors()) {
-                if (gd instanceof ParameterDescriptor<?>) {
-                    final ParameterDescriptor<?> d = (ParameterDescriptor<?>) gd;
-                    if (Path.class.isAssignableFrom(d.getValueClass())) {
-                        parameters.getOrCreate(d).setValue(files[i]);
-                        if (++i == files.length) break;
-                    }
+    @Override
+    public final void getParameterValues(final Parameters parameters) {
+        int i = 0;
+        for (final GeneralParameterDescriptor gd : descriptor.descriptors()) {
+            if (gd instanceof ParameterDescriptor<?>) {
+                final ParameterDescriptor<?> d = (ParameterDescriptor<?>) gd;
+                if (Path.class.isAssignableFrom(d.getValueClass())) {
+                    if (i >= files.length) break;                               // Safety in case of invalid parameters.
+                    parameters.getOrCreate(d).setValue(files[i++]);
                 }
             }
         }
@@ -309,16 +271,6 @@ public abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quanti
     @Override
     public int hashCode() {
         return super.hashCode() + Arrays.hashCode(files);
-    }
-
-    /**
-     * Returns a string representation of this grid.
-     *
-     * @return a string representation for debugging purpose.
-     */
-    @Override
-    public String toString() {
-        return Strings.toString(getClass(), "file", (files != null) ? files[0] : null);
     }
 
 

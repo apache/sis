@@ -225,7 +225,7 @@ public final class Envelopes extends Static {
                     targetAOI      = converter.setBounds(target, null, "findOperation");
                     if (areaOfInterest == null) {
                         areaOfInterest = targetAOI;
-                    } else {
+                    } else if (targetAOI != null) {
                         areaOfInterest.add(targetAOI);
                     }
                 } catch (TransformException e) {

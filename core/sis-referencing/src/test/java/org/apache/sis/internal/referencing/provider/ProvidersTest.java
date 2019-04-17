@@ -75,6 +75,7 @@ public final strictfp class ProvidersTest extends TestCase {
             Geographic2Dto3D.class,
             Molodensky.class,
             AbridgedMolodensky.class,
+            PseudoPlateCarree.class,
             Equirectangular.class,
             Mercator1SP.class,
             Mercator2SP.class,

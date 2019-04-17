@@ -77,7 +77,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * This class should not be loaded when a connection to an EPSG geodetic dataset is available.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -180,6 +180,7 @@ final class StandardDefinitions {
             case 4269: name = "NAD83";                          scope = "Geodetic survey.";                   break;
             case 4267: name = "NAD27";                          scope = "Geodetic survey.";                   break;
             case 4230: name = "ED50";                           scope = "Geodetic survey.";                   break;
+            case 4019: name = "Unknown datum based upon the GRS 1980 ellipsoid";           world = true;      break;
             case 4047: name = "Unspecified datum based upon the GRS 1980 Authalic Sphere"; world = true;      break;
             default:   throw new AssertionError(code);
         }
@@ -207,6 +208,7 @@ final class StandardDefinitions {
             case 6269: name = "North American Datum 1983";                         alias = "NAD83";                break;
             case 6267: name = "North American Datum 1927";                         alias = "NAD27";                break;
             case 6230: name = "European Datum 1950";                               alias = "ED50";                 break;
+            case 6019: name = "Not specified (based on GRS 1980 ellipsoid)";       alias = null;     world = true; break;
             case 6047: name = "Not specified (based on GRS 1980 Authalic Sphere)"; alias = null;     world = true; break;
             default:   throw new AssertionError(code);
         }

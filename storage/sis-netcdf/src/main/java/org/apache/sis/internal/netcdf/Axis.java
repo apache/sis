@@ -109,6 +109,8 @@ public final class Axis extends NamedElement {
      * <p>A given {@link Grid} should not have two {@code Axis} instances with equal {@code sourceDimensions} array.
      * When {@code sourceDimensions.length} ≧ 2 we may have two {@code Axis} instances with the same indices in their
      * {@code sourceDimensions} arrays, but those indices should be in different order.</p>
+     *
+     * @see #getMainDirection()
      */
     final int[] sourceDimensions;
 
@@ -245,7 +247,7 @@ public final class Axis extends NamedElement {
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of an axis exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      *
-     * @see #getDimension()
+     * @see #getMainDirection()
      */
     final void mainDimensionFirst(final Axis[] axes, final int count) throws IOException, DataStoreException {
         final int d0 = sourceDimensions[0];
@@ -313,6 +315,26 @@ public final class Axis extends NamedElement {
     }
 
     /**
+     * Returns the fastest varying dimension of this "two-dimensional" axis.
+     *
+     * <ul>
+     *   <li>If this method returns 0, then axis coordinates vary mostly in columns.
+     *       Or to be more accurate, in first grid dimension (in netCDF order) associated to this axis.</li>
+     *   <li>If this method returns 1, then axis coordinates vary mostly in rows.
+     *       Or to be more accurate, in second grid dimension (in netCDF order) associated to this axis.</li>
+     * </ul>
+     *
+     * If a grid has <var>n</var> dimensions but we copy in an array of length 2 the dimensions used by this
+     * {@code Axis} instance, while preserving the dimension order as declared in the netCDF file, then the
+     * value returned by this method is the index of the "main" dimension in this array of length 2.
+     *
+     * @return 0 or 1, depending on whether coordinates vary mostly on columns or on rows respectively.
+     */
+    final int getMainDirection() {
+        return (sourceDimensions.length < 2 || sourceDimensions[0] <= sourceDimensions[1]) ? 0 : 1;
+    }
+
+    /**
      * Returns the number of dimension of the localization grid used by this axis.
      * This method returns 2 if this axis if backed by a localization grid having 2 or more dimensions.
      * In the netCDF UCAR library, such axes are handled by a {@link ucar.nc2.dataset.CoordinateAxis2D}.
@@ -344,6 +366,7 @@ public final class Axis extends NamedElement {
      * Returns the {@link #sourceSizes} value at the given index, making sure it is representable as a
      * signed integer value. This method is invoked by operations not designed for unsigned integers.
      *
+     * @param  i  index of the desired dimension, in the same order than {@link #sourceDimensions}.
      * @throws ArithmeticException if the size can not be represented as a signed 32 bits integer.
      */
     private int getSize(final int i) {
@@ -384,7 +407,7 @@ public final class Axis extends NamedElement {
 
     /**
      * Returns {@code true} if the given axis specifies the same direction and unit of measurement than this axis.
-     * This is used for testing is a predefined axis can be used instead than invoking {@link #toISO(CSFactory)}.
+     * This is used for testing if a predefined axis can be used instead than invoking {@link #toISO(CSFactory, int)}.
      */
     final boolean isSameUnitAndDirection(final CoordinateSystemAxis axis) {
         if (!axis.getDirection().equals(direction)) {
@@ -412,7 +435,7 @@ public final class Axis extends NamedElement {
     @SuppressWarnings("fallthrough")
     private double wraparoundRange() {
         if (isWraparound()) {
-            double period = 360;
+            double period = Longitude.MAX_VALUE - Longitude.MIN_VALUE;
             final Unit<?> unit = getUnit();
             if (unit != null) try {
                 period = unit.getConverterToAny(Units.DEGREE).convert(period);
@@ -467,9 +490,10 @@ public final class Axis extends NamedElement {
      * Creates an ISO 19111 axis from the information stored in this netCDF axis.
      *
      * @param  factory  the factory to use for creating the coordinate system axis.
+     * @param  order    0 if creating the first axis, 1 if creating the second axis, <i>etc</i>.
      * @return the ISO axis.
      */
-    final CoordinateSystemAxis toISO(final CSFactory factory) throws FactoryException {
+    final CoordinateSystemAxis toISO(final CSFactory factory, final int order) throws FactoryException {
         /*
          * The axis name is stored without namespace, because the variable name in a netCDF file can be anything;
          * this is not controlled vocabulary. However the standard name, if any, is stored with "NetCDF" namespace
@@ -505,28 +529,40 @@ public final class Axis extends NamedElement {
         /*
          * Axis abbreviation, direction and unit of measurement are mandatory. If any of them is null,
          * creation of CoordinateSystemAxis is likely to fail with an InvalidGeodeticParameterException.
-         * We provide default values for the most well-accepted values and leave other values to null.
+         * We provide default values for the most well-identified axes and leave other values to null.
          * Those null values can be accepted if users specify their own factory.
+         *
+         * The default values are SI base units except degrees, which is the usually angular units for netCDF files.
+         * Providing default units is a little bit dangerous, but we can not create CRS otherwise. Note that wrong
+         * defaults become harmless if the CRS is overwritten by GridMapping attributes in Variable.getGridGeometry().
          */
         Unit<?> unit = getUnit();
         if (unit == null) {
             switch (abbreviation) {
-                /*
-                 * TODO: consider moving those default values in a separated class,
-                 * for example a netCDF-specific CSFactory, for allowing users to override.
-                 */
-                case 'λ': case 'φ': unit = Units.DEGREE; break;
+                case 'λ': case 'φ':                                 // Geodetic longitude and latitude.
+                case 'θ': case 'Ω': unit = Units.DEGREE; break;     // Spherical longitude and latitude.
+                case 'r': case 'D':                                 // Depth and radius.
+                case 'H': case 'h':                                 // Gravity-related and ellipsoidal height.
+                case 'E': case 'N': unit = Units.METRE;  break;     // Projected easting and northing.
+                case 't':           unit = Units.SECOND; break;     // Time.
+            }
+        }
+        AxisDirection dir = direction;
+        if (dir == null) {
+            switch (order) {
+                case 0: dir = AxisDirection.COLUMN_POSITIVE; break;
+                case 1: dir = AxisDirection.ROW_POSITIVE; break;
             }
         }
         final String abbr;
         if (abbreviation != 0) {
             abbr = Character.toString(abbreviation).intern();
-        } else if (direction != null && unit != null) {
-            abbr = AxisDirections.suggestAbbreviation(name, direction, unit);
+        } else if (dir != null && unit != null) {
+            abbr = AxisDirections.suggestAbbreviation(name, dir, unit);
         } else {
             abbr = null;
         }
-        return factory.createCoordinateSystemAxis(properties, abbr, direction, unit);
+        return factory.createCoordinateSystemAxis(properties, abbr, dir, unit);
     }
 
     /**
@@ -551,7 +587,7 @@ public final class Axis extends NamedElement {
     final boolean trySetTransform(final Matrix gridToCRS, final int lastSrcDim, final int tgtDim,
             final List<MathTransform> nonLinears) throws IOException, DataStoreException
     {
-main:   switch (getDimension()) {
+        switch (getDimension()) {
             /*
              * Defined as a matter of principle, but should never happen.
              */
@@ -596,7 +632,7 @@ main:   switch (getDimension()) {
                 for (int r : repetitions) {
                     repetitionLength = Math.multiplyExact(repetitionLength, r);
                 }
-                final int ri = (sourceDimensions[0] <= sourceDimensions[1]) ? 0 : 1;
+                final int ri = getMainDirection();
                 for (int i=0; i<=1; i++) {
                     final int width  = getSize(ri ^ i    );
                     final int height = getSize(ri ^ i ^ 1);
@@ -634,6 +670,11 @@ main:   switch (getDimension()) {
      * This method is invoked as a fallback when {@link #trySetTransform(Matrix, int, int, List)}
      * could not set coefficients in the matrix of an affine transform.
      *
+     * <p>The <em>source</em> dimensions (pixel indices) are insensitive to variables order: invoking {@code A.f(B)}
+     * or {@code B.f(A)} are equivalent. However the <em>target</em> dimensions ("real world" coordinates) depend on
+     * the order: values of this variable will be stored in the first target dimension of the localization grid, and
+     * values of the other variable will be in the second target dimension.</p>
+     *
      * @param  other  the other axis to use for creating a localization grid.
      * @return the localization grid, or {@code null} if none can be built.
      * @throws IOException if an error occurred while reading the data.
@@ -654,8 +695,8 @@ main:   switch (getDimension()) {
                  */
                 final int ri = (xd <= yd) ? 0 : 1;      // Take in account that mainDimensionFirst(…) may have reordered values.
                 final int ro = (xo <= yo) ? 0 : 1;
-                final int width  = getSize(ri ^ 1);     // Fastest varying is right-most dimension.
-                final int height = getSize(ri    );     // Slowest varying if left-most dimension.
+                final int width  = getSize(ri ^ 1);     // Fastest varying is right-most dimension (when in netCDF order).
+                final int height = getSize(ri    );     // Slowest varying is left-most dimension (when in netCDF order).
                 if (other.sourceSizes[ro ^ 1] == width &&
                     other.sourceSizes[ro    ] == height)
                 {
@@ -712,7 +753,7 @@ main:   switch (getDimension()) {
      * @throws DataStoreException if a logical error occurred.
      */
     final Vector read() throws IOException, DataStoreException {
-        final TransferFunction tr = coordinates.decoder.convention().transferFunction(coordinates);
+        final TransferFunction tr = coordinates.getTransferFunction();
         if (TransferFunctionType.LINEAR.equals(tr.getType())) {
             Vector data = coordinates.read();
             data = data.subList(0, getSizeProduct(0));                  // Trim trailing NaN values.

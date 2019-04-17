@@ -109,8 +109,8 @@ public strictfp class GridTest extends TestCase {
         final Axis z = axes[2];
         final Axis t = axes[3];
 
-        assertEquals('x', x.abbreviation);
-        assertEquals('y', y.abbreviation);
+        assertEquals('E', x.abbreviation);
+        assertEquals('N', y.abbreviation);
         assertEquals('H', z.abbreviation);
         assertEquals('t', t.abbreviation);
 
