@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.netcdf;
+package org.apache.sis.internal.netcdf;
 
 import java.util.List;
 import java.awt.image.DataBuffer;
@@ -22,26 +22,39 @@ import java.awt.image.RenderedImage;
 import java.awt.image.RasterFormatException;
 import org.opengis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.ImageRenderer;
-import org.apache.sis.internal.netcdf.Resources;
+import org.apache.sis.internal.coverage.BufferedGridCoverage;
 
 
 /**
- * Data loaded from a {@link GridResource}.
+ * Data loaded from a {@link RasterResource} and potentially shown as {@link RenderedImage}.
+ * The rendered image is usually mono-banded, but may be multi-banded in some special cases
+ * handled by {@link RasterResource#read(GridGeometry, int...)}.
+ *
+ * <p>The inherited {@link #data} buffer contains the sample values, potentially multi-banded. If there is more than
+ * one band to put in the rendered image, then each band is a {@linkplain DataBuffer#getNumBanks() separated bank}
+ * in the buffer, even if two banks are actually wrapping the same arrays with different offsets.
+ * The later case is better represented by {@link java.awt.image.PixelInterleavedSampleModel},
+ * but it is {@link ImageRenderer} responsibility to perform this substitution as an optimization.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-final class Image extends GridCoverage {
+final class Raster extends BufferedGridCoverage {
     /**
-     * The sample values.
+     * Increment to apply on index for moving to the next pixel in the same band.
      */
-    private final DataBuffer data;
+    private final int pixelStride;
+
+    /**
+     * Offsets to add to sample index in each band, or {@code null} if none.
+     * This is non-null only if a variable dimension is used for the bands.
+     */
+    private final int[] bandOffsets;
 
     /**
      * Name to display in error messages. Not to be used for processing.
@@ -51,10 +64,13 @@ final class Image extends GridCoverage {
     /**
      * Creates a new raster from the given resource.
      */
-    Image(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data, final String label) {
-        super(domain, range);
-        this.data  = data;
-        this.label = label;
+    Raster(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data,
+            final int pixelStride, final int[] bandOffsets, final String label)
+    {
+        super(domain, range, data);
+        this.label       = label;
+        this.pixelStride = pixelStride;
+        this.bandOffsets = bandOffsets;
     }
 
     /**
@@ -66,6 +82,9 @@ final class Image extends GridCoverage {
         try {
             final ImageRenderer renderer = new ImageRenderer(this, target);
             renderer.setData(data);
+            if (bandOffsets != null) {
+                renderer.setInterleavedPixelOffsets(pixelStride, bandOffsets);
+            }
             return renderer.image();
         } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
             throw new CannotEvaluateException(Resources.format(Resources.Keys.CanNotRender_2, label, e), e);

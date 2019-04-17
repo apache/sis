@@ -84,7 +84,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CategoryRangeOverlap_4 = 13;
 
         /**
-         * Indices ({3}) are outside grid coverage. The value at dimension {0} shall be between
+         * Indices ({3}) are outside grid coverage. The value in dimension {0} shall be between
          * {1,number} and {2,number} inclusive.
          */
         public static final short GridCoordinateOutsideCoverage_4 = 21;
@@ -93,6 +93,12 @@ public final class Resources extends IndexedResourceBundle {
          * The grid envelope must have at least {0} dimensions.
          */
         public static final short GridEnvelopeMustBeNDimensional_1 = 25;
+
+        /**
+         * Envelope is outside grid coverage. Indices [{3,number} … {4,number}] in dimension {0} do not
+         * intersect the [{1,number} … {2,number}] grid extent.
+         */
+        public static final short GridEnvelopeOutsideCoverage_5 = 22;
 
         /**
          * Sample value range {1} for “{0}” category is illegal.
@@ -180,10 +186,7 @@ public final class Resources extends IndexedResourceBundle {
          */
         public static final short OutOfIteratorDomain_2 = 1;
 
-        /**
-         * Point ({0}) is outside the coverage domain.
-         */
-        public static final short PointOutsideCoverageDomain_1 = 22;
+        public static final short PointOutsideCoverageDomain_1 = 33;
 
         /**
          * Too many qualitative categories.

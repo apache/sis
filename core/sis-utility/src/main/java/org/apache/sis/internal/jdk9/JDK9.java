@@ -94,4 +94,20 @@ public final class JDK9 {
         if (b instanceof DoubleBuffer) return ((DoubleBuffer) b).slice();
         throw new IllegalArgumentException();
     }
+
+    /**
+     * Place holder for {@code Buffer.duplicate()}.
+     *
+     * @param  b the buffer to duplicate.
+     * @return the duplicate buffer.
+     */
+    public static Buffer duplicate(Buffer b) {
+        if (b instanceof ByteBuffer)   return ((ByteBuffer) b).duplicate();
+        if (b instanceof ShortBuffer)  return ((ShortBuffer) b).duplicate();
+        if (b instanceof IntBuffer)    return ((IntBuffer) b).duplicate();
+        if (b instanceof LongBuffer)   return ((LongBuffer) b).duplicate();
+        if (b instanceof FloatBuffer)  return ((FloatBuffer) b).duplicate();
+        if (b instanceof DoubleBuffer) return ((DoubleBuffer) b).duplicate();
+        throw new IllegalArgumentException();
+    }
 }

@@ -29,7 +29,9 @@ import java.io.IOException;
 import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
@@ -112,15 +114,30 @@ public abstract class Variable extends NamedElement {
     private Map<Number,Object> nodataValues;
 
     /**
-     * Factors by which to multiply a grid index in order to get the corresponding data index, or {@code null} if none.
-     * This is usually null, meaning that there is an exact match between grid indices and data indices. This array may
-     * be non-null if the localization grid has smaller dimensions than the dimensions of this variable, as documented
-     * in {@link Convention#nameOfDimension(Variable, int)} javadoc.
+     * The grid associated to this variable, or {@code null} if none or not yet computed.
+     * The grid needs to be computed if {@link #gridDetermined} is {@code false}.
      *
-     * <p>Some values in this array may be {@link Double#NaN} if the {@code "resampling_interval"} attribute
-     * was not found.</p>
+     * @see #gridDetermined
+     * @see #getGridGeometry()
      */
-    private double[] gridToDataIndices;
+    private GridGeometry gridGeometry;
+
+    /**
+     * Whether {@link #gridGeometry} has been computed. Note that the result may still be {@code null}.
+     *
+     * @see #gridGeometry
+     * @see #getGridGeometry()
+     */
+    private boolean gridDetermined;
+
+    /**
+     * If {@link #gridGeometry} has less dimensions than this variable, index of a grid dimension to take as raster bands.
+     * Otherwise this field is left uninitialized. If set, the index is relative to "natural" order (reverse of netCDF order).
+     *
+     * @see #getBandStride()
+     * @see RasterResource#bandDimension
+     */
+    int bandDimension;
 
     /**
      * Creates a new variable.
@@ -142,7 +159,7 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
-     * Returns the name of this variable.
+     * Returns the name of this variable. May be used as sample dimension name in a raster.
      *
      * @return the name of this variable.
      */
@@ -151,8 +168,13 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns the standard name if available, or the long name other, or the ordinary name otherwise.
+     * May be used as the {@link RasterResource} label, or the label of a {@link Raster} as a whole
+     * (including all bands). Standard name is preferred to variable name when controlled vocabulary
+     * is desired, for example for more stable identifier or more consistency between similar data.
      *
      * @return the standard name, or a fallback if there is no standard name.
+     *
+     * @see RasterResource#identifier
      */
     public final String getStandardName() {
         String name = getAttributeAsString(CF.STANDARD_NAME);
@@ -167,6 +189,7 @@ public abstract class Variable extends NamedElement {
 
     /**
      * Returns the description of this variable, or {@code null} if none.
+     * May be used as a category name in a sample dimension of a {@link Raster}.
      * This information may be encoded in different attributes like {@code "description"}, {@code "title"},
      * {@code "long_name"} or {@code "standard_name"}. If the return value is non-null, then it should also
      * be non-empty.
@@ -250,13 +273,13 @@ public abstract class Variable extends NamedElement {
      * {@link #getUnit()}, except for the fill/missing values. If {@code true}, then replacing fill/missing values by
      * {@code NaN} is the only action needed for having converted values.
      *
-     * <p>This method is for detecting when {@link org.apache.sis.storage.netcdf.GridResource#getSampleDimensions()}
-     * should return sample dimensions for already converted values. But to be consistent with {@code SampleDimension}
-     * contract, it requires fill/missing values to be replaced by NaN. This is done by {@link #replaceNaN(Object)}.</p>
+     * <p>This method is for detecting when {@link RasterResource#getSampleDimensions()} should return sample dimensions
+     * for already converted values. But to be consistent with {@code SampleDimension} contract, it requires fill/missing
+     * values to be replaced by NaN. This is done by {@link #replaceNaN(Object)}.</p>
      *
      * @return whether this variable contains values in unit of measurement, ignoring fill and missing values.
      */
-    public final boolean hasRealValues() {
+    final boolean hasRealValues() {
         final int n = getDataType().number;
         if (n == Numbers.FLOAT | n == Numbers.DOUBLE) {
             final Convention convention = decoder.convention();
@@ -319,16 +342,176 @@ public abstract class Variable extends NamedElement {
     protected abstract boolean isCoordinateSystemAxis();
 
     /**
+     * Contains information computed together with {@link Variable#getGrid(Adjustment)} but are still specific to
+     * the enclosing variable. Those information are kept in a class separated from {@link Grid} because the same
+     * {@code Grid} instance may apply to many variables while {@code Adjustment} may contain amendments that are
+     * specific to a particular {@link Variable} instance.
+     *
+     * <p>An instance of this class is created by {@link #getGridGeometry()} and updated by {@link #getGrid(Adjustment)}.
+     * Subclasses of {@link Variable} do not need to know the details of this class; they just need to pass it verbatim
+     * to their parent class.</p>
+     */
+    protected static final class Adjustment {
+        /**
+         * Factors by which to multiply a grid index in order to get the corresponding data index, or {@code null} if none.
+         * This is usually null, meaning that there is an exact match between grid indices and data indices. This array may
+         * be non-null if the localization grid has shorter dimensions than the dimensions of the variable, as documented
+         * in {@link Convention#nameOfDimension(Variable, int)} javadoc.
+         *
+         * <p>This array may be created by {@link #getGrid(Adjustment)} and is consumed by {@link #getGridGeometry()}.
+         * Some values in this array may be {@link Double#NaN} if the {@code "resampling_interval"} attribute was not found.
+         * This array may be longer than necessary.</p>
+         *
+         * @see #dataToGridIndices()
+         */
+        private double[] gridToDataIndices;
+
+        /**
+         * Maps grid dimensions to variable dimensions when those dimensions are not the same. This map should always be empty,
+         * except in the case described in {@link #mapLabelToGridDimensions mapLabelToGridDimensions(…)} method. If non-empty,
+         * then the keys are dimensions in the {@link Grid} and values are corresponding dimensions in the {@link Variable}.
+         */
+        final Map<Dimension,Dimension> gridToVariable;
+
+        /**
+         * Only {@link Variable#getGridGeometry()} should instantiate this class.
+         */
+        private Adjustment() {
+            gridToVariable = new HashMap<>();
+        }
+
+        /**
+         * Builds a map of "dimension labels" to the actual {@link Dimension} instances of the grid.
+         * The dimension labels are not the dimension names, but some other convention-dependent identifiers.
+         * The mechanism is documented in {@link Convention#nameOfDimension(Variable, int)}.
+         * For example given a file with the following netCDF variables:
+         *
+         * {@preformat text
+         *     float Latitude(grid_y, grid_x)
+         *       dim0 = "Line grids"
+         *       dim1 = "Pixel grids"
+         *       resampling_interval = 10
+         *     float Longitude(grid_y, grid_x)
+         *       dim0 = "Line grids"
+         *       dim1 = "Pixel grids"
+         *       resampling_interval = 10
+         *     ushort SST(data_y, data_x)
+         *       dim0 = "Line grids"
+         *       dim1 = "Pixel grids"
+         * }
+         *
+         * this method will add the following entries in the {@code toGridDimensions} map, provided that
+         * the dimensions are not already keys in that map:
+         *
+         * {@preformat text
+         *     "Line grids"   →  Dimension[grid_x]
+         *     "Pixel grids"  →  Dimension[grid_y]
+         * }
+         *
+         * @param  variable          the variable for which a "label to grid dimensions" mapping is desired.
+         * @param  axes              all axes in the netCDF file (not only the variable axes).
+         * @param  toGridDimensions  in input, the dimensions to accept. In output, "label → grid dimension" entries.
+         * @param  convention        convention for getting dimension labels.
+         * @return {@code true} if the {@code Variable.getGrid(…)} caller should abort.
+         *
+         * @see Convention#nameOfDimension(Variable, int)
+         */
+        boolean mapLabelToGridDimensions(final Variable variable, final List<Variable> axes,
+                final Map<Object,Dimension> toGridDimensions, final Convention convention)
+        {
+            final Set<Dimension> requestedByConvention = new HashSet<>();                       // Only in case of ambiguities.
+            final String[] namesOfAxisVariables = convention.namesOfAxisVariables(variable);    // Only in case of ambiguities.
+            for (final Variable axis : axes) {
+                final boolean isRequested = ArraysExt.containsIgnoreCase(namesOfAxisVariables, axis.getName());
+                final List<Dimension> candidates = axis.getGridDimensions();
+                for (int j=candidates.size(); --j >= 0;) {
+                    final Dimension dim = candidates.get(j);
+                    if (toGridDimensions.containsKey(dim)) {
+                        /*
+                         * Found a dimension that has not already be taken by the 'dimensions' array.
+                         * If this dimension has a name defined by an attribute like "Dim0" or "Dim1",
+                         * make this dimension available for consideration by 'dimensions[i] = …' later.
+                         */
+                        final String name = convention.nameOfDimension(axis, j);
+                        if (name != null) {
+                            if (gridToDataIndices == null) {
+                                gridToDataIndices = new double[axes.size()];    // Conservatively use longest possible length.
+                            }
+                            gridToDataIndices[j] = convention.gridToDataIndices(axis);
+                            final boolean overwrite = isRequested && requestedByConvention.add(dim);
+                            final Dimension previous = toGridDimensions.put(name, dim);
+                            if (previous != null && !previous.equals(dim)) {
+                                /*
+                                 * The same name maps to two different dimensions. Given the ambiguity, we should give up.
+                                 * However we make an exception if only one dimension is part of a variable that has been
+                                 * explicitly requested. We identify this disambiguation in the following ways:
+                                 *
+                                 *   isRequested = true   →  ok if overwrite = true  →  keep the newly added dimension.
+                                 *   isRequested = false  →  if was previously in requestedByConvention, restore previous.
+                                 */
+                                if (!overwrite) {
+                                    if (!isRequested && requestedByConvention.contains(dim)) {
+                                        toGridDimensions.put(name, previous);
+                                    } else {
+                                        // Variable.getGridGeometry() is (indirectly) the caller of this method.
+                                        variable.error(Variable.class, "getGridGeometry", null, Errors.Keys.DuplicatedIdentifier_1, name);
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Returns the factors by which to multiply a data index in order to get the corresponding grid index,
+         * or {@code null} if none. This array may be non-null if the localization grid has shorter dimensions
+         * than the ones of the variable (see {@link #mapLabelToGridDimensions mapLabelToGridDimensions(…)}).
+         * Caller needs to verify that the returned array, if non-null, is long enough.
+         */
+        double[] dataToGridIndices() {
+            double[] dataToGridIndices = null;
+            if (gridToDataIndices != null) {
+                for (int i=gridToDataIndices.length; --i >= 0;) {
+                    final double s = gridToDataIndices[i];
+                    if (s > 0 && s != Double.POSITIVE_INFINITY) {
+                        if (dataToGridIndices == null) {
+                            dataToGridIndices = new double[i + 1];
+                        }
+                        dataToGridIndices[i] = 1 / s;
+                    } else {
+                        dataToGridIndices = null;
+                        // May return a shorter array.
+                    }
+                }
+            }
+            return dataToGridIndices;
+        }
+    }
+
+    /**
      * Returns a builder for the grid geometry of this variable, or {@code null} if this variable is not a data cube.
      * Not all variables have a grid geometry. For example collections of features do not have such grid.
-     * The same grid geometry may be shared by many variables.
-     * The default implementation searches for a grid in the following ways:
+     * This method should be invoked only once per variable, but the same builder may be returned by different variables.
+     * The grid may have fewer {@linkplain Grid#getDimensions() dimensions} than this variable,
+     * in which case the additional {@linkplain #getGridDimensions() variable dimensions} can be considered as bands.
+     * The dimensions of the grid may have different {@linkplain Dimension#length() lengths} than the dimensions of
+     * this variable, in which case {@link #getGridGeometry()} is responsible for concatenating a scale factor to the
+     * "grid to CRS" transform.
+     *
+     * <p>The default implementation provided in this {@code Variable} base class could be sufficient, but subclasses
+     * are encouraged to override with a more efficient implementation or by exploiting information not available to this
+     * base class (for example UCAR {@link ucar.nc2.dataset.CoordinateSystem} objects) and invoke {@code super.getGrid(…)}
+     * as a fallback. The default implementation tries to build a grid in the following ways:</p>
      *
      * <ol class="verbose">
      *   <li><b>Grid of same dimension than this variable:</b>
      *     iterate over {@linkplain Decoder#getGrids() all localization grids} and search for an element having the
      *     same dimensions than this variable, i.e. where {@link Grid#getDimensions()} contains the same elements
-     *     than {@link #getGridDimensions()} (not necessarily in the same order). The {@link Grid#derive(Dimension[])}
+     *     than {@link #getGridDimensions()} (not necessarily in the same order). The {@link Grid#forDimensions(Dimension[])}
      *     method will be invoked for reordering dimensions in the right order.</li>
      *
      *   <li><b>Grid of different dimension than this variable:</b>
@@ -342,17 +525,19 @@ public abstract class Variable extends NamedElement {
      *     but rather the value of some {@code "dim"} attribute. If this method can map all dimensions of this variable to
      *     dimensions of a grid, then that grid is returned.</li>
      *
-     *   <li>If a mapping can not be established for all dimensions, this method return {@code null}.</li>
+     *   <li>If a mapping can not be established for all dimensions, this method returns {@code null}.</li>
      * </ol>
      *
      * Subclasses should override this class with a more direct implementation and invoke this implementation only as a fallback.
      * Typically, subclasses will handle case #1 in above list and this implementation is invoked for case #2.
+     * This method should be invoked only once, so subclasses do not need to cache the value.
      *
+     * @param  adjustment  subclasses shall ignore and pass verbatim to {@code super.getGrid(adjustment)}.
      * @return the grid geometry for this variable, or {@code null} if none.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    protected Grid getGrid() throws IOException, DataStoreException {
+    protected Grid getGrid(final Adjustment adjustment) throws IOException, DataStoreException {
         final Convention convention = decoder.convention();
         /*
          * Collect all axis dimensions, in no particular order. We use this map for determining
@@ -377,7 +562,8 @@ public abstract class Variable extends NamedElement {
          * loop and all dimensions should be the same than the values returned by 'Variable.getGridDimensions()'.
          */
         boolean isIncomplete = false;
-        final Dimension[] dimensions = CollectionsExt.toArray(getGridDimensions(), Dimension.class);
+        final List<Dimension> fromVariable = getGridDimensions();
+        final Dimension[] dimensions = fromVariable.toArray(new Dimension[fromVariable.size()]);
         for (int i=0; i<dimensions.length; i++) {
             isIncomplete |= ((dimensions[i] = domain.remove(dimensions[i])) == null);
         }
@@ -389,84 +575,71 @@ public abstract class Variable extends NamedElement {
          */
         if (isIncomplete) {
             for (int i=0; i<dimensions.length; i++) {
-                if (dimensions[i] != null) {
-                    continue;
-                }
-                final String label = convention.nameOfDimension(this, i);
-                if (label == null) {
-                    return null;        // No information allowing us to relate that variable dimension to a grid dimension.
-                }
-                /*
-                 * The first time that we find a label that may allow us to associate this variable dimension with a
-                 * grid dimension, build a map of all labels associated to dimensions. We reuse the existing 'domain'
-                 * map; there is no confusion since the keys are not of the same class.
-                 */
-                if (isIncomplete) {
-                    isIncomplete = false;
-                    final Set<Dimension> requestedByConvention = new HashSet<>();
-                    final String[] namesOfAxisVariables = convention.namesOfAxisVariables(this);
-                    for (final Variable axis : axes) {
-                        final boolean isRequested = ArraysExt.containsIgnoreCase(namesOfAxisVariables, axis.getName());
-                        final List<Dimension> candidates = axis.getGridDimensions();
-                        for (int j=candidates.size(); --j >= 0;) {
-                            final Dimension dim = candidates.get(j);
-                            if (domain.containsKey(dim)) {
-                                /*
-                                 * Found a dimension that has not already be taken by the 'dimensions' array.
-                                 * If this dimension has a name defined by attribute (not Dimension.getName()),
-                                 * make this dimension available for consideration by 'dimensions[i] = …' later.
-                                 */
-                                final String name = convention.nameOfDimension(axis, j);
-                                if (name != null) {
-                                    if (gridToDataIndices == null) {
-                                        gridToDataIndices = new double[axes.size()];
-                                    }
-                                    gridToDataIndices[j] = convention.gridToDataIndices(axis);
-                                    final boolean overwrite = isRequested && requestedByConvention.add(dim);
-                                    final Dimension previous = domain.put(name, dim);
-                                    if (previous != null && !previous.equals(dim)) {
-                                        /*
-                                         * The same name maps to two different dimensions. Given the ambiguity, we should give up.
-                                         * However we make an exception if only one dimension is part of a variable that has been
-                                         * explicitly requested. We identify this disambiguation in the following ways:
-                                         *
-                                         *   isRequested = true   →  ok if overwrite = true  →  keep the newly added dimension.
-                                         *   isRequested = false  →  if was previously in requestedByConvention, restore previous.
-                                         */
-                                        if (!overwrite) {
-                                            if (!isRequested && requestedByConvention.contains(dim)) {
-                                                domain.put(name, previous);
-                                            } else {
-                                                error(Variable.class, "getGridGeometry", null, Errors.Keys.DuplicatedIdentifier_1, name);
-                                                return null;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                if (dimensions[i] == null) {
+                    final String label = convention.nameOfDimension(this, i);
+                    if (label == null) {
+                        return null;  // No information allowing us to relate that variable dimension to a grid dimension.
+                    }
+                    /*
+                     * The first time that we find a label that may allow us to associate this variable dimension with a
+                     * grid dimension, build a map of all labels associated to dimensions. We reuse the existing 'domain'
+                     * map; there is no confusion since the keys are not of the same class.
+                     */
+                    if (isIncomplete) {
+                        isIncomplete = false;                                           // Execute this block only once.
+                        if (adjustment.mapLabelToGridDimensions(this, axes, domain, convention)) {
+                            return null;                               // Warning message already emitted by Adjustment.
                         }
                     }
-                }
-                if ((dimensions[i] = domain.remove(label)) == null) {
-                    warning(Variable.class, "getGridGeometry",        // Caller (indirectly) for this method.
-                            Resources.Keys.CanNotRelateVariableDimension_3, getFilename(), getName(), label);
-                    return null;        // Can not to relate that variable dimension to a grid dimension.
+                    /*
+                     * Remembers which dimension from the variable corresponds to a dimension from the grid.
+                     * Those dimensions would have been the same if we were not in a situation where size of
+                     * localization grid is not the same than the data variable size.
+                     */
+                    final Dimension  varDimension = fromVariable.get(i);
+                    final Dimension gridDimension = domain.remove(label);
+                    dimensions[i] = gridDimension;
+                    if (gridDimension == null) {
+                        warning(Variable.class, "getGridGeometry",        // Caller (indirectly) for this method.
+                                Resources.Keys.CanNotRelateVariableDimension_3, getFilename(), getName(), label);
+                        return null;
+                    }
+                    if (adjustment.gridToVariable.put(gridDimension, varDimension) != null) {
+                        throw new InternalDataStoreException(errors().getString(Errors.Keys.ElementAlreadyPresent_1, gridDimension));
+                    }
                 }
             }
         }
         /*
          * At this point we finished collecting all dimensions to use in the grid. Search a grid containing
-         * all those dimensions, not necessarily in the same order. The 'Grid.derive(…)' method shall return
-         * a grid with the specified order.
+         * those dimensions in the same order (the order is enforced by Grid.forDimensions(…) method call).
+         * If we find a grid meting all criterion, we return it immediately. Otherwise select a fallback in
+         * the following precedence order:
+         *
+         *   1) grid having all axes requested by the customized convention (usually there is none).
+         *   2) grid having the greatest number of dimensions.
          */
         Grid fallback = null;
+        boolean fallbackMatches = false;
+        final String[] axisNames = convention.namesOfAxisVariables(this);       // Usually null.
         for (final Grid candidate : decoder.getGrids()) {
-            final Grid grid = candidate.derive(dimensions);
+            final Grid grid = candidate.forDimensions(dimensions);
             if (grid != null) {
-                if (grid.containsAllNamedAxes(convention.namesOfAxisVariables(this))) {
-                    return grid;
-                } else if (fallback == null) {
-                    fallback = grid;
+                final int     gridDimension = grid.getSourceDimensions();
+                final boolean gridMatches   = grid.containsAllNamedAxes(axisNames);
+                if (gridMatches && gridDimension == dimensions.length) {
+                    return grid;                                                // Full match: no need to continue.
+                }
+                if (gridMatches | !fallbackMatches) {
+                    /*
+                     * If the grid contains all axes, it has precedence over previous grid unless that previous grid
+                     * also contained all axes (gridMatches == fallbackMatches). In such case we keep the grid having
+                     * the largest number of dimensions.
+                     */
+                    if (gridMatches != fallbackMatches || fallback == null || gridDimension > fallback.getSourceDimensions()) {
+                        fallbackMatches = gridMatches;
+                        fallback = grid;
+                    }
                 }
             }
         }
@@ -477,56 +650,119 @@ public abstract class Variable extends NamedElement {
      * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
      * Not all variables have a grid geometry. For example collections of features do not have such grid.
      * The same grid geometry may be shared by many variables.
+     * The grid may have fewer {@linkplain Grid#getDimensions() dimensions} than this variable,
+     * in which case the additional {@linkplain #getGridDimensions() variable dimensions} can be considered as bands.
      *
      * @return the grid geometry for this variable, or {@code null} if none.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
     public final GridGeometry getGridGeometry() throws IOException, DataStoreException {
-        final Grid info = getGrid();
-        if (info == null) {
-            return null;
-        }
-        GridGeometry grid = info.getGridGeometry(decoder);
-        /*
-         * Compare the size of the variable with the size of the localization grid.
-         * If they do not match, then there is a scale factor between the two that
-         * needs to be applied.
-         */
-        if (grid.isDefined(GridGeometry.EXTENT)) {
-            GridExtent extent = grid.getExtent();
-            final List<Dimension> dimensions = getGridDimensions();
-            final long[] sizes = new long[dimensions.size()];
-            boolean needsResize = false;
-            for (int i=sizes.length; --i >= 0;) {
-                final int d = (sizes.length - 1) - i;               // Convert "natural order" index into netCDF index.
-                sizes[i] = dimensions.get(d).length();
-                if (!needsResize) {
-                    needsResize = (sizes[i] != extent.getSize(i));
+        if (!gridDetermined) {
+            gridDetermined = true;                      // Set first so we don't try twice in case of failure.
+            final GridMapping gridMapping = GridMapping.forVariable(this);
+            final Adjustment adjustment = new Adjustment();
+            final Grid info = getGrid(adjustment);
+            if (info != null) {
+                /*
+                 * This variable may have more dimensions than the grid. We need to reduce the list to the same
+                 * dimensions than the ones in the grid.  We can not take Grid.getDimensions() directly because
+                 * those dimensions may not have the same length (this mismatch is handled in the next block).
+                 */
+                List<Dimension> dimensions = getGridDimensions();                       // In netCDF order.
+                final int dataDimension = dimensions.size();
+                if (dataDimension > info.getSourceDimensions()) {
+                    boolean copied = false;
+                    final List<Dimension> toKeep = info.getDimensions();                // Also in netCDF order.
+                    final int numToKeep = toKeep.size();
+                    for (int i=0; i<numToKeep; i++) {
+                        Dimension expected = toKeep.get(i);
+                        expected = adjustment.gridToVariable.getOrDefault(expected, expected);
+                        /*
+                         * At this point, 'expected' is a dimension of the variable that we expect to find at
+                         * current index 'i'. If we do not find that dimension, then the unexpected dimension
+                         * is assumed to be a band. We usually remove at most one element. If removal results
+                         * in a list too short, it would be a bug in the way we computed 'toKeep'.
+                         */
+                        while (!expected.equals(dimensions.get(i))) {
+                            if (!copied) {
+                                copied = true;
+                                dimensions = new ArrayList<>(dimensions);
+                            }
+                            /*
+                             * It is possible that we never reach this point if the unexpected dimension is last.
+                             * However in such case the dimension to declare is the last one in netCDF order,
+                             * which corresponds to the first dimension (i.e. dimension 0) in "natural" order.
+                             * Since the 'bandDimension' field is initialized to zero, its value is correct.
+                             */
+                            bandDimension = dataDimension - 1 - i;          // Convert netCDF order to "natural" order.
+                            dimensions.remove(i);
+                            if (dimensions.size() < numToKeep) {
+                                throw new InternalDataStoreException();     // Should not happen (see above comment).
+                            }
+                        }
+                    }
+                    /*
+                     * At this point 'dimensions' may still be longer than 'toKeep' but it does not matter.
+                     * We only need that for any index i < numToKeep, dimensions.get(i) corresponds to the
+                     * dimension at the same index in the grid.
+                     */
                 }
-            }
-            if (needsResize) {
-                double[] dataToGridIndices = null;
-                if (gridToDataIndices != null) {
-                    dataToGridIndices = new double[gridToDataIndices.length];
-                    for (int i=0; i<dataToGridIndices.length; i++) {
-                        final double s = gridToDataIndices[i];
-                        if (!(s > 0)) {
+                /*
+                 * Compare the size of the variable with the size of the localization grid.
+                 * If they do not match, then there is a scale factor between the two that
+                 * needs to be applied.
+                 */
+                GridGeometry grid = info.getGridGeometry(decoder);
+                if (grid.isDefined(GridGeometry.EXTENT)) {
+                    GridExtent extent = grid.getExtent();
+                    final long[] sizes = new long[extent.getDimension()];
+                    boolean needsResize = false;
+                    for (int i=sizes.length; --i >= 0;) {
+                        final int d = (sizes.length - 1) - i;               // Convert "natural order" index into netCDF index.
+                        sizes[i] = dimensions.get(d).length();
+                        if (!needsResize) {
+                            needsResize = (sizes[i] != extent.getSize(i));
+                        }
+                    }
+                    if (needsResize) {
+                        final double[] dataToGridIndices = adjustment.dataToGridIndices();
+                        if (dataToGridIndices == null || dataToGridIndices.length < sizes.length) {
                             warning(Variable.class, "getGridGeometry", Resources.Keys.ResamplingIntervalNotFound_2, getFilename(), getName());
                             return null;
                         }
-                        dataToGridIndices[i] = 1 / s;
+                        extent = extent.resize(sizes);
+                        grid = grid.derive().resize(extent, dataToGridIndices).build();
                     }
                 }
-                extent = extent.resize(sizes);
-                grid = grid.derive().resize(extent, dataToGridIndices).build();
                 /*
-                 * Note: the 'gridToDataIndices' array was computed as a side-effect of the call to 'getGrid(decoder)'.
-                 * This is one reason why we keep the call to 'getGrid(…)' inside this 'getGridGeometry(…)' method.
+                 * At this point we finished to build a grid geometry from the information provided by axes.
+                 * If there is grid mapping attributes (e.g. "EPSG_code", "ESRI_pe_string", "GeoTransform",
+                 * "spatial_ref", etc.), substitute some parts of the grid geometry by the parts built from
+                 * those attributes.
                  */
+                if (gridMapping != null) {
+                    grid = gridMapping.adaptGridCRS(this, grid, info.getAnchor());
+                }
+                gridGeometry = grid;
+            } else if (gridMapping != null) {
+                gridGeometry = gridMapping.createGridCRS(this);
             }
         }
-        return grid;
+        return gridGeometry;
+    }
+
+    /**
+     * Returns the number of sample values between two bands.
+     * This method is meaningful only if {@link #bandDimension} ≧ 0.
+     */
+    final long getBandStride() throws IOException, DataStoreException {
+        long length = 1;
+        final GridExtent extent = getGridGeometry().getExtent();
+        for (int i=bandDimension; --i >= 0;) {
+            length = Math.multiplyExact(length, extent.getSize(i));
+        }
+        return length;
     }
 
     /**
@@ -535,11 +771,21 @@ public abstract class Variable extends NamedElement {
      * In ISO 19123 terminology, {@link Dimension#length()} on each dimension give the upper corner
      * of the grid envelope plus one. The lower corner is always (0, 0, …, 0).
      *
-     * <p>This information is used for completing ISO 19115 metadata, providing a default implementation of
-     * {@link Convention#roleOf(Variable)} method, or for building string representation of this variable
-     * among others.</p>
+     * <div class="note"><b>Usage:</b>
+     * this information is used for completing ISO 19115 metadata, providing a default implementation of
+     * {@link Convention#roleOf(Variable)} method or for building string representation of this variable
+     * among others. Those tasks are mostly for information purpose, except if {@code Variable} subclass
+     * failed to create a grid and we must rely on {@link #getGrid(Adjustment)} default implementation.
+     * For actual georeferencing, use {@link #getGridGeometry()} instead.</div>
      *
-     * @return all dimension of the grid, in netCDF order (reverse of "natural" order).
+     * If {@link #getGrid(Adjustment)} returns a non-null value, then the list returned by this method should
+     * contain all dimensions returned by {@link Grid#getDimensions()}. It may contain more dimension however.
+     * Those additional dimensions can be considered as bands. Furthermore the dimensions of the {@code Grid}
+     * may have a different {@linkplain Dimension#length() length} than the dimensions returned by this method.
+     * If such length mismatch exists, then {@link #getGridGeometry()} will concatenate a scale factor to
+     * the "grid to CRS" transform.
+     *
+     * @return all dimensions of this variable, in netCDF order (reverse of "natural" order).
      *
      * @see Grid#getDimensions()
      */
@@ -635,6 +881,22 @@ public abstract class Variable extends NamedElement {
     }
 
     /**
+     * Returns the range of valid values, or {@code null} if unknown. This is a shortcut for
+     * {@link Convention#validRange(Variable)} with a fallback on {@link #getRangeFallback()}.
+     *
+     * @return the range of valid values, or {@code null} if unknown.
+     *
+     * @see Convention#validRange(Variable)
+     */
+    final NumberRange<?> getValidRange() {
+        NumberRange<?> range = decoder.convention().validRange(this);
+        if (range == null) {
+            range = getRangeFallback();
+        }
+        return range;
+    }
+
+    /**
      * Returns the range of values as determined by the data type or other means, or {@code null} if unknown.
      * This method is invoked only as a fallback if {@link Convention#validRange(Variable)} did not found a
      * range of values by application of CF conventions. The returned range may be a range of packed values
@@ -649,7 +911,7 @@ public abstract class Variable extends NamedElement {
      *
      * @see Convention#validRange(Variable)
      */
-    public NumberRange<?> getRangeFallback() {
+    protected NumberRange<?> getRangeFallback() {
         final DataType dataType = getDataType();
         if (dataType.isInteger) {
             final int size = dataType.size() * Byte.SIZE;
@@ -703,11 +965,18 @@ public abstract class Variable extends NamedElement {
      * @see Convention#nodataValues(Variable)
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public final Map<Number,Object> getNodataValues() {
+    final Map<Number,Object> getNodataValues() {
         if (nodataValues == null) {
             nodataValues = CollectionsExt.unmodifiableOrCopy(decoder.convention().nodataValues(this));
         }
         return nodataValues;
+    }
+
+    /**
+     * Builds the function converting values from their packed formats in the variable to "real" values.
+     */
+    final TransferFunction getTransferFunction() {
+        return decoder.convention().transferFunction(this);
     }
 
     /**
@@ -790,7 +1059,7 @@ public abstract class Variable extends NamedElement {
      * Maybe replaces fill values and missing values by {@code NaN} values in the given array.
      * This method does nothing if {@link #hasRealValues()} returns {@code false}.
      * The NaN values used by this method must be consistent with the NaN values declared in
-     * the sample dimensions created by {@link org.apache.sis.storage.netcdf.GridResource}.
+     * the sample dimensions created by {@link RasterResource}.
      *
      * @param  array  the array in which to replace fill and missing values.
      */
@@ -798,7 +1067,7 @@ public abstract class Variable extends NamedElement {
         if (hasRealValues()) {
             int ordinal = 0;
             for (final Number value : getNodataValues().keySet()) {
-                final float pad = MathFunctions.toNanFloat(ordinal++);      // Must be consistent with GridResource.createSampleDimension(…).
+                final float pad = MathFunctions.toNanFloat(ordinal++);      // Must be consistent with RasterResource.createSampleDimension(…).
                 if (array instanceof float[]) {
                     ArraysExt.replace((float[]) array, value.floatValue(), pad);
                 } else if (array instanceof double[]) {
@@ -903,7 +1172,7 @@ public abstract class Variable extends NamedElement {
      * @param  key        one or {@link Resources.Keys} constants.
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
-    public final void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
+    protected final void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
         warning(decoder.listeners, caller, method, null, null, key, arguments);
     }
 
@@ -952,4 +1221,9 @@ public abstract class Variable extends NamedElement {
         }
         return buffer.toString();
     }
+
+    /*
+     * Do not override Object.equals(Object) and Object.hashCode(),
+     * because Variables are used as keys by GridMapping.forVariable(…).
+     */
 }

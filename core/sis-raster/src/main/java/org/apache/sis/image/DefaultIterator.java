@@ -54,27 +54,27 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @todo Change iteration order on tiles for using Hilbert iterator.
  */
-final class DefaultIterator extends WritablePixelIterator {
+class DefaultIterator extends WritablePixelIterator {
     /**
      * Tile coordinate of {@link #currentRaster}.
      */
-    private int tileX, tileY;
+    protected int tileX, tileY;
 
     /**
      * Current column index in current raster.
      */
-    private int x;
+    protected int x;
 
     /**
      * Current row index in current raster.
      */
-    private int y;
+    protected int y;
 
     /**
      * Bounds of the region traversed by the iterator in current raster.
      * When iteration reaches the upper coordinates, the iterator needs to move to next tile.
      */
-    private int currentLowerX, currentUpperX, currentUpperY;
+    protected int currentLowerX, currentUpperX, currentUpperY;
 
     /**
      * Creates an iterator for the given region in the given raster.
@@ -238,7 +238,7 @@ final class DefaultIterator extends WritablePixelIterator {
      * All fields prefixed by {@code current} are updated by this method. This method also updates
      * the {@link #y} field, but caller is responsible for updating the {@link #x} field.
      */
-    private void fetchTile() {
+    void fetchTile() {
         currentRaster = null;
         if (destination != null) {
             destRaster = destination.getWritableTile(tileX, tileY);

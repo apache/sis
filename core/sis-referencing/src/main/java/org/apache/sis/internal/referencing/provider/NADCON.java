@@ -262,7 +262,7 @@ public final class NADCON extends AbstractProvider {
          * @param channel  where to read data from.
          * @param buffer   the buffer to use. That buffer must use little endian byte order
          *                 and have a capacity divisible by the size of the {@code float} type.
-         * @param file     path to the longitude or latitude difference file. Used only for error reporting.
+         * @param file     path to the longitude or latitude difference file. Used for parameter declaration and error reporting.
          */
         Loader(final ReadableByteChannel channel, final ByteBuffer buffer, final Path file)
                 throws IOException, FactoryException
@@ -376,7 +376,7 @@ public final class NADCON extends AbstractProvider {
          *
          * @param fb               a {@code FloatBuffer} view over the full {@link #buffer} range.
          * @param latitudeShifts   the previously loaded latitude shifts, or {@code null} if not yet loaded.
-         * @param longitudeShifts  the file for the longitude grid, or {@code null} if identical to {@link #file}.
+         * @param longitudeShifts  the file for the longitude grid.
          */
         final void readGrid(final FloatBuffer fb, final Loader latitudeShifts, final Path longitudeShifts)
                 throws IOException, FactoryException, NoninvertibleTransformException

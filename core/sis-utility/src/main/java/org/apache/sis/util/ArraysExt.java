@@ -628,8 +628,9 @@ public final class ArraysExt extends Static {
      *
      * @param  <T>     the array type.
      * @param  array   array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
-     * @param  first   index where the first space should be inserted. All {@code array} elements
+     * @param  first   index where the first space will be inserted. All {@code array} elements
      *                 having an index equal to or higher than {@code index} will be moved forward.
+     *                 Can be {@code array.length} for inserting spaces at the end of the array.
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
@@ -645,8 +646,9 @@ public final class ArraysExt extends Static {
             return array;               // May be null
         }
         ArgumentChecks.ensureNonNull ("array",  array);
-        ArgumentChecks.ensurePositive("length", length);
         final int arrayLength = Array.getLength(array);
+        ArgumentChecks.ensureBetween("first", 0, arrayLength, first);
+        ArgumentChecks.ensurePositive("length", length);
         @SuppressWarnings("unchecked")
         final T newArray = (T) Array.newInstance(array.getClass().getComponentType(), arrayLength + length);
         System.arraycopy(array, 0,     newArray, 0,            first            );
@@ -662,8 +664,9 @@ public final class ArraysExt extends Static {
      *
      * @param  <E>     the type of array elements.
      * @param  array   array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
-     * @param  first   index where the first space should be inserted. All {@code array} elements
+     * @param  first   index where the first space will be inserted. All {@code array} elements
      *                 having an index equal to or higher than {@code index} will be moved forward.
+     *                 Can be {@code array.length} for inserting spaces at the end of the array.
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
@@ -687,8 +690,9 @@ public final class ArraysExt extends Static {
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
      *
      * @param  array   array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
-     * @param  first   index where the first space should be inserted. All {@code array} elements
+     * @param  first   index where the first space will be inserted. All {@code array} elements
      *                 having an index equal to or higher than {@code index} will be moved forward.
+     *                 Can be {@code array.length} for inserting spaces at the end of the array.
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
@@ -712,8 +716,9 @@ public final class ArraysExt extends Static {
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
      *
      * @param  array   array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
-     * @param  first   index where the first space should be inserted. All {@code array} elements
+     * @param  first   index where the first space will be inserted. All {@code array} elements
      *                 having an index equal to or higher than {@code index} will be moved forward.
+     *                 Can be {@code array.length} for inserting spaces at the end of the array.
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
@@ -737,8 +742,9 @@ public final class ArraysExt extends Static {
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
      *
      * @param  array   array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
-     * @param  first   index where the first space should be inserted. All {@code array} elements
+     * @param  first   index where the first space will be inserted. All {@code array} elements
      *                 having an index equal to or higher than {@code index} will be moved forward.
+     *                 Can be {@code array.length} for inserting spaces at the end of the array.
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
@@ -762,8 +768,9 @@ public final class ArraysExt extends Static {
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
      *
      * @param  array   array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
-     * @param  first   index where the first space should be inserted. All {@code array} elements
+     * @param  first   index where the first space will be inserted. All {@code array} elements
      *                 having an index equal to or higher than {@code index} will be moved forward.
+     *                 Can be {@code array.length} for inserting spaces at the end of the array.
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
@@ -812,8 +819,9 @@ public final class ArraysExt extends Static {
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
      *
      * @param  array   array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
-     * @param  first   index where the first space should be inserted. All {@code array} elements
+     * @param  first   index where the first space will be inserted. All {@code array} elements
      *                 having an index equal to or higher than {@code index} will be moved forward.
+     *                 Can be {@code array.length} for inserting spaces at the end of the array.
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
@@ -837,8 +845,9 @@ public final class ArraysExt extends Static {
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
      *
      * @param  array   array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
-     * @param  first   index where the first space should be inserted. All {@code array} elements
+     * @param  first   index where the first space will be inserted. All {@code array} elements
      *                 having an index equal to or higher than {@code index} will be moved forward.
+     *                 Can be {@code array.length} for inserting spaces at the end of the array.
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.
@@ -862,8 +871,9 @@ public final class ArraysExt extends Static {
      * Otherwise this method creates a new array. In every cases, the given array is never modified.
      *
      * @param  array   array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
-     * @param  first   index where the first space should be inserted. All {@code array} elements
+     * @param  first   index where the first space will be inserted. All {@code array} elements
      *                 having an index equal to or higher than {@code index} will be moved forward.
+     *                 Can be {@code array.length} for inserting spaces at the end of the array.
      * @param  length  number of spaces to insert.
      * @return array containing the {@code array} elements with the additional space inserted,
      *         or {@code array} (which may be null) if {@code length} is 0.

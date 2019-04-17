@@ -142,7 +142,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DataStoreEncoding = 29;
 
         /**
-         * Formating conventions of dates and numbers.
+         * Formatting conventions of dates and numbers.
          */
         public static final short DataStoreLocale = 30;
 
@@ -165,6 +165,11 @@ public final class Resources extends IndexedResourceBundle {
          * Content of “{0}” directory.
          */
         public static final short DirectoryContent_1 = 35;
+
+        /**
+         * Sample dimension index {0} is duplicated.
+         */
+        public static final short DuplicatedSampleDimensionIndex_1 = 53;
 
         /**
          * Character string in the “{0}” file is too long. The string has {2} characters while the

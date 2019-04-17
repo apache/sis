@@ -279,7 +279,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
          * Copy parameters to the ContextualParameter. Those parameters are not used directly by
          * EllipsoidToCentricTransform, but we need to store them in case the user asks for them.
          */
-        context = new ContextualParameters(GeographicToGeocentric.PARAMETERS, withHeight ? 4 : 3, 4);
+        context = new ContextualParameters(GeographicToGeocentric.PARAMETERS, withHeight ? 3 : 2, 3);
         context.getOrCreate(SEMI_MAJOR).setValue(semiMajor, unit);
         context.getOrCreate(SEMI_MINOR).setValue(semiMinor, unit);
         /*
@@ -710,11 +710,11 @@ next:   while (--numPts >= 0) {
                  * If this code is used on a planet with high eccentricity,
                  * the φ value may need to be improved by an iterative method.
                  */
-                for (int it=0; it<Formulas.MAXIMUM_ITERATIONS; it++) {
+                for (int it = Formulas.MAXIMUM_ITERATIONS; it >= 0; it--) {
                     final double sinφ = sin(φ);
                     final double ν = 1/sqrt(1 - eccentricitySquared * (sinφ*sinφ));
                     final double Δφ = φ - (φ = atan((Z + eccentricitySquared * ν * sinφ) / p));
-                    if (!(abs(Δφ) >= Formulas.ANGULAR_TOLERANCE * (PI/180) * 0.25)) {   // Use ! for accepting NaN.
+                    if (!(abs(Δφ) >= Formulas.ANGULAR_TOLERANCE * (PI/180) * 0.25)) {               // Use ! for accepting NaN.
                         dstPts[dstOff++] = atan2(Y, X);
                         dstPts[dstOff++] = φ;
                         if (withHeight) {

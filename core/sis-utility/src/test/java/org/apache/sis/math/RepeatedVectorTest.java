@@ -169,4 +169,57 @@ public final strictfp class RepeatedVectorTest extends TestCase {
         assertArrayEquals(new float[] {10, 10, 10, 12, 15, 18,
                                        10, ip, 10, 12, 15, 18}, sub.floatValues(), (float) STRICT);
     }
+
+    /**
+     * Tests {@link Vector#repeat(boolean, int)} with {@code eachValue} set to {@code false}.
+     */
+    @Test
+    public void testRepeatVector() {
+        Vector vec = Vector.create(new int[] {2, -4, 7, 3}, false);
+        assertSame(vec, vec.repeat(false, 1));
+
+        vec = vec.repeat(false, 3);
+        assertArrayEquals(new float[] {
+            2, -4, 7, 3,
+            2, -4, 7, 3,
+            2, -4, 7, 3
+        }, vec.floatValues(), (float) STRICT);
+        assertSame(vec, vec.repeat(false, 1));
+
+        vec = vec.repeat(false, 2);
+        assertArrayEquals(new float[] {
+            2, -4, 7, 3,
+            2, -4, 7, 3,
+            2, -4, 7, 3,
+            2, -4, 7, 3,
+            2, -4, 7, 3,
+            2, -4, 7, 3
+        }, vec.floatValues(), (float) STRICT);
+    }
+
+    /**
+     * Tests {@link Vector#repeat(boolean, int)} with {@code eachValue} set to {@code true}.
+     */
+    @Test
+    public void testRepeatValues() {
+        Vector vec = Vector.create(new int[] {2, -4, 7, 3}, false);
+        assertSame(vec, vec.repeat(true, 1));
+
+        vec = vec.repeat(true, 3);
+        assertArrayEquals(new float[] {
+             2,  2,  2,
+            -4, -4, -4,
+             7,  7,  7,
+             3,  3,  3
+        }, vec.floatValues(), (float) STRICT);
+        assertSame(vec, vec.repeat(false, 1));
+
+        vec = vec.repeat(true, 2);
+        assertArrayEquals(new float[] {
+             2,  2,  2,  2,  2,  2,
+            -4, -4, -4, -4, -4, -4,
+             7,  7,  7,  7,  7,  7,
+             3,  3,  3,  3,  3,  3
+        }, vec.floatValues(), (float) STRICT);
+    }
 }

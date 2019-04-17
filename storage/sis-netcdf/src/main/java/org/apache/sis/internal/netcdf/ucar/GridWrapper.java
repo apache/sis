@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.IOException;
@@ -82,7 +83,7 @@ final class GridWrapper extends Grid {
     GridWrapper(final CoordinateSystem cs) {
         netcdfCS  = cs;
         domain    = cs.getDomain();
-        reordered = new HashMap<>();
+        reordered = new HashMap<>(4);               // Will typically contain 0 or 1 entry.
     }
 
     /**
@@ -97,24 +98,29 @@ final class GridWrapper extends Grid {
 
     /**
      * Returns a localization grid having the same dimensions than this grid but in a different order.
-     * This method is invoked by {@link VariableWrapper#getGrid()} when the localization grids created
-     * by {@link Decoder} subclasses are not sufficient and must be tailored for a particular variable.
-     * Returns {@code null} the the given dimensions are not members of this grid.
+     * This method is invoked by {@link VariableWrapper#getGrid} when the localization grids created
+     * by {@link DecoderWrapper} are not sufficient and must be tailored for a particular variable.
+     * Returns {@code null} if this grid contains a dimension not in the given list.
      */
     @Override
-    protected Grid derive(final org.apache.sis.internal.netcdf.Dimension[] dimensions) {
-        return derive(UnmodifiableArrayList.wrap(DimensionWrapper.unwrap(dimensions)));
+    protected Grid forDimensions(final org.apache.sis.internal.netcdf.Dimension[] dimensions) {
+        return forDimensions(UnmodifiableArrayList.wrap(DimensionWrapper.unwrap(dimensions)));
     }
 
     /**
-     * Returns a localization grid wrapping the same coordinate system than this grid but with dimensions in different order.
-     * This is the implementation of {@link #derive(org.apache.sis.internal.netcdf.Dimension[])} after the Apache SIS objects
-     * have been unwrapped into UCAR objects. Returns {@code null} the the given dimensions are not members of this grid.
+     * Implementation of {@link #forDimensions(org.apache.sis.internal.netcdf.Dimension[])} after the Apache SIS objects
+     * have been unwrapped into UCAR objects.
      *
-     * @param  dimensions  the dimensions of this grid but potentially in a different order.
-     * @return localization grid with given dimension order (may be {@code this}), or {@code null}.
+     * @param  dimensions  the desired dimensions, in order. May contain more dimensions than this grid.
+     * @return localization grid with the exact same set of dimensions than this grid (no more and no less),
+     *         but in the order specified by the given array (ignoring dimensions not in this grid).
+     *         May be {@code this} or {@code null}.
      */
-    private GridWrapper derive(final List<Dimension> dimensions) {
+    private GridWrapper forDimensions(List<Dimension> dimensions) {
+        if (dimensions.size() > domain.size()) {
+            dimensions = new ArrayList<>(dimensions);
+            dimensions.retainAll(domain);
+        }
         if (domain.equals(dimensions)) {
             return this;
         }
@@ -137,7 +143,7 @@ final class GridWrapper extends Grid {
      */
     final GridWrapper forVariable(final VariableIF variable, final List<CoordinateSystem> systems, final String[] axisNames) {
         if (systems.contains(netcdfCS) && containsAllNamedAxes(axisNames)) {
-            return derive(variable.getDimensions());
+            return forDimensions(variable.getDimensions());
         }
         return null;
     }
@@ -153,6 +159,7 @@ final class GridWrapper extends Grid {
     /**
      * Returns the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>grid</em>.
+     * It should be equal to the size of {@link #getDimensions()} list.
      */
     @Override
     public int getSourceDimensions() {
@@ -162,7 +169,7 @@ final class GridWrapper extends Grid {
     /**
      * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>coordinate reference system</em>.
-     * It should be equal to the size of the array returned by {@link #getAxes(Decoder)},
+     * It should be equal to the length of the array returned by {@link #getAxes(Decoder)},
      * but caller should be robust to inconsistencies.
      */
     @Override
@@ -234,9 +241,9 @@ next:       for (final String name : axisNames) {
             char abbreviation = 0;
             final AxisType type = axis.getAxisType();
             if (type != null) switch (type) {
-                case GeoX:            abbreviation = 'x'; break;
-                case GeoY:            abbreviation = 'y'; break;
-                case GeoZ:            abbreviation = 'z'; break;
+                case GeoX:            abbreviation = netcdfCS.isGeoXY() ? 'E' : 'x'; break;
+                case GeoY:            abbreviation = netcdfCS.isGeoXY() ? 'N' : 'y'; break;
+                case GeoZ:            abbreviation = netcdfCS.isGeoXY() ? 'H' : 'z'; break;
                 case Lon:             abbreviation = 'λ'; break;
                 case Lat:             abbreviation = 'φ'; break;
                 case Pressure:        // Fallthrough: consider as Height

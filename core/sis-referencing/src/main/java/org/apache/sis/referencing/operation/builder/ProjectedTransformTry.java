@@ -83,11 +83,11 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
 
     /**
      * Maps {@link #projection} dimensions to {@link LinearTransformBuilder} target dimensions.
-     * For example if this array is {@code {2,1}}, then dimensions 0 and 1 of {@code projection}
-     * map dimensions 2 and 1 of {@link LinearTransformBuilder#targets} respectively. The length
-     * of this array shall be equal to the number of {@link #projection} source dimensions.
+     * For example if this array is {@code {2,1}}, then dimensions 0 and 1 of {@link #projection}
+     * (both source and target dimensions) will map dimensions 2 and 1 of {@link LinearTransformBuilder#targets}, respectively.
+     * The length of this array shall be equal to the number of {@link #projection} source dimensions.
      */
-    private final int[] dimensions;
+    private final int[] projToGrid;
 
     /**
      * A global correlation factor, stored for information purpose only.
@@ -105,7 +105,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
     ProjectedTransformTry(final ProjectedTransformTry other) {
         name       = other.name;
         projection = other.projection;
-        dimensions = other.dimensions;
+        projToGrid = other.projToGrid;
     }
 
     /**
@@ -114,7 +114,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
      */
     ProjectedTransformTry(final float corr) {
         projection  = null;
-        dimensions  = null;
+        projToGrid  = null;
         correlation = corr;
     }
 
@@ -124,19 +124,19 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
      *
      * @param name               a name by witch this projection attempt is identified, or {@code null}.
      * @param projection         conversion from non-linear grid to something that may be more linear.
-     * @param dimensions         maps {@code projection} dimensions to {@link LinearTransformBuilder} target dimensions.
+     * @param projToGrid         maps {@code projection} dimensions to {@link LinearTransformBuilder} target dimensions.
      * @param expectedDimension  number of {@link LinearTransformBuilder} target dimensions.
      */
-    ProjectedTransformTry(final String name, final MathTransform projection, final int[] dimensions, int expectedDimension) {
+    ProjectedTransformTry(final String name, final MathTransform projection, final int[] projToGrid, int expectedDimension) {
         ArgumentChecks.ensureNonNull("name", name);
         ArgumentChecks.ensureNonNull("projection", projection);
         this.name       = name;
         this.projection = projection;
-        this.dimensions = dimensions;
+        this.projToGrid = projToGrid;
         int side = 0;                           // 0 = problem with source dimensions, 1 = problem with target dimensions.
         int actual = projection.getSourceDimensions();
         if (actual <= expectedDimension) {
-            expectedDimension = dimensions.length;
+            expectedDimension = projToGrid.length;
             if (actual == expectedDimension) {
                 actual = projection.getTargetDimensions();
                 if (actual == expectedDimension) {
@@ -158,19 +158,19 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
     }
 
     /**
-     * Returns the projection, taking in account axis swapping if {@link #dimensions} is not an arithmetic progression.
+     * Returns the projection, taking in account axis swapping if {@link #projToGrid} is not an arithmetic progression.
      */
     final MathTransform projection() {
-        MathTransform mt = MathTransforms.linear(Matrices.createDimensionSelect(dimensions.length, dimensions));
+        MathTransform mt = MathTransforms.linear(Matrices.createDimensionSelect(projToGrid.length, projToGrid));
         return MathTransforms.concatenate(mt, projection);
     }
 
     /**
      * Transforms target coordinates of a localization grid. The {@code coordinates} argument is the value
      * of {@link LinearTransformBuilder#targets}, without clone (this method will only read those arrays).
-     * Only arrays at indices given by {@link #dimensions} will be read; the other arrays will be ignored.
+     * Only arrays at indices given by {@link #projToGrid} will be read; the other arrays will be ignored.
      * The coordinate operation result will be stored in arrays of size {@code [numDimensions][numPoints]}
-     * where {@code numDimensions} is the length of the {@link #dimensions} array. Indices are as below,
+     * where {@code numDimensions} is the length of the {@link #projToGrid} array. Indices are as below,
      * with 0 ≦ <var>d</var> ≦ {@code numDimensions}:
      *
      * <ol>
@@ -187,7 +187,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
      * @return results of coordinate operations (see method javadoc), or {@code null} if an error occurred.
      */
     final double[][] transform(final double[][] coordinates, final int numPoints, final Queue<double[]> pool) {
-        final int numDimensions = dimensions.length;
+        final int numDimensions = projToGrid.length;
         final double[][] results = new double[numDimensions][];
         for (int i=0; i<numDimensions; i++) {
             if ((results[i] = pool.poll()) == null) {
@@ -201,7 +201,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
          */
         try {
             if (numDimensions == 1) {
-                projection.transform(coordinates[dimensions[0]], 0, results[0], 0, numPoints);
+                projection.transform(coordinates[projToGrid[0]], 0, results[0], 0, numPoints);
             } else {
                 final int bufferCapacity = Math.min(numPoints, BUFFER_CAPACITY);                 // In number of points.
                 final double[] buffer = new double[bufferCapacity * numDimensions];
@@ -214,7 +214,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
                      * Coordinates start at index 0 and the number of valid points is stop - start.
                      */
                     for (int d=0; d<numDimensions; d++) {
-                        final double[] data = coordinates[dimensions[d]];
+                        final double[] data = coordinates[projToGrid[d]];
                         dataOffset = start;
                         int dst = d;
                         do {
@@ -223,7 +223,8 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
                         } while (++dataOffset < stop);
                     }
                     /*
-                     * Transform coordinates and save the result.
+                     * Transform coordinates and save the result. If any coordinate result is NaN,
+                     * we can not use that projection (LinearTransformBuilder requires all points).
                      */
                     projection.transform(buffer, 0, buffer, 0, stop - start);
                     for (int d=0; d<numDimensions; d++) {
@@ -232,7 +233,10 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
                         dataOffset = start;
                         int dst = d;
                         do {
-                            data[dataOffset] = buffer[dst];
+                            if (Double.isNaN(data[dataOffset] = buffer[dst])) {
+                                recycle(results, pool);         // Make arrays available for other transforms.
+                                return null;
+                            }
                             dst += numDimensions;
                         } while (++dataOffset < stop);
                     }
@@ -264,12 +268,12 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
      * @return a copy of the given {@code correlation} array with new values overwriting the old values.
      */
     final double[] replace(double[] correlations, final double[] newValues) {
-        if (newValues.length == correlations.length && ArraysExt.isRange(0, dimensions)) {
+        if (newValues.length == correlations.length && ArraysExt.isRange(0, projToGrid)) {
             return newValues;
         }
         correlations = correlations.clone();
-        for (int j=0; j<dimensions.length; j++) {
-            correlations[dimensions[j]] = newValues[j];
+        for (int j=0; j<projToGrid.length; j++) {
+            correlations[projToGrid[j]] = newValues[j];
         }
         return correlations;
     }
@@ -289,13 +293,13 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
          * have a different number of rows since the number of target dimensions may differ.
          */
         assert newValues.getNumCol() == transform.getNumCol();
-        if (newValues.getNumRow() == transform.getNumRow() && ArraysExt.isRange(0, dimensions)) {
+        if (newValues.getNumRow() == transform.getNumRow() && ArraysExt.isRange(0, projToGrid)) {
             return newValues;
         }
         transform = transform.clone();
-        for (int j=0; j<dimensions.length; j++) {
-            final int d = dimensions[j];
-            for (int i=transform.getNumRow(); --i >= 0;) {
+        for (int j=0; j<projToGrid.length; j++) {
+            final int d = projToGrid[j];
+            for (int i=transform.getNumCol(); --i >= 0;) {
                 transform.setNumber(d, i, newValues.getNumber(j, i));
             }
         }
@@ -303,7 +307,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry> {
     }
 
     /**
-     * Order by the inverse of correlation coefficients. Highest coefficients (best correlations)
+     * Orders by the inverse of correlation coefficients. Highest coefficients (best correlations)
      * are first, lower coefficients are next, {@link Float#NaN} values are last.
      */
     @Override

@@ -26,6 +26,7 @@ org.apache.sis.internal.referencing.provider.CoordinateFrameRotation3D
 org.apache.sis.internal.referencing.provider.CoordinateFrameRotation2D
 org.apache.sis.internal.referencing.provider.Molodensky
 org.apache.sis.internal.referencing.provider.AbridgedMolodensky
+org.apache.sis.internal.referencing.provider.PseudoPlateCarree
 org.apache.sis.internal.referencing.provider.Equirectangular
 org.apache.sis.internal.referencing.provider.Mercator1SP
 org.apache.sis.internal.referencing.provider.Mercator2SP

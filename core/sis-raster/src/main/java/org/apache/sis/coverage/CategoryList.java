@@ -159,13 +159,12 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * The {@code categories} array should contain at least one element,
      * otherwise the {@link #EMPTY} constant should be used.
      *
-     * @param  categories  the list of categories. May be empty, but can not be null.
-     *                     This array is not cloned and is modified in-place.
+     * @param  categories  the list of categories. This array is not cloned and is modified in-place.
      * @param  converse    if we are creating the list of categories after conversion from samples to real values,
      *                     the original list before conversion. Otherwise {@code null}.
      * @throws IllegalArgumentException if two or more categories have overlapping sample value range.
      */
-    CategoryList(final Category[] categories, CategoryList converse) {
+    private CategoryList(final Category[] categories, CategoryList converse) {
         this.categories = categories;
         final int count = categories.length;
         /*
@@ -304,6 +303,20 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private Object readResolve() throws ObjectStreamException {
         return (categories.length == 0) ? EMPTY : this;
+    }
+
+    /**
+     * Constructs a category list using the specified array of categories.
+     * The {@code categories} array should contain at least one element,
+     * otherwise the {@link #EMPTY} constant should be used.
+     *
+     * <p>This is defined as a static method for allowing the addition of a caching mechanism in the future if desired.</p>
+     *
+     * @param  categories  the list of categories. This array is not cloned and is modified in-place.
+     * @throws IllegalArgumentException if two or more categories have overlapping sample value range.
+     */
+    static CategoryList create(final Category[] categories) {
+        return new CategoryList(categories, null);
     }
 
     /**

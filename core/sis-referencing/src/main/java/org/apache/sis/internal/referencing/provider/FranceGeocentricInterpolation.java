@@ -350,7 +350,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * Unconditionally loads the grid for the given file without in-memory compression.
      *
      * @param  in    reader of the RGF93 datum shift file.
-     * @param  file  path to the file being read, used only for error reporting.
+     * @param  file  path to the file being read, used for parameter declaration and error reporting.
      * @throws IOException if an I/O error occurred.
      * @throws NumberFormatException if a number can not be parsed.
      * @throws NoSuchElementException if a data line is missing a value.

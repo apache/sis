@@ -51,7 +51,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
      * The pixel iterator being tested.
      * This field is initialized by a call to one of the {@code createPixelIterator(…)} methods.
      */
-    private WritablePixelIterator iterator;
+    WritablePixelIterator iterator;
 
     /**
      * The raster or image data type as one of the {@link DataBuffer} constants.
@@ -109,7 +109,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
     /**
      * {@code true} for testing write operations in addition of read operations.
      */
-    private boolean isWritable;
+    boolean isWritable;
 
     /**
      * Creates a new test case for the given data type.
@@ -194,8 +194,6 @@ public strictfp class DefaultIteratorTest extends TestCase {
     private WritableRenderedImage createImage(final Rectangle subArea) {
         assertEquals(0, width  % tileWidth);
         assertEquals(0, height % tileHeight);
-        final int numXTiles = (width  + tileWidth -1) / tileWidth;
-        final int numYTiles = (height + tileHeight-1) / tileHeight;
         final int xmax = xmin + width;                                  // Maximum value is exclusive.
         final int ymax = ymin + height;
         final int subMinX, subMinY, subMaxX, subMaxY;
@@ -214,34 +212,87 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final TiledImageMock image = new TiledImageMock(dataType, numBands, xmin, ymin, width, height, tileWidth, tileHeight, minTileX, minTileY);
         /*
          * At this point, all data structures have been created an initialized to zero sample values.
-         * Now fill the data structures with arbitrary values. We fill them tile-by-tile.
+         * Now fill the data structures with arbitrary values. We fill them tile-by-tile by default,
+         * unless an iteration order is specified.
          */
         int n = 0;
         float value = (dataType == DataBuffer.TYPE_FLOAT) ? -100.5f : 100f;
-        for (int j=0; j<numYTiles; j++) {
-            for (int i=0; i<numXTiles; i++) {
-                final int yNextTile = ymin + (j+1) * tileHeight;
-                for (int y = yNextTile - tileHeight; y < yNextTile; y++) {
-                    final boolean rowIncluded = (y >= subMinY && y < subMaxY);
-                    final int xNextTile = xmin + (i+1) * tileWidth;
-                    for (int x = xNextTile - tileWidth; x < xNextTile; x++) {
-                        final boolean included = rowIncluded && (x >= subMinX && x < subMaxX);
-                        for (int b = 0; b < numBands; b++) {
-                            image.setSample(x, y, b, value);
-                            if (included) {
-                                expected[n++] = value;
-                            }
-                            value++;
-                        }
-                    }
-                    value += 4;         // Arbitrary offset.
+        final int[] coordinates = getCoordinatesInExpectedOrder(new Rectangle(xmin, ymin, width, height));
+        for (int i=0; i<coordinates.length;) {
+            final int x = coordinates[i++];
+            final int y = coordinates[i++];
+            final boolean included = (y >= subMinY && y < subMaxY) && (x >= subMinX && x < subMaxX);
+            for (int b = 0; b < numBands; b++) {
+                image.setSample(x, y, b, value);
+                if (included) {
+                    expected[n++] = value;
                 }
-                value += 7;             // Arbitrary offset.
+                value++;
             }
-            value += 10;                // Arbitrary offset.
+            if (x == y) value += 10;        // Arbitrary offset.
         }
         assertEquals("Number of expected values", expected.length, n);
         return image;
+    }
+
+    /**
+     * Returns the sequence of (x,y) coordinates expected for the iterator being tested.
+     * This method must be overridden for each kind of iterator to test.
+     *
+     * @param  subArea  the ranges of pixel coordinates in which to iterate.
+     * @return sequence of (x,y) tuples inside the given ranges, in the order to be traversed by the iterator.
+     */
+    int[] getCoordinatesInExpectedOrder(final Rectangle subArea) {
+        final int[] coordinates = new int[subArea.width * subArea.height * 2];
+        final int numXTiles = (width  + tileWidth -1) / tileWidth;
+        final int numYTiles = (height + tileHeight-1) / tileHeight;
+        int i = 0;
+        for (int ty=0; ty<numYTiles; ty++) {
+            for (int tx=0; tx<numXTiles; tx++) {
+                final int yNextTile = ymin + (ty+1) * tileHeight;
+                for (int y = yNextTile - tileHeight; y < yNextTile; y++) {
+                    final int xNextTile = xmin + (tx+1) * tileWidth;
+                    for (int x = xNextTile - tileWidth; x < xNextTile; x++) {
+                        coordinates[i++] = x;
+                        coordinates[i++] = y;
+                    }
+                }
+            }
+        }
+        assertEquals(coordinates.length, i);
+        return coordinates;
+    }
+
+    /**
+     * Returns the index in iteration of the given coordinates. For example a return value of 2 means
+     * that the given (x,y) should be the third point in iteration (iteration starts at index zero).
+     * This method must be overridden for each kind of iterator to test.
+     *
+     * @param  bounds  the image bounds.
+     * @param  x       <var>x</var> coordinate for which the iterator position is desired.
+     * @param  y       <var>y</var> coordinate for which the iterator position is desired.
+     * @return point index in iterator order for the given (x,y) coordinates.
+     */
+    int getIndexOf(final Rectangle bounds, int x, int y) {
+        x -= bounds.x;
+        y -= bounds.y;
+        if (tileWidth == 0 && tileHeight == 0) {
+            return y * bounds.width + x;
+        }
+        final int tx = x / tileWidth;
+        final int ty = y / tileHeight;
+        final int numTileX = (bounds.width + tileWidth - 1) / tileWidth;
+        return ((ty * (numTileX - 1) + tx) * tileHeight + y - tx) * tileWidth + x;
+    }
+
+    /**
+     * Returns the expected sequence type. Subclasses may need to override.
+     *
+     * @param  singleTile  {@code true} if iteration occurs in a single tile, or {@code false} for the whole image.
+     * @return the iteration order (may be {@code null}).
+     */
+    SequenceType getIterationOrder(boolean singleTile) {
+        return singleTile ? SequenceType.LINEAR : null;
     }
 
     /**
@@ -566,7 +617,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         tileHeight =   5;
         numBands   =   3;
         createPixelIterator(createImage(null), null);
-        assertNull("getIterationOrder()", iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -586,7 +637,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         tileHeight =   5;
         numBands   =   2;
         createPixelIterator(createImage(null), null);
-        assertNull("getIterationOrder()", iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
         verifyIteration(false);
 
         iterator.rewind();
@@ -613,7 +664,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(-10, -20, 8, 28);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(true), iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -637,7 +688,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(45, -20, 30, 29);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(true), iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -662,7 +713,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(68, 5, 4, 4);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(true), iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -687,7 +738,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(0, 0, 9, 50);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(true), iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -710,7 +761,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(6, 20, 4, 5);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(true), iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -734,7 +785,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(-10, -5, 25, 22);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertNull("getIterationOrder()", iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -758,7 +809,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(27, -20, 30, 37);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertNull("getIterationOrder()", iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -782,7 +833,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(36, 8, 12, 20);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertNull("getIterationOrder()", iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -806,7 +857,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(-20, -1, 30, 20);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertNull("getIterationOrder()", iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -829,7 +880,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(20, 10, 30, 25);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertNull("getIterationOrder()", iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -851,7 +902,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(-10, -10, 150, 80);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertNull("getIterationOrder()", iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
         verifyIteration(false);
     }
 
@@ -938,20 +989,17 @@ public strictfp class DefaultIteratorTest extends TestCase {
         minTileY   = 100;
         createPixelIterator(createImage(null), null);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        final int[] coordinates = getCoordinatesInExpectedOrder(new Rectangle(xmin, ymin, width, height));
         int i = 0;
-        for (int ty = 0; ty < height/tileHeight; ty++) {
-            for (int tx = 0; tx < width/tileWidth; tx++) {
-                for (int y = 0; y<tileHeight; y++) {
-                    for (int x = 0; x<tileWidth; x++) {
-                        assertTrue(iterator.next());
-                        final Point position = iterator.getPosition();
-                        assertEquals("x", tx*tileWidth  + x + xmin, position.x);
-                        assertEquals("y", ty*tileHeight + y + ymin, position.y);
-                        for (int b=0; b<numBands; b++) {
-                            assertEquals(expected[i++], iterator.getSampleFloat(b), 0f);
-                        }
-                    }
-                }
+        for (int j=0; j<coordinates.length;) {
+            final int x = coordinates[j++];
+            final int y = coordinates[j++];
+            assertTrue(iterator.next());
+            final Point position = iterator.getPosition();
+            assertEquals("x", x, position.x);
+            assertEquals("y", y, position.y);
+            for (int b=0; b<numBands; b++) {
+                assertEquals(expected[i++], iterator.getSampleFloat(b), 0f);
             }
         }
         assertEquals("Too few elements in iteration.", expected.length, i);
@@ -964,7 +1012,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
      * @see #verifyIteration(boolean)
      * @see #verifyWindow(Dimension)
      */
-    private void verifyIterationAfterMove(int x, int y) {
+    private void verifyIterationAfterMove(final int x, final int y) {
         /*
          * Move the iterator and verify location after the move.
          */
@@ -976,18 +1024,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
          * Compute index of the (x,y) position in the array of expected values.
          * Iteration verification will need to begin at that value.
          */
-        x -= xmin;
-        y -= ymin;
-        int i;
-        if (tileWidth == 0 && tileHeight == 0) {
-            i = y * width + x;
-        } else {
-            final int tx = x / tileWidth;
-            final int ty = y / tileHeight;
-            final int numTileX = (width + tileWidth - 1) / tileWidth;
-            i = ((ty * (numTileX - 1) + tx) * tileHeight + y - tx) * tileWidth + x;
-        }
-        i *= numBands;
+        int i = getIndexOf(new Rectangle(xmin, ymin, width, height), x, y) * numBands;
         /*
          * Iteration verification happens here. Note that contrarily to 'verifyIteration(boolean)' method,
          * we use a do … while loop instead than a while loop because the call to 'moveTo(x, y)' should be
@@ -1092,7 +1129,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Dimension window = new Dimension(3, 4);
         createWindowIterator(createImage(null), window);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(true), iterator.getIterationOrder());
         verifyWindow(window);
     }
 
@@ -1114,7 +1151,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Dimension window = new Dimension(2, 3);
         createWindowIterator(createImage(null), window);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertNull("getIterationOrder()", iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
         verifyWindow(window);
     }
 

@@ -22,7 +22,6 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.GregorianCalendar;
-import java.util.TimeZone;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 import org.apache.sis.internal.util.StandardDateFormat;
@@ -107,7 +106,7 @@ final class HYCOM {
                          */
                         Vector values = variable.read();
                         final double[] times = new double[values.size()];
-                        final GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone(StandardDateFormat.UTC), Locale.US);
+                        final GregorianCalendar calendar = new GregorianCalendar(decoder.getTimeZone(), Locale.US);
                         calendar.clear();
                         for (int i=0; i<times.length; i++) {
                             double time = values.doubleValue(i);                            // Date encoded as a double (e.g. 20181017)

@@ -16,18 +16,24 @@
  */
 package org.apache.sis.image;
 
+import java.util.Arrays;
 import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
+import java.awt.image.SampleModel;
+import java.awt.image.SinglePixelPackedSampleModel;
+import java.awt.image.MultiPixelPackedSampleModel;
 import java.util.NoSuchElementException;
 import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.measure.NumberRange;
 
 import static java.lang.Math.floorDiv;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
@@ -54,6 +60,7 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -295,7 +302,9 @@ public abstract class PixelIterator {
          */
         public PixelIterator create(final RenderedImage data) {
             ArgumentChecks.ensureNonNull("data", data);
-            if (order != null) {
+            if (order == SequenceType.LINEAR) {
+                return new LinearIterator(data, null, subArea, window);
+            } else if (order != null) {
                 throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
             }
             // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
@@ -348,7 +357,9 @@ public abstract class PixelIterator {
         public WritablePixelIterator createWritable(final RenderedImage input, final WritableRenderedImage output) {
             ArgumentChecks.ensureNonNull("input",  input);
             ArgumentChecks.ensureNonNull("output", output);
-            if (order != null) {
+            if (order == SequenceType.LINEAR) {
+                return new LinearIterator(input, output, subArea, window);
+            } else if (order != null) {
                 throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
             }
             // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
@@ -397,6 +408,60 @@ public abstract class PixelIterator {
     }
 
     /**
+     * Returns the range of sample values that can be stored in each band of the rendered image or raster.
+     * The ranges depend on the data type (byte, integer, <i>etc.</i>) and the number of bits per sample.
+     * If the samples are stored as floating point values, then the ranges are infinite (unbounded).
+     *
+     * <p>Usually, the range is the same for all bands. A situation where the ranges may differ is when an
+     * image uses {@link SinglePixelPackedSampleModel}, in which case the number of bits per pixel may vary
+     * for different bands.</p>
+     *
+     * @return the ranges of valid sample values for each band. Ranges may be {@linkplain NumberRange#isBounded() unbounded}.
+     */
+    public NumberRange<?>[] getSampleRanges() {
+        final SampleModel model = (currentRaster != null) ? currentRaster.getSampleModel() : image.getSampleModel();
+        final NumberRange<?>[] ranges = new NumberRange<?>[model.getNumBands()];
+        final NumberRange<?> range;
+        if (model instanceof MultiPixelPackedSampleModel) {
+            /*
+             * This model supports only unsigned integer types: DataBuffer.TYPE_BYTE, DataBuffer.TYPE_USHORT
+             * or DataBuffer.TYPE_INT (considered unsigned in the context of this sample model).  The number
+             * of bits per sample is defined by the "pixel bit stride".
+             */
+            final int numBits = ((MultiPixelPackedSampleModel) model).getPixelBitStride();
+            range = NumberRange.create(0, true, (1 << numBits) - 1, true);
+        } else if (model instanceof SinglePixelPackedSampleModel) {
+            /*
+             * This model supports only unsigned integer types: TYPE_BYTE, TYPE_USHORT, TYPE_INT (considered
+             * unsigned in the context of this sample model). The number of bits may vary for each band.
+             */
+            final int[] masks = ((SinglePixelPackedSampleModel) model).getBitMasks();
+            for (int i=0; i<masks.length; i++) {
+                final int numBits = Integer.bitCount(masks[i]);
+                ranges[i] = NumberRange.create(0, true, (1 << numBits) - 1, true);
+            }
+            return ranges;
+        } else {
+            /*
+             * For all other sample models, the range is determined by the data type.
+             * The following cases invoke the NumberRange constructor which best fit the data type.
+             */
+            final int type = model.getDataType();
+            switch (type) {
+                case DataBuffer.TYPE_BYTE:   range = NumberRange.create((short) 0,                 true,  (short)   0xFF,            true);  break;
+                case DataBuffer.TYPE_USHORT: range = NumberRange.create(        0,                 true,          0xFFFF,            true);  break;
+                case DataBuffer.TYPE_SHORT:  range = NumberRange.create(Short.  MIN_VALUE,         true,  Short.  MAX_VALUE,         true);  break;
+                case DataBuffer.TYPE_INT:    range = NumberRange.create(Integer.MIN_VALUE,         true,  Integer.MAX_VALUE,         true);  break;
+                case DataBuffer.TYPE_FLOAT:  range = NumberRange.create(Float.  NEGATIVE_INFINITY, false, Float.  POSITIVE_INFINITY, false); break;
+                case DataBuffer.TYPE_DOUBLE: range = NumberRange.create(Double. NEGATIVE_INFINITY, false, Double. POSITIVE_INFINITY, false); break;
+                default: throw new IllegalStateException(Errors.format(Errors.Keys.UnknownType_1, type));
+            }
+        }
+        Arrays.fill(ranges, range);
+        return ranges;
+    }
+
+    /**
      * Returns the order in which pixels are traversed. {@link SequenceType#LINEAR} means that pixels on the first
      * row are traversed from left to right, then pixels on the second row from left to right, <i>etc.</i>
      * A {@code null} value means that the iteration order is unspecified.
@@ -404,6 +469,15 @@ public abstract class PixelIterator {
      * @return order in which pixels are traversed, or {@code null} if unspecified.
      */
     public abstract SequenceType getIterationOrder();
+
+    /**
+     * Returns the number of bands (samples per pixel) in the image or raster.
+     *
+     * @return number of bands.
+     */
+    public int getNumBands() {
+        return numBands;
+    }
 
     /**
      * Returns the pixel coordinates of the region where this iterator is doing the iteration.

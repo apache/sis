@@ -31,6 +31,7 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.image.DefaultIteratorTest.class,
+    org.apache.sis.image.LinearIteratorTest.class,
     org.apache.sis.coverage.grid.PixelTranslationTest.class,
     org.apache.sis.coverage.grid.GridExtentTest.class,
     org.apache.sis.coverage.grid.GridGeometryTest.class,
@@ -38,7 +39,8 @@ import org.junit.BeforeClass;
     org.apache.sis.coverage.CategoryTest.class,
     org.apache.sis.coverage.CategoryListTest.class,
     org.apache.sis.coverage.SampleDimensionTest.class,
-    org.apache.sis.internal.raster.ScaledColorSpaceTest.class
+    org.apache.sis.internal.raster.ScaledColorSpaceTest.class,
+    org.apache.sis.internal.coverage.BufferedGridCoverageTest.class
 })
 public final strictfp class RasterTestSuite extends TestSuite {
     /**

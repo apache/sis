@@ -33,17 +33,22 @@ import org.opengis.referencing.datum.*;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.operation.CoordinateOperationFactory;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.cs.DefaultSphericalCS;
-import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.crs.AbstractCRS;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.referencing.crs.DefaultGeographicCRS;
+import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
+import org.apache.sis.internal.referencing.provider.Equirectangular;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.TemporalUtilities;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
@@ -51,9 +56,11 @@ import org.apache.sis.math.Vector;
 
 /**
  * Temporary object for building a coordinate reference system from the variables in a netCDF file.
- * Different instances are required for the geographic, vertical and temporal components of a CRS,
- * or if a netCDF file uses different CRS for different variables.
- * This builder is used as below:
+ * This class proceeds by inspecting the coordinate system axes. This is a different approach than
+ * {@link GridMapping}, which parses Well Known Text or EPSG codes declared in variable attributes.
+ *
+ * <p>Different instances are required for the geographic, vertical and temporal components of a CRS,
+ * or if a netCDF file uses different CRS for different variables. This builder is used as below:</p>
  *
  * <ol>
  *   <li>Invoke {@link #dispatch(List, Axis)} for all axes in a grid.
@@ -73,9 +80,13 @@ import org.apache.sis.math.Vector;
 abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
     /**
      * The coordinate reference system which is presumed the basis of datum on netCDF files.
-     * Note: if this default is changed, search also for "WGS 84" strings in this class.
+     * Note: if this default is changed, search also for "GRS 1980" strings in this class.
+     *
+     * <div class="note"><b>Note:</b> we use GRS 1980 instead than WGS 84 because the CRS name
+     * clearly said "Unknown datum based upon the GRS 1980 ellipsoid" and for consistency with
+     * {@link CommonCRS#SPHERE}, which also use GRS 1980.</div>
      */
-    private static final CommonCRS DEFAULT = CommonCRS.WGS84;
+    private static final CommonCRS DEFAULT = CommonCRS.GRS1980;
 
     /**
      * The type of datum as a GeoAPI sub-interface of {@link Datum}.
@@ -85,7 +96,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
 
     /**
      * Name of the datum on which the CRS is presumed to be based, or {@code ""}. This is used
-     * for building a datum name like <cite>"Unknown datum presumably based on WGS 84"</cite>.
+     * for building a datum name like <cite>"Unknown datum presumably based on GRS 1980"</cite>.
      */
     private final String datumBase;
 
@@ -119,17 +130,17 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
     /**
      * The datum created by {@link #createDatum(DatumFactory, Map)}.
      */
-    D datum;
+    protected D datum;
 
     /**
      * The coordinate system created by {@link #createCS(CSFactory, Map, CoordinateSystemAxis[])}.
      */
-    CS coordinateSystem;
+    protected CS coordinateSystem;
 
     /**
-     * The coordinate reference system that may have been create by {@link #candidate(Decoder)}.
+     * The coordinate reference system that may have been create by {@link #setPredefinedComponents(Decoder)}.
      */
-    SingleCRS referenceSystem;
+    protected SingleCRS referenceSystem;
 
     /**
      * Non-fatal exceptions that may occur while building the coordinate reference system.
@@ -276,12 +287,11 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * set the datum, CS and CRS field values to those candidate. Those values do not need to be exact; they
          * will be overwritten later if they do not match the netCDF file content.
          */
-        datum = datumType.cast(decoder.datumCache[datumIndex]);         // Should be initialized before 'candidate' call.
-        candidate(decoder);
+        datum = datumType.cast(decoder.datumCache[datumIndex]);         // Should be before 'setPredefinedComponents' call.
+        setPredefinedComponents(decoder);
         /*
-         * If 'candidate(decoder)' offers a datum, we will used it as-is. Otherwise create the datum now.
-         * Datum are often not defined in netCDF files, so it will usually be EPSG::6030 — "Not specified
-         * (based on WGS 84 ellipsoid)".
+         * If 'setPredefinedComponents(decoder)' offers a datum, we will used it as-is. Otherwise create the datum now.
+         * Datum are often not defined in netCDF files, so we use EPSG::6019 — "Not specified (based on GRS 1980 ellipsoid)".
          */
         if (datum == null) {
             // Not localized because stored as a String, possibly exported in WKT or GML, and 'datumBase' is in English.
@@ -304,8 +314,8 @@ previous:   for (int i=components.size(); --i >= 0;) {
             }
         }
         /*
-         * If 'candidate(decoder)' did not proposed a coordinate system, or if it proposed a CS but its
-         * axes do not match the axes in the netCDF file, then create a new coordinate system here.
+         * If 'setPredefinedComponents(decoder)' did not proposed a coordinate system, or if it proposed a CS
+         * but its axes do not match the axes in the netCDF file, then create a new coordinate system here.
          */
         if (referenceSystem == null) {
             final Map<String,?> properties;
@@ -317,7 +327,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
                 for (int i=0; i<iso.length; i++) {
                     final Axis axis = axes[i];
                     joiner.add(axis.getName());
-                    iso[i] = axis.toISO(csFactory);
+                    iso[i] = axis.toISO(csFactory, i);
                 }
                 createCS(csFactory, properties(joiner.toString()), iso);
                 properties = properties(coordinateSystem.getName());
@@ -354,9 +364,9 @@ previous:   for (int i=components.size(); --i >= 0;) {
     }
 
     /**
-     * Reports a non-fatal exception that may occur when processing the value returned by {@link #epsgCandidate(Unit)}.
-     * In order to avoid repeating the same warning many times, this method collects the warnings together and reports
-     * them in a single log record after we finished creating the CRS.
+     * Reports a non-fatal exception that may occur during {@link #setPredefinedComponents(Decoder)}.
+     * In order to avoid repeating the same warning many times, this method collects the warnings
+     * together and reports them in a single log record after we finished creating the CRS.
      */
     final void recoverableException(final NoSuchAuthorityCodeException e) {
         if (warnings == null) warnings = e;
@@ -376,12 +386,14 @@ previous:   for (int i=components.size(); --i >= 0;) {
      * Returns the EPSG code of a possible coordinate system from EPSG database. This method proceed by brief
      * inspection of axis directions and units; there is no guarantees that the coordinate system returned by
      * this method match the axes defined in the netCDF file. It is caller's responsibility to verify.
-     * This is a helper method for {@link #candidate(Decoder)} implementations.
+     * This is a helper method for {@link #setPredefinedComponents(Decoder)} implementations.
      *
      * @param  defaultUnit  the unit to use if unit definition is missing in the netCDF file.
      * @return EPSG code of a CS candidate, or {@code null} if none.
+     *
+     * @see Geodetic#isPredefinedCS(Unit)
      */
-    final Integer epsgCandidate(final Unit<?> defaultUnit) {
+    final Integer epsgCandidateCS(final Unit<?> defaultUnit) {
         Unit<?> unit = getFirstAxis().getUnit();
         if (unit == null) unit = defaultUnit;
         final AxisDirection[] directions = new AxisDirection[dimension];
@@ -400,11 +412,11 @@ previous:   for (int i=components.size(); --i >= 0;) {
      * <p>This method may opportunistically set the {@link #datum} and {@link #referenceSystem} fields if it
      * can propose a CRS candidate instead than only a CS candidate.</p>
      */
-    abstract void candidate(Decoder decoder) throws FactoryException;
+    abstract void setPredefinedComponents(Decoder decoder) throws FactoryException;
 
     /**
      * Creates the datum for the coordinate reference system to build. The datum are generally not specified in netCDF files.
-     * To make that clearer, this method builds datum with names like <cite>"Unknown datum presumably based on WGS 84"</cite>.
+     * To make that clearer, this method builds datum with names like <cite>"Unknown datum presumably based on GRS 1980"</cite>.
      * The newly created datum is assigned to the {@link #datum} field.
      *
      * @param  factory     the factory to use for creating the datum.
@@ -433,20 +445,33 @@ previous:   for (int i=components.size(); --i >= 0;) {
      */
     abstract void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException;
 
+
+
+
     /**
      * Base classes of {@link Spherical}, {@link Geographic} and {@link Projected} builders.
      * They all have in common to be based on a {@link GeodeticDatum}.
      */
     private abstract static class Geodetic<CS extends CoordinateSystem> extends CRSBuilder<GeodeticDatum, CS> {
-        /** Whether the coordinate system has longitude before latitude. */
-        boolean isLongitudeFirst;
+        /**
+         * Whether the coordinate system has longitude before latitude.
+         * This flag is set as a side-effect of {@link #isPredefinedCS(Unit)} method call.
+         */
+        protected boolean isLongitudeFirst;
 
-        /** For subclasses constructors. */
+        /**
+         * For subclasses constructors.
+         *
+         * @param  minDim  minimum number of dimensions (2 or 3).
+         */
         Geodetic(final byte minDim) {
-            super(GeodeticDatum.class, "WGS 84", (byte) 0, minDim, (byte) 3);
+            super(GeodeticDatum.class, "GRS 1980", (byte) 0, minDim, (byte) 3);
         }
 
-        /** Creates a {@link GeodeticDatum} for <cite>"Unknown datum based on WGS 84"</cite>. */
+        /**
+         * Creates a {@link GeodeticDatum} for <cite>"Unknown datum based on GRS 1980"</cite>.
+         * This method is invoked only if {@link #setPredefinedComponents(Decoder)} failed to create a datum.
+         */
         @Override final void createDatum(DatumFactory factory, Map<String,?> properties) throws FactoryException {
             final GeodeticDatum template = DEFAULT.datum();
             datum = factory.createGeodeticDatum(properties, template.getEllipsoid(), template.getPrimeMeridian());
@@ -459,8 +484,10 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * If {@code true}, then {@link #isLongitudeFirst} will have been set to an indication of axis order.
          *
          * @param  expected  the expected unit of measurement of the first axis.
+         *
+         * @see #epsgCandidateCS(Unit)
          */
-        final boolean isPredefined(final Unit<?> expected) {
+        final boolean isPredefinedCS(final Unit<?> expected) {
             final Axis axis = getFirstAxis();
             final Unit<?> unit = axis.getUnit();
             if (unit == null || expected.equals(unit)) {
@@ -471,103 +498,109 @@ previous:   for (int i=components.size(); --i >= 0;) {
             }
             return false;
         }
-
-        /**
-         * If the {@link #datum} field is not already set, initialize it to "Not specified (based upon the WGS 84 ellipsoid)".
-         * Subclasses should override this method for setting also the {@link #coordinateSystem} and {@link #referenceSystem}
-         * fields if possible.
-         */
-        @Override void candidate(final Decoder decoder) throws FactoryException {
-            if (datum == null) try {
-                datum = decoder.getDatumAuthorityFactory().createGeodeticDatum(String.valueOf(Constants.EPSG_UNKNOWN_DATUM));
-            } catch (NoSuchAuthorityCodeException e) {
-                recoverableException(e);
-            }
-        }
     }
+
+
+
 
     /**
      * Builder for geocentric CRS with (θ,Ω,r) axes.
      */
     private static final class Spherical extends Geodetic<SphericalCS> {
-        /** Creates a new builder (invoked by lambda function). */
+        /**
+         * Creates a new builder (invoked by lambda function).
+         */
         public Spherical() {
             super((byte) 3);
         }
 
-        /** Possibly sets {@link #coordinateSystem} to a predefined CS matching the axes defined in the netCDF file. */
-        @Override void candidate(final Decoder decoder) throws FactoryException {
-            super.candidate(decoder);
-            final Integer epsg = epsgCandidate(Units.DEGREE);
-            if (epsg != null) try {
-                coordinateSystem = decoder.getCSAuthorityFactory().createSphericalCS(epsg.toString());
-                return;
-            } catch (NoSuchAuthorityCodeException e) {
-                recoverableException(e);
-            }
-            if (isPredefined(Units.DEGREE)) {
-                coordinateSystem = (SphericalCS) DEFAULT.spherical().getCoordinateSystem();
+        /**
+         * Possibly sets {@link #datum} and {@link #coordinateSystem} to predefined objects
+         * matching the axes defined in the netCDF file.
+         */
+        @Override void setPredefinedComponents(final Decoder decoder) throws FactoryException {
+            if (isPredefinedCS(Units.DEGREE)) {
+                GeocentricCRS crs = DEFAULT.spherical();
                 if (isLongitudeFirst) {
-                    coordinateSystem = DefaultSphericalCS.castOrCopy(coordinateSystem).forConvention(AxesConvention.RIGHT_HANDED);
+                    crs = DefaultGeocentricCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
                 }
+                referenceSystem  = crs;
+                coordinateSystem = (SphericalCS) crs.getCoordinateSystem();
+                datum            = crs.getDatum();
+            } else {
+                datum = DEFAULT.datum();
             }
         }
 
-        /** Creates the three-dimensional {@link SphericalCS} from given axes. */
+        /**
+         * Creates the three-dimensional {@link SphericalCS} from given axes. This method is invoked only
+         * if {@link #setPredefinedComponents(Decoder)} failed to assign a CS or if {@link #build(Decoder)}
+         * found that the {@link #coordinateSystem} does not have compatible axes.
+         */
         @Override void createCS(CSFactory factory, Map<String,?> properties, CoordinateSystemAxis[] axes) throws FactoryException {
             coordinateSystem = factory.createSphericalCS(properties, axes[0], axes[1], axes[2]);
         }
 
-        /** Creates the coordinate reference system from datum and coordinate system computed in previous steps. */
+        /**
+         * Creates the coordinate reference system from datum and coordinate system computed in previous steps.
+         * This method is invoked under conditions similar to the ones of above {@code createCS(…)} method.
+         */
         @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
             referenceSystem = factory.createGeocentricCRS(properties, datum, coordinateSystem);
         }
-    };
+    }
+
+
+
 
     /**
      * Geographic CRS with (λ,φ,h) axes.
      * The height, if present, is ellipsoidal height.
      */
     private static final class Geographic extends Geodetic<EllipsoidalCS> {
-        /** Creates a new builder (invoked by lambda function). */
+        /**
+         * Creates a new builder (invoked by lambda function).
+         */
         public Geographic() {
             super((byte) 2);
         }
 
-        /** Tries to creates the coordinate system from EPSG code. */
-        private boolean tryEPSG(final Decoder decoder) throws FactoryException {
-            super.candidate(decoder);               // Initialize the datum.
-            final Integer epsg = epsgCandidate(Units.DEGREE);
-            if (epsg != null) try {
-                coordinateSystem = decoder.getCSAuthorityFactory().createEllipsoidalCS(epsg.toString());
-                return true;
-            } catch (NoSuchAuthorityCodeException e) {
-                recoverableException(e);
-            }
-            return false;
-        }
-
-        /** Possibly sets {@link #coordinateSystem} to a predefined CS matching the axes defined in the netCDF file. */
-        @Override void candidate(final Decoder decoder) throws FactoryException {
-            if (isPredefined(Units.DEGREE)) {
-                if (!is3D()) {
-                    GeographicCRS crs = decoder.getCRSAuthorityFactory().createGeographicCRS(String.valueOf(Constants.EPSG_UNKNOWN_CRS));
-                    coordinateSystem = crs.getCoordinateSystem();
-                    datum = crs.getDatum();
-                    referenceSystem = crs;
-                } else if (!tryEPSG(decoder)) {
-                    coordinateSystem = DEFAULT.geographic3D().getCoordinateSystem();
+        /**
+         * Possibly sets {@link #datum}, {@link #coordinateSystem} and {@link #referenceSystem}
+         * to predefined objects matching the axes defined in the netCDF file.
+         */
+        @Override void setPredefinedComponents(final Decoder decoder) throws FactoryException {
+            if (isPredefinedCS(Units.DEGREE)) {
+                GeographicCRS crs;
+                if (is3D()) {
+                    crs = DEFAULT.geographic3D();
+                    if (isLongitudeFirst) {
+                        crs = DefaultGeographicCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
+                    }
+                } else if (isLongitudeFirst) {
+                    crs = DEFAULT.normalizedGeographic();
+                } else {
+                    crs = DEFAULT.geographic();
                 }
-                if (isLongitudeFirst) {
-                    coordinateSystem = DefaultEllipsoidalCS.castOrCopy(coordinateSystem).forConvention(AxesConvention.RIGHT_HANDED);
-                    referenceSystem  = null;
-                }
+                referenceSystem  = crs;
+                coordinateSystem = crs.getCoordinateSystem();
+                datum            = crs.getDatum();
             } else {
-                tryEPSG(decoder);
+                datum = DEFAULT.datum();
+                final Integer epsg = epsgCandidateCS(Units.DEGREE);
+                if (epsg != null) try {
+                    coordinateSystem = decoder.getCSAuthorityFactory().createEllipsoidalCS(epsg.toString());
+                } catch (NoSuchAuthorityCodeException e) {
+                    recoverableException(e);
+                }
             }
         }
 
-        /** Creates the two- or three-dimensional {@link EllipsoidalCS} from given axes. */
+        /**
+         * Creates the two- or three-dimensional {@link EllipsoidalCS} from given axes. This method is invoked only if
+         * {@link #setPredefinedComponents(Decoder)} failed to assign a coordinate system or if {@link #build(Decoder)}
+         * found that the {@link #coordinateSystem} does not have compatible axes.
+         */
         @Override void createCS(CSFactory factory, Map<String,?> properties, CoordinateSystemAxis[] axes) throws FactoryException {
             if (axes.length > 2) {
                 coordinateSystem = factory.createEllipsoidalCS(properties, axes[0], axes[1], axes[2]);
@@ -576,29 +609,71 @@ previous:   for (int i=components.size(); --i >= 0;) {
             }
         }
 
-        /** Creates the coordinate reference system from datum and coordinate system computed in previous steps. */
+        /**
+         * Creates the coordinate reference system from datum and coordinate system computed in previous steps.
+         * This method is invoked under conditions similar to the ones of above {@code createCS(…)} method.
+         */
         @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
-            referenceSystem =  factory.createGeographicCRS(properties, datum, coordinateSystem);
+            referenceSystem = factory.createGeographicCRS(properties, datum, coordinateSystem);
         }
-    };
+    }
+
+
+
 
     /**
-     * Projected CRS with (E,N,h) axes.
+     * Projected CRS with (E,N,h) axes. There is not enough information in a netCDF files for creating the right
+     * map projection, unless {@code "grid_mapping"} attributes are specified. If insufficient information, this
+     * class creates an unknown map projection based on Plate Carrée. Note that this map projection may be replaced
+     * by {@link GridMapping#crs} at a later stage.
      */
     private static final class Projected extends Geodetic<CartesianCS> {
-        /** Creates a new builder (invoked by lambda function). */
+        /**
+         * The spherical variant of {@link CRSBuilder#DEFAULT}.
+         * Currently based upon the GRS 1980 Authalic Sphere.
+         */
+        private static final CommonCRS SPHERICAL = CommonCRS.SPHERE;
+
+        /**
+         * Defining conversion for "Not specified (presumed Plate Carrée)". This conversion use spherical formulas.
+         * Consequently it should be used with {@link #SPHERICAL} instead of {@link CommonCRS#DEFAULT}.
+         */
+        private static final Conversion UNKNOWN_PROJECTION;
+        static {
+            final CoordinateOperationFactory factory = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
+            try {
+                final OperationMethod method = factory.getOperationMethod(Equirectangular.NAME);
+                UNKNOWN_PROJECTION = factory.createDefiningConversion(
+                        properties("Not specified (presumed Plate Carrée)"),
+                        method, method.getParameters().createValue());
+            } catch (FactoryException e) {
+                throw new ExceptionInInitializerError(e);
+            }
+        }
+
+        /**
+         * Creates a new builder (invoked by lambda function).
+         */
         public Projected() {
             super((byte) 2);
         }
 
-        /** Possibly sets {@link #coordinateSystem} to a predefined CS matching the axes defined in the netCDF file. */
-        @Override void candidate(final Decoder decoder) {
-            if (isPredefined(Units.METRE)) {
-                coordinateSystem = DEFAULT.universal(0,0).getCoordinateSystem();
+        /**
+         * Possibly sets {@link #datum}, {@link #coordinateSystem} and {@link #referenceSystem}
+         * to predefined objects matching the axes defined in the netCDF file.
+         */
+        @Override void setPredefinedComponents(final Decoder decoder) throws FactoryException {
+            datum = SPHERICAL.datum();
+            if (isPredefinedCS(Units.METRE)) {
+                coordinateSystem = CommonCRS.WGS84.universal(0,0).getCoordinateSystem();
             }
         }
 
-        /** Creates the two- or three-dimensional {@link CartesianCS} from given axes. */
+        /**
+         * Creates the two- or three-dimensional {@link CartesianCS} from given axes. This method is invoked only if
+         * {@link #setPredefinedComponents(Decoder)} failed to assign a coordinate system or if {@link #build(Decoder)}
+         * found that the {@link #coordinateSystem} does not have compatible axes.
+         */
         @Override void createCS(CSFactory factory, Map<String,?> properties, CoordinateSystemAxis[] axes) throws FactoryException {
             if (axes.length > 2) {
                 coordinateSystem = factory.createCartesianCS(properties, axes[0], axes[1], axes[2]);
@@ -607,24 +682,38 @@ previous:   for (int i=components.size(); --i >= 0;) {
             }
         }
 
-        /** Creates the coordinate reference system from datum and coordinate system computed in previous steps. */
+        /**
+         * Creates the coordinate reference system from datum and coordinate system computed in previous steps.
+         * The datum for this method is based upon the GRS 1980 Authalic Sphere.
+         */
         @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
-            throw new UnsupportedOperationException();  // TODO
+            GeographicCRS baseCRS = (coordinateSystem.getDimension() >= 3) ? SPHERICAL.geographic3D() : SPHERICAL.geographic();
+            if (!baseCRS.getDatum().equals(datum)) {
+                baseCRS = factory.createGeographicCRS(properties, datum, baseCRS.getCoordinateSystem());
+            }
+            referenceSystem = factory.createProjectedCRS(properties, baseCRS, UNKNOWN_PROJECTION, coordinateSystem);
         }
-    };
+    }
+
+
+
 
     /**
      * Vertical CRS with (H) or (D) axis.
      * Used for mean sea level (not for ellipsoidal height).
      */
     private static final class Vertical extends CRSBuilder<VerticalDatum, VerticalCS> {
-        /** Creates a new builder (invoked by lambda function). */
+        /**
+         * Creates a new builder (invoked by lambda function).
+         */
         public Vertical() {
             super(VerticalDatum.class, "Mean Sea Level", (byte) 1, (byte) 1, (byte) 1);
         }
 
-        /** Possibly sets {@link #coordinateSystem} to a predefined CS matching the axes defined in the netCDF file. */
-        @Override void candidate(final Decoder decoder) {
+        /**
+         * Possibly sets {@link #coordinateSystem} to a predefined CS matching the axes defined in the netCDF file.
+         */
+        @Override void setPredefinedComponents(final Decoder decoder) {
             final Axis axis = getFirstAxis();
             final Unit<?> unit = axis.getUnit();
             final CommonCRS.Vertical predefined;
@@ -642,34 +731,49 @@ previous:   for (int i=components.size(); --i >= 0;) {
             coordinateSystem = predefined.crs().getCoordinateSystem();
         }
 
-        /** Creates a {@link VerticalDatum} for <cite>"Unknown datum based on Mean Sea Level"</cite>. */
+        /**
+         * Creates a {@link VerticalDatum} for <cite>"Unknown datum based on Mean Sea Level"</cite>.
+         */
         @Override void createDatum(DatumFactory factory, Map<String,?> properties) throws FactoryException {
             datum = factory.createVerticalDatum(properties, VerticalDatumType.GEOIDAL);
         }
 
-        /** Creates the one-dimensional {@link VerticalCS} from given axes. */
+        /**
+         * Creates the one-dimensional {@link VerticalCS} from given axes. This method is invoked
+         * only if {@link #setPredefinedComponents(Decoder)} failed to assign a coordinate system
+         * or if {@link #build(Decoder)} found that the axis or direction are not compatible.
+         */
         @Override void createCS(CSFactory factory, Map<String,?> properties, CoordinateSystemAxis[] axes) throws FactoryException {
             coordinateSystem = factory.createVerticalCS(properties, axes[0]);
         }
 
-        /** Creates the coordinate reference system from datum and coordinate system computed in previous steps. */
+        /**
+         * Creates the coordinate reference system from datum and coordinate system computed in previous steps.
+         */
         @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
             referenceSystem =  factory.createVerticalCRS(properties, datum, coordinateSystem);
         }
-    };
+    }
+
+
+
 
     /**
      * Temporal CRS with (t) axis. Its datum need to be built
      * in a special way since it contains the time origin.
      */
     private static final class Temporal extends CRSBuilder<TemporalDatum, TimeCS> {
-        /** Creates a new builder (invoked by lambda function). */
+        /**
+         * Creates a new builder (invoked by lambda function).
+         */
         public Temporal() {
             super(TemporalDatum.class, "", (byte) 2, (byte) 1, (byte) 1);
         }
 
-        /** Possibly sets {@link #coordinateSystem} to a predefined CS matching the axes defined in the netCDF file. */
-        @Override void candidate(final Decoder decoder) {
+        /**
+         * Possibly sets {@link #coordinateSystem} to a predefined CS matching the axes defined in the netCDF file.
+         */
+        @Override void setPredefinedComponents(final Decoder decoder) {
             final Axis axis = getFirstAxis();
             final Unit<?> unit = axis.getUnit();
             final CommonCRS.Temporal predefined;
@@ -685,7 +789,9 @@ previous:   for (int i=components.size(); --i >= 0;) {
             coordinateSystem = predefined.crs().getCoordinateSystem();
         }
 
-        /** Creates a {@link VerticalDatum} for <cite>"Unknown datum based on …"</cite>. */
+        /**
+         * Creates a {@link TemporalDatum} for <cite>"Unknown datum based on …"</cite>.
+         */
         @Override void createDatum(DatumFactory factory, Map<String,?> properties) throws FactoryException {
             final Axis axis = getFirstAxis();
             axis.getUnit();                                     // Force epoch parsing if not already done.
@@ -699,37 +805,54 @@ previous:   for (int i=components.size(); --i >= 0;) {
             }
         }
 
-        /** Creates the one-dimensional {@link TimeCS} from given axes. */
+        /**
+         * Creates the one-dimensional {@link TimeCS} from given axes. This method is invoked only
+         * if {@link #setPredefinedComponents(Decoder)} failed to assign a coordinate system or if
+         * {@link #build(Decoder)} found that the axis or direction are not compatible.
+         */
         @Override void createCS(CSFactory factory, Map<String,?> properties, CoordinateSystemAxis[] axes) throws FactoryException {
             coordinateSystem = factory.createTimeCS(properties, axes[0]);
         }
 
-        /** Creates the coordinate reference system from datum and coordinate system computed in previous steps. */
+        /**
+         * Creates the coordinate reference system from datum and coordinate system computed in previous steps.
+         */
         @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
             properties = properties(getFirstAxis().coordinates.getUnitsString());
             referenceSystem =  factory.createTemporalCRS(properties, datum, coordinateSystem);
         }
-    };
+    }
+
+
+
 
     /**
      * Unknown CRS with (x,y,z) axes.
      */
     private static final class Engineering extends CRSBuilder<EngineeringDatum, AffineCS> {
-        /** Creates a new builder (invoked by lambda function). */
+        /**
+         * Creates a new builder (invoked by lambda function).
+         */
         public Engineering() {
             super(EngineeringDatum.class, "affine coordinate system", (byte) 3, (byte) 2, (byte) 3);
         }
 
-        /** No-op since we have no predefined engineering CRS. */
-        @Override void candidate(final Decoder decoder) {
+        /**
+         * No-op since we have no predefined engineering CRS.
+         */
+        @Override void setPredefinedComponents(final Decoder decoder) {
         }
 
-        /** Creates a {@link VerticalDatum} for <cite>"Unknown datum based on affine coordinate system"</cite>. */
+        /**
+         * Creates a {@link VerticalDatum} for <cite>"Unknown datum based on affine coordinate system"</cite>.
+         */
         @Override void createDatum(DatumFactory factory, Map<String,?> properties) throws FactoryException {
             datum = factory.createEngineeringDatum(properties);
         }
 
-        /** Creates two- or three-dimensional {@link AffineCS} from given axes. */
+        /**
+         * Creates two- or three-dimensional {@link AffineCS} from given axes.
+         */
         @Override void createCS(CSFactory factory, Map<String,?> properties, CoordinateSystemAxis[] axes) throws FactoryException {
             if (axes.length > 2) {
                 coordinateSystem = factory.createAffineCS(properties, axes[0], axes[1], axes[2]);
@@ -738,11 +861,13 @@ previous:   for (int i=components.size(); --i >= 0;) {
             }
         }
 
-        /** Creates the coordinate reference system from datum and coordinate system computed in previous steps. */
+        /**
+         * Creates the coordinate reference system from datum and coordinate system computed in previous steps.
+         */
         @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
             referenceSystem =  factory.createEngineeringCRS(properties, datum, coordinateSystem);
         }
-    };
+    }
 
     /**
      * Maximal {@link #datumIndex} value +1. The maximal value can be seen in the call to {@code super(…)} constructor

@@ -18,9 +18,11 @@ package org.apache.sis.coverage;
 
 import java.util.Set;
 import java.util.List;
+import java.util.Iterator;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.TestCase;
@@ -79,7 +81,6 @@ public final strictfp class SampleDimensionTest extends TestCase {
 
         final Set<Number> nodataValues = dimension.getNoDataValues();
         assertArrayEquals("nodataValues", new Integer[] {0, 1, 255}, nodataValues.toArray());
-        assertEquals("nodataValues.size", 0, dimension.forConvertedValues(true).getNoDataValues().size());
 
         NumberRange<?> range = dimension.getSampleRange().get();
         assertEquals("minimum",   0, range.getMinDouble(), STRICT);
@@ -95,14 +96,22 @@ public final strictfp class SampleDimensionTest extends TestCase {
         assertFalse ("identity",  tr.getTransform().isIdentity());
         assertEquals("scale",     scale,  tr.getScale(),  STRICT);
         assertEquals("offset",    offset, tr.getOffset(), STRICT);
-
+        /*
+         * Verifies SampleDimension properties after we converted integers to real values.
+         */
         final SampleDimension converted = dimension.forConvertedValues(true);
         assertNotSame(dimension,  converted);
         assertSame   (dimension,  dimension.forConvertedValues(false));
         assertSame   (dimension,  converted.forConvertedValues(false));
         assertSame   (converted,  converted.forConvertedValues(true));
+        assertSame   (range,      converted.getSampleRange().get());
         assertTrue   ("identity", converted.getTransferFunction().get().isIdentity());
         assertTrue   ("background", Double.isNaN(converted.getBackground().get().doubleValue()));
+        final Iterator<Number> it = converted.getNoDataValues().iterator();
+        assertEquals("nodataValues",   0, MathFunctions.toNanOrdinal(it.next().floatValue()));
+        assertEquals("nodataValues",   1, MathFunctions.toNanOrdinal(it.next().floatValue()));
+        assertEquals("nodataValues", 255, MathFunctions.toNanOrdinal(it.next().floatValue()));
+        assertFalse ("nodataValues", it.hasNext());
     }
 
     /**
@@ -117,7 +126,7 @@ public final strictfp class SampleDimensionTest extends TestCase {
 
         assertEquals("name", "Temperature", String.valueOf(dimension.getName()));
         assertEquals("background", Float.NaN, dimension.getBackground().get());
-        assertEquals(0, dimension.getNoDataValues().toArray().length);
+        assertArrayEquals(new Number[] {Float.NaN}, dimension.getNoDataValues().toArray());
 
         NumberRange<?> range = dimension.getSampleRange().get();
         assertEquals("minimum", -2f, range.getMinValue());

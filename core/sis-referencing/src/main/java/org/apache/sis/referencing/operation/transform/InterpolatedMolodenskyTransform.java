@@ -28,7 +28,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
 import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
 import org.apache.sis.internal.referencing.provider.Molodensky;
 import org.apache.sis.internal.util.Constants;
@@ -61,7 +60,7 @@ import org.apache.sis.util.Debug;
  * ({@linkplain #tX}, {@linkplain #tY}, {@linkplain #tZ}) parameters of a Molodensky transformation.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see InterpolatedGeocentricTransform
  *
@@ -223,9 +222,7 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
             pg.getOrCreate(Molodensky.AXIS_LENGTH_DIFFERENCE).setValue(Δa, unit);
             pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Units.UNITY);
         }
-        if (grid instanceof DatumShiftGridFile<?,?>) {
-            ((DatumShiftGridFile<?,?>) grid).setGridParameters(pg);
-        }
+        grid.getParameterValues(pg);
     }
 
     /**
@@ -244,8 +241,8 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
         final double[] vector = new double[3];
         final double λ = srcPts[srcOff];
         final double φ = srcPts[srcOff+1];
-        grid.interpolateInCell(grid.normalizedToGridX(λ),
-                               grid.normalizedToGridY(φ), vector);
+        grid.interpolateInCell(normalizedToGridX(λ),
+                               normalizedToGridY(φ), vector);
         return transform(λ, φ, isSource3D ? srcPts[srcOff+2] : 0,
                 dstPts, dstOff, vector[0], vector[1], vector[2], null, derivate);
     }
@@ -292,8 +289,8 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
         while (--numPts >= 0) {
             final double λ = srcPts[srcOff  ];
             final double φ = srcPts[srcOff+1];
-            grid.interpolateInCell(grid.normalizedToGridX(λ),
-                                   grid.normalizedToGridY(φ), offset);
+            grid.interpolateInCell(normalizedToGridX(λ),
+                                   normalizedToGridY(φ), offset);
             transform(λ, φ, isSource3D ? srcPts[srcOff+2] : 0,
                       dstPts, dstOff, offset[0], offset[1], offset[2], null, false);
             srcOff += srcInc;

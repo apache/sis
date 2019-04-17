@@ -54,18 +54,24 @@ final class GridInfo extends Grid {
      * Mapping from values of the {@code "_CoordinateAxisType"} attribute or axis name to the abbreviation.
      * Keys are lower cases and values are controlled vocabulary documented in {@link Axis#abbreviation}.
      *
+     * <div class="note">"GeoX" and "GeoY" stands for projected coordinates, not geocentric coordinates
+     * (<a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/CoordinateAttributes.html#AxisTypes">source</a>).
+     * </div>
+     *
      * @see #getAxisType(String)
      */
     private static final Map<String,Character> AXIS_TYPES = new HashMap<>(26);
     static {
         addAxisTypes('λ', "longitude", "lon", "long");
         addAxisTypes('φ', "latitude",  "lat");
-        addAxisTypes('H', "pressure", "height", "altitude", "elevation", "elev");
+        addAxisTypes('H', "pressure", "height", "altitude", "elevation", "elev", "geoz");
         addAxisTypes('D', "depth");
+        addAxisTypes('E', "geox");
+        addAxisTypes('N', "geoy");
         addAxisTypes('t', "t", "time", "runtime");
-        addAxisTypes('x', "x", "geox");
-        addAxisTypes('y', "y", "geoy");
-        addAxisTypes('z', "z", "geoz");
+        addAxisTypes('x', "x");
+        addAxisTypes('y', "y");
+        addAxisTypes('z', "z");
     }
 
     /**
@@ -108,17 +114,19 @@ final class GridInfo extends Grid {
     }
 
     /**
-     * Returns a localization grid having the same dimensions than this grid but in a different order.
-     * This method is invoked by {@link VariableInfo#getGrid()} when the localization grids created by
-     * {@link Decoder} subclasses are not sufficient and must be tailored for a particular variable.
-     * Returns {@code null} the the given dimensions are not members of this grid.
+     * Returns {@code this} if the dimensions in this grid appear in the same order than in the given array,
+     * or {@code null} otherwise. Current implementation does not apply the dimension reordering documented
+     * in parent class because reordering should not be needed for this SIS implementation of netCDF reader.
+     * Reordering is more needed for the implementation based on UCAR library.
      */
     @Override
-    protected Grid derive(final Dimension[] dimensions) {
-        if (Arrays.equals(domain, dimensions)) {
-            return this;
+    protected Grid forDimensions(final Dimension[] dimensions) {
+        int i = 0;
+        for (Dimension required : domain) {
+            do if (i >= dimensions.length) return null;
+            while (!required.equals(dimensions[i++]));
         }
-        return null;        // Not yet implemented.
+        return this;
     }
 
     /**

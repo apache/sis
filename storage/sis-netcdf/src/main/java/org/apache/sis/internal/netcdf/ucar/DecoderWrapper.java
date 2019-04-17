@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.EnumSet;
 import java.util.Formatter;
 import java.util.Collection;
+import java.util.Collections;
 import java.io.IOException;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
@@ -40,6 +41,7 @@ import ucar.nc2.ft.FeatureDatasetFactoryManager;
 import ucar.nc2.ft.FeatureCollection;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.Grid;
@@ -125,7 +127,9 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             throws IOException
     {
         super(geomlib, listeners);
-        file = NetcdfDataset.openDataset(filename, false, this);
+        final NetcdfDataset ds = NetcdfDataset.openDataset(filename, false, this);
+        ds.enhance(Collections.singleton(NetcdfDataset.Enhance.CoordSystems));
+        file = ds;
         groups = new Group[1];
         initialize();
     }
@@ -450,9 +454,26 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                 final NetcdfDataset ds = (NetcdfDataset) file;
                 final EnumSet<NetcdfDataset.Enhance> mode = EnumSet.copyOf(ds.getEnhanceMode());
                 if (mode.add(NetcdfDataset.Enhance.CoordSystems)) {
+                    /*
+                     * Should not happen with NetcdfDataset opened by the constructor expecting a filename,
+                     * because that constructor already enhanced the dataset. It may happen however if the
+                     * NetcdfDataset was given explicitly by the user. We try to increase the chances to
+                     * get information we need, but it is not guaranteed to work; it may be too late if we
+                     * already started to use the NetcdfDataset before this point.
+                     */
                     ds.enhance(mode);
                 }
                 systems = ds.getCoordinateSystems();
+                /*
+                 * If the UCAR library does not see any coordinate system in the file, verify if there is
+                 * a custom convention recognizing the axes. CSBuilderFallback uses the mechanism defined
+                 * by Apache SIS for determining variable role.
+                 */
+                if (systems.isEmpty() && convention() != Convention.DEFAULT) {
+                    final CSBuilderFallback builder = new CSBuilderFallback(this);
+                    builder.buildCoordinateSystems(ds);
+                    systems = ds.getCoordinateSystems();
+                }
             }
             geometries = new Grid[(systems != null) ? systems.size() : 0];
             for (int i=0; i<geometries.length; i++) {

@@ -241,20 +241,6 @@ public final class Constants extends Static {
     public static final short EPSG_ANTARCTIC_POLAR_STEREOGRAPHIC = 3031;
 
     /**
-     * EPSG code of "Unknown datum based upon the WGS 84 ellipsoid".
-     * This is a two-dimensional geographic CRS.
-     * Note that the EPSG database defines unknown CRS for many other ellipsoids.
-     * For now only the WGS 84 case is used by Apache SIS.
-     */
-    public static final short EPSG_UNKNOWN_CRS = 4030;
-
-    /**
-     * EPSG code of "Not specified (based upon the WGS 84 ellipsoid)".
-     * This is a geodetic datum.
-     */
-    public static final short EPSG_UNKNOWN_DATUM = 6030;
-
-    /**
      * Do not allow instantiation of this class.
      */
     private Constants() {

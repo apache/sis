@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.StoreMetadata;
-import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.util.ArgumentChecks;
@@ -163,7 +162,7 @@ final class DataStoreRegistry {
          * iteration on other providers (matchCondition = FALSE). The intent is to avoid DataStoreProvider.probeContent(…)
          * invocations loading large dependencies.
          */
-        final String extension = IOUtilities.extension(storage);
+        final String extension = connector.getFileExtension();
         Boolean matchCondition = (extension != null && !extension.isEmpty()) ? Boolean.TRUE : null;
         final List<ProbeProviderPair> needMoreBytes = new LinkedList<>();
         ProbeProviderPair selected = null;

@@ -104,7 +104,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * Constructs a new {@code AffineTransform2D} from 6 values representing the 6 specifiable
      * entries of the 3×3 transformation matrix. Those values are given unchanged to the
      * {@link AffineTransform#AffineTransform(double,double,double,double,double,double) super
-     * class constructor}.
+     * class constructor}, except for negative zeros that are replaced by positive zeros.
      *
      * @param m00 the X coordinate scaling.
      * @param m10 the Y coordinate shearing.
@@ -126,7 +126,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * <p>The inconsistency is in the use of {@link Double#doubleToLongBits(double)} for hash code and
      * {@code ==} for testing equality. The former is sensitive to the sign of 0 while the later is not.</p>
      */
-    @Workaround(library="JDK", version="8") // Last verified in 1.8.0_05.
+    @Workaround(library="JDK", version="8")                         // Last verified in 1.8.0_05.
     private static double pz(final double value) {
         return (value != 0) ? value : 0;
     }

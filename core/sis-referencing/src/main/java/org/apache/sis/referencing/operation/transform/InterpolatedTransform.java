@@ -37,8 +37,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.DirectPositionView;
-import org.apache.sis.internal.referencing.provider.NTv2;
-import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
 
 
 /**
@@ -70,7 +68,7 @@ import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Simon Reynard (Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 0.8
+ * @version 1.0
  *
  * @see DatumShiftGrid
  * @see org.apache.sis.referencing.operation.builder.LocalizationGridBuilder
@@ -132,14 +130,11 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * @see #createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
     @SuppressWarnings( {"OverridableMethodCallDuringObjectConstruction", "fallthrough"})
-    protected <T extends Quantity<T>> InterpolatedTransform(final DatumShiftGrid<T,T> grid)
-            throws NoninvertibleMatrixException
-    {
+    protected <T extends Quantity<T>> InterpolatedTransform(final DatumShiftGrid<T,T> grid) throws NoninvertibleMatrixException {
         /*
          * Create the contextual parameters using the descriptor of the provider that created the datum shift grid.
-         * If that provider is unknown, default (for now) to NTv2. This default may change in any future SIS version.
          */
-        super((grid instanceof DatumShiftGridFile<?,?>) ? ((DatumShiftGridFile<?,?>) grid).descriptor : NTv2.PARAMETERS, grid);
+        super(grid.getParameterDescriptors(), grid);
         if (!grid.isCellValueRatio()) {
             throw new IllegalArgumentException(Resources.format(
                     Resources.Keys.IllegalParameterValue_2, "isCellValueRatio", Boolean.FALSE));
@@ -169,8 +164,8 @@ public class InterpolatedTransform extends DatumShiftTransform {
             Number offset = 0.0;
             final Number[] coefficients = Units.coefficients(normalized.getConverterTo(unit));
             switch (coefficients != null ? coefficients.length : -1) {
-                case 2:  scale  = coefficients[1];       // Fall through
-                case 1:  offset = coefficients[0];       // Fall through
+                case 2:  scale  = coefficients[1];                                      // Fall through
+                case 1:  offset = coefficients[0];                                      // Fall through
                 case 0:  break;
                 default: throw new IllegalArgumentException(Resources.format(Resources.Keys.NonLinearUnitConversion_2, normalized, unit));
             }
@@ -181,26 +176,15 @@ public class InterpolatedTransform extends DatumShiftTransform {
         /*
          * Denormalization is the inverse of all above conversions in the usual case (NADCON and NTv2) where the
          * source coordinate system is the same than the target coordinate system, for example with axis unit in
-         * degrees. However we also use this InterpolatedTransform implementation for other operation, like the
+         * degrees. However we also use this InterpolatedTransform implementation for other operations, like the
          * one created by LocalizationGridBuilder. Those later operations may require a different denormalization
-         * matrix.
+         * matrix. Consequently the call to `getParameterValues(…)` may overwrite the denormalization matrix as
+         * a non-documented side effect.
          */
-        Matrix denormalize = null;
-        if (grid instanceof DatumShiftGridFile<?,?>) {
-            denormalize = ((DatumShiftGridFile<?,?>) grid).gridToTarget();
-        }
-        if (denormalize == null) {
-            denormalize = normalize.inverse();                      // Normal NACDON and NTv2 case.
-        }
+        Matrix denormalize = normalize.inverse();                   // Normal NACDON and NTv2 case.
         context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).setMatrix(denormalize);
+        grid.getParameterValues(context);       // May overwrite `denormalize` (see above comment).
         inverse = createInverse();
-        /*
-         * Parameters completed last because some DatumShiftGridFile subclasses (e.g. ResidualGrid) needs the
-         * (de)normalization matrices.
-         */
-        if (grid instanceof DatumShiftGridFile<?,?>) {
-            ((DatumShiftGridFile<?,?>) grid).setGridParameters(context);
-        }
     }
 
     /**
@@ -432,18 +416,28 @@ public class InterpolatedTransform extends DatumShiftTransform {
         private static final long serialVersionUID = 4335801994727826360L;
 
         /**
+         * Whether to enable debugging. If {@code true}, additional but very costly {@code assert} statements will
+         * be enabled, and some information will be printed to the standard output stream. Enabling debugging slows
+         * down considerably the transformations; it should be done only for small set of test data.
+         */
+        private static final boolean DEBUG = false;
+
+        /**
+         * Whether to use a simple version of this inverse transform (where the Jacobian matrix is close to identity
+         * in every points) or a more complex version using derivatives (Jacobian matrices) for adjusting the errors.
+         * The simple mode is okay for transformations based on e.g. NADCON or NTv2 grids, but is not sufficient for
+         * more curved grids like the ones read from netCDF files. We provide this switch for allowing performance
+         * comparisons.
+         */
+        private static final boolean SIMPLE = false;
+
+        /**
          * Maximum number of iterations. This is set to a higher value than {@link Formulas#MAXIMUM_ITERATIONS} because
          * the data used in {@link InterpolatedTransform} grid may come from anywhere, in particular localization grids
          * in netCDF files. Deformations in those grids may be much higher than e.g. {@link DatumShiftTransform} grids.
-         * We observed that inverse transformations may converge slowly if the grid is far from a linear approximation.
-         * It happens when the grids have very high {@link DatumShiftGrid#interpolateInCell(double, double, double[])}
-         * values, for example close to 1000 while we usually expect values smaller than 1. Behavior with such grids may
-         * be unpredictable, sometime with the {@code abs(xi - ox)} or {@code abs(yi - oy)} errors staying high for a
-         * long time before to suddenly fall to zero.
-         *
-         * @see #tryAgain(int, double, double)
+         * The algorithm in this class converges more slowly in area with very strong curvature.
          */
-        private static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS * 4;
+        private static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS * 2;
 
         /**
          * The enclosing transform.
@@ -490,51 +484,12 @@ public class InterpolatedTransform extends DatumShiftTransform {
                 dstPts = new double[dimension];
                 dstOff = 0;
             }
-            double xi, yi;
-            final double x = xi = srcPts[srcOff  ];
-            final double y = yi = srcPts[srcOff+1];
-            final double[] vector = new double[dimension];
-            int it = MAXIMUM_ITERATIONS;
-            double tol = tolerance;
-            do {
-                /*
-                 * We want (xi, yi) such as the following conditions hold:
-                 *
-                 *     xi + vector[0] ≈ x      ⟶      xi ≈ x - vector[0]
-                 *     yi + vector[1] ≈ y      ⟶      yi ≈ y - vector[1]
-                 */
-                forward.grid.interpolateInCell(xi, yi, vector);
-                final double ox = xi;
-                final double oy = yi;
-                xi = x - vector[0];
-                yi = y - vector[1];
-                if (!(Math.abs(xi - ox) > tol ||                // Use '!' for catching NaN.
-                      Math.abs(yi - oy) > tol))
-                {
-                    if (dimension > GRID_DIMENSION) {
-                        System.arraycopy(srcPts, srcOff + GRID_DIMENSION,
-                                         dstPts, dstOff + GRID_DIMENSION,
-                                              dimension - GRID_DIMENSION);
-                        /*
-                         * We can not use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
-                         * because the arrays may overlap. The contract said that this method
-                         * must behave as if all input coordinate values have been read before
-                         * we write outputs, which is the reason for System.arraycopy(…) call.
-                         */
-                        int i = dimension;
-                        do dstPts[dstOff + --i] -= vector[i];
-                        while (i > GRID_DIMENSION);
-                    }
-                    dstPts[dstOff  ] = xi;      // Shall not be done before above loop.
-                    dstPts[dstOff+1] = yi;
-                    if (derivate) {
-                        return Matrices.inverse(forward.derivative(
-                                new DirectPositionView.Double(dstPts, dstOff, dimension)));
-                    }
-                    return null;
-                }
-            } while (--it >= 0 || (tol = tryAgain(it, xi, yi)) > 0);
-            throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
+            transform(srcPts, srcOff, dstPts, dstOff, 1);
+            if (derivate) {
+                return Matrices.inverse(forward.derivative(new DirectPositionView.Double(dstPts, dstOff, dimension)));
+            } else {
+                return null;
+            }
         }
 
         /**
@@ -543,6 +498,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
          * @throws TransformException if a point can not be transformed.
          */
         @Override
+        @SuppressWarnings("UseOfSystemOutOrSystemErr")                            // Used if DEBUG = true only.
         public final void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts)
                 throws TransformException
         {
@@ -566,73 +522,120 @@ public class InterpolatedTransform extends DatumShiftTransform {
                     }
                 }
             }
-            final double[] vector = new double[dimension];
-nextPoint:  while (--numPts >= 0) {
-                double xi, yi;
+            final double[] vector = new double[SIMPLE ? dimension : dimension + 4];         // +4 is for derivate coefficients.
+            while (--numPts >= 0) {
+                double xi, yi;                                                              // (x,y) values at iteration i.
                 final double x = xi = srcPts[srcOff  ];
                 final double y = yi = srcPts[srcOff+1];
-                int it = MAXIMUM_ITERATIONS;
                 double tol = tolerance;
-                do {
-                    forward.grid.interpolateInCell(xi, yi, vector);
-                    final double ox = xi;
-                    final double oy = yi;
-                    xi = x - vector[0];
-                    yi = y - vector[1];
-                    if (!(Math.abs(xi - ox) > tol ||                // Use '!' for catching NaN.
-                          Math.abs(yi - oy) > tol))
-                    {
-                        if (dimension > GRID_DIMENSION) {
-                            System.arraycopy(srcPts, srcOff + GRID_DIMENSION,
-                                             dstPts, dstOff + GRID_DIMENSION,
-                                                  dimension - GRID_DIMENSION);
-                            /*
-                             * We can not use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
-                             * because the arrays may overlap. The contract said that this method
-                             * must behave as if all input coordinate values have been read before
-                             * we write outputs, which is the reason for System.arraycopy(…) call.
-                             */
-                            int i = dimension;
-                            do dstPts[dstOff + --i] -= vector[i];
-                            while (i > GRID_DIMENSION);
-                        }
-                        dstPts[dstOff  ] = xi;          // Shall not be done before above loop.
-                        dstPts[dstOff+1] = yi;
-                        dstOff += inc;
-                        srcOff += inc;
-                        continue nextPoint;
-                    }
-                } while (--it >= 0 || (tol = tryAgain(it, xi, yi)) > 0);
-                throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
-            }
-        }
-
-        /**
-         * If iteration did not converge, tells whether we should perform another try with a more permissive threshold.
-         * We start relaxing threshold only in last resort, and nevertheless aim for an accuracy of 0.5 of cell size in
-         * order to keep some consistency with forward transform. We may relax more in case of extrapolations.
-         *
-         * @param  it  the iteration counter. Should be negative since we exhausted the normal number of iterations.
-         * @param  xi  best <var>x</var> estimation so far.
-         * @param  yi  best <var>y</var> estimation so far.
-         * @return the new tolerance threshold, or {@link Double#NaN} if no more try should be allowed.
-         *
-         * @see #MAXIMUM_ITERATIONS
-         */
-        private double tryAgain(final int it, final double xi, final double yi) {
-            double tol = Math.scalb(tolerance, -it);
-            if (tol >= 0.5) {
-                /*
-                 * If the point was inside the grid and the grid is well-formed, we assume that iteration should have converged.
-                 * But during extrapolations since there is no authoritative results, we consider that a more approximate result
-                 * is okay. In particular it does not make sense to require a 1E-7 accuracy (relative to cell size) if we don't
-                 * really know what the answer should be.
-                 */
-                if (forward.grid.isCellInGrid(xi, yi) || tol > 2) {
-                    return Double.NaN;                                      // No more iteration - caller will throw an exception.
+                if (DEBUG) {
+                    System.out.format("Searching source coordinates for target = (%g %g)%n", x, y);
                 }
+                for (int it = MAXIMUM_ITERATIONS;;) {
+                    forward.grid.interpolateInCell(xi, yi, vector);
+                    if (SIMPLE) {
+                        /*
+                         * We want (xi, yi) such as the following conditions hold
+                         * (see next commnt for the simplification applied here):
+                         *
+                         *     xi + vector[0] ≈ x      ⟶      xi ≈ x - vector[0]
+                         *     yi + vector[1] ≈ y      ⟶      yi ≈ y - vector[1]
+                         */
+                        final double ox = xi;
+                        final double oy = yi;
+                        xi = x - vector[0];
+                        yi = y - vector[1];
+                        if (!(Math.abs(xi - ox) > tol || Math.abs(yi - oy) > tol)) break;       // Use '!' for catching NaN.
+                    } else {
+                        /*
+                         * The error between the new position (xi + tx) and the desired position x is measured
+                         * in target units.   In order to apply a correction in opposite direction, we need to
+                         * convert the translation vector from target units to source units.  The above simple
+                         * case was assuming that this conversion is close to identity transform,  allowing us
+                         * to write   xi = xi - ex   with the error   ex = (xi + tx) - x,  which simplified as
+                         * xi = x - tx.   But if the grid is more curved, we can not assume anymore that error
+                         * ex in target units is approximately equal to error dx in source units. A conversion
+                         * needs to be applied,  by multiplying the translation error by the derivative of the
+                         * "target to source" transform.  Since we do not know that derivative, we use inverse
+                         * of the "source to target" transform derivative.
+                         */
+                        final double tx  = vector[0];
+                        final double ty  = vector[1];
+                        final double m00 = vector[dimension    ];
+                        final double m01 = vector[dimension + 1];
+                        final double m10 = vector[dimension + 2];
+                        final double m11 = vector[dimension + 3];
+                        final double det = m00 * m11 - m01 * m10;
+                        final double ex  = (xi + tx) - x;                       // Errors in target units.
+                        final double ey  = (yi + ty) - y;
+                        final double dx  = (ex * m11 - ey * m01) / det;         // Errors in source units.
+                        final double dy  = (ey * m00 - ex * m10) / det;
+                        if (DEBUG) {
+                            System.out.printf("  source=(%9.3f %9.3f) target=(%9.3f %9.3f) error=(%11.6f %11.6f) → (%11.6f %11.6f)%n",
+                                                 xi, yi, (xi+tx), (yi+ty), ex, ey, dx, dy);
+
+                            Matrix m = forward.grid.derivativeInCell(xi, yi);
+                            assert m.getElement(0,0) == m00 &                   // Expect `m` computed in exact same way.
+                                   m.getElement(0,1) == m01 &
+                                   m.getElement(1,0) == m10 &
+                                   m.getElement(1,1) == m11 : m;
+
+                            final double[] d = Matrices.inverse(m).multiply(new double[] {ex, ey});
+                            assert Math.abs(dx - d[0]) < tol &
+                                   Math.abs(dy - d[1]) < tol : Arrays.toString(d) + " versus [" + dx + ", " + dy + "]";
+                        }
+                        xi -= dx;
+                        yi -= dy;
+                        if (!(Math.abs(ex) > tol || Math.abs(ey) > tol)) break;     // Use '!' for catching NaN.
+                    }
+                    /*
+                     * At this point we determined that we need to iterate more. If iteration does not converge, we may relax
+                     * threshold in last resort but nevertheless aim for an accuracy of 0.5 of cell size in order to keep some
+                     * consistency with forward transform. We relax the threshold only if the result is apparently outside the
+                     * grid (since there is no authoritative result outside the grid, it does not make sense to require a 1E-7
+                     * accuracy if we don't really know what the answer should be). If we can not find an answer, we throw an
+                     * exception even if the points seem outside since experience shows that the point is not always outside;
+                     * sometime the algorithm wrongly think that the point is outside while it should actually have been inside.
+                     */
+                    if (--it < 0) {
+                        if (it == -1 && !forward.grid.isCellInGrid(xi, yi)) {
+                            tol = 0.5;
+                        } else {
+                            throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
+                        }
+                    }
+                }
+                /*
+                 * At this point iteration converged. Store the result before to continue with next point.
+                 */
+                if (DEBUG) {
+                    if (!Double.isNaN(xi) && !Double.isNaN(yi)) {
+                        forward.grid.interpolateInCell(xi, yi, vector);
+                        final double xf = xi + vector[0];
+                        final double yf = yi + vector[1];
+                        assert Math.abs(xf - x) <= tol : xf;
+                        assert Math.abs(yf - y) <= tol : yf;
+                    }
+                }
+                if (dimension > GRID_DIMENSION) {
+                    System.arraycopy(srcPts, srcOff + GRID_DIMENSION,
+                                     dstPts, dstOff + GRID_DIMENSION,
+                                          dimension - GRID_DIMENSION);
+                    /*
+                     * We can not use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
+                     * because the arrays may overlap. The contract said that this method
+                     * must behave as if all input coordinate values have been read before
+                     * we write outputs, which is the reason for System.arraycopy(…) call.
+                     */
+                    int i = dimension;
+                    do dstPts[dstOff + --i] -= vector[i];
+                    while (i > GRID_DIMENSION);
+                }
+                dstPts[dstOff  ] = xi;          // Shall not be done before above loop.
+                dstPts[dstOff+1] = yi;
+                dstOff += inc;
+                srcOff += inc;
             }
-            return tol;
         }
     }
 }

@@ -38,7 +38,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.operation.DefaultOperationMethod;
 
 
 /**
@@ -46,7 +45,7 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  * Each subclasses should have a singleton instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -83,10 +82,9 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      */
     CoordinateSystemTransform(final String method, final int dimension) {
         this.dimension = dimension;
-        final Map<String,?> properties = Collections.singletonMap(DefaultOperationMethod.NAME_KEY,
+        final Map<String,?> properties = Collections.singletonMap(DefaultParameterDescriptorGroup.NAME_KEY,
                 new ImmutableIdentifier(Citations.SIS, Constants.SIS, method));
-        context = new ContextualParameters(new DefaultOperationMethod(properties, dimension, dimension,
-                new DefaultParameterDescriptorGroup(properties, 1, 1)));
+        context = new ContextualParameters(new DefaultParameterDescriptorGroup(properties, 1, 1), dimension, dimension);
     }
 
     /**

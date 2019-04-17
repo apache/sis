@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.Set;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -40,11 +41,15 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
  * Information about the grid geometry and the conversion from grid coordinates to geodetic coordinates.
- * More than one variable may share the same grid.
+ * A grid is associated to all variables that are georeferenced coverages and the same grid may be shared
+ * by many variables. The {@linkplain #getSourceDimensions() number of source dimensions} is normally the
+ * number of {@linkplain Variable#getGridDimensions() netCDF dimensions in the variable}, but may be less
+ * if a variable dimensions should considered as bands instead than spatio-temporal dimensions.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -99,6 +104,16 @@ public abstract class Grid extends NamedElement {
     private boolean isGeometryDetermined;
 
     /**
+     * Whether we computed a "grid to CRS" transform relative to pixel center or pixel corner.
+     * CF-Convention said: "If bounds are not provided, an application might reasonably assume
+     * the grid points to be at the centers of the cells, but we do not require that in this
+     * standard".
+     *
+     * @see #getAnchor()
+     */
+    private PixelInCell anchor = PixelInCell.CELL_CENTER;
+
+    /**
      * Constructs a new grid geometry information.
      */
     protected Grid() {
@@ -106,27 +121,32 @@ public abstract class Grid extends NamedElement {
 
     /**
      * Returns a localization grid having the same dimensions than this grid but in a different order.
-     * This method is invoked by {@link Variable#getGrid()} when the localization grids created by
+     * This method is invoked by {@link Variable#getGrid} when the localization grids created by
      * {@link Decoder} subclasses are not sufficient and must be tailored for a particular variable.
-     * Subclasses should verify that the given {@code dimensions} array meets the following conditions:
+     * Subclasses shall verify that the given {@code dimensions} array met the following conditions:
      *
      * <ul>
-     *   <li>The length of the given array should be equal to {@link #getSourceDimensions()}.</li>
-     *   <li>The array should contain all elements contained in {@link #getDimensions()}.</li>
+     *   <li>The length of the given array is equal or greater than {@link #getSourceDimensions()}.</li>
+     *   <li>The array contains all elements contained in {@link #getDimensions()}.
+     *       Additional elements, if any, are ignored (they may be considered as bands by the caller).</li>
      * </ul>
      *
      * If elements in the given array are in same order than elements in {@link #getDimensions()} list,
-     * then this method returns {@code this}. If the given dimensions are unknown to this grid,
-     * then this method returns {@code null}. Otherwise a grid with the given dimensions is returned.
+     * then this method returns {@code this}. If the given array does not contain all grid dimensions,
+     * then this method returns {@code null}. Otherwise a grid with reordered dimensions is returned.
+     * It is caller's responsibility to verify if the grid has less dimensions than the given argument.
      *
-     * @param  dimensions  the dimensions of this grid but potentially in a different order.
-     * @return localization grid with given dimension order (may be {@code this}), or {@code null}.
+     * @param  dimensions  the desired dimensions, in order. May contain more dimensions than this grid.
+     * @return localization grid with the exact same set of dimensions than this grid (no more and no less),
+     *         but in the order specified by the given array (ignoring dimensions not in this grid).
+     *         May be {@code this} or {@code null}.
      */
-    protected abstract Grid derive(Dimension[] dimensions);
+    protected abstract Grid forDimensions(Dimension[] dimensions);
 
     /**
      * Returns the number of dimensions of source coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>grid</em>.
+     * It should be equal to the size of {@link #getDimensions()} list.
      *
      * @return number of grid dimensions.
      */
@@ -135,7 +155,7 @@ public abstract class Grid extends NamedElement {
     /**
      * Returns the number of dimensions of target coordinates in the <cite>"grid to CRS"</cite> conversion.
      * This is the number of dimensions of the <em>coordinate reference system</em>.
-     * It should be equal to the size of the array returned by {@link #getAxes(Decoder)},
+     * It should be equal to the length of the array returned by {@link #getAxes(Decoder)},
      * but caller should be robust to inconsistencies.
      *
      * @return number of CRS dimensions.
@@ -146,6 +166,18 @@ public abstract class Grid extends NamedElement {
      * Returns the dimensions of this grid, in netCDF (reverse of "natural") order. Each element in the list
      * contains the number of cells in the dimension, together with implementation-specific information.
      * The list length should be equal to {@link #getSourceDimensions()}.
+     *
+     * <p>This list is usually equal to the {@link Variable#getGridDimensions()} list for all variables
+     * that are {@linkplain Variable#getGrid associated to this grid}. But those lists can also differ
+     * in the following aspects:</p>
+     *
+     * <ul>
+     *   <li>This grid may have less dimensions than the variable using this grid. In such case the additional
+     *       dimensions in the variable can be considered as bands instead than spatiotemporal dimensions.</li>
+     *   <li>The dimensions in this grid may have a different {@linkplain Dimension#length() length} than the
+     *       dimensions in the variable. In such case {@link Variable#getGridGeometry()} is responsible for
+     *       concatenating a scale factor to the "grid to CRS" transform.</li>
+     * </ul>
      *
      * @return the source dimensions of this grid, in netCDF order.
      *
@@ -228,15 +260,22 @@ public abstract class Grid extends NamedElement {
     protected abstract boolean containsAllNamedAxes(String[] axisNames);
 
     /**
-     * Returns the coordinate reference system, or {@code null} if none.
-     * This method creates the CRS the first time it is invoked and cache the result.
+     * Returns the coordinate reference system inferred from axes, or {@code null} if none.
+     * This method creates the CRS the first time it is invoked and caches the result,
+     * for allowing {@link Decoder#getReferenceSystemInfo()} to be cheaper.
+     *
+     * <p>This CRS is inferred only from analysis of grid axes. It does not take in account {@link GridMapping} information.
+     * This CRS may be overwritten by another CRS parsed from Well Known Text or other attributes. This overwriting is done
+     * by {@link Variable#getGridGeometry()}. But even if the CRS is going to be overwritten, we still need to create it in
+     * this method because this CRS will be used for adjusting axis order or for completion if grid mapping does not include
+     * information for all dimensions.</p>
      *
      * @param   decoder  the decoder for which CRS are constructed.
      * @return  the CRS for this grid geometry, or {@code null}.
      * @throws  IOException if an I/O operation was necessary but failed.
      * @throws  DataStoreException if the CRS can not be constructed.
      */
-    public final CoordinateReferenceSystem getCoordinateReferenceSystem(final Decoder decoder) throws IOException, DataStoreException {
+    final CoordinateReferenceSystem getCoordinateReferenceSystem(final Decoder decoder) throws IOException, DataStoreException {
         if (!isCRSDetermined) try {
             isCRSDetermined = true;                             // Set now for avoiding new attempts if creation fail.
             final List<CRSBuilder<?,?>> builders = new ArrayList<>();
@@ -303,7 +342,7 @@ public abstract class Grid extends NamedElement {
     /**
      * Returns an object containing the grid size, the CRS and the conversion from grid indices to CRS coordinates.
      * {@code GridGeometry} is the public object exposed to users. It uses the dimensions given by axes, which are
-     * usually the same dimensions that the ones of the variable using this grid geometry but not always.
+     * usually the same dimensions than the ones of the variable using this grid geometry but not always.
      * Caller may need to call {@link GridExtent#resize(long...)} for adjusting.
      *
      * @param   decoder   the decoder for which grid geometries are constructed.
@@ -354,7 +393,7 @@ public abstract class Grid extends NamedElement {
             for (int i=0; i<sourceDimensions.length; i++) {
                 final int tgtDim = deferred[i];
                 final Axis axis = axes[tgtDim];
-findFree:       for (int srcDim : axis.sourceDimensions) {
+findFree:       for (int srcDim : axis.sourceDimensions) {                      // In preference order (will take only one).
                     srcDim = lastSrcDim - srcDim;                               // Convert netCDF order to "natural" order.
                     for (int j=affine.getNumRow(); --j>=0;) {
                         if (affine.getElement(j, srcDim) != 0) {
@@ -374,19 +413,40 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
             final MathTransformFactory factory = decoder.getMathTransformFactory();
             for (int i=0; i<nonLinears.size(); i++) {         // Length of 'nonLinears' may change in this loop.
                 if (nonLinears.get(i) == null) {
-                    final Axis axis = axes[deferred[i]];
                     for (int j=i; ++j < nonLinears.size();) {
                         if (nonLinears.get(j) == null) {
-                            final Axis other   = axes[deferred[j]];
+                            /*
+                             * Found a pair of axes.  Prepare an array of length 2, to be reordered later in the
+                             * axis order declared in 'sourceDimensions'. This is not necessarily the same order
+                             * than iteration order because it depends on values of 'axis.sourceDimensions[0]'.
+                             * Those values take in account what is the "main" dimension of each axis.
+                             */
+                            final Axis[] gridAxes = new Axis[] {
+                                axes[deferred[i]],
+                                axes[deferred[j]]
+                            };
                             final int srcDim   = sourceDimensions[i];
                             final int otherDim = sourceDimensions[j];
-                            final LocalizationGridBuilder grid;
                             switch (srcDim - otherDim) {
-                                case -1: grid = axis.createLocalizationGrid(other); break;
-                                case +1: grid = other.createLocalizationGrid(axis); break;
-                                default: continue;  // Needs axes at consecutive source dimensions.
+                                case -1: break;
+                                case +1: ArraysExt.swap(gridAxes, 0, 1); break;
+                                default: continue;            // Needs axes at consecutive source dimensions.
                             }
+                            final LocalizationGridBuilder grid = gridAxes[0].createLocalizationGrid(gridAxes[1]);
                             if (grid != null) {
+                                final Set<Linearizer> linearizers = decoder.convention().linearizers(decoder);
+                                if (!linearizers.isEmpty()) {
+                                    Linearizer.applyTo(linearizers, factory, grid, gridAxes);
+                                }
+                                /*
+                                 * There is usually a one-to-one relationship between localization grid cells and image pixels.
+                                 * Consequently an accuracy set to a fraction of cell should be enough.
+                                 *
+                                 * TODO: take in account the case where Variable.Adjustment.dataToGridIndices() returns a value
+                                 * smaller than 1. For now we set the desired precision to a value 10 times smaller in order to
+                                 * take in account the case where dataToGridIndices() returns 0.1.
+                                 */
+                                grid.setDesiredPrecision(0.001);
                                 /*
                                  * Replace the first transform by the two-dimensional localization grid and
                                  * remove the other transform. Removals need to be done in arrays too.
@@ -428,7 +488,6 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
              * to be at the centers of the cells, but we do not require that in this standard". We nevertheless check
              * if an axis thinks otherwise.
              */
-            PixelInCell anchor = PixelInCell.CELL_CENTER;
             final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(decoder);
             if (CRS.getHorizontalComponent(crs) instanceof GeographicCRS) {
                 for (final Axis axis : axes) {
@@ -446,7 +505,19 @@ findFree:       for (int srcDim : axis.sourceDimensions) {
     }
 
     /**
+     * Returns whether we computed a "grid to CRS" transform relative to pixel center or pixel corner.
+     * The default value is {@link PixelInCell#CELL_CENTER}, but may be modified after invocation of
+     * {@link #getGridGeometry(Decoder)}.
+     */
+    final PixelInCell getAnchor() {
+        return anchor;
+    }
+
+    /**
      * Logs a warning about a CRS or grid geometry that can not be created.
+     *
+     * @param  caller  one of {@code "getCoordinateReferenceSystem"} or {@code "getGridGeometry"}.
+     * @param  key     one of {@link Resources.Keys#CanNotCreateCRS_3} or {@link Resources.Keys#CanNotCreateGridGeometry_3}.
      */
     private void canNotCreate(final Decoder decoder, final String caller, final short key, final Exception ex) {
         warning(decoder.listeners, Grid.class, caller, ex, null, key, decoder.getFilename(), getName(), ex.getLocalizedMessage());

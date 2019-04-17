@@ -255,7 +255,7 @@ public final class ChannelDecoder extends Decoder {
          */
         DimensionInfo[]    dimensions = null;
         VariableInfo[]     variables  = null;
-        Map<String,Object> attributes = null;
+        Map<String,Object> attributes = Collections.emptyMap();
         for (int i=0; i<3; i++) {
             final long tn = input.readLong();                   // Combination of tag and nelems
             if (tn != 0) {
@@ -275,8 +275,13 @@ public final class ChannelDecoder extends Decoder {
             }
         }
         this.attributeMap = attributes;
-        this.variables    = variables;
-        this.variableMap  = toCaseInsensitiveNameMap(variables);
+        if (variables != null) {
+            this.variables   = variables;
+            this.variableMap = toCaseInsensitiveNameMap(variables);
+        } else {
+            this.variables   = new VariableInfo[0];
+            this.variableMap = Collections.emptyMap();
+        }
         initialize();
     }
 

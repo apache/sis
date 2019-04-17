@@ -106,20 +106,48 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#append(DimensionNameType, long, long, boolean)}.
+     * Tests {@link GridExtent#insert(int, DimensionNameType, long, long, boolean)}
+     * with {@code offset} set to {@link GridExtent#getDimension()}.
      */
     @Test
     public void testAppend() {
+        appendOrInsert(2, 1);
+    }
+
+    /**
+     * Tests {@link GridExtent#insert(int, DimensionNameType, long, long, boolean)}.
+     */
+    @Test
+    public void testInsert() {
+        appendOrInsert(1, 2);
+    }
+
+    /**
+     * Implementation of {@link #testAppend()} and {@link #testInsert()}.
+     */
+    private void appendOrInsert(final int offset, final int rowIndex) {
         GridExtent extent = new GridExtent(new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW},
                                            new long[] {100, 200}, new long[] {500, 800}, true);
-        extent = extent.append(DimensionNameType.TIME, 40, 50, false);
+        extent = extent.insert(offset, DimensionNameType.TIME, 40, 50, false);
         assertEquals("dimension", 3, extent.getDimension());
-        assertExtentEquals(extent, 0, 100, 500);
-        assertExtentEquals(extent, 1, 200, 800);
-        assertExtentEquals(extent, 2,  40,  49);
+        assertExtentEquals(extent, 0,        100, 500);
+        assertExtentEquals(extent, rowIndex, 200, 800);
+        assertExtentEquals(extent, offset,    40,  49);
         assertEquals(DimensionNameType.COLUMN, extent.getAxisType(0).get());
-        assertEquals(DimensionNameType.ROW,    extent.getAxisType(1).get());
-        assertEquals(DimensionNameType.TIME,   extent.getAxisType(2).get());
+        assertEquals(DimensionNameType.ROW,    extent.getAxisType(rowIndex).get());
+        assertEquals(DimensionNameType.TIME,   extent.getAxisType(offset).get());
+    }
+
+    /**
+     * Tests {@link GridExtent#expand(long...)}.
+     */
+    @Test
+    public void testExpand() {
+        GridExtent extent = create3D();
+        extent = extent.expand(20, -10);
+        assertExtentEquals(extent, 0,  80, 519);
+        assertExtentEquals(extent, 1, 210, 789);
+        assertExtentEquals(extent, 2,  40,  49);
     }
 
     /**

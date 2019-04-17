@@ -418,8 +418,9 @@ public final strictfp class MathFunctionsTest extends TestCase {
     @Test
     @DependsOnMethod("testDivisors")
     public void testCommonDivisors() {
-        assertArrayEquals(new int[] {
-            1, 5
-        }, commonDivisors(2000, 15));
+        assertArrayEquals(new int[] {1, 2, 4, 8}, commonDivisors(8));
+        assertArrayEquals(new int[] {1, 5}, commonDivisors(2000, 15));
+        assertArrayEquals(new int[] {1, 2}, commonDivisors(-4, 2));
+        assertArrayEquals(new int[] {}, commonDivisors(0));
     }
 }
