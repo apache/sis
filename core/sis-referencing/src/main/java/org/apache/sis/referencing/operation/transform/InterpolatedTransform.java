@@ -589,22 +589,19 @@ public class InterpolatedTransform extends DatumShiftTransform {
                         if (!(Math.abs(ex) > tol || Math.abs(ey) > tol)) break;     // Use '!' for catching NaN.
                     }
                     /*
-                     * At this point we determined that we need to iterate more. If iteration does not converge, we may relaxe
+                     * At this point we determined that we need to iterate more. If iteration does not converge, we may relax
                      * threshold in last resort but nevertheless aim for an accuracy of 0.5 of cell size in order to keep some
-                     * consistency with forward transform. If the point was inside the grid, we assume (for well-formed grid)
-                     * that iteration should have converged. But during extrapolations since there is no authoritative results,
-                     * we consider that a more approximate result is okay. In particular it does not make sense to require a
-                     * 1E-7 accuracy (relative to cell size) if we don't really know what the answer should be.
+                     * consistency with forward transform. We relax the threshold only if the result is apparently outside the
+                     * grid (since there is no authoritative result outside the grid, it does not make sense to require a 1E-7
+                     * accuracy if we don't really know what the answer should be). If we can not find an answer, we throw an
+                     * exception even if the points seem outside since experience shows that the point is not always outside;
+                     * sometime the algorithm wrongly think that the point is outside while it should actually have been inside.
                      */
                     if (--it < 0) {
-                        if (it == -1) {
-                            if (forward.grid.isCellInGrid(xi, yi)) {
-                                throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
-                            }
+                        if (it == -1 && !forward.grid.isCellInGrid(xi, yi)) {
                             tol = 0.5;
                         } else {
-                            xi = yi = Double.NaN;
-                            break;
+                            throw new TransformException(Resources.format(Resources.Keys.NoConvergence));
                         }
                     }
                 }
