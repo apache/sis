@@ -320,7 +320,7 @@ public class Convention {
      *
      * Whether the returned range is a range of packed values or a range of real values is ambiguous.
      * An heuristic rule is documented in UCAR {@link ucar.nc2.dataset.EnhanceScaleMissing} interface.
-     * If both type of ranges are available, then this method should return the range of packed value.
+     * If both types of range are available, then this method should return the range of packed value.
      * Otherwise if this method returns the range of real values, then that range shall be an instance
      * of {@link MeasurementRange} for allowing the caller to distinguish the two cases.
      *
@@ -428,9 +428,9 @@ public class Convention {
      * The returned function will be a component of the {@link org.apache.sis.coverage.SampleDimension}
      * to be created for each variable.
      *
-     * <p>This method is invoked only if {@link #validRange(Variable)} returned a non-null value.
-     * Since a transfer function is assumed to exist in such case (even if that function is identity),
-     * this method shall never return {@code null}.</p>
+     * <p>This method is invoked in contexts where a transfer function is assumed to exist, for example
+     * because {@link #validRange(Variable)} returned a non-null value. Consequently this method shall
+     * never return {@code null}, but can return the identity function.</p>
      *
      * @param  data  the variable from which to determine the transfer function.
      *               This is usually a variable containing raster data.

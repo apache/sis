@@ -176,6 +176,10 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      *
      * @see #isEnumeration()
      * @see #meaning(int)
+     *
+     * @todo Need to be consistent with {@code VariableWrapper}. We could move this field to {@link FeaturesInfo},
+     *       or provides the same functionality in {@code VariableWrapper}. Whatever solution is chosen,
+     *       {@code RasterResource.createEnumeration(…)} needs to use the mechanism common to both implementations.
      */
     private final String[] meanings;
 
@@ -510,20 +514,16 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Returns the numeric type of the attribute of the given name, or {@code null}
-     * if the given attribute is not found or its value is not numeric.
+     * Returns the type of the attribute of the given name,
+     * or {@code null} if the given attribute is not found.
      */
     @Override
-    @SuppressWarnings("unchecked")
-    public Class<? extends Number> getAttributeType(final String attributeName) {
+    public Class<?> getAttributeType(final String attributeName) {
         final Object value = getAttributeValue(attributeName);
         if (value != null) {
-            Class<?> type = value.getClass();
+            final Class<?> type = value.getClass();
             final Class<?> c = type.getComponentType();
-            if (c != null) type = c;
-            if (Number.class.isAssignableFrom(type)) {
-                return (Class<? extends Number>) type;
-            }
+            return (c != null) ? c : type;
         }
         return null;
     }

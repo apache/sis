@@ -37,6 +37,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridDerivation;
+import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -45,6 +46,7 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jdk9.JDK9;
@@ -398,8 +400,8 @@ public final class RasterResource extends AbstractGridResource implements Resour
          * is used only as a fallback. We give precedence to the range computed by Apache SIS instead than the range given
          * by UCAR because we need the range of packed values instead than the range of converted values.
          */
-        NumberRange<?> range = band.getValidRange();
-        if (range != null) {
+        NumberRange<?> range;
+        if (!createEnumeration(builder, band, index) && (range = band.getValidRange()) != null) {
             final MathTransform1D mt = band.getTransferFunction().getTransform();
             if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
                 /*
@@ -487,6 +489,41 @@ public final class RasterResource extends AbstractGridResource implements Resour
             name = Strings.toIndexed(name, index);
         }
         return builder.setName(name).build();
+    }
+
+    /**
+     * Appends qualitative categories in the given builder for {@code "flag_values"} or {@code "flag_masks"} attribute.
+     *
+     * @param  builder  the builder to use for creating the sample dimension.
+     * @param  band     the data for which to create a sample dimension.
+     * @param  index    index in the variable dimension identified by {@link #bandDimension}.
+     * @return {@code true} if flag attributes have been found, or {@code false} otherwise.
+     */
+    private static boolean createEnumeration(final SampleDimension.Builder builder, final Variable band, final int index) {
+        Object[] names = band.getAttributeValues(AttributeNames.FLAG_NAMES, false);
+        if (names.length == 0) {
+            names = band.getAttributeValues(AttributeNames.FLAG_MEANINGS, false);
+            if (names.length == 0) return false;
+        }
+        Object[] values = band.getAttributeValues(AttributeNames.FLAG_VALUES, true);
+        if (values.length == 0) {
+            values = band.getAttributeValues(AttributeNames.FLAG_MASKS, true);
+            if (values.length == 0) return false;
+        }
+        if (names.length == 1) {
+            names = CharSequences.split((CharSequence) names[0], ' ');
+        }
+        for (int i=0; i<values.length; i++) {
+            final Number value = (Number) values[i];
+            final CharSequence name;
+            if (i < names.length) {
+                name = (CharSequence) names[i];
+            } else {
+                name = Vocabulary.formatInternational(Vocabulary.Keys.Unnamed);
+            }
+            builder.addQualitative(name, value, value);
+        }
+        return true;
     }
 
     /**

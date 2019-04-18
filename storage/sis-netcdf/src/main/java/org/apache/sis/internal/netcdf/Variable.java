@@ -799,15 +799,15 @@ public abstract class Variable extends NamedElement {
     public abstract Collection<String> getAttributeNames();
 
     /**
-     * Returns the numeric type of the attribute of the given name, or {@code null}
-     * if the given attribute is not found or its value is not numeric.
+     * Returns the type of the attribute of the given name,
+     * or {@code null} if the given attribute is not found.
      *
      * @param  attributeName  the name of the attribute for which to get the type.
-     * @return type of the given attribute, or {@code null} if none or not numeric.
+     * @return type of the given attribute, or {@code null} if the attribute does not exist.
      *
      * @see #getDataType()
      */
-    public abstract Class<? extends Number> getAttributeType(String attributeName);
+    public abstract Class<?> getAttributeType(String attributeName);
 
     /**
      * Returns the sequence of values for the given attribute, or an empty array if none.
