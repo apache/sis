@@ -83,6 +83,7 @@ public final strictfp class ProvidersTest extends TestCase {
             PseudoMercator.class,
             RegionalMercator.class,
             MillerCylindrical.class,
+            Sinusoidal.class,
             Mollweide.class,
             LambertConformal1SP.class,
             LambertConformal2SP.class,
