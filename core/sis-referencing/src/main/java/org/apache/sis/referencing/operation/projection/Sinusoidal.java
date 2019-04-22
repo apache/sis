@@ -42,7 +42,7 @@ import static org.apache.sis.internal.referencing.provider.Sinusoidal.*;
  * @since   1.0
  * @module
  */
-public class Sinusoidal extends NormalizedProjection {
+public class Sinusoidal extends MeridionalDistanceBased {
     /**
      * For cross-version compatibility.
      */
