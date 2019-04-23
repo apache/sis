@@ -78,7 +78,7 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
 
     /**
      * Series expansion with more terms. We use this formulas as a reference for testing accuracy of the formula
-     * implemented by {@link MeridionalDistanceBased} after making sure that
+     * implemented by {@link MeridionalDistanceBased#meridianArc(double, double, double)} after making sure that
      * this value is in agreement with {@link #reference(double)}.
      *
      * <p>References:</p>
@@ -108,7 +108,7 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
     }
 
     /**
-     * Compares {@link MeridionalDistanceBased} calculation with formulas taken as references.
+     * Compares {@link MeridionalDistanceBased#meridianArc(double, double, double)} with formulas taken as references.
      */
     @Test
     public void compareWithReference() {
@@ -118,8 +118,9 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
             final double φ = random.nextDouble() * PI - PI/2;
             final double reference = reference(φ);
             final double accurate  = referenceMoreAccurate(φ);
-            assertEquals("Accurate formula disagree with reference.", reference, accurate, 2E-10);
-            // TODO: invoke MeridionalDistanceBased method.
+            final double actual    = projection.meridianArc(φ, sin(φ), cos(φ));
+            assertEquals("Accurate formula disagrees with reference.", reference, accurate, 2E-10);
+            assertEquals("Implementation disagrees with reference.",   accurate,  actual,   1E-13);
         }
     }
 }
