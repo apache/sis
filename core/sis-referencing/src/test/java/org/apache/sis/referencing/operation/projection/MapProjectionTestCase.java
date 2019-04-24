@@ -80,16 +80,16 @@ abstract strictfp class MapProjectionTestCase extends MathTransformTestCase {
      * Returns the parameters to use for instantiating the projection to test.
      * The parameters are initialized with the ellipse semi-axis lengths.
      *
-     * @param  provider  the provider of the projection to test.
-     * @param  ellipse   {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
+     * @param  provider     the provider of the projection to test.
+     * @param  ellipsoidal  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      * @return the parameters to use for instantiating the projection.
      */
-    static Parameters parameters(final DefaultOperationMethod provider, final boolean ellipse) {
+    static Parameters parameters(final DefaultOperationMethod provider, final boolean ellipsoidal) {
         final Parameters parameters = Parameters.castOrWrap(provider.getParameters().createValue());
-        final Ellipsoid ellipsoid = (ellipse ? GeodeticDatumMock.WGS84 : GeodeticDatumMock.SPHERE).getEllipsoid();
+        final Ellipsoid ellipsoid = (ellipsoidal ? GeodeticDatumMock.WGS84 : GeodeticDatumMock.SPHERE).getEllipsoid();
         parameters.parameter(Constants.SEMI_MAJOR).setValue(ellipsoid.getSemiMajorAxis());
         parameters.parameter(Constants.SEMI_MINOR).setValue(ellipsoid.getSemiMinorAxis());
-        if (ellipse) {
+        if (ellipsoidal) {
             parameters.parameter(Constants.INVERSE_FLATTENING).setValue(ellipsoid.getInverseFlattening());
         }
         return parameters;

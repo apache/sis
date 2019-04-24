@@ -53,12 +53,12 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      * Creates a new instance of {@link Mercator} for a sphere or an ellipsoid.
      * The new instance is stored in the inherited {@link #transform} field.
      *
-     * @param  ellipse  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
+     * @param  ellipsoidal  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
-    private void createNormalizedProjection(final boolean ellipse) {
+    private void createNormalizedProjection(final boolean ellipsoidal) {
         final Mercator2SP method = new Mercator2SP();
-        transform = new Mercator(method, parameters(method, ellipse));
-        if (!ellipse) {
+        transform = new Mercator(method, parameters(method, ellipsoidal));
+        if (!ellipsoidal) {
             transform = new Mercator.Spherical((Mercator) transform);
         }
         tolerance = NORMALIZED_TOLERANCE;
