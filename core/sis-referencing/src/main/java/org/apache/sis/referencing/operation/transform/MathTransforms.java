@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Arrays;
 import java.util.Collections;
 import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
@@ -85,6 +86,36 @@ public final class MathTransforms extends Static {
     public static LinearTransform identity(final int dimension) {
         ArgumentChecks.ensurePositive("dimension", dimension);
         return IdentityTransform.create(dimension);
+    }
+
+    /**
+     * Creates an affine transform which applies the same translation for all dimensions.
+     * For each dimension, input values <var>x</var> are converted into output values <var>y</var>
+     * using the following equation:
+     *
+     * <blockquote><var>y</var> = <var>x</var> + {@code offset}</blockquote>
+     *
+     * @param  dimension  the input and output dimensions.
+     * @param  offset     the {@code offset} term in the linear equation.
+     * @return the linear transform for the given offset.
+     *
+     * @since 1.0
+     */
+    public static LinearTransform uniformTranslation(final int dimension, final double offset) {
+        ArgumentChecks.ensurePositive("dimension", dimension);
+        if (offset == 0) {
+            return IdentityTransform.create(dimension);
+        }
+        switch (dimension) {
+            case 0:  return IdentityTransform.create(0);
+            case 1:  return LinearTransform1D.create(1, offset);
+            case 2:  return new AffineTransform2D(1, 0, 0, 1, offset, offset);
+            default: {
+                final double[] vector = new double[dimension];
+                Arrays.fill(vector, offset);
+                return new TranslationTransform(vector);
+            }
+        }
     }
 
     /**

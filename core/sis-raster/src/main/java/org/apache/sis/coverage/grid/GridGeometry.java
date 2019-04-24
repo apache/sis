@@ -243,9 +243,9 @@ public class GridGeometry implements Serializable {
      * <p>If {@code toOther} is non-null, it should be a transform from the given {@code extent} coordinates to the
      * {@code other} grid coordinates. That transform should be merely a {@linkplain MathTransforms#scale(double...)
      * scale} and {@linkplain MathTransforms#translation(double...) translation} even if more complex transforms are
-     * accepted. The {@link #gridToCRS} transform of the new grid geometry will be set to the following concatenation:</p>
+     * accepted. The {@link #cornerToCRS} transform of the new grid geometry will be set to the following concatenation:</p>
      *
-     * <blockquote>{@code this.gridToCRS} = {@code toOther} → {@code other.gridToCRS}</blockquote>
+     * <blockquote>{@code this.cornerToCRS} = {@code toOther} → {@code other.cornerToCRS}</blockquote>
      *
      * The new {@linkplain #getEnvelope() grid geometry envelope} will be {@linkplain GeneralEnvelope#intersect(Envelope)
      * clipped} to the envelope of the other grid geometry. This is for preventing the envelope to become larger under the
@@ -269,8 +269,11 @@ public class GridGeometry implements Serializable {
             resolution  = other.resolution;
             nonLinears  = other.nonLinears;
         } else {
-            gridToCRS   = MathTransforms.concatenate(toOther, other.gridToCRS);
+            final MathTransform centerShift = MathTransforms.concatenate(
+                    MathTransforms.uniformTranslation(dimension, +0.5), toOther,
+                    MathTransforms.uniformTranslation(dimension, -0.5));
             cornerToCRS = MathTransforms.concatenate(toOther, other.cornerToCRS);
+            gridToCRS   = MathTransforms.concatenate(centerShift, other.gridToCRS);
             resolution  = resolution(gridToCRS, extent);
             nonLinears  = findNonLinearTargets(gridToCRS);
         }
