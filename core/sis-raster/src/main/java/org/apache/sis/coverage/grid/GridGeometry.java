@@ -269,6 +269,12 @@ public class GridGeometry implements Serializable {
             resolution  = other.resolution;
             nonLinears  = other.nonLinears;
         } else {
+            /*
+             * The `toOther` transform applies on `cornerToCRS` because the corner of upper-left pixel before scaling
+             * is still the corner of upper-left pixel after scaling, while "pixel center" is no longer the center of
+             * the same pixel. We adjust `toOther` instead than invoking `PixelTranslation.translate(cornerToCRS, …)`
+             * because we do not know which of `cornerToCRS` or `gridToCRS` has less NaN values.
+             */
             final MathTransform centerShift = MathTransforms.concatenate(
                     MathTransforms.uniformTranslation(dimension, +0.5), toOther,
                     MathTransforms.uniformTranslation(dimension, -0.5));

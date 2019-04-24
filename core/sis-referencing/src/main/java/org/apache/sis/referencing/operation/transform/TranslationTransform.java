@@ -58,6 +58,15 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
     private final double[] errors;
 
     /**
+     * Constructs an uniform translation transform for the given offset applied on all dimensions.
+     */
+    TranslationTransform(final int dimension, double offset) {
+        offsets = new double[dimension];
+        Arrays.fill(offsets, offset);
+        errors = null;
+    }
+
+    /**
      * Constructs a translation transform for the given offset vector.
      */
     TranslationTransform(final double[] offsets) {

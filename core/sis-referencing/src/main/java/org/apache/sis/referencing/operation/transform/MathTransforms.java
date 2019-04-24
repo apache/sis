@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Arrays;
 import java.util.Collections;
 import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
@@ -80,7 +79,7 @@ public final class MathTransforms extends Static {
      *   <li>If {@code dimension == 2}, then the returned transform implements {@link MathTransform2D}.</li>
      * </ul>
      *
-     * @param  dimension  the dimension of the transform to be returned.
+     * @param  dimension  number of dimensions of the transform to be returned.
      * @return an identity transform of the specified dimension.
      */
     public static LinearTransform identity(final int dimension) {
@@ -95,9 +94,9 @@ public final class MathTransforms extends Static {
      *
      * <blockquote><var>y</var> = <var>x</var> + {@code offset}</blockquote>
      *
-     * @param  dimension  the input and output dimensions.
+     * @param  dimension  number of input and output dimensions.
      * @param  offset     the {@code offset} term in the linear equation.
-     * @return the linear transform for the given offset.
+     * @return an affine transform applying the specified translation.
      *
      * @since 1.0
      */
@@ -110,20 +109,16 @@ public final class MathTransforms extends Static {
             case 0:  return IdentityTransform.create(0);
             case 1:  return LinearTransform1D.create(1, offset);
             case 2:  return new AffineTransform2D(1, 0, 0, 1, offset, offset);
-            default: {
-                final double[] vector = new double[dimension];
-                Arrays.fill(vector, offset);
-                return new TranslationTransform(vector);
-            }
+            default: return new TranslationTransform(dimension, offset);
         }
     }
 
     /**
-     * Creates a transform which applies the given translation.
+     * Creates an affine transform which applies the given translation.
      * The source and target dimensions of the transform are the length of the given vector.
      *
      * @param  vector  the translation vector.
-     * @return a transform applying the given translation.
+     * @return an affine transform applying the specified translation.
      *
      * @since 1.0
      */
@@ -140,11 +135,11 @@ public final class MathTransforms extends Static {
     }
 
     /**
-     * Creates a transform which applies the given scale.
+     * Creates an affine transform which applies the given scale.
      * The source and target dimensions of the transform are the length of the given vector.
      *
      * @param  factors  the scale factors.
-     * @return a transform applying the given scale.
+     * @return an affine transform applying the specified scales.
      *
      * @since 1.0
      */

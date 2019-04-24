@@ -140,11 +140,12 @@ public final strictfp class GridGeometryTest extends TestCase {
 
     /**
      * Tests the {@link GridGeometry#GridGeometry(GridGeometry, GridExtent, MathTransform)} constructor.
+     * The math transform used for this test map to pixel corners.
      *
      * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
-    public void testFromOther() throws TransformException {
+    public void testFromOtherDefinedAtCorner() throws TransformException {
         long[]        low       = new long[] {  1,   3, 2};
         long[]        high      = new long[] {101, 203, 4};
         GridExtent    extent    = new GridExtent(null, low, high, false);
@@ -169,7 +170,7 @@ public final strictfp class GridGeometryTest extends TestCase {
      * We check envelopes as a more intuitive way to verify consistency than inspecting the math transforms.
      */
     @Test
-    public void testFromOtherConsistency() {
+    public void testFromOtherDefinedAtCenter() {
         GridExtent extent = new GridExtent(126, 197);
         GridGeometry grid = new GridGeometry(extent, PixelInCell.CELL_CENTER, MathTransforms.identity(2), HardCodedCRS.WGS84);
         GeneralEnvelope expected = new GeneralEnvelope(new double[] {-0.5, -0.5}, new double[] {125.5, 196.5});
@@ -181,8 +182,8 @@ public final strictfp class GridGeometryTest extends TestCase {
         grid = grid.derive().resize(extent, 0.1, 0.1).build();
         assertEnvelopeEquals(expected, grid.getEnvelope(), STRICT);
         /*
-         * If we try to create a grid geometry with identical properties, the envelope computed by that grid geometry would
-         * be different than the envelope computed above if the "grid to CRS" transforms are not correctly adjusted.
+         * If we create a grid geometry with identical properties, the envelope computed by that grid geometry would
+         * be different than the envelope computed above if the "grid to CRS" transform is not correctly adjusted.
          */
         final GridGeometry alternative = new GridGeometry(grid.getExtent(), PixelInCell.CELL_CENTER,
                  grid.getGridToCRS(PixelInCell.CELL_CENTER), grid.getCoordinateReferenceSystem());
