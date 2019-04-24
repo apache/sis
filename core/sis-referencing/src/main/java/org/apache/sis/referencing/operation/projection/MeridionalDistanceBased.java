@@ -65,7 +65,7 @@ abstract class MeridionalDistanceBased extends NormalizedProjection {
      * Coefficients for the formula implemented by the {@link #meridianArc(double, double, double)} method.
      * Values are computed by {@link #computeCoefficients()} at construction time or after deserialization.
      * The values depends on the form of equation implemented by {@code meridianArc(…)}. We do not use the
-     * form published commonly found in publication since a few algebraic operations allow to replace the
+     * form commonly found in publications since a few algebraic operations allow to replace the
      * sin(2φ), sin(4φ), sin(6φ) and sin(8φ) terms by only sin²(φ), which is faster to calculate.
      * See {@link #computeCoefficients()} comments in method body for more information.
      */
@@ -158,6 +158,7 @@ abstract class MeridionalDistanceBased extends NormalizedProjection {
         c2 = -2625./0x8000  * e10  +   175./0x6000  * e8  +  5120./0x60000 * e6  +  -15./0x20 * e4;
         c3 =   735./0x800   * e10  +  2240./0x60000 * e8  +   -35./0x60    * e6;
         c4 = -2205./0x1000  * e10  +  -315./0x400   * e8;
+     // c6 =   693./0x20000 * e10  omitted for now (not yet used).
     }
 
     /**
@@ -183,11 +184,11 @@ abstract class MeridionalDistanceBased extends NormalizedProjection {
      *
      * @return the derivative at the specified latitude.
      */
-    final double dM_dφ(final double sinφ2, final double cosφ2) {
-        return c0 +
-               c1 * (sinφ2 -   cosφ2) + sinφ2*(
-               c2 * (sinφ2 - 3*cosφ2) + sinφ2*(
-               c3 * (sinφ2 - 5*cosφ2) + sinφ2*
-               c4 * (    1 - 7*cosφ2)));
+    final double dM_dφ(final double sinφ2) {
+        return ((((7 - 8*sinφ2)*c4 - 6*c3) * sinφ2
+                            + 5*c3 - 4*c2) * sinφ2
+                            + 3*c2 - 2*c1) * sinφ2
+                            +   c1
+                            +   c0;
     }
 }

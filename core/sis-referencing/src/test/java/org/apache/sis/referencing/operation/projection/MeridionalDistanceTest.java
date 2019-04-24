@@ -17,8 +17,11 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Random;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.transform.AbstractMathTransform1D;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.test.TestUtilities;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -37,12 +40,22 @@ import static org.junit.Assert.assertEquals;
 @DependsOn(NormalizedProjectionTest.class)
 public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase {
     /**
-     * Creates a new test case.
+     * Threshold for comparison of floating point values.
      */
-    public MeridionalDistanceTest() {
+    private static final double STRICT = 0;
+
+    /**
+     * Creates the projection to be tested.
+     *
+     * @param  ellipsoidal   {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
+     * @return a test instance of the projection.
+     */
+    private MeridionalDistanceBased create(final boolean ellipsoidal) {
         final DefaultOperationMethod provider = new org.apache.sis.internal.referencing.provider.Sinusoidal();
-        transform = new Sinusoidal(provider, parameters(provider, true));
+        final Sinusoidal projection = new Sinusoidal(provider, parameters(provider, ellipsoidal));
         tolerance = NormalizedProjection.ANGULAR_TOLERANCE;     // = linear tolerance on a sphere of radius 1.
+        transform = projection;
+        return projection;
     }
 
     /**
@@ -112,7 +125,7 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
      */
     @Test
     public void compareWithReference() {
-        final MeridionalDistanceBased projection = (MeridionalDistanceBased) transform;
+        final MeridionalDistanceBased projection = create(true);
         final Random random = TestUtilities.createRandomNumberGenerator();
         for (int i=0; i<100; i++) {
             final double φ = random.nextDouble() * PI - PI/2;
@@ -120,7 +133,65 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
             final double accurate  = referenceMoreAccurate(φ);
             final double actual    = projection.meridianArc(φ, sin(φ), cos(φ));
             assertEquals("Accurate formula disagrees with reference.", reference, accurate, 2E-10);
-            assertEquals("Implementation disagrees with reference.",   accurate,  actual,   1E-13);
+            assertEquals("Implementation disagrees with our formula.", accurate,  actual,   1E-13);
         }
+    }
+
+    /**
+     * Compares {@link MeridionalDistanceBased#meridianArc(double, double, double)} with spherical formula.
+     * In the spherical case, {@code meridianArc(φ)} should be equal to φ.
+     */
+    @Test
+    public void compareWithSphere() {
+        final MeridionalDistanceBased projection = create(false);
+        assertEquals("Expected spherical projection.", 0, projection.eccentricity, STRICT);
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        for (int i=0; i<20; i++) {
+            final double φ = random.nextDouble() * PI - PI/2;
+            assertEquals("When excentricity=0, meridianArc(φ, sinφ, cosφ) simplify to φ.",
+                    φ, projection.meridianArc(φ, sin(φ), cos(φ)), 1E-15);
+        }
+    }
+
+    /**
+     * Tests the {@link MeridionalDistanceBased#dM_dφ(double)} method on a sphere.
+     *
+     * @throws TransformException should never happen.
+     */
+    @Test
+    public void testDerivativeOnSphere() throws TransformException {
+        testDerivative(false);
+    }
+
+    /**
+     * Tests the {@link MeridionalDistanceBased#dM_dφ(double)} method on an ellipsoid.
+     *
+     * @throws TransformException should never happen.
+     */
+    @Test
+    @DependsOnMethod("testDerivativeOnSphere")
+    public void testDerivativeOnEllipsoid() throws TransformException {
+        testDerivative(true);
+    }
+
+    /**
+     * Implementation of tests for derivative method.
+     */
+    private void testDerivative(final boolean ellipsoidal) throws TransformException {
+        final MeridionalDistanceBased projection = create(ellipsoidal);
+        isInverseTransformSupported = false;
+        derivativeDeltas = new double[] {toRadians(0.01)};
+        transform = new AbstractMathTransform1D() {
+            @Override public double transform (final double φ) {
+                return projection.meridianArc(φ, sin(φ), cos(φ));
+            }
+            @Override public double derivative(final double φ) {
+                final double sinφ = sin(φ);
+                return projection.dM_dφ(sinφ*sinφ);
+            }
+        };
+        verifyInDomain(new double[] {toRadians(-89)},
+                       new double[] {toRadians(+89)},
+                       new int[] {ellipsoidal ? 100 : 20}, null);
     }
 }
