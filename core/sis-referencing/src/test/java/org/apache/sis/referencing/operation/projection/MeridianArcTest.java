@@ -32,7 +32,7 @@ import static org.junit.Assert.assertEquals;
 
 
 /**
- * Tests the meridional distances computed by {@link MeridionalDistanceBased}.
+ * Tests the distances along meridian arc computed by {@link MeridianArcBased}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -40,7 +40,7 @@ import static org.junit.Assert.assertEquals;
  * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase {
+public final strictfp class MeridianArcTest extends MapProjectionTestCase {
     /**
      * Threshold for comparison of floating point values.
      */
@@ -52,7 +52,7 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
      * @param  ellipsoidal   {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      * @return a test instance of the projection.
      */
-    private MeridionalDistanceBased create(final boolean ellipsoidal) {
+    private MeridianArcBased create(final boolean ellipsoidal) {
         final DefaultOperationMethod provider = new org.apache.sis.internal.referencing.provider.Sinusoidal();
         final Sinusoidal projection = new Sinusoidal(provider, parameters(provider, ellipsoidal));
         tolerance = NormalizedProjection.ANGULAR_TOLERANCE;     // = linear tolerance on a sphere of radius 1.
@@ -60,7 +60,7 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
     }
 
     /**
-     * Computes the meridional distance using equation given in EPSG guidance notes, which is also from Snyder book.
+     * Computes the distance on meridian using equation given in EPSG guidance notes, which is also from Snyder book.
      * The equation is given in Snyder 3-21. We use this equation as a reference for testing validity of other forms.
      * The equation is:
      *
@@ -73,9 +73,9 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
      * }
      *
      * @param  φ  latitude in radians.
-     * @return meridional distance from equator to the given latitude on an ellipsoid with semi-major axis of 1.
+     * @return distance on meridian from equator to the given latitude on an ellipsoid with semi-major axis of 1.
      */
-    private static double reference(final MeridionalDistanceBased projection, final double φ) {
+    private static double reference(final MeridianArcBased projection, final double φ) {
         final double e2 = projection.eccentricitySquared;
         final double e4 = e2*e2;
         final double e6 = e2*e4;
@@ -91,8 +91,8 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
 
     /**
      * Series expansion with more terms. We use this formulas as a reference for testing accuracy of the formula
-     * implemented by {@link MeridionalDistanceBased#meridianArc(double, double, double)} after making sure that
-     * this value is in agreement with {@link #reference(MeridionalDistanceBased, double)}.
+     * implemented by {@link MeridianArcBased#distance(double, double, double)} after making sure that this value
+     * is in agreement with {@link #reference(MeridianArcBased, double)}.
      *
      * <p>References:</p>
      * <ul>
@@ -103,7 +103,7 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
      *       on Wikipedia.</li>
      * </ul>
      */
-    private static double referenceMoreAccurate(final MeridionalDistanceBased projection, final double φ) {
+    private static double referenceMoreAccurate(final MeridianArcBased projection, final double φ) {
         final double e2  = projection.eccentricitySquared;
         final double e4  = e2*e2;
         final double e6  = e2*e4;
@@ -120,15 +120,15 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
     }
 
     /**
-     * Computes the latitude of given meridional distance using Newton's method. This method is described in
+     * Computes the latitude of a given distance along meridian arc using Newton's method. This method is described in
      * <a href="https://en.wikipedia.org/wiki/Meridian_arc#The_inverse_meridian_problem_for_the_ellipsoid">Wikipedia</a>.
      * This method depends on the forward method and can not be more accurate than that method. For testing purposes, we
      * use the {@linkplain #referenceMoreAccurate must accurate method implemented in this class} regardless performance.
      *
-     * @param  m  the meridional distance on ellipsoidal of semi-major axis length of 1.
-     * @return latitude for the given meridional distance, in radians.
+     * @param  m  the distance on ellipsoid of semi-major axis length of 1.
+     * @return latitude for the given distance on meridian arc, in radians.
      */
-    private static double inverse(final MeridionalDistanceBased projection, final double m) throws TransformException {
+    private static double inverse(final MeridianArcBased projection, final double m) throws TransformException {
         final double ITERATION_TOLERANCE = 1E-13;               // Should be less than `referenceMoreAccurate` accuracy.
         final double e2 = projection.eccentricitySquared;
         int i = NormalizedProjection.MAXIMUM_ITERATIONS;
@@ -157,48 +157,48 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
     }
 
     /**
-     * Compares {@link MeridionalDistanceBased#meridianArc(double, double, double)} with formulas taken as references.
+     * Compares {@link MeridianArcBased#distance(double, double, double)} with formulas taken as references.
      */
     @Test
     public void compareWithReference() {
-        final MeridionalDistanceBased projection = create(true);
+        final MeridianArcBased projection = create(true);
         final Random random = TestUtilities.createRandomNumberGenerator();
         for (int i=0; i<100; i++) {
             final double φ = random.nextDouble() * PI - PI/2;
             final double reference = reference(projection, φ);
             final double accurate  = referenceMoreAccurate(projection, φ);
-            final double actual    = projection.meridianArc(φ, sin(φ), cos(φ));
+            final double actual    = projection.distance(φ, sin(φ), cos(φ));
             assertEquals("Accurate formula disagrees with reference.", reference, accurate, 2E-10);
             assertEquals("Implementation disagrees with our formula.", accurate,  actual,   1E-13);
         }
     }
 
     /**
-     * Compares {@link MeridionalDistanceBased#meridianArc(double, double, double)} with spherical formula.
-     * In the spherical case, {@code meridianArc(φ)} should be equal to φ.
+     * Compares {@link MeridianArcBased#distance(double, double, double)} with spherical formula.
+     * In the spherical case, {@code distance(φ)} should be equal to φ.
      */
     @Test
     public void compareWithSphere() {
-        final MeridionalDistanceBased projection = create(false);
+        final MeridianArcBased projection = create(false);
         assertEquals("Expected spherical projection.", 0, projection.eccentricity, STRICT);
         final Random random = TestUtilities.createRandomNumberGenerator();
         for (int i=0; i<20; i++) {
             final double φ = random.nextDouble() * PI - PI/2;
-            assertEquals("When excentricity=0, meridianArc(φ, sinφ, cosφ) simplify to φ.",
-                    φ, projection.meridianArc(φ, sin(φ), cos(φ)), 1E-15);
+            assertEquals("When excentricity=0, distance(φ, sinφ, cosφ) simplify to φ.",
+                    φ, projection.distance(φ, sin(φ), cos(φ)), 1E-15);
         }
     }
 
     /**
-     * Compares {@link MeridionalDistanceBased#latitude(double)} with iterative approach.
-     * On WGS 84 ellipsoid, the meridional distance <var>M</var> is between ±π/2 × 0.9983243 approximately.
+     * Compares {@link MeridianArcBased#latitude(double)} with iterative approach.
+     * On WGS 84 ellipsoid, the distance <var>M</var> is between ±π/2 × 0.9983243 approximately.
      *
      * @throws TransformException if the iterative method does not converge.
      */
     @Test
     @DependsOnMethod("compareWithReference")
     public void compareInverse() throws TransformException {
-        final MeridionalDistanceBased projection = create(true);
+        final MeridianArcBased projection = create(true);
         final Random random = TestUtilities.createRandomNumberGenerator();
         for (int i=0; i<50; i++) {
             final double m = random.nextDouble() * (PI * 0.998) - (PI/2) * 0.998;
@@ -209,7 +209,7 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
     }
 
     /**
-     * Tests all methods, including {@link MeridionalDistanceBased#dM_dφ(double)}, on a sphere.
+     * Tests all methods, including {@link MeridianArcBased#dM_dφ(double)}, on a sphere.
      *
      * @throws TransformException if an iteration does not converge.
      */
@@ -220,7 +220,7 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
     }
 
     /**
-     * Tests all methods, including {@link MeridionalDistanceBased#dM_dφ(double)}, on an ellipsoid.
+     * Tests all methods, including {@link MeridianArcBased#dM_dφ(double)}, on an ellipsoid.
      *
      * @throws TransformException if an iteration does not converge.
      */
@@ -234,11 +234,11 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
      * Verifies transform, inverse transform and derivative in the [-90 … 90]° latitude range.
      */
     private void verifyInDomain(final boolean ellipsoidal, final int numCoordinates) throws TransformException {
-        final MeridionalDistanceBased projection = create(ellipsoidal);
+        final MeridianArcBased projection = create(ellipsoidal);
         derivativeDeltas = new double[] {toRadians(0.01)};
         transform = new AbstractMathTransform1D() {
             @Override public double transform (final double φ) {
-                return projection.meridianArc(φ, sin(φ), cos(φ));
+                return projection.distance(φ, sin(φ), cos(φ));
             }
             @Override public double derivative(final double φ) {
                 final double sinφ = sin(φ);

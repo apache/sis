@@ -28,7 +28,8 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 /**
  * The provider for <cite>"sinusoidal equal-area"</cite> projection.
- * This projection has no associated EPSG code.
+ * This is a pseudo-cylindrical (or "false cylindrical") projection.
+ * This projection method has no associated EPSG code.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

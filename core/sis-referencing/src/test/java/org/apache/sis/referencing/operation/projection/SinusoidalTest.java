@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @since   1.0
  * @module
  */
-@DependsOn(MeridionalDistanceTest.class)
+@DependsOn(MeridianArcTest.class)
 public final strictfp class SinusoidalTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link Sinusoidal} concatenated with the (de)normalization matrices.

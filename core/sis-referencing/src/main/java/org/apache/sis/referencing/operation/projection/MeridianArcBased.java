@@ -25,6 +25,7 @@ import static java.lang.Math.*;
 
 /**
  * Base class of map projections based on distance along the meridian from equator to latitude φ.
+ * Except for some cases like "Sinusoidal equal area", those projections are neither conformal nor equal-area.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rémi Maréchal (Geomatys)
@@ -35,39 +36,16 @@ import static java.lang.Math.*;
  * @since 1.0
  * @module
  */
-abstract class MeridionalDistanceBased extends NormalizedProjection {
+abstract class MeridianArcBased extends NormalizedProjection {
     /**
-     * {@code false} for using the original formulas as published by EPSG, or {@code true} for using formulas
-     * modified using trigonometric identities. Use of trigonometric identities reduces the amount of calls to
-     * {@link Math#sin(double)} and similar methods. Snyder 3-34 to 3-39 give the following identities:
-     *
-     * <pre>
-     *     If:     f(φ) = A⋅sin(2φ) + B⋅sin(4φ) + C⋅sin(6φ) + D⋅sin(8φ)
-     *     Then:   f(φ) = sin(2φ)⋅(A′ + cos(2φ)⋅(B′ + cos(2φ)⋅(C′ + D′⋅cos(2φ))))
-     *     Where:  A′ = A - C
-     *             B′ = 2B - 4D
-     *             C′ = 4C
-     *             D′ = 8D
-     * </pre>
-     *
-     * Similar, but with cosine instead than sin and the addition of a constant:
-     *
-     * <pre>
-     *     If:     f(φ) = A + B⋅cos(2φ) + C⋅cos(4φ) + D⋅cos(6φ) + E⋅cos(8φ)
-     *     Then:   f(φ) = A′ + cos(2φ)⋅(B′ + cos(2φ)⋅(C′ + cos(2φ)⋅(D′ + E′⋅cos(2φ))))
-     *     Where:  A′ = A - C + E
-     *             B′ = B - 3D
-     *             C′ = 2C - 8E
-     *             D′ = 4D
-     *             E′ = 8E
-     * </pre>
+     * For cross-version compatibility.
      */
-    private static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = true;
+    private static final long serialVersionUID = -1390453290591193455L;
 
     /**
-     * Coefficients for the formula implemented by the {@link #meridianArc(double, double, double)} method.
+     * Coefficients for the formula implemented by the {@link #distance(double, double, double)} method.
      * Values are computed by {@link #computeCoefficients(double)} in constructor or after deserialization.
-     * The values depends on the form of equation implemented by {@code meridianArc(…)}. We do not use the
+     * The values depends on the form of equation implemented by {@code distance(…)}. We do not use the
      * form commonly found in publications since a few algebraic operations allow to replace the
      * sin(2φ), sin(4φ), sin(6φ) and sin(8φ) terms by only sin²(φ), which is faster to calculate.
      * See {@link #computeCoefficients(double)} comments in method body for more information.
@@ -88,7 +66,7 @@ abstract class MeridionalDistanceBased extends NormalizedProjection {
     /**
      * Creates a new normalized projection from the parameters computed by the given initializer.
      */
-    MeridionalDistanceBased(final Initializer initializer) {
+    MeridianArcBased(final Initializer initializer) {
         super(initializer);
         DoubleDouble e1 = initializer.axisLengthRatio();
         e1.ratio_1m_1p();
@@ -98,7 +76,7 @@ abstract class MeridionalDistanceBased extends NormalizedProjection {
     /**
      * Creates a new projection initialized to the same parameters than the given one.
      */
-    MeridionalDistanceBased(final MeridionalDistanceBased other) {
+    MeridianArcBased(final MeridianArcBased other) {
         super(other);
         c0  = other.c0;
         c1  = other.c1;
@@ -123,7 +101,7 @@ abstract class MeridionalDistanceBased extends NormalizedProjection {
 
     /**
      * Computes the coefficients in the series expansions from the {@link #eccentricitySquared} value.
-     * This method shall be invoked after {@code MeridionalDistanceBased} construction or deserialization.
+     * This method shall be invoked after {@code MeridianArcBased} construction or deserialization.
      *
      * @param  ei  value of  [1 - √(1 - ℯ²)] / [1 + √(1 - ℯ²)]   (Snyder 3-24).
      */
@@ -148,7 +126,7 @@ abstract class MeridionalDistanceBased extends NormalizedProjection {
          *   Kawase, Kazushige (2011). A General Formula for Calculating Meridian Arc Length and its Application to Coordinate
          *   Conversion in the Gauss-Krüger Projection. Bulletin of the Geospatial Information Authority of Japan, Vol.59.
          *
-         * That more accurate formula is implemented in MeridionalDistanceTest for comparison purposes.
+         * That more accurate formula is implemented in MeridianArcTest for comparison purposes.
          * Then we transform that formula as below:
          *
          *    1) Multiply by b²/a = (1 - ℯ²). This is done by combining some terms. For example (1 - ℯ²)⋅(1 + ¾ℯ²) =
@@ -209,26 +187,29 @@ abstract class MeridionalDistanceBased extends NormalizedProjection {
     }
 
     /**
-     * Computes the meridional distance (M) from equator to a given latitude φ.
+     * Computes the distance (M) along meridian arc from equator to a given latitude φ.
      * Special cases:
+     *
      * <ul>
      *   <li>If φ is 0°, then this method returns 0.</li>
      *   <li>If φ=+π/2, then this method returns a value slightly smaller than +π/2, depending on the eccentricity.</li>
      *   <li>If φ=-π/2, then this method returns a value slightly greater than -π/2, depending on the eccentricity.</li>
      * </ul>
      *
-     * @param  φ     latitude for which to compute the meridional distance, in radians.
+     * This value is related to <cite>rectifying latitude</cite> by µ = (π/2)⋅(M/{@linkplain #c0}) (derived from Snyder 3-20).
+     *
+     * @param  φ     latitude for which to compute the distance, in radians.
      * @param  sinφ  value of sin(φ).
      * @param  cosφ  value of cos(φ).
-     * @return meridional distance for the given latitude on an ellipsoid of semi-major axis of 1.
+     * @return distance for the given latitude on an ellipsoid of semi-major axis of 1.
      */
-    final double meridianArc(final double φ, final double sinφ, final double cosφ) {
+    final double distance(final double φ, final double sinφ, final double cosφ) {
         final double sinφ2 = sinφ * sinφ;
         return c0*φ + cosφ*sinφ*(c1 + sinφ2*(c2 + sinφ2*(c3 + sinφ2*c4)));     // TODO: use Math.fma with JDK9.
     }
 
     /**
-     * Gets the derivative of this {@link #meridianArc(double, double, double)} method.
+     * Gets the derivative of this {@link #distance(double, double, double)} method.
      *
      * @return the derivative at the specified latitude.
      */
@@ -254,10 +235,9 @@ abstract class MeridionalDistanceBased extends NormalizedProjection {
         φ += sinφ*cosφ*(ci1 + sinφ2*(ci2 + sinφ2*(ci3 + sinφ2*ci4)));                   // Snyder 3-26.
         /*
          * We could improve accuracy by continuing from here with Newton's iterative method
-         * (see MeridionalDistanceTest.inverse(…) for implementation).  However that method
-         * requires calls to meridianArc(double, …), which is itself an approximation based
-         * on series expansion. Consequently the accuracy of iterative method can not be
-         * better than `meridianArc(…)` accuracy.
+         * (see MeridianArcTest.inverse(…) for implementation). However those iterations requires
+         * calls to distance(double, …), which is itself an approximation based on series expansion.
+         * Consequently the accuracy of iterative method can not be better than distance(…) accuracy.
          */
         return φ;
     }

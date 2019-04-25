@@ -42,7 +42,7 @@ import static org.apache.sis.internal.referencing.provider.Sinusoidal.*;
  * @since   1.0
  * @module
  */
-public class Sinusoidal extends MeridionalDistanceBased {
+public class Sinusoidal extends MeridianArcBased {
     /**
      * For cross-version compatibility.
      */

@@ -28,6 +28,7 @@ import static java.lang.Math.*;
  * All those projections have in common the property of being <cite>conformal</cite>, i.e. they preserve
  * angles locally. However we do not put this base class in public API because we do not (yet) guarantee
  * than all conformal projections will extend this base class.
+ * Note that no projection can be both conformal and equal-area.
  *
  * <p>This base class can been seen as a generalization of <cite>Lambert Conic Conformal</cite> projection,
  * which includes some other projections like Mercator and Polar Stereographic as special cases.
@@ -91,6 +92,29 @@ abstract class ConformalProjection extends NormalizedProjection {
      *                = 8⋅cosh²(θ) ⋅ sinh²(θ) + 1
      *                = 2⋅sinh²(2θ) + 1</li>
      * </ul>
+     *
+     * Snyder 3-34 to 3-39 uses above identities for deriving the following equivalence:
+     *
+     * <pre>
+     *     If:     f(φ) = A⋅sin(2φ) + B⋅sin(4φ) + C⋅sin(6φ) + D⋅sin(8φ)
+     *     Then:   f(φ) = sin(2φ)⋅(A′ + cos(2φ)⋅(B′ + cos(2φ)⋅(C′ + D′⋅cos(2φ))))
+     *     Where:  A′ = A - C
+     *             B′ = 2B - 4D
+     *             C′ = 4C
+     *             D′ = 8D
+     * </pre>
+     *
+     * Similar, but with cosine instead than sin and the addition of a constant:
+     *
+     * <pre>
+     *     If:     f(φ) = A + B⋅cos(2φ) + C⋅cos(4φ) + D⋅cos(6φ) + E⋅cos(8φ)
+     *     Then:   f(φ) = A′ + cos(2φ)⋅(B′ + cos(2φ)⋅(C′ + cos(2φ)⋅(D′ + E′⋅cos(2φ))))
+     *     Where:  A′ = A - C + E
+     *             B′ = B - 3D
+     *             C′ = 2C - 8E
+     *             D′ = 4D
+     *             E′ = 8E
+     * </pre>
      *
      * Note that since this boolean is static final, the compiler should exclude the code in the branch that is never
      * executed (no need to comment-out that code).
