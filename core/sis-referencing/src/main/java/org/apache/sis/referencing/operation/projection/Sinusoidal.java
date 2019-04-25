@@ -118,15 +118,28 @@ public class Sinusoidal extends MeridianArcBased {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double λ    = srcPts[srcOff  ];
-        final double φ    = srcPts[srcOff+1];
-        final double cosφ = cos(φ);
-        // TODO: replace by ellipsoidal formulas.
+        final double λ     = srcPts[srcOff  ];
+        final double φ     = srcPts[srcOff+1];
+        final double cosφ  = cos(φ);
+        final double sinφ  = sin(φ);
+        final double sinφ2 = sinφ * sinφ;
+        final double rν2   = 1 - eccentricitySquared * sinφ2;
+        final double rν    = sqrt(rν2);                                 // Reciprocal of the radius of curvature.
+        final double dx_dλ = cosφ / rν;                                 // Part of Snyder 30-8.
+        /*
+         * Note: in theory x/cos(φ) is indeterminate at φ=±π/2. However in this code,
+         * that indetermination never happen because there is no exact representation
+         * of π/2 in base 2, so cos(φ) can never return 0.
+         */
         if (dstPts != null) {
-            dstPts[dstOff]   = λ * cosφ;
-            dstPts[dstOff+1] = φ;
+            dstPts[dstOff  ] = dx_dλ * λ;
+            dstPts[dstOff+1] = distance(φ, sinφ, cosφ);
         }
-        return derivate ? new Matrix2(cosφ, -λ*sin(φ), 0, 1) : null;
+        if (!derivate) {
+            return null;
+        }
+        final double dx_dφ = λ * sinφ * (eccentricitySquared*(cosφ*cosφ) / rν2 - 1) / rν;
+        return new Matrix2(dx_dλ, dx_dφ, 0, dM_dφ(sinφ2));
     }
 
     /**
@@ -137,11 +150,12 @@ public class Sinusoidal extends MeridianArcBased {
     protected void inverseTransform(final double[] srcPts, final int srcOff,
                                     final double[] dstPts, final int dstOff)
     {
-        final double x = srcPts[srcOff  ];
-        final double φ = srcPts[srcOff+1];
-        // TODO: replace by ellipsoidal formulas.
-        dstPts[dstOff  ] = x / cos(φ);
-        dstPts[dstOff+1] = φ;
+        final double x    = srcPts[srcOff  ];
+        final double y    = srcPts[srcOff+1];
+        final double φ    = latitude(y);
+        final double sinφ = sin(φ);
+        dstPts[dstOff  ]  = x * sqrt(1 - eccentricitySquared * (sinφ*sinφ)) / cos(φ);           // Part of Snyder 30-11
+        dstPts[dstOff+1]  = φ;
     }
 
 
@@ -214,6 +228,11 @@ public class Sinusoidal extends MeridianArcBased {
         {
             final double x = srcPts[srcOff  ];
             final double φ = srcPts[srcOff+1];
+            /*
+             * Note: in theory x/cos(φ) is indeterminate at φ=±π/2. However in this code,
+             * that indetermination never happen because there is no exact representation
+             * of π/2 in base 2, so cos(φ) can never return 0.
+             */
             dstPts[dstOff  ] = x / cos(φ);              // Part of Snyder 30-5
             dstPts[dstOff+1] = φ;                       // Part of Snyder 30-6
         }

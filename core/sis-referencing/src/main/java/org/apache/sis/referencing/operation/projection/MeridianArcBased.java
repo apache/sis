@@ -230,9 +230,8 @@ abstract class MeridianArcBased extends NormalizedProjection {
     final double latitude(final double distance) {
         double    φ  = distance / rld;            // Rectifying latitude µ used as first approximation.
         double sinφ  = sin(φ);
-        double cosφ  = cos(φ);
         double sinφ2 = sinφ * sinφ;
-        φ += sinφ*cosφ*(ci1 + sinφ2*(ci2 + sinφ2*(ci3 + sinφ2*ci4)));                   // Snyder 3-26.
+        φ += cos(φ)*sinφ*(ci1 + sinφ2*(ci2 + sinφ2*(ci3 + sinφ2*ci4)));                 // Snyder 3-26.
         /*
          * We could improve accuracy by continuing from here with Newton's iterative method
          * (see MeridianArcTest.inverse(…) for implementation). However those iterations requires

@@ -61,11 +61,13 @@ public final strictfp class SinusoidalTest extends MapProjectionTestCase {
         createProjection(false);
         assertTrue(isInverseTransformSupported);
         verifyTransform(
-            new double[] {              // (λ,φ) coordinates in degrees to project.
-                  2,      1
+            new double[] {                  // (λ,φ) coordinates in degrees to project.
+                  2,              1,
+                -75 - -90,      -50         // Snyder example is relative to λ₀ = 90°W.
             },
-            new double[] {              // Expected (x,y) results in metres.
-               223368.12, 111701.07     // Values taken from PROJ.4.
+            new double[] {                  // Expected (x,y) results in metres.
+               223368.12,    111701.07,     // Values taken from PROJ.4.
+              1077000.98,  -5585053.61      // Values derived from Snyder page 365.
             });
     }
 
@@ -76,30 +78,49 @@ public final strictfp class SinusoidalTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @org.junit.Ignore("Ellipsoidal formula not yet implemented.")
     public void testEllipsoidal() throws FactoryException, TransformException {
         createProjection(true);
         assertTrue(isInverseTransformSupported);
         verifyTransform(
-            new double[] {              // (λ,φ) coordinates in degrees to project.
-                  2,      1
+            new double[] {                  // (λ,φ) coordinates in degrees to project.
+                  2,              1,
+                -75 - -90,      -50         // Snyder example is relative to λ₀ = 90°W.
             },
-            new double[] {              // Expected (x,y) results in metres.
-               222605.30, 110574.39     // Values taken from PROJ.4.
+            new double[] {                  // Expected (x,y) results in metres.
+               222605.30,    110574.39,     // Values taken from PROJ.4.
+              1075436.30,  -5540847.04      // Snyder values modified for WGS84 (Δx ≈ 35m and Δy ≈ 219m).
             });
     }
 
     /**
-     * Tests the derivatives at a few points. This method compares the derivatives computed by
-     * the projection with an estimation of derivatives computed by the finite differences method.
+     * Tests the derivatives at a few points on a sphere. This method compares the derivatives computed
+     * by the projection with an estimation of derivatives computed by the finite differences method.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
     @DependsOnMethod("testInverseDerivative")
-    public void testDerivative() throws FactoryException, TransformException {
+    public void testDerivativeOnSphere() throws FactoryException, TransformException {
         createProjection(false);
+        final double delta = (100.0 / 60) / 1852;               // Approximatively 100 metres.
+        derivativeDeltas = new double[] {delta, delta};
+        tolerance = 1E-6;                                       // More severe than Formulas.LINEAR_TOLERANCE.
+        verifyDerivative(15,  30);
+        verifyDerivative(10, -60);
+    }
+
+    /**
+     * Tests the derivatives at a few points on an ellipsoid. This method compares the derivatives computed
+     * by the projection with an estimation of derivatives computed by the finite differences method.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a point.
+     */
+    @Test
+    @DependsOnMethod("testInverseDerivative")
+    public void testDerivativeOnEllipsoid() throws FactoryException, TransformException {
+        createProjection(true);
         final double delta = (100.0 / 60) / 1852;               // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         tolerance = 1E-6;                                       // More severe than Formulas.LINEAR_TOLERANCE.
