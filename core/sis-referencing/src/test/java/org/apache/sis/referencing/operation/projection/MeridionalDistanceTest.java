@@ -21,6 +21,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform1D;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -54,27 +55,7 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
     private MeridionalDistanceBased create(final boolean ellipsoidal) {
         final DefaultOperationMethod provider = new org.apache.sis.internal.referencing.provider.Sinusoidal();
         final Sinusoidal projection = new Sinusoidal(provider, parameters(provider, ellipsoidal));
-        derivativeDeltas = new double[] {toRadians(0.01)};
         tolerance = NormalizedProjection.ANGULAR_TOLERANCE;     // = linear tolerance on a sphere of radius 1.
-        transform = new AbstractMathTransform1D() {
-            @Override public double transform (final double φ) {
-                return projection.meridianArc(φ, sin(φ), cos(φ));
-            }
-            @Override public double derivative(final double φ) {
-                final double sinφ = sin(φ);
-                return projection.dM_dφ(sinφ*sinφ);
-            }
-            @Override public MathTransform1D inverse() {
-                return new AbstractMathTransform1D() {
-                    @Override public double transform (final double M) throws TransformException {
-                        return projection.inverse(M);
-                    }
-                    @Override public double derivative(final double φ) throws TransformException {
-                        throw new TransformException("Unsupported");
-                    }
-                };
-            }
-        };
         return projection;
     }
 
@@ -139,6 +120,43 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
     }
 
     /**
+     * Computes the latitude of given meridional distance using Newton's method. This method is described in
+     * <a href="https://en.wikipedia.org/wiki/Meridian_arc#The_inverse_meridian_problem_for_the_ellipsoid">Wikipedia</a>.
+     * This method depends on the forward method and can not be more accurate than that method. For testing purposes, we
+     * use the {@linkplain #referenceMoreAccurate must accurate method implemented in this class} regardless performance.
+     *
+     * @param  m  the meridional distance on ellipsoidal of semi-major axis length of 1.
+     * @return latitude for the given meridional distance, in radians.
+     */
+    private static double inverse(final MeridionalDistanceBased projection, final double m) throws TransformException {
+        final double ITERATION_TOLERANCE = 1E-13;               // Should be less than `referenceMoreAccurate` accuracy.
+        final double e2 = projection.eccentricitySquared;
+        int i = NormalizedProjection.MAXIMUM_ITERATIONS;
+        double φ = m;                                           // Starting point.
+        do {
+            /*
+             * Meridian radius of curvature:   M(φ) = a(1 - ℯ²) / (1 - ℯ²sinφ)^(3/2).
+             * We compute the inverse of M.
+             */
+            final double sinφ = sin(φ);
+            double iM = 1 - e2*(sinφ*sinφ);
+            iM *= sqrt(iM);
+            iM /= (1 - e2);
+            /*
+             * From Wikipedia: Newton's method:  φᵢ₊₁ = φᵢ - [m(φᵢ) - m] / M(φᵢ)
+             * In principle the numerator should be the derivative of m(φᵢ), but
+             * the meridian radius of curvature can be used instead.
+             */
+            final double t = (m - referenceMoreAccurate(projection, φ)) * iM;
+            φ += t;
+            if (abs(t) <= ITERATION_TOLERANCE) {
+                return φ;
+            }
+        } while (--i >= 0);
+        throw new ProjectionException(Resources.format(Resources.Keys.NoConvergence));
+    }
+
+    /**
      * Compares {@link MeridionalDistanceBased#meridianArc(double, double, double)} with formulas taken as references.
      */
     @Test
@@ -172,48 +190,71 @@ public final strictfp class MeridionalDistanceTest extends MapProjectionTestCase
     }
 
     /**
-     * Tests the {@link MeridionalDistanceBased#inverse(double)} method on an ellipsoid.
+     * Compares {@link MeridionalDistanceBased#latitude(double)} with iterative approach.
+     * On WGS 84 ellipsoid, the meridional distance <var>M</var> is between ±π/2 × 0.9983243 approximately.
      *
-     * @throws TransformException should never happen.
+     * @throws TransformException if the iterative method does not converge.
      */
     @Test
     @DependsOnMethod("compareWithReference")
-    public void testInverse() throws TransformException {
-        isDerivativeSupported = false;                                      // For focusing on inverse transform.
-        create(true);
-        verifyInDomain(100);
+    public void compareInverse() throws TransformException {
+        final MeridionalDistanceBased projection = create(true);
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        for (int i=0; i<50; i++) {
+            final double m = random.nextDouble() * (PI * 0.998) - (PI/2) * 0.998;
+            final double reference = inverse(projection, m);
+            final double actual    = projection.latitude(m);
+            assertEquals("Implementation disagrees with reference.", reference, actual, 1E-10);
+        }
     }
 
     /**
-     * Tests the {@link MeridionalDistanceBased#dM_dφ(double)} method on a sphere.
+     * Tests all methods, including {@link MeridionalDistanceBased#dM_dφ(double)}, on a sphere.
      *
-     * @throws TransformException should never happen.
+     * @throws TransformException if an iteration does not converge.
      */
     @Test
-    @DependsOnMethod("compareWithReference")
-    public void testDerivativeOnSphere() throws TransformException {
-        isInverseTransformSupported = false;                                // For focusing on derivative.
-        create(false);
-        verifyInDomain(20);
+    @DependsOnMethod("compareInverse")
+    public void testOnSphere() throws TransformException {
+        verifyInDomain(false, 20);
     }
 
     /**
-     * Tests the {@link MeridionalDistanceBased#dM_dφ(double)} method on an ellipsoid.
+     * Tests all methods, including {@link MeridionalDistanceBased#dM_dφ(double)}, on an ellipsoid.
      *
-     * @throws TransformException should never happen.
+     * @throws TransformException if an iteration does not converge.
      */
     @Test
-    @DependsOnMethod("testDerivativeOnSphere")
-    public void testDerivativeOnEllipsoid() throws TransformException {
-        isInverseTransformSupported = false;                                // For focusing on derivative.
-        create(true);
-        verifyInDomain(100);
+    @DependsOnMethod("testOnSphere")
+    public void testOnEllipsoid() throws TransformException {
+        verifyInDomain(true, 100);
     }
 
     /**
      * Verifies transform, inverse transform and derivative in the [-90 … 90]° latitude range.
      */
-    private void verifyInDomain(final int numCoordinates) throws TransformException {
+    private void verifyInDomain(final boolean ellipsoidal, final int numCoordinates) throws TransformException {
+        final MeridionalDistanceBased projection = create(ellipsoidal);
+        derivativeDeltas = new double[] {toRadians(0.01)};
+        transform = new AbstractMathTransform1D() {
+            @Override public double transform (final double φ) {
+                return projection.meridianArc(φ, sin(φ), cos(φ));
+            }
+            @Override public double derivative(final double φ) {
+                final double sinφ = sin(φ);
+                return projection.dM_dφ(sinφ*sinφ);
+            }
+            @Override public MathTransform1D inverse() {
+                return new AbstractMathTransform1D() {
+                    @Override public double transform (final double M) throws TransformException {
+                        return projection.latitude(M);
+                    }
+                    @Override public double derivative(final double φ) throws TransformException {
+                        throw new TransformException("Unsupported");
+                    }
+                };
+            }
+        };
         verifyInDomain(new double[] {toRadians(-89)},
                        new double[] {toRadians(+89)},
                        new int[] {numCoordinates},

@@ -281,7 +281,7 @@ final class Initializer {
      * Returns {@code b/a} where {@code a} is the semi-major axis length and {@code b} the semi-minor axis length.
      * We retrieve this value from the eccentricity with {@code b/a = sqrt(1-ℯ²)}.
      *
-     * <p><b>Tip:</b> for ℯ₁ = [1 - √(1 - ℯ²)] / [1 + √(1 - ℯ²)]  (equation Snyder 3-24),
+     * <p><b>Tip:</b> for ℯ₁ = [1 - √(1 - ℯ²)] / [1 + √(1 - ℯ²)]  (Snyder 3-24),
      * invoke {@link DoubleDouble#ratio_1m_1p()} on the returned value.</p>
      */
     final DoubleDouble axisLengthRatio() {

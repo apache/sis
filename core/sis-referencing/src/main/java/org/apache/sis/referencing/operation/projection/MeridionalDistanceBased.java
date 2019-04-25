@@ -212,7 +212,9 @@ abstract class MeridionalDistanceBased extends NormalizedProjection {
      * Computes the meridional distance (M) from equator to a given latitude φ.
      * Special cases:
      * <ul>
-     *   <li>If <var>φ</var> is 0°, then this method returns 0.</li>
+     *   <li>If φ is 0°, then this method returns 0.</li>
+     *   <li>If φ=+π/2, then this method returns a value slightly smaller than +π/2, depending on the eccentricity.</li>
+     *   <li>If φ=-π/2, then this method returns a value slightly greater than -π/2, depending on the eccentricity.</li>
      * </ul>
      *
      * @param  φ     latitude for which to compute the meridional distance, in radians.
@@ -221,9 +223,8 @@ abstract class MeridionalDistanceBased extends NormalizedProjection {
      * @return meridional distance for the given latitude on an ellipsoid of semi-major axis of 1.
      */
     final double meridianArc(final double φ, final double sinφ, final double cosφ) {
-        final double sinφcosφ = cosφ * sinφ;
-        final double sinφ2    = sinφ * sinφ;
-        return c0*φ + sinφcosφ*(c1 + sinφ2*(c2 + sinφ2*(c3 + sinφ2*c4)));      // TODO: use Math.fma with JDK9.
+        final double sinφ2 = sinφ * sinφ;
+        return c0*φ + cosφ*sinφ*(c1 + sinφ2*(c2 + sinφ2*(c3 + sinφ2*c4)));     // TODO: use Math.fma with JDK9.
     }
 
     /**
@@ -244,14 +245,20 @@ abstract class MeridionalDistanceBased extends NormalizedProjection {
      *
      * @param  distance  meridian distance for which to compute the latitude.
      * @return the latitude of given meridian distance, in radians.
-     * @throws ProjectionException if the iteration does not converge.
      */
-    final double inverse(final double distance) throws ProjectionException {
+    final double latitude(final double distance) {
         double    φ  = distance / rld;            // Rectifying latitude µ used as first approximation.
         double sinφ  = sin(φ);
         double cosφ  = cos(φ);
         double sinφ2 = sinφ * sinφ;
         φ += sinφ*cosφ*(ci1 + sinφ2*(ci2 + sinφ2*(ci3 + sinφ2*ci4)));                   // Snyder 3-26.
+        /*
+         * We could improve accuracy by continuing from here with Newton's iterative method
+         * (see MeridionalDistanceTest.inverse(…) for implementation).  However that method
+         * requires calls to meridianArc(double, …), which is itself an approximation based
+         * on series expansion. Consequently the accuracy of iterative method can not be
+         * better than `meridianArc(…)` accuracy.
+         */
         return φ;
     }
 }
