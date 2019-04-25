@@ -18,16 +18,22 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.awt.image.DataBuffer;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.resources.Errors;
 import ucar.nc2.constants.CDM;
+import ucar.nc2.constants.CF;
 
 
 /**
@@ -463,5 +469,111 @@ public class Convention {
      */
     public Set<Linearizer> linearizers(final Decoder decoder) {
         return Collections.emptySet();
+    }
+
+    /**
+     * Returns the name of nodes (variables or groups) that may define the map projection parameters.
+     * The variables or groups will be inspected in the order they are declared in the returned set.
+     * For each string in the set, {@link Decoder#findNode(String)} is invoked.
+     *
+     * <p>The default implementation returns the value of {@link CF#GRID_MAPPING}, or an empty set
+     * if the given variable does not contain that attribute.</p>
+     *
+     * @param  data  the variable for which to get the grid mapping node.
+     * @return name of nodes that may contain the grid mapping, or an empty set if none.
+     */
+    public Set<String> gridMapping(final Variable data) {
+        final String mapping = data.getAttributeAsString(CF.GRID_MAPPING);
+        return (mapping != null) ? Collections.singleton(mapping) : Collections.emptySet();
+    }
+
+    /**
+     * Key associated to {@link GeographicCRS} value in the map returned by {@link #projection(Node)}.
+     */
+    protected static final String BASE_CRS = "base_crs";
+
+    /**
+     * Key associated to {@link MathTransform} value in the map returned by {@link #projection(Node)}.
+     */
+    protected static final String GRID_TO_CRS = "grid_to_crs";
+
+    /**
+     * Returns the map projection defined by the given node.  The given {@code node} is typically the variable named by a
+     * {@value CF#GRID_MAPPING} attribute (this is the preferred, CF-compliant approach), or if no grid mapping attribute
+     * is found {@code node} may be directly the data variable (non CF-compliant, but found in practice).
+     * If non-null, the returned map contains the following information:
+     *
+     * <table class="sis">
+     *   <caption>Content of the returned map</caption>
+     *   <tr>
+     *     <th>Key</th>
+     *     <th>Value type</th>
+     *     <th>Description</th>
+     *     <th>Default value</th>
+     *   </tr><tr>
+     *     <td>{@value CF#GRID_MAPPING_NAME}</td>
+     *     <td>{@link String}</td>
+     *     <td>Operation method name</td>
+     *     <td>Value of {@value CF#GRID_MAPPING_NAME} attribute.</td>
+     *   </tr><tr>
+     *     <td>{@value #BASE_CRS}</td>
+     *     <td>{@link GeographicCRS}</td>
+     *     <td>Base CRS of the map projection</td>
+     *     <td>Unknown datum based upon the GRS 1980 ellipsoid.</td>
+     *   </tr><tr>
+     *     <td>{@code "*_name"}</td>
+     *     <td>{@link String}</td>
+     *     <td>Name of a component (datum, base CRS, …)</td>
+     *     <td>Attributes found on grid mapping variable.</td>
+     *   </tr><tr>
+     *     <td>(projection-dependent)</td>
+     *     <td>{@link Number} or {@code double[]}</td>
+     *     <td>Map projection parameter values</td>
+     *     <td>Attributes found on grid mapping variable.</td>
+     *   </tr><tr>
+     *     <td>{@value #GRID_TO_CRS}</td>
+     *     <td>{@link MathTransform}</td>
+     *     <td>Conversion from pixel indices to CRS.</td>
+     *     <td>None (not from CF-convention).</td>
+     *   </tr>
+     * </table>
+     *
+     * Subclasses can override this method for example in order to override the {@value #BASE_CRS} attribute
+     * if they know that a particular product is based on "World Geodetic System 1984" or other datum.
+     *
+     * @param  node  the {@value CF#GRID_MAPPING} variable (preferred) or the data variable (as a fallback) from which to read attributes.
+     * @return the map projection definition, or {@code null} if none.
+     */
+    public Map<String,Object> projection(final Node node) {
+        final String method = node.getAttributeAsString(CF.GRID_MAPPING_NAME);
+        if (method == null) {
+            return null;
+        }
+        final Map<String,Object> definition = new HashMap<>();
+        definition.put(CF.GRID_MAPPING_NAME, method);
+        definition.put(BASE_CRS, CRSBuilder.DEFAULT.geographic());
+        for (final String name : node.getAttributeNames()) {
+            final String ln = name.toLowerCase(Locale.US);
+            final Object value;
+            if (ln.endsWith("_name")) {
+                value = node.getAttributeAsString(name);
+                if (value == null) continue;
+                break;
+            } else switch (ln) {
+                case CF.GRID_MAPPING_NAME: continue;        // Already stored.
+                case "towgs84":            continue;        // TODO: process in a future version.
+                case "crs_wkt":            continue;        // TODO: process in a future version.
+                default: {
+                    final double n = node.getAttributeAsNumber(name);
+                    if (Double.isNaN(n)) continue;
+                    value = n;
+                    break;
+                }
+            }
+            if (definition.putIfAbsent(name, value) != null) {
+                node.error(Convention.class, "projection", null, Errors.Keys.DuplicatedIdentifier_1, name);
+            }
+        }
+        return definition;
     }
 }

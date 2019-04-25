@@ -86,7 +86,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
      * clearly said "Unknown datum based upon the GRS 1980 ellipsoid" and for consistency with
      * {@link CommonCRS#SPHERE}, which also use GRS 1980.</div>
      */
-    private static final CommonCRS DEFAULT = CommonCRS.GRS1980;
+    static final CommonCRS DEFAULT = CommonCRS.GRS1980;
 
     /**
      * The type of datum as a GeoAPI sub-interface of {@link Datum}.

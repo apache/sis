@@ -1150,7 +1150,7 @@ public class GridGeometry implements Serializable {
 
         /**
          * The section under the {@linkplain #root} where to write elements.
-         * This is updated when {@link #section(int, short, Object, boolean)} is invoked.
+         * This is updated when {@link #section(int, short, boolean)} is invoked.
          */
         private TreeTable.Node section;
 
@@ -1198,7 +1198,7 @@ public class GridGeometry implements Serializable {
              * ├─ Dimension 0: [370 … 389]  (20 cells)
              * └─ Dimension 1: [ 41 … 340] (300 cells)
              */
-            if (section(EXTENT, Vocabulary.Keys.GridExtent, extent, false)) {
+            if (section(EXTENT, Vocabulary.Keys.GridExtent, false)) {
                 extent.appendTo(buffer, vocabulary);
                 writeNodes();
             }
@@ -1207,7 +1207,7 @@ public class GridGeometry implements Serializable {
              * ├─ Geodetic latitude:  -69.75 … 80.25  Δφ = 0.5°
              * └─ Geodetic longitude:   4.75 … 14.75  Δλ = 0.5°
              */
-            if (section(ENVELOPE, Vocabulary.Keys.Envelope, envelope, false)) {
+            if (section(ENVELOPE, Vocabulary.Keys.Envelope, false)) {
                 final boolean appendResolution = (bitmask & RESOLUTION) != 0 && resolution != null;
                 final TableAppender table = new TableAppender(buffer, "");
                 final int dimension = envelope.getDimension();
@@ -1235,7 +1235,7 @@ public class GridGeometry implements Serializable {
                 }
                 GridExtent.flush(table);
                 writeNodes();
-            } else if (section(RESOLUTION, Vocabulary.Keys.Resolution, resolution, false)) {
+            } else if (section(RESOLUTION, Vocabulary.Keys.Resolution, false)) {
                 /*
                  * Example: Resolution
                  * └─ 0.5° × 0.5°
@@ -1251,7 +1251,7 @@ public class GridGeometry implements Serializable {
              * Example: Coordinate reference system
              * └─ EPSG:4326 — WGS 84 (φ,λ)
              */
-            if (section(CRS, Vocabulary.Keys.CoordinateRefSys, crs, false)) {
+            if (section(CRS, Vocabulary.Keys.CoordinateRefSys, false)) {
                 final Identifier id = IdentifiedObjects.getIdentifier(crs, null);
                 if (id != null) {
                     buffer.append(IdentifiedObjects.toString(id)).append(" — ");
@@ -1264,7 +1264,7 @@ public class GridGeometry implements Serializable {
              * └─ 2D → 2D non linear in 2
              */
             final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
-            if (section(GRID_TO_CRS, Vocabulary.Keys.Conversion, gridToCRS, matrix != null)) {
+            if (section(GRID_TO_CRS, Vocabulary.Keys.Conversion, matrix != null)) {
                 if (matrix != null) {
                     writeNode(Matrices.toString(matrix));
                 } else {
@@ -1291,10 +1291,9 @@ public class GridGeometry implements Serializable {
          * @param  property    one of {@link #EXTENT}, {@link #ENVELOPE}, {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
          * @param  title       the {@link Vocabulary} key for the title to show for this section, if formatted.
          * @param  cellCenter  whether to add a "origin in cell center" text in the title. This is relevant only for conversion.
-         * @param  value       the value to be formatted in that section.
          * @return {@code true} if the caller shall format the value.
          */
-        private boolean section(final int property, final short title, final Object value, final boolean cellCenter) {
+        private boolean section(final int property, final short title, final boolean cellCenter) {
             if ((bitmask & property) != 0) {
                 CharSequence text = vocabulary.getString(title);
                 if (cellCenter) {
@@ -1305,7 +1304,7 @@ public class GridGeometry implements Serializable {
                 }
                 section = root.newChild();
                 section.setValue(TableColumn.VALUE_AS_TEXT, text);
-                if (value != null) {
+                if (isDefined(property)) {
                     return true;
                 }
                 writeNode(vocabulary.getString(Vocabulary.Keys.Unspecified));

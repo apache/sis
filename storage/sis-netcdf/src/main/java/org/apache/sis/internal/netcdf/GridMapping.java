@@ -21,12 +21,21 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.text.ParseException;
+import java.util.Collections;
 import org.opengis.util.FactoryException;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.CoordinateOperationFactory;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -101,19 +110,20 @@ final class GridMapping {
      */
     static GridMapping forVariable(final Variable variable) {
         final Map<Object,GridMapping> gridMapping = variable.decoder.gridMapping;
-        final String name = variable.getAttributeAsString(CF.GRID_MAPPING);
-        if (name != null) {
+        for (final String name : variable.decoder.convention().gridMapping(variable)) {
             GridMapping gm = gridMapping.get(name);
             if (gm != null) {
                 return gm;
             }
-            for (final Variable mapping : variable.decoder.getVariables()) {
-                if (name.equals(mapping.getName())) {
+            final Node mapping = variable.decoder.findNode(name);
+            if (mapping != null) {
+                gm = parseProjectionParameters(mapping);
+                if (gm == null) {
                     gm = parseGeoTransform(mapping);
-                    if (gm != null) {
-                        gridMapping.put(name, gm);
-                        return gm;
-                    }
+                }
+                if (gm != null) {
+                    gridMapping.put(name, gm);
+                    return gm;
                 }
             }
         }
@@ -123,12 +133,39 @@ final class GridMapping {
          */
         GridMapping gm = gridMapping.get(variable);
         if (gm == null) {
-            gm = parseNonStandard(variable);
+            gm = parseProjectionParameters(variable);
+            if (gm == null) {
+                gm = parseNonStandard(variable);
+            }
             if (gm != null) {
                 gridMapping.put(variable, gm);
             }
         }
         return gm;
+    }
+
+    /**
+     * If the netCDF variable defines explicitly the map projection method and its parameters, returns those parameters.
+     * Otherwise returns {@code null}.
+     */
+    private static GridMapping parseProjectionParameters(final Node node) {
+        final Map<String, Object> definition = node.decoder.convention().projection(node);
+        if (definition != null) try {
+            final CoordinateOperationFactory factory = node.decoder.getCoordinateOperationFactory();
+            final OperationMethod method = factory.getOperationMethod((String) definition.get(CF.GRID_MAPPING_NAME));
+            final ParameterValueGroup parameters = method.getParameters().createValue();
+            // TODO: set parameter values.
+            final Map<String,?> name = Collections.singletonMap(Conversion.NAME_KEY, "NetCDF projection");      // TODO: find a better name.
+            final Conversion conversion = factory.createDefiningConversion(name, method, parameters);
+
+            final GeographicCRS baseCRS = (GeographicCRS) definition.get(Convention.BASE_CRS);
+            final CartesianCS cs = CommonCRS.WGS84.universal(0,0).getCoordinateSystem();                     // TODO
+            final ProjectedCRS crs = node.decoder.getCRSFactory().createProjectedCRS(name, baseCRS, conversion, cs);
+            return new GridMapping(crs, null, false);
+        } catch (ClassCastException | IllegalArgumentException | FactoryException e) {
+            canNotCreate(node, Resources.Keys.CanNotCreateCRS_3, e);
+        }
+        return null;
     }
 
     /**
@@ -145,7 +182,7 @@ final class GridMapping {
      * @param  mapping  the variable that contains attributes giving CRS definition.
      * @return the mapping, or {@code null} if this method did not found grid geometry attributes.
      */
-    private static GridMapping parseGeoTransform(final Variable mapping) {
+    private static GridMapping parseGeoTransform(final Node mapping) {
         final String wkt = mapping.getAttributeAsString("spatial_ref");
         final String gtr = mapping.getAttributeAsString("GeoTransform");
         if (wkt == null && gtr == null) {
@@ -177,12 +214,12 @@ final class GridMapping {
 
     /**
      * Tries to parse the Coordinate Reference System using ESRI conventions or other non-CF conventions.
-     * This method is invoked as a fallback if {@link #parseGeoTransform(Variable)} found no grid geometry.
+     * This method is invoked as a fallback if {@link #parseGeoTransform(Node)} found no grid geometry.
      *
      * @param  variable  the variable potentially with attributes to parse.
      * @return whether this method found grid geometry attributes.
      */
-    private static GridMapping parseNonStandard(final Variable variable) {
+    private static GridMapping parseNonStandard(final Node variable) {
         boolean isEPSG = false;
         String code = variable.getAttributeAsString("ESRI_pe_string");
         if (code == null) {
@@ -217,8 +254,8 @@ final class GridMapping {
      * Creates a coordinate reference system by parsing a Well Known Text (WKT) string. The WKT is presumed
      * to use the GDAL flavor of WKT 1, and warnings are redirected to decoder listeners.
      */
-    private static CoordinateReferenceSystem createFromWKT(final Variable variable, final String wkt) throws ParseException {
-        final WKTFormat f = new WKTFormat(variable.getLocale(), variable.decoder.getTimeZone());
+    private static CoordinateReferenceSystem createFromWKT(final Node node, final String wkt) throws ParseException {
+        final WKTFormat f = new WKTFormat(node.getLocale(), node.decoder.getTimeZone());
         f.setConvention(org.apache.sis.io.wkt.Convention.WKT1_COMMON_UNITS);
         final CoordinateReferenceSystem crs = (CoordinateReferenceSystem) f.parseObject(wkt);
         final Warnings warnings = f.getWarnings();
@@ -227,7 +264,7 @@ final class GridMapping {
             record.setLoggerName(Modules.NETCDF);
             record.setSourceClassName(Variable.class.getCanonicalName());
             record.setSourceMethodName("getGridGeometry");
-            variable.decoder.listeners.warning(record);
+            node.decoder.listeners.warning(record);
         }
         return crs;
     }
@@ -239,9 +276,9 @@ final class GridMapping {
      * @param  key  one of {@link Resources.Keys#CanNotCreateCRS_3} or {@link Resources.Keys#CanNotCreateGridGeometry_3}.
      * @param  ex   the exception that occurred while creating the CRS or grid geometry.
      */
-    private static void canNotCreate(final Variable variable, final short key, final Exception ex) {
-        NamedElement.warning(variable.decoder.listeners, Variable.class, "getGridGeometry", ex, null,
-                key, variable.decoder.getFilename(), variable.getName(), ex.getLocalizedMessage());
+    private static void canNotCreate(final Node node, final short key, final Exception ex) {
+        NamedElement.warning(node.decoder.listeners, Variable.class, "getGridGeometry", ex, null,
+                key, node.decoder.getFilename(), node.getName(), ex.getLocalizedMessage());
     }
 
     /**
@@ -275,7 +312,6 @@ final class GridMapping {
             final CoordinateReferenceSystem templateCRS = template.getCoordinateReferenceSystem();
             if (givenCRS == null) {
                 givenCRS = templateCRS;
-                isSameGrid = false;
             } else {
                 /*
                  * The CRS built by Grid may have a different axis order than the CRS specified by grid mapping attributes.
@@ -312,7 +348,7 @@ final class GridMapping {
                     if (c != null) components[count++] = c;
                 }
                 switch (count) {
-                    case 0: break;                                          // Should never happen.
+                    case 0: /* Keep givenCRS as-is */ break;                // Should never happen.
                     case 1: givenCRS = components[0]; break;
                     default: {
                         components = ArraysExt.resize(components, count);
@@ -328,7 +364,7 @@ final class GridMapping {
                 }
                 isSameGrid = templateCRS.equals(givenCRS);
                 if (isSameGrid) {
-                    givenCRS = templateCRS;                                 // Keep using existing instance if appropriate.
+                    givenCRS = templateCRS;                                 // Keep existing instance if appropriate.
                 }
             }
         }
@@ -343,7 +379,6 @@ final class GridMapping {
             final MathTransform templateG2C = template.getGridToCRS(anchor);
             if (givenG2C == null) {
                 givenG2C = templateG2C;
-                isSameGrid = false;
             } else try {
                 int count = 0;
                 MathTransform[] components = new MathTransform[3];

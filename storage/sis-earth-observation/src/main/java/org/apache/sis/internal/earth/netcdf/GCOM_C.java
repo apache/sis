@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.regex.Pattern;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.internal.netcdf.Convention;
@@ -27,8 +28,10 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.netcdf.Linearizer;
+import org.apache.sis.internal.netcdf.Node;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.referencing.CommonCRS;
 
 
 /**
@@ -40,30 +43,30 @@ import org.apache.sis.measure.NumberRange;
  *     group: Geometry_data {
  *         variables:
  *             float Latitude(161, 126)
- *             string Unit = "degree"
- *             string Dim0 = "Line grids"
- *             string Dim1 = "Pixel grids"
- *             int Resampling_interval = 10
- *         float Longitude(161, 126)
- *             string Unit = "degree"
- *             string Dim0 = "Line grids"
- *             string Dim1 = "Pixel grids"
- *             int Resampling_interval = 10
+ *                 string Unit = "degree"
+ *                 string Dim0 = "Line grids"
+ *                 string Dim1 = "Pixel grids"
+ *                 int Resampling_interval = 10
+ *             float Longitude(161, 126)
+ *                 string Unit = "degree"
+ *                 string Dim0 = "Line grids"
+ *                 string Dim1 = "Pixel grids"
+ *                 int Resampling_interval = 10
  *     }
  *     group: Image_data {
  *         variables:
  *             ushort SST(1599, 1250)                   // Note: different size than (latitude, longitude) variables.
- *             string dim0 = "Line grids"
- *             string dim1 = "Piexl grids"              // Note: typo in "Pixel"
- *             ushort Error_DN           = 65535
- *             ushort Land_DN            = 65534
- *             ushort Cloud_error_DN     = 65533
- *             ushort Retrieval_error_DN = 65532
- *             ushort Maximum_valid_DN   = 65531
- *             ushort Minimum_valid_DN   = 0
- *             float  Slope              = 0.0012
- *             float  Offset             = -10
- *             string Unit               = "degree"
+ *                 string dim0 = "Line grids"
+ *                 string dim1 = "Piexl grids"              // Note: typo in "Pixel"
+ *                 ushort Error_DN           = 65535
+ *                 ushort Land_DN            = 65534
+ *                 ushort Cloud_error_DN     = 65533
+ *                 ushort Retrieval_error_DN = 65532
+ *                 ushort Maximum_valid_DN   = 65531
+ *                 ushort Minimum_valid_DN   = 0
+ *                 float  Slope              = 0.0012
+ *                 float  Offset             = -10
+ *                 string Unit               = "degree"
  *     }
  *     group: Global_attributes {
  *         string :Algorithm_developer = "Japan Aerospace Exploration Agency (JAXA)"
@@ -132,6 +135,11 @@ public final class GCOM_C extends Convention {
         m.put(AttributeNames.TIME.MAXIMUM,        "Scene_end_time");           // identification­Info / extent / temporal­Element / extent
         ATTRIBUTES = m;
     }
+
+    /**
+     * Name of the group defining map projection parameters, localization grid, <i>etc</i>.
+     */
+    private static final String GEOMETRY_DATA = "Geometry_data";
 
     /**
      * Names of attributes for sample values having "no-data" meaning.
@@ -242,7 +250,7 @@ public final class GCOM_C extends Convention {
              * In a future version we should probably keep them but store them in their own resource aggregate.
              */
             final String group = variable.getGroupName();
-            if ("Geometry_data".equalsIgnoreCase(group)) {
+            if (GEOMETRY_DATA.equalsIgnoreCase(group)) {
                 role = VariableRole.OTHER;
             }
         }
@@ -320,5 +328,57 @@ public final class GCOM_C extends Convention {
     @Override
     public Set<Linearizer> linearizers(final Decoder decoder) {
         return Collections.singleton(Linearizer.GROUND_TRACK);
+    }
+
+    /**
+     * Returns the name of nodes (variables or groups) that may define the map projection parameters.
+     * For GCOM files, this is {@value #GEOMETRY_DATA}.
+     *
+     * @param  data  the variable for which to get the grid mapping node.
+     * @return name of nodes that may contain the grid mapping, or an empty set if none.
+     */
+    @Override
+    public Set<String> gridMapping(final Variable data) {
+        final Set<String> names = new LinkedHashSet<>(4);
+        names.add(GEOMETRY_DATA);
+        names.addAll(super.gridMapping(data));              // Fallback if geometry data does not exist.
+        return names;
+    }
+
+    /**
+     * Returns the map projection definition for the given data variable.
+     * This method expects the following attribute names in the {@value #GEOMETRY_DATA} group:
+     *
+     * {@preformat text
+     *     group: Geometry_data {
+     *         // group attributes:
+     *         string Image_projection      = "EQA (sinusoidal equal area) projection from 0-deg longitude"
+     *         float  Upper_left_longitude  = 115.17541
+     *         float  Upper_left_latitude   =  80.0
+     *         float  Upper_right_longitude = 172.7631
+     *         float  Upper_right_latitude  =  80.0
+     *         float  Lower_left_longitude  =  58.47609
+     *         float  Lower_left_latitude   =  70.0
+     *         float  Lower_right_longitude =  87.714134
+     *         float  Lower_right_latitude  =  70.0
+     *     }
+     * }
+     *
+     * @param  node  the group of variables from which to read attributes.
+     * @return the map projection definition, or {@code null} if none.
+     */
+    @Override
+    public Map<String,Object> projection(final Node node) {
+        String method = node.getAttributeAsString("Image_projection");
+        if (method != null) {
+            if (method.matches("EQA\\b.*")) {
+                method = "Sinusoidal";
+                final Map<String,Object> definition = new HashMap<>(4);
+                definition.put(BASE_CRS, CommonCRS.WGS84.geographic());
+                definition.put("grid_mapping_name", method);
+                return definition;
+            }
+        }
+        return super.projection(node);
     }
 }

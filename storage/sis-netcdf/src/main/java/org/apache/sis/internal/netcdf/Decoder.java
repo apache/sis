@@ -379,4 +379,12 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
             list.add(crs);
         }
     }
+
+    /**
+     * Returns the variable or group of the given name. Groups exist in netCDF 4 but not in netCDF 3.
+     *
+     * @param  name  name of the variable or group to search.
+     * @return the variable or group of the given name, or {@code null} if none.
+     */
+    protected abstract Node findNode(String name);
 }
