@@ -18,14 +18,18 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Map;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.text.ParseException;
-import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -34,12 +38,18 @@ import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.datum.DatumFactory;
+import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
@@ -49,11 +59,13 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
+import org.apache.sis.measure.Units;
 import ucar.nc2.constants.CF;
 
 
@@ -63,12 +75,10 @@ import ucar.nc2.constants.CF;
  * (e.g. GDAL or ESRI conventions). This class uses a different approach than {@link CRSBuilder},
  * which creates Coordinate Reference Systems by inspecting coordinate system axes.
  *
- * <p>Current implementation does not yet parse CF-convention attributes.
- * Only some GDAL and ESRI custom attributes are currently supported.</p>
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
+ * @see <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#grid-mappings-and-projections">CF-conventions</a>
  * @see <a href="https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/StandardCoordinateTransforms.html">UCAR projections</a>
  *
  * @since 1.0
@@ -147,28 +157,151 @@ final class GridMapping {
 
     /**
      * If the netCDF variable defines explicitly the map projection method and its parameters, returns those parameters.
-     * Otherwise returns {@code null}.
+     * Otherwise returns {@code null}. The given {@code node} argument is typically a dummy variable referenced by value
+     * of the {@value CF#GRID_MAPPING} attribute on the real data variable (as required by CF-conventions), but may also
+     * be something else (the data variable itself, or a group, <i>etc.</i>). That node, together with the attributes to
+     * be parsed, depend on the {@link Convention} instance.
+     *
+     * @see <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#grid-mappings-and-projections">CF-conventions</a>
      */
     private static GridMapping parseProjectionParameters(final Node node) {
-        final Map<String, Object> definition = node.decoder.convention().projection(node);
+        final Map<String,Object> definition = node.decoder.convention().projection(node);
         if (definition != null) try {
-            final CoordinateOperationFactory factory = node.decoder.getCoordinateOperationFactory();
-            final OperationMethod method = factory.getOperationMethod((String) definition.get(CF.GRID_MAPPING_NAME));
+            /*
+             * Fetch now numerical values that are not map projection parameters.
+             * This step needs to be done before to try to set parameter values.
+             */
+            final Object greenwichLongitude = definition.remove("longitude_of_prime_meridian");
+            /*
+             * Prepare the block of projection parameters. The set of legal parameter depends on the map projection.
+             * We assume that all numerical values are map projection parameters; character sequences (assumed to be
+             * component names) are handled later. The CF-conventions use parameter names that are slightly different
+             * than OGC names, but Apache SIS implementations of map projections know how to handle them, including
+             * the redundant parameters like "inverse_flattening" and "earth_radius".
+             */
+            final CoordinateOperationFactory opFactory = node.decoder.getCoordinateOperationFactory();
+            final OperationMethod method = opFactory.getOperationMethod((String) definition.get(CF.GRID_MAPPING_NAME));
             final ParameterValueGroup parameters = method.getParameters().createValue();
-            // TODO: set parameter values.
-            final Map<String,?> name = Collections.singletonMap(Conversion.NAME_KEY, "NetCDF projection");      // TODO: find a better name.
-            final Conversion conversion = factory.createDefiningConversion(name, method, parameters);
-
-            final GeographicCRS baseCRS = (GeographicCRS) definition.get(Convention.BASE_CRS);
+            for (final Map.Entry<String,Object> entry : definition.entrySet()) {
+                final String name  = entry.getKey();
+                final Object value = entry.getValue();
+                if (value instanceof Number || value instanceof double[]) try {
+                    parameters.parameter(name).setValue(value);
+                } catch (IllegalArgumentException ex) {
+                    warning(node, ex, Resources.Keys.CanNotSetProjectionParameter_5, node.decoder.getFilename(),
+                            node.getName(), name, value, ex.getLocalizedMessage());
+                }
+            }
+            /*
+             * In principle, projection parameters do not include the semi-major and semi-minor axis lengths.
+             * But if those information are provided, then we use them for building the geodetic reference frame.
+             * Otherwise a default reference frame will be used.
+             */
+            final CRSFactory crsFactory = node.decoder.getCRSFactory();
+            GeographicCRS baseCRS = (GeographicCRS) definition.get(Convention.BASE_CRS);
+            if (baseCRS == null) {
+                final DatumFactory datumFactory = node.decoder.getDatumFactory();
+                final CommonCRS defaultDefinitions = CRSBuilder.DEFAULT;
+                boolean isSpecified = false;
+                /*
+                 * Prime meridian built from "longitude_of_prime_meridian".
+                 */
+                final PrimeMeridian meridian;
+                if (greenwichLongitude instanceof Number) {
+                    final double longitude = ((Number) greenwichLongitude).doubleValue();
+                    final Map<String,?> properties = properties(definition, "prime_meridian_name", null);
+                    meridian = datumFactory.createPrimeMeridian(properties, longitude, Units.DEGREE);
+                    isSpecified = true;
+                } else {
+                    meridian = defaultDefinitions.primeMeridian();
+                }
+                /*
+                 * Ellipsoid built from "semi_major_axis", "semi_minor_axis", etc.
+                 */
+                Ellipsoid ellipsoid;
+                try {
+                    final double semiMajor = parameters.parameter(Constants.SEMI_MAJOR).doubleValue();
+                    final Map<String,?> properties = properties(definition, "reference_ellipsoid_name", null);
+                    if (parameters.parameter(Constants.IS_IVF_DEFINITIVE).booleanValue()) {
+                        final double ivf = parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue();
+                        ellipsoid = datumFactory.createFlattenedSphere(properties, semiMajor, ivf, Units.METRE);
+                    } else {
+                        final double semiMinor = parameters.parameter(Constants.SEMI_MINOR).doubleValue();
+                        ellipsoid = datumFactory.createEllipsoid(properties, semiMajor, semiMinor, Units.METRE);
+                    }
+                    isSpecified = true;
+                } catch (ParameterNotFoundException | IllegalStateException e) {
+                    // Ignore - may be normal if the map projection is not an Apache SIS implementation.
+                    ellipsoid = defaultDefinitions.ellipsoid();
+                }
+                /*
+                 * Geodetic datum built from "towgs84" and above properties.
+                 */
+                final Object bursaWolf = definition.remove("towgs84");
+                final GeodeticDatum datum;
+                if (isSpecified | bursaWolf != null) {
+                    Map<String,Object> properties = properties(definition, "horizontal_datum_name", ellipsoid);
+                    if (bursaWolf instanceof BursaWolfParameters) {
+                        properties = new HashMap<>(properties);
+                        properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, bursaWolf);
+                        isSpecified = true;
+                    }
+                    datum = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
+                } else {
+                    datum = defaultDefinitions.datum();
+                }
+                /*
+                 * Geographic CRS form all above properties.
+                 */
+                if (isSpecified) {
+                    final Map<String,?> properties = properties(definition, "geographic_coordinate_system_name", datum);
+                    baseCRS = crsFactory.createGeographicCRS(properties, datum, defaultDefinitions.geographic().getCoordinateSystem());
+                } else {
+                    baseCRS = defaultDefinitions.geographic();
+                }
+            }
+            /*
+             * Create defining conversion from the parameters and the projected CRS.
+             */
+            Map<String,?> properties = properties(definition, "conversion_name", node.getName());
+            final Conversion conversion = opFactory.createDefiningConversion(properties, method, parameters);
             final CartesianCS cs = CommonCRS.WGS84.universal(0,0).getCoordinateSystem();                     // TODO
-            final ProjectedCRS crs = node.decoder.getCRSFactory().createProjectedCRS(name, baseCRS, conversion, cs);
-
+            properties = properties(definition, "projected_coordinate_system_name", conversion);
+            final ProjectedCRS crs = crsFactory.createProjectedCRS(properties, baseCRS, conversion, cs);
+            /*
+             * Build the "grid to CRS" if present. This is not present in CF-convention,
+             * but may be present in some non-CF conventions.
+             */
             final MathTransform gridToCRS = node.decoder.convention().gridToCRS(node, crs);
             return new GridMapping(crs, gridToCRS, false);
         } catch (ClassCastException | IllegalArgumentException | FactoryException | TransformException e) {
             canNotCreate(node, Resources.Keys.CanNotCreateCRS_3, e);
         }
         return null;
+    }
+
+    /**
+     * Returns the {@code properties} argument value to give to the factory methods of geodetic objects.
+     * The returned map contains at least an entry for {@value IdentifiedObject#NAME_KEY} with the name
+     * fetched from the value of the attribute named {@code nameAttribute}.
+     *
+     * @param definition     map containing the attribute values.
+     * @param nameAttribute  name of the attribute from which to get the name.
+     * @param fallback       fallback as an {@link IdentifiedObject} (from which the name will be copied),
+     *                       or a character sequence, or {@code null} for "Unnamed" localized string.
+     */
+    private static Map<String,Object> properties(final Map<String,Object> definition, final String nameAttribute, final Object fallback) {
+        Object name = definition.remove(nameAttribute);
+        if (name == null) {
+            if (fallback instanceof IdentifiedObject) {
+                name = ((IdentifiedObject) fallback).getName();
+            } else if (fallback != null) {
+                name = fallback;
+            } else {
+                name = Vocabulary.formatInternational(Vocabulary.Keys.Unnamed);
+            }
+        }
+        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
     }
 
     /**
@@ -280,8 +413,14 @@ final class GridMapping {
      * @param  ex   the exception that occurred while creating the CRS or grid geometry.
      */
     private static void canNotCreate(final Node node, final short key, final Exception ex) {
-        NamedElement.warning(node.decoder.listeners, Variable.class, "getGridGeometry", ex, null,
-                key, node.decoder.getFilename(), node.getName(), ex.getLocalizedMessage());
+        warning(node, ex, key, node.decoder.getFilename(), node.getName(), ex.getLocalizedMessage());
+    }
+
+    /**
+     * Logs a warning, presuming that {@link GridMapping} are invoked (indirectly) from {@link Variable#getGridGeometry()}.
+     */
+    private static void warning(final Node node, final Exception ex, final short key, final Object... arguments) {
+        NamedElement.warning(node.decoder.listeners, Variable.class, "getGridGeometry", ex, null, key, arguments);
     }
 
     /**

@@ -496,6 +496,8 @@ public class Convention {
 
     /**
      * Key associated to {@link GeographicCRS} value in the map returned by {@link #projection(Node)}.
+     * The geographic CRS associated to this key <strong>must</strong> have (latitude, longitude) axes
+     * in degrees.
      */
     protected static final String BASE_CRS = "base_crs";
 
@@ -526,25 +528,28 @@ public class Convention {
      *     <td>{@code "*_name"}</td>
      *     <td>{@link String}</td>
      *     <td>Name of a component (datum, base CRS, …)</td>
-     *     <td>Attributes found on grid mapping variable.</td>
+     *     <td>Attribute values found on grid mapping variable.</td>
      *   </tr><tr>
      *     <td>(projection-dependent)</td>
      *     <td>{@link Number} or {@code double[]}</td>
      *     <td>Map projection parameter values</td>
-     *     <td>Attributes found on grid mapping variable.</td>
+     *     <td>Attribute values found on grid mapping variable.</td>
      *   </tr><tr>
      *     <td>{@code "towgs84"}</td>
      *     <td>{@link BursaWolfParameters}</td>
      *     <td>Datum shift information.</td>
-     *     <td>Attributes found on grid mapping variable.</td>
+     *     <td>Built from {@code "towgs84"} attribute values.</td>
      *   </tr>
      * </table>
      *
-     * Subclasses can override this method for example in order to override the {@value #BASE_CRS} attribute
+     * The {@value CF#GRID_MAPPING_NAME} entry is mandatory. All other entries are optional.
+     *
+     * <p>Subclasses can override this method for example in order to override the {@value #BASE_CRS} attribute
      * if they know that a particular product is based on "World Geodetic System 1984" or other datum.
+     * The returned map must be modifiable for allowing callers to modify its content.</p>
      *
      * @param  node  the {@value CF#GRID_MAPPING} variable (preferred) or the data variable (as a fallback) from which to read attributes.
-     * @return the map projection definition, or {@code null} if none.
+     * @return the map projection definition as a modifiable map, or {@code null} if none.
      *
      * @see <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#grid-mappings-and-projections">CF-conventions</a>
      */
@@ -555,7 +560,6 @@ public class Convention {
         }
         final Map<String,Object> definition = new HashMap<>();
         definition.put(CF.GRID_MAPPING_NAME, method);
-        definition.put(BASE_CRS, CRSBuilder.DEFAULT.geographic());
         for (final String name : node.getAttributeNames()) {
             final String ln = name.toLowerCase(Locale.US);
             final Object value;
@@ -587,9 +591,15 @@ public class Convention {
                     continue;
                 }
                 default: {
-                    final double n = node.getAttributeAsNumber(name);
-                    if (Double.isNaN(n)) continue;
-                    value = n;
+                    /*
+                     * Assume that all map projection parameters in netCDF files are numbers or array of numbers.
+                     */
+                    final Object[] values = node.getAttributeValues(name, true);
+                    switch (values.length) {
+                        case 0:  continue;                       // Attribute not found or not numeric.
+                        case 1:  value = values[0]; break;       // This is the usual case.
+                        default: value = Vector.create(values, false).doubleValues(); break;
+                    }
                     break;
                 }
             }

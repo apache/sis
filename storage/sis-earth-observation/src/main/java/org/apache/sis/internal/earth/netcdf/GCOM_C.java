@@ -373,7 +373,7 @@ public final class GCOM_C extends Convention {
      * }
      *
      * @param  node  the group of variables from which to read attributes.
-     * @return the map projection definition, or {@code null} if none.
+     * @return the map projection definition as a modifiable map, or {@code null} if none.
      */
     @Override
     public Map<String,Object> projection(final Node node) {
@@ -396,6 +396,7 @@ public final class GCOM_C extends Convention {
         final Map<String,Object> definition = new HashMap<>(4);
         definition.put(BASE_CRS, CommonCRS.SPHERE.geographic());
         definition.put("grid_mapping_name", method);
+        definition.put("conversion_name", name);
         return definition;
     }
 
