@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.regex.Pattern;
+import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.internal.netcdf.Decoder;
@@ -29,9 +32,14 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.VariableRole;
 import org.apache.sis.internal.netcdf.Linearizer;
 import org.apache.sis.internal.netcdf.Node;
+import org.apache.sis.internal.referencing.provider.Sinusoidal;
+import org.apache.sis.internal.referencing.provider.Equirectangular;
+import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
-import org.apache.sis.measure.NumberRange;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.measure.NumberRange;
 
 
 /**
@@ -369,16 +377,80 @@ public final class GCOM_C extends Convention {
      */
     @Override
     public Map<String,Object> projection(final Node node) {
-        String method = node.getAttributeAsString("Image_projection");
-        if (method != null) {
-            if (method.matches("EQA\\b.*")) {
-                method = "Sinusoidal";
-                final Map<String,Object> definition = new HashMap<>(4);
-                definition.put(BASE_CRS, CommonCRS.WGS84.geographic());
-                definition.put("grid_mapping_name", method);
-                return definition;
-            }
+        final String name = node.getAttributeAsString("Image_projection");
+        if (name == null) {
+            return super.projection(node);
         }
-        return super.projection(node);
+        final String method;
+        final int s = name.indexOf(' ');
+        final String code = (s >= 0) ? name.substring(0, s) : name;
+        if (code.equalsIgnoreCase("EQA")) {
+            method = Sinusoidal.NAME;
+        } else if (code.equalsIgnoreCase("EQR")) {
+            method = Equirectangular.NAME;
+        } else if (code.equalsIgnoreCase("PS")) {
+            method = PolarStereographicA.NAME;
+        } else {
+            return super.projection(node);
+        }
+        final Map<String,Object> definition = new HashMap<>(4);
+        definition.put(BASE_CRS, CommonCRS.SPHERE.geographic());
+        definition.put("grid_mapping_name", method);
+        return definition;
+    }
+
+    /**
+     * The attributes storing values of the 4 corners in degrees with (latitude, longitude) axis order.
+     * This is used by {@link #projection(Node)} for inferring a "grid to CRS" transform.
+     */
+    private static final String[] CORNERS = {
+        "Upper_left_latitude",
+        "Upper_left_longitude",
+        "Upper_right_latitude",
+        "Upper_right_longitude",
+        "Lower_left_latitude",
+        "Lower_left_longitude",
+        "Lower_right_latitude",
+        "Lower_right_longitude"
+    };
+
+    /**
+     * Returns the <cite>grid to CRS</cite> transform for the given node.
+     * This method is invoked after call to {@link #projection(Node)} resulted in creation of a projected CRS.
+     * The {@linkplain ProjectedCRS#getBaseCRS() base CRS} shall have (latitude, longitude) axes in degrees.
+     *
+     * @param  node  the same node than the one given to {@link #projection(Node)}.
+     * @param  crs   the projected coordinate reference system created from the information given by {@code node}.
+     * @return the "grid corner to CRS" transform, or {@code null} if none or unknown.
+     * @throws TransformException if a coordinate operation was required but failed.
+     */
+    @Override
+    public MathTransform gridToCRS(final Node node, final ProjectedCRS crs) throws TransformException {
+        final double[] corners = new double[CORNERS.length];
+        for (int i=0; i<corners.length; i++) {
+            corners[i] = node.getAttributeAsNumber(CORNERS[i]);
+        }
+        crs.getConversionFromBase().getMathTransform().transform(corners, 0, corners, 0, corners.length / 2);
+        /*
+         * Compute spans of data (typically in metres) as the average of the spans on both sides
+         * (width as length of top and bottom edges, height as length of left and right edges).
+         * This code assumes (easting, northing) axes — this is currently not verified.
+         */
+        double sx = ((corners[2] - corners[0]) + (corners[6] - corners[4])) / 2;
+        double sy = ((corners[1] - corners[5]) + (corners[3] - corners[7])) / 2;
+        /*
+         * Transform the spans into pixel sizes (resolution), then build the transform.
+         */
+        sx /= (node.getAttributeAsNumber("Number_of_pixels") - 1);
+        sy /= (node.getAttributeAsNumber("Number_of_lines")  - 1);
+        if (Double.isFinite(sx) && Double.isFinite(sy)) {
+            final Matrix3 m = new Matrix3();
+            m.m00 =  sx;
+            m.m11 = -sy;
+            m.m02 = corners[0];
+            m.m12 = corners[1];
+            return MathTransforms.linear(m);
+        }
+        return super.gridToCRS(node, crs);
     }
 }

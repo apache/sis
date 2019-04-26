@@ -29,6 +29,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
@@ -161,8 +162,10 @@ final class GridMapping {
             final GeographicCRS baseCRS = (GeographicCRS) definition.get(Convention.BASE_CRS);
             final CartesianCS cs = CommonCRS.WGS84.universal(0,0).getCoordinateSystem();                     // TODO
             final ProjectedCRS crs = node.decoder.getCRSFactory().createProjectedCRS(name, baseCRS, conversion, cs);
-            return new GridMapping(crs, null, false);
-        } catch (ClassCastException | IllegalArgumentException | FactoryException e) {
+
+            final MathTransform gridToCRS = node.decoder.convention().gridToCRS(node, crs);
+            return new GridMapping(crs, gridToCRS, false);
+        } catch (ClassCastException | IllegalArgumentException | FactoryException | TransformException e) {
             canNotCreate(node, Resources.Keys.CanNotCreateCRS_3, e);
         }
         return null;

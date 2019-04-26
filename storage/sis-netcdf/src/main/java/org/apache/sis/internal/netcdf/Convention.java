@@ -24,12 +24,17 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.awt.image.DataBuffer;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.operation.MathTransform;
-import org.apache.sis.internal.referencing.LazySet;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
+import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import ucar.nc2.constants.CDM;
@@ -474,10 +479,12 @@ public class Convention {
     /**
      * Returns the name of nodes (variables or groups) that may define the map projection parameters.
      * The variables or groups will be inspected in the order they are declared in the returned set.
-     * For each string in the set, {@link Decoder#findNode(String)} is invoked.
+     * For each string in the set, {@link Decoder#findNode(String)} is invoked and the return value
+     * (if non-null) is given to {@link #projection(Node)}.
      *
      * <p>The default implementation returns the value of {@link CF#GRID_MAPPING}, or an empty set
-     * if the given variable does not contain that attribute.</p>
+     * if the given variable does not contain that attribute. Subclasses may override for example
+     * if grid mapping information are hard-coded in a particular node for a specific product.</p>
      *
      * @param  data  the variable for which to get the grid mapping node.
      * @return name of nodes that may contain the grid mapping, or an empty set if none.
@@ -493,15 +500,10 @@ public class Convention {
     protected static final String BASE_CRS = "base_crs";
 
     /**
-     * Key associated to {@link MathTransform} value in the map returned by {@link #projection(Node)}.
-     */
-    protected static final String GRID_TO_CRS = "grid_to_crs";
-
-    /**
-     * Returns the map projection defined by the given node.  The given {@code node} is typically the variable named by a
-     * {@value CF#GRID_MAPPING} attribute (this is the preferred, CF-compliant approach), or if no grid mapping attribute
-     * is found {@code node} may be directly the data variable (non CF-compliant, but found in practice).
-     * If non-null, the returned map contains the following information:
+     * Returns the map projection defined by the given node. The given {@code node} argument is one of the nodes
+     * named by {@link #gridMapping(Variable)} (typically a variable named by {@value CF#GRID_MAPPING} attribute),
+     * or if no grid mapping attribute is found {@code node} may be directly the data variable (non CF-compliant,
+     * but found in practice). If non-null, the returned map contains the following information:
      *
      * <table class="sis">
      *   <caption>Content of the returned map</caption>
@@ -531,10 +533,10 @@ public class Convention {
      *     <td>Map projection parameter values</td>
      *     <td>Attributes found on grid mapping variable.</td>
      *   </tr><tr>
-     *     <td>{@value #GRID_TO_CRS}</td>
-     *     <td>{@link MathTransform}</td>
-     *     <td>Conversion from pixel indices to CRS.</td>
-     *     <td>None (not from CF-convention).</td>
+     *     <td>{@code "towgs84"}</td>
+     *     <td>{@link BursaWolfParameters}</td>
+     *     <td>Datum shift information.</td>
+     *     <td>Attributes found on grid mapping variable.</td>
      *   </tr>
      * </table>
      *
@@ -543,6 +545,8 @@ public class Convention {
      *
      * @param  node  the {@value CF#GRID_MAPPING} variable (preferred) or the data variable (as a fallback) from which to read attributes.
      * @return the map projection definition, or {@code null} if none.
+     *
+     * @see <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#grid-mappings-and-projections">CF-conventions</a>
      */
     public Map<String,Object> projection(final Node node) {
         final String method = node.getAttributeAsString(CF.GRID_MAPPING_NAME);
@@ -561,8 +565,27 @@ public class Convention {
                 break;
             } else switch (ln) {
                 case CF.GRID_MAPPING_NAME: continue;        // Already stored.
-                case "towgs84":            continue;        // TODO: process in a future version.
-                case "crs_wkt":            continue;        // TODO: process in a future version.
+                case "towgs84": {
+                    /*
+                     * Conversion to WGS 84 datum may be specified as Bursa-Wolf parameters. Encoding this information
+                     * with the CRS is deprecated (the hard-coded WGS84 target datum is not always suitable) but still
+                     * a common practice as of 2019. We require at least the 3 translation parameters.
+                     */
+                    final Object[] values = node.getAttributeValues(name, true);
+                    if (values.length < 3) continue;
+                    final BursaWolfParameters bp = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
+                    bp.setValues(Vector.create(values, false).doubleValues());
+                    value = bp;
+                    break;
+                }
+                case "crs_wkt": {
+                    /*
+                     * CF-Convention said that even if a WKT definition is provided, other attributes shall be present
+                     * and have precedence over the WKT definition. Consequently purpose of WKT in netCDF files is not
+                     * obvious (except for CompoundCRS). We ignore them for now.
+                     */
+                    continue;
+                }
                 default: {
                     final double n = node.getAttributeAsNumber(name);
                     if (Double.isNaN(n)) continue;
@@ -575,5 +598,23 @@ public class Convention {
             }
         }
         return definition;
+    }
+
+    /**
+     * Returns the <cite>grid to CRS</cite> transform for the given node. This method is invoked after call
+     * to {@link #projection(Node)} method resulted in creation of a projected coordinate reference system.
+     * The {@linkplain ProjectedCRS#getBaseCRS() base CRS} shall have (latitude, longitude) axes in degrees.
+     * The projected CRS axes may have any order and units.
+     * The returned transform, if non-null, shall map cell corners.
+     *
+     * <p>The default implementation returns {@code null}.</p>
+     *
+     * @param  node  the same node than the one given to {@link #projection(Node)}.
+     * @param  crs   the projected coordinate reference system created from the information given by {@code node}.
+     * @return the "grid corner to CRS" transform, or {@code null} if none or unknown.
+     * @throws TransformException if a coordinate operation was required but failed.
+     */
+    public MathTransform gridToCRS(final Node node, final ProjectedCRS crs) throws TransformException {
+        return null;
     }
 }

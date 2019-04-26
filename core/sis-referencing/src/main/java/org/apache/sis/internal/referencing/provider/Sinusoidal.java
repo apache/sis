@@ -48,6 +48,11 @@ public final class Sinusoidal extends MapProjection {
     private static final long serialVersionUID = -3236247448683326299L;
 
     /**
+     * Name of this projection.
+     */
+    public static final String NAME = "Sinusoidal";
+
+    /**
      * The operation parameter descriptor for the <cite>Longitude of projection center</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
@@ -71,7 +76,7 @@ public final class Sinusoidal extends MapProjection {
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder().setCodeSpace(Citations.OGC, Constants.OGC)
-                .addName      ("Sinusoidal")
+                .addName      (NAME)
                 .addName      ("Sanson-Flamsteed")
                 .addName      (Citations.GEOTIFF,  "CT_Sinusoidal")
                 .addIdentifier(Citations.GEOTIFF,  "24")
