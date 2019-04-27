@@ -169,6 +169,30 @@ public final class GCOM_W extends Convention {
         return role;
     }
 
+
+    // ┌────────────────────────────────────────────────────────────────────────────────────────────┐
+    // │                                      COVERAGE DOMAIN                                       │
+    // └────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+    /**
+     * Returns an enumeration of two-dimensional non-linear transforms that may be tried in attempts to make
+     * localization grid more linear.
+     *
+     * @param  decoder  the netCDF file for which to determine linearizers that may possibly apply.
+     * @return enumeration of two-dimensional non-linear transforms to try.
+     */
+    @Override
+    public Set<Linearizer> linearizers(final Decoder decoder) {
+        return Collections.singleton(Linearizer.GROUND_TRACK);
+    }
+
+
+    // ┌────────────────────────────────────────────────────────────────────────────────────────────┐
+    // │                                       COVERAGE RANGE                                       │
+    // └────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
     /**
      * Returns no-data values declared for the given variable.
      *
@@ -206,17 +230,5 @@ public final class GCOM_W extends Convention {
             if (Double.isFinite(offset)) tr.setOffset(offset);
         }
         return tr;
-    }
-
-    /**
-     * Returns an enumeration of two-dimensional non-linear transforms that may be tried in attempts to make
-     * localization grid more linear.
-     *
-     * @param  decoder  the netCDF file for which to determine linearizers that may possibly apply.
-     * @return enumeration of two-dimensional non-linear transforms to try.
-     */
-    @Override
-    public Set<Linearizer> linearizers(final Decoder decoder) {
-        return Collections.singleton(Linearizer.GROUND_TRACK);
     }
 }

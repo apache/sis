@@ -218,32 +218,6 @@ public final class GCOM_C extends Convention {
     }
 
     /**
-     * Returns the attribute-specified name of the dimension at the given index, or {@code null} if unspecified.
-     * See {@link Convention#nameOfDimension(Variable, int)} for a more detailed explanation of this information.
-     * The implementation in this class fixes a typo found in some {@code "Dim1"} attribute values and generates
-     * the values when they are known to be missing.
-     *
-     * @param  dataOrAxis  the variable for which to get the attribute-specified name of the dimension.
-     * @param  index       zero-based index of the dimension for which to get the name.
-     * @return dimension name as specified by attributes, or {@code null} if none.
-     */
-    @Override
-    public String nameOfDimension(final Variable dataOrAxis, final int index) {
-        String name = super.nameOfDimension(dataOrAxis, index);
-        if (name == null) {
-            if ("QA_flag".equals(dataOrAxis.getName())) {       // Missing Dim0 and Dim1 for this variable in GCOM-C version 1.00.
-                switch (index) {
-                    case 0: name = "Line grids";  break;
-                    case 1: name = "Pixel grids"; break;
-                }
-            }
-        } else if ("Piexl grids".equalsIgnoreCase(name)) {      // Typo in GCOM-C version 1.00.
-            name = "Pixel grids";
-        }
-        return name;
-    }
-
-    /**
      * Returns whether the given variable is used as a coordinate system axis, a coverage or something else.
      *
      * @param  variable  the variable for which to get the role, or {@code null}.
@@ -264,6 +238,192 @@ public final class GCOM_C extends Convention {
         }
         return role;
     }
+
+
+    // ┌────────────────────────────────────────────────────────────────────────────────────────────┐
+    // │                                      COVERAGE DOMAIN                                       │
+    // └────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+    /**
+     * Returns the attribute-specified name of the dimension at the given index, or {@code null} if unspecified.
+     * See {@link Convention#nameOfDimension(Variable, int)} for a more detailed explanation of this information.
+     * The implementation in this class fixes a typo found in some {@code "Dim1"} attribute values and generates
+     * the values when they are known to be missing.
+     *
+     * @param  dataOrAxis  the variable for which to get the attribute-specified name of the dimension.
+     * @param  index       zero-based index of the dimension for which to get the name.
+     * @return dimension name as specified by attributes, or {@code null} if none.
+     */
+    @Override
+    public String nameOfDimension(final Variable dataOrAxis, final int index) {
+        String name = super.nameOfDimension(dataOrAxis, index);
+        if (name == null) {
+            if ("QA_flag".equals(dataOrAxis.getName())) {
+                /*
+                 * The "QA_flag" variable is missing "Dim0" and "Dim1" attribute in GCOM-C version 1.00.
+                 * However not all GCOM-C files use a localization grid. We use the presence of spatial
+                 * resolution attribute as a sentinel value for now.
+                 */
+                if (dataOrAxis.getAttributeType("Spatial_resolution") != null) {
+                    switch (index) {
+                        case 0: name = "Line grids";  break;
+                        case 1: name = "Pixel grids"; break;
+                    }
+                }
+            }
+        } else if ("Piexl grids".equalsIgnoreCase(name)) {      // Typo in GCOM-C version 1.00.
+            name = "Pixel grids";
+        }
+        return name;
+    }
+
+    /**
+     * Returns an enumeration of two-dimensional non-linear transforms that may be tried in attempts to make
+     * localization grid more linear.
+     *
+     * @param  decoder  the netCDF file for which to determine linearizers that may possibly apply.
+     * @return enumeration of two-dimensional non-linear transforms to try.
+     */
+    @Override
+    public Set<Linearizer> linearizers(final Decoder decoder) {
+        return Collections.singleton(Linearizer.GROUND_TRACK);
+    }
+
+    /**
+     * Returns the name of nodes (variables or groups) that may define the map projection parameters.
+     * For GCOM files, this is {@value #GEOMETRY_DATA}.
+     *
+     * @param  data  the variable for which to get the grid mapping node.
+     * @return name of nodes that may contain the grid mapping, or an empty set if none.
+     */
+    @Override
+    public Set<String> nameOfMappingNode(final Variable data) {
+        final Set<String> names = new LinkedHashSet<>(4);
+        names.add(GEOMETRY_DATA);
+        names.addAll(super.nameOfMappingNode(data));            // Fallback if geometry data does not exist.
+        return names;
+    }
+
+    /**
+     * Returns the map projection definition for the given data variable.
+     * This method expects the following attribute names in the {@value #GEOMETRY_DATA} group:
+     *
+     * {@preformat text
+     *     group: Geometry_data {
+     *         // group attributes:
+     *         string Image_projection      = "EQA (sinusoidal equal area) projection from 0-deg longitude"
+     *         float  Upper_left_longitude  = 115.17541
+     *         float  Upper_left_latitude   =  80.0
+     *         float  Upper_right_longitude = 172.7631
+     *         float  Upper_right_latitude  =  80.0
+     *         float  Lower_left_longitude  =  58.47609
+     *         float  Lower_left_latitude   =  70.0
+     *         float  Lower_right_longitude =  87.714134
+     *         float  Lower_right_latitude  =  70.0
+     *     }
+     * }
+     *
+     * @param  node  the group of variables from which to read attributes.
+     * @return the map projection definition as a modifiable map, or {@code null} if none.
+     */
+    @Override
+    public Map<String,Object> projection(final Node node) {
+        final String name = node.getAttributeAsString("Image_projection");
+        if (name == null) {
+            return super.projection(node);
+        }
+        final String method;
+        final int s = name.indexOf(' ');
+        final String code = (s >= 0) ? name.substring(0, s) : name;
+        if (code.equalsIgnoreCase("EQA")) {
+            method = Sinusoidal.NAME;
+        } else if (code.equalsIgnoreCase("EQR")) {
+            method = Equirectangular.NAME;
+        } else if (code.equalsIgnoreCase("PS")) {
+            method = PolarStereographicA.NAME;
+        } else {
+            return super.projection(node);
+        }
+        final Map<String,Object> definition = new HashMap<>(4);
+        definition.put("grid_mapping_name", method);
+        definition.put(CONVERSION_NAME, name);
+        return definition;
+    }
+
+    /**
+     * The attributes storing values of the 4 corners in degrees with (latitude, longitude) axis order.
+     * This is used by {@link #projection(Node)} for inferring a "grid to CRS" transform.
+     */
+    private static final String[] CORNERS = {
+        "Upper_left_latitude",
+        "Upper_left_longitude",
+        "Upper_right_latitude",
+        "Upper_right_longitude",
+        "Lower_left_latitude",
+        "Lower_left_longitude",
+        "Lower_right_latitude",
+        "Lower_right_longitude"
+    };
+
+    /**
+     * Returns the <cite>grid to CRS</cite> transform for the given node.
+     * This method is invoked after call to {@link #projection(Node)} resulted in creation of a projected CRS.
+     * The {@linkplain ProjectedCRS#getBaseCRS() base CRS} shall have (latitude, longitude) axes in degrees.
+     *
+     * @param  node       the same node than the one given to {@link #projection(Node)}.
+     * @param  baseToCRS  conversion from (latitude, longitude) in degrees to the projected CRS.
+     * @return the "grid corner to CRS" transform, or {@code null} if none or unknown.
+     * @throws TransformException if a coordinate operation was required but failed.
+     */
+    @Override
+    public MathTransform gridToCRS(final Node node, final MathTransform baseToCRS) throws TransformException {
+        final double[] corners = new double[CORNERS.length];
+        for (int i=0; i<corners.length; i++) {
+            corners[i] = node.getAttributeAsNumber(CORNERS[i]);
+        }
+        baseToCRS.transform(corners, 0, corners, 0, corners.length / 2);
+        /*
+         * Compute spans of data (typically in metres) as the average of the spans on both sides
+         * (width as length of top and bottom edges, height as length of left and right edges).
+         * This code assumes (easting, northing) axes — this is currently not verified.
+         */
+        double sx = ((corners[2] - corners[0]) + (corners[6] - corners[4])) / 2;
+        double sy = ((corners[1] - corners[5]) + (corners[3] - corners[7])) / 2;
+        /*
+         * Transform the spans into pixel sizes (resolution), then build the transform.
+         */
+        sx /= (node.getAttributeAsNumber("Number_of_pixels") - 1);
+        sy /= (node.getAttributeAsNumber("Number_of_lines")  - 1);
+        if (Double.isFinite(sx) && Double.isFinite(sy)) {
+            final Matrix3 m = new Matrix3();
+            m.m00 =  sx;
+            m.m11 = -sy;
+            m.m02 = corners[0];
+            m.m12 = corners[1];
+            return MathTransforms.linear(m);
+        }
+        return super.gridToCRS(node, baseToCRS);
+    }
+
+    /**
+     * Returns the default prime meridian, ellipsoid, datum or CRS to use if no information is found in the netCDF file.
+     * While GCOM documentation said that the datum is WGS 84, we have found that the map projection applied use spherical
+     * formulas.
+     *
+     * @param  spherical  ignored, since we assume a sphere in all cases.
+     * @return information about geodetic objects to use if no explicit information is found in the file.
+     */
+    @Override
+    public CommonCRS defaultHorizontalCRS(final boolean spherical) {
+        return CommonCRS.SPHERE;
+    }
+
+
+    // ┌────────────────────────────────────────────────────────────────────────────────────────────┐
+    // │                                       COVERAGE RANGE                                       │
+    // └────────────────────────────────────────────────────────────────────────────────────────────┘
+
 
     /**
      * Returns the range of valid values, or {@code null} if unknown.
@@ -324,134 +484,5 @@ public final class GCOM_C extends Convention {
             if (Double.isFinite(offset)) tr.setOffset(offset);
         }
         return tr;
-    }
-
-    /**
-     * Returns an enumeration of two-dimensional non-linear transforms that may be tried in attempts to make
-     * localization grid more linear.
-     *
-     * @param  decoder  the netCDF file for which to determine linearizers that may possibly apply.
-     * @return enumeration of two-dimensional non-linear transforms to try.
-     */
-    @Override
-    public Set<Linearizer> linearizers(final Decoder decoder) {
-        return Collections.singleton(Linearizer.GROUND_TRACK);
-    }
-
-    /**
-     * Returns the name of nodes (variables or groups) that may define the map projection parameters.
-     * For GCOM files, this is {@value #GEOMETRY_DATA}.
-     *
-     * @param  data  the variable for which to get the grid mapping node.
-     * @return name of nodes that may contain the grid mapping, or an empty set if none.
-     */
-    @Override
-    public Set<String> gridMapping(final Variable data) {
-        final Set<String> names = new LinkedHashSet<>(4);
-        names.add(GEOMETRY_DATA);
-        names.addAll(super.gridMapping(data));              // Fallback if geometry data does not exist.
-        return names;
-    }
-
-    /**
-     * Returns the map projection definition for the given data variable.
-     * This method expects the following attribute names in the {@value #GEOMETRY_DATA} group:
-     *
-     * {@preformat text
-     *     group: Geometry_data {
-     *         // group attributes:
-     *         string Image_projection      = "EQA (sinusoidal equal area) projection from 0-deg longitude"
-     *         float  Upper_left_longitude  = 115.17541
-     *         float  Upper_left_latitude   =  80.0
-     *         float  Upper_right_longitude = 172.7631
-     *         float  Upper_right_latitude  =  80.0
-     *         float  Lower_left_longitude  =  58.47609
-     *         float  Lower_left_latitude   =  70.0
-     *         float  Lower_right_longitude =  87.714134
-     *         float  Lower_right_latitude  =  70.0
-     *     }
-     * }
-     *
-     * @param  node  the group of variables from which to read attributes.
-     * @return the map projection definition as a modifiable map, or {@code null} if none.
-     */
-    @Override
-    public Map<String,Object> projection(final Node node) {
-        final String name = node.getAttributeAsString("Image_projection");
-        if (name == null) {
-            return super.projection(node);
-        }
-        final String method;
-        final int s = name.indexOf(' ');
-        final String code = (s >= 0) ? name.substring(0, s) : name;
-        if (code.equalsIgnoreCase("EQA")) {
-            method = Sinusoidal.NAME;
-        } else if (code.equalsIgnoreCase("EQR")) {
-            method = Equirectangular.NAME;
-        } else if (code.equalsIgnoreCase("PS")) {
-            method = PolarStereographicA.NAME;
-        } else {
-            return super.projection(node);
-        }
-        final Map<String,Object> definition = new HashMap<>(4);
-        definition.put(BASE_CRS, CommonCRS.SPHERE.geographic());
-        definition.put("grid_mapping_name", method);
-        definition.put("conversion_name", name);
-        return definition;
-    }
-
-    /**
-     * The attributes storing values of the 4 corners in degrees with (latitude, longitude) axis order.
-     * This is used by {@link #projection(Node)} for inferring a "grid to CRS" transform.
-     */
-    private static final String[] CORNERS = {
-        "Upper_left_latitude",
-        "Upper_left_longitude",
-        "Upper_right_latitude",
-        "Upper_right_longitude",
-        "Lower_left_latitude",
-        "Lower_left_longitude",
-        "Lower_right_latitude",
-        "Lower_right_longitude"
-    };
-
-    /**
-     * Returns the <cite>grid to CRS</cite> transform for the given node.
-     * This method is invoked after call to {@link #projection(Node)} resulted in creation of a projected CRS.
-     * The {@linkplain ProjectedCRS#getBaseCRS() base CRS} shall have (latitude, longitude) axes in degrees.
-     *
-     * @param  node  the same node than the one given to {@link #projection(Node)}.
-     * @param  crs   the projected coordinate reference system created from the information given by {@code node}.
-     * @return the "grid corner to CRS" transform, or {@code null} if none or unknown.
-     * @throws TransformException if a coordinate operation was required but failed.
-     */
-    @Override
-    public MathTransform gridToCRS(final Node node, final ProjectedCRS crs) throws TransformException {
-        final double[] corners = new double[CORNERS.length];
-        for (int i=0; i<corners.length; i++) {
-            corners[i] = node.getAttributeAsNumber(CORNERS[i]);
-        }
-        crs.getConversionFromBase().getMathTransform().transform(corners, 0, corners, 0, corners.length / 2);
-        /*
-         * Compute spans of data (typically in metres) as the average of the spans on both sides
-         * (width as length of top and bottom edges, height as length of left and right edges).
-         * This code assumes (easting, northing) axes — this is currently not verified.
-         */
-        double sx = ((corners[2] - corners[0]) + (corners[6] - corners[4])) / 2;
-        double sy = ((corners[1] - corners[5]) + (corners[3] - corners[7])) / 2;
-        /*
-         * Transform the spans into pixel sizes (resolution), then build the transform.
-         */
-        sx /= (node.getAttributeAsNumber("Number_of_pixels") - 1);
-        sy /= (node.getAttributeAsNumber("Number_of_lines")  - 1);
-        if (Double.isFinite(sx) && Double.isFinite(sy)) {
-            final Matrix3 m = new Matrix3();
-            m.m00 =  sx;
-            m.m11 = -sy;
-            m.m02 = corners[0];
-            m.m12 = corners[1];
-            return MathTransforms.linear(m);
-        }
-        return super.gridToCRS(node, crs);
     }
 }
