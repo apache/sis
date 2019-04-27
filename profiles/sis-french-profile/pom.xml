@@ -95,7 +95,7 @@
           <archive>
             <manifestEntries>
               <Automatic-Module-Name>
-                org.apache.sis.metadata.fra
+                org.apache.sis.profile.france
               </Automatic-Module-Name>
             </manifestEntries>
           </archive>
