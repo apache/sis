@@ -305,11 +305,6 @@ public enum CommonCRS {
     static final CommonCRS DEFAULT = WGS84;
 
     /**
-     * Properties to exclude when using an other object as a template.
-     */
-    private static final String[] EXCLUDE = new String[] {IdentifiedObject.IDENTIFIERS_KEY};
-
-    /**
      * The EPSG code of the two-dimensional geographic CRS.
      */
     final short geographic;
@@ -352,7 +347,7 @@ public enum CommonCRS {
     final byte firstZone, lastZone;
 
     /**
-     * The cached object. This is initially {@code null}, then set to various kind of objects depending
+     * The cached object. This is initially {@code null}, then set to various kinds of objects depending
      * on which method has been invoked. The kind of object stored in this field may change during the
      * application execution.
      */
@@ -645,7 +640,7 @@ public enum CommonCRS {
                      */
                     final EllipsoidalCS cs;
                     if (this == DEFAULT) {
-                        cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem((short) 6422);
+                        cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.ELLIPSOIDAL_2D, true);
                     } else {
                         cs = DEFAULT.geographic().getCoordinateSystem();
                     }
@@ -703,7 +698,7 @@ public enum CommonCRS {
                      */
                     final EllipsoidalCS cs;
                     if (this == DEFAULT) {
-                        cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem((short) 6423);
+                        cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.ELLIPSOIDAL_3D, true);
                     } else {
                         cs = DEFAULT.geographic3D().getCoordinateSystem();
                     }
@@ -762,7 +757,7 @@ public enum CommonCRS {
                      */
                     final CartesianCS cs;
                     if (this == DEFAULT) {
-                        cs = (CartesianCS) StandardDefinitions.createCoordinateSystem((short) 6500);
+                        cs = (CartesianCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.EARTH_CENTRED, true);
                     } else {
                         cs = (CartesianCS) DEFAULT.geocentric().getCoordinateSystem();
                     }
@@ -806,19 +801,19 @@ public enum CommonCRS {
                     if (this == DEFAULT) {
                         final GeodeticAuthorityFactory factory = factory();
                         if (factory != null) try {
-                            cs = factory.createSphericalCS("6404");
+                            cs = factory.createSphericalCS(Short.toString(StandardDefinitions.SPHERICAL));
                         } catch (FactoryException e) {
-                            failure(this, "spherical", e, (short) 6404);
+                            failure(this, "spherical", e, StandardDefinitions.SPHERICAL);
                         }
                         if (cs == null) {
-                            cs = (SphericalCS) StandardDefinitions.createCoordinateSystem((short) 6404);
+                            cs = (SphericalCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.SPHERICAL, true);
                         }
                     } else {
                         cs = (SphericalCS) DEFAULT.spherical().getCoordinateSystem();
                     }
                     // Use same name and datum than the geographic CRS.
                     final GeographicCRS base = geographic();
-                    object = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(base, EXCLUDE), base.getDatum(), cs);
+                    object = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(base, exclude()), base.getDatum(), cs);
                     cachedSpherical = object;
                 }
             }
@@ -1153,7 +1148,9 @@ public enum CommonCRS {
                     cs = DEFAULT.universal(latitude, longitude).getCoordinateSystem();
                 } else {
                     cs = (CartesianCS) StandardDefinitions.createCoordinateSystem(
-                            isUTM ? Constants.EPSG_PROJECTED_CS : isSouth ? (short) 1027 : (short) 1026);
+                            isUTM   ? StandardDefinitions.CARTESIAN_2D :
+                            isSouth ? StandardDefinitions.UPS_SOUTH
+                                    : StandardDefinitions.UPS_NORTH, true);
                 }
             }
             crs = StandardDefinitions.createUniversal(code, geographic(), isUTM, latitude, longitude, cs);
@@ -1312,7 +1309,7 @@ public enum CommonCRS {
         final short datum;
 
         /**
-         * The cached object. This is initially {@code null}, then set to various kind of objects depending
+         * The cached object. This is initially {@code null}, then set to various kinds of objects depending
          * on which method has been invoked. The kind of object stored in this field may change during the
          * application execution.
          */
@@ -1389,7 +1386,7 @@ public enum CommonCRS {
                             object = StandardDefinitions.createVerticalCRS(crs, datum());
                         } else {
                             final VerticalCS cs = cs();
-                            object = new DefaultVerticalCRS(IdentifiedObjects.getProperties(cs, EXCLUDE), datum(), cs);
+                            object = new DefaultVerticalCRS(IdentifiedObjects.getProperties(cs, exclude()), datum(), cs);
                         }
                         cached = object;
                     }
@@ -1577,7 +1574,7 @@ public enum CommonCRS {
         private final long epoch;
 
         /**
-         * The cached object. This is initially {@code null}, then set to various kind of objects depending
+         * The cached object. This is initially {@code null}, then set to various kinds of objects depending
          * on which method has been invoked. The kind of object stored in this field may change during the
          * application execution.
          */
@@ -1659,7 +1656,7 @@ public enum CommonCRS {
                     object = crs(cached);
                     if (object == null) {
                         final TemporalDatum datum = datum();
-                        object = new DefaultTemporalCRS(IdentifiedObjects.getProperties(datum, EXCLUDE), datum, cs());
+                        object = new DefaultTemporalCRS(IdentifiedObjects.getProperties(datum, exclude()), datum, cs());
                         cached = object;
                     }
                 }
@@ -1687,8 +1684,8 @@ public enum CommonCRS {
                 case UNIX: {
                     // Share the NamedIdentifier created for Java time.
                     final TimeCS share = JAVA.crs().getCoordinateSystem();
-                    cs   = IdentifiedObjects.getProperties(share, EXCLUDE);
-                    axis = IdentifiedObjects.getProperties(share.getAxis(0), EXCLUDE);
+                    cs   = IdentifiedObjects.getProperties(share, exclude());
+                    axis = IdentifiedObjects.getProperties(share.getAxis(0), exclude());
                     break;
                 }
                 case JAVA: {
@@ -1788,9 +1785,16 @@ public enum CommonCRS {
      * Returns the same properties than the given object, except for the identifier which is set to the given code.
      */
     private static Map<String,?> properties(final IdentifiedObject template, final short code) {
-        final Map<String,Object> properties = new HashMap<>(IdentifiedObjects.getProperties(template, EXCLUDE));
+        final Map<String,Object> properties = new HashMap<>(IdentifiedObjects.getProperties(template, exclude()));
         properties.put(GeographicCRS.IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
         return properties;
+    }
+
+    /**
+     * Properties to exclude when using another object as a template.
+     */
+    private static String[] exclude() {
+        return new String[] {IdentifiedObject.IDENTIFIERS_KEY};
     }
 
     /**

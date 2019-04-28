@@ -1219,7 +1219,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      * until a successful one is found.
      *
      * <p><strong>Note that this method may be ambiguous</strong> since the same EPSG code can be used for different
-     * kind of objects. This method throws an exception if it detects an ambiguity on a <em>best-effort</em> basis.
+     * kinds of objects. This method throws an exception if it detects an ambiguity on a <em>best-effort</em> basis.
      * It is recommended to invoke the most specific {@code createFoo(String)} method when the desired type is known,
      * both for performance reason and for avoiding ambiguity.</p>
      *

@@ -40,7 +40,6 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
@@ -460,19 +459,20 @@ public final class ReferencingUtilities extends Static {
 
     /**
      * Returns the a coordinate system for map projections with (easting, northing) axes in metres.
-     * This coordinate system is identified by EPSG:{@value Constants#EPSG_PROJECTED_CS}.
+     * EPSG::4400 — Cartesian 2D CS. Axes: easting, northing (E,N). Orientations: east, north. UoM: m.
      *
-     * @param  factory the factory to use for creating the coordinate system, or {@code null} for the default.
+     * @param  factory the EPSG factory to use for creating the coordinate system.
      * @return a coordinate system with (easting, northing) axes in metres.
      * @throws FactoryException if an error occurred while creating the coordinate system.
      *
      * @since 1.0
      */
-    public static CartesianCS standardProjectedCS(CSAuthorityFactory factory) throws FactoryException {
-        if (factory == null) {
-            factory = DefaultFactories.forBuildin(CSAuthorityFactory.class);
-        }
-        return factory.createCartesianCS(String.valueOf(Constants.EPSG_PROJECTED_CS));
+    public static CartesianCS standardProjectedCS(final CSAuthorityFactory factory) throws FactoryException {
+        /*
+         * Note: we may provide a default factory in a future SIS version.
+         * We may need to mimic ReferencingFactoryContainer.getCSAuthorityFactory().
+         */
+        return factory.createCartesianCS("4400");
     }
 
     /**
