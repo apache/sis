@@ -59,7 +59,7 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see Mercator
  * @see ObliqueMercator
@@ -67,11 +67,59 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  * @since 0.6
  * @module
  */
-public class TransverseMercator extends ConformalProjection {
+public class TransverseMercator extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 8167193470189463354L;
+    private static final long serialVersionUID = -627685138188387835L;
+
+    /**
+     * {@code false} for using the original formulas as published by EPSG, or {@code true} for using formulas
+     * modified using trigonometric identities. The use of trigonometric identities is for reducing the amount
+     * of calls to the {@link Math#sin(double)} and similar methods. Some identities used are:
+     *
+     * <ul>
+     *   <li>sin(2θ) = 2⋅sinθ⋅cosθ</li>
+     *   <li>cos(2θ) = cos²θ - sin²θ</li>
+     *   <li>sin(3θ) = (3 - 4⋅sin²θ)⋅sinθ</li>
+     *   <li>cos(3θ) = (4⋅cos³θ) - 3⋅cosθ</li>
+     *   <li>sin(4θ) = (4 - 8⋅sin²θ)⋅sinθ⋅cosθ</li>
+     *   <li>cos(4θ) = (8⋅cos⁴θ) - (8⋅cos²θ) + 1</li>
+     * </ul>
+     *
+     * Hyperbolic formulas:
+     *
+     * <ul>
+     *   <li>sinh(2θ) = 2⋅sinhθ⋅coshθ</li>
+     *   <li>cosh(2θ) = cosh²θ + sinh²θ   =   2⋅cosh²θ - 1   =   1 + 2⋅sinh²θ</li>
+     *   <li>sinh(3θ) = (3 + 4⋅sinh²θ)⋅sinhθ</li>
+     *   <li>cosh(3θ) = ((4⋅cosh²θ) - 3)⋅coshθ</li>
+     *   <li>sinh(4θ) = (1 + 2⋅sinh²θ)⋅4.sinhθ⋅coshθ
+     *                = 4.cosh(2θ).sinhθ⋅coshθ</li>
+     *   <li>cosh(4θ) = (8⋅cosh⁴θ) - (8⋅cosh²θ) + 1
+     *                = 8⋅cosh²(θ) ⋅ (cosh²θ - 1) + 1
+     *                = 8⋅cosh²(θ) ⋅ sinh²(θ) + 1
+     *                = 2⋅sinh²(2θ) + 1</li>
+     * </ul>
+     *
+     * Note that since this boolean is static final, the compiler should exclude the code in the branch that is never
+     * executed (no need to comment-out that code).
+     *
+     * @see #identityEquals(double, double)
+     */
+    private static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = true;
+
+    /**
+     * Verifies if a trigonometric identity produced the expected value. This method is used in assertions only,
+     * for values close to the [-1 … +1] range. The tolerance threshold is approximately 1.5E-12 (note that it
+     * still about 7000 time greater than {@code Math.ulp(1.0)}).
+     *
+     * @see #ALLOW_TRIGONOMETRIC_IDENTITIES
+     */
+    private static boolean identityEquals(final double actual, final double expected) {
+        return !(abs(actual - expected) >                               // Use !(a > b) instead of (a <= b) in order to tolerate NaN.
+                (ANGULAR_TOLERANCE / 1000) * max(1, abs(expected)));    // Increase tolerance for values outside the [-1 … +1] range.
+    }
 
     /**
      * Coefficients in the series expansion of the forward projection,
@@ -83,10 +131,20 @@ public class TransverseMercator extends ConformalProjection {
      * Those coefficients are named h₁, h₂, h₃ and h₄ in §1.3.5.1 of
      * IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015.
      *
-     * <p><strong>Consider those fields as final!</strong>
-     * They are not final only for the purpose of {@link #computeCoefficients()}.</p>
+     * <div class="note"><b>Serialization note:</b>
+     * we do not strictly need to serialize those fields since they could be computed after deserialization.
+     * Bu we serialize them anyway in order to simplify a little bit this class (it allows us to keep those
+     * fields final) and because values computed after deserialization could be slightly different than the
+     * ones computed after construction since the constructor uses the double-double values provided by
+     * {@link Initializer}.</div>
      */
-    private transient double cf2, cf4, cf6, cf8;
+    private final double cf2, cf4, cf6, cf8;
+
+    /**
+     * Coefficients in the series expansion of the inverse projection,
+     * depending only on {@linkplain #eccentricity eccentricity} value.
+     */
+    private final double ci2, ci4, ci6, ci8;
 
     /**
      * Creates a Transverse Mercator projection from the given parameters.
@@ -136,15 +194,46 @@ public class TransverseMercator extends ConformalProjection {
          * Opportunistically use double-double arithmetic for computation of B since we will store
          * it in the denormalization matrix, and there is no sine/cosine functions involved here.
          */
+        double cf4, cf6, cf8, ci4, ci6, ci8;
         final DoubleDouble B;
-        {   // For keeping the 't' variable locale.
+        {   // For keeping the `t` and `n` variables locale.
             /*
-             * EPSG gives:      n  =  f / (2-f)
-             * We rewrite as:   n  =  (1 - b/a) / (1 + b/a)
+             * The n parameter is defined by the EPSG guide as:
+             *
+             *     n = f / (2-f)
+             *
+             * Where f is the flattening factor (1 - b/a). This equation can be rewritten as:
+             *
+             *     n = (1 - b/a) / (1 + b/a)
+             *
+             * As much as possible, b/a should be computed from the map projection parameters.
+             * However if those parameters are not available anymore, then they can be computed
+             * from the eccentricity as:
+             *
+             *     b/a = √(1 - ℯ²)
              */
             final DoubleDouble t = initializer.axisLengthRatio();   // t  =  b/a
             t.ratio_1m_1p();                                        // t  =  (1 - t) / (1 + t)
-            computeCoefficients(t.doubleValue());
+            final double n  = t.doubleValue();                      // n = f / (2-f)
+            final double n2 = n  * n;
+            final double n3 = n2 * n;
+            final double n4 = n2 * n2;
+            /*
+             * Coefficients for the forward projections.
+             * Add the smallest values first in order to reduce rounding errors.
+             */
+            cf2 = (   41. /    180)*n4  +  ( 5. /  16)*n3  +  (-2. /  3)*n2  +  n/2;
+            cf4 = (  557. /   1440)*n4  +  (-3. /   5)*n3  +  (13. / 48)*n2;
+            cf6 = ( -103. /    140)*n4  +  (61. / 240)*n3;
+            cf8 = (49561. / 161280)*n4;
+            /*
+             * Coefficients for the inverse projections.
+             * Add the smallest values first in order to reduce rounding errors.
+             */
+            ci2 = (  -1. /    360)*n4  +  (37. /  96)*n3  +  (-2. /  3)*n2  +  n/2;
+            ci4 = (-437. /   1440)*n4  +  ( 1. /  15)*n3  +  ( 1. / 48)*n2;
+            ci6 = ( -37. /    840)*n4  +  (17. / 480)*n3;
+            ci8 = (4397. / 161280)*n4;
             /*
              * Compute B  =  (1 + n²/4 + n⁴/64) / (1 + n)
              */
@@ -203,69 +292,12 @@ public class TransverseMercator extends ConformalProjection {
             cf6 *= 16;   ci6 *= 16;
             cf8 *= 64;   ci8 *= 64;
         }
-    }
-
-    /**
-     * Automatically invoked after deserialization for restoring transient fields.
-     */
-    @Override
-    final void computeCoefficients() {
-        /*
-         * Double-double precision is necessary for computing 'n', otherwise we have rounding errors
-         * in the 3 last digits. Note that we still have sometime a 1 ULP difference compared to the
-         * 'n' value at serialization time.
-         */
-        final DoubleDouble t = new DoubleDouble(1d);
-        t.subtract(eccentricitySquared);
-        t.sqrt();
-        t.ratio_1m_1p();
-        computeCoefficients(t.doubleValue());
-        if (ALLOW_TRIGONOMETRIC_IDENTITIES) {
-            // Same scaling than in the constructor.
-            cf4 *=  4;   ci4 *=  4;
-            cf6 *= 16;   ci6 *= 16;
-            cf8 *= 64;   ci8 *= 64;
-        }
-    }
-
-    /**
-     * Computes the transient fields after construction or deserialization.
-     * The <var>n</var> parameter is defined by the EPSG guide as:
-     *
-     *     <blockquote>n = f / (2-f)</blockquote>
-     *
-     * Where <var>f</var> is the flattening factor (1 - b/a). This equation can be rewritten as:
-     *
-     *     <blockquote>n = (1 - b/a) / (1 + b/a)</blockquote>
-     *
-     * As much as possible, b/a should be computed from the map projection parameters.
-     * However if those parameters are not available anymore, then they can be computed
-     * from the eccentricity as:
-     *
-     *     <blockquote>b/a = √(1 - ℯ²)</blockquote>
-     *
-     * @param  n  the value of {@code f / (2-f)} where {@code f} is the flattening factor.
-     */
-    private void computeCoefficients(final double n) {
-        final double n2 = n  * n;
-        final double n3 = n2 * n;
-        final double n4 = n2 * n2;
-        /*
-         * Coefficients for the forward projections.
-         * Add the smallest values first in order to reduce rounding errors.
-         */
-        cf2 = (   41. /    180)*n4  +  ( 5. /  16)*n3  +  (-2. /  3)*n2  +  n/2;
-        cf4 = (  557. /   1440)*n4  +  (-3. /   5)*n3  +  (13. / 48)*n2;
-        cf6 = ( -103. /    140)*n4  +  (61. / 240)*n3;
-        cf8 = (49561. / 161280)*n4;
-        /*
-         * Coefficients for the inverse projections.
-         * Add the smallest values first in order to reduce rounding errors.
-         */
-        ci2 = (  -1. /    360)*n4  +  (37. /  96)*n3  +  (-2. /  3)*n2  +  n/2;
-        ci4 = (-437. /   1440)*n4  +  ( 1. /  15)*n3  +  ( 1. / 48)*n2;
-        ci6 = ( -37. /    840)*n4  +  (17. / 480)*n3;
-        ci8 = (4397. / 161280)*n4;
+        this.cf4 = cf4;
+        this.cf6 = cf6;
+        this.cf8 = cf8;
+        this.ci4 = ci4;
+        this.ci6 = ci6;
+        this.ci8 = ci8;
     }
 
     /**
@@ -277,6 +309,10 @@ public class TransverseMercator extends ConformalProjection {
         cf4 = other.cf4;
         cf6 = other.cf6;
         cf8 = other.cf8;
+        ci2 = other.ci2;
+        ci4 = other.ci4;
+        ci6 = other.ci6;
+        ci8 = other.ci8;
     }
 
     /**

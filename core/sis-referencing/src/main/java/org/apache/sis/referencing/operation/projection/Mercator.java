@@ -203,7 +203,6 @@ public class Mercator extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private Mercator(final Initializer initializer) {
         super(initializer);
-        super.computeCoefficients();
         this.variant = initializer.variant;
         /*
          * The "Longitude of natural origin" parameter is found in all Mercator projections and is mandatory.

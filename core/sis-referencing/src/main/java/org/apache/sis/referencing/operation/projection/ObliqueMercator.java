@@ -147,7 +147,6 @@ public class ObliqueMercator extends ConformalProjection {
      */
     private ObliqueMercator(final Initializer initializer) {
         super(initializer);
-        super.computeCoefficients();
         final double λc = toRadians(initializer.getAndStore(LONGITUDE_OF_CENTRE));
         final double φc = toRadians(initializer.getAndStore(LATITUDE_OF_CENTRE));
         final double sinφ  = sin(φc);

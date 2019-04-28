@@ -136,7 +136,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
          *    2) Application of trigonometric identities:
          *
          *       replace:  f(φ) = A⋅sin(2φ) + B⋅sin(4φ) + C⋅sin(6φ) + D⋅sin(8φ)                             Snyder 3-34
-         *       by:       f(φ) = sin(2φ)⋅(A′ + cos(2φ)⋅(B′ + cos(2φ)⋅(C′ + D′⋅cos(2φ))))                   Snyder 3-35
+         *       by:       f(φ) = sin(2φ)⋅(A′ + cos(2φ)⋅(B′ + cos(2φ)⋅(C′ + cos(2φ)⋅D′)))                   Snyder 3-35
          *       with:       A′ = A - C
          *                   B′ = 2B - 4D
          *                   C′ = 4C
@@ -144,7 +144,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
          *
          *    3) Replacement of  sin2φ  by  2⋅sinφ⋅cosφ  and  cos2φ  by  1 - 2sin²φ:
          *
-         *                 f(φ) = sinφ⋅cosφ⋅(C₁ + sin²φ⋅(C₂ + sin²φ⋅(C₃ + C₄⋅sin²φ)))
+         *                 f(φ) = sinφ⋅cosφ⋅(C₁ + sin²φ⋅(C₂ + sin²φ⋅(C₃ + sin²φ⋅C₄)))
          *       with:      C₁ = 2⋅(A′ + B′ + C′ + D′)
          *                  C₂ = 2⋅(−2B′ − 4C′ − 6D′)
          *                  C₃ = 2⋅(4C′ + 12D′)

@@ -140,7 +140,6 @@ public class PolarStereographic extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private PolarStereographic(final Initializer initializer) {
         super(initializer);
-        super.computeCoefficients();
         final byte variant = initializer.variant;
         /*
          * "Standard parallel" and "Latitude of origin" should be mutually exclusive,

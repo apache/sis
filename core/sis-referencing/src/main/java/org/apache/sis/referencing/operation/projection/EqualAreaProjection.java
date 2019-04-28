@@ -222,10 +222,6 @@ abstract class EqualAreaProjection extends NormalizedProjection {
             final double t4β = 0.5 - sin2_β;                                        // = sin(4β) / ( 4⋅sin(2β))
             final double t8β = (cos2_β - sin2_β)*(cos2_β*cos2_β - cos2_β + 1./8);   // = sin(8β) / (32⋅sin(2β))
 
-            assert ConformalProjection.identityEquals(t2β, sin(2*β) / ( 2      ));
-            assert ConformalProjection.identityEquals(t4β, sin(4*β) / ( 8 * t2β));
-            assert ConformalProjection.identityEquals(t8β, sin(8*β) / (64 * t2β));
-
             φ = (ci8*t8β  +  ci4*t4β  +  ci2) * t2β  +  β;
         }
         /*

@@ -210,7 +210,6 @@ public class LambertConicConformal extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private LambertConicConformal(final Initializer initializer) {
         super(initializer);
-        super.computeCoefficients();
         double φ0 = initializer.getAndStore(((initializer.variant & 1) != 0) ?  // Odd 'type' are SP1, even 'type' are SP2.
                 LambertConformal1SP.LATITUDE_OF_ORIGIN : LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN);
         /*

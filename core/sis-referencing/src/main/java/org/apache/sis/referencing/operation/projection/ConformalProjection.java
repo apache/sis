@@ -16,8 +16,6 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import org.apache.sis.internal.referencing.Resources;
 
 import static java.lang.Math.*;
@@ -26,9 +24,12 @@ import static java.lang.Math.*;
 /**
  * Base class of {@link LambertConicConformal}, {@link Mercator} and {@link PolarStereographic} projections.
  * All those projections have in common the property of being <cite>conformal</cite>, i.e. they preserve
- * angles locally. However we do not put this base class in public API because we do not (yet) guarantee
- * than all conformal projections will extend this base class.
- * Note that no projection can be both conformal and equal-area.
+ * angles locally. However we do not put this base class in public API because not all conformal projections
+ * will extend this base class. For example {@link TransverseMercator}, despite being conformal, uses very
+ * different formulas.
+ *
+ * <p>Note that no projection can be both conformal and equal-area. This restriction is implemented in class
+ * hierarchy with {@link ConformalProjection} and {@link EqualAreaProjection} being two distinct classes.</p>
  *
  * <p>This base class can been seen as a generalization of <cite>Lambert Conic Conformal</cite> projection,
  * which includes some other projections like Mercator and Polar Stereographic as special cases.
@@ -54,7 +55,7 @@ import static java.lang.Math.*;
  * parallel is a pole, the polar Stereographic results.” (Snyder, page 105)</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -62,66 +63,7 @@ abstract class ConformalProjection extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 458860570536642265L;
-
-    /**
-     * {@code false} for using the original formulas as published by EPSG, or {@code true} for using formulas
-     * modified using trigonometric identities. The use of trigonometric identities is for reducing the amount
-     * of calls to the {@link Math#sin(double)} and similar methods. Some identities used are:
-     *
-     * <ul>
-     *   <li>sin(2θ) = 2⋅sinθ⋅cosθ</li>
-     *   <li>cos(2θ) = cos²θ - sin²θ</li>
-     *   <li>sin(3θ) = (3 - 4⋅sin²θ)⋅sinθ</li>
-     *   <li>cos(3θ) = (4⋅cos³θ) - 3⋅cosθ</li>
-     *   <li>sin(4θ) = (4 - 8⋅sin²θ)⋅sinθ⋅cosθ</li>
-     *   <li>cos(4θ) = (8⋅cos⁴θ) - (8⋅cos²θ) + 1</li>
-     * </ul>
-     *
-     * Hyperbolic formulas (used in Transverse Mercator projection):
-     *
-     * <ul>
-     *   <li>sinh(2θ) = 2⋅sinhθ⋅coshθ</li>
-     *   <li>cosh(2θ) = cosh²θ + sinh²θ   =   2⋅cosh²θ - 1   =   1 + 2⋅sinh²θ</li>
-     *   <li>sinh(3θ) = (3 + 4⋅sinh²θ)⋅sinhθ</li>
-     *   <li>cosh(3θ) = ((4⋅cosh²θ) - 3)⋅coshθ</li>
-     *   <li>sinh(4θ) = (1 + 2⋅sinh²θ)⋅4.sinhθ⋅coshθ
-     *                = 4.cosh(2θ).sinhθ⋅coshθ</li>
-     *   <li>cosh(4θ) = (8⋅cosh⁴θ) - (8⋅cosh²θ) + 1
-     *                = 8⋅cosh²(θ) ⋅ (cosh²θ - 1) + 1
-     *                = 8⋅cosh²(θ) ⋅ sinh²(θ) + 1
-     *                = 2⋅sinh²(2θ) + 1</li>
-     * </ul>
-     *
-     * Snyder 3-34 to 3-39 uses above identities for deriving the following equivalence:
-     *
-     * <pre>
-     *     If:     f(φ) = A⋅sin(2φ) + B⋅sin(4φ) + C⋅sin(6φ) + D⋅sin(8φ)
-     *     Then:   f(φ) = sin(2φ)⋅(A′ + cos(2φ)⋅(B′ + cos(2φ)⋅(C′ + D′⋅cos(2φ))))
-     *     Where:  A′ = A - C
-     *             B′ = 2B - 4D
-     *             C′ = 4C
-     *             D′ = 8D
-     * </pre>
-     *
-     * Similar, but with cosine instead than sin and the addition of a constant:
-     *
-     * <pre>
-     *     If:     f(φ) = A + B⋅cos(2φ) + C⋅cos(4φ) + D⋅cos(6φ) + E⋅cos(8φ)
-     *     Then:   f(φ) = A′ + cos(2φ)⋅(B′ + cos(2φ)⋅(C′ + cos(2φ)⋅(D′ + E′⋅cos(2φ))))
-     *     Where:  A′ = A - C + E
-     *             B′ = B - 3D
-     *             C′ = 2C - 8E
-     *             D′ = 4D
-     *             E′ = 8E
-     * </pre>
-     *
-     * Note that since this boolean is static final, the compiler should exclude the code in the branch that is never
-     * executed (no need to comment-out that code).
-     *
-     * @see #identityEquals(double, double)
-     */
-    static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = true;
+    private static final long serialVersionUID = -292755890184138414L;
 
     /**
      * The threshold value of {@link #eccentricity} at which we consider the accuracy of the
@@ -139,100 +81,91 @@ abstract class ConformalProjection extends NormalizedProjection {
     /**
      * {@code true} if the {@link #eccentricity} value is greater than or equals to {@link #ECCENTRICITY_THRESHOLD},
      * in which case the {@link #φ(double)} method will need to use an iterative method.
-     *
-     * <p><strong>Consider this field as final!</strong>
-     * It is not final only for the purpose of {@link #readObject(ObjectInputStream)}.
-     * This field is not serialized because its value may depend on the version of this
-     * {@code ConformalProjection} class.</p>
      */
-    private transient boolean useIterations;
+    private final boolean useIterations;
 
     /**
-     * Coefficients in the series expansion of the inverse projection,
-     * depending only on {@linkplain #eccentricity eccentricity} value.
-     * The series expansion is of the following form, where ｆ(θ) is typically sin(θ):
+     * Coefficients in the series expansion of the inverse projection, depending only on {@linkplain #eccentricity
+     * eccentricity} value. The series expansion is published under the following form, where χ is the conformal latitude:
      *
-     *     <blockquote>ci₂⋅ｆ(2θ) + ci₄⋅ｆ(4θ) + ci₆⋅ｆ(6θ) + ci₈⋅ｆ(8θ)</blockquote>
+     *     <blockquote>c₂⋅sin(2χ) + c₄⋅sin(4χ) + c₆⋅sin(6χ) + c₈⋅sin(8χ)</blockquote>
      *
-     * This {@code ConformalProjection} class uses those coefficients in {@link #φ(double)}.
-     * However some subclasses may compute those coefficients differently and use them in a
-     * different series expansion (but for the same purpose).
+     * However we rewrite above series expansion for taking advantage of trigonometric identities.
+     * The equation become (with different <var>c</var> values):
      *
-     * <p><strong>Consider those fields as final!</strong> They are not final only for sub-class
-     * constructors convenience and for the purpose of {@link #readObject(ObjectInputStream)}.</p>
+     *     <blockquote>sin(2χ)⋅(c₂ + cos(2χ)⋅(c₄ + cos(2χ)⋅(c₆ + cos(2χ)⋅c₈)))</blockquote>
      *
-     * @see #computeCoefficients()
+     * <div class="note"><b>Serialization note:</b>
+     * we do not strictly need to serialize those fields since they could be computed after deserialization.
+     * Bu we serialize them anyway in order to simplify a little bit this class (it allows us to keep those
+     * fields final) and because values computed after deserialization could be slightly different than the
+     * ones computed after construction if a future version of the constructor uses the double-double values
+     * provided by {@link Initializer}.</div>
      */
-    transient double ci2, ci4, ci6, ci8;
+    private final double c2χ, c4χ, c6χ, c8χ;
 
     /**
      * Creates a new normalized projection from the parameters computed by the given initializer.
-     *
-     * <p>It is sub-classes responsibility to invoke {@code super.computeCoefficients()} in their
-     * constructor when ready, or to compute the coefficients themselves.</p>
+     * This constructor computes the coefficients in the series expansion from the {@link #eccentricitySquared} value.
      *
      * @param  initializer  the initializer for computing map projection internal parameters.
      */
     ConformalProjection(final Initializer initializer) {
         super(initializer);
-    }
-
-    /**
-     * Computes the coefficients in the series expansions from the {@link #eccentricitySquared} value.
-     * This method shall be invoked after {@code ConformalProjection} construction or deserialization.
-     */
-    void computeCoefficients() {
         useIterations = (eccentricity >= ECCENTRICITY_THRESHOLD);
         final double e2 = eccentricitySquared;
         final double e4 = e2 * e2;
         final double e6 = e2 * e4;
         final double e8 = e4 * e4;
         /*
-         * For each line below, add the smallest values first in order to reduce rounding errors.
-         * The smallest values are the one using the eccentricity raised to the highest power.
+         * Published equation is of the following form:
+         *
+         *     φ  =  χ + A⋅sin(2χ) + B⋅sin(4χ) + C⋅sin(6χ) + D⋅sin(8χ)                      (Snyder 3-34)
+         *
+         * We rewrite as:
+         *
+         *     φ  =  χ + sin(2χ)⋅(A′ + cos(2χ)⋅(B′ + cos(2χ)⋅(C′ + cos(2χ)⋅D′)))            (Snyder 3-35)
+         *     A′ =  A - C
+         *     B′ =  2B - 4D
+         *     C′ =  4C
+         *     D′ =  8D
+         *
+         * Published coefficients are:
+         *
+         *     A  =    13/360   ⋅ℯ⁸  +   1/12 ⋅ℯ⁶  +  5/24⋅ℯ⁴  +  ℯ²/2
+         *     B  =   811/11520 ⋅ℯ⁸  +  29/240⋅ℯ⁶  +  7/48⋅ℯ⁴
+         *     C  =    81/1120  ⋅ℯ⁸  +   7/120⋅ℯ⁶
+         *     D  =  4279/161280⋅ℯ⁸
+         *
+         * We replace A B C D by A′ B′ C′ D′ using Snyder 3-35. The result are coefficients below.
+         * For each line, we add the smallest values first in order to reduce rounding errors.
+         * The smallest values are the ones using the eccentricity raised to the highest power.
          */
-        ci2  =    13/   360. * e8  +   1/ 12. * e6  +  5/24. * e4  +  e2/2;
-        ci4  =   811/ 11520. * e8  +  29/240. * e6  +  7/48. * e4;
-        ci6  =    81/  1120. * e8  +   7/120. * e6;
-        ci8  =  4279/161280. * e8;
-        /*
-         * When rewriting equations using trigonometric identities, some constants appear.
-         * For example sin(2θ) = 2⋅sinθ⋅cosθ, so we can factor out the 2 constant into the
-         * corresponding 'c' field.
-         */
-        if (ALLOW_TRIGONOMETRIC_IDENTITIES) {
-            // Multiplication by powers of 2 does not bring any additional rounding error.
-            ci4 *= 2;
-            ci6 *= 4;
-            ci8 *= 8;
-        }
+        c2χ =  -73./ 2016 * e8  +   1./40  * e6  +  5./24 * e4  +  1./2 * e2;
+        c4χ =  233./ 6720 * e8  +  29./120 * e6  +  7./24 * e4;
+        c6χ =   81./  280 * e8  +   7./30  * e6;
+        c8χ = 4279./20160 * e8;
     }
 
     /**
      * Creates a new projection initialized to the values of the given one. This constructor may be invoked after
-     * we determined that the default implementation can be replaced by an other one, for example using spherical
+     * we determined that the default implementation can be replaced by another one, for example using spherical
      * formulas instead than the ellipsoidal ones. This constructor allows to transfer all parameters to the new
      * instance without recomputing them.
      */
     ConformalProjection(final ConformalProjection other) {
         super(other);
         useIterations = other.useIterations;
-        ci2 = other.ci2;
-        ci4 = other.ci4;
-        ci6 = other.ci6;
-        ci8 = other.ci8;
+        c2χ = other.c2χ;
+        c4χ = other.c4χ;
+        c6χ = other.c6χ;
+        c8χ = other.c8χ;
     }
 
     /**
      * Computes the latitude for a value closely related to the <var>y</var> value of a Mercator projection.
      * This formula is also part of other projections, since Mercator can be considered as a special case of
      * Lambert Conic Conformal for instance.
-     *
-     * <div class="note"><b>Warning:</b>
-     * this method is valid only if the series expansion coefficients where computed by the
-     * {@link #computeCoefficients()} method defined in this class. This is not the case of
-     * {@link TransverseMercator} for instance. Note however that even in the later case,
-     * this method can still be seen as a special case of {@code TransverseMercator} formulas.</div>
      *
      * <p>This function is <em>almost</em> the converse of the {@link #expOfNorthing(double, double)} function.
      * In a Mercator inverse projection, the value of the {@code expOfSouthing} argument is {@code exp(-y)}.</p>
@@ -271,24 +204,15 @@ abstract class ConformalProjection extends NormalizedProjection {
         /*
          * Add a correction for the flattened shape of the Earth. The correction can be represented by an
          * infinite series. Here, we apply only the first 4 terms. Those terms are given by §1.3.3 in the
-         * EPSG guidance note. Note that we add those terms in reverse order, beginning with the smallest
-         * values, for reducing rounding errors due to IEEE 754 arithmetic.
+         * EPSG guidance note and modified by application of Snyder 3-35. We add those terms in reverse order,
+         * beginning with the smallest values, for reducing rounding errors due to IEEE 754 arithmetic.
+         *
+         * For the original formula as published by EPSG, see MercatorMethodComparison.bySeriesExpansion()
+         * in the test suite.
          */
-        if (!ALLOW_TRIGONOMETRIC_IDENTITIES) {
-            φ += ci8 * sin(8*φ)
-               + ci6 * sin(6*φ)
-               + ci4 * sin(4*φ)
-               + ci2 * sin(2*φ);
-        } else {
-            /*
-             * Same formula than above, but rewriten using trigonometric identities in order to have only two
-             * calls to Math.sin/cos instead than 5. The performance gain is twice faster on tested machine.
-             */
-            final double sin_2φ = sin(2*φ);
-            final double sin2 = sin_2φ * sin_2φ;
-            φ += ((ci4 + ci8 * (0.50 - sin2)) * cos(2*φ)
-                + (ci2 + ci6 * (0.75 - sin2))) * sin_2φ;
-        }
+        final double sin_2φ = sin(2*φ);
+        final double cos_2φ = cos(2*φ);
+        φ += sin_2φ * (c2χ + cos_2φ * (c4χ + cos_2φ * (c6χ + cos_2φ * c8χ)));
         /*
          * Note: a previous version checked if the value of the smallest term c8χ⋅sin(8φ) was smaller than
          * the iteration tolerance. But this was not reliable enough. We use now a hard coded threshold
@@ -401,25 +325,5 @@ abstract class ConformalProjection extends NormalizedProjection {
      */
     final double dy_dφ(final double sinφ, final double cosφ) {
         return (1 / cosφ)  -  eccentricitySquared * cosφ / (1 - eccentricitySquared * (sinφ*sinφ));
-    }
-
-    /**
-     * Restores transient fields after deserialization.
-     */
-    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        computeCoefficients();
-    }
-
-    /**
-     * Verifies if a trigonometric identity produced the expected value. This method is used in assertions only,
-     * for values close to the [-1 … +1] range. The tolerance threshold is approximately 1.5E-12 (note that it
-     * still about 7000 time greater than {@code Math.ulp(1.0)}).
-     *
-     * @see #ALLOW_TRIGONOMETRIC_IDENTITIES
-     */
-    static boolean identityEquals(final double actual, final double expected) {
-        return !(abs(actual - expected) >                               // Use !(a > b) instead of (a <= b) in order to tolerate NaN.
-                (ANGULAR_TOLERANCE / 1000) * max(1, abs(expected)));    // Increase tolerance for values outside the [-1 … +1] range.
     }
 }
