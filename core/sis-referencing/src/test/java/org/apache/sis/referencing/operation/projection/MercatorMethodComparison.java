@@ -23,7 +23,6 @@ import java.io.UncheckedIOException;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
@@ -41,9 +40,9 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
  *   <li>an iterative process for solving equation (7-9) from Snyder, initially implemented by USGS.</li>
  * </ul>
  *
- * In our measurements, both the iterative process (USGS) and the series expansion (EPSG) have the
- * same accuracy when applied on the WGS84 ellipsoid. However the EPSG formula is 2 times faster.
- * On the other hand, accuracy of the EPSG formula decreases when we increase the eccentricity,
+ * In our measurements, both the iterative process (USGS) and the series expansion (EPSG) have the same accuracy
+ * when applied on the WGS84 ellipsoid. However the EPSG formula is 2 times faster on Java 8 (less on more recent
+ * Java versions). On the other hand, accuracy of the EPSG formula decreases when we increase the eccentricity,
  * while the iterative process keeps its accuracy (at the cost of more iterations).
  * For the Earth (eccentricity of about 0.082) the errors are less than 0.01 millimetres.
  * But the errors become centimetric (for a hypothetical planet of the size of the Earth)
@@ -55,7 +54,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
  * win in about 50% of cases. But as we increase the eccentricity, the iterative method wins more often.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -77,29 +76,19 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     private final double c2χ, c4χ, c6χ, c8χ;
 
     /**
-     * Creates a new instance for the eccentricity of the WGS84 ellipsoid, which is approximately 0.08181919084262157.
-     * Reminder: the eccentricity of a sphere is 0.
+     * The actual implementation to compare with.
      */
-    public MercatorMethodComparison() {
-        this(0.00669437999014133);                      // Squared eccentricity.
-    }
+    private final ConformalProjection implementation;
 
     /**
      * Creates a new instance for the same eccentricity than the given projection.
      *
      * @param  projection  the projection from which to take the eccentricity.
      */
-    public MercatorMethodComparison(final NormalizedProjection projection) {
-        this(projection.eccentricitySquared);
-    }
-
-    /**
-     * Creates a new instance for the given squared eccentricity.
-     *
-     * @param  e2  the square of the eccentricity.
-     */
-    public MercatorMethodComparison(final double e2) {
-        eccentricity = sqrt(e2);
+    MercatorMethodComparison(final ConformalProjection projection) {
+        implementation = projection;
+        eccentricity = projection.eccentricity;
+        final double e2 = projection.eccentricitySquared;
         final double e4 = e2 * e2;
         final double e6 = e2 * e4;
         final double e8 = e4 * e4;
@@ -126,30 +115,6 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
                c6χ * sin(6*χ) +
                c4χ * sin(4*χ) +
                c2χ * sin(2*χ) + χ;
-    }
-
-    /**
-     * Same formula than {@link #bySeriesExpansion(double)}, but replacing some sine by trigonometric identities.
-     * The identities used are:
-     *
-     * <ul>
-     *   <li>sin(2⋅x) = 2⋅sin(x)⋅cos(x)</li>
-     *   <li>sin(3⋅x) = (3 - 4⋅sin²(x))⋅sin(x)</li>
-     *   <li>sin(4⋅x) = (4 - 8⋅sin²(x))⋅sin(x)⋅cos(x)</li>
-     * </ul>
-     *
-     * @param  t  the {@code expOfSouthing} parameter value.
-     * @return the latitude (in radians) for the given parameter.
-     */
-    public double usingTrigonometricIdentities(final double t) {
-        final double χ = PI/2 - 2*atan(t);
-        final double sin2χ     = sin(2*χ);
-        final double sin_cos2χ = cos(2*χ) * sin2χ;
-        final double sin_sin2χ = sin2χ * sin2χ;
-        return c8χ * (4 - 8*sin_sin2χ)*sin_cos2χ
-             + c6χ * (3 - 4*sin_sin2χ)*sin2χ
-             + c4χ * 2*sin_cos2χ
-             + c2χ * sin2χ + χ;
     }
 
     /**
@@ -193,34 +158,28 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      * @throws ProjectionException if an error occurred during the calculation of φ.
      */
     public void printAccuracyComparison(final int numSamples) throws ProjectionException {
-        compare(null, numSamples, null);
+        compare(numSamples, null);
     }
 
     /**
      * Implementation of {@link #printAccuracyComparison(int)} and {@link #printErrorForExcentricities(double,double)},
      * optionally with a comparison with {@link ConformalProjection}.
      */
-    private void compare(final ConformalProjection projection, final int numSamples, final TableAppender summarize)
-            throws ProjectionException
-    {
+    private void compare(final int numSamples, final TableAppender summarize) throws ProjectionException {
         final Statistics iterativeMethodErrors = new Statistics("Iterative method error");
         final Statistics seriesExpansionErrors = new Statistics("Series expansion error");
-        final Statistics usingTrigoIdentErrors = new Statistics("Using trigonometric identities");
-        final Statistics abstractLambertErrors = new Statistics("'ConformalProjection' error");
+        final Statistics implementationErrors  = new Statistics("Implementation error");
         final Random random = new Random();
         for (int i=0; i<numSamples; i++) {
             final double φ = random.nextDouble() * PI - PI/2;
             final double t = 1 / expOfNorthing(φ);
             final double byIterativeMethod = byIterativeMethod(t);
             final double bySeriesExpansion = bySeriesExpansion(t);
-            final double usingTrigoIdent = usingTrigonometricIdentities(t);
+            final double byImplementation  = implementation.φ(t);
 
             iterativeMethodErrors.accept(abs(φ - byIterativeMethod) / NormalizedProjection.ITERATION_TOLERANCE);
             seriesExpansionErrors.accept(abs(φ - bySeriesExpansion) / NormalizedProjection.ITERATION_TOLERANCE);
-            usingTrigoIdentErrors.accept(abs(φ - usingTrigoIdent)   / NormalizedProjection.ITERATION_TOLERANCE);
-            if (projection != null) {
-                abstractLambertErrors.accept(abs(φ - projection.φ(t)) / NormalizedProjection.ITERATION_TOLERANCE);
-            }
+            implementationErrors .accept(abs(φ - byImplementation)  / NormalizedProjection.ITERATION_TOLERANCE);
         }
         /*
          * At this point we finished to collect the statistics for the eccentricity of this particular
@@ -238,12 +197,8 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
             Statistics[] stats = new Statistics[] {
                 iterativeMethodErrors,
                 seriesExpansionErrors,
-                usingTrigoIdentErrors,
-                abstractLambertErrors
+                implementationErrors,
             };
-            if (projection == null) {
-                stats = ArraysExt.remove(stats, 2, 1);
-            }
             out.println("Comparison of different ways to compute φ for eccentricity " + eccentricity + '.');
             out.println("Values are in units of " + NormalizedProjection.ITERATION_TOLERANCE + " radians (about "
                     + round(toDegrees(NormalizedProjection.ITERATION_TOLERANCE) * 60 * ReferencingServices.NAUTICAL_MILE * 1000)
@@ -288,8 +243,9 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
                 crossThreshold = true;
                 table.appendHorizontalSeparator();
             }
-            final MercatorMethodComparison alt = new MercatorMethodComparison(eccentricity * eccentricity);
-            alt.compare(null, 10000, table);
+            final double semiMinor = sqrt(1 - eccentricity * eccentricity);
+            final MercatorMethodComparison alt = new MercatorMethodComparison(new NoOp(1, semiMinor));
+            alt.compare(10000, table);
         }
         table.appendHorizontalSeparator();
         try {
@@ -321,13 +277,13 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
         }
         final long t2 = System.nanoTime();
         for (int i=0; i<t.length; i++) {
-            s2 += usingTrigonometricIdentities(t[i]);
+            s2 += implementation.φ(t[i]);
         }
         final long t3 = System.nanoTime();
         final float c = (t1 - t0) / 100f;
-        out.println("Iterative method:         " + ((t1 - t0) / (float) NANOS_PER_SECOND) + " seconds (" + round((t1 - t0) / c) + "%).");
-        out.println("Series expansion:         " + ((t2 - t1) / (float) NANOS_PER_SECOND) + " seconds (" + round((t2 - t1) / c) + "%).");
-        out.println("Trigonometric identities: " + ((t3 - t2) / (float) NANOS_PER_SECOND) + " seconds (" + round((t3 - t2) / c) + "%).");
+        out.println("Iterative method: " + ((t1 - t0) / (float) NANOS_PER_SECOND) + " seconds (" + round((t1 - t0) / c) + "%).");
+        out.println("Series expansion: " + ((t2 - t1) / (float) NANOS_PER_SECOND) + " seconds (" + round((t2 - t1) / c) + "%).");
+        out.println("Implementation:   " + ((t3 - t2) / (float) NANOS_PER_SECOND) + " seconds (" + round((t3 - t2) / c) + "%).");
         out.println("Mean φ values: " + (s0 / t.length) + ", "
                                       + (s1 / t.length) + " and "
                                       + (s2 / t.length) + ".");
@@ -348,29 +304,26 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
         out.println("Comparison of the errors for a sphere.");
         out.println("The errors should be almost zero:");
         out.println();
-        ConformalProjection projection = new NoOp(false);
-        MercatorMethodComparison c = new MercatorMethodComparison(projection);
-        c.compare(projection, 10000, null);
+        MercatorMethodComparison c = new MercatorMethodComparison(new NoOp(false));
+        c.compare(10000, null);
 
         out.println();
         out.println("Comparison of the errors for the WGS84 eccentricity.");
         out.println("The 'ConformalProjection' errors should be the same than the series expansion errors:");
         out.println();
-        projection = new NoOp(true);
-        c = new MercatorMethodComparison(projection);
-        c.compare(projection, 1000000, null);
+        c = new MercatorMethodComparison(new NoOp(true));
+        c.compare(1000000, null);
 
         out.println();
         out.println("Comparison of the errors for the eccentricity of an imaginary ellipsoid.");
         out.println("The 'ConformalProjection' errors should be the close to the iterative method errors:");
         out.println();
-        projection = new NoOp(100, 95);
-        c = new MercatorMethodComparison(projection);
-        c.compare(projection, 1000000, null);
+        c = new MercatorMethodComparison(new NoOp(100, 95));
+        c.compare(1000000, null);
 
         out.println();
         out.println("Benchmarks");
-        c = new MercatorMethodComparison();
+        c = new MercatorMethodComparison(new NoOp(true));
         for (int i=0; i<4; i++) {
             System.gc();
             Thread.sleep(1000);
