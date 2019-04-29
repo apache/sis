@@ -23,10 +23,9 @@ import static java.lang.Math.*;
 
 /**
  * Base class of {@link LambertConicConformal}, {@link Mercator} and {@link PolarStereographic} projections.
- * All those projections have in common the property of being <cite>conformal</cite>, i.e. they preserve
- * angles locally. However we do not put this base class in public API because not all conformal projections
- * will extend this base class. For example {@link TransverseMercator}, despite being conformal, uses very
- * different formulas.
+ * Those projections have in common the property of being <cite>conformal</cite>, i.e. they preserve angles locally.
+ * However we do not put this base class in public API because not all conformal projections extend this base class.
+ * For example the {@link TransverseMercator} projection, despite being conformal, uses very different formulas.
  *
  * <p>Note that no projection can be both conformal and equal-area. This restriction is implemented in class
  * hierarchy with {@link ConformalProjection} and {@link EqualAreaProjection} being two distinct classes.</p>
@@ -85,8 +84,9 @@ abstract class ConformalProjection extends NormalizedProjection {
     private final boolean useIterations;
 
     /**
-     * Coefficients in the series expansion of the inverse projection, depending only on {@linkplain #eccentricity
-     * eccentricity} value. The series expansion is published under the following form, where χ is the conformal latitude:
+     * Coefficients of the first terms in the series expansion of the inverse projection.
+     * Values of those coefficients depend only on {@linkplain #eccentricity eccentricity} value.
+     * The series expansion is published under the following form, where χ is the <cite>conformal latitude</cite>:
      *
      *     <blockquote>c₂⋅sin(2χ) + c₄⋅sin(4χ) + c₆⋅sin(6χ) + c₈⋅sin(8χ)</blockquote>
      *
@@ -200,7 +200,7 @@ abstract class ConformalProjection extends NormalizedProjection {
          * Note that the φ value computed by the line below is called χ in EPSG guide.
          * We name it φ in our code because we will modify that value in-place in order to get φ.
          */
-        double φ = (PI/2) - 2*atan(expOfSouthing);          // at this point == χ
+        double φ = (PI/2) - 2*atan(expOfSouthing);          // at this point == χ (conformal latitude).
         /*
          * Add a correction for the flattened shape of the Earth. The correction can be represented by an
          * infinite series. Here, we apply only the first 4 terms. Those terms are given by §1.3.3 in the

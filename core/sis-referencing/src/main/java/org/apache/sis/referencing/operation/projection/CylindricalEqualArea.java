@@ -168,7 +168,6 @@ public class CylindricalEqualArea extends EqualAreaProjection {
         ik.divide(k0);
         denormalize.convertAfter(0, k0, null);
         denormalize.convertAfter(1, ik, null);
-        super.computeCoefficients();
     }
 
     /**

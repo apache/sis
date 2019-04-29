@@ -161,7 +161,6 @@ public class AlbersEqualArea extends EqualAreaProjection {
         denormalize.convertBefore(0, rn, null); rn.negate();
         denormalize.convertBefore(1, rn, ρ0);   rn.inverseDivide(-1);
         normalize.convertAfter(0, rn, null);
-        super.computeCoefficients();
     }
 
     /**

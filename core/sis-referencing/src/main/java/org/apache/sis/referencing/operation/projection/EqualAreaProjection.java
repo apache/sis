@@ -16,8 +16,6 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import org.apache.sis.internal.referencing.Resources;
 
 import static java.lang.Math.*;
@@ -25,10 +23,16 @@ import static org.apache.sis.math.MathFunctions.atanh;
 
 
 /**
- * Provides formulas common to Equal Area projections.
+ * Base class of {@link AlbersEqualArea} and {@link CylindricalEqualArea} projections.
+ * Those projections have in common the property of being <cite>equal-area</cite>.
+ * However we do not put this base class in public API because not all equal-area projections extend this base class.
+ * For example the {@link Sinusoidal} projection, despite being equal-area, uses different formulas.
+ *
+ * <p>Note that no projection can be both conformal and equal-area. This restriction is implemented in class
+ * hierarchy with {@link ConformalProjection} and {@link EqualAreaProjection} being two distinct classes.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -36,56 +40,48 @@ abstract class EqualAreaProjection extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -6175270149094989517L;
+    private static final long serialVersionUID = 2221537810038553082L;
 
     /**
-     * {@code false} for using the original formulas as published by Snyder, or {@code true} for using formulas
-     * modified using trigonometric identities. The use of trigonometric identities is for reducing the amount
-     * of calls to the {@link Math#sin(double)} and similar methods. Some identities used are:
+     * The threshold value of {@link #eccentricity} at which we consider the accuracy of the
+     * series expansion insufficient. This threshold is determined empirically with the help
+     * of the {@code EqualAreaProjectionTest.searchThreshold()} method in the test directory.
      *
-     * <ul>
-     *   <li>sin(2β) = 2⋅sinβ⋅cosβ</li>
-     *   <li>sin(4β) = (2 - 4⋅sin²β)⋅sin(2β)</li>
-     *   <li>sin(8β) = 4⋅sin(2β)⋅(cos²β - sin²β)⋅(8⋅cos⁴β - 8⋅cos²β + 1)</li>
-     * </ul>
-     *
-     * Note that since this boolean is static final, the compiler should exclude the code in the branch that is never
-     * executed (no need to comment-out that code).
-     *
-     *
-     * <p><b>BENCHMARK AND ANALYSIS:</b>
-     * as of July 2016, benchmarking shows small benefit in using trigonometric identities for {@code EqualAreaProjection}
-     * (contrarily to {@link ConformalProjection} where we measured a greater benefit). This may be because in this class,
-     * the series expansion is unconditionally followed by iterative method in order to reach the centimetric precision.
-     * We observe that the original series expansion allows convergence in only one iteration, while the formulas using
-     * trigonometric identifies often requires two iterations.</p>
-     *
-     * @todo Redo the benchmark with JDK9, since {@code sin} seems much faster.
+     * <p>Note: WGS84 eccentricity is about 0.082.</p>
      */
-    private static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = true;
+    private static final double ECCENTRICITY_THRESHOLD = 0.1;
 
     /**
-     * Coefficients in the series expansion of the inverse projection,
-     * depending only on {@linkplain #eccentricity eccentricity} value.
-     * The series expansion is of the following form:
+     * Coefficients of the first terms in the series expansion of the inverse projection.
+     * Values of those coefficients depend only on {@linkplain #eccentricity eccentricity} value.
+     * The series expansion is published under the following form, where β is the <cite>authalic latitude</cite>:
      *
-     *     <blockquote>φ = ci₂⋅sin(2β) + ci₄⋅sin(4β) + ci₈⋅sin(8β)</blockquote>
+     *     <blockquote>φ = c₂⋅sin(2β) + c₄⋅sin(4β) + c₈⋅sin(6β)</blockquote>
      *
-     * This {@code EqualAreaProjection} class uses those coefficients in {@link #φ(double)}.
+     * However we rewrite above series expansion for taking advantage of trigonometric identities.
+     * The equation become (with different <var>c</var> values):
      *
-     * <p><strong>Consider those fields as final!</strong> They are not final only for sub-class
-     * constructors convenience and for the purpose of {@link #readObject(ObjectInputStream)}.</p>
+     *     <blockquote>sin(2β)⋅(c₂ + cos(2β)⋅(c₄ + cos(2β)⋅c₆))</blockquote>
      *
-     * @see #computeCoefficients()
+     * <div class="note"><b>Serialization note:</b>
+     * we do not strictly need to serialize those fields since they could be computed after deserialization.
+     * Bu we serialize them anyway in order to simplify a little bit this class (it allows us to keep those
+     * fields final) and because values computed after deserialization could be slightly different than the
+     * ones computed after construction if a future version of the constructor uses the double-double values
+     * provided by {@link Initializer}.</div>
      */
-    private transient double ci2, ci4, ci8;
+    private final double c2β, c4β, c6β;
 
     /**
      * Value of {@link #qm(double)} function (part of Snyder equation (3-12)) at pole (sinφ = 1).
-     *
-     * @see #computeCoefficients()
      */
-    private transient double qmPolar;
+    private final double qmPolar;
+
+    /**
+     * {@code true} if the {@link #eccentricity} value is greater than or equals to the eccentricity threshold,
+     * in which case the {@link #φ(double)} method will need to use an iterative method.
+     */
+    private final boolean useIterations;
 
     /**
      * Creates a new normalized projection from the parameters computed by the given initializer.
@@ -94,31 +90,37 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      */
     EqualAreaProjection(final Initializer initializer) {
         super(initializer);
-    }
-
-    /**
-     * Computes the coefficients in the series expansions from the {@link #eccentricitySquared} value.
-     * This method shall be invoked after {@code EqualAreaProjection} construction or deserialization.
-     */
-    void computeCoefficients() {
         final double e2 = eccentricitySquared;
-        final double e4  = e2 * e2;
-        final double e6  = e2 * e4;
-        ci2  =  517/5040.  * e6  +  31/180. * e4  +  1/3. * e2;
-        ci4  =  251/3780.  * e6  +  23/360. * e4;
-        ci8  =  761/45360. * e6;
+        final double e4 = e2 * e2;
+        final double e6 = e2 * e4;
         /*
-         * When rewriting equations using trigonometric identities, some constants appear.
-         * For example sin(2β) = 2⋅sinβ⋅cosβ, so we can factor out the 2 constant into the
-         * into the corresponding 'c' field.
+         * Published equation is of the following form:
+         *
+         *     φ  =  β + A⋅sin(2β) + B⋅sin(4β) + C⋅sin(6β)                  (part of Snyder 3-34)
+         *
+         * We rewrite as:
+         *
+         *     φ  =  β + sin(2β)⋅(A′ + cos(2β)⋅(B′ + cos(2β)⋅C′))           (part of Snyder 3-35)
+         *     A′ =  A - C
+         *     B′ =  2B - 4D
+         *     C′ =  4C
+         *
+         * Published coefficients are:
+         *
+         *     A  =  517/5040  ⋅ℯ⁶  +  31/180 ⋅ℯ⁴  +  ℯ²/3
+         *     B  =  251/3780  ⋅ℯ⁶  +  23/360 ⋅ℯ⁴
+         *     C  =  761/45360 ⋅ℯ⁶
+         *
+         * We replace A B C D by A′ B′ C′ D′ using Snyder 3-35, then replace sin2β by 2sinβ⋅cosβ
+         * and cos2β by 1 – 2sin²β. The result are coefficients below. For each line, we add the
+         * smallest values first in order to reduce rounding errors. The algebraic changes are
+         * in https://svn.apache.org/repos/asf/sis/analysis/Map%20projection%20formulas.ods.
          */
-        if (ALLOW_TRIGONOMETRIC_IDENTITIES) {
-            // Multiplication by powers of 2 does not bring any additional rounding error.
-            ci2 *=  2;
-            ci4 *=  8;
-            ci8 *= 64;
-        }
+        c2β     =      4./7    * e6  +    3./5  * e4  +  2./3 * e2;
+        c4β     =  -3028./2835 * e6  +  -23./45 * e4;
+        c6β     =   1522./2835 * e6;
         qmPolar = qm(1);
+        useIterations = (eccentricity >= ECCENTRICITY_THRESHOLD);
     }
 
     /**
@@ -129,10 +131,11 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      */
     EqualAreaProjection(final EqualAreaProjection other) {
         super(other);
-        ci2 = other.ci2;
-        ci4 = other.ci4;
-        ci8 = other.ci8;
+        c2β     = other.c2β;
+        c4β     = other.c4β;
+        c6β     = other.c6β;
         qmPolar = other.qmPolar;
+        useIterations = other.useIterations;
     }
 
     /**
@@ -204,49 +207,36 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      */
     final double φ(final double y) throws ProjectionException {
         final double sinβ = y / qmPolar;
+        final double sinβ2 = sinβ * sinβ;
         final double β = asin(sinβ);
-        double φ;
-        if (!ALLOW_TRIGONOMETRIC_IDENTITIES) {
-            φ = ci8 * sin(8*β)
-              + ci4 * sin(4*β)
-              + ci2 * sin(2*β)
-              + β;                                                                  // Snyder 3-18
-        } else {
-            /*
-             * Same formula than above, but rewriten using trigonometric identities in order to avoid
-             * multiple calls to sin(double) method. The cost is only one sqrt(double) method call.
-             */
-            final double sin2_β = sinβ*sinβ;                                        // = sin²β
-            final double cos2_β = 1 - sin2_β;                                       // = cos²β
-            final double t2β = sinβ * sqrt(cos2_β);                                 // = sin(2β) /   2
-            final double t4β = 0.5 - sin2_β;                                        // = sin(4β) / ( 4⋅sin(2β))
-            final double t8β = (cos2_β - sin2_β)*(cos2_β*cos2_β - cos2_β + 1./8);   // = sin(8β) / (32⋅sin(2β))
-
-            φ = (ci8*t8β  +  ci4*t4β  +  ci2) * t2β  +  β;
-        }
         /*
-         * At this point φ is close to the desired value, but may have an error of a few centimetres.
-         * Use the iterative method for reaching the last part of missing accuracy. Usually this loop
-         * will perform exactly one iteration, no more, because φ is already quite close to the result.
-         *
-         * Mathematical note: Snyder 3-16 gives q/(1-ℯ²) instead of y in the calculation of Δφ below.
-         * For Cylindrical Equal Area projection, Snyder 10-17 gives  q = (qPolar⋅sinβ), which simplifies
-         * as y.
-         *
-         * For Albers Equal Area projection, Snyder 14-19 gives  q = (C - ρ²n²/a²)/n,  which we rewrite
-         * as  q = (C - ρ²)/n  (see comment in AlbersEqualArea.inverseTransform(…) for the mathematic).
-         * The y value given to this method is y = (C - ρ²) / (n⋅(1-ℯ²)) = q/(1-ℯ²), the desired value.
+         * Snyder 3-18, but rewriten using trigonometric identities in order to avoid
+         * multiple calls to sin(double) method.
          */
-        for (int i=0; i<MAXIMUM_ITERATIONS; i++) {
-            final double sinφ  = sin(φ);
-            final double cosφ  = cos(φ);
-            final double ℯsinφ = eccentricity * sinφ;
-            final double ome   = 1 - ℯsinφ*ℯsinφ;
-            final double Δφ    = ome*ome/(2*cosφ) * (y - sinφ/ome - atanh(ℯsinφ)/eccentricity);
-            φ += Δφ;
-            if (abs(Δφ) <= ITERATION_TOLERANCE) {
-                return φ;
+        double φ = β + cos(β)*sinβ*(c2β + sinβ2*(c4β + sinβ2*c6β));
+        if (useIterations) {
+            /*
+             * Mathematical note: Snyder 3-16 gives q/(1-ℯ²) instead of y in the calculation of Δφ below.
+             * For Cylindrical Equal Area projection, Snyder 10-17 gives  q = (qPolar⋅sinβ), which simplifies
+             * as y.
+             *
+             * For Albers Equal Area projection, Snyder 14-19 gives  q = (C - ρ²n²/a²)/n,  which we rewrite
+             * as  q = (C - ρ²)/n  (see comment in AlbersEqualArea.inverseTransform(…) for the mathematic).
+             * The y value given to this method is y = (C - ρ²) / (n⋅(1-ℯ²)) = q/(1-ℯ²), the desired value.
+             */
+            for (int i=0; i<MAXIMUM_ITERATIONS; i++) {
+                final double sinφ  = sin(φ);
+                final double cosφ  = cos(φ);
+                final double ℯsinφ = eccentricity * sinφ;
+                final double ome   = 1 - ℯsinφ*ℯsinφ;
+                final double Δφ    = ome*ome/(2*cosφ) * (y - sinφ/ome - atanh(ℯsinφ)/eccentricity);
+                φ += Δφ;
+                if (abs(Δφ) <= ITERATION_TOLERANCE) {
+                    return φ;
+                }
             }
+        } else if (!Double.isNaN(φ)) {
+            return φ;
         }
         /*
          * In the Albers Equal Area discussion, Snyder said that above algorithm does not converge if
@@ -274,13 +264,5 @@ abstract class EqualAreaProjection extends NormalizedProjection {
         }
         // Value should have converged but did not.
         throw new ProjectionException(Resources.format(Resources.Keys.NoConvergence));
-    }
-
-    /**
-     * Restores transient fields after deserialization.
-     */
-    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        computeCoefficients();
     }
 }
