@@ -16,8 +16,6 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import org.apache.sis.internal.util.DoubleDouble;
 
 import static java.lang.Math.*;
@@ -40,72 +38,33 @@ abstract class MeridianArcBased extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -1390453290591193455L;
+    private static final long serialVersionUID = 6105123637473385555L;
 
     /**
-     * Coefficients for the formula implemented by the {@link #distance(double, double, double)} method.
-     * Values are computed by {@link #computeCoefficients(double)} in constructor or after deserialization.
-     * The values depends on the form of equation implemented by {@code distance(…)}. We do not use the
-     * form commonly found in publications since a few algebraic operations allow to replace the
-     * sin(2φ), sin(4φ), sin(6φ) and sin(8φ) terms by only sin²(φ), which is faster to calculate.
-     * See {@link #computeCoefficients(double)} comments in method body for more information.
+     * Coefficients for the forward transform implemented by the {@link #distance(double, double, double)} method.
+     * Values are computed by the constructor and depend on the form of equation implemented by {@code distance(…)}.
+     * We do not use the formulas in the form published by EPSG or Snyder since a few algebraic operations allow to
+     * replace the sin(2φ), sin(4φ), sin(6φ) and sin(8φ) terms by sin²(φ), which is faster to calculate.
+     * See comments in constructor body for more information.
      */
-    private transient double c0, c1, c2, c3, c4;
+    private final double cf0, cf1, cf2, cf3, cf4;
 
     /**
-     * Coefficients used in inverse transform. Same comment than for {@link #c0}… applies.
+     * Coefficients used in inverse transform. Same comment than for {@link #cf0}… applies.
      */
-    private transient double ci1, ci2, ci3, ci4;
+    private final double ci1, ci2, ci3, ci4;
 
     /**
      * Denominator of <cite>rectifying latitude</cite> equation. The rectifying latitude is computed by
      * µ = M/(1 – ℯ²/4 – 3ℯ⁴/64 – 5ℯ⁶/256 – …)  (Snyder 7-19 with a=1).
      */
-    private transient double rld;
+    private final double rµ;
 
     /**
      * Creates a new normalized projection from the parameters computed by the given initializer.
      */
     MeridianArcBased(final Initializer initializer) {
         super(initializer);
-        DoubleDouble e1 = initializer.axisLengthRatio();
-        e1.ratio_1m_1p();
-        computeCoefficients(e1.doubleValue());
-    }
-
-    /**
-     * Creates a new projection initialized to the same parameters than the given one.
-     */
-    MeridianArcBased(final MeridianArcBased other) {
-        super(other);
-        c0  = other.c0;
-        c1  = other.c1;
-        c2  = other.c2;
-        c3  = other.c3;
-        c4  = other.c4;
-        ci1 = other.ci1;
-        ci2 = other.ci2;
-        ci3 = other.ci3;
-        ci4 = other.ci4;
-        rld = other.rld;
-    }
-
-    /**
-     * Restores transient fields after deserialization.
-     */
-    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        double ba = sqrt(1 - eccentricitySquared);
-        computeCoefficients((1 - ba) / (1 + ba));
-    }
-
-    /**
-     * Computes the coefficients in the series expansions from the {@link #eccentricitySquared} value.
-     * This method shall be invoked after {@code MeridianArcBased} construction or deserialization.
-     *
-     * @param  ei  value of  [1 - √(1 - ℯ²)] / [1 + √(1 - ℯ²)]   (Snyder 3-24).
-     */
-    private void computeCoefficients(final double ei) {
         final double e2  = eccentricitySquared;
         final double e4  = e2*e2;
         final double e6  = e2*e4;
@@ -155,11 +114,11 @@ abstract class MeridianArcBased extends NormalizedProjection {
          * of 2, which result in exact representations in IEEE 754 double type. Derivation from Kawase formula can be
          * viewed at: https://svn.apache.org/repos/asf/sis/analysis/Map%20projection%20formulas.ods
          */
-        c0 =  -441./0x10000 * e10  +  -175./0x4000  * e8  +    -5./0x100   * e6  +   -3./0x40 * e4  +  -1./4 * e2  +  1;
-        c1 =  1575./0x20000 * e10  +   175./0x4000  * e8  +     5./0x100   * e6  +    3./0x40 * e4  +  -3./4 * e2;
-        c2 = -2625./0x8000  * e10  +   175./0x6000  * e8  +  5120./0x60000 * e6  +  -15./0x20 * e4;
-        c3 =   735./0x800   * e10  +  2240./0x60000 * e8  +   -35./0x60    * e6;
-        c4 = -2205./0x1000  * e10  +  -315./0x400   * e8;
+        cf0 =  -441./0x10000 * e10  +  -175./0x4000  * e8  +    -5./0x100   * e6  +   -3./0x40 * e4  +  -1./4 * e2  +  1;
+        cf1 =  1575./0x20000 * e10  +   175./0x4000  * e8  +     5./0x100   * e6  +    3./0x40 * e4  +  -3./4 * e2;
+        cf2 = -2625./0x8000  * e10  +   175./0x6000  * e8  +  5120./0x60000 * e6  +  -15./0x20 * e4;
+        cf3 =   735./0x800   * e10  +  2240./0x60000 * e8  +   -35./0x60    * e6;
+        cf4 = -2205./0x1000  * e10  +  -315./0x400   * e8;
      // c6 =   693./0x20000 * e10  omitted for now (not yet used).
         /*
          * Coefficients for inverse transform derived from Snyder 3-26 and EPSG guidance notes:
@@ -176,7 +135,10 @@ abstract class MeridianArcBased extends NormalizedProjection {
          * µ is the rectifying latitude.
          * Derivation of coefficients used by this class are provided in the above-cited spreadsheet.
          */
-        rld = (1 - 1./4*e2 - 3./64*e4 - 5./256*e6);       // Part of Snyder 7-19 for computing rectifying latitude.
+        rµ = (1 - 1./4*e2 - 3./64*e4 - 5./256*e6);        // Part of Snyder 7-19 for computing rectifying latitude.
+        DoubleDouble e1 = initializer.axisLengthRatio();
+        e1.ratio_1m_1p();
+        final double ei  = e1.doubleValue();              // Equivalent to [1 - √(1 - ℯ²)] / [1 + √(1 - ℯ²)]   (Snyder 3-24).
         final double ei2 = ei*ei;
         final double ei3 = ei*ei2;
         final double ei4 = ei2*ei2;
@@ -184,6 +146,23 @@ abstract class MeridianArcBased extends NormalizedProjection {
         ci2 = -5045./0x20 * ei4  +  -151./3 * ei3  +  -21./2 * ei2;
         ci3 =  3291./0x08 * ei4  +   151./3 * ei3;
         ci4 = -1097./0x04 * ei4;
+    }
+
+    /**
+     * Creates a new projection initialized to the same parameters than the given one.
+     */
+    MeridianArcBased(final MeridianArcBased other) {
+        super(other);
+        cf0 = other.cf0;
+        cf1 = other.cf1;
+        cf2 = other.cf2;
+        cf3 = other.cf3;
+        cf4 = other.cf4;
+        ci1 = other.ci1;
+        ci2 = other.ci2;
+        ci3 = other.ci3;
+        ci4 = other.ci4;
+        rµ  = other.rµ;
     }
 
     /**
@@ -196,7 +175,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
      *   <li>If φ=-π/2, then this method returns a value slightly greater than -π/2, depending on the eccentricity.</li>
      * </ul>
      *
-     * This value is related to <cite>rectifying latitude</cite> by µ = (π/2)⋅(M/{@linkplain #c0}) (derived from Snyder 3-20).
+     * This value is related to <cite>rectifying latitude</cite> by µ = (π/2)⋅(M/{@linkplain #cf0}) (derived from Snyder 3-20).
      *
      * @param  φ     latitude for which to compute the distance, in radians.
      * @param  sinφ  value of sin(φ).
@@ -205,7 +184,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
      */
     final double distance(final double φ, final double sinφ, final double cosφ) {
         final double sinφ2 = sinφ * sinφ;
-        return c0*φ + cosφ*sinφ*(c1 + sinφ2*(c2 + sinφ2*(c3 + sinφ2*c4)));     // TODO: use Math.fma with JDK9.
+        return cf0*φ + cosφ*sinφ*(cf1 + sinφ2*(cf2 + sinφ2*(cf3 + sinφ2*cf4)));     // TODO: use Math.fma with JDK9.
     }
 
     /**
@@ -214,11 +193,11 @@ abstract class MeridianArcBased extends NormalizedProjection {
      * @return the derivative at the specified latitude.
      */
     final double dM_dφ(final double sinφ2) {
-        return ((((7 - 8*sinφ2)*c4 - 6*c3) * sinφ2
-                            + 5*c3 - 4*c2) * sinφ2
-                            + 3*c2 - 2*c1) * sinφ2
-                            +   c1
-                            +   c0;
+        return ((((7 - 8*sinφ2)*cf4 - 6*cf3) * sinφ2
+                            + 5*cf3 - 4*cf2) * sinφ2
+                            + 3*cf2 - 2*cf1) * sinφ2
+                            +   cf1
+                            +   cf0;
     }
 
     /**
@@ -228,7 +207,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
      * @return the latitude of given meridian distance, in radians.
      */
     final double latitude(final double distance) {
-        double    φ  = distance / rld;            // Rectifying latitude µ used as first approximation.
+        double    φ  = distance / rµ;             // Rectifying latitude µ used as first approximation.
         double sinφ  = sin(φ);
         double sinφ2 = sinφ * sinφ;
         φ += cos(φ)*sinφ*(ci1 + sinφ2*(ci2 + sinφ2*(ci3 + sinφ2*ci4)));                 // Snyder 3-26.
