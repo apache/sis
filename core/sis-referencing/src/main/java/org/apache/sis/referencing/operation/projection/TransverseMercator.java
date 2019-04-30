@@ -689,7 +689,6 @@ public class TransverseMercator extends NormalizedProjection {
         @Override
         protected void inverseTransform(final double[] srcPts, final int srcOff,
                                         final double[] dstPts, final int dstOff)
-                throws ProjectionException
         {
             final double x = srcPts[srcOff  ];
             final double y = srcPts[srcOff+1];

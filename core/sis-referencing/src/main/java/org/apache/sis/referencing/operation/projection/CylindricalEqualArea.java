@@ -284,7 +284,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
      * @since   0.8
      * @module
      */
-    static final class Spherical extends CylindricalEqualArea {
+    private static final class Spherical extends CylindricalEqualArea {
         /**
          * For cross-version compatibility.
          */
@@ -306,7 +306,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
         @Override
         public Matrix transform(final double[] srcPts, final int srcOff,
                                 final double[] dstPts, final int dstOff,
-                                final boolean derivate) throws ProjectionException
+                                final boolean derivate)
         {
             final double φ = srcPts[srcOff+1];
             if (dstPts != null) {
@@ -345,7 +345,6 @@ public class CylindricalEqualArea extends EqualAreaProjection {
         @Override
         protected void inverseTransform(final double[] srcPts, final int srcOff,
                                         final double[] dstPts, final int dstOff)
-                throws ProjectionException
         {
             final double y = srcPts[srcOff+1];                      // Must be before writing x.
             dstPts[dstOff  ] = srcPts[srcOff];                      // Must be before writing y.

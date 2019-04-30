@@ -281,7 +281,7 @@ public class Polyconic extends MeridianArcBased {
      * @since   1.0
      * @module
      */
-    static final class Spherical extends Polyconic {
+    private static final class Spherical extends Polyconic {
         /**
          * For cross-version compatibility.
          */
@@ -302,7 +302,7 @@ public class Polyconic extends MeridianArcBased {
         @Override
         public Matrix transform(final double[] srcPts, final int srcOff,
                                 final double[] dstPts, final int dstOff,
-                                final boolean derivate) throws ProjectionException
+                                final boolean derivate)
         {
             final double λ    = srcPts[srcOff  ];
             final double φ    = srcPts[srcOff+1];

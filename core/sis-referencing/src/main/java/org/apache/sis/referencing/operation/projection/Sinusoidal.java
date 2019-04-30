@@ -188,7 +188,7 @@ public class Sinusoidal extends MeridianArcBased {
         @Override
         public Matrix transform(final double[] srcPts, final int srcOff,
                                 final double[] dstPts, final int dstOff,
-                                final boolean derivate) throws ProjectionException
+                                final boolean derivate)
         {
             final double λ    = srcPts[srcOff  ];
             final double φ    = srcPts[srcOff+1];

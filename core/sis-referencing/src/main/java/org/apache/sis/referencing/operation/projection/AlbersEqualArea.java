@@ -310,7 +310,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         @Override
         public Matrix transform(final double[] srcPts, final int srcOff,
                                 final double[] dstPts, final int dstOff,
-                                final boolean derivate) throws ProjectionException
+                                final boolean derivate)
         {
             final double θ = srcPts[srcOff];                // θ = n⋅λ
             final double φ = srcPts[srcOff+1];
@@ -336,7 +336,6 @@ public class AlbersEqualArea extends EqualAreaProjection {
         @Override
         protected void inverseTransform(final double[] srcPts, final int srcOff,
                                         final double[] dstPts, final int dstOff)
-                throws ProjectionException
         {
             final double x = srcPts[srcOff];
             final double y = srcPts[srcOff + 1];

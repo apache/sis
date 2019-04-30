@@ -513,7 +513,7 @@ public class LambertConicConformal extends ConformalProjection {
         @Override
         public Matrix transform(final double[] srcPts, final int srcOff,
                                 final double[] dstPts, final int dstOff,
-                                final boolean derivate) throws ProjectionException
+                                final boolean derivate)
         {
             final double θ    = srcPts[srcOff  ];       // θ = λ⋅n
             final double φ    = srcPts[srcOff+1];       // Sign may be reversed
@@ -553,7 +553,6 @@ public class LambertConicConformal extends ConformalProjection {
         @Override
         protected void inverseTransform(final double[] srcPts, final int srcOff,
                                         final double[] dstPts, final int dstOff)
-                throws ProjectionException
         {
             double x = srcPts[srcOff  ];
             double y = srcPts[srcOff+1];
