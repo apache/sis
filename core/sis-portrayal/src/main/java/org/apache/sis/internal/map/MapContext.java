@@ -51,7 +51,7 @@ public class MapContext extends MapGroup {
     /**
      * Returns the map area to show by default. This is not necessarily the
      * {@linkplain org.apache.sis.storage.DataSet#getEnvelope() envelope of data}
-     * since one may want to zoom in a different spatio-temporal area.
+     * since one may want to zoom in a different spatiotemporal area.
      *
      * <p>The {@linkplain org.apache.sis.geometry.GeneralEnvelope#getCoordinateReferenceSystem() envelope CRS}
      * defines the map projection to use for rendering the map. It may be different than the CRS of the data.

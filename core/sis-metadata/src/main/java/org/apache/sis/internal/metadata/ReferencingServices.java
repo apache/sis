@@ -262,7 +262,7 @@ public class ReferencingServices extends OptionalDependency {
      * </ul>
      *
      * @param  envelope  the source envelope.
-     * @param  target    the target spatio-temporal extent.
+     * @param  target    the target spatiotemporal extent.
      * @throws TransformException if no temporal component can be extracted from the given envelope.
      * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
      */

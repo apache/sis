@@ -188,7 +188,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
     }
 
     /**
-     * Sets this spatio-temporal extent to values inferred from the specified envelope.
+     * Sets this spatiotemporal extent to values inferred from the specified envelope.
      * The given envelope shall have at least a spatial, vertical or temporal component.
      *
      * <p>The spatial component is handled as below:</p>
@@ -217,7 +217,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      * <b>Note:</b> This method is available only if the {@code sis-referencing} module is
      * available on the classpath.
      *
-     * @param  envelope  the envelope to use for setting this spatio-temporal extent.
+     * @param  envelope  the envelope to use for setting this spatiotemporal extent.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.
      * @throws TransformException if the envelope can not be transformed to a temporal extent.
      */

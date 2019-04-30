@@ -68,7 +68,7 @@ public class CoordinateOperationContext implements Serializable {
     private static final long serialVersionUID = -6944460471653277973L;
 
     /**
-     * The spatio-temporal area of interest, or {@code null} if none. This instance may be updated or
+     * The spatiotemporal area of interest, or {@code null} if none. This instance may be updated or
      * replaced by other methods in this class, or (indirectly) by {@link CoordinateOperationFinder}.
      */
     private Extent areaOfInterest;
@@ -131,9 +131,9 @@ public class CoordinateOperationContext implements Serializable {
     }
 
     /**
-     * Returns the spatio-temporal area of interest, or {@code null} if none.
+     * Returns the spatiotemporal area of interest, or {@code null} if none.
      *
-     * @return the spatio-temporal area of interest, or {@code null} if none.
+     * @return the spatiotemporal area of interest, or {@code null} if none.
      *
      * @see Extents#getGeographicBoundingBox(Extent)
      */
@@ -142,9 +142,9 @@ public class CoordinateOperationContext implements Serializable {
     }
 
     /**
-     * Sets the spatio-temporal area of interest, or {@code null} if none.
+     * Sets the spatiotemporal area of interest, or {@code null} if none.
      *
-     * @param  area  the spatio-temporal area of interest, or {@code null} if none.
+     * @param  area  the spatiotemporal area of interest, or {@code null} if none.
      */
     public void setAreaOfInterest(Extent area) {
         if (area != null) {
@@ -155,7 +155,7 @@ public class CoordinateOperationContext implements Serializable {
 
     /**
      * Sets the geographic component of the area of interest, or {@code null} if none.
-     * This convenience method set the bounding box into the spatio-temporal {@link Extent}.
+     * This convenience method set the bounding box into the spatiotemporal {@link Extent}.
      *
      * <p>The reverse operation can be done with <code>{@linkplain Extents#getGeographicBoundingBox(Extent)
      * Extents.getGeographicBoundingBox}({@linkplain #getAreaOfInterest()})</code>.</p>
