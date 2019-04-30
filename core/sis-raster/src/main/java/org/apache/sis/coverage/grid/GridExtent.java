@@ -53,6 +53,7 @@ import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
 import org.opengis.coverage.grid.GridEnvelope;
+import org.opengis.coverage.grid.GridCoordinates;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
 
@@ -71,16 +72,12 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * <p>{@code GridExtent} instances are immutable and thread-safe.
  * The same instance can be shared by different {@link GridGeometry} instances.</p>
  *
- * <div class="note"><b>Upcoming API generalization:</b>
- * this class may implement the {@code GridEnvelope} interface in a future Apache SIS version.
- * This is pending <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>.</div>
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public class GridExtent implements Serializable {
+public class GridExtent implements GridEnvelope, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -509,6 +506,7 @@ public class GridExtent implements Serializable {
      *
      * @see #reduce(int...)
      */
+    @Override
     public final int getDimension() {
         return coordinates.length >>> 1;
     }
@@ -533,11 +531,9 @@ public class GridExtent implements Serializable {
      * The sequence contains a minimum value for each dimension of the grid coverage.
      *
      * @return the valid minimum grid coordinates, inclusive.
-     *
-     * @todo Pending resolution of <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>
-     *       before to become public API, in order to use the interface in return type.
      */
-    GridCoordinatesView getLow() {
+    @Override
+    public GridCoordinates getLow() {
         return new GridCoordinatesView(coordinates, 0);
     }
 
@@ -546,11 +542,9 @@ public class GridExtent implements Serializable {
      * The sequence contains a maximum value for each dimension of the grid coverage.
      *
      * @return the valid maximum grid coordinates, <strong>inclusive</strong>.
-     *
-     * @todo Pending resolution of <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>
-     *       before to become public API, in order to use the interface in return type.
      */
-    GridCoordinatesView getHigh() {
+    @Override
+    public GridCoordinates getHigh() {
         return new GridCoordinatesView(coordinates, getDimension());
     }
 
@@ -565,6 +559,7 @@ public class GridExtent implements Serializable {
      * @see #getLow()
      * @see #getHigh(int)
      */
+    @Override
     public long getLow(final int index) {
         ArgumentChecks.ensureValidIndex(getDimension(), index);
         return coordinates[index];
@@ -581,6 +576,7 @@ public class GridExtent implements Serializable {
      * @see #getHigh()
      * @see #getLow(int)
      */
+    @Override
     public long getHigh(final int index) {
         final int dimension = getDimension();
         ArgumentChecks.ensureValidIndex(dimension, index);
@@ -600,6 +596,7 @@ public class GridExtent implements Serializable {
      * @see #getLow(int)
      * @see #getHigh(int)
      */
+    @Override
     public long getSize(final int index) {
         final int dimension = getDimension();
         ArgumentChecks.ensureValidIndex(dimension, index);

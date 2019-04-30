@@ -17,6 +17,8 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
+import org.opengis.coverage.grid.GridCoordinates;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -24,16 +26,12 @@ import org.apache.sis.util.ArgumentChecks;
  * A view over the low or high grid envelope coordinates.
  * This is not a general-purpose grid coordinates since it assumes a {@link GridExtent} coordinates layout.
  *
- * <div class="note"><b>Upcoming API generalization:</b>
- * this class may implement the {@code GridCoordinates} interface in a future Apache SIS version.
- * This is pending <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>.</div>
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-final class GridCoordinatesView /* implements GridCoordinates */ {
+final class GridCoordinatesView implements GridCoordinates {
     /**
      * A reference to the coordinate array of the enclosing grid envelope.
      */
@@ -56,6 +54,7 @@ final class GridCoordinatesView /* implements GridCoordinates */ {
     /**
      * Returns the number of dimension.
      */
+    @Override
     public final int getDimension() {
         return ordinates.length >>> 1;
     }
@@ -63,6 +62,7 @@ final class GridCoordinatesView /* implements GridCoordinates */ {
     /**
      * Returns all coordinate values.
      */
+    @Override
     public final long[] getCoordinateValues() {
         return Arrays.copyOfRange(ordinates, offset, offset + getDimension());
     }
@@ -70,6 +70,7 @@ final class GridCoordinatesView /* implements GridCoordinates */ {
     /**
      * Returns the coordinate value for the specified dimension.
      */
+    @Override
     public final long getCoordinateValue(final int index) {
         ArgumentChecks.ensureValidIndex(getDimension(), index);
         return ordinates[offset + index];
@@ -78,9 +79,10 @@ final class GridCoordinatesView /* implements GridCoordinates */ {
     /**
      * Do not allow modification of grid coordinates since they are backed by {@link GridExtent}.
      */
-//  public void setCoordinateValue(final int index, long value) {
-//      throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "GridCoordinates"));
-//  }
+    @Override
+    public void setCoordinateValue(final int index, long value) {
+        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "GridCoordinates"));
+    }
 
     /**
      * Returns a string representation of this grid coordinates for debugging purpose.
