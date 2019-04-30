@@ -34,7 +34,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests various map projections using {@literal Proj.4} wrappers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -96,7 +96,6 @@ public class TransformTest extends ParameterizedTransformTest {
                     "Mercator (variant C)",                     // Need to verify if Proj4 handles easting/northing correctly.
                     "Polar Stereographic (variant C)",          // Need to verify if Proj4 handles northing correctly.
                     "Popular Visualisation Pseudo Mercator",
-                    "Polyconic",                                // No OperationMethod in SIS yet.
                     "Transverse Mercator (South Orientated)"), FAILURES);
             FAILURES.clear();
         }

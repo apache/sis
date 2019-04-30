@@ -16,8 +16,8 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -25,33 +25,36 @@ import org.junit.Test;
 
 
 /**
- * Tests the {@link Sinusoidal} projection.
+ * Tests the {@link Polyconic} class.
  *
+ * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 @DependsOn(MeridianArcTest.class)
-public final strictfp class SinusoidalTest extends MapProjectionTestCase {
+public final strictfp class PolyconicTest extends MapProjectionTestCase {
     /**
-     * Creates a new instance of {@link Sinusoidal} concatenated with the (de)normalization matrices.
+     * Creates a new instance of {@link Polyconic} concatenated with the (de)normalization matrices.
      * The new instance is stored in the inherited {@link #transform} field.
      *
      * @param  ellipsoidal  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
     private void createProjection(final boolean ellipsoidal) throws FactoryException {
-        createCompleteProjection(new org.apache.sis.internal.referencing.provider.Sinusoidal(),
+        createCompleteProjection(new org.apache.sis.internal.referencing.provider.Polyconic(),
                 ellipsoidal ? CLARKE_A : RADIUS,        // Semi-major axis (Clarke 1866)
                 ellipsoidal ? CLARKE_B : RADIUS,        // Semi-minor axis (Clarke 1866)
-                -90,                                    // Central meridian
-                Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+                -96,                                    // Central meridian
+                 30,                                    // Latitude of origin
+                Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         tolerance = Formulas.LINEAR_TOLERANCE;  // Not NORMALIZED_TOLERANCE since this is not a NormalizedProjection.
     }
 
     /**
      * Tests the projection of a few points on a sphere. The first point in this test is provided
-     * by Snyder at page 365. The Snyder example gives intermediate values at different step,
+     * by Snyder at page 304. The Snyder example gives intermediate values at different step,
      * which may be verified by executing this code in the debugger.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
@@ -62,19 +65,26 @@ public final strictfp class SinusoidalTest extends MapProjectionTestCase {
         createProjection(false);
         verifyTransform(
             new double[] {                  // (λ,φ) coordinates in degrees to project.
-                -75, -50,                   // Snyder example is relative to λ₀ = 90°W.
-                -88,   1
+                -75, 40,                    // Snyder example is relative to λ₀ = 96°W.
+                -75,  0
             },
             new double[] {                  // Expected (x,y) results in metres.
-              1077000.98,  -5585053.61,     // Values derived from Snyder page 365.
-               223368.12,    111701.07      // Values taken from PROJ.4.
+                1780350.84,  1327706.12,    // Values derived from Snyder page 303 with R=6400000 metres.
+                2345722.51, -3351032.16
             });
     }
 
     /**
      * Tests the projection of a few points on an ellipsoid. The first point in this test is provided
-     * by Snyder at page 366. The Snyder example gives intermediate values at different step, which
-     * may be verified by executing this code in the debugger.
+     * by Snyder at page 304. The Snyder example gives intermediate values at different step, which may
+     * be verified by executing this code in the debugger. In particular during inverse projection,
+     * values of φ should be as below during each iteration steps:
+     *
+     * <ol>
+     *   <li>0.6967280</li>
+     *   <li>0.6981286</li>
+     *   <li>0.6981317</li>
+     * </ol>
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a point.
@@ -84,12 +94,12 @@ public final strictfp class SinusoidalTest extends MapProjectionTestCase {
         createProjection(true);
         verifyTransform(
             new double[] {                  // (λ,φ) coordinates in degrees to project.
-                -75, -50,                   // Snyder example is relative to λ₀ = 90°W.
-                -88,   1,
+                -75, 40,                    // Snyder example is relative to λ₀ = 96°W.
+                -75,  0
             },
             new double[] {                  // Expected (x,y) results in metres.
-              1075471.54,  -5540628.03,     // Values from Snyder page 366.
-               222607.72,    110567.32      // Values taken from PROJ.4 and modified for Clarke 1866.
+                1776774.54,  1319657.78,    // Values derived from Snyder page 304.
+                2337734.74, -3319933.30
             });
     }
 
@@ -106,9 +116,10 @@ public final strictfp class SinusoidalTest extends MapProjectionTestCase {
         createProjection(false);
         final double delta = (1.0 / 60) / 1852;                 // Approximatively 1 metre.
         derivativeDeltas = new double[] {delta, delta};
-        tolerance = Formulas.LINEAR_TOLERANCE / 10000;
-        verifyDerivative(105,  30);
-        verifyDerivative(100, -60);
+        tolerance = Formulas.LINEAR_TOLERANCE / 10;
+        verifyDerivative(-100,  3);
+        verifyDerivative( -56, 50);
+        verifyDerivative( -20, 47);
     }
 
     /**
@@ -124,8 +135,21 @@ public final strictfp class SinusoidalTest extends MapProjectionTestCase {
         createProjection(true);
         final double delta = (1.0 / 60) / 1852;                 // Approximatively 1 metre.
         derivativeDeltas = new double[] {delta, delta};
-        tolerance = Formulas.LINEAR_TOLERANCE / 10000;
-        verifyDerivative(105,  30);
-        verifyDerivative(100, -60);
+        tolerance = Formulas.LINEAR_TOLERANCE / 10;
+        verifyDerivative(-100,  3);
+        verifyDerivative( -56, 50);
+        verifyDerivative( -20, 47);
+    }
+
+    /**
+     * Runs the test defined in the GeoAPI-conformance module.
+     *
+     * @throws FactoryException   if the transform can not be created.
+     * @throws TransformException if an error occurred while projecting a point.
+     */
+    @Test
+    @DependsOnMethod("testEllipsoidal")
+    public void runGeoapiTest() throws FactoryException, TransformException {
+        createGeoApiTest(new org.apache.sis.internal.referencing.provider.Polyconic()).testPolyconic();
     }
 }

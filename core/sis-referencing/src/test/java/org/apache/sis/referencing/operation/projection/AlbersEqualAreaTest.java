@@ -111,8 +111,8 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
     @DependsOnMethod("testSphere")
     public void testEllipse() throws FactoryException, TransformException {
         createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
-                6378206.4,  // Semi-major axis from Snyder table 15
-                6356583.8,  // Semi-minor axis
+                CLARKE_A,   // Semi-major axis from Snyder table 15
+                CLARKE_B,   // Semi-minor axis
                 0,          // Central meridian
                 0,          // Latitude of origin
                 29.5,       // Standard parallel 1 (from Snyder table 15)
@@ -168,8 +168,8 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
 
         // Spherical case
         createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
-                6400000,    // Semi-major axis
-                6400000,    // Semi-minor axis
+                RADIUS,     // Semi-major axis
+                RADIUS,     // Semi-minor axis
                 0,          // Central meridian
                 0,          // Latitude of origin
                 0,          // Standard parallel 1
@@ -182,7 +182,7 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
 
         // Ellipsoidal case
         createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
-                6378137,            // Semi-major axis
+                6378137,            // Semi-major axis (not WGS84 despite same values)
                 6356752.314140347,  // Semi-minor axis
                 0,                  // Central meridian
                 0,                  // Latitude of origin

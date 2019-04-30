@@ -178,6 +178,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.AlbersEqualAreaTest.class,
     org.apache.sis.referencing.operation.projection.MeridianArcTest.class,
     org.apache.sis.referencing.operation.projection.SinusoidalTest.class,
+    org.apache.sis.referencing.operation.projection.PolyconicTest.class,
     org.apache.sis.referencing.operation.projection.MollweideTest.class,
 
     // Coordinate operation and derived Coordinate Reference Systems (cyclic dependency).

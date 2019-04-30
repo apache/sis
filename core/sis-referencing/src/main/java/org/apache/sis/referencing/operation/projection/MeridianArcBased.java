@@ -119,7 +119,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
         cf2 = -2625./0x8000  * e10  +   175./0x6000  * e8  +  5120./0x60000 * e6  +  -15./0x20 * e4;
         cf3 =   735./0x800   * e10  +  2240./0x60000 * e8  +   -35./0x60    * e6;
         cf4 = -2205./0x1000  * e10  +  -315./0x400   * e8;
-     // c6 =   693./0x20000 * e10  omitted for now (not yet used).
+     // cf5 =   693./0x20000 * e10  omitted for now (not yet used).
         /*
          * Coefficients for inverse transform derived from Snyder 3-26 and EPSG guidance notes:
          *
