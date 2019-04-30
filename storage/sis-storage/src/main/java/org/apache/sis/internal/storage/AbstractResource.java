@@ -105,11 +105,11 @@ public abstract class AbstractResource implements Resource, Localized {
     }
 
     /**
-     * Returns the spatio-temporal envelope of this resource. This information is part of API only in some kind of resources
+     * Returns the spatiotemporal envelope of this resource. This information is part of API only in some kind of resources
      * like {@link org.apache.sis.storage.FeatureSet}. But the method is provided in this base class for convenience and for
      * allowing {@link #getMetadata()} to use this information if available. The default implementation returns {@code null}.
      *
-     * @return the spatio-temporal resource extent, or {@code null} if none.
+     * @return the spatiotemporal resource extent, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
     public Envelope getEnvelope() throws DataStoreException {

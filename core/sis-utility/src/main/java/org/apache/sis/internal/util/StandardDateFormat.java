@@ -103,7 +103,7 @@ public final class StandardDateFormat extends DateFormat {
             .toFormatter(Locale.ROOT);
 
     /**
-     * The kind of objects to get from calls to {@link #parseBest(CharSequence)}, in preference order.
+     * The kinds of objects to get from calls to {@link #parseBest(CharSequence)}, in preference order.
      * The time is converted to UTC timezone if possible.
      *
      * Tip: if we want to preserve the timezone instead than converting to UTC, we could try replacing

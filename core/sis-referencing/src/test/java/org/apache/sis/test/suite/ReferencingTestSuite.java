@@ -173,8 +173,12 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.PolarStereographicTest.class,
     org.apache.sis.referencing.operation.projection.ObliqueStereographicTest.class,
     org.apache.sis.referencing.operation.projection.ObliqueMercatorTest.class,
+    org.apache.sis.referencing.operation.projection.EqualAreaProjectionTest.class,
     org.apache.sis.referencing.operation.projection.CylindricalEqualAreaTest.class,
     org.apache.sis.referencing.operation.projection.AlbersEqualAreaTest.class,
+    org.apache.sis.referencing.operation.projection.MeridianArcTest.class,
+    org.apache.sis.referencing.operation.projection.SinusoidalTest.class,
+    org.apache.sis.referencing.operation.projection.PolyconicTest.class,
     org.apache.sis.referencing.operation.projection.MollweideTest.class,
 
     // Coordinate operation and derived Coordinate Reference Systems (cyclic dependency).

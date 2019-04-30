@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Collections;
 import java.util.Set;
 import java.util.LinkedHashSet;
+import javax.measure.Unit;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
@@ -33,6 +34,12 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CSAuthorityFactory;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.SphericalCS;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -46,6 +53,7 @@ import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
 import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -54,12 +62,14 @@ import org.apache.sis.measure.Latitude;
  * in the {@link CRS#forCode(String)} method javadoc is always available.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
 @Fallback
-final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSAuthorityFactory, DatumAuthorityFactory {
+final class EPSGFactoryFallback extends GeodeticAuthorityFactory
+        implements CRSAuthorityFactory, CSAuthorityFactory, DatumAuthorityFactory
+{
     /**
      * Whether to disallow {@code CommonCRS} to use {@link org.apache.sis.referencing.factory.sql.EPSGFactory}
      * (in which case {@code CommonCRS} will fallback on hard-coded values).
@@ -72,11 +82,6 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
      * The singleton instance.
      */
     static final EPSGFactoryFallback INSTANCE = new EPSGFactoryFallback();
-
-    /**
-     * Kinds of object created by this factory. Used as bitmask.
-     */
-    private static final int CRS = 1, DATUM = 2, ELLIPSOID = 4, PRIME_MERIDIAN = 8;
 
     /**
      * The authority to report in exceptions. Not necessarily the same than the {@link #authority} title.
@@ -155,10 +160,27 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
         if (vertical || vdatum) {
             for (final CommonCRS.Vertical candidate : CommonCRS.Vertical.values()) {
                 if (candidate.isEPSG) {
-                    if (vertical) codes.add(Integer.toString(candidate.crs));
-                    if (vdatum)   codes.add(Integer.toString(candidate.datum));
+                    if (vertical) add(codes, candidate.crs);
+                    if (vdatum)   add(codes, candidate.datum);
                 }
             }
+        }
+        if (type.isAssignableFrom(EllipsoidalCS.class)) {
+            add(codes, StandardDefinitions.ELLIPSOIDAL_2D);
+            add(codes, StandardDefinitions.ELLIPSOIDAL_3D);
+        }
+        if (type.isAssignableFrom(SphericalCS.class)) {
+            add(codes, StandardDefinitions.SPHERICAL);
+        }
+        if (type.isAssignableFrom(CartesianCS.class)) {
+            add(codes, StandardDefinitions.EARTH_CENTRED);
+            add(codes, StandardDefinitions.CARTESIAN_2D);
+            add(codes, StandardDefinitions.UPS_NORTH);
+            add(codes, StandardDefinitions.UPS_SOUTH);
+        }
+        if (type.isAssignableFrom(Unit.class)) {
+            add(codes, Constants.EPSG_METRE);
+            add(codes, Constants.EPSG_AXIS_DEGREES);
         }
         return codes;
     }
@@ -167,11 +189,15 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
      * Adds the given value to the given set, provided that the value is different than zero.
      * Zero is used as a sentinel value in {@link CommonCRS} meaning "no EPSG code".
      */
-    private static void add(final Set<String> codes, final int value) {
-        if (value != 0) {
-            codes.add(Integer.toString(value));
-        }
+    private static void add(final Set<String> codes, final short value) {
+        if (value != 0) codes.add(Short.toString(value));
     }
+
+    /**
+     * Kinds of object created by this factory, as bitmask. Note that objects
+     * created for {@link #CS} and {@link #AXIS} kinds are currently not cached.
+     */
+    private static final int CRS=0x1, DATUM=0x2, ELLIPSOID=0x4, PRIME_MERIDIAN=0x8, UNIT=0x10, AXIS=0x20, CS=0x40;
 
     /**
      * Returns a prime meridian for the given EPSG code.
@@ -207,22 +233,50 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
     }
 
     /**
+     * Returns a coordinate system for the given EPSG code. Contrarily to other kinds of objects,
+     * coordinate systems are not cached because we can not use {@link CommonCRS} as a store for
+     * them (because all enumerated values use the same coordinate systems). The lack of caching
+     * should not be an issue since standalone CS objects (without CRS) are rarely be needed.
+     */
+    @Override
+    public CoordinateSystem createCoordinateSystem(final String code) throws NoSuchAuthorityCodeException {
+        return (CoordinateSystem) predefined(code, CS);
+    }
+
+    /**
+     * Returns a coordinate system axis for the given EPSG code. Axes are not cached for the same
+     * reasons than {@link #createCoordinateSystem(String)}.
+     */
+    @Override
+    public CoordinateSystemAxis createCoordinateSystemAxis(final String code) throws NoSuchAuthorityCodeException {
+        return (CoordinateSystemAxis) predefined(code, AXIS);
+    }
+
+    /**
+     * Returns a unit of measurement for the given code.
+     */
+    @Override
+    public Unit<?> createUnit(final String code) throws NoSuchAuthorityCodeException {
+        return (Unit) predefined(code, UNIT);
+    }
+
+    /**
      * Returns a coordinate reference system, datum or ellipsoid for the given EPSG code.
      */
     @Override
     public IdentifiedObject createObject(final String code) throws NoSuchAuthorityCodeException {
-        return predefined(code, -1);
+        return (IdentifiedObject) predefined(code, -1 & ~UNIT);
     }
 
     /**
      * Implementation of all {@code createFoo(String)} methods in this fallback class.
      *
      * @param  code  the EPSG code.
-     * @param  kind  any combination of {@link #CRS}, {@link #DATUM}, {@link #ELLIPSOID} or {@link #PRIME_MERIDIAN} bits.
+     * @param  kind  any combination of {@code *_MASK} bits.
      * @return the requested object.
      * @throws NoSuchAuthorityCodeException if no matching object has been found.
      */
-    private IdentifiedObject predefined(String code, final int kind) throws NoSuchAuthorityCodeException {
+    private Object predefined(String code, final int kind) throws NoSuchAuthorityCodeException {
         try {
             /*
              * Parse the value after the last ':'. We do not bother to verify if the part before ':' is legal
@@ -232,47 +286,66 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
              * when using the factory returned by AuthorityFactories.fallback(…).
              */
             code = CharSequences.trimWhitespaces(code, code.lastIndexOf(DefaultNameSpace.DEFAULT_SEPARATOR) + 1, code.length()).toString();
-            final int n = Integer.parseInt(code);
+            final short n = Short.parseShort(code);
+            if ((kind & (ELLIPSOID | DATUM | CRS)) != 0) {
+                for (final CommonCRS crs : CommonCRS.values()) {
+                    /*
+                     * In a complete EPSG dataset we could have an ambiguity below because the same code can be used
+                     * for datum, ellipsoid and CRS objects. However in the particular case of this EPSG-subset, we
+                     * ensured that there is no such collision - see CommonCRSTest.ensureNoCodeCollision().
+                     */
+                    if ((kind & ELLIPSOID) != 0  &&  n == crs.ellipsoid) return crs.ellipsoid();
+                    if ((kind & DATUM)     != 0  &&  n == crs.datum)     return crs.datum();
+                    if ((kind & CRS) != 0) {
+                        if (n == crs.geographic) return crs.geographic();
+                        if (n == crs.geocentric) return crs.geocentric();
+                        if (n == crs.geo3D)      return crs.geographic3D();
+                        final double latitude;
+                        int zone;
+                        if (crs.northUTM != 0 && (zone = n - crs.northUTM) >= crs.firstZone && zone <= crs.lastZone) {
+                            latitude = +1;          // Any north latitude below 56°N (because of Norway exception) is okay
+                        } else if (crs.southUTM != 0 && (zone = n - crs.southUTM) >= crs.firstZone && zone <= crs.lastZone) {
+                            latitude = -1;          // Any south latitude above 80°S (because of UPS south case) is okay.
+                        } else if (n == crs.northUPS) {
+                            latitude = Latitude.MAX_VALUE;
+                            zone     = 30;                  // Any random UTM zone is okay.
+                        } else if (n == crs.southUPS) {
+                            latitude = Latitude.MIN_VALUE;
+                            zone     = 30;                  // Any random UTM zone is okay.
+                        } else {
+                            continue;
+                        }
+                        return crs.universal(latitude, TransverseMercator.Zoner.UTM.centralMeridian(zone));
+                    }
+                }
+                if ((kind & (DATUM | CRS)) != 0) {
+                    for (final CommonCRS.Vertical candidate : CommonCRS.Vertical.values()) {
+                        if (candidate.isEPSG) {
+                            if ((kind & DATUM) != 0  &&  candidate.datum == n) return candidate.datum();
+                            if ((kind & CRS)   != 0  &&  candidate.crs   == n) return candidate.crs();
+                        }
+                    }
+                }
+            }
+            /*
+             * Other kinds of objects (prime meridian, units of measurement, etc). We check those candidates only after
+             * above loop (CRS, datum, etc.) in order to give precedence to CRS if the same code is used for both kinds
+             * of objects. We do not bother to cache coordinate system and axis instances.
+             */
             if ((kind & PRIME_MERIDIAN) != 0  &&  n == Constants.EPSG_GREENWICH) {
                 return CommonCRS.WGS84.primeMeridian();
             }
-            for (final CommonCRS crs : CommonCRS.values()) {
-                /*
-                 * In a complete EPSG dataset we could have an ambiguity below because the same code can be used
-                 * for datum, ellipsoid and CRS objects. However in the particular case of this EPSG-subset, we
-                 * ensured that there is no such collision - see CommonCRSTest.ensureNoCodeCollision().
-                 */
-                if ((kind & ELLIPSOID) != 0  &&  n == crs.ellipsoid) return crs.ellipsoid();
-                if ((kind & DATUM)     != 0  &&  n == crs.datum)     return crs.datum();
-                if ((kind & CRS) != 0) {
-                    if (n == crs.geographic) return crs.geographic();
-                    if (n == crs.geocentric) return crs.geocentric();
-                    if (n == crs.geo3D)      return crs.geographic3D();
-                    final double latitude;
-                    int zone;
-                    if (crs.northUTM != 0 && (zone = n - crs.northUTM) >= crs.firstZone && zone <= crs.lastZone) {
-                        latitude = +1;          // Any north latitude below 56°N (because of Norway exception) is okay
-                    } else if (crs.southUTM != 0 && (zone = n - crs.southUTM) >= crs.firstZone && zone <= crs.lastZone) {
-                        latitude = -1;          // Any south latitude above 80°S (because of UPS south case) is okay.
-                    } else if (n == crs.northUPS) {
-                        latitude = Latitude.MAX_VALUE;
-                        zone     = 30;                  // Any random UTM zone is okay.
-                    } else if (n == crs.southUPS) {
-                        latitude = Latitude.MIN_VALUE;
-                        zone     = 30;                  // Any random UTM zone is okay.
-                    } else {
-                        continue;
-                    }
-                    return crs.universal(latitude, TransverseMercator.Zoner.UTM.centralMeridian(zone));
-                }
+            if ((kind & CS) != 0) {
+                final CoordinateSystem cs = StandardDefinitions.createCoordinateSystem(n, false);
+                if (cs != null) return cs;
             }
-            if ((kind & (DATUM | CRS)) != 0) {
-                for (final CommonCRS.Vertical candidate : CommonCRS.Vertical.values()) {
-                    if (candidate.isEPSG) {
-                        if ((kind & DATUM) != 0  &&  candidate.datum == n) return candidate.datum();
-                        if ((kind & CRS)   != 0  &&  candidate.crs   == n) return candidate.crs();
-                    }
-                }
+            if ((kind & AXIS) != 0) {
+                final CoordinateSystemAxis axis = StandardDefinitions.createAxis(n, false);
+                if (axis != null) return axis;
+            }
+            if ((kind & UNIT) != 0) {
+                final Unit<?> unit = Units.valueOfEPSG(n);
+                if (unit != null) return unit;
             }
         } catch (NumberFormatException cause) {
             final NoSuchAuthorityCodeException e = new NoSuchAuthorityCodeException(Resources.format(
@@ -285,8 +358,8 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
     }
 
     /**
-     * Returns the interface for the given {@link #CRS}, {@link #DATUM}, {@link #ELLIPSOID} or {@link #PRIME_MERIDIAN}
-     * constant. This is used for formatting error message only.
+     * Returns the interface for the given {@code *_MASK} constant.
+     * This is used for formatting error message only.
      */
     private static Class<?> toClass(final int kind) {
         switch (kind) {
@@ -294,6 +367,9 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
             case DATUM:          return Datum.class;
             case ELLIPSOID:      return Ellipsoid.class;
             case PRIME_MERIDIAN: return PrimeMeridian.class;
+            case UNIT:           return Unit.class;
+            case AXIS:           return CoordinateSystemAxis.class;
+            case CS:             return CoordinateSystem.class;
             default:             return IdentifiedObject.class;
         }
     }

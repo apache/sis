@@ -25,7 +25,6 @@ import org.opengis.referencing.cs.AxisDirection;
 
 import static org.apache.sis.internal.util.Constants.EPSG_METRE;
 import static org.apache.sis.internal.util.Constants.EPSG_AXIS_DEGREES;
-import static org.apache.sis.internal.util.Constants.EPSG_PROJECTED_CS;
 
 
 /**
@@ -144,7 +143,7 @@ loop:   for (int i=0; ; i++) {
             final short epsg;
             short to3D = 0;
             switch (i) {
-                case  0: epsg = EPSG_PROJECTED_CS;                           break;      //  Cartesian   [E,N] in metres
+                case  0: epsg = 4400;                                        break;      //  Cartesian   [E,N] in metres
                 case  1: epsg = 1039;              unit = 9002;              break;      //  Cartesian   [E,N] in feet
                 case  2: epsg = 4497;              unit = 9003;              break;      //  Cartesian   [E,N] in US survey feet
                 case  3: epsg = 4403;              unit = 9005;              break;      //  Cartesian   [E,N] in Clarke feet

@@ -44,6 +44,7 @@ import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.Node;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.setup.GeometryLibrary;
@@ -481,6 +482,22 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             }
         }
         return geometries;
+    }
+
+    /**
+     * Returns the variable or group of the given name.
+     *
+     * @param  name  name of the variable or group to search.
+     * @return the variable or group of the given name, or {@code null} if none.
+     */
+    @Override
+    protected Node findNode(final String name) {
+        final VariableIF v = file.findVariable(name);
+        if (v != null) {
+            return getWrapperFor(v);
+        }
+        final Group group = file.findGroup(name);
+        return (group != null) ? new GroupWrapper(this, group) : null;
     }
 
     /**

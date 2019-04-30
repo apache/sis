@@ -28,7 +28,7 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
 
 
 /**
- * Base class of netCDF dimension, variable or attribute.
+ * Base class of netCDF dimension, variable or axis or grid.
  * All those objects share in common a {@link #getName()} method.
  *
  * @author  Martin Desruisseaux (Geomatys)

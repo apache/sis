@@ -30,13 +30,13 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
-import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
 // Test imports
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -161,7 +161,7 @@ public final strictfp class CRSTest extends TestCase {
          * different domain of validity. CRS[1] is given a domain large enough for all CRS except the last one.
          */
         final Map<String,Object> properties = new HashMap<>(4);
-        final CartesianCS cs = (CartesianCS) StandardDefinitions.createCoordinateSystem(Constants.EPSG_PROJECTED_CS);
+        final CartesianCS cs = HardCodedCS.PROJECTED;
         final ProjectedCRS[] crs = new ProjectedCRS[4];
         for (int i=0; i<crs.length; i++) {
             final CommonCRS baseCRS;

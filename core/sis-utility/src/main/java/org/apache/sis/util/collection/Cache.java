@@ -1305,7 +1305,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * error, so the default {@code Cache} behavior is to thrown an {@link IllegalStateException}
      * in such cases, typically when {@link Handler#putAndUnlock(Object)} is invoked. However in
      * some cases we may want to relax this check. For example the EPSG database sometime assigns
-     * the same key to different kind of objects.
+     * the same key to different kinds of objects.
      *
      * <p>If key collisions are allowed and two threads invoke {@link #lock(Object)} concurrently
      * for the same key, then the value to be stored in the map will be the one computed by the

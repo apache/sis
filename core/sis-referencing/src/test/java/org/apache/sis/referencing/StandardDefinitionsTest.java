@@ -22,6 +22,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.Ellipsoid;
@@ -30,6 +31,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.apache.sis.referencing.datum.GeodeticDatumMock;
@@ -43,14 +45,14 @@ import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
  * Tests the {@link StandardDefinitions} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -68,6 +70,23 @@ public final strictfp class StandardDefinitionsTest extends TestCase {
     @Test
     public void verifyGreenwichCode() {
         assertEquals(String.valueOf(Constants.EPSG_GREENWICH), StandardDefinitions.GREENWICH);
+    }
+
+    /**
+     * Tests {@link StandardDefinitions#createCoordinateSystem(short, boolean)}.
+     *
+     * @since 1.0
+     */
+    @Test
+    @DependsOnMethod("testCreateAxis")
+    public void testCreateCoordinateSystem() {
+        CoordinateSystem cs = StandardDefinitions.createCoordinateSystem((short) 4400, true);
+        assertInstanceOf("projected", CartesianCS.class, cs);
+        assertEquals("dimension", 2, cs.getDimension());
+        assertEquals("unit",      Units.METRE,         cs.getAxis(0).getUnit());
+        assertEquals("unit",      Units.METRE,         cs.getAxis(1).getUnit());
+        assertEquals("direction", AxisDirection.EAST,  cs.getAxis(0).getDirection());
+        assertEquals("direction", AxisDirection.NORTH, cs.getAxis(1).getDirection());
     }
 
     /**
@@ -128,7 +147,7 @@ public final strictfp class StandardDefinitionsTest extends TestCase {
     @DependsOnMethod("testCreateAxis")
     public void testCreateGeographicCRS() {
         final PrimeMeridian pm = StandardDefinitions.primeMeridian();
-        final EllipsoidalCS cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem((short) 6422);
+        final EllipsoidalCS cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem((short) 6422, true);
         for (final CommonCRS e : CommonCRS.values()) {
             final Ellipsoid ellipsoid = StandardDefinitions.createEllipsoid(e.ellipsoid);
             switch (e) {
@@ -179,14 +198,14 @@ public final strictfp class StandardDefinitionsTest extends TestCase {
     }
 
     /**
-     * Compares the values created by {@link StandardDefinitions#createAxis(short)} against the {@link HardCodedAxes}
-     * constants. Actually this is more a {@code HardCodedAxes} test than a {@code StandardDefinitions} one - in case
-     * of test failure, both classes could be at fault.
+     * Compares the values created by {@link StandardDefinitions#createAxis(short, boolean)} against the {@link HardCodedAxes}
+     * constants. Actually this is more a {@code HardCodedAxes} test than a {@code StandardDefinitions} one - in case of test
+     * failure, both classes could be at fault.
      */
     @Test
     public void testCreateAxis() {
         for (final short code : new short[] {1, 2, 60, 61, 62, 106, 107, 110, 114, 113}) {
-            final CoordinateSystemAxis actual = StandardDefinitions.createAxis(code);
+            final CoordinateSystemAxis actual = StandardDefinitions.createAxis(code, true);
             Validators.validate(actual);
             switch (code) {
                 case   1: compare(HardCodedAxes.EASTING,                actual); break;

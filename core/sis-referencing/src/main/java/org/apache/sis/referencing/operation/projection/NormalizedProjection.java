@@ -892,7 +892,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @param  applyOtherFirst  whether {@code other} is concatenated before {@code projection} or the converse.
      * @return the 3×3 matrix of the affine transform step, or {@code null} if none.
      */
-    static Matrix getMiddleMatrix(final AbstractMathTransform projection, final MathTransform other,
+    private static Matrix getMiddleMatrix(final AbstractMathTransform projection, final MathTransform other,
             final boolean applyOtherFirst)
     {
         final List<MathTransform> steps = MathTransforms.getSteps(other);

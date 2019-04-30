@@ -92,6 +92,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotRender_2 = 14;
 
         /**
+         * Can not set map projection parameter “{1}​:{2}” = {3} in the “{0}” netCDF file. The reason
+         * is: {4}
+         */
+        public static final short CanNotSetProjectionParameter_5 = 20;
+
+        /**
          * Can not use axis “{0}” in a grid geometry.
          */
         public static final short CanNotUseAxis_1 = 18;

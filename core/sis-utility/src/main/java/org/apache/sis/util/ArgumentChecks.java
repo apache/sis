@@ -192,7 +192,7 @@ public final class ArgumentChecks extends Static {
     /**
      * Ensures that the given {@code values} array is non-null and non-empty. This method can also ensures that all values
      * are between the given bounds (inclusive) and are distinct. The distinct values requirement is useful for validating
-     * arrays of spatio-temporal dimension indices, where dimensions can not be repeated.
+     * arrays of spatiotemporal dimension indices, where dimensions can not be repeated.
      *
      * <p>Note that a successful call to {@code ensureNonEmpty(name, values, 0, max, true)} implies
      * 1 ≦ {@code values.length} ≦ {@code max}.</p>

@@ -251,7 +251,7 @@ final class StandardDefinitions {
      */
     static PrimeMeridian primeMeridian() {
         final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, "Greenwich")); // Name is fixed by ISO 19111.
+        properties.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, "Greenwich"));         // Name is fixed by ISO 19111.
         properties.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, GREENWICH));
         return new DefaultPrimeMeridian(properties, 0, Units.DEGREE);
     }
@@ -264,32 +264,34 @@ final class StandardDefinitions {
      * @return the vertical CRS for the given code.
      */
     static VerticalCRS createVerticalCRS(final short code, final VerticalDatum datum) {
-        String cs   = "Vertical CS. Axis: height (H).";   // Default coordinate system
-        short  c    = 6499;                               // EPSG code of above coordinate system.
-        short  axis = 114;                                // Axis of above coordinate system.
-        String wms  = null;
+        String csName = "Vertical CS. Axis: height (H).";   // Default coordinate system
+        short  csCode = 6499;                               // EPSG code of above coordinate system.
+        short  axis   = 114;                                // Axis of above coordinate system.
+        String wms    = null;
         final  String name, alias;
         switch (code) {
-            case 5703: wms   = "88";
-                       name  = "NAVD88 height";
-                       alias = "North American Vertical Datum of 1988 height (m)";
+            case 5703: wms    = "88";
+                       name   = "NAVD88 height";
+                       alias  = "North American Vertical Datum of 1988 height (m)";
                        break;
-            case 5714: name  = "MSL height";
-                       alias = "mean sea level height";
+            case 5714: name   = "MSL height";
+                       alias  = "mean sea level height";
                        break;
-            case 5715: name  = "MSL depth";
-                       alias = "mean sea level depth";
-                       cs    = "Vertical CS. Axis: depth (D).";
-                       c     = 6498;
-                       axis  = 113;
+            case 5715: name   = "MSL depth";
+                       alias  = "mean sea level depth";
+                       csName = "Vertical CS. Axis: depth (D).";
+                       csCode = 6498;
+                       axis   = 113;
                        break;
             default:   throw new AssertionError(code);
         }
-        final Map<String,Object> properties = properties(code, name, alias, true);
+        Map<String,Object> properties = properties(csCode, csName, null, false);
+        final DefaultVerticalCS cs = new DefaultVerticalCS(properties, createAxis(axis, true));
+        properties = properties(code, name, alias, true);
         if (wms != null) {
             addWMS(properties, wms);
         }
-        return new DefaultVerticalCRS(properties, datum, new DefaultVerticalCS(properties(c, cs, null, false), createAxis(axis)));
+        return new DefaultVerticalCRS(properties, datum, cs);
     }
 
     /**
@@ -310,36 +312,51 @@ final class StandardDefinitions {
     }
 
     /**
+     * EPSG codes of coordinate systems supported by this class. We provide constants only for
+     * coordinate systems because those codes appear directly in method bodies, contrarily to
+     * other kinds of object where the code are stored in {@link CommonCRS} fields.
+     */
+    static final short ELLIPSOIDAL_2D = (short) 6422,
+                       ELLIPSOIDAL_3D = (short) 6423,
+                       SPHERICAL      = (short) 6404,
+                       EARTH_CENTRED  = (short) 6500,
+                       CARTESIAN_2D   = (short) 4400,
+                       UPS_NORTH      = (short) 1026,
+                       UPS_SOUTH      = (short) 1027;
+
+    /**
      * Creates a coordinate system from hard-coded values for the given code.
      * The coordinate system names used by this method contains only the first
      * part of the names declared in the EPSG database.
      *
-     * @param  code  the EPSG code.
+     * @param  code       the EPSG code.
+     * @param  mandatory  whether to fail or return {@code null} if the given code is unknown.
      * @return the coordinate system for the given code.
      */
     @SuppressWarnings("fallthrough")
-    static CoordinateSystem createCoordinateSystem(final short code) {
+    static CoordinateSystem createCoordinateSystem(final short code, final boolean mandatory) {
         final String name;
         int type = 0;                   // 0= Cartesian (default), 1= Spherical, 2= Ellipsoidal
         int dim = 2;                    // Number of dimension, default to 2.
         short axisCode;                 // Code of first axis + dim (or code after the last axis).
         switch (code) {
-            case 6422: name = "Ellipsoidal 2D"; type = 2;          axisCode =  108; break;
-            case 6423: name = "Ellipsoidal 3D"; type = 2; dim = 3; axisCode =  111; break;
-            case 6404: name = "Spherical";      type = 1; dim = 3; axisCode =   63; break;
-            case 6500: name = "Earth centred";            dim = 3; axisCode =  118; break;
-            case 4400: name = "Cartesian 2D";                      axisCode =    3; break;
-            case 1026: name = "Cartesian 2D for UPS north";        axisCode = 1067; break;
-            case 1027: name = "Cartesian 2D for UPS south";        axisCode = 1059; break;
-            default:   throw new AssertionError(code);
+            case ELLIPSOIDAL_2D: name = "Ellipsoidal 2D"; type = 2;          axisCode =  108; break;
+            case ELLIPSOIDAL_3D: name = "Ellipsoidal 3D"; type = 2; dim = 3; axisCode =  111; break;
+            case SPHERICAL:      name = "Spherical";      type = 1; dim = 3; axisCode =   63; break;
+            case EARTH_CENTRED:  name = "Earth centred";            dim = 3; axisCode =  118; break;
+            case CARTESIAN_2D:   name = "Cartesian 2D";                      axisCode =    3; break;
+            case UPS_NORTH:      name = "Cartesian 2D for UPS north";        axisCode = 1067; break;
+            case UPS_SOUTH:      name = "Cartesian 2D for UPS south";        axisCode = 1059; break;
+            default:   if (!mandatory) return null;
+                       throw new AssertionError(code);
         }
         final Map<String,?> properties = properties(code, name, null, false);
         CoordinateSystemAxis xAxis = null, yAxis = null, zAxis = null;
         switch (dim) {
             default: throw new AssertionError(dim);
-            case 3:  zAxis = createAxis(--axisCode);
-            case 2:  yAxis = createAxis(--axisCode);
-            case 1:  xAxis = createAxis(--axisCode);
+            case 3:  zAxis = createAxis(--axisCode, true);
+            case 2:  yAxis = createAxis(--axisCode, true);
+            case 1:  xAxis = createAxis(--axisCode, true);
             case 0:  break;
         }
         switch (type) {
@@ -355,10 +372,11 @@ final class StandardDefinitions {
     /**
      * Creates an axis from hard-coded values for the given code.
      *
-     * @param  code  the EPSG code.
+     * @param  code       the EPSG code.
+     * @param  mandatory  whether to fail or return {@code null} if the given code is unknown.
      * @return the coordinate system axis for the given code.
      */
-    static CoordinateSystemAxis createAxis(final short code) {
+    static CoordinateSystemAxis createAxis(final short code, final boolean mandatory) {
         final String name, abrv;
         Unit<?> unit = Units.METRE;
         double min = Double.NEGATIVE_INFINITY;
@@ -455,7 +473,8 @@ final class StandardDefinitions {
                        abrv = "N";
                        dir  = CoordinateSystems.directionAlongMeridian(AxisDirection.SOUTH, 180);
                        break;
-            default:   throw new AssertionError(code);
+            default:   if (!mandatory) return null;
+                       throw new AssertionError(code);
         }
         final Map<String,Object> properties = properties(code, name, null, false);
         properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, min);

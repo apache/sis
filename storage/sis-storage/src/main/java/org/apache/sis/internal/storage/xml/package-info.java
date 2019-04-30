@@ -17,7 +17,7 @@
 
 /**
  * {@link org.apache.sis.storage.DataStore} implementation for XML files that can be (un)marshalled by the
- * {@link org.apache.sis.xml.XML} class. The kind of objects recognized by this package is listed in the
+ * {@link org.apache.sis.xml.XML} class. The kinds of objects recognized by this package is listed in the
  * {@link org.apache.sis.internal.storage.xml.Store} class.
  *
  * <p>This base package is designed for use with JAXB, which allows this package to be very small since most of the

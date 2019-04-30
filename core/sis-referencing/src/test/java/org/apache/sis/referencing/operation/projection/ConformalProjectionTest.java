@@ -36,7 +36,7 @@ import static org.apache.sis.referencing.operation.projection.NormalizedProjecti
  * Tests the {@link ConformalProjection} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -60,7 +60,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
      * }
      */
     @Test
-    public void testMath() {
+    public void verifyMath() {
         assertEquals("Forward 0°N",      0, log(tan(PI/4)),                   TOLERANCE);
         assertEquals("Inverse 0 m",      0, PI/2 - 2*atan(exp(0)),            TOLERANCE);
         assertEquals("Forward 90°S",     NEGATIVE_INFINITY, log(tan(0)),      TOLERANCE);
@@ -88,10 +88,29 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     }
 
     /**
-     * Implementation of {@link #testExpOfNorthing()}.
-     * The {@link #transform} field must have been set before this method is called.
+     * Tests the {@link ConformalProjection#expOfNorthing(double, double)} function.
+     *
+     * {@preformat text
+     *   Forward:  y = -log(t(φ))
+     *   Inverse:  φ = φ(exp(-y))
+     * }
      */
-    private void doTestExpOfNorthing() {
+    @Test
+    @DependsOnMethod("verifyMath")
+    public void verifyNorthingKnownValues() {
+        verifyNorthingKnownValues(false);                       // Spherical case
+        verifyNorthingKnownValues(true);                        // Ellipsoidal case
+    }
+
+    /**
+     * Tests {@link ConformalProjection#expOfNorthing(double, double)} on some known values.
+     *
+     * @param  ellipsoidal  {@code true} for an ellipsoidal case, or {@code false} for a spherical case.
+     */
+    private void verifyNorthingKnownValues(final boolean ellipsoidal) {
+        transform = new NoOp(ellipsoidal);
+        tolerance = TOLERANCE;
+
         assertEquals("f(NaN) = NaN",       NaN, expOfNorthing(NaN),               tolerance);
         assertEquals("f( ±∞) = NaN",       NaN, expOfNorthing(NEGATIVE_INFINITY), tolerance);
         assertEquals("f( ±∞) = NaN",       NaN, expOfNorthing(POSITIVE_INFINITY), tolerance);
@@ -135,41 +154,16 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
 
     /**
      * Computes {@link ConformalProjection#expOfNorthing(double, double)} for the given latitude.
+     * The {@link #transform} field must have been set before this method is invoked.
      *
      * @param  φ  the latitude in radians.
      * @return {@code Math.exp} of the Mercator projection of the given latitude.
+     *
+     * @see #φ(double)
      */
     private double expOfNorthing(final double φ) {
-        return expOfNorthing((ConformalProjection) transform, φ);
-    }
-
-    /**
-     * Computes {@link ConformalProjection#expOfNorthing(double, double)} for the given latitude.
-     *
-     * @param  projection  the projection on which to invoke {@code expOfNorthing(…)}.
-     * @param  φ           the latitude in radians.
-     * @return {@code Math.exp} of the Mercator projection of the given latitude.
-     */
-    private static double expOfNorthing(final ConformalProjection projection, final double φ) {
+        final ConformalProjection projection = (ConformalProjection) transform;
         return projection.expOfNorthing(φ, projection.eccentricity * sin(φ));
-    }
-
-    /**
-     * Tests the {@link ConformalProjection#expOfNorthing(double, double)} function.
-     *
-     * {@preformat text
-     *   Forward:  y = -log(t(φ))
-     *   Inverse:  φ = φ(exp(-y))
-     * }
-     */
-    @Test
-    @DependsOnMethod("testMath")
-    public void testExpOfNorthing() {
-        transform = new NoOp(false);                            // Spherical case
-        tolerance = TOLERANCE;
-        doTestExpOfNorthing();
-        transform = new NoOp(true);                             // Ellipsoidal case
-        doTestExpOfNorthing();
     }
 
     /**
@@ -178,48 +172,46 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testExpOfNorthing")
+    @DependsOnMethod("verifyNorthingKnownValues")
     public void test_dy_dφ() throws TransformException {
-        tolerance = 1E-7;
-        doTest_dy_dφ(new NoOp(false));                          // Spherical case
-        doTest_dy_dφ(new NoOp(true));                           // Ellipsoidal case
+        test_dy_dφ(false);                                      // Spherical case
+        test_dy_dφ(true);                                       // Ellipsoidal case
     }
 
     /**
-     * Implementation of {@link #test_dy_dφ()}.
+     * Tests the {@link ConformalProjection#dy_dφ(double, double)} method.
+     *
+     * @param  ellipsoidal  {@code true} for an ellipsoidal case, or {@code false} for a spherical case.
      */
-    private void doTest_dy_dφ(final NoOp projection) throws TransformException {
+    private void test_dy_dφ(final boolean ellipsoidal) throws TransformException {
+        final NoOp projection = new NoOp(ellipsoidal);
         transform = new AbstractMathTransform1D() {
             @Override public double transform(final double φ) {
-                return expOfNorthing(projection, φ);
+                return projection.expOfNorthing(φ, projection.eccentricity * sin(φ));
             }
             @Override public double derivative(final double φ) {
                 final double sinφ = sin(φ);
-                return projection.dy_dφ(sinφ, cos(φ)) * expOfNorthing(projection, φ);
+                return projection.dy_dφ(sinφ, cos(φ)) * transform(φ);
             }
         };
-        verifyInDomain(-89 * (PI/180), 89 * (PI/180));          // Verify from 85°S to 85°N.
-    }
-
-    /**
-     * Convenience method invoking {@link TransformTestCase#verifyInDomain} for an 1D transform.
-     */
-    private void verifyInDomain(final double min, final double max) throws TransformException {
-        derivativeDeltas = new double[] {2E-8};
         isInverseTransformSupported = false;
-        verifyInDomain(
-                new double[] {min},                             // Minimal value to test.
-                new double[] {max},                             // Maximal value to test.
-                new int[]    {100},                             // Number of points to test.
-                TestUtilities.createRandomNumberGenerator());
+        derivativeDeltas = new double[] {2E-8};
+        tolerance = 1E-7;
+        verifyInDomain(new double[] {-89 * (PI/180)},                  // Minimal value to test.
+                       new double[] {+89 * (PI/180)},                  // Maximal value to test.
+                       new int[]    {100},                             // Number of points to test.
+                       TestUtilities.createRandomNumberGenerator());
     }
 
     /**
      * Computes {@link ConformalProjection#φ(double)}.
+     * The {@link #transform} field must have been set before this method is invoked.
      *
      * @param  expOfSouthing  the reciprocal of the value returned by {@link #expOfNorthing(double)}.
      * @return the latitude in radians.
      * @throws ProjectionException if the iteration does not converge.
+     *
+     * @see #expOfNorthing(double)
      */
     private double φ(final double expOfSouthing) throws ProjectionException {
         return ((ConformalProjection) transform).φ(expOfSouthing);
@@ -234,21 +226,19 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
      * @throws ProjectionException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testExpOfNorthing")
+    @DependsOnMethod("verifyNorthingKnownValues")
     public void test_φ() throws ProjectionException {
-        transform = new NoOp(false);                            // Spherical case
-        tolerance = TOLERANCE;
-        doTest_φ();
-        transform = new NoOp(true);                             // Ellipsoidal case
-        tolerance = NormalizedProjection.ITERATION_TOLERANCE;
-        doTest_φ();
+        test_φ(false);                                          // Spherical case
+        test_φ(true);                                           // Ellipsoidal case
     }
 
     /**
-     * Implementation of {@link #test_φ()}.
-     * The {@link #transform} field must have been set before this method is called.
+     * Tests {@link ConformalProjection#φ(double)} on known values and as the reverse of {@code expOfNorthing(φ)}.
      */
-    private void doTest_φ() throws ProjectionException {
+    private void test_φ(final boolean ellipsoidal) throws ProjectionException {
+        transform = new NoOp(ellipsoidal);
+        tolerance = ellipsoidal ? NormalizedProjection.ITERATION_TOLERANCE : TOLERANCE;
+
         assertEquals("φ(NaN) = NaN",    NaN,   φ(NaN),               tolerance);
         assertEquals("φ( ∞)  = -90°", -PI/2,   φ(POSITIVE_INFINITY), tolerance);
         assertEquals("φ( ∞)  = -90°", -PI/2,   φ(MAX_VALUE),         tolerance);
@@ -282,21 +272,18 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
      * <ol>
      *   <li>φ values computed by an iterative method.</li>
      *   <li>φ values computed by the series expansion given by EPSG guide.</li>
-     *   <li>φ values computed by modified form of series expansion, using trigonometric identities.</li>
-     *   <li>φ values computed by the actual {@link ConformalProjection} implementation.</li>
+     *   <li>φ values computed by the actual {@link ConformalProjection} implementation,
+     *       which uses a modified form of series expansion using trigonometric identities.</li>
      * </ol>
-     *
-     * {@link ConformalProjection#φ(double)} which uses a mix of 1 and 3 in the above list.
-     * See {@link MercatorMethodComparison} for a discussion.
      *
      * @throws ProjectionException if an error occurred during computation of φ.
      *
      * @see MercatorMethodComparison
      */
     @Test
-    public void compareWithSeriesExpansion() throws ProjectionException {
+    public void compareReference() throws ProjectionException {
         final ConformalProjection projection = new NoOp(true);
-        final MercatorMethodComparison comparator = new MercatorMethodComparison(projection.eccentricitySquared);
+        final MercatorMethodComparison comparator = new MercatorMethodComparison(projection);
         final Random random = TestUtilities.createRandomNumberGenerator();
         final int numSamples = 2000;
         for (int i=0; i<numSamples; i++) {
@@ -304,19 +291,16 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
             final double t = 1 / comparator.expOfNorthing(φ);
             final double byIterativeMethod = comparator.byIterativeMethod(t);
             final double bySeriesExpansion = comparator.bySeriesExpansion(t);
-            final double byTrigoIdentities = comparator.usingTrigonometricIdentities(t);
             final double byImplementation  = projection.φ(t);
             assertEquals("Iterative method",  φ, byIterativeMethod, 1E-11);
             assertEquals("Series expansion",  φ, bySeriesExpansion, 1E-11);
-            assertEquals("Trigo. identities", φ, byTrigoIdentities, 1E-11);
             assertEquals("Implementation",    φ, byImplementation,  1E-11);
             /*
              * Verify that the formulas modified with trigonometric identities give the same results
              * than the original formulas. The main purpose of this test is to detect mistake during
              * the application of identities.
              */
-            assertEquals(byTrigoIdentities, bySeriesExpansion, 1E-15);  // Tolerance threshold close to 1 ULP of 2π.
-            assertEquals(projection.φ(t),   byTrigoIdentities, 1E-15);
+            assertEquals(byImplementation, bySeriesExpansion, 1E-15);  // Tolerance threshold close to 1 ULP of 2π.
         }
     }
 }

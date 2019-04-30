@@ -32,7 +32,7 @@
  * <p>Some other noticeable services are:</p>
  * <ul>
  *   <li>{@link org.apache.sis.util.ObjectConverters}, together with the
- *       {@link org.apache.sis.util.ObjectConverter} interface, for converting various kind of objects.</li>
+ *       {@link org.apache.sis.util.ObjectConverter} interface, for converting various kinds of objects.</li>
  *   <li>{@link org.apache.sis.util.Utilities}, together with the
  *       {@link org.apache.sis.util.LenientComparable} interface, for comparing objects in various ways.</li>
  * </ul>

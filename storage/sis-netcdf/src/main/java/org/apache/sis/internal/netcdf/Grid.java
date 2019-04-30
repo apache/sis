@@ -49,7 +49,7 @@ import org.apache.sis.util.ArraysExt;
  * A grid is associated to all variables that are georeferenced coverages and the same grid may be shared
  * by many variables. The {@linkplain #getSourceDimensions() number of source dimensions} is normally the
  * number of {@linkplain Variable#getGridDimensions() netCDF dimensions in the variable}, but may be less
- * if a variable dimensions should considered as bands instead than spatio-temporal dimensions.
+ * if a variable dimensions should considered as bands instead than spatiotemporal dimensions.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

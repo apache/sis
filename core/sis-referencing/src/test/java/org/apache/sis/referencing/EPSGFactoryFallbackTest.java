@@ -27,6 +27,10 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.SphericalCS;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
@@ -48,7 +52,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link EPSGFactoryFallback} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -70,6 +74,12 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(Ellipsoid.class));
         assertSetEquals(Arrays.asList("6326", "6322", "6269", "6267", "6258", "6230", "6019", "6047", "5100", "5103"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(Datum.class));
+        assertSetEquals(Arrays.asList("6422", "6423"),
+                EPSGFactoryFallback.INSTANCE.getAuthorityCodes(EllipsoidalCS.class));
+        assertSetEquals(Arrays.asList("6404"),
+                EPSGFactoryFallback.INSTANCE.getAuthorityCodes(SphericalCS.class));
+        assertSetEquals(Arrays.asList("6500", "4400", "1026", "1027"),
+                EPSGFactoryFallback.INSTANCE.getAuthorityCodes(CartesianCS.class));
         assertSetEquals(Arrays.asList("4978", "4984", "4936"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(GeocentricCRS.class));
         assertSetEquals(Arrays.asList("4326", "4322", "4019", "4047", "4269", "4267", "4258", "4230", "4979", "4985", "4937"),
@@ -77,7 +87,7 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
         assertSetEquals(Arrays.asList("5714", "5715", "5703"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(VerticalCRS.class));
         /*
-         * There is two many ProjectedCRS codes for enumerating all of them, so test only a sampling.
+         * There is too many ProjectedCRS codes for enumerating all of them, so test only a sampling.
          */
         final Set<String> codes = EPSGFactoryFallback.INSTANCE.getAuthorityCodes(ProjectedCRS.class);
         assertTrue(codes.containsAll(Arrays.asList("5041", "5042", "32601", "32660", "32701", "32760")));
@@ -122,6 +132,18 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
         verifyCreateDatum(CommonCRS.NAD27 .datum(), "6267");
         verifyCreateDatum(CommonCRS.ED50  .datum(), "6230");
         verifyCreateDatum(CommonCRS.SPHERE.datum(), "6047");
+    }
+
+    /**
+     * Tests {@link EPSGFactoryFallback#createCoordinateSystem(String)}.
+     *
+     * @throws FactoryException if a CS can not be constructed.
+     */
+    @Test
+    public void testCreateCS() throws FactoryException {
+        verifyCreateCS(CommonCRS.DEFAULT.geographic(),   "6422");
+        verifyCreateCS(CommonCRS.DEFAULT.geographic3D(), "6423");
+        verifyCreateCS(CommonCRS.DEFAULT.spherical(),    "6404");
     }
 
     /**
@@ -185,6 +207,18 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
     private static void verifyCreateCRS(final SingleCRS expected, final String code) throws FactoryException {
         assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createCoordinateReferenceSystem(code));
         assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createObject(code));
+    }
+
+    /**
+     * Asserts that the result of {@link EPSGFactoryFallback#createObject(String)} is CS of the given CRS.
+     * Contrarily to other kinds of objects, coordinate systems are currently not cached. Consequently we
+     * can not assert that instances are the same.
+     */
+    private static void verifyCreateCS(final CoordinateReferenceSystem crs, final String code) throws FactoryException {
+        final CoordinateSystem expected = crs.getCoordinateSystem();
+        final CoordinateSystem actual = EPSGFactoryFallback.INSTANCE.createCoordinateSystem(code);
+        assertEquals(code, actual, EPSGFactoryFallback.INSTANCE.createObject(code));
+        assertEqualsIgnoreMetadata(expected, actual);
     }
 
     /**

@@ -43,6 +43,9 @@ import org.apache.sis.util.logging.Logging;
  * but other types are allowed), instances of {@code PropertyInformation} are obtained
  * indirectly by the {@link MetadataStandard#asInformationMap(Class, KeyNamePolicy)} method.
  *
+ * <p>This class implements also the {@link org.opengis.metadata.Identifier} and {@link CheckedContainer} interfaces.
+ * Those features are not directly used by this class, but is published in the {@link MetadataStandard} javadoc.</p>
+ *
  * <div class="note"><b>API note:</b>
  * The rational for implementing {@code CheckedContainer} is to consider each {@code ExtendedElementInformation}
  * instance as the set of all possible values for the property. If the information had a {@code contains(E)} method,
@@ -64,7 +67,7 @@ import org.apache.sis.util.logging.Logging;
  * @since 0.3
  * @module
  */
-final class PropertyInformation<E> extends SimpleIdentifier
+final class PropertyInformation<E> extends SimpleIdentifier           // Implementing Identifier is part of SIS public API.
         implements ExtendedElementInformation, CheckedContainer<E>
 {
     /**

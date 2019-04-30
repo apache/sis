@@ -140,16 +140,17 @@ public final strictfp class GridGeometryTest extends TestCase {
 
     /**
      * Tests the {@link GridGeometry#GridGeometry(GridGeometry, GridExtent, MathTransform)} constructor.
+     * The math transform used for this test map to pixel corners.
      *
      * @throws TransformException if an error occurred while using the "grid to CRS" transform.
      */
     @Test
-    public void testFromOther() throws TransformException {
+    public void testFromOtherDefinedAtCorner() throws TransformException {
         long[]        low       = new long[] {  1,   3, 2};
         long[]        high      = new long[] {101, 203, 4};
         GridExtent    extent    = new GridExtent(null, low, high, false);
         MathTransform gridToCRS = MathTransforms.translation(5, 7, 8);
-        GridGeometry  grid      = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, null);
+        GridGeometry  grid      = new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, null);
 
         low    = new long[] { 11,  35, 20};
         high   = new long[] {120, 250, 39};
@@ -160,7 +161,33 @@ public final strictfp class GridGeometryTest extends TestCase {
                 2, 0, 0, 5,
                 0, 1, 0, 7,     // Combination of above scales (diagonal) and translation (last column).
                 0, 0, 3, 8,
-                0, 0, 0, 1), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER)), STRICT);
+                0, 0, 0, 1), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
+    }
+
+    /**
+     * Tests the adjustment done for pixel center in {@link GridGeometry#GridGeometry(GridGeometry, GridExtent, MathTransform)}
+     * constructor. This test depends on {@link GridGeometry#derive()}, which will (indirectly) invoke the constructor to test.
+     * We check envelopes as a more intuitive way to verify consistency than inspecting the math transforms.
+     */
+    @Test
+    public void testFromOtherDefinedAtCenter() {
+        GridExtent extent = new GridExtent(126, 197);
+        GridGeometry grid = new GridGeometry(extent, PixelInCell.CELL_CENTER, MathTransforms.identity(2), HardCodedCRS.WGS84);
+        GeneralEnvelope expected = new GeneralEnvelope(new double[] {-0.5, -0.5}, new double[] {125.5, 196.5});
+        assertEnvelopeEquals(expected, grid.getEnvelope(), STRICT);
+        /*
+         * Derive a new grid geometry with 10×10 times more cells. The geographic area should be unchanged.
+         */
+        extent = extent.resize(1260, 1970);
+        grid = grid.derive().resize(extent, 0.1, 0.1).build();
+        assertEnvelopeEquals(expected, grid.getEnvelope(), STRICT);
+        /*
+         * If we create a grid geometry with identical properties, the envelope computed by that grid geometry would
+         * be different than the envelope computed above if the "grid to CRS" transform is not correctly adjusted.
+         */
+        final GridGeometry alternative = new GridGeometry(grid.getExtent(), PixelInCell.CELL_CENTER,
+                 grid.getGridToCRS(PixelInCell.CELL_CENTER), grid.getCoordinateReferenceSystem());
+        assertEnvelopeEquals(expected, alternative.getEnvelope(), STRICT);
     }
 
     /**
