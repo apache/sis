@@ -21,7 +21,6 @@ import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Deprecable;
@@ -201,9 +200,11 @@ public class SimpleIdentifier implements Identifier, Deprecable, Serializable {
 
     /**
      * Returns a string representation of this identifier.
+     *
+     * <p>For customizing this string representation, see {@link #appendStringTo(StringBuilder)}.</p>
      */
     @Override
-    public String toString() {
+    public final String toString() {
         final String classname = Classes.getShortClassName(this);
         final StringBuilder buffer = new StringBuilder(classname.length() + CharSequences.length(code) + 10);
         buffer.append(classname).append('[');
@@ -231,31 +232,5 @@ public class SimpleIdentifier implements Identifier, Deprecable, Serializable {
      * @param  buffer  a buffer filled with the {@link #toString()} characters, that subclasses can update.
      */
     protected void appendStringTo(final StringBuilder buffer) {
-    }
-
-    /**
-     * Returns a pseudo Well Known Text for this identifier.
-     * While this method is not defined in the {@link Identifier} interface, it is often
-     * defined in related interfaces like {@link org.opengis.referencing.IdentifiedObject}.
-     *
-     * @return pseudo Well Known Text for this identifier.
-     */
-    public String toWKT() {
-        final StringBuilder buffer = new StringBuilder(40).append("Id[");   // Consistent with WKTKeywords.Id.
-        append(buffer, Citations.getIdentifier(authority, true));           // Do not invoke getCodeSpace().
-        append(buffer.append(", "), code);
-        return buffer.append(']').toString();
-    }
-
-    /**
-     * Appends the given value in the given buffer between quotes, except if the
-     * given value is null in which case {@code null} is appended without quotes.
-     */
-    private static void append(final StringBuilder buffer, final String value) {
-        if (value == null) {
-            buffer.append("null");
-        } else {
-            buffer.append('"').append(value).append('"');
-        }
     }
 }
