@@ -472,7 +472,7 @@ final class Store extends URIDataStore implements FeatureSet {
             envelope = new GeneralEnvelope(dim);
         }
         /*
-         * At this point we got the three- or four-dimensional spatio-temporal CRS.
+         * At this point we got the three- or four-dimensional spatiotemporal CRS.
          * We can now set the envelope coordinate values, including temporal values.
          */
         int dim;
@@ -543,7 +543,7 @@ final class Store extends URIDataStore implements FeatureSet {
                  * columns are not followed by a type. Those columns are:
                  *
                  *   1) mfidref     - used in order to identify the moving feature.
-                 *   2) trajectory  - defines the spatio-temporal geometry of moving features.
+                 *   2) trajectory  - defines the spatiotemporal geometry of moving features.
                  *                    Contains implicit "start time" and "end time" columns.
                  *
                  * Those two columns are mandatory in Moving Feature specification. All other ones are optional.
@@ -666,7 +666,7 @@ final class Store extends URIDataStore implements FeatureSet {
     }
 
     /**
-     * Returns the spatio-temporal extent of CSV data in coordinate reference system of the CSV file.
+     * Returns the spatiotemporal extent of CSV data in coordinate reference system of the CSV file.
      */
     @Override
     public Envelope getEnvelope() throws DataStoreException {

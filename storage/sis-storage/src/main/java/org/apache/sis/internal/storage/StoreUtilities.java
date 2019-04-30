@@ -147,13 +147,13 @@ public final class StoreUtilities extends Static {
     }
 
     /**
-     * Returns the spatio-temporal envelope of the given metadata.
+     * Returns the spatiotemporal envelope of the given metadata.
      * This method computes the union of all {@link GeographicBoundingBox} in the metadata, assuming the
      * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}
      * (usually WGS 84).
      *
      * @param  metadata  the metadata from which to compute the envelope, or {@code null}.
-     * @return the spatio-temporal extent, or {@code null} if none.
+     * @return the spatiotemporal extent, or {@code null} if none.
      */
     public static Envelope getEnvelope(final Metadata metadata) {
         GeneralEnvelope bounds = null;

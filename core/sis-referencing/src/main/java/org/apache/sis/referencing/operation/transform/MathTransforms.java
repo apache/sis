@@ -79,7 +79,7 @@ public final class MathTransforms extends Static {
      *   <li>If {@code dimension == 2}, then the returned transform implements {@link MathTransform2D}.</li>
      * </ul>
      *
-     * @param  dimension  the dimension of the transform to be returned.
+     * @param  dimension  number of dimensions of the transform to be returned.
      * @return an identity transform of the specified dimension.
      */
     public static LinearTransform identity(final int dimension) {
@@ -88,11 +88,37 @@ public final class MathTransforms extends Static {
     }
 
     /**
-     * Creates a transform which applies the given translation.
+     * Creates an affine transform which applies the same translation for all dimensions.
+     * For each dimension, input values <var>x</var> are converted into output values <var>y</var>
+     * using the following equation:
+     *
+     * <blockquote><var>y</var> = <var>x</var> + {@code offset}</blockquote>
+     *
+     * @param  dimension  number of input and output dimensions.
+     * @param  offset     the {@code offset} term in the linear equation.
+     * @return an affine transform applying the specified translation.
+     *
+     * @since 1.0
+     */
+    public static LinearTransform uniformTranslation(final int dimension, final double offset) {
+        ArgumentChecks.ensurePositive("dimension", dimension);
+        if (offset == 0) {
+            return IdentityTransform.create(dimension);
+        }
+        switch (dimension) {
+            case 0:  return IdentityTransform.create(0);
+            case 1:  return LinearTransform1D.create(1, offset);
+            case 2:  return new AffineTransform2D(1, 0, 0, 1, offset, offset);
+            default: return new TranslationTransform(dimension, offset);
+        }
+    }
+
+    /**
+     * Creates an affine transform which applies the given translation.
      * The source and target dimensions of the transform are the length of the given vector.
      *
      * @param  vector  the translation vector.
-     * @return a transform applying the given translation.
+     * @return an affine transform applying the specified translation.
      *
      * @since 1.0
      */
@@ -109,11 +135,11 @@ public final class MathTransforms extends Static {
     }
 
     /**
-     * Creates a transform which applies the given scale.
+     * Creates an affine transform which applies the given scale.
      * The source and target dimensions of the transform are the length of the given vector.
      *
      * @param  factors  the scale factors.
-     * @return a transform applying the given scale.
+     * @return an affine transform applying the specified scales.
      *
      * @since 1.0
      */

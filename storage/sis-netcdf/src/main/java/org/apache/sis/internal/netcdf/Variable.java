@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.HashMap;
-import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -36,7 +35,6 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
@@ -57,7 +55,7 @@ import ucar.nc2.constants.CF;
  * @since   0.3
  * @module
  */
-public abstract class Variable extends NamedElement {
+public abstract class Variable extends Node {
     /**
      * Pool of vectors created by the {@link #read()} method. This pool is used for sharing netCDF coordinate axes,
      * since the same vectors tend to be repeated in many netCDF files produced by the same data producer. Because
@@ -66,11 +64,6 @@ public abstract class Variable extends NamedElement {
      * <p>All shared vectors shall be considered read-only.</p>
      */
     protected static final WeakHashSet<Vector> SHARED_VECTORS = new WeakHashSet<>(Vector.class);
-
-    /**
-     * The netCDF file where this variable is stored.
-     */
-    protected final Decoder decoder;
 
     /**
      * The pattern to use for parsing temporal units of the form "days since 1970-01-01 00:00:00".
@@ -145,7 +138,7 @@ public abstract class Variable extends NamedElement {
      * @param decoder  the netCDF file where this variable is stored.
      */
     protected Variable(final Decoder decoder) {
-        this.decoder = decoder;
+        super(decoder);
     }
 
     /**
@@ -792,95 +785,6 @@ public abstract class Variable extends NamedElement {
     public abstract List<Dimension> getGridDimensions();
 
     /**
-     * Returns the names of all attributes associated to this variable.
-     *
-     * @return names of all attributes associated to this variable.
-     */
-    public abstract Collection<String> getAttributeNames();
-
-    /**
-     * Returns the numeric type of the attribute of the given name, or {@code null}
-     * if the given attribute is not found or its value is not numeric.
-     *
-     * @param  attributeName  the name of the attribute for which to get the type.
-     * @return type of the given attribute, or {@code null} if none or not numeric.
-     *
-     * @see #getDataType()
-     */
-    public abstract Class<? extends Number> getAttributeType(String attributeName);
-
-    /**
-     * Returns the sequence of values for the given attribute, or an empty array if none.
-     * The elements will be of class {@link String} if {@code numeric} is {@code false},
-     * or {@link Number} if {@code numeric} is {@code true}. Some elements may be null
-     * if they are not of the expected type.
-     *
-     * @param  attributeName  the name of the attribute for which to get the values.
-     * @param  numeric        {@code true} if the values are expected to be numeric, or {@code false} for strings.
-     * @return the sequence of {@link String} or {@link Number} values for the named attribute.
-     *         May contain null elements.
-     */
-    public abstract Object[] getAttributeValues(String attributeName, boolean numeric);
-
-    /**
-     * Returns the singleton value for the given attribute, or {@code null} if none or ambiguous.
-     *
-     * @param  attributeName  the name of the attribute for which to get the value.
-     * @param  numeric        {@code true} if the value is expected to be numeric, or {@code false} for string.
-     * @return the {@link String} or {@link Number} value for the named attribute.
-     */
-    private Object getAttributeValue(final String attributeName, final boolean numeric) {
-        Object singleton = null;
-        for (final Object value : getAttributeValues(attributeName, numeric)) {
-            if (value != null) {
-                if (singleton != null && !singleton.equals(value)) {              // Paranoiac check.
-                    return null;
-                }
-                singleton = value;
-            }
-        }
-        return singleton;
-    }
-
-    /**
-     * Returns the value of the given attribute as a non-blank string with leading/trailing spaces removed.
-     * This is a convenience method for {@link #getAttributeValues(String, boolean)} when a singleton value
-     * is expected and blank strings ignored.
-     *
-     * @param  attributeName  the name of the attribute for which to get the value.
-     * @return the singleton attribute value, or {@code null} if none, empty, blank or ambiguous.
-     */
-    public String getAttributeAsString(final String attributeName) {
-        final Object value = getAttributeValue(attributeName, false);
-        if (value != null) {
-            final String text = value.toString().trim();
-            if (!text.isEmpty()) return text;
-        }
-        return null;
-    }
-
-    /**
-     * Returns the value of the given attribute as a number, or {@link Double#NaN}.
-     * If the number is stored with single-precision, it is assumed casted from a
-     * representation in base 10.
-     *
-     * @param  attributeName  the name of the attribute for which to get the value.
-     * @return the singleton attribute value, or {@code NaN} if none or ambiguous.
-     */
-    public final double getAttributeAsNumber(final String attributeName) {
-        final Object value = getAttributeValue(attributeName, true);
-        if (value instanceof Number) {
-            double dp = ((Number) value).doubleValue();
-            final float sp = (float) dp;
-            if (sp == dp) {                              // May happen even if the number was stored as a double.
-                dp = DecimalFunctions.floatToDouble(sp);
-            }
-            return dp;
-        }
-        return Double.NaN;
-    }
-
-    /**
      * Returns the range of valid values, or {@code null} if unknown. This is a shortcut for
      * {@link Convention#validRange(Variable)} with a fallback on {@link #getRangeFallback()}.
      *
@@ -1134,59 +1038,6 @@ public abstract class Variable extends NamedElement {
             }
         }
         return false;
-    }
-
-    /**
-     * Returns the locale to use for warnings and error messages.
-     *
-     * @return the locale for warnings and error messages.
-     */
-    protected final Locale getLocale() {
-        return decoder.listeners.getLocale();
-    }
-
-    /**
-     * Returns the resources to use for warnings or error messages.
-     *
-     * @return the resources for the locales specified to the decoder.
-     */
-    protected final Resources resources() {
-        return Resources.forLocale(getLocale());
-    }
-
-    /**
-     * Returns the resources to use for error messages.
-     *
-     * @return the resources for error messages using the locales specified to the decoder.
-     */
-    final Errors errors() {
-        return Errors.getResources(getLocale());
-    }
-
-    /**
-     * Reports a warning to the listeners specified at construction time.
-     * This method is for Apache SIS internal purpose only since resources may change at any time.
-     *
-     * @param  caller     the caller class to report, preferably a public class.
-     * @param  method     the caller method to report, preferable a public method.
-     * @param  key        one or {@link Resources.Keys} constants.
-     * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
-     */
-    protected final void warning(final Class<?> caller, final String method, final short key, final Object... arguments) {
-        warning(decoder.listeners, caller, method, null, null, key, arguments);
-    }
-
-    /**
-     * Reports a warning to the listeners specified at construction time.
-     *
-     * @param  caller     the caller class to report, preferably a public class.
-     * @param  method     the caller method to report, preferable a public method.
-     * @param  exception  the exception that occurred, or {@code null} if none.
-     * @param  key        one or {@link Errors.Keys} constants.
-     * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
-     */
-    final void error(final Class<?> caller, final String method, final Exception exception, final short key, final Object... arguments) {
-        warning(decoder.listeners, caller, method, exception, errors(), key, arguments);
     }
 
     /**

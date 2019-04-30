@@ -210,7 +210,6 @@ public class LambertConicConformal extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private LambertConicConformal(final Initializer initializer) {
         super(initializer);
-        super.computeCoefficients();
         double φ0 = initializer.getAndStore(((initializer.variant & 1) != 0) ?  // Odd 'type' are SP1, even 'type' are SP2.
                 LambertConformal1SP.LATITUDE_OF_ORIGIN : LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN);
         /*
@@ -514,7 +513,7 @@ public class LambertConicConformal extends ConformalProjection {
         @Override
         public Matrix transform(final double[] srcPts, final int srcOff,
                                 final double[] dstPts, final int dstOff,
-                                final boolean derivate) throws ProjectionException
+                                final boolean derivate)
         {
             final double θ    = srcPts[srcOff  ];       // θ = λ⋅n
             final double φ    = srcPts[srcOff+1];       // Sign may be reversed
@@ -554,7 +553,6 @@ public class LambertConicConformal extends ConformalProjection {
         @Override
         protected void inverseTransform(final double[] srcPts, final int srcOff,
                                         final double[] dstPts, final int dstOff)
-                throws ProjectionException
         {
             double x = srcPts[srcOff  ];
             double y = srcPts[srcOff+1];

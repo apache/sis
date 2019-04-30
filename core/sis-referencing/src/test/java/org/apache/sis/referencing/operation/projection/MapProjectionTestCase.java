@@ -39,20 +39,27 @@ import static org.junit.Assert.*;
  * Base class of map projection tests.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.6
  * @module
  */
 abstract strictfp class MapProjectionTestCase extends MathTransformTestCase {
     /**
-     * Semi-major axis length of WGS84 ellipsoid.
+     * Axis length of WGS84 ellipsoid.
      */
-    static final double WGS84_A = 6378137;
+    static final double WGS84_A = 6378137,
+                        WGS84_B = 6356752.314245179;
 
     /**
-     * Semi-minor axis length of WGS84 ellipsoid.
+     * Axis length of Clarke 1866 ellipsoid. This ellipsoid is used by Snyder examples.
      */
-    static final double WGS84_B = 6356752.314245179;
+    static final double CLARKE_A = 6378206.4,
+                        CLARKE_B = 6356583.8;
+
+    /**
+     * A radius for tests of spherical formulas.
+     */
+    static final double RADIUS = 6400000;
 
     /**
      * Tolerance level for comparing formulas on the unitary sphere or ellipsoid.
@@ -79,16 +86,16 @@ abstract strictfp class MapProjectionTestCase extends MathTransformTestCase {
      * Returns the parameters to use for instantiating the projection to test.
      * The parameters are initialized with the ellipse semi-axis lengths.
      *
-     * @param  provider  the provider of the projection to test.
-     * @param  ellipse   {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
+     * @param  provider     the provider of the projection to test.
+     * @param  ellipsoidal  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      * @return the parameters to use for instantiating the projection.
      */
-    static Parameters parameters(final DefaultOperationMethod provider, final boolean ellipse) {
+    static Parameters parameters(final DefaultOperationMethod provider, final boolean ellipsoidal) {
         final Parameters parameters = Parameters.castOrWrap(provider.getParameters().createValue());
-        final Ellipsoid ellipsoid = (ellipse ? GeodeticDatumMock.WGS84 : GeodeticDatumMock.SPHERE).getEllipsoid();
+        final Ellipsoid ellipsoid = (ellipsoidal ? GeodeticDatumMock.WGS84 : GeodeticDatumMock.SPHERE).getEllipsoid();
         parameters.parameter(Constants.SEMI_MAJOR).setValue(ellipsoid.getSemiMajorAxis());
         parameters.parameter(Constants.SEMI_MINOR).setValue(ellipsoid.getSemiMinorAxis());
-        if (ellipse) {
+        if (ellipsoidal) {
             parameters.parameter(Constants.INVERSE_FLATTENING).setValue(ellipsoid.getInverseFlattening());
         }
         return parameters;

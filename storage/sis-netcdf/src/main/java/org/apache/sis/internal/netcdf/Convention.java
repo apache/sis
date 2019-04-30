@@ -18,16 +18,27 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.awt.image.DataBuffer;
-import org.apache.sis.internal.referencing.LazySet;
+import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
+import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.resources.Errors;
 import ucar.nc2.constants.CDM;
+import ucar.nc2.constants.CF;
 
 
 /**
@@ -219,6 +230,12 @@ public class Convention {
         return VariableRole.OTHER;
     }
 
+
+    // ┌────────────────────────────────────────────────────────────────────────────────────────────┐
+    // │                                      COVERAGE DOMAIN                                       │
+    // └────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
     /**
      * Returns the names of the variables containing data for all dimension of a variable.
      * Each netCDF variable can have an arbitrary number of dimensions identified by their name.
@@ -297,7 +314,7 @@ public class Convention {
      * This value may be different than 1 if the localization grid is smaller than the data grid,
      * as documented in the {@link #nameOfDimension(Variable, int)}.
      *
-     * <p>Default implementation returns the inverse of {@code "resampling_interval"} attribute value.
+     * <p>Default implementation returns the {@code "resampling_interval"} attribute value.
      * This feature is an extension to CF-conventions.</p>
      *
      * @param  axis  the axis for which to get the "grid indices to data indices" scale factor.
@@ -306,6 +323,217 @@ public class Convention {
     public double gridToDataIndices(final Variable axis) {
         return axis.getAttributeAsNumber("resampling_interval");
     }
+
+    /**
+     * Returns an enumeration of two-dimensional non-linear transforms (usually map projections) that may result
+     * in more linear localization grids. The enumerated transforms will be tested in "trials and errors" and the
+     * one resulting in best {@linkplain org.apache.sis.math.Plane#fit linear regression correlation coefficients}
+     * will be selected.
+     *
+     * <p>Default implementation returns an empty set.</p>
+     *
+     * @param  decoder  the netCDF file for which to get linearizer candidates.
+     * @return enumeration of two-dimensional non-linear transforms to try on the localization grid.
+     */
+    public Set<Linearizer> linearizers(final Decoder decoder) {
+        return Collections.emptySet();
+    }
+
+    /**
+     * Returns the name of nodes (variables or groups) that may define the map projection parameters.
+     * The variables or groups will be inspected in the order they are declared in the returned set.
+     * For each string in the set, {@link Decoder#findNode(String)} is invoked and the return value
+     * (if non-null) is given to {@link #projection(Node)} until a non-null map is obtained.
+     *
+     * <div class="note"><b>API note:</b>
+     * this method name is singular because even if a set is returned, in the end only one value is used.</div>
+     *
+     * The default implementation returns the value of {@link CF#GRID_MAPPING} attribute, or an empty set
+     * if the given variable does not contain that attribute. Subclasses may override for example if grid
+     * mapping information are hard-coded in a particular node for a specific product.
+     *
+     * @param  data  the variable for which to get the grid mapping node.
+     * @return name of nodes that may contain the grid mapping, or an empty set if none.
+     */
+    public Set<String> nameOfMappingNode(final Variable data) {
+        final String mapping = data.getAttributeAsString(CF.GRID_MAPPING);
+        return (mapping != null) ? Collections.singleton(mapping) : Collections.emptySet();
+    }
+
+    /**
+     * The {@value} attribute name from CF-convention, defined here because not yet provided in {@link CF}.
+     * Associated value shall be an instance of {@link Number}. This field may be removed in a future SIS
+     * version if this constant become defined in {@link ucar.nc2.constants}.
+     */
+    protected static final String LONGITUDE_OF_PRIME_MERIDIAN = "longitude_of_prime_meridian";
+
+    /**
+     * The {@value} attribute name from CF-convention, defined here because not yet provided in {@link CF}.
+     * Associated value shall be an instance of {@link String}. This field may be removed in a future SIS
+     * version if this constant become defined in {@link ucar.nc2.constants}.
+     */
+    protected static final String ELLIPSOID_NAME      = "reference_ellipsoid_name",
+                                  PRIME_MERIDIAN_NAME = "prime_meridian_name",
+                                  GEODETIC_DATUM_NAME = "horizontal_datum_name",
+                                  GEOGRAPHIC_CRS_NAME = "geographic_crs_name",
+                                  PROJECTED_CRS_NAME  = "projected_crs_name";
+
+    /**
+     * The {@value} attribute name, not yet part of CF-convention.
+     */
+    protected static final String CONVERSION_NAME = "conversion_name";
+
+    /**
+     * The {@value} attribute name from CF-convention, defined here because not yet provided in {@link CF}.
+     * Associated value shall be an instance of {@link BursaWolfParameters}.
+     */
+    protected static final String TOWGS84 = "towgs84";
+
+    /**
+     * Returns the map projection defined by the given node. The given {@code node} argument is one of the nodes
+     * named by {@link #nameOfMappingNode(Variable)} (typically a variable referenced by {@value CF#GRID_MAPPING}
+     * attribute on the data variable), or if no grid mapping attribute is found {@code node} may be directly the
+     * data variable (not a CF-compliant approach, but found in practice). If non-null, the returned map contains
+     * the following information ({@value CF#GRID_MAPPING_NAME} is mandatory, all other entries are optional):
+     *
+     * <table class="sis">
+     *   <caption>Content of the returned map</caption>
+     *   <tr>
+     *     <th>Key</th>
+     *     <th>Value type</th>
+     *     <th>Description</th>
+     *   </tr><tr>
+     *     <td>{@value CF#GRID_MAPPING_NAME}</td>
+     *     <td>{@link String}</td>
+     *     <td>Operation method name <strong>(mandatory)</strong></td>
+     *   </tr><tr>
+     *     <td>{@code "*_name"}</td>
+     *     <td>{@link String}</td>
+     *     <td>Name of a component (datum, base CRS, …)</td>
+     *   </tr><tr>
+     *     <td>{@value #LONGITUDE_OF_PRIME_MERIDIAN}</td>
+     *     <td>{@link Number}</td>
+     *     <td>Value in degrees relative to reference meridian.</td>
+     *   </tr><tr>
+     *     <td>(projection-dependent)</td>
+     *     <td>{@link Number} or {@code double[]}</td>
+     *     <td>Map projection parameter values</td>
+     *   </tr><tr>
+     *     <td>{@value #TOWGS84}</td>
+     *     <td>{@link BursaWolfParameters}</td>
+     *     <td>Datum shift information.</td>
+     *   </tr>
+     * </table>
+     *
+     * The returned map must be modifiable for allowing callers to modify its content.
+     *
+     * @param  node  the {@value CF#GRID_MAPPING} variable (preferred) or the data variable (as a fallback) from which to read attributes.
+     * @return the map projection definition as a modifiable map, or {@code null} if none.
+     *
+     * @see <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#grid-mappings-and-projections">CF-conventions</a>
+     */
+    public Map<String,Object> projection(final Node node) {
+        final String method = node.getAttributeAsString(CF.GRID_MAPPING_NAME);
+        if (method == null) {
+            return null;
+        }
+        final Map<String,Object> definition = new HashMap<>();
+        definition.put(CF.GRID_MAPPING_NAME, method);
+        for (final String name : node.getAttributeNames()) {
+            final String ln = name.toLowerCase(Locale.US);
+            final Object value;
+            if (ln.endsWith("_name")) {
+                value = node.getAttributeAsString(name);
+                if (value == null) continue;
+                break;
+            } else switch (ln) {
+                case CF.GRID_MAPPING_NAME: continue;        // Already stored.
+                case TOWGS84: {
+                    /*
+                     * Conversion to WGS 84 datum may be specified as Bursa-Wolf parameters. Encoding this information
+                     * with the CRS is deprecated (the hard-coded WGS84 target datum is not always suitable) but still
+                     * a common practice as of 2019. We require at least the 3 translation parameters.
+                     */
+                    final Object[] values = node.getAttributeValues(name, true);
+                    if (values.length < 3) continue;
+                    final BursaWolfParameters bp = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
+                    bp.setValues(Vector.create(values, false).doubleValues());
+                    value = bp;
+                    break;
+                }
+                case "crs_wkt": {
+                    /*
+                     * CF-Convention said that even if a WKT definition is provided, other attributes shall be present
+                     * and have precedence over the WKT definition. Consequently purpose of WKT in netCDF files is not
+                     * obvious (except for CompoundCRS). We ignore them for now.
+                     */
+                    continue;
+                }
+                default: {
+                    /*
+                     * Assume that all map projection parameters in netCDF files are numbers or array of numbers.
+                     */
+                    final Object[] values = node.getAttributeValues(name, true);
+                    switch (values.length) {
+                        case 0:  continue;                       // Attribute not found or not numeric.
+                        case 1:  value = values[0]; break;       // This is the usual case.
+                        default: value = Vector.create(values, false).doubleValues(); break;
+                    }
+                    break;
+                }
+            }
+            if (definition.putIfAbsent(name, value) != null) {
+                node.error(Convention.class, "projection", null, Errors.Keys.DuplicatedIdentifier_1, name);
+            }
+        }
+        return definition;
+    }
+
+    /**
+     * Returns the <cite>grid to CRS</cite> transform for the given node. This method is invoked after call
+     * to {@link #projection(Node)} method resulted in creation of a projected coordinate reference system.
+     * The {@linkplain ProjectedCRS#getBaseCRS() base CRS} is fixed to (latitude, longitude) axes in degrees,
+     * but the projected CRS axes may have any order and units. In the particular case of "latitude_longitude"
+     * pseudo-projection, the "projected" CRS is actually a {@link GeographicCRS} instance.
+     * The returned transform, if non-null, shall map cell corners.
+     *
+     * <div class="note"><b>API notes:</b>
+     * <ul>
+     *   <li>We do not provide a {@link ProjectedCRS} argument because of the {@code "latitude_longitude"} special case.</li>
+     *   <li>Base CRS axis order is (latitude, longitude) for increasing the chances to have a CRS identified by EPSG.</li>
+     * </ul></div>
+     *
+     * The default implementation returns {@code null}.
+     *
+     * @param  node       the same node than the one given to {@link #projection(Node)}.
+     * @param  baseToCRS  conversion from (latitude, longitude) in degrees to the projected CRS.
+     * @return the <cite>grid corner to CRS</cite> transform, or {@code null} if none or unknown.
+     * @throws TransformException if a coordinate operation was required but failed.
+     */
+    public MathTransform gridToCRS(final Node node, final MathTransform baseToCRS) throws TransformException {
+        return null;
+    }
+
+    /**
+     * Returns an identification of default geodetic components to use if no corresponding information is found in the
+     * netCDF file. The default implementation returns <cite>"Unknown datum based upon the GRS 1980 ellipsoid"</cite>.
+     * Note that the GRS 1980 ellipsoid is close to WGS 84 ellipsoid.
+     *
+     * <div class="note"><b>Maintenance note:</b>
+     * if this default is changed, search also for "GRS 1980" strings in {@link CRSBuilder} class.</div>
+     *
+     * @param  spherical  whether to restrict the ellipsoid to a sphere.
+     * @return information about geodetic objects to use if no explicit information is found in the file.
+     */
+    public CommonCRS defaultHorizontalCRS(final boolean spherical) {
+        return spherical ? CommonCRS.SPHERE : CommonCRS.GRS1980;
+    }
+
+
+    // ┌────────────────────────────────────────────────────────────────────────────────────────────┐
+    // │                                       COVERAGE RANGE                                       │
+    // └────────────────────────────────────────────────────────────────────────────────────────────┘
+
 
     /**
      * Returns the range of valid values, or {@code null} if unknown.
@@ -320,7 +548,7 @@ public class Convention {
      *
      * Whether the returned range is a range of packed values or a range of real values is ambiguous.
      * An heuristic rule is documented in UCAR {@link ucar.nc2.dataset.EnhanceScaleMissing} interface.
-     * If both type of ranges are available, then this method should return the range of packed value.
+     * If both types of range are available, then this method should return the range of packed value.
      * Otherwise if this method returns the range of real values, then that range shall be an instance
      * of {@link MeasurementRange} for allowing the caller to distinguish the two cases.
      *
@@ -428,9 +656,9 @@ public class Convention {
      * The returned function will be a component of the {@link org.apache.sis.coverage.SampleDimension}
      * to be created for each variable.
      *
-     * <p>This method is invoked only if {@link #validRange(Variable)} returned a non-null value.
-     * Since a transfer function is assumed to exist in such case (even if that function is identity),
-     * this method shall never return {@code null}.</p>
+     * <p>This method is invoked in contexts where a transfer function is assumed to exist, for example
+     * because {@link #validRange(Variable)} returned a non-null value. Consequently this method shall
+     * never return {@code null}, but can return the identity function.</p>
      *
      * @param  data  the variable from which to determine the transfer function.
      *               This is usually a variable containing raster data.
@@ -450,18 +678,5 @@ public class Convention {
         if (!Double.isNaN(scale))  tr.setScale (scale);
         if (!Double.isNaN(offset)) tr.setOffset(offset);
         return tr;
-    }
-
-    /**
-     * Returns an enumeration of two-dimensional non-linear transforms that may be tried in attempts to make
-     * localization grid more linear. Default implementation returns an empty set. If this method is overridden,
-     * the enumerated transforms will be tested in "trials and errors" and the one resulting in best correlation
-     * coefficients will be selected.
-     *
-     * @param  decoder  the netCDF file for which to determine linearizers that may possibly apply.
-     * @return enumeration of two-dimensional non-linear transforms to try.
-     */
-    public Set<Linearizer> linearizers(final Decoder decoder) {
-        return Collections.emptySet();
     }
 }

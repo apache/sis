@@ -185,7 +185,7 @@ final class TreeTableView implements TreeTable, TreeFormatCustomization, Seriali
             }
             /*
              * Filter out the ISBN and ISSN identifiers if they are inside a Citation object.
-             * We keep them if the user added them to other kind of objects.
+             * We keep them if the user added them to other kinds of objects.
              */
             if (value instanceof SpecializedIdentifier) {
                 final Citation authority = ((SpecializedIdentifier) value).getAuthority();

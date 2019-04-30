@@ -55,6 +55,8 @@ org.apache.sis.internal.referencing.provider.ObliqueMercatorCenter
 org.apache.sis.internal.referencing.provider.ObliqueMercatorTwoPoints
 org.apache.sis.internal.referencing.provider.ObliqueMercatorTwoPointsCenter
 org.apache.sis.internal.referencing.provider.ZonedTransverseMercator
+org.apache.sis.internal.referencing.provider.Sinusoidal
+org.apache.sis.internal.referencing.provider.Polyconic
 org.apache.sis.internal.referencing.provider.Mollweide
 org.apache.sis.internal.referencing.provider.NTv2
 org.apache.sis.internal.referencing.provider.NADCON

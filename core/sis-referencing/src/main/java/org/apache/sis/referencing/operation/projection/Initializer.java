@@ -280,6 +280,9 @@ final class Initializer {
     /**
      * Returns {@code b/a} where {@code a} is the semi-major axis length and {@code b} the semi-minor axis length.
      * We retrieve this value from the eccentricity with {@code b/a = sqrt(1-ℯ²)}.
+     *
+     * <p><b>Tip:</b> for ℯ₁ = [1 - √(1 - ℯ²)] / [1 + √(1 - ℯ²)]  (Snyder 3-24),
+     * invoke {@link DoubleDouble#ratio_1m_1p()} on the returned value.</p>
      */
     final DoubleDouble axisLengthRatio() {
         final DoubleDouble b = new DoubleDouble(1d);
@@ -295,13 +298,6 @@ final class Initializer {
      * <blockquote>ν = 1 / √(1 - ℯ²⋅sin²φ)</blockquote>
      *
      * This method returns 1/ν², which is the (1 - ℯ²⋅sin²φ) part of above equation.
-     *
-     * <div class="section">Relationship with Snyder</div>
-     * This is related to functions (14-15) from Snyder (used for computation of scale factors
-     * at the true scale latitude) as below:
-     *
-     * <blockquote>m = cosφ / sqrt(rν²)</blockquote>
-     *
      * Special cases:
      * <ul>
      *   <li>If φ is 0°, then <var>m</var> is 1.</li>
@@ -352,7 +348,7 @@ final class Initializer {
     }
 
     /**
-     * Returns the scale factor at latitude φ. This is computed as:
+     * Returns the scale factor at latitude φ (Snyder 14-15). This is computed as:
      *
      * <blockquote>cosφ / sqrt(rν2(sinφ))</blockquote>
      *

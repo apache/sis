@@ -45,11 +45,11 @@ public final strictfp class ZonedGridSystemTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link ZonedGridSystem}.
      *
-     * @param  ellipse  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
+     * @param  ellipsoidal  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
-    private void createProjection(final boolean ellipse) throws FactoryException {
+    private void createProjection(final boolean ellipsoidal) throws FactoryException {
         final ZonedTransverseMercator method = new ZonedTransverseMercator();
-        final Parameters values = parameters(method, ellipse);
+        final Parameters values = parameters(method, ellipsoidal);
         values.parameter(Constants.SCALE_FACTOR) .setValue(0.9996, Units.UNITY );
         values.parameter(Constants.FALSE_EASTING).setValue(500000, Units.METRE );
         values.parameter("Initial longitude")    .setValue(  -180, Units.DEGREE);

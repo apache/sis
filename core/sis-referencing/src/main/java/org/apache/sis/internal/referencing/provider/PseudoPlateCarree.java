@@ -22,12 +22,16 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The <cite>"Pseudo Plate Carrée"</cite> pseudo-projection (EPSG:9825). This is only the identity transform;
- * even the semi-major and semi-minor axis lengths are fixed to 1. We do not declare that operation method as
- * a {@link org.opengis.referencing.operation.Projection} because axis units are degrees.
+ * The <cite>"Pseudo Plate Carrée"</cite> pseudo-projection (EPSG:9825). This is only the identity transform.
+ * The semi-major and semi-minor axis lengths are ignored (they could be fixed to 1) but nevertheless declared
+ * for allowing netCDF file encoding to declare the ellipsoid in pseudo-projection parameters.
+ *
+ * <p>We do not declare that operation method as a {@link org.opengis.referencing.operation.Projection} because
+ * axis units are degrees.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -48,7 +52,8 @@ public final class PseudoPlateCarree extends AbstractProvider {
      * The group of all parameters expected by this coordinate operation.
      */
     private static final ParameterDescriptorGroup PARAMETERS = builder()
-            .addName("Pseudo Plate Carree").addIdentifier("9825").createGroup();
+            .addName("Pseudo Plate Carree").addIdentifier("9825")
+            .addName(Citations.NETCDF, "latitude_longitude").createGroupForMapProjection();
 
     /**
      * Constructs a new provider.

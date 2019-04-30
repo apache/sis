@@ -775,7 +775,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
     }
 
     /**
-     * Tests extracting the vertical part of a spatio-temporal CRS.
+     * Tests extracting the vertical part of a spatiotemporal CRS.
      *
      * @throws FactoryException if the operation can not be created.
      * @throws TransformException if an error occurred while converting the test points.
@@ -919,7 +919,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
     }
 
     /**
-     * Tests conversion from spatio-temporal CRS to a derived CRS.
+     * Tests conversion from spatiotemporal CRS to a derived CRS.
      *
      * @throws FactoryException if the operation can not be created.
      * @throws TransformException if an error occurred while converting the test points.

@@ -80,7 +80,7 @@ public interface Resource {
     /**
      * Returns information about this resource.
      * If this resource is an {@link Aggregate}, then the metadata may enumerate characteristics
-     * (spatio-temporal extents, feature types, range dimensions, <i>etc.</i>) of all
+     * (spatiotemporal extents, feature types, range dimensions, <i>etc.</i>) of all
      * {@linkplain Aggregate#components() components} in the aggregate, or summarize them (for example by omitting
      * {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent extents} that are fully included in larger extents).
      * If this resource is a {@link DataSet}, then the metadata shall contain only the information that apply to that

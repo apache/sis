@@ -89,7 +89,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * }
  * </div>
  *
- * The kind of objects accepted by this formatter are:
+ * The kinds of objects accepted by this formatter are:
  * <table class="sis">
  *   <caption>Formattable object types</caption>
  *   <tr><th>Class</th> <th>Remarks</th></tr>

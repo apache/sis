@@ -59,6 +59,12 @@ public interface GridCoverageResource extends DataSet {
      *   <li>An <em>estimation</em> of grid resolution for each "real world" axis.</li>
      * </ul>
      *
+     * The grid returned by this method <em>should</em> be equal to the grid returned by
+     * <code>{@linkplain #read(GridGeometry, int...) read}(null).{@linkplain GridCoverage#getGridGeometry() getGridGeometry()}</code>.
+     * However the grid geometry returned by this method is allowed to be only approximate if computing accurate information would be
+     * prohibitively expensive, or if the grid geometry depends on the exact argument value given to the {@code read(…)} method.
+     * At least, the {@linkplain GridGeometry#getDimension() number of dimensions} should match.
+     *
      * @return extent of grid coordinates together with their mapping to "real world" coordinates.
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      *
@@ -84,6 +90,12 @@ public interface GridCoverageResource extends DataSet {
      * size should be equal to the {@linkplain java.awt.image.SampleModel#getNumBands() number of bands} in the image
      * and sample dimension names may be "Red", "Green" and "Blue" for instance. Those sample dimensions do not need
      * to contain any {@linkplain SampleDimension#getCategories() category}.
+     *
+     * <p>The list returned by this method <em>should</em> be equal to the list returned by
+     * <code>{@linkplain #read(GridGeometry, int...) read}(null).{@linkplain GridCoverage#getSampleDimensions() getSampleDimensions()}</code>.
+     * However the sample dimensions returned by this method is allowed to be only approximate if computing accurate information
+     * would be prohibitively expensive, or if the sample dimensions depend on the {@code domain} argument (area of interest)
+     * given to the {@code read(…)} method. At least, the number of sample dimensions should match.</p>
      *
      * @return ranges of sample values together with their mapping to "real values".
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.

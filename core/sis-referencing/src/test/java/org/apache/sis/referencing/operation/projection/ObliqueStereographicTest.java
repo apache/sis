@@ -351,7 +351,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
     public void testPolarStereographic() throws FactoryException, TransformException {
         final OperationMethod op = new org.apache.sis.internal.referencing.provider.ObliqueStereographic();
         final ParameterValueGroup p = op.getParameters().createValue();
-        p.parameter("semi_major")                    .setValue(6378137);
+        p.parameter("semi_major")                    .setValue(WGS84_A);
         p.parameter("inverse_flattening")            .setValue(298.2572236);
         p.parameter("Latitude of natural origin")    .setValue(90);
         p.parameter("Scale factor at natural origin").setValue(0.994);

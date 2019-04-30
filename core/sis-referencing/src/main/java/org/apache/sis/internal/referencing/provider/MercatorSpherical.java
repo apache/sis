@@ -58,7 +58,7 @@ public final class MercatorSpherical extends AbstractMercator {
          * Visualisation CRS / Mercator", now deprecated). But at the difference of what we did in Mercator2SP, we keep
          * the EPSG name here since there is no "standard parallel" parameter.  So the "Scale factor at natural origin"
          * parameter name still okay provided that the "Latitude of natural origin" parameter value stay zero (which is
-         * normally enforced by the Mercator1SP.LATITUDE_OF_ORIGIN minimum and maximum values).
+         * enforced by the Mercator1SP.LATITUDE_OF_ORIGIN minimum and maximum values).
          */
         final ParameterDescriptor<Double> scaleFactor = createScale(builder
                 .addNamesAndIdentifiers(Mercator1SP.SCALE_FACTOR)

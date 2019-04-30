@@ -402,7 +402,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         @Override
         public Matrix transform(final double[] srcPts, final int srcOff,
                                 final double[] dstPts, final int dstOff,
-                                final boolean derivate) throws ProjectionException
+                                final boolean derivate)
         {
             final double λ = srcPts[srcOff  ];
             final double φ = srcPts[srcOff+1];
@@ -440,7 +440,6 @@ public class ObliqueStereographic extends NormalizedProjection {
         @Override
         protected void inverseTransform(final double[] srcPts, final int srcOff,
                                         final double[] dstPts, final int dstOff)
-                throws ProjectionException
         {
             final double x = srcPts[srcOff  ];
             final double y = srcPts[srcOff+1];

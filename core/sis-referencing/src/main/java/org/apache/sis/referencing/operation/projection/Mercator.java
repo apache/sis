@@ -203,7 +203,6 @@ public class Mercator extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private Mercator(final Initializer initializer) {
         super(initializer);
-        super.computeCoefficients();
         this.variant = initializer.variant;
         /*
          * The "Longitude of natural origin" parameter is found in all Mercator projections and is mandatory.
@@ -477,7 +476,7 @@ public class Mercator extends ConformalProjection {
         @Override
         public Matrix transform(final double[] srcPts, final int srcOff,
                                 final double[] dstPts, final int dstOff,
-                                final boolean derivate) throws ProjectionException
+                                final boolean derivate)
         {
             final double φ = srcPts[srcOff+1];
             if (dstPts != null) {
@@ -547,7 +546,6 @@ public class Mercator extends ConformalProjection {
         @Override
         protected void inverseTransform(final double[] srcPts, final int srcOff,
                                         final double[] dstPts, final int dstOff)
-                throws ProjectionException
         {
             final double y = srcPts[srcOff+1];                      // Must be before writing x.
             dstPts[dstOff  ] = srcPts[srcOff];                      // Must be before writing y.

@@ -170,9 +170,9 @@ public final class Store extends StaxDataStore implements FeatureSet {
     }
 
     /**
-     * Returns the spatio-temporal envelope of this resource.
+     * Returns the spatiotemporal envelope of this resource.
      *
-     * @return the spatio-temporal resource extent.
+     * @return the spatiotemporal resource extent.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
     @Override

@@ -44,7 +44,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
 
 /**
  * Tests envelope transformations using either {@link Envelopes} or {@link Shapes2D} transform methods.
- * This base class allows us to perform the same tests on both kind of objects.
+ * This base class allows us to perform the same tests on both kinds of objects.
  * All tests performed by this class are two-dimensional.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

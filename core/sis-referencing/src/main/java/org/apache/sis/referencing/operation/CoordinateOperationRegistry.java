@@ -175,7 +175,7 @@ class CoordinateOperationRegistry {
     final DefaultCoordinateOperationFactory factorySIS;
 
     /**
-     * The spatio-temporal area of interest, or {@code null} if none.
+     * The spatiotemporal area of interest, or {@code null} if none.
      * When a new {@code CoordinateOperationFinder} instance is created with a non-null
      * {@link CoordinateOperationContext}, the context is used for initializing this value.
      * After initialization, this field may be updated as {@code CoordinateOperationFinder}

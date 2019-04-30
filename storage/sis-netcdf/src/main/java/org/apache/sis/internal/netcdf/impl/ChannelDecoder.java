@@ -44,6 +44,7 @@ import javax.measure.format.ParserException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.internal.netcdf.Node;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.NamedElement;
@@ -714,7 +715,7 @@ public final class ChannelDecoder extends Decoder {
      * Returns the netCDF variable of the given name, or {@code null} if none.
      *
      * @param  name  the name of the variable to search, or {@code null}.
-     * @return the attribute value, or {@code null} if none.
+     * @return the variable of the given name, or {@code null} if none.
      */
     final VariableInfo findVariable(final String name) {
         VariableInfo v = variableMap.get(name);
@@ -726,6 +727,17 @@ public final class ChannelDecoder extends Decoder {
             }
         }
         return v;
+    }
+
+    /**
+     * Returns the variable of the given name. Note that groups do not exist in netCDF 3.
+     *
+     * @param  name  the name of the variable to search, or {@code null}.
+     * @return the variable of the given name, or {@code null} if none.
+     */
+    @Override
+    protected Node findNode(final String name) {
+        return findVariable(name);
     }
 
     /**

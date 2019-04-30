@@ -460,6 +460,24 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
+     * Returns the a coordinate system for map projections with (easting, northing) axes in metres.
+     * EPSG::4400 — Cartesian 2D CS. Axes: easting, northing (E,N). Orientations: east, north. UoM: m.
+     *
+     * @param  factory the EPSG factory to use for creating the coordinate system.
+     * @return a coordinate system with (easting, northing) axes in metres.
+     * @throws FactoryException if an error occurred while creating the coordinate system.
+     *
+     * @since 1.0
+     */
+    public static CartesianCS standardProjectedCS(final CSAuthorityFactory factory) throws FactoryException {
+        /*
+         * Note: we may provide a default factory in a future SIS version.
+         * We may need to mimic ReferencingFactoryContainer.getCSAuthorityFactory().
+         */
+        return factory.createCartesianCS("4400");
+    }
+
+    /**
      * Returns the mapping between parameter identifiers and parameter names as defined by the given authority.
      * This method assumes that the identifiers of all parameters defined by that authority are numeric.
      * Examples of authorities defining numeric parameters are EPSG and GeoTIFF.

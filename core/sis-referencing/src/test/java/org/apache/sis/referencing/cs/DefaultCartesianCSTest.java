@@ -22,7 +22,6 @@ import org.opengis.test.Validators;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
-import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -216,9 +215,9 @@ public final strictfp class DefaultCartesianCSTest extends TestCase {
         final CoordinateSystemAxis N = cs.getAxis(1);
         assertEquals("name",    "Easting, northing (E,N)", cs.getName().getCode());
         assertEquals("remarks", "Used in ProjectedCRS.", cs.getRemarks().toString());
-        assertEpsgIdentifierEquals(String.valueOf(Constants.EPSG_PROJECTED_CS), getSingleton(cs.getIdentifiers()));
-        assertEpsgIdentifierEquals("1", getSingleton(E.getIdentifiers()));
-        assertEpsgIdentifierEquals("2", getSingleton(N.getIdentifiers()));
+        assertEpsgIdentifierEquals("4400", getSingleton(cs.getIdentifiers()));
+        assertEpsgIdentifierEquals("1",    getSingleton(E.getIdentifiers()));
+        assertEpsgIdentifierEquals("2",    getSingleton(N.getIdentifiers()));
         assertAxisEquals("Easting",  "E", AxisDirection.EAST,  Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, null, E);
         assertAxisEquals("Northing", "N", AxisDirection.NORTH, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, null, N);
         /*

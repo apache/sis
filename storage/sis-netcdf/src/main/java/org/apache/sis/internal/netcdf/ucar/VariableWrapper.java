@@ -298,14 +298,18 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the numeric type of the attribute of the given name, or {@code null}
-     * if the given attribute is not found or its value is not numeric.
-     *
-     * @see #getDataType()
+     * Returns the type of the attribute of the given name,
+     * or {@code null} if the given attribute is not found.
      */
     @Override
-    public Class<? extends Number> getAttributeType(final String attributeName) {
-        final Attribute attribute = raw.findAttributeIgnoreCase(attributeName);
+    public Class<?> getAttributeType(final String attributeName) {
+        return getAttributeType(raw.findAttributeIgnoreCase(attributeName));
+    }
+
+    /**
+     * Implementation of {@link #getAttributeType(String)} shared with {@link GroupWrapper}.
+     */
+    static Class<?> getAttributeType(final Attribute attribute) {
         if (attribute != null) {
             switch (attribute.getDataType()) {
                 case BYTE:   return Byte.class;
@@ -314,6 +318,8 @@ final class VariableWrapper extends Variable {
                 case LONG:   return Long.class;
                 case FLOAT:  return Float.class;
                 case DOUBLE: return Double.class;
+                case STRING: return String.class;
+                default:     return Object.class;
             }
         }
         return null;
@@ -326,7 +332,13 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public Object[] getAttributeValues(final String attributeName, final boolean numeric) {
-        final Attribute attribute = raw.findAttributeIgnoreCase(attributeName);
+        return getAttributeValues(raw.findAttributeIgnoreCase(attributeName), numeric);
+    }
+
+    /**
+     * Implementation of {@link #getAttributeValues(String, boolean)} shared with {@link GroupWrapper}.
+     */
+    static Object[] getAttributeValues(final Attribute attribute, final boolean numeric) {
         if (attribute != null) {
             boolean hasValues = false;
             final Object[] values = new Object[attribute.getLength()];

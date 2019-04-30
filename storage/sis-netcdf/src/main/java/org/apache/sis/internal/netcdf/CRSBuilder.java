@@ -45,6 +45,7 @@ import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.internal.referencing.provider.Equirectangular;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.storage.DataStoreContentException;
@@ -81,16 +82,6 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
  * @module
  */
 abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
-    /**
-     * The coordinate reference system which is presumed the basis of datum on netCDF files.
-     * Note: if this default is changed, search also for "GRS 1980" strings in this class.
-     *
-     * <div class="note"><b>Note:</b> we use GRS 1980 instead than WGS 84 because the CRS name
-     * clearly said "Unknown datum based upon the GRS 1980 ellipsoid" and for consistency with
-     * {@link CommonCRS#SPHERE}, which also use GRS 1980.</div>
-     */
-    private static final CommonCRS DEFAULT = CommonCRS.GRS1980;
-
     /**
      * The type of datum as a GeoAPI sub-interface of {@link Datum}.
      * Used for verifying the type of cached datum at {@link #datumIndex}.
@@ -293,8 +284,9 @@ previous:   for (int i=components.size(); --i >= 0;) {
         datum = datumType.cast(decoder.datumCache[datumIndex]);         // Should be before 'setPredefinedComponents' call.
         setPredefinedComponents(decoder);
         /*
-         * If 'setPredefinedComponents(decoder)' offers a datum, we will used it as-is. Otherwise create the datum now.
-         * Datum are often not defined in netCDF files, so we use EPSG::6019 — "Not specified (based on GRS 1980 ellipsoid)".
+         * If `setPredefinedComponents(decoder)` offers a datum, we will used it as-is. Otherwise create the datum now.
+         * Datum are often not defined in netCDF files, so the above `setPredefinedComponents` method call may have set
+         * EPSG::6019 — "Not specified (based on GRS 1980 ellipsoid)". If not, we build a similar name.
          */
         if (datum == null) {
             // Not localized because stored as a String, possibly exported in WKT or GML, and 'datumBase' is in English.
@@ -457,6 +449,11 @@ previous:   for (int i=components.size(); --i >= 0;) {
      */
     private abstract static class Geodetic<CS extends CoordinateSystem> extends CRSBuilder<GeodeticDatum, CS> {
         /**
+         * The coordinate reference system which is presumed the basis of datum on netCDF files.
+         */
+        protected CommonCRS defaultCRS;
+
+        /**
          * Whether the coordinate system has longitude before latitude.
          * This flag is set as a side-effect of {@link #isPredefinedCS(Unit)} method call.
          */
@@ -472,11 +469,18 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /**
-         * Creates a {@link GeodeticDatum} for <cite>"Unknown datum based on GRS 1980"</cite>.
+         * Initializes this builder before {@link #build(Decoder)} execution.
+         */
+        @Override void setPredefinedComponents(final Decoder decoder) throws FactoryException {
+            defaultCRS = decoder.convention().defaultHorizontalCRS(false);
+        }
+
+        /**
+         * Creates a {@link GeodeticDatum} for <cite>"Unknown datum presumably based on GRS 1980"</cite>.
          * This method is invoked only if {@link #setPredefinedComponents(Decoder)} failed to create a datum.
          */
         @Override final void createDatum(DatumFactory factory, Map<String,?> properties) throws FactoryException {
-            final GeodeticDatum template = DEFAULT.datum();
+            final GeodeticDatum template = defaultCRS.datum();
             datum = factory.createGeodeticDatum(properties, template.getEllipsoid(), template.getPrimeMeridian());
         }
 
@@ -522,8 +526,9 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * matching the axes defined in the netCDF file.
          */
         @Override void setPredefinedComponents(final Decoder decoder) throws FactoryException {
+            super.setPredefinedComponents(decoder);
             if (isPredefinedCS(Units.DEGREE)) {
-                GeocentricCRS crs = DEFAULT.spherical();
+                GeocentricCRS crs = defaultCRS.spherical();
                 if (isLongitudeFirst) {
                     crs = DefaultGeocentricCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
                 }
@@ -531,7 +536,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
                 coordinateSystem = (SphericalCS) crs.getCoordinateSystem();
                 datum            = crs.getDatum();
             } else {
-                datum = DEFAULT.datum();
+                datum = defaultCRS.datum();
             }
         }
 
@@ -573,23 +578,24 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * to predefined objects matching the axes defined in the netCDF file.
          */
         @Override void setPredefinedComponents(final Decoder decoder) throws FactoryException {
+            super.setPredefinedComponents(decoder);
             if (isPredefinedCS(Units.DEGREE)) {
                 GeographicCRS crs;
                 if (is3D()) {
-                    crs = DEFAULT.geographic3D();
+                    crs = defaultCRS.geographic3D();
                     if (isLongitudeFirst) {
                         crs = DefaultGeographicCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
                     }
                 } else if (isLongitudeFirst) {
-                    crs = DEFAULT.normalizedGeographic();
+                    crs = defaultCRS.normalizedGeographic();
                 } else {
-                    crs = DEFAULT.geographic();
+                    crs = defaultCRS.geographic();
                 }
                 referenceSystem  = crs;
                 coordinateSystem = crs.getCoordinateSystem();
                 datum            = crs.getDatum();
             } else {
-                datum = DEFAULT.datum();
+                datum = defaultCRS.datum();
                 final Integer epsg = epsgCandidateCS(Units.DEGREE);
                 if (epsg != null) try {
                     coordinateSystem = decoder.getCSAuthorityFactory().createEllipsoidalCS(epsg.toString());
@@ -632,14 +638,13 @@ previous:   for (int i=components.size(); --i >= 0;) {
      */
     private static final class Projected extends Geodetic<CartesianCS> {
         /**
-         * The spherical variant of {@link CRSBuilder#DEFAULT}.
-         * Currently based upon the GRS 1980 Authalic Sphere.
+         * The spherical variant of {@link #defaultCRS}.
          */
-        private static final CommonCRS SPHERICAL = CommonCRS.SPHERE;
+        private CommonCRS sphericalDatum;
 
         /**
          * Defining conversion for "Not specified (presumed Plate Carrée)". This conversion use spherical formulas.
-         * Consequently it should be used with {@link #SPHERICAL} instead of {@link CommonCRS#DEFAULT}.
+         * Consequently it should be used with {@link #sphericalDatum} instead of {@link #defaultCRS}.
          */
         private static final Conversion UNKNOWN_PROJECTION;
         static {
@@ -667,9 +672,11 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * to predefined objects matching the axes defined in the netCDF file.
          */
         @Override void setPredefinedComponents(final Decoder decoder) throws FactoryException {
-            datum = SPHERICAL.datum();
+            super.setPredefinedComponents(decoder);
+            sphericalDatum = decoder.convention().defaultHorizontalCRS(true);
+            datum = sphericalDatum.datum();
             if (isPredefinedCS(Units.METRE)) {
-                coordinateSystem = CommonCRS.WGS84.universal(0,0).getCoordinateSystem();
+                coordinateSystem = ReferencingUtilities.standardProjectedCS(decoder.getCSAuthorityFactory());
             }
         }
 
@@ -688,10 +695,11 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
         /**
          * Creates the coordinate reference system from datum and coordinate system computed in previous steps.
-         * The datum for this method is based upon the GRS 1980 Authalic Sphere.
+         * The datum for this method is based on a sphere.
          */
         @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
-            GeographicCRS baseCRS = (coordinateSystem.getDimension() >= 3) ? SPHERICAL.geographic3D() : SPHERICAL.geographic();
+            final boolean is3D = (coordinateSystem.getDimension() >= 3);
+            GeographicCRS baseCRS = is3D ? sphericalDatum.geographic3D() : sphericalDatum.geographic();
             if (!baseCRS.getDatum().equals(datum)) {
                 baseCRS = factory.createGeographicCRS(properties, datum, baseCRS.getCoordinateSystem());
             }
