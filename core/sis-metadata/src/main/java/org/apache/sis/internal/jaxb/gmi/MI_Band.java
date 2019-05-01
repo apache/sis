@@ -69,8 +69,8 @@ public class MI_Band extends DefaultBand {
             if (original.getBandBoundaryDefinition()   != null ||
                 original.getNominalSpatialResolution() != null ||
                 original.getTransferFunctionType()     != null ||
-                original.getTransmittedPolarization()  != null ||
-                original.getDetectedPolarization()     != null)
+                original.getTransmittedPolarisation()  != null ||
+                original.getDetectedPolarisation()     != null)
             {
                 return new MI_Band(original);
             }

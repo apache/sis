@@ -417,18 +417,6 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                 }
                 break;
             }
-            case "detectedPolarization": {
-                if (org.opengis.metadata.content.Band.class.isAssignableFrom(enclosing)) {
-                    name = "detectedPolarisation";          // Spelling change in XSD files
-                }
-                break;
-            }
-            case "transmittedPolarization": {
-                if (org.opengis.metadata.content.Band.class.isAssignableFrom(enclosing)) {
-                    name = "transmittedPolarisation";       // Spelling change in XSD files
-                }
-                break;
-            }
             case "featureType": {
                 if (org.opengis.metadata.distribution.DataFile.class.isAssignableFrom(enclosing)) {
                     name = "featureTypes";                  // Spelling change in XSD files

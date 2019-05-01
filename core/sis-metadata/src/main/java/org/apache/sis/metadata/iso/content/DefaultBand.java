@@ -69,8 +69,8 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
     "bandBoundaryDefinition",
     "nominalSpatialResolution",
     "transferFunctionType",
-    "transmittedPolarization",
-    "detectedPolarization"
+    "transmittedPolarisation",
+    "detectedPolarisation"
 })
 @XmlRootElement(name = "MD_Band")
 @XmlSeeAlso(org.apache.sis.internal.jaxb.gmi.MI_Band.class)
@@ -78,7 +78,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2474871120376144737L;
+    private static final long serialVersionUID = 2492553738885938445L;
 
     /**
      * Shortest wavelength that the sensor is capable of collecting within a designated band.
@@ -113,12 +113,12 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Polarization of the radiation transmitted.
      */
-    private PolarizationOrientation transmittedPolarization;
+    private PolarizationOrientation transmittedPolarisation;
 
     /**
      * Polarization of the radiation detected.
      */
-    private PolarizationOrientation detectedPolarization;
+    private PolarizationOrientation detectedPolarisation;
 
     /**
      * Constructs an initially empty band.
@@ -151,8 +151,8 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
             peakResponse             = object.getPeakResponse();
             toneGradation            = object.getToneGradation();
             bandBoundaryDefinition   = object.getBandBoundaryDefinition();
-            transmittedPolarization  = object.getTransmittedPolarization();
-            detectedPolarization     = object.getDetectedPolarization();
+            transmittedPolarisation  = object.getTransmittedPolarisation();
+            detectedPolarisation     = object.getDetectedPolarisation();
         }
     }
 
@@ -391,8 +391,8 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     @Override
     @XmlElement(name = "transmittedPolarisation")
-    public PolarizationOrientation getTransmittedPolarization() {
-        return transmittedPolarization;
+    public PolarizationOrientation getTransmittedPolarisation() {
+        return transmittedPolarisation;
     }
 
     /**
@@ -400,9 +400,9 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      *
      * @param  newValue  the new transmitted polarization.
      */
-    public void setTransmittedPolarization(final PolarizationOrientation newValue) {
-        checkWritePermission(transmittedPolarization);
-        transmittedPolarization = newValue;
+    public void setTransmittedPolarisation(final PolarizationOrientation newValue) {
+        checkWritePermission(transmittedPolarisation);
+        transmittedPolarisation = newValue;
     }
 
     /**
@@ -412,8 +412,8 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     @Override
     @XmlElement(name = "detectedPolarisation")
-    public PolarizationOrientation getDetectedPolarization() {
-        return detectedPolarization;
+    public PolarizationOrientation getDetectedPolarisation() {
+        return detectedPolarisation;
     }
 
     /**
@@ -421,8 +421,8 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      *
      * @param  newValue  the new detected polarization.
      */
-    public void setDetectedPolarization(final PolarizationOrientation newValue) {
-        checkWritePermission(detectedPolarization);
-        detectedPolarization = newValue;
+    public void setDetectedPolarisation(final PolarizationOrientation newValue) {
+        checkWritePermission(detectedPolarisation);
+        detectedPolarisation = newValue;
     }
 }
