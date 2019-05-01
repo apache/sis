@@ -75,7 +75,7 @@ import org.apache.sis.util.resources.Messages;
     "checkPointAvailable",
     "checkPointDescription",
     "cornerPoints",
-    "centerPoint",
+    "centrePoint",
     "pointInPixel",
     "transformationDimensionDescription",
     "transformationDimensionMapping",
@@ -87,7 +87,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2924562334097446037L;
+    private static final long serialVersionUID = 6234748157247202686L;
 
     /**
      * Mask for the {@code checkPointAvailable} boolean value.
@@ -115,7 +115,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * and the grid coordinate of the cell halfway between opposite ends of the grid in the
      * spatial dimensions.
      */
-    private Point centerPoint;
+    private Point centrePoint;
 
     /**
      * Point in a pixel corresponding to the Earth location of the pixel.
@@ -157,7 +157,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
         if (object != null) {
             checkPointDescription              = object.getCheckPointDescription();
             cornerPoints                       = copyList(object.getCornerPoints(), Point.class);
-            centerPoint                        = object.getCenterPoint();
+            centrePoint                        = object.getCentrePoint();
             pointInPixel                       = object.getPointInPixel();
             transformationDimensionDescription = object.getTransformationDimensionDescription();
             transformationDimensionMapping     = copyCollection(object.getTransformationDimensionMapping(), InternationalString.class);
@@ -298,8 +298,8 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      */
     @Override
     @XmlElement(name = "centrePoint")
-    public Point getCenterPoint() {
-        return centerPoint;
+    public Point getCentrePoint() {
+        return centrePoint;
     }
 
     /**
@@ -307,9 +307,9 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      *
      * @param  newValue  the new center point.
      */
-    public void setCenterPoint(final Point newValue) {
-        checkWritePermission(centerPoint);
-        centerPoint = newValue;
+    public void setCentrePoint(final Point newValue) {
+        checkWritePermission(centrePoint);
+        centrePoint = newValue;
     }
 
     /**
