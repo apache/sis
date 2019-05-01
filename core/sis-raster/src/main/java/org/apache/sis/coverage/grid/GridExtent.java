@@ -68,7 +68,7 @@ import org.apache.sis.util.iso.Types;
  *
  * <div class="note"><b>Upcoming API generalization:</b>
  * this class may implement the {@code GridEnvelope} interface in a future Apache SIS version.
- * This is pending <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>.</div>
+ * This is pending GeoAPI update.</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
@@ -491,9 +491,6 @@ public class GridExtent implements Serializable {
      * The sequence contains a minimum value for each dimension of the grid coverage.
      *
      * @return the valid minimum grid coordinates, inclusive.
-     *
-     * @todo Pending resolution of <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>
-     *       before to become public API, in order to use the interface in return type.
      */
     GridCoordinatesView getLow() {
         return new GridCoordinatesView(coordinates, 0);
@@ -504,9 +501,6 @@ public class GridExtent implements Serializable {
      * The sequence contains a maximum value for each dimension of the grid coverage.
      *
      * @return the valid maximum grid coordinates, <strong>inclusive</strong>.
-     *
-     * @todo Pending resolution of <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>
-     *       before to become public API, in order to use the interface in return type.
      */
     GridCoordinatesView getHigh() {
         return new GridCoordinatesView(coordinates, getDimension());
@@ -520,7 +514,6 @@ public class GridExtent implements Serializable {
      * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() grid dimension}.
      *
-     * @see #getLow()
      * @see #getHigh(int)
      */
     public long getLow(final int index) {
@@ -536,7 +529,6 @@ public class GridExtent implements Serializable {
      * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() grid dimension}.
      *
-     * @see #getHigh()
      * @see #getLow(int)
      */
     public long getHigh(final int index) {

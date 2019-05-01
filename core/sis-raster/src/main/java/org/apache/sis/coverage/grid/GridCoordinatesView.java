@@ -26,14 +26,14 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * <div class="note"><b>Upcoming API generalization:</b>
  * this class may implement the {@code GridCoordinates} interface in a future Apache SIS version.
- * This is pending <a href="https://github.com/opengeospatial/geoapi/issues/36">GeoAPI update</a>.</div>
+ * This is pending GeoAPI update.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-final class GridCoordinatesView /* implements GridCoordinates */ {
+final class GridCoordinatesView {
     /**
      * A reference to the coordinate array of the enclosing grid envelope.
      */
