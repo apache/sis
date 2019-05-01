@@ -227,9 +227,13 @@ public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
              */
             return null;
         }
+        String identifier = type.getAnnotation(UML.class).identifier();
+        if (identifier.equals("MI_PolarizationOrientationCode")) {
+            identifier = "MI_PolarisationOrientationCode";
+            // https://issues.apache.org/jira/browse/SIS-398
+        }
         final String classname = "org.apache.sis.internal.jaxb." +
-                (CodeList.class.isAssignableFrom(type) ? "code" : "metadata") +
-                '.' + type.getAnnotation(UML.class).identifier();
+                (CodeList.class.isAssignableFrom(type) ? "code" : "metadata") + '.' + identifier;
         final Class<?> wrapper = Class.forName(classname);
         Class<?>[] expectedFinalClasses = wrapper.getClasses();   // "Since2014" internal class.
         if (expectedFinalClasses.length == 0) {

@@ -40,7 +40,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * <div class="preformat">{@code MI_Objective}
  * {@code   ├─identifier…………………………} Code used to identify the objective.
  * {@code   │   └─code………………………………} Alphanumeric value identifying an instance in the namespace.
- * {@code   └─objectiveOccurence……} Event or events associated with objective completion.
+ * {@code   └─objectiveOccurrence…} Event or events associated with objective completion.
  * {@code       ├─identifier………………} Event name or number.
  * {@code       │   └─code……………………} Alphanumeric value identifying an instance in the namespace.
  * {@code       ├─trigger………………………} Initiator of the event.
@@ -134,14 +134,14 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     public DefaultObjective(final Objective object) {
         super(object);
         if (object != null) {
-            identifiers         = copyCollection(object.getIdentifiers(), Identifier.class);
-            priority            = object.getPriority();
-            types               = copyCollection(object.getTypes(), ObjectiveType.class);
-            functions           = copyCollection(object.getFunctions(), InternationalString.class);
-            extents             = copyCollection(object.getExtents(), Extent.class);
-            objectiveOccurences = copyCollection(object.getObjectiveOccurences(), Event.class);
-            pass                = copyCollection(object.getPass(), PlatformPass.class);
-            sensingInstruments  = copyCollection(object.getSensingInstruments(), Instrument.class);
+            identifiers          = copyCollection(object.getIdentifiers(), Identifier.class);
+            priority             = object.getPriority();
+            types                = copyCollection(object.getTypes(), ObjectiveType.class);
+            functions            = copyCollection(object.getFunctions(), InternationalString.class);
+            extents              = copyCollection(object.getExtents(), Extent.class);
+            objectiveOccurences  = copyCollection(object.getObjectiveOccurences(), Event.class);
+            pass                 = copyCollection(object.getPass(), PlatformPass.class);
+            sensingInstruments   = copyCollection(object.getSensingInstruments(), Instrument.class);
         }
     }
 
@@ -289,6 +289,9 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Returns the event or events associated with objective completion.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * This method is misspelled (missing "r"). Its name may be fixed in GeoAPI 4.0.</div>
+     *
      * @return events associated with objective completion.
      */
     @Override
@@ -299,6 +302,9 @@ public class DefaultObjective extends ISOMetadata implements Objective {
 
     /**
      * Sets the event or events associated with objective completion.
+     *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * This method is misspelled (missing "r"). Its name may be fixed in GeoAPI 4.0.</div>
      *
      * @param  newValues  the new objective occurrences values.
      */

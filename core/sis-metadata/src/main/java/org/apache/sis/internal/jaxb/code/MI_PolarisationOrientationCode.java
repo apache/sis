@@ -37,19 +37,19 @@ import org.apache.sis.xml.Namespaces;
  * @since 0.3
  * @module
  */
-public final class MI_PolarizationOrientationCode
-        extends CodeListAdapter<MI_PolarizationOrientationCode, PolarizationOrientation>
+public final class MI_PolarisationOrientationCode
+        extends CodeListAdapter<MI_PolarisationOrientationCode, PolarizationOrientation>
 {
     /**
      * Empty constructor for JAXB only.
      */
-    public MI_PolarizationOrientationCode() {
+    public MI_PolarisationOrientationCode() {
     }
 
     /**
      * Creates a new adapter for the given value.
      */
-    private MI_PolarizationOrientationCode(final CodeListUID value) {
+    private MI_PolarisationOrientationCode(final CodeListUID value) {
         super(value);
     }
 
@@ -59,8 +59,8 @@ public final class MI_PolarizationOrientationCode
      * @return the wrapper for the code list value.
      */
     @Override
-    protected MI_PolarizationOrientationCode wrap(final CodeListUID value) {
-        return new MI_PolarizationOrientationCode(value);
+    protected MI_PolarisationOrientationCode wrap(final CodeListUID value) {
+        return new MI_PolarisationOrientationCode(value);
     }
 
     /**
