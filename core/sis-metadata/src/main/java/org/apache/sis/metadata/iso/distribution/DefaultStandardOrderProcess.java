@@ -60,7 +60,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
     "plannedAvailableDateTime",
     "orderingInstructions",
     "turnaround",
-    "orderOptionType",              // New in ISO 19115-3
+    "orderOptionsType",             // New in ISO 19115-3
     "orderOptions"                  // New in ISO 19115-3
 })
 @XmlRootElement(name = "MD_StandardOrderProcess")
@@ -68,7 +68,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6107884863471045743L;
+    private static final long serialVersionUID = 1948951192071039775L;
 
     /**
      * Fees and terms for retrieving the resource.
@@ -100,7 +100,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Description of the order options record.
      */
-    private RecordType orderOptionType;
+    private RecordType orderOptionsType;
 
     /**
      * Request/purchase choices.
@@ -129,7 +129,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
             plannedAvailableDateTime = toMilliseconds(object.getPlannedAvailableDateTime());
             orderingInstructions     = object.getOrderingInstructions();
             turnaround               = object.getTurnaround();
-            orderOptionType          = object.getOrderOptionType();
+            orderOptionsType         = object.getOrderOptionsType();
             orderOptions             = object.getOrderOptions();
         }
     }
@@ -291,27 +291,51 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @return description of the order options record, or {@code null} if none.
      *
-     * @since 0.5
+     * @since 1.0
      *
      * @see org.apache.sis.util.iso.DefaultRecord#getRecordType()
      */
     @Override
     @XmlElement(name = "orderOptionsType")
     @XmlJavaTypeAdapter(GO_RecordType.Since2014.class)
+    public RecordType getOrderOptionsType() {
+        return orderOptionsType;
+    }
+
+    /**
+     * @deprecated Renamed {@link #getOrderOptionsType()} for ISO 19115 conformance.
+     *
+     * @return description of the order options record, or {@code null} if none.
+     *
+     * @since 0.5
+     */
+    @Deprecated
     public RecordType getOrderOptionType() {
-        return orderOptionType;
+        return getOrderOptionsType();
     }
 
     /**
      * Sets the description of the {@linkplain #getOrderOptions() order options} record.
      *
-     * @param newValue New description of the order options record.
+     * @param  newValue  new description of the order options record.
+     *
+     * @since 1.0
+     */
+    public void setOrderOptionsType(final RecordType newValue) {
+        checkWritePermission(orderOptionsType);
+        orderOptionsType = newValue;
+    }
+
+    /**
+     * @deprecated Renamed {@link #setOrderOptionsType(RecordType)} for ISO 19115 conformance.
+     *
+     * @param  newValue  new description of the order options record.
      *
      * @since 0.5
      */
+    @Deprecated
     public void setOrderOptionType(final RecordType newValue) {
-        checkWritePermission(orderOptionType);
-        orderOptionType = newValue;
+        setOrderOptionsType(newValue);
     }
 
     /**
