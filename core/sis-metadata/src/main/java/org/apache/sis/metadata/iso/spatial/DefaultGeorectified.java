@@ -294,6 +294,10 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * and the grid coordinate of the cell halfway between opposite ends of the grid in the
      * spatial dimensions.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * This method may be renamed {@code getCentrePoint()} in GeoAPI 4.0
+     * for compliance with ISO 19115:2014.</div>
+     *
      * @return the center point, or {@code null}.
      */
     @Override
@@ -304,6 +308,10 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
 
     /**
      * Sets the center point.
+     *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * This method may be renamed {@code setCentrePoint(…)} in GeoAPI 4.0
+     * for compliance with ISO 19115:2014.</div>
      *
      * @param  newValue  the new center point.
      */
