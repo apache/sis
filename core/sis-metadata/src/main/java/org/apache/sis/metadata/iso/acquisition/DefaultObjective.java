@@ -40,7 +40,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * <div class="preformat">{@code MI_Objective}
  * {@code   ├─identifier…………………………} Code used to identify the objective.
  * {@code   │   └─code………………………………} Alphanumeric value identifying an instance in the namespace.
- * {@code   └─objectiveOccurence……} Event or events associated with objective completion.
+ * {@code   └─objectiveOccurrence…} Event or events associated with objective completion.
  * {@code       ├─identifier………………} Event name or number.
  * {@code       │   └─code……………………} Alphanumeric value identifying an instance in the namespace.
  * {@code       ├─trigger………………………} Initiator of the event.
@@ -69,7 +69,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
     "types",
     "functions",
     "extents",
-    "objectiveOccurences",
+    "objectiveOccurrences",
     "pass",
     "sensingInstruments"
 })
@@ -78,7 +78,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 8273806197892815938L;
+    private static final long serialVersionUID = 3312985886806161441L;
 
     /**
      * Priority applied to the target.
@@ -104,7 +104,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Event or events associated with objective completion.
      */
-    private Collection<Event> objectiveOccurences;
+    private Collection<Event> objectiveOccurrences;
 
     /**
      * Pass of the platform over the objective.
@@ -134,14 +134,14 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     public DefaultObjective(final Objective object) {
         super(object);
         if (object != null) {
-            identifiers         = copyCollection(object.getIdentifiers(), Identifier.class);
-            priority            = object.getPriority();
-            types               = copyCollection(object.getTypes(), ObjectiveType.class);
-            functions           = copyCollection(object.getFunctions(), InternationalString.class);
-            extents             = copyCollection(object.getExtents(), Extent.class);
-            objectiveOccurences = copyCollection(object.getObjectiveOccurences(), Event.class);
-            pass                = copyCollection(object.getPass(), PlatformPass.class);
-            sensingInstruments  = copyCollection(object.getSensingInstruments(), Instrument.class);
+            identifiers          = copyCollection(object.getIdentifiers(), Identifier.class);
+            priority             = object.getPriority();
+            types                = copyCollection(object.getTypes(), ObjectiveType.class);
+            functions            = copyCollection(object.getFunctions(), InternationalString.class);
+            extents              = copyCollection(object.getExtents(), Extent.class);
+            objectiveOccurrences = copyCollection(object.getObjectiveOccurences(), Event.class);
+            pass                 = copyCollection(object.getPass(), PlatformPass.class);
+            sensingInstruments   = copyCollection(object.getSensingInstruments(), Instrument.class);
         }
     }
 
@@ -290,20 +290,44 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * Returns the event or events associated with objective completion.
      *
      * @return events associated with objective completion.
+     *
+     * @since 1.0
+     */
+    @XmlElement(name = "objectiveOccurence", required = true)
+    public Collection<Event> getObjectiveOccurrences() {
+        return objectiveOccurrences = nonNullCollection(objectiveOccurrences, Event.class);
+    }
+
+    /**
+     * @deprecated Renamed {@link #getObjectiveOccurrences()}.
+     *
+     * @return events associated with objective completion.
      */
     @Override
-    @XmlElement(name = "objectiveOccurence", required = true)
+    @Deprecated
     public Collection<Event> getObjectiveOccurences() {
-        return objectiveOccurences = nonNullCollection(objectiveOccurences, Event.class);
+        return getObjectiveOccurrences();
     }
 
     /**
      * Sets the event or events associated with objective completion.
      *
      * @param  newValues  the new objective occurrences values.
+     *
+     * @since 1.0
      */
+    public void setObjectiveOccurrences(final Collection<? extends Event> newValues) {
+        objectiveOccurrences = writeCollection(newValues, objectiveOccurrences, Event.class);
+    }
+
+    /**
+     * @deprecated Renamed {@link #setObjectiveOccurrences(Collection)}.
+     *
+     * @param  newValues  the new objective occurrences values.
+     */
+    @Deprecated
     public void setObjectiveOccurences(final Collection<? extends Event> newValues) {
-        objectiveOccurences = writeCollection(newValues, objectiveOccurences, Event.class);
+        setObjectiveOccurrences(newValues);
     }
 
     /**
