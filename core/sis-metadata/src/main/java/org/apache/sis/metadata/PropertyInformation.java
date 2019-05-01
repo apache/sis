@@ -116,7 +116,7 @@ final class PropertyInformation<E> extends SimpleIdentifier           // Impleme
      *
      * @see #getDomainValue()
      */
-    private Object domainValue;
+    private volatile Object domainValue;
 
     /**
      * Creates a new {@code PropertyInformation} instance from the annotations on the given getter method.
@@ -286,6 +286,7 @@ final class PropertyInformation<E> extends SimpleIdentifier           // Impleme
         if (domain != null) {
             if (!(domain instanceof DomainRange)) {
                 try {
+                    // Not a big deal if we create two instances of that in two concurrent threads.
                     domain = new DomainRange(elementType, (ValueRange) domain);
                 } catch (IllegalArgumentException e) {
                     /*
