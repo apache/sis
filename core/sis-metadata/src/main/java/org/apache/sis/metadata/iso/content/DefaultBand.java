@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.content.Band;
 import org.opengis.metadata.content.BandDefinition;
-import org.opengis.metadata.content.PolarizationOrientation;
+import org.opengis.metadata.content.PolarisationOrientation;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.internal.jaxb.gco.GO_Real;
@@ -113,12 +113,12 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Polarization of the radiation transmitted.
      */
-    private PolarizationOrientation transmittedPolarisation;
+    private PolarisationOrientation transmittedPolarisation;
 
     /**
      * Polarization of the radiation detected.
      */
-    private PolarizationOrientation detectedPolarisation;
+    private PolarisationOrientation detectedPolarisation;
 
     /**
      * Constructs an initially empty band.
@@ -391,7 +391,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     @Override
     @XmlElement(name = "transmittedPolarisation")
-    public PolarizationOrientation getTransmittedPolarisation() {
+    public PolarisationOrientation getTransmittedPolarisation() {
         return transmittedPolarisation;
     }
 
@@ -400,7 +400,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      *
      * @param  newValue  the new transmitted polarization.
      */
-    public void setTransmittedPolarisation(final PolarizationOrientation newValue) {
+    public void setTransmittedPolarisation(final PolarisationOrientation newValue) {
         checkWritePermission(transmittedPolarisation);
         transmittedPolarisation = newValue;
     }
@@ -412,7 +412,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      */
     @Override
     @XmlElement(name = "detectedPolarisation")
-    public PolarizationOrientation getDetectedPolarisation() {
+    public PolarisationOrientation getDetectedPolarisation() {
         return detectedPolarisation;
     }
 
@@ -421,7 +421,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
      *
      * @param  newValue  the new detected polarization.
      */
-    public void setDetectedPolarisation(final PolarizationOrientation newValue) {
+    public void setDetectedPolarisation(final PolarisationOrientation newValue) {
         checkWritePermission(detectedPolarisation);
         detectedPolarisation = newValue;
     }

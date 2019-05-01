@@ -17,14 +17,14 @@
 package org.apache.sis.internal.jaxb.code;
 
 import javax.xml.bind.annotation.XmlElement;
-import org.opengis.metadata.content.PolarizationOrientation;
+import org.opengis.metadata.content.PolarisationOrientation;
 import org.apache.sis.internal.jaxb.cat.CodeListAdapter;
 import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.xml.Namespaces;
 
 
 /**
- * JAXB adapter for {@link PolarizationOrientation}
+ * JAXB adapter for {@link PolarisationOrientation}
  * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
  * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
@@ -37,19 +37,19 @@ import org.apache.sis.xml.Namespaces;
  * @since 0.3
  * @module
  */
-public final class MI_PolarizationOrientationCode
-        extends CodeListAdapter<MI_PolarizationOrientationCode, PolarizationOrientation>
+public final class MI_PolarisationOrientationCode
+        extends CodeListAdapter<MI_PolarisationOrientationCode, PolarisationOrientation>
 {
     /**
      * Empty constructor for JAXB only.
      */
-    public MI_PolarizationOrientationCode() {
+    public MI_PolarisationOrientationCode() {
     }
 
     /**
      * Creates a new adapter for the given value.
      */
-    private MI_PolarizationOrientationCode(final CodeListUID value) {
+    private MI_PolarisationOrientationCode(final CodeListUID value) {
         super(value);
     }
 
@@ -59,8 +59,8 @@ public final class MI_PolarizationOrientationCode
      * @return the wrapper for the code list value.
      */
     @Override
-    protected MI_PolarizationOrientationCode wrap(final CodeListUID value) {
-        return new MI_PolarizationOrientationCode(value);
+    protected MI_PolarisationOrientationCode wrap(final CodeListUID value) {
+        return new MI_PolarisationOrientationCode(value);
     }
 
     /**
@@ -69,8 +69,8 @@ public final class MI_PolarizationOrientationCode
      * @return the code list class.
      */
     @Override
-    protected Class<PolarizationOrientation> getCodeListClass() {
-        return PolarizationOrientation.class;
+    protected Class<PolarisationOrientation> getCodeListClass() {
+        return PolarisationOrientation.class;
     }
 
     /**

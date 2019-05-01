@@ -372,10 +372,6 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      */
     protected String getExpectedXmlRootElementName(final Stereotype stereotype, final UML uml) {
         String name = uml.identifier();
-        switch (name) {
-            // This case can be removed if https://issues.apache.org/jira/browse/SIS-398 is fixed.
-            case "MI_PolarizationOrientationCode": name = "MI_PolarisationOrientationCode"; break;
-        }
         if (Stereotype.ABSTRACT.equals(stereotype)) {
             name = "Abstract".concat(name);
         }

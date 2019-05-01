@@ -200,7 +200,7 @@ MI_OperationTypeCode
 MI_Plan
 MI_Platform
 MI_PlatformPass
-MI_PolarizationOrientationCode
+MI_PolarisationOrientationCode
 MI_PriorityCode
 MI_RangeElementDescription
 MI_RequestedDate

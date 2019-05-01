@@ -106,7 +106,7 @@ public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
             org.opengis.metadata.content.FeatureCatalogueDescription.class,
             org.opengis.metadata.content.ImageDescription.class,
             org.opengis.metadata.content.ImagingCondition.class,
-            org.opengis.metadata.content.PolarizationOrientation.class,
+            org.opengis.metadata.content.PolarisationOrientation.class,
             org.opengis.metadata.content.RangeDimension.class,
             org.opengis.metadata.content.RangeElementDescription.class,
             org.opengis.metadata.content.SampleDimension.class,
