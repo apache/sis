@@ -372,10 +372,6 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      */
     protected String getExpectedXmlRootElementName(final Stereotype stereotype, final UML uml) {
         String name = uml.identifier();
-        switch (name) {
-            // This case can be removed if https://issues.apache.org/jira/browse/SIS-398 is fixed.
-            case "MI_PolarizationOrientationCode": name = "MI_PolarisationOrientationCode"; break;
-        }
         if (Stereotype.ABSTRACT.equals(stereotype)) {
             name = "Abstract".concat(name);
         }
@@ -414,18 +410,6 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
             case "meteorologicalConditions": {
                 if (org.opengis.metadata.acquisition.EnvironmentalRecord.class.isAssignableFrom(enclosing)) {
                     name = "meterologicalConditions";       // Misspelling in ISO 19115-3:2016
-                }
-                break;
-            }
-            case "detectedPolarization": {
-                if (org.opengis.metadata.content.Band.class.isAssignableFrom(enclosing)) {
-                    name = "detectedPolarisation";          // Spelling change in XSD files
-                }
-                break;
-            }
-            case "transmittedPolarization": {
-                if (org.opengis.metadata.content.Band.class.isAssignableFrom(enclosing)) {
-                    name = "transmittedPolarisation";       // Spelling change in XSD files
                 }
                 break;
             }

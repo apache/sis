@@ -44,7 +44,7 @@
  * {@code  ├─} {@linkplain org.opengis.metadata.content.BandDefinition          Band definition}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.content.CoverageContentType     Coverage content type}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.content.ImagingCondition        Imaging condition}<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.content.PolarizationOrientation Polarization orientation}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.content.PolarizationOrientation Polarisation orientation}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.content.TransferFunctionType    Transfer function type}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *                 {@linkplain org.apache.sis.metadata.iso.content.AbstractContentInformation         Content information} «abstract»<br>
@@ -57,7 +57,7 @@
  * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeElementDescription     Range element description}<br>
  *                 {@linkplain org.apache.sis.metadata.iso.content.DefaultBand                        Band}<br>
  * {@code  ├─}     {@linkplain org.opengis.metadata.content.BandDefinition                            Band definition} «code list»<br>
- * {@code  ├─}     {@linkplain org.opengis.metadata.content.PolarizationOrientation                   Polarization orientation} «code list»<br>
+ * {@code  ├─}     {@linkplain org.opengis.metadata.content.PolarizationOrientation                   Polarisation orientation} «code list»<br>
  * {@code  └─}     {@linkplain org.opengis.metadata.content.TransferFunctionType                      Transfer function type} «code list»<br>
  *                 {@linkplain org.apache.sis.metadata.iso.content.DefaultImageDescription            Image description}<br>
  * {@code  └─}     {@linkplain org.opengis.metadata.content.ImagingCondition                          Imaging condition} «code list»<br>
@@ -109,7 +109,7 @@
     @XmlJavaTypeAdapter(MD_ImagingConditionCode.class),
     @XmlJavaTypeAdapter(MD_RangeDimension.class),
     @XmlJavaTypeAdapter(MI_BandDefinition.class),
-    @XmlJavaTypeAdapter(MI_PolarizationOrientationCode.class),
+    @XmlJavaTypeAdapter(MI_PolarisationOrientationCode.class),
     @XmlJavaTypeAdapter(MI_RangeElementDescription.class),
     @XmlJavaTypeAdapter(MI_TransferFunctionTypeCode.class),
     @XmlJavaTypeAdapter(PT_Locale.class),

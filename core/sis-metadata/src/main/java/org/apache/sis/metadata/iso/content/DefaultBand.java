@@ -387,6 +387,11 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Returns the polarization of the radiation transmitted.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * This method may be renamed {@code getTransmittedPolarization} and its return type replaced by
+     * {@code PolarisationOrientation} ("z" letter replaced by "s" letter) in GeoAPI 4.0
+     * for compliance with ISO 19115-2:2019.</div>
+     *
      * @return polarization of the radiation transmitted, or {@code null}.
      */
     @Override
@@ -398,6 +403,11 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
     /**
      * Sets the polarization of the radiation transmitted.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * This method may be renamed {@code setTransmittedPolarization} and its argument type replaced by
+     * {@code PolarisationOrientation} ("z" letter replaced by "s" letter) in GeoAPI 4.0
+     * for compliance with ISO 19115-2:2019.</div>
+     *
      * @param  newValue  the new transmitted polarization.
      */
     public void setTransmittedPolarization(final PolarizationOrientation newValue) {
@@ -407,6 +417,11 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
 
     /**
      * Returns polarization of the radiation detected.
+     *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * This method may be renamed {@code getDetectedPolarization} and its return type replaced by
+     * {@code PolarisationOrientation} ("z" letter replaced by "s" letter) in GeoAPI 4.0
+     * for compliance with ISO 19115-2:2019.</div>
      *
      * @return polarization of the radiation detected, or {@code null}.
      */
@@ -418,6 +433,11 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
 
     /**
      * Sets the polarization of the radiation detected.
+     *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * This method may be renamed {@code setDetectedPolarization} and its argument type replaced by
+     * {@code PolarisationOrientation} ("z" letter replaced by "s" letter) in GeoAPI 4.0
+     * for compliance with ISO 19115-2:2019.</div>
      *
      * @param  newValue  the new detected polarization.
      */
