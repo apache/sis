@@ -26,16 +26,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Medium;
-import org.opengis.metadata.distribution.MediumName;
 import org.opengis.metadata.distribution.MediumFormat;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.gco.GO_Real;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
+import org.apache.sis.internal.metadata.legacy.MediumName;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 
@@ -67,10 +68,10 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * @since   0.3
  * @module
  */
-@TitleProperty(name = "name")
 @XmlType(name = "MD_Medium_Type", propOrder = {
     "identifier",           // New in ISO 19115-3
     "name",
+    "legacyName",           // From ISO 19115:2003
     "density",
     "densities",
     "densityUnits",
@@ -83,12 +84,12 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 2657393801067168091L;
+    private static final long serialVersionUID = -460355952171320089L;
 
     /**
      * Name of the medium on which the resource can be received.
      */
-    private MediumName name;
+    private Citation name;
 
     /**
      * Density at which the data is recorded.
@@ -180,13 +181,11 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * Returns the name of the medium on which the resource can be received.
      *
      * @return name of the medium, or {@code null}.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-389">SIS-389</a>
-     *
      */
     @Override
     @XmlElement(name = "name")
-    public MediumName getName() {
+    @XmlJavaTypeAdapter(CI_Citation.Since2014.class)
+    public Citation getName() {
         return name;
     }
 
@@ -195,7 +194,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @param  newValue  the new name.
      */
-    public void setName(final MediumName newValue) {
+    public void setName(final Citation newValue) {
         checkWritePermission(name);
         name = newValue;
     }
@@ -388,5 +387,34 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     @Override
     public void setIdentifier(final Identifier newValue) {
         super.setIdentifier(newValue);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns the medium name as a code list.
+     */
+    @XmlElement(name = "name", namespace = LegacyNamespaces.GMD)
+    private MediumName getLegacyName() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? MediumName.castOrWrap(name) : null;
+    }
+
+    /**
+     * Sets the name of the medium on which the resource can be received.
+     */
+    private void setLegacyName(final MediumName newValue) {
+        name = newValue;
     }
 }

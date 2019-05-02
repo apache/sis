@@ -17,14 +17,14 @@
 package org.apache.sis.internal.jaxb.code;
 
 import javax.xml.bind.annotation.XmlElement;
-import org.opengis.metadata.distribution.MediumName;
 import org.apache.sis.internal.jaxb.cat.CodeListAdapter;
 import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.internal.metadata.legacy.MediumName;
 
 
 /**
- * JAXB adapter for {@link MediumName}
+ * JAXB adapter for legacy {@link MediumName}
  * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
  * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *

@@ -118,7 +118,7 @@ public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
             org.opengis.metadata.distribution.Format.class,
             org.opengis.metadata.distribution.Medium.class,
             org.opengis.metadata.distribution.MediumFormat.class,
-            org.opengis.metadata.distribution.MediumName.class,
+            org.apache.sis.internal.metadata.legacy.MediumName.class,
             org.opengis.metadata.distribution.StandardOrderProcess.class,
             org.opengis.metadata.extent.BoundingPolygon.class,
             org.opengis.metadata.extent.Extent.class,
