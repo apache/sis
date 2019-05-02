@@ -24,7 +24,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
 /**
- * JAXB adapter for {@link MediumName}
+ * JAXB adapter for legacy {@link MediumName}
  * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
  * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
