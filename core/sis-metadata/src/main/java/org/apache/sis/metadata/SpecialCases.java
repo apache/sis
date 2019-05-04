@@ -25,10 +25,9 @@ import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
- * Substitute on-the-fly the values of some properties handled in a special way.
- * The current implementation handles only the longitude and latitude bounds of
- * {@link GeographicBoundingBox}, which are returned as {@link Longitude} or
- * {@link Latitude} instances instead of {@link Double}.
+ * Substitute on-the-fly the values of some ISO 19115 properties handled in a special way.
+ * Current implementation handles the longitude and latitude bounds of {@link GeographicBoundingBox},
+ * which are returned as {@link Longitude} or {@link Latitude} instances instead of {@link Double}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -155,5 +154,28 @@ final class SpecialCases extends PropertyAccessor {
         } else {
             return super.set(index, metadata, value, mode);
         }
+    }
+
+    /**
+     * Returns {@code true} if the property at the given index is a {@code Map<Locale,Charset>}.
+     */
+    static boolean isLocaleAndCharset(final PropertyAccessor accessor, final int indexInData) {
+        return accessor.isMap(indexInData) && accessor.type.getName().startsWith("org.opengis.metadata.")
+                 && "localesAndCharsets".equals(accessor.name(indexInData, KeyNamePolicy.JAVABEANS_PROPERTY));
+    }
+
+    /**
+     * Returns the identifier to use in replacement of the identifier given in {@link org.opengis.annotation.UML} annotations.
+     * We usually want to use those identifiers as-is because they were specified by ISO standards, but we may an exception if
+     * the identifier is actually a construction of two or more identifiers like {@code "defaultLocale+otherLocale"}.
+     *
+     * @param  name  the UML identifier(s) from ISO specification.
+     * @return the potentially simplified identifier to use for displaying purpose.
+     */
+    static String rename(final String name) {
+        if ("defaultLocale+otherLocale".equals(name)) {
+            return "locale";
+        }
+        return name;
     }
 }

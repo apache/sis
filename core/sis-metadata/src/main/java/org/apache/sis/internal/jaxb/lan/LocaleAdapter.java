@@ -75,4 +75,66 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
     public LanguageCode marshal(final Locale value) {
         return LanguageCode.create(Context.current(), value);
     }
+
+
+
+
+    /**
+     * JAXB adapter for XML {@code <PT_Locale>} elements mapped to {@link Locale}.
+     * This adapter formats the locale like below:
+     *
+     * {@preformat xml
+     *   <gmd:locale>
+     *     <gmd:PT_Locale>
+     *       <gmd:language>
+     *         <gmd:LanguageCode codeList="(snip)#LanguageCode" codeListValue="jpn">Japanese</gmd:LanguageCode>
+     *       </gmd:language>
+     *     </gmd:PT_Locale>
+     *   </gmd:locale>
+     * }
+     *
+     * This adapter is used for legacy locales in {@code gmd} namespace.
+     * For locales in the newer {@code lan} namespace, see {@link PT_Locale}.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.0
+     * @since   1.0
+     * @module
+     */
+    public static final class Wrapped extends XmlAdapter<PT_Locale, Locale> {
+        /**
+         * Empty constructor for JAXB.
+         */
+        private Wrapped() {
+        }
+
+        /**
+         * Substitutes the locale by the wrapper to be marshalled into an XML file
+         * or stream. JAXB calls automatically this method at marshalling time.
+         *
+         * @param  value  the locale value.
+         * @return the wrapper for the locale value.
+         */
+        @Override
+        public PT_Locale marshal(final Locale value) {
+            if (value == null) {
+                return null;
+            }
+            PT_Locale p = new PT_Locale(value);
+            p.setCharacterSet(null);                // For forcing creating of child element.
+            return p;
+        }
+
+        /**
+         * Substitutes the wrapped value read from a XML stream by the object which will
+         * contains the value. JAXB calls automatically this method at unmarshalling time.
+         *
+         * @param  value  the wrapper for this metadata value.
+         * @return a locale which represents the metadata value.
+         */
+        @Override
+        public Locale unmarshal(final PT_Locale value) {
+            return (value != null) ? value.getLocale() : null;
+        }
+    }
 }

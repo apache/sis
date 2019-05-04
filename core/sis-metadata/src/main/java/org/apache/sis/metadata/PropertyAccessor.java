@@ -28,6 +28,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.measure.ValueRange;
@@ -109,7 +110,7 @@ class PropertyAccessor {
         try {
             EXTRA_GETTER = IdentifiedObject.class.getMethod("getIdentifiers", (Class<?>[]) null);
         } catch (NoSuchMethodException e) {
-            throw new AssertionError(e); // Should never happen.
+            throw new AssertionError(e);                                // Should never happen.
         }
     }
 
@@ -192,6 +193,7 @@ class PropertyAccessor {
      *
      * <p>Notes:</p>
      * <ul>
+     *   <li>Element type of {@link Map} collection is {@link Map.Entry}.</li>
      *   <li>Primitive types like {@code double} or {@code int} are converted to their wrapper types.</li>
      *   <li>This array may contain null values if the type of elements in a collection is unknown
      *       (i.e. the collection is not parameterized).</li>
@@ -250,11 +252,11 @@ class PropertyAccessor {
         int standardCount = allCount;
         if (allCount != 0 && getters[allCount-1] == EXTRA_GETTER) {
             if (!EXTRA_GETTER.getDeclaringClass().isAssignableFrom(implementation)) {
-                allCount--; // The extra getter method does not exist.
+                allCount--;                                 // The extra getter method does not exist.
             }
             standardCount--;
         }
-        while (standardCount != 0) { // Skip deprecated methods.
+        while (standardCount != 0) {                        // Skip deprecated methods.
             if (!isDeprecated(standardCount - 1)) {
                 break;
             }
@@ -325,8 +327,10 @@ class PropertyAccessor {
                 try {
                     getter = implementation.getMethod(getter.getName(), (Class<?>[]) null);
                 } catch (NoSuchMethodException error) {
-                    // Should never happen, since the implementation class
-                    // implements the interface where the getter come from.
+                    /*
+                     * Should never happen, since the implementation class
+                     * implements the interface where the getter come from.
+                     */
                     throw new AssertionError(error);
                 }
                 if (returnType != (returnType = getter.getReturnType())) {
@@ -334,8 +338,10 @@ class PropertyAccessor {
                     try {
                         setter = implementation.getMethod(name, arguments);
                     } catch (NoSuchMethodException ignore) {
-                        // There is no setter, which may be normal. At this stage
-                        // the 'setter' variable should still have the null value.
+                        /*
+                         * There is no setter, which may be normal. At this stage
+                         * the 'setter' variable should still have the null value.
+                         */
                     }
                 }
             }
@@ -358,6 +364,8 @@ class PropertyAccessor {
                     // Subclass has erased parameterized type. Use method declared in the interface.
                     elementType = Classes.boundOfParameterizedProperty(getters[i]);
                 }
+            } else if (Map.class.isAssignableFrom(elementType)) {
+                elementType = Map.Entry.class;
             }
             elementTypes[i] = Numbers.primitiveToWrapper(elementType);
         }
@@ -530,7 +538,7 @@ class PropertyAccessor {
      * @return the name of the given kind at the given index, or {@code null} if the index is out of bounds.
      */
     @SuppressWarnings("fallthrough")
-    @Workaround(library="JDK", version="1.7") // Actually apply to String.intern() below.
+    @Workaround(library="JDK", version="10")                        // Actually apply to String.intern() below.
     final String name(final int index, final KeyNamePolicy keyPolicy) {
         if (index >= 0 && index < names.length) {
             switch (keyPolicy) {
@@ -538,10 +546,10 @@ class PropertyAccessor {
                     final UML uml = getters[index].getAnnotation(UML.class);
                     if (uml != null) {
                         /*
-                         * Workaround here: I though that annotation strings were interned like any other
-                         * constants, but it doesn't seem to be the case as of JDK7. To check if a future
-                         * JDK release still needs this explicit call to String.intern(), try to remove
-                         * the ".intern()" part and run the NameMapTest.testStringIntern() method.
+                         * Workaround here: I though that annotation strings were interned like any other constants,
+                         * but it does not seem to be the case as of JDK 10. To check if a future JDK release still
+                         * needs this explicit call to String.intern(), try to remove the ".intern()" part and run
+                         * the NameMapTest.testStringIntern() method.
                          */
                         return uml.identifier().intern();
                     }
@@ -606,13 +614,21 @@ class PropertyAccessor {
     }
 
     /**
-     * Returns {@code true} if the type at the given index is {@link Collection}.
+     * Returns {@code true} if the type at the given index is {@link Collection} or {@link Map}.
      */
-    final boolean isCollection(final int index) {
+    final boolean isCollectionOrMap(final int index) {
         if (index >= 0 && index < allCount) {
-            return Collection.class.isAssignableFrom(getters[index].getReturnType());
+            final Class<?> type = getters[index].getReturnType();
+            return Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type);
         }
         return false;
+    }
+
+    /**
+     * Returns {@code true} if the type at the given index is {@link Map}.
+     */
+    final boolean isMap(final int index) {
+        return (index >= 0 && index < allCount) &&  elementTypes[index] == Map.Entry.class;
     }
 
     /**
@@ -1132,7 +1148,7 @@ class PropertyAccessor {
                          * Count always at least one element because if the user wanted to skip null or empty
                          * collections, then 'valuePolicy.isSkipped(value)' above would have returned 'true'.
                          */
-                        count += (value != null && isCollection(i)) ? Math.max(((Collection<?>) value).size(), 1) : 1;
+                        count += isCollectionOrMap(i) ? Math.max(CollectionsExt.size(value), 1) : 1;
                         break;
                     }
                     default: throw new AssertionError(mode);

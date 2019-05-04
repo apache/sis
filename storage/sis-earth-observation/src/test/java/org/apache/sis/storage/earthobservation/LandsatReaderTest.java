@@ -106,7 +106,7 @@ public class LandsatReaderTest extends TestCase {
         verifier.addPropertyToIgnore(Metadata.class, "referenceSystemInfo");        // Very verbose and depends on EPSG connection.
         verifier.addMetadataToVerify(actual);
         verifier.assertMetadataEquals(
-            "language[0]",                                                                           "en",
+            "defaultLocale+otherLocale[0]",                                                          "en",
             "metadataIdentifier.code",                                                               "LandsatTest",
             "metadataScope[0].resourceScope",                                                        ScopeCode.COVERAGE,
             "dateInfo[0].date",                                                                      date("2016-06-27 16:48:12"),

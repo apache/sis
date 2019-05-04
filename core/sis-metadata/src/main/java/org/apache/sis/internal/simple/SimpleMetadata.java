@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
 import org.opengis.metadata.ApplicationSchemaInformation;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
@@ -79,7 +80,7 @@ import org.opengis.util.InternationalString;
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -113,12 +114,21 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      * Also the language(s) used within the data.
      */
     @Override
+    public Map<Locale,Charset> getLocalesAndCharsets() {
+        return Collections.emptyMap();
+    }
+
+    /**
+     * @deprecated As of SIS 1.0, replaced by {@link #getLocalesAndCharsets()}.
+     */
+    @Override
+    @Deprecated
     public Collection<Locale> getLanguages() {
         return Collections.emptySet();                  // We use 'Set' because we handle 'Locale' like a CodeList.
     }
 
     /**
-     * @deprecated As of SIS 0.5, replaced by {@link #getLanguages()}.
+     * @deprecated As of SIS 1.0, replaced by {@link #getLocalesAndCharsets()}.
      */
     @Override
     @Deprecated
@@ -127,7 +137,7 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     }
 
     /**
-     * @deprecated As of SIS 0.5, replaced by {@link #getLanguages()}.
+     * @deprecated As of SIS 1.0, replaced by {@link #getLocalesAndCharsets()}.
      */
     @Override
     @Deprecated
@@ -136,10 +146,10 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     }
 
     /**
-     * The character coding standard used for the metadata set.
-     * Also the character coding standard(s) used for the dataset.
+     * @deprecated As of SIS 1.0, replaced by {@link #getLocalesAndCharsets()}.
      */
     @Override
+    @Deprecated
     public Collection<Charset> getCharacterSets() {
         return Collections.emptySet();                  // We use 'Set' because we handle 'Charset' like a CodeList.
     }

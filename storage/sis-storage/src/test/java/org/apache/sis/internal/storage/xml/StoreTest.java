@@ -18,7 +18,6 @@ package org.apache.sis.internal.storage.xml;
 
 import java.util.Locale;
 import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.*;
 import org.apache.sis.xml.Namespaces;
@@ -31,7 +30,6 @@ import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.metadata.iso.DefaultMetadataTest.REGRESSION;
 
 
 /**
@@ -103,9 +101,7 @@ public final strictfp class StoreTest extends TestCase {
         final OnlineResource resource = getSingleton(contact.getOnlineResources());
 
         assertInstanceOf("party", Organisation.class, party);
-        assertEquals(Locale.ENGLISH,              getSingleton(metadata.getLanguages()));
-        if (!REGRESSION)
-            assertEquals(StandardCharsets.UTF_8,  getSingleton(metadata.getCharacterSets()));
+        assertEquals(Locale.ENGLISH,              getSingleton(metadata.getLocalesAndCharsets().keySet()));
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, resp.getRole());
         assertEquals("Apache SIS",                String.valueOf(party.getName()));
         assertEquals("http://sis.apache.org",     String.valueOf(resource.getLinkage()));

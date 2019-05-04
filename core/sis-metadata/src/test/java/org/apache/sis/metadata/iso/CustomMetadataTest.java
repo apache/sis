@@ -136,6 +136,7 @@ public final strictfp class CustomMetadataTest extends TestCase {
 @Deprecated @Override public Collection<AggregateInformation>      getAggregationInfo()            {return null;}
             @Override public Collection<AssociatedResource>        getAssociatedResources()        {return null;}
             @Override public Collection<Citation>                  getAdditionalDocumentations()   {return null;}
+            @Override public Map<Locale,Charset>                   getLocalesAndCharsets()         {return null;}
         };
         final DefaultMetadata data = new DefaultMetadata();
         data.setIdentificationInfo(singleton(identification));

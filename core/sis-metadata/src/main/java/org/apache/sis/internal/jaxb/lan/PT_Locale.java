@@ -16,32 +16,35 @@
  */
 package org.apache.sis.internal.jaxb.lan;
 
+import java.util.Set;
+import java.util.Map;
+import java.util.AbstractSet;
+import java.util.Iterator;
 import java.util.Locale;
 import java.nio.charset.Charset;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.PropertyException;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.apache.sis.internal.jaxb.code.MD_CharacterSetCode;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
- * JAXB adapter for {@link Locale}
- * in order to wrap the value in an XML element as specified by ISO 19115-3 standard.
+ * A {@link Locale} associated to {@link Charset}.
+ * This class wraps the value in an XML element as specified by ISO 19115-3 standard.
  * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
- *
- * <p>This adapter formats the locale like below:</p>
+ * This wrapper formats the locale like below:
  *
  * {@preformat xml
  *   <lan:locale>
  *     <lan:PT_Locale id="locale-eng">
- *       <lan:languageCode>
+ *       <lan:language>
  *         <lan:LanguageCode codeList="./resources/Codelists.xml#LanguageCode" codeListValue="eng">eng</lan:LanguageCode>
- *       </lan:languageCode>
+ *       </lan:language>
  *       <lan:country>
  *         <lan:Country codeList="./resources/Codelists.xml#Country" codeListValue="GB">GB</lan:Country>
  *       </lan:country>
@@ -66,7 +69,15 @@ import org.apache.sis.internal.jaxb.Context;
  * @since 0.3
  * @module
  */
-public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
+public final class PT_Locale {
+    /**
+     * The wrapped locale, for information purpose. This object is not marshalled directly.
+     * Instead it will be decomposed in language and country components in {@link Wrapper}.
+     *
+     * @see #getLocale()
+     */
+    private Locale locale;
+
     /**
      * The attributes wrapped in a {@code "PT_Locale"} element.
      */
@@ -77,13 +88,16 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
      * Wraps the {@code "locale"} attributes in a {@code "PT_Locale"} element.
      */
     @XmlType(name = "PT_Locale_Type", propOrder = {
-        "languageCode", "language", "country", "characterEncoding"
+        "languageCode",         // Legacy ISO 19115:2003
+        "language",             // New in ISO 19115:2014
+        "country",
+        "characterEncoding"
     })
     private static final class Wrapper {
         /**
          * The language code, or {@code null} if none.
          */
-        LanguageCode languageCode;
+        LanguageCode language;
 
         /**
          * The country code, or {@code null} if none.
@@ -92,7 +106,8 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
         Country country;
 
         /**
-         * The character encoding. The specification said:
+         * The character encoding. If {@code null}, then this property will be set to the encoding of XML file.
+         * The specification said:
          *
          * <blockquote>Indeed, an XML file can only support data expressed in a single character set, which is generally
          * declared in the XML file header. Having all the localized strings stored in a single XML file would limit the
@@ -123,13 +138,16 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
 
         /**
          * Creates a new wrapper for the given locale.
+         *
+         * @param  locale    the locale to marshal, or {@code null}.
+         * @param  encoding  the character set, or {@code null} for defaulting to the encoding of XML document.
          */
-        Wrapper(final Locale locale) {
+        Wrapper(final Locale locale, final Charset encoding) {
             final Context context = Context.current();
-            isLegacyMetadata = Context.isFlagSet(context, Context.LEGACY_METADATA);
-            languageCode     = LanguageCode.create(context, locale);
-            country          = Country     .create(context, locale);
-            // The characterEncoding field will be initialized at marshalling time (see method below).
+            isLegacyMetadata  = Context.isFlagSet(context, Context.LEGACY_METADATA);
+            language          = LanguageCode.create(context, locale);
+            country           = Country     .create(context, locale);
+            characterEncoding = encoding;
         }
 
         /**
@@ -137,7 +155,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
          */
         @XmlElement(name = "languageCode", namespace = LegacyNamespaces.GMD)
         private LanguageCode getLanguageCode() {
-            return isLegacyMetadata ? languageCode : null;
+            return isLegacyMetadata ? language : null;
         }
 
         /**
@@ -145,45 +163,50 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
          */
         @SuppressWarnings("unused")
         private void setLanguageCode(LanguageCode newValue) {
-            languageCode = newValue;
+            language = newValue;
         }
 
         /**
-         * Gets the language code for this PT_Locale. Used in ISO 19115-3.
+         * Gets the language code for this PT_Locale. Used in ISO 19115:2014 model.
          */
         @XmlElement(name = "language", required = true)
         private LanguageCode getLanguage() {
-            return isLegacyMetadata ? null : languageCode;
+            return isLegacyMetadata ? null : language;
         }
 
         /**
-         * Sets the language code for this PT_Locale. Used in ISO 19115:2003 model.
+         * Sets the language code for this PT_Locale. Used in ISO 19115:2014 model.
          */
         @SuppressWarnings("unused")
         private void setLanguage(LanguageCode newValue) {
-            languageCode = newValue;
+            language = newValue;
         }
 
         /**
          * Invoked by JAXB {@link javax.xml.bind.Marshaller} before this object is marshalled to XML.
-         * This method sets the {@link #characterEncoding} to the XML encoding.
+         * If the {@link #characterEncoding} is not set, then this method set a default value.
+         * That default is the encoding of the XML document being written.
          *
-         * <div class="note"><b>Note:</b> This is totally redundant with the encoding declared in the XML header.
-         * Unfortunately, the {@code <lan:characterEncoding>} element is mandatory according OGC/ISO schemas.</div>
+         * <div class="note"><b>Note:</b> This is redundant with the encoding declared in the XML header.
+         * But the {@code <lan:characterEncoding>} element is mandatory according OGC/ISO schemas.</div>
          */
         public void beforeMarshal(final Marshaller marshaller) {
-            final String encoding;
-            try {
-                encoding = (String) marshaller.getProperty(Marshaller.JAXB_ENCODING);
-            } catch (PropertyException | ClassCastException e) {
-                // Should never happen. But if it happen anyway, just let the
-                // characterEncoding unitialized: it will not be marshalled.
-                Context.warningOccured(Context.current(), PT_Locale.class, "beforeMarshal", e, true);
-                return;
-            }
-            if (encoding != null) {
-                final Context context = Context.current();
-                characterEncoding = Context.converter(context).toCharset(context, encoding);
+            if (characterEncoding == null) {
+                final String encoding;
+                try {
+                    encoding = (String) marshaller.getProperty(Marshaller.JAXB_ENCODING);
+                } catch (PropertyException | ClassCastException e) {
+                    /*
+                     * Should never happen. But if it happen anyway, just let the
+                     * characterEncoding unitialized: it will not be marshalled.
+                     */
+                    Context.warningOccured(Context.current(), PT_Locale.class, "beforeMarshal", e, true);
+                    return;
+                }
+                if (encoding != null) {
+                    final Context context = Context.current();
+                    characterEncoding = Context.converter(context).toCharset(context, encoding);
+                }
             }
         }
     }
@@ -191,43 +214,120 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
     /**
      * Empty constructor for JAXB only.
      */
-    public PT_Locale() {
+    private PT_Locale() {
     }
 
     /**
      * Creates a new wrapper for the given locale.
+     *
+     * @param  locale  the language and country components of {@code PT_Locale}.
      */
-    private PT_Locale(final Locale locale) {
-        element = new Wrapper(locale);
+    public PT_Locale(final Locale locale) {
+        this.locale = locale;
     }
 
     /**
-     * Substitutes the locale by the wrapper to be marshalled into an XML file
-     * or stream. JAXB calls automatically this method at marshalling time.
+     * Creates a new wrapper for the given locale and character set.
      *
-     * @param  value  the locale value.
-     * @return the wrapper for the locale value.
+     * @param  entry  the locale to marshal together with its charset.
      */
-    @Override
-    public PT_Locale marshal(final Locale value) {
-        return (value != null) ? new PT_Locale(value) : null;
+    private PT_Locale(final Map.Entry<Locale,Charset> entry) {
+        locale  = entry.getKey();
+        setCharacterSet(entry.getValue());
     }
 
     /**
-     * Substitutes the wrapped value read from a XML stream by the object which will
-     * contains the value. JAXB calls automatically this method at unmarshalling time.
-     *
-     * @param  value  the wrapper for this metadata value.
-     * @return a locale which represents the metadata value.
+     * Sets the character set to the given value.
      */
-    @Override
-    public Locale unmarshal(final PT_Locale value) {
-        if (value != null) {
-            final Wrapper element = value.element;
-            if (element != null) {
-                return Country.getLocale(Context.current(), element.languageCode, element.country, PT_Locale.class);
-            }
+    final void setCharacterSet(final Charset encoding) {
+        element = new Wrapper(locale, encoding);
+    }
+
+    /**
+     * Returns the Java locale wrapped by this {@link PT_Locale} instance.
+     * This method returns a cached instance if possible.
+     *
+     * @return the wrapped locale, or {@code null} if none.
+     */
+    public Locale getLocale() {
+        if (locale == null && element != null) {
+            locale = Country.getLocale(Context.current(), element.language, element.country, PT_Locale.class);
+        }
+        return locale;
+    }
+
+    /**
+     * Infers a locale and character set from this wrapper and adds them as an entry in the given map.
+     *
+     * @param  addTo  the map where to add an entry for the locale and character set.
+     * @return whether the given map has been modified.
+     */
+    final boolean addInto(final Map<Locale,Charset> addTo) {
+        final Locale locale = getLocale();
+        final Charset encoding = (element != null) ? element.characterEncoding : null;
+        if (locale != null || encoding != null) {
+            // We need a special check if (encoding == null) since put(…) != encoding will not work in that case.
+            final boolean wasAbsent = (encoding == null) && !addTo.containsKey(locale);
+            return (addTo.put(locale, encoding) != encoding) | wasAbsent;
+        }
+        return false;
+    }
+
+    /**
+     * Returns the first element of the given map, or {@code null} if none.
+     *
+     * @param  locales  the locales and character sets, or {@code null}.
+     * @return the first element of the given map, or {@code null}.
+     */
+    public static PT_Locale first(final Map<Locale,Charset> locales) {
+        if (locales != null) {
+            final Map.Entry<Locale,Charset> first = CollectionsExt.first(locales.entrySet());
+            if (first != null) return new PT_Locale(first);
         }
         return null;
+    }
+
+    /**
+     * Wraps all elements of the given map in a sequence of {@link PT_Locale}.
+     *
+     * @param  locales  the locales and character sets, or {@code null}.
+     * @return the all elements of the given map, or {@code null} if the given map is null or empty.
+     */
+    public static Set<PT_Locale> wrap(final Map<Locale,Charset> locales) {
+        return (locales != null && !locales.isEmpty()) ? new Sequence(locales) : null;
+    }
+
+    /**
+     * A set of {@link PT_Locale} instances backed by a {@code Map<Locale,Charset>}.
+     * This is used at marshalling and unmarshalling time only.
+     */
+    private static final class Sequence extends AbstractSet<PT_Locale> {
+        /** The languages and character sets. */
+        final Map<Locale,Charset> locales;
+
+        /** Creates a new set backed by the given map. */
+        Sequence(final Map<Locale,Charset> locales) {
+            this.locales = locales;
+        }
+
+        /** Returns the number of elements in this set. */
+        @Override public int size() {
+            return locales.size();
+        }
+
+        /** Add the given {@code PT_Locale} in the backing map. */
+        @Override public boolean add(final PT_Locale value) {
+            return (value != null) && value.addInto(locales);
+        }
+
+        /** Returns an iterator over the entries in this set. */
+        @Override public Iterator<PT_Locale> iterator() {
+            final Iterator<Map.Entry<Locale,Charset>> it = locales.entrySet().iterator();
+            return new Iterator<PT_Locale>() {
+                @Override public boolean   hasNext() {return it.hasNext();}
+                @Override public PT_Locale next()    {return new PT_Locale(it.next());}
+                @Override public void      remove()  {it.remove();}
+            };
+        }
     }
 }

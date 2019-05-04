@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Map;
 import java.util.Iterator;
 import java.util.Collections;
 import java.util.AbstractCollection;
@@ -94,7 +95,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * <p>Not all elements in this array will be returned by the iterator.
      * The value needs to be verified for the {@link ValueExistencePolicy}.</p>
      */
-    private final TreeNode[] children;
+    private final TreeNode.Element[] children;
 
     /**
      * Index of the property to write in the parent node instead than as a child.
@@ -138,7 +139,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
         this.parent   = parent;
         this.metadata = metadata;
         this.accessor = accessor;
-        this.children = new TreeNode[accessor.count()];
+        this.children = new TreeNode.Element[accessor.count()];
         /*
          * Search for something that looks like the main property, to be associated with the parent node
          * instead than provided as a child. The intent is to have more compact and easy to read trees.
@@ -225,9 +226,8 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     }
 
     /**
-     * Returns {@code true} if the type at the given index is a collection. The given
-     * {@code index} is relative to the {@link #accessor} indexing, <strong>not</strong>
-     * to this collection.
+     * Returns {@code true} if the type at the given index is a collection or a map.
+     * The given {@code index} is relative to the {@link #accessor} indexing, <strong>not</strong> to this collection.
      *
      * <div class="note"><b>Implementation note:</b>
      * We do not test {@code (value instanceof Collection)} because the value could be any user's implementation.
@@ -236,8 +236,8 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * @param  index  the index in the accessor (<em>not</em> the index in this collection).
      * @return {@code true} if the value at the given index is a collection.
      */
-    final boolean isCollection(final int index) {
-        return accessor.isCollection(index);
+    final boolean isCollectionOrMap(final int index) {
+        return accessor.isCollectionOrMap(index);
     }
 
     /**
@@ -263,13 +263,16 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      *         collection (<em>not</em> the index in <em>this</em> collection). Otherwise -1.
      * @return the node to be returned by public API.
      */
-    final TreeNode childAt(final int index, final int subIndex) {
-        TreeNode node = children[index];
+    final TreeNode.Element childAt(final int index, final int subIndex) {
+        TreeNode.Element node = children[index];
         if (subIndex >= 0) {
             /*
              * If the value is an element of a collection, we will cache only the last used value.
              * We don't cache all elements in order to avoid yet more complex code, and this cover
              * the majority of cases where the collection has only one element anyway.
+             *
+             * Note: subIndex is ≧ 0 only if node is an instance of CollectionElement.
+             * A ClassCastException below would be a logical error in this class.
              */
             if (node == null || ((TreeNode.CollectionElement) node).indexInList != subIndex) {
                 node = new TreeNode.CollectionElement(parent, metadata, accessor, index, subIndex);
@@ -462,23 +465,25 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
                 if (nextInAccessor != titleProperty) {
                     nextValue = valueAt(nextInAccessor);
                     if (!isSkipped(nextValue)) {
-                        if (isCollection(nextInAccessor)) {
+                        if (isCollectionOrMap(nextInAccessor)) {
+                            /*
+                             * Null collections are illegal (it shall be empty collections instead),
+                             * but we try to keep the iterator robust to ill-formed metadata because
+                             * we want AbstractMetadata.toString() to work so we can spot problems.
+                             */
+                            if (nextValue == null) {
+                                subIterator = Collections.emptyIterator();
+                            } else if (nextValue instanceof Iterable<?>) {
+                                subIterator = ((Iterable<?>) nextValue).iterator();
+                            } else {
+                                subIterator = ((Map<?,?>) nextValue).entrySet().iterator();
+                            }
                             /*
                              * If the property is a collection, unconditionally get the first element
                              * even if absent (null) in order to comply with the ValueExistencePolicy.
                              * if we were expected to ignore empty collections, 'isSkipped(nextValue)'
                              * would have returned 'true'.
                              */
-                            if (nextValue != null) {
-                                subIterator = ((Iterable<?>) nextValue).iterator();
-                            } else {
-                                subIterator = Collections.emptyIterator();
-                                /*
-                                 * Null collections are illegal (it shall be empty collections instead),
-                                 * but we try to keep the iterator robut to ill-formed metadata, because
-                                 * we want AbstractMetadata.toString() to work so we can spot problems.
-                                 */
-                            }
                             subIndex = 0;
                             if (subIterator.hasNext()) {
                                 nextValue = subIterator.next();
@@ -502,12 +507,12 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
         /**
          * Returns the node for the metadata property at the current {@link #nextInAccessor}.
          * The value of this property is initially {@link #nextValue}, but this may change at
-         * any time if the user modify the underlying metadata object.
+         * any time if the user modifies the underlying metadata object.
          */
         @Override
         public TreeTable.Node next() {
             if (hasNext()) {
-                final TreeNode node = childAt(nextInAccessor, subIndex);
+                final TreeNode.Element node = childAt(nextInAccessor, subIndex);
                 node.cachedValue = nextValue;
                 previousInAccessor = nextInAccessor;
                 if (subIterator == null) {
@@ -521,7 +526,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
                     nextInAccessor++;
                 }
                 isNextVerified = false;
-                return node;
+                return (node.decorator == null) ? node : node.decorator.apply(node);
             }
             throw new NoSuchElementException();
         }

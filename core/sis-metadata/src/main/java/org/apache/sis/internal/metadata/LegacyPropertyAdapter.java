@@ -138,7 +138,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
 
     /**
      * Returns the singleton value of the given collection, or {@code null} if the given collection is null or empty.
-     * If the given collection contains more than one element, then a warning is emitted.
+     * If the given collection contains more than one non-null and distinct element, then a warning is emitted.
      *
      * @param  <L>           the kind of legacy values to be returned.
      * @param  values        the collection from which to get the value.
@@ -153,18 +153,24 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     {
         if (values != null) {
             final Iterator<? extends L> it = values.iterator();
-            if (it.hasNext()) {
+            while (it.hasNext()) {
                 final L value = it.next();
-                if (it.hasNext()) {
-                    if (caller != null) {
-                        if (caller.warningOccurred) {
-                            return value; // Skip the warning.
+                if (value != null) {
+                    while (it.hasNext()) {
+                        final L next = it.next();
+                        if (next != null && !value.equals(next)) {
+                            if (caller != null) {
+                                if (caller.warningOccurred) {
+                                    return value;                       // Skip the warning.
+                                }
+                                caller.warningOccurred = true;
+                            }
+                            warnIgnoredExtraneous(valueClass, callerClass, callerMethod);
+                            break;
                         }
-                        caller.warningOccurred = true;
                     }
-                    warnIgnoredExtraneous(valueClass, callerClass, callerMethod);
+                    return value;
                 }
-                return value;
             }
         }
         return null;

@@ -53,7 +53,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   0.3
  * @module
  */
-@DependsOn(org.apache.sis.internal.metadata.OtherLocalesTest.class)
+@DependsOn(org.apache.sis.internal.jaxb.lan.OtherLocalesTest.class)
 public final strictfp class DefaultMetadataTest extends TestCase {
     /**
      * A flag for tracing workarounds for allowing some tests to pass despite regression.
@@ -102,9 +102,9 @@ public final strictfp class DefaultMetadataTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultMetadata#getLanguage()}, {@link DefaultMetadata#setLanguage(Locale)},
-     * {@link DefaultMetadata#getLocales()} and {@link DefaultMetadata#setLocales(Collection)}
-     * legacy methods. Those methods should delegate to newer methods.
+     * Tests {@link DefaultMetadata#getLanguage()}, {@link DefaultMetadata#setLanguage(Locale)}
+     * and {@link DefaultMetadata#getLocales()} legacy methods.
+     * Those methods should delegate to newer methods.
      *
      * @since 0.5
      */
@@ -123,7 +123,7 @@ public final strictfp class DefaultMetadataTest extends TestCase {
          * Add other languages. They should appear as additional entries after the first one.
          * The "language" property shall be unmodified by changes in the "other locales" one.
          */
-        metadata.setLocales(Arrays.asList(Locale.FRENCH, Locale.ENGLISH));
+        metadata.getLocales().addAll(Arrays.asList(Locale.FRENCH, Locale.ENGLISH));
         assertLanguagesEquals(metadata, Locale.JAPANESE, Locale.FRENCH, Locale.ENGLISH);
         /*
          * Ensure that the "locales" list is modifiable, since JAXB writes directly in it.

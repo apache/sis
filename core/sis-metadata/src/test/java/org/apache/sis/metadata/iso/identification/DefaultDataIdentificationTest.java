@@ -34,7 +34,6 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.apache.sis.test.MetadataAssert.*;
 
@@ -55,11 +54,6 @@ import static org.apache.sis.test.MetadataAssert.*;
     DefaultKeywordsTest.class
 })
 public final strictfp class DefaultDataIdentificationTest extends TestCase {
-    /**
-     * The locales used in this test.
-     */
-    private static final Locale[] LOCALES = {Locale.US, Locale.ENGLISH};
-
     /**
      * Creates the instance to test.
      */
@@ -90,7 +84,7 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
         /*
          * Identification info
          *  ├─(above objects)
-         *  ├─Abstract………………………………………………………………………………… NCEP SST Global 5.0 x 2.5 degree model data
+         *  ├─Abstract………………………………………………………………………………… Global 5.0 x 2.5 degree model data
          *  ├─Descriptive keywords
          *  │   ├─Keyword………………………………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature
          *  │   ├─Type………………………………………………………………………………… Theme
@@ -99,9 +93,10 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
          *  ├─Resource constraints
          *  │   └─Use limitation……………………………………………………… Freely available
          *  ├─Spatial representation type……………………………… Grid
-         *  ├─Language (1 of 2)………………………………………………………… en_US
-         *  ├─Language (2 of 2)………………………………………………………… en
-         *  ├─Character set…………………………………………………………………… US-ASCII
+         *  ├─Locale (1 of 2)……………………………………………………………… en_US
+         *  │   └─Character set………………………………………………………… US-ASCII
+         *  ├─Locale (2 of 2)……………………………………………………………… fr
+         *  │   └─Character set………………………………………………………… ISO-8859-1
          *  └─Extent
          *      └─Geographic element
          *          ├─West bound longitude…………………………… 180°W
@@ -111,13 +106,13 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
          *          └─Extent type code……………………………………… true
          */
         final DefaultDataIdentification info = new DefaultDataIdentification(citation,
-                "NCEP SST Global 5.0 x 2.5 degree model data", null, null);
+                "Global 5.0 x 2.5 degree model data", null, null);
         info.setSpatialRepresentationTypes(singleton(SpatialRepresentationType.GRID));
         info.setDescriptiveKeywords(singleton(keywords));
         info.setResourceConstraints(singleton(new DefaultConstraints("Freely available")));
+        info.getLocalesAndCharsets().put(Locale.US,     StandardCharsets.US_ASCII);
+        info.getLocalesAndCharsets().put(Locale.FRENCH, StandardCharsets.ISO_8859_1);
         info.setExtents(singleton(Extents.WORLD));
-        info.setLanguages(asList(LOCALES));
-        info.setCharacterSets(singleton(StandardCharsets.US_ASCII));
         return info;
     }
 
@@ -139,7 +134,7 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
                 "  │   ├─Date………………………………………………………… 2005-09-22 00:00:00\n" +
                 "  │   │   └─Date type………………………………… Creation\n" +
                 "  │   └─Identifier………………………………………… SST_Global.nc\n" +
-                "  ├─Abstract………………………………………………………… NCEP SST Global 5.0 x 2.5 degree model data\n" +
+                "  ├─Abstract………………………………………………………… Global 5.0 x 2.5 degree model data\n" +
                 "  ├─Spatial representation type……… Grid\n" +
                 "  ├─Extent……………………………………………………………… World\n" +
                 "  │   └─Geographic element\n" +
@@ -154,9 +149,10 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
                 "  │   └─Thesaurus name……………………………… GCMD Science Keywords\n" +
                 "  ├─Resource constraints\n" +
                 "  │   └─Use limitation……………………………… Freely available\n" +
-                "  ├─Language (1 of 2)………………………………… en_US\n" +
-                "  ├─Language (2 of 2)………………………………… en\n" +
-                "  └─Character set…………………………………………… US-ASCII\n",
+                "  ├─Locale (1 of 2)……………………………………… en_US\n" +
+                "  │   └─Character set………………………………… US-ASCII\n" +
+                "  └─Locale (2 of 2)……………………………………… fr\n" +
+                "      └─Character set………………………………… ISO-8859-1\n",
             TestUtilities.formatMetadata(create().asTreeTable()));
     }
 
@@ -168,11 +164,13 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
     public void testValueMap() {
         final DefaultDataIdentification info = create();
         final Map<String,Object> map = info.asMap();
-        assertEquals("abstract", "NCEP SST Global 5.0 x 2.5 degree model data", map.get("abstract").toString());
+        assertEquals("abstract", "Global 5.0 x 2.5 degree model data", map.get("abstract").toString());
         assertTitleEquals("title", "Sea Surface Temperature Analysis Model", (Citation) map.get("citation"));
         assertEquals("spatialRepresentationType", singleton(SpatialRepresentationType.GRID), map.get("spatialRepresentationType"));
-        assertArrayEquals("language",     LOCALES, ((Collection<?>) map.get("language")).toArray());
-        assertArrayEquals("languages",    LOCALES, ((Collection<?>) map.get("languages")).toArray());
-        assertArrayEquals("getLanguages", LOCALES, ((Collection<?>) map.get("getLanguages")).toArray());
+
+        final Locale[] locales = {Locale.US, Locale.FRENCH};
+        assertArrayEquals("language",     locales, ((Collection<?>) map.get("language")).toArray());
+        assertArrayEquals("languages",    locales, ((Collection<?>) map.get("languages")).toArray());
+        assertArrayEquals("getLanguages", locales, ((Collection<?>) map.get("getLanguages")).toArray());
     }
 }

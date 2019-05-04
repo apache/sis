@@ -16,21 +16,23 @@
  */
 package org.apache.sis.metadata.iso.content;
 
-import java.util.Locale;
+import java.util.Map;
 import java.util.Collection;
+import java.util.Locale;
+import java.nio.charset.Charset;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.opengis.metadata.content.FeatureTypeInfo;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
+import org.apache.sis.internal.jaxb.lan.PT_Locale;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.jaxb.lan.LocaleAndCharset;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
 
@@ -65,7 +67,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
 @XmlType(name = "MD_FeatureCatalogueDescription_Type", propOrder = {
     "compliant",
     "locale",                       // New in ISO 19115:2014
-    "language",                     // Legacy ISO 19115:2003
+    "languages",                    // Legacy ISO 19115:2003
     "includedWithDataset",
     "featureTypesInfo",             // New in ISO 19115:2014. Actual name is "featureTypeInfo"
     "featureTypes",                 // Legacy ISO 19115:2003
@@ -78,7 +80,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5731044701122380718L;
+    private static final long serialVersionUID = 4637544662644655274L;
 
     /**
      * Whether or not the cited feature catalogue complies with ISO 19110.
@@ -90,9 +92,9 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     private Boolean compliant;
 
     /**
-     * Language(s) used within the catalogue
+     * Language(s) and character set(s) used within the catalogue.
      */
-    private Collection<Locale> languages;
+    private Map<Locale,Charset> locales;
 
     /**
      * Whether or not the feature catalogue is included with the resource.
@@ -129,7 +131,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
         if (object != null) {
             compliant                 = object.isCompliant();
             includedWithDataset       = object.isIncludedWithDataset();
-            languages                 = copyCollection(object.getLanguages(), Locale.class);
+            locales                   = copyMap(object.getLocalesAndCharsets(), Locale.class);
             featureTypes              = copyCollection(object.getFeatureTypeInfo(), FeatureTypeInfo.class);
             featureCatalogueCitations = copyCollection(object.getFeatureCatalogueCitations(), Citation.class);
         }
@@ -182,23 +184,55 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     }
 
     /**
-     * Returns the language(s) used within the catalogue
+     * Returns the language(s) and character set(s) used within the catalogue.
      *
-     * @return language(s) used within the catalogue.
+     * @return language(s) and character set(s) used within the catalogue.
+     *
+     * @since 1.0
      */
     @Override
     // @XmlElement at the end of this class.
-    public Collection<Locale> getLanguages() {
-        return languages = nonNullCollection(languages, Locale.class);
+    public Map<Locale,Charset> getLocalesAndCharsets() {
+        return locales = nonNullMap(locales, Locale.class);
     }
 
     /**
-     * Sets the language(s) used within the catalogue
+     * Sets the language(s) and character set(s) used within the catalogue.
+     *
+     * @param  newValues  the new language(s) and character set(s) used within the catalogue.
+     *
+     * @since 1.0
+     */
+    public void setLocalesAndCharsets(final Map<? extends Locale, ? extends Charset> newValues) {
+        locales = writeMap(newValues, locales, Locale.class);
+    }
+
+    /**
+     * Returns the language(s) used within the catalogue.
+     *
+     * @return language(s) used within the catalogue.
+     *
+     * @deprecated Replaced by {@code getLocalesAndCharsets().keySet()}.
+     */
+    @Override
+    @Deprecated
+    @Dependencies("getLocalesAndCharsets")
+    @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
+    public Collection<Locale> getLanguages() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? LocaleAndCharset.getLanguages(getLocalesAndCharsets()) : null;
+    }
+
+    /**
+     * Sets the language(s) used within the catalogue.
      *
      * @param  newValues  the new languages.
+     *
+     * @deprecated Replaced by putting keys in {@link #getLocalesAndCharsets()} map.
      */
+    @Deprecated
     public void setLanguages(final Collection<? extends Locale> newValues) {
-        languages = writeCollection(newValues, languages, Locale.class);
+        // TODO: delete after SIS 1.0 release (method not needed by JAXB).
+        setLocalesAndCharsets(LocaleAndCharset.setLanguages(getLocalesAndCharsets(), newValues));
     }
 
     /**
@@ -339,21 +373,11 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     }
 
     /**
-     * Returns the locale to marshal if the XML document is to be written
+     * Returns the locales and character sets to marshal if the XML document is to be written
      * according the new ISO 19115:2014 model.
      */
     @XmlElement(name = "locale")
-    private Collection<Locale> getLocale() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? getLanguages() : null;
-    }
-
-    /**
-     * Returns the locale to marshal if the XML document is to be written
-     * according the legacy ISO 19115:2003 model.
-     */
-    @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
-    @XmlJavaTypeAdapter(LocaleAdapter.class)
-    private Collection<Locale> getLanguage() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? getLanguages() : null;
+    private Collection<PT_Locale> getLocale() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? PT_Locale.wrap(locales) : null;
     }
 }
