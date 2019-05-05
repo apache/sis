@@ -191,20 +191,9 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     }
 
     /**
-     * Returns the given value as an empty or singleton collection.
-     *
-     * @param  <L>    the type of the old value.
-     * @param  value  the value, or {@code null} if none.
-     * @return the given value as a collection.
-     */
-    public static <L> Collection<L> asCollection(final L value) {
-        return (value != null) ? Collections.singleton(value) : Collections.emptySet();
-    }
-
-    /**
      * Returns {@code true} if the given metadata is empty.
      */
-    static boolean isEmpty(final Object container) {
+    private static boolean isEmpty(final Object container) {
         return (container instanceof Emptiable) && ((Emptiable) container).isEmpty();
     }
 

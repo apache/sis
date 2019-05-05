@@ -29,6 +29,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
@@ -219,7 +220,7 @@ public final class MetadataUtilities extends Static {
      */
     public static <T> Collection<T> setFirst(Collection<T> values, final T newValue) {
         if (values == null) {
-            return LegacyPropertyAdapter.asCollection(newValue);
+            return CollectionsExt.singletonOrEmpty(newValue);
         }
         if (newValue == null) {
             final Iterator<T> it = values.iterator();

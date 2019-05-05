@@ -283,7 +283,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      */
     @Deprecated
     public void setOffLine(final Medium newValue) {
-        setOffLines(LegacyPropertyAdapter.asCollection(newValue));
+        setOffLines(CollectionsExt.singletonOrEmpty(newValue));
     }
 
     /**

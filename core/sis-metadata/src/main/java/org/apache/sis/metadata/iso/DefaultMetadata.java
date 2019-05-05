@@ -706,7 +706,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setCharacterSet(final CharacterSet newValue) {
-        setCharacterSets(LegacyPropertyAdapter.asCollection((newValue != null) ? newValue.toCharset() : null));
+        setCharacterSets(CollectionsExt.singletonOrEmpty((newValue != null) ? newValue.toCharset() : null));
     }
 
     /**
@@ -1646,7 +1646,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Sets the character coding standard for the metadata set (used in legacy ISO 19157 format).
      */
     private void setCharset(final Charset newValue) {
-        setCharacterSets(LegacyPropertyAdapter.asCollection(newValue));
+        setCharacterSets(CollectionsExt.singletonOrEmpty(newValue));
     }
 
     /**
