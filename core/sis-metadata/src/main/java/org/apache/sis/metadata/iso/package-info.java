@@ -109,6 +109,7 @@
     @XmlJavaTypeAdapter(GO_Integer.class),
     @XmlJavaTypeAdapter(LI_Lineage.class),
     @XmlJavaTypeAdapter(MD_ApplicationSchemaInformation.class),
+    @XmlJavaTypeAdapter(MD_CharacterSetCode.class),
     @XmlJavaTypeAdapter(MD_Constraints.class),
     @XmlJavaTypeAdapter(MD_ContentInformation.class),
     @XmlJavaTypeAdapter(MD_DatatypeCode.class),
@@ -124,7 +125,6 @@
     @XmlJavaTypeAdapter(MD_SpatialRepresentation.class),
     @XmlJavaTypeAdapter(MI_AcquisitionInformation.class),
     @XmlJavaTypeAdapter(RS_ReferenceSystem.class),
-    @XmlJavaTypeAdapter(LegacyCharacterSet.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(StringAdapter.class),

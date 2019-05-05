@@ -171,8 +171,7 @@ public final class CodeListUID {
         } else {
             /*
              * Fallback when no value is defined for the code list. Build a value from the
-             * most descriptive name (excluding the field name), which is usually the UML
-             * name except for CharacterSet in which case it is a string like "UTF-8".
+             * most descriptive name (excluding the field name), which is usually the UML.
              */
             value = Types.getCodeLabel(code);
         }

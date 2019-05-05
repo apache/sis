@@ -88,7 +88,6 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.metadata.iso.DefaultMetadataTest.REGRESSION;
 
 
 /**
@@ -452,10 +451,6 @@ public strictfp class MetadataTest extends TestCase {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final DefaultMetadata metadata = (DefaultMetadata) unmarshaller.unmarshal(getResource());
         pool.recycle(unmarshaller);
-        if (REGRESSION) {
-            assertTrue("Maybe SIS-402 has been fixed and this anti-regression hack can be removed?",
-                       metadata.getCharacterSets().add(StandardCharsets.UTF_8));
-        }
         final DefaultMetadata expected = createHardCoded();
         assertTrue(metadata.equals(expected, ComparisonMode.DEBUG));
         loggings.skipNextLogIfContains("sis-temporal");
@@ -469,10 +464,6 @@ public strictfp class MetadataTest extends TestCase {
     @Test
     public void testMetadataWithVerticalCRS() throws JAXBException {
         final Metadata metadata = unmarshalFile(Metadata.class, VERTICAL_CRS_XML);
-        if (REGRESSION) {
-            assertTrue("Maybe SIS-402 has been fixed and this anti-regression hack can be removed?",
-                       ((DefaultMetadata) metadata).getCharacterSets().add(StandardCharsets.UTF_8));
-        }
         assertEquals("fileIdentifier", "20090901",                     metadata.getMetadataIdentifier().getCode());
         assertEquals("language",       Locale.ENGLISH,                 getSingleton(metadata.getLocalesAndCharsets().keySet()));
         assertEquals("characterSet",   StandardCharsets.UTF_8,         getSingleton(metadata.getLocalesAndCharsets().values()));

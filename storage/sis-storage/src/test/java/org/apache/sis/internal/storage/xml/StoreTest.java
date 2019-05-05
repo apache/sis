@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage.xml;
 
 import java.util.Locale;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.*;
 import org.apache.sis.xml.Namespaces;
@@ -102,6 +103,7 @@ public final strictfp class StoreTest extends TestCase {
 
         assertInstanceOf("party", Organisation.class, party);
         assertEquals(Locale.ENGLISH,              getSingleton(metadata.getLocalesAndCharsets().keySet()));
+        assertEquals(StandardCharsets.UTF_8,      getSingleton(metadata.getLocalesAndCharsets().values()));
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, resp.getRole());
         assertEquals("Apache SIS",                String.valueOf(party.getName()));
         assertEquals("http://sis.apache.org",     String.valueOf(resource.getLinkage()));

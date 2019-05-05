@@ -56,16 +56,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(org.apache.sis.internal.jaxb.lan.OtherLocalesTest.class)
 public final strictfp class DefaultMetadataTest extends TestCase {
     /**
-     * A flag for tracing workarounds for allowing some tests to pass despite regression.
-     * This boolean should be set to {@code false} and removed after the following issues has been fixed:
-     *
-     * <ul>
-     *   <li><a href="https://issues.apache.org/jira/browse/SIS-402">SIS-402</a></li>
-     * </ul>
-     */
-    public static final boolean REGRESSION = true;
-
-    /**
      * Tests unmarshalling of a metadata having a collection that contains no element.
      * This was used to cause a {@code NullPointerException} prior SIS-139 fix.
      *

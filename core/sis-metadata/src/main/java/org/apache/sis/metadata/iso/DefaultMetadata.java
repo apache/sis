@@ -148,7 +148,7 @@ import org.apache.sis.math.FunctionProperty;
     // Legacy ISO 19115:2003 attributes
     "fileIdentifier",
     "language",
-    "characterSet",
+    "charset",
     "parentIdentifier",
     "hierarchyLevels",
     "hierarchyLevelNames",
@@ -479,30 +479,18 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns the language(s) and character set(s) used for documenting metadata.
-     * The first element in iteration order is the default language.
-     * All other elements, if any, are alternate language(s) used within the resource.
+     * The first entry in iteration order is the default language and its character set.
+     * All other entries, if any, are alternate language(s) and character set(s) used within the resource.
      *
      * <p>Unless another locale has been specified with the {@link org.apache.sis.xml.XML#LOCALE} property,
      * this {@code DefaultMetadata} instance and its children will use the first locale returned by this method
      * for marshalling {@link org.opengis.util.InternationalString} and {@link org.opengis.util.CodeList} instances
      * in ISO 19115-2 compliant XML documents.</p>
      *
-     * <div class="section">Relationship with ISO 19115</div>
-     * Each ({@link Locale}, {@link Charset}) entry is equivalent to an instance of ISO {@code PT_Locale} class.
-     * ISO 19115-1:2014 represents character sets by references to the
-     * <a href="http://www.iana.org/assignments/character-sets">IANA Character Set register</a>,
-     * which is represented in Java by {@link java.nio.charset.Charset}.
-     * Instances can be obtained by a call to {@link Charset#forName(String)}.
-     *
-     * <div class="note"><b>Examples:</b>
-     * {@code UCS-2}, {@code UCS-4}, {@code UTF-7}, {@code UTF-8}, {@code UTF-16},
-     * {@code ISO-8859-1} (a.k.a. {@code ISO-LATIN-1}), {@code ISO-8859-2}, {@code ISO-8859-3}, {@code ISO-8859-4},
-     * {@code ISO-8859-5}, {@code ISO-8859-6}, {@code ISO-8859-7}, {@code ISO-8859-8}, {@code ISO-8859-9},
-     * {@code ISO-8859-10}, {@code ISO-8859-11}, {@code ISO-8859-12}, {@code ISO-8859-13}, {@code ISO-8859-14},
-     * {@code ISO-8859-15}, {@code ISO-8859-16},
-     * {@code JIS_X0201}, {@code Shift_JIS}, {@code EUC-JP}, {@code US-ASCII}, {@code EBCDIC}, {@code EUC-KR},
-     * {@code Big5}, {@code GB2312}.
-     * </div>
+     * <p>Each ({@link Locale}, {@link Charset}) entry is equivalent to an instance of ISO 19115 {@code PT_Locale}
+     * class. The language code and the character set are mandatory elements in ISO standard. Consequently this map
+     * should not contain null key or null values, but Apache SIS implementations is tolerant for historical reasons.
+     * The same character set may be associated to many languages.</p>
      *
      * @return language(s) and character set(s) used for documenting metadata.
      *
@@ -542,7 +530,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      *
-     * @deprecated Replaced by {@code getLocalesAndCharsets().keySet()}.
+     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.keySet()</code>.
      */
     @Deprecated
     @Dependencies("getLocalesAndCharsets")
@@ -573,7 +561,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return language used for documenting metadata, or {@code null}.
      *
-     * @deprecated As of SIS 0.5, replaced by {@link #getLanguages()}.
+     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.keySet()</code>.
      */
     @Override
     @Deprecated
@@ -598,7 +586,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValue  the new language.
      *
-     * @deprecated As of SIS 0.5, replaced by {@link #setLanguages(Collection)}.
+     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.put(newValue, …)</code>.
      */
     @Deprecated
     public void setLanguage(final Locale newValue) {
@@ -610,7 +598,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return alternatively used localized character string for a linguistic extension.
      *
-     * @deprecated As of SIS 0.5, replaced by {@link #getLanguages()}.
+     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.keySet()</code>.
      */
     @Override
     @Deprecated
@@ -657,7 +645,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 0.5
      *
-     * @deprecated Replaced by {@code getLocalesAndCharsets().values()}.
+     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.values()</code>.
      */
     @Deprecated
     @Dependencies("getLocalesAndCharsets")
@@ -686,27 +674,25 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return character coding standard used for the metadata, or {@code null}.
      *
-     * @deprecated As of SIS 0.5, replaced by {@link #getCharacterSets()}.
+     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.values()</code>.
      */
     @Override
     @Deprecated
     @Dependencies("getLocalesAndCharsets")
-    @XmlElement(name = "characterSet", namespace = LegacyNamespaces.GMD)
+    // @XmlElement at the end of this class.
     public CharacterSet getCharacterSet() {
-        if (FilterByVersion.LEGACY_METADATA.accept()) {
-            final Charset cs = LegacyPropertyAdapter.getSingleton(getCharacterSets(),
-                    Charset.class, null, DefaultMetadata.class, "getCharacterSet");
-            if (cs != null) {
-                final String name = cs.name();
-                for (final CharacterSet candidate : CharacterSet.values()) {
-                    for (final String n : candidate.names()) {
-                        if (name.equals(n)) {
-                            return candidate;
-                        }
+        final Charset cs = LegacyPropertyAdapter.getSingleton(getCharacterSets(),
+                Charset.class, null, DefaultMetadata.class, "getCharacterSet");
+        if (cs != null) {
+            final String name = cs.name();
+            for (final CharacterSet candidate : CharacterSet.values()) {
+                for (final String n : candidate.names()) {
+                    if (name.equals(n)) {
+                        return candidate;
                     }
                 }
-                return CharacterSet.valueOf(name);
             }
+            return CharacterSet.valueOf(name);
         }
         return null;
     }
@@ -716,7 +702,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValue  the new character set.
      *
-     * @deprecated As of SIS 0.5, replaced by {@link #setCharacterSets(Collection)}.
+     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.put(…, newValue)</code>.
      */
     @Deprecated
     public void setCharacterSet(final CharacterSet newValue) {
@@ -1621,7 +1607,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Gets the default locale for this record (used in ISO 19115-3 format).
+     * Gets the default locale for this record (used in ISO 19115-3:2016 format).
      */
     @XmlElement(name = "defaultLocale")
     private PT_Locale getDefaultLocale() {
@@ -1629,18 +1615,38 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Sets the default locale for this record (used in ISO 19115-3 format).
+     * Sets the default locale for this record (used in ISO 19115-3:2016 format).
      */
     private void setDefaultLocale(final PT_Locale newValue) {
         setLocalesAndCharsets(OtherLocales.setFirst(locales, newValue));
     }
 
     /**
-     * Gets the other locales for this record (used in ISO 19115-3 format).
+     * Gets the other locales for this record (used in ISO 19115-3:2016 format).
      */
     @XmlElement(name = "otherLocale")
     private Collection<PT_Locale> getOtherLocales() {
         return FilterByVersion.CURRENT_METADATA.accept() ? OtherLocales.filter(getLocalesAndCharsets()) : null;
+    }
+
+    /**
+     * Returns the character coding for the metadata set (used in legacy ISO 19157 format).
+     */
+    @Dependencies("getLocalesAndCharsets")
+    @XmlElement(name = "characterSet", namespace = LegacyNamespaces.GMD)
+    private Charset getCharset() {
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            return LegacyPropertyAdapter.getSingleton(getCharacterSets(),
+                    Charset.class, null, DefaultMetadata.class, "getCharacterSet");
+        }
+        return null;
+    }
+
+    /**
+     * Sets the character coding standard for the metadata set (used in legacy ISO 19157 format).
+     */
+    private void setCharset(final Charset newValue) {
+        setCharacterSets(LegacyPropertyAdapter.asCollection(newValue));
     }
 
     /**

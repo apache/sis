@@ -22,6 +22,7 @@ import java.util.Random;
 import java.util.Collection;
 import java.util.Map;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import org.opengis.util.CodeList;
 import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.Numbers;
@@ -374,11 +375,12 @@ public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsis
                             names = standard.asNameMap(type, KeyNamePolicy.JAVABEANS_PROPERTY, KeyNamePolicy.METHOD_NAME);
                         }
                         /*
-                         * Currently, @Dependencies is applied only on deprecated getter methods.
+                         * Currently, @Dependencies is applied mostly on deprecated getter methods.
                          * However this policy may change in future Apache SIS versions.
                          */
                         assertTrue(name, name.startsWith("get"));
-                        assertTrue(name, method.isAnnotationPresent(Deprecated.class));
+                        assertTrue(name, method.isAnnotationPresent(Deprecated.class)
+                                         || Modifier.isPrivate(method.getModifiers()));
                         /*
                          * All dependencies shall be non-deprecated methods. Combined with above
                          * restriction about @Dependencies applied only on deprected methods, this
