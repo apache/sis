@@ -651,7 +651,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Dependencies("getLocalesAndCharsets")
     public Collection<Charset> getCharacterSets() {
         // TODO: delete after SIS 1.0 release (method not needed by JAXB).
-        return FilterByVersion.LEGACY_METADATA.accept() ? LocaleAndCharset.getCharacterSets(getLocalesAndCharsets()) : null;
+        return LocaleAndCharset.getCharacterSets(getLocalesAndCharsets());
     }
 
     /**
@@ -681,20 +681,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Dependencies("getLocalesAndCharsets")
     // @XmlElement at the end of this class.
     public CharacterSet getCharacterSet() {
-        final Charset cs = LegacyPropertyAdapter.getSingleton(getCharacterSets(),
-                Charset.class, null, DefaultMetadata.class, "getCharacterSet");
-        if (cs != null) {
-            final String name = cs.name();
-            for (final CharacterSet candidate : CharacterSet.values()) {
-                for (final String n : candidate.names()) {
-                    if (name.equals(n)) {
-                        return candidate;
-                    }
-                }
-            }
-            return CharacterSet.valueOf(name);
-        }
-        return null;
+        return CharacterSet.fromCharset(LegacyPropertyAdapter.getSingleton(getCharacterSets(),
+                Charset.class, null, DefaultMetadata.class, "getCharacterSet"));
     }
 
     /**
@@ -1632,7 +1620,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns the character coding for the metadata set (used in legacy ISO 19157 format).
      */
-    @Dependencies("getLocalesAndCharsets")
     @XmlElement(name = "characterSet", namespace = LegacyNamespaces.GMD)
     private Charset getCharset() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
