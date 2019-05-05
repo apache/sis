@@ -88,7 +88,6 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.metadata.iso.DefaultMetadataTest.REGRESSION;
 
 
 /**
@@ -152,8 +151,7 @@ public strictfp class MetadataTest extends TestCase {
     private DefaultMetadata createHardCoded() {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setMetadataIdentifier(new DefaultIdentifier("Apache SIS/Metadata test"));
-        metadata.setLanguages(singleton(Locale.ENGLISH));
-        metadata.setCharacterSets(singleton(StandardCharsets.UTF_8));
+        metadata.setLocalesAndCharsets(singletonMap(Locale.ENGLISH, StandardCharsets.UTF_8));
         metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET, "Common Data Index record")));
         metadata.setDateInfo(singleton(new DefaultCitationDate(TestUtilities.date("2009-01-01 04:00:00"), DateType.CREATION)));
         /*
@@ -413,7 +411,7 @@ public strictfp class MetadataTest extends TestCase {
         /*
          * The <gmd:EX_TemporalExtent> block can not be marshalled yet, since it requires the sis-temporal module.
          * We need to instruct the XML comparator to ignore this block during the comparison. We also ignore for
-         * now the "gml:id" attribute since SIS generates different values than the ones in oyr test XML file,
+         * now the "gml:id" attribute since SIS generates different values than the ones in our test XML file,
          * and those values may change in future SIS version.
          */
         final DocumentComparator comparator = new DocumentComparator(getResource(), xml.toString());
@@ -453,10 +451,6 @@ public strictfp class MetadataTest extends TestCase {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final DefaultMetadata metadata = (DefaultMetadata) unmarshaller.unmarshal(getResource());
         pool.recycle(unmarshaller);
-        if (REGRESSION) {
-            assertTrue("Maybe SIS-402 has been fixed and this anti-regression hack can be removed?",
-                       metadata.getCharacterSets().add(StandardCharsets.UTF_8));
-        }
         final DefaultMetadata expected = createHardCoded();
         assertTrue(metadata.equals(expected, ComparisonMode.DEBUG));
         loggings.skipNextLogIfContains("sis-temporal");
@@ -470,13 +464,9 @@ public strictfp class MetadataTest extends TestCase {
     @Test
     public void testMetadataWithVerticalCRS() throws JAXBException {
         final Metadata metadata = unmarshalFile(Metadata.class, VERTICAL_CRS_XML);
-        if (REGRESSION) {
-            assertTrue("Maybe SIS-402 has been fixed and this anti-regression hack can be removed?",
-                       metadata.getCharacterSets().add(StandardCharsets.UTF_8));
-        }
         assertEquals("fileIdentifier", "20090901",                     metadata.getMetadataIdentifier().getCode());
-        assertEquals("language",       Locale.ENGLISH,                 getSingleton(metadata.getLanguages()));
-        assertEquals("characterSet",   StandardCharsets.UTF_8,         getSingleton(metadata.getCharacterSets()));
+        assertEquals("language",       Locale.ENGLISH,                 getSingleton(metadata.getLocalesAndCharsets().keySet()));
+        assertEquals("characterSet",   StandardCharsets.UTF_8,         getSingleton(metadata.getLocalesAndCharsets().values()));
         assertEquals("dateStamp",      xmlDate("2014-01-04 00:00:00"), getSingleton(metadata.getDateInfo()).getDate());
         /*
          * <gmd:contact>

@@ -35,7 +35,6 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.metadata.NameMeaningTest.class,
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
     org.apache.sis.internal.metadata.VerticalDatumTypesTest.class,
-    org.apache.sis.internal.metadata.OtherLocalesTest.class,
 
     // Classes using Java reflection.
     org.apache.sis.metadata.PropertyInformationTest.class,
@@ -75,6 +74,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.jaxb.gco.PropertyTypeTest.class,
     org.apache.sis.internal.jaxb.gco.MultiplicityTest.class,
     org.apache.sis.internal.jaxb.lan.PT_LocaleTest.class,
+    org.apache.sis.internal.jaxb.lan.OtherLocalesTest.class,
     org.apache.sis.internal.jaxb.lan.LanguageCodeTest.class,
     org.apache.sis.internal.jaxb.lan.FreeTextMarshallingTest.class,
     org.apache.sis.internal.jaxb.cat.EnumAdapterTest.class,

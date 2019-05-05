@@ -16,9 +16,11 @@
  */
 package org.apache.sis.test.mock;
 
-import java.util.Locale;
+import java.util.Map;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
+import java.nio.charset.Charset;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -67,11 +69,22 @@ public final strictfp class MetadataMock extends SimpleMetadata {
     }
 
     /**
+     * Returns {@link #language} in a singleton map or an empty map.
+     *
+     * @return {@link #language}
+     */
+    @Override
+    public Map<Locale,Charset> getLocalesAndCharsets() {
+        return (language != null) ? Collections.singletonMap(language, null) : Collections.emptyMap();
+    }
+
+    /**
      * Returns {@link #language} in a singleton set or an empty set.
      *
      * @return {@link #language}
      */
     @Override
+    @Deprecated
     public Collection<Locale> getLanguages() {
         return (language != null) ? Collections.singleton(language) : Collections.emptySet();
     }

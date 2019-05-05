@@ -167,7 +167,7 @@ public final strictfp class LanguageCodeTest extends TestCase {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final String xml = getMetadataXML(LANGUAGE_CODE);
         final Metadata metadata = (Metadata) unmarshal(unmarshaller, xml);
-        assertEquals(Locale.JAPANESE, getSingleton(metadata.getLanguages()));
+        assertEquals(Locale.JAPANESE, getSingleton(metadata.getLocalesAndCharsets().keySet()));
     }
 
     /**
@@ -190,7 +190,7 @@ public final strictfp class LanguageCodeTest extends TestCase {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final String xml = getMetadataXML(LANGUAGE_CODE_WITHOUT_ATTRIBUTE);
         final Metadata metadata = (Metadata) unmarshal(unmarshaller, xml);
-        assertEquals(Locale.JAPANESE, getSingleton(metadata.getLanguages()));
+        assertEquals(Locale.JAPANESE, getSingleton(metadata.getLocalesAndCharsets().keySet()));
         pool.recycle(unmarshaller);
     }
 
@@ -232,7 +232,7 @@ public final strictfp class LanguageCodeTest extends TestCase {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final String xml = getMetadataXML(CHARACTER_STRING);
         final Metadata metadata = (Metadata) unmarshal(unmarshaller, xml);
-        assertEquals(Locale.JAPANESE, getSingleton(metadata.getLanguages()));
+        assertEquals(Locale.JAPANESE, getSingleton(metadata.getLocalesAndCharsets().keySet()));
         pool.recycle(unmarshaller);
     }
 }

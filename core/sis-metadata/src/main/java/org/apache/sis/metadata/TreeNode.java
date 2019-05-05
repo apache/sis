@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
@@ -23,6 +24,9 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
+import java.util.function.Function;
+import org.apache.sis.internal.jaxb.lan.LocaleAndCharset;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.CharSequences;
@@ -172,7 +176,7 @@ class TreeNode implements Node {
      * @param  metadata  the metadata object for which this node will be a value.
      * @param  baseType  the return type of the getter method that provides the value encapsulated by this node.
      */
-    TreeNode(final TreeNode parent, final Object metadata, final Class<?> baseType) {
+    private TreeNode(final TreeNode parent, final Object metadata, final Class<?> baseType) {
         this.table    = parent.table;
         this.parent   = parent;
         this.metadata = metadata;
@@ -321,6 +325,19 @@ class TreeNode implements Node {
         private final int indexInData;
 
         /**
+         * If tree node should be wrapped in another object before to be returned, the function performing that wrapping.
+         * This is used if we want to render a metadata property in a different way than the way implied by JavaBeans.
+         * The wrapping operation should be cheap because it will be applied every time the user request the node.
+         *
+         * <div class="note"><b>Example:</b>
+         * the {@code "defaultLocale+otherLocale"} property is represented by {@code Map.Entry<Locale,Charset>} values.
+         * The nodes created by this class contain those {@code Map.Entry} values, but we want to show them to users as
+         * as a {@link java.util.Locale} node with a {@link java.nio.charset.Charset} child. This separation is done by
+         * {@link LocaleAndCharset}.</div>
+         */
+        final Function<TreeNode,Node> decorator;
+
+        /**
          * Creates a new child for a property of the given metadata at the given index.
          *
          * @param  parent       the parent of this node.
@@ -334,6 +351,11 @@ class TreeNode implements Node {
             super(parent, metadata, accessor.type(indexInData, TypeValuePolicy.ELEMENT_TYPE));
             this.accessor = accessor;
             this.indexInData = indexInData;
+            if (SpecialCases.isLocaleAndCharset(accessor, indexInData)) {
+                decorator = LocaleAndCharset::new;
+            } else {
+                decorator = null;
+            }
         }
 
         /**
@@ -360,7 +382,8 @@ class TreeNode implements Node {
          * node for each element in a collection.
          *
          * <p>If the property name is equals, ignoring case, to the simple type name, then this method
-         * returns the subtype name. For example instead of:</p>
+         * returns the subtype name (<a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>).
+         * For example instead of:</p>
          *
          * {@preformat text
          *   Citation
@@ -377,8 +400,6 @@ class TreeNode implements Node {
          *       └─Individual
          *          └─Name ……………………………… Jon Smith
          * }
-         *
-         * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
          */
         @Override
         CharSequence getName() {
@@ -392,6 +413,7 @@ class TreeNode implements Node {
                     }
                 }
             }
+            identifier = SpecialCases.rename(identifier);                       // Hard-coded special case.
             return CharSequences.camelCaseToSentence(identifier).toString();
         }
 
@@ -421,7 +443,7 @@ class TreeNode implements Node {
          * Gets remarks about the value in this node, or {@code null} if none.
          */
         @Override
-        CharSequence getRemarks() {
+        final CharSequence getRemarks() {
             return accessor.remarks(indexInData, metadata);
         }
 
@@ -519,12 +541,9 @@ class TreeNode implements Node {
         @Override
         CharSequence getName() {
             CharSequence name = super.getName();
-            final Collection<?> values = (Collection<?>) super.getUserObject();
-            if (values != null) {
-                final int size = values.size();
-                if (size >= 2) {
-                    name = Vocabulary.formatInternational(Vocabulary.Keys.Of_3, name, indexInList+1, size);
-                }
+            final int size = CollectionsExt.size(super.getUserObject());
+            if (size >= 2) {
+                name = Vocabulary.formatInternational(Vocabulary.Keys.Of_3, name, indexInList+1, size);
             }
             return name;
         }
@@ -535,7 +554,17 @@ class TreeNode implements Node {
          */
         @Override
         public Object getUserObject() {
-            final Collection<?> values = (Collection<?>) super.getUserObject();
+            final Object collection = super.getUserObject();
+            final Collection<?> values;
+            if (collection instanceof Collection<?>) {
+                values = (Collection<?>) collection;
+            } else {
+                /*
+                 * ClassCastException should never happen here unless PropertyAccessor.isCollectionOrMap(…) has
+                 * been modified, in which case there is probably many code to update (not only this method).
+                 */
+                values = ((Map<?,?>) collection).entrySet();
+            }
             /*
              * If the collection is null or empty but the value existence policy tells
              * us that such elements shall be shown, behave as if the collection was a
@@ -672,8 +701,8 @@ class TreeNode implements Node {
              * exists otherwise the call to 'isLeaf()' above would have returned 'true'.
              */
             if (children == null || ((TreeNodeChildren) children).metadata != value) {
-                children = new TreeNodeChildren(this, value,
-                        table.standard.getAccessor(new CacheKey(value.getClass(), baseType), true));
+                PropertyAccessor accessor = table.standard.getAccessor(new CacheKey(value.getClass(), baseType), true);
+                children = new TreeNodeChildren(this, value, accessor);
             }
         }
         return children;
@@ -773,8 +802,8 @@ class TreeNode implements Node {
                     }
                     final TreeNodeChildren siblings = getSiblings();
                     final int indexInList;
-                    if (siblings.isCollection(indexInData)) {
-                        indexInList = ((Collection<?>) siblings.valueAt(indexInData)).size();
+                    if (siblings.isCollectionOrMap(indexInData)) {
+                        indexInList = CollectionsExt.size(siblings.valueAt(indexInData));
                     } else {
                         indexInList = -1;
                     }

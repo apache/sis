@@ -37,9 +37,10 @@ import org.apache.sis.internal.jaxb.gco.GO_Real;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
-import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.CodeLists;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
@@ -262,7 +263,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
 
             /** Returns an iterator over 0 or 1 element. Current iterator implementation is unmodifiable. */
             @Override public Iterator<Double> iterator() {
-                return LegacyPropertyAdapter.asCollection(getDensity()).iterator();
+                return CollectionsExt.singletonOrEmpty(getDensity()).iterator();
             }
 
             /** Adds an element only if the set is empty. This method is invoked by JAXB at unmarshalling time. */

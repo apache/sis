@@ -33,10 +33,11 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
@@ -337,7 +338,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      */
     @Deprecated
     public void setAddress(final Address newValue) {
-        setAddresses(LegacyPropertyAdapter.asCollection(newValue));
+        setAddresses(CollectionsExt.singletonOrEmpty(newValue));
     }
 
     /**
@@ -393,7 +394,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      */
     @Deprecated
     public void setOnlineResource(final OnlineResource newValue) {
-        setOnlineResources(LegacyPropertyAdapter.asCollection(newValue));
+        setOnlineResources(CollectionsExt.singletonOrEmpty(newValue));
     }
 
     /**

@@ -102,6 +102,27 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns the number of elements if the given object is a collection or a map.
+     * Otherwise returns 0 if the given object if null or 1 otherwise.
+     *
+     * @param  c  the collection or map for which to get the size, or {@code null}.
+     * @return the size or pseudo-size of the given object.
+     *
+     * @since 1.0
+     */
+    public static int size(final Object c) {
+        if (c == null) {
+            return 0;
+        } else if (c instanceof Collection<?>) {
+            return ((Collection<?>) c).size();
+        } else if (c instanceof Map<?,?>) {
+            return ((Map<?,?>) c).size();
+        } else {
+            return 1;
+        }
+    }
+
+    /**
      * Returns the first element of the given iterable, or {@code null} if none.
      * This method does not emit warning if more than one element is found.
      * Consequently, this method should be used only when multi-occurrence is not ambiguous.

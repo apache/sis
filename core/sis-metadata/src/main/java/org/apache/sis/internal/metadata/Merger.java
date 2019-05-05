@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.IdentityHashMap;
 import java.util.Locale;
+import java.util.function.BiFunction;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.metadata.InvalidMetadataException;
@@ -62,7 +63,7 @@ import org.apache.sis.util.Classes;
  * @author  Johann Sorel (Geomatys)
  * @author  Benjamin Garcia (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -219,7 +220,8 @@ public class Merger {
 distribute:                 while (it.hasNext()) {
                                 final Object value = it.next();
                                 switch (resolve(value, (ModifiableMetadata) element)) {
-                                //  case SEPARATE: do nothing.
+                                    default: throw new UnsupportedOperationException();
+                                    case SEPARATE: break;               // do nothing.
                                     case MERGE: {
                                         /*
                                          * If enabled, copy(…, true) call verified that the merge can be done, including
@@ -257,12 +259,14 @@ distribute:                 while (it.hasNext()) {
                         throw new InvalidMetadataException(errors().getString(
                                 Errors.Keys.UnsupportedImplementation_1, Classes.getShortClassName(targetList)));
                     }
+                } else if (targetValue instanceof Map<?,?>) {
+                    success = new ForMap<>(target, propertyName, (Map<?,?>) sourceValue, (Map<?,?>) targetValue).run(dryRun);
                 } else {
                     success = targetValue.equals(sourceValue);
                     if (!success) {
                         if (dryRun) break;
                         merge(target, propertyName, sourceValue, targetValue);
-                        success = true;  // If no exception has been thrown by 'merged', assume the conflict solved.
+                        success = true;         // If no exception has been thrown by 'merged', assume the conflict solved.
                     }
                 }
             }
@@ -273,6 +277,79 @@ distribute:                 while (it.hasNext()) {
             }
         }
         return success;
+    }
+
+    /**
+     * Helper class for merging the content of two maps where values may be other metadata objects.
+     */
+    private final class ForMap<V> implements BiFunction<V,V,V> {
+        /** Used only in case of non-merged values. */ private final ModifiableMetadata parent;
+        /** Used only in case of non-merged values. */ private final String property;
+        /** The map to copy. Will not be modified.  */ private final Map<?,?> source;
+        /** Where to write copied or merged values. */ private final Map<?,?> target;
+
+        /** Creates a new merger for maps. */
+        ForMap(final ModifiableMetadata parent, final String property,
+                final Map<?,?> source, final Map<?,?> target)
+        {
+            this.parent   = parent;
+            this.property = property;
+            this.source   = source;
+            this.target   = target;
+        }
+
+        /**
+         * Executes the merge process between the maps specified at construction time.
+         *
+         * @param  dryRun  {@code true} for verifying if there is a merge conflict
+         *                 instead that performing the actual merge operation.
+         */
+        final boolean run(final boolean dryRun) {
+            for (final Map.Entry<?,?> pe : source.entrySet()) {
+                final Object newValue = pe.getValue();
+                if (dryRun) {
+                    final Object oldValue;
+                    if (newValue != null && (oldValue = target.get(pe.getKey())) != null) {
+                        if (newValue instanceof ModifiableMetadata && copy(oldValue, (ModifiableMetadata) newValue, true)) {
+                            continue;
+                        }
+                        return false;               // Copying maps would overwrite at least one value.
+                    }
+                } else {
+                    /*
+                     * No @SuppressWarnings("unchecked") because this is really unchecked. However since the two maps
+                     * have been fetched by calls to the same getter method on two org.apache.sis.metadata.iso objects,
+                     * the types should.
+                     */
+                    ((Map) target).merge(pe.getKey(), newValue, this);
+                }
+            }
+            return true;
+        }
+
+        /**
+         * Invoked when an entry is about to be written in the target map, but a value already exists for that entry.
+         *
+         * @param  oldValue  the metadata value that already exists.
+         * @param  newValue  the metadata value to copy in the target.
+         * @return the value to copy in the target (merged) map.
+         */
+        @Override
+        public V apply(final V oldValue, final V newValue) {
+            if (newValue instanceof ModifiableMetadata) {
+                switch (resolve(oldValue, (ModifiableMetadata) newValue)) {
+                    default: throw new UnsupportedOperationException();
+                    case IGNORE: break;
+                    case MERGE: {
+                        if (!copy(oldValue, (ModifiableMetadata) newValue, false)) {
+                            merge(parent, property, oldValue, newValue);
+                        }
+                        break;
+                    }
+                }
+            }
+            return (newValue != null) ? newValue : oldValue;
+        }
     }
 
     /**

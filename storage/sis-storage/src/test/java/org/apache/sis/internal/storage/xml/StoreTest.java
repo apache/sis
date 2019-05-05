@@ -31,7 +31,6 @@ import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.metadata.iso.DefaultMetadataTest.REGRESSION;
 
 
 /**
@@ -103,9 +102,8 @@ public final strictfp class StoreTest extends TestCase {
         final OnlineResource resource = getSingleton(contact.getOnlineResources());
 
         assertInstanceOf("party", Organisation.class, party);
-        assertEquals(Locale.ENGLISH,              getSingleton(metadata.getLanguages()));
-        if (!REGRESSION)
-            assertEquals(StandardCharsets.UTF_8,  getSingleton(metadata.getCharacterSets()));
+        assertEquals(Locale.ENGLISH,              getSingleton(metadata.getLocalesAndCharsets().keySet()));
+        assertEquals(StandardCharsets.UTF_8,      getSingleton(metadata.getLocalesAndCharsets().values()));
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, resp.getRole());
         assertEquals("Apache SIS",                String.valueOf(party.getName()));
         assertEquals("http://sis.apache.org",     String.valueOf(resource.getLinkage()));

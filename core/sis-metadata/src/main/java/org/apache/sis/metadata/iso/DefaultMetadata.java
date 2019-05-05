@@ -18,6 +18,9 @@ package org.apache.sis.metadata.iso;
 
 import java.util.Date;
 import java.util.Locale;
+import java.util.Set;
+import java.util.EnumSet;
+import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,17 +66,22 @@ import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
-import org.apache.sis.internal.metadata.OtherLocales;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.jaxb.lan.LocaleAndCharset;
 import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.lan.OtherLocales;
+import org.apache.sis.internal.jaxb.lan.PT_Locale;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
-
-import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
+import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.ObjectConverter;
+import org.apache.sis.internal.converter.SurjectiveConverter;
+import org.apache.sis.math.FunctionProperty;
 
 
 /**
@@ -140,7 +148,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
     // Legacy ISO 19115:2003 attributes
     "fileIdentifier",
     "language",
-    "characterSet",
+    "charset",
     "parentIdentifier",
     "hierarchyLevels",
     "hierarchyLevelNames",
@@ -189,17 +197,12 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7337533776231004504L;
+    private static final long serialVersionUID = -76483485174667242L;
 
     /**
-     * Language(s) used for documenting metadata.
+     * Language(s) and character set(s) used within the dataset.
      */
-    private Collection<Locale> languages;
-
-    /**
-     * Full name of the character coding standard used for the metadata set.
-     */
-    private Collection<Charset> characterSets;
+    private Map<Locale,Charset> locales;
 
     /**
      * Identification of the parent metadata record.
@@ -345,8 +348,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         if (object != null) {
             identifiers                   = singleton(object.getMetadataIdentifier(), Identifier.class);
             parentMetadata                = object.getParentMetadata();
-            languages                     = copyCollection(object.getLanguages(),                     Locale.class);
-            characterSets                 = copyCollection(object.getCharacterSets(),                 Charset.class);
+            locales                       = copyMap       (object.getLocalesAndCharsets(),            Locale.class);
             metadataScopes                = copyCollection(object.getMetadataScopes(),                MetadataScope.class);
             contacts                      = copyCollection(object.getContacts(),                      ResponsibleParty.class);
             dateInfo                      = copyCollection(object.getDateInfo(),                      CitationDate.class);
@@ -476,23 +478,65 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
+     * Returns the language(s) and character set(s) used for documenting metadata.
+     * The first entry in iteration order is the default language and its character set.
+     * All other entries, if any, are alternate language(s) and character set(s) used within the resource.
+     *
+     * <p>Unless another locale has been specified with the {@link org.apache.sis.xml.XML#LOCALE} property,
+     * this {@code DefaultMetadata} instance and its children will use the first locale returned by this method
+     * for marshalling {@link org.opengis.util.InternationalString} and {@link org.opengis.util.CodeList} instances
+     * in ISO 19115-2 compliant XML documents.</p>
+     *
+     * <p>Each ({@link Locale}, {@link Charset}) entry is equivalent to an instance of ISO 19115 {@code PT_Locale}
+     * class. The language code and the character set are mandatory elements in ISO standard. Consequently this map
+     * should not contain null key or null values, but Apache SIS implementations is tolerant for historical reasons.
+     * The same character set may be associated to many languages.</p>
+     *
+     * @return language(s) and character set(s) used for documenting metadata.
+     *
+     * @since 1.0
+     */
+    @Override
+    // @XmlElement at the end of this class.
+    public Map<Locale,Charset> getLocalesAndCharsets() {
+        return locales = nonNullMap(locales, Locale.class);
+    }
+
+    /**
+     * Sets the language(s) and character set(s) used within the dataset.
+     * The first element in iteration order should be the default language.
+     * All other elements, if any, are alternate language(s) used within the resource.
+     *
+     * @param  newValues  the new language(s) and character set(s) used for documenting metadata.
+     *
+     * @see org.apache.sis.xml.XML#LOCALE
+     *
+     * @since 1.0
+     */
+    public void setLocalesAndCharsets(final Map<? extends Locale, ? extends Charset> newValues) {
+        locales = writeMap(newValues, locales, Locale.class);
+        /*
+         * The "magic" applying this language to every children
+         * is performed by the 'beforeMarshal(Marshaller)' method.
+         */
+    }
+
+    /**
      * Returns the language(s) used for documenting metadata.
      * The first element in iteration order is the default language.
      * All other elements, if any, are alternate language(s) used within the resource.
      *
-     * <p>Unless an other locale has been specified with the {@link org.apache.sis.xml.XML#LOCALE} property,
-     * this {@code DefaultMetadata} instance and its children will use the first locale returned by this method
-     * for marshalling {@link org.opengis.util.InternationalString} and {@link org.opengis.util.CodeList} instances
-     * in ISO 19115-2 compliant XML documents.
-     *
      * @return language(s) used for documenting metadata.
      *
      * @since 0.5
+     *
+     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.keySet()</code>.
      */
-    @Override
-    // @XmlElement at the end of this class.
+    @Deprecated
+    @Dependencies("getLocalesAndCharsets")
     public Collection<Locale> getLanguages() {
-        return languages = nonNullCollection(languages, Locale.class);
+        // TODO: delete after SIS 1.0 release (method not needed by JAXB).
+        return FilterByVersion.LEGACY_METADATA.accept() ? LocaleAndCharset.getLanguages(getLocalesAndCharsets()) : null;
     }
 
     /**
@@ -502,14 +546,14 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValues  the new languages.
      *
-     * @see org.apache.sis.xml.XML#LOCALE
-     *
      * @since 0.5
+     *
+     * @deprecated Replaced by putting keys in {@link #getLocalesAndCharsets()} map.
      */
+    @Deprecated
     public void setLanguages(final Collection<Locale> newValues) {
-        languages = writeCollection(newValues, languages, Locale.class);
-        // The "magic" applying this language to every children
-        // is performed by the 'beforeMarshal(Marshaller)' method.
+        // TODO: delete after SIS 1.0 release (method not needed by JAXB).
+        setLocalesAndCharsets(LocaleAndCharset.setLanguages(getLocalesAndCharsets(), newValues));
     }
 
     /**
@@ -517,13 +561,12 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return language used for documenting metadata, or {@code null}.
      *
-     * @deprecated As of SIS 0.5, replaced by {@link #getLanguages()}.
+     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.keySet()</code>.
      */
     @Override
     @Deprecated
-    @Dependencies("getLanguages")
+    @Dependencies("getLocalesAndCharsets")
     @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
-    @XmlJavaTypeAdapter(LocaleAdapter.class)
     public Locale getLanguage() {
         return FilterByVersion.LEGACY_METADATA.accept() ? CollectionsExt.first(getLanguages()) : null;
         /*
@@ -543,12 +586,11 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValue  the new language.
      *
-     * @deprecated As of SIS 0.5, replaced by {@link #setLanguages(Collection)}.
+     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.put(newValue, …)</code>.
      */
     @Deprecated
     public void setLanguage(final Locale newValue) {
-        checkWritePermission(valueIfDefined(languages));
-        setDefaultLocale(newValue);
+        setLocalesAndCharsets(OtherLocales.setFirst(locales, new PT_Locale(newValue)));
     }
 
     /**
@@ -556,58 +598,60 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return alternatively used localized character string for a linguistic extension.
      *
-     * @deprecated As of SIS 0.5, replaced by {@link #getLanguages()}.
+     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.keySet()</code>.
      */
     @Override
     @Deprecated
-    @Dependencies("getLanguages")
+    @Dependencies("getLocalesAndCharsets")
     @XmlElement(name = "locale", namespace = LegacyNamespaces.GMD)
+    @XmlJavaTypeAdapter(LocaleAdapter.Wrapped.class)
     public Collection<Locale> getLocales() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? OtherLocales.filter(getLanguages()) : null;
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            final Set<PT_Locale> locales = OtherLocales.filter(getLocalesAndCharsets());
+            return Containers.derivedSet(locales, ToLocale.INSTANCE);
+        }
+        return null;
     }
 
     /**
-     * Sets information about an alternatively used localized character string for a linguistic extension.
-     *
-     * @param  newValues  the new locales.
-     *
-     * @deprecated As of SIS 0.5, replaced by {@link #setLanguages(Collection)}.
+     * Converter from {@link PT_Locale} and {@link Locale}.
      */
-    @Deprecated
-    public void setLocales(final Collection<? extends Locale> newValues) {
-        checkWritePermission(valueIfDefined(languages));
-        setOtherLocales(newValues);
+    private static final class ToLocale extends SurjectiveConverter<PT_Locale,Locale> {
+        static final ToLocale INSTANCE = new ToLocale();
+        private ToLocale() {}
+        @Override public Class<PT_Locale> getSourceClass()   {return PT_Locale.class;}
+        @Override public Class<Locale>    getTargetClass()   {return    Locale.class;}
+        @Override public Locale           apply(PT_Locale p) {return p.getLocale();}
+        @Override public ObjectConverter<Locale, PT_Locale> inverse() {return FromLocale.INSTANCE;}
+    }
+
+    /**
+     * Converter from {@link Locale} and {@link PT_Locale}.
+     */
+    private static final class FromLocale implements ObjectConverter<Locale,PT_Locale> {
+        static final FromLocale INSTANCE = new FromLocale();
+        private FromLocale() {}
+        @Override public Set<FunctionProperty> properties()     {return EnumSet.of(FunctionProperty.INJECTIVE);}
+        @Override public Class<Locale>         getSourceClass() {return Locale.class;}
+        @Override public Class<PT_Locale>      getTargetClass() {return PT_Locale.class;}
+        @Override public PT_Locale             apply(Locale o)  {return (o != null) ? new PT_Locale(o) : null;}
+        @Override public ObjectConverter<PT_Locale, Locale> inverse() {return ToLocale.INSTANCE;}
     }
 
     /**
      * Returns the character coding standard used for the metadata set.
-     * ISO 19115:2014 represents character sets by references to the
-     * <a href="http://www.iana.org/assignments/character-sets">IANA Character Set register</a>,
-     * which is represented in Java by {@link java.nio.charset.Charset}.
-     * Instances can be obtained by a call to {@link Charset#forName(String)}.
-     *
-     * <div class="note"><b>Examples:</b>
-     * {@code UCS-2}, {@code UCS-4}, {@code UTF-7}, {@code UTF-8}, {@code UTF-16},
-     * {@code ISO-8859-1} (a.k.a. {@code ISO-LATIN-1}), {@code ISO-8859-2}, {@code ISO-8859-3}, {@code ISO-8859-4},
-     * {@code ISO-8859-5}, {@code ISO-8859-6}, {@code ISO-8859-7}, {@code ISO-8859-8}, {@code ISO-8859-9},
-     * {@code ISO-8859-10}, {@code ISO-8859-11}, {@code ISO-8859-12}, {@code ISO-8859-13}, {@code ISO-8859-14},
-     * {@code ISO-8859-15}, {@code ISO-8859-16},
-     * {@code JIS_X0201}, {@code Shift_JIS}, {@code EUC-JP}, {@code US-ASCII}, {@code EBCDIC}, {@code EUC-KR},
-     * {@code Big5}, {@code GB2312}.
-     * </div>
      *
      * @return character coding standards used for the metadata.
      *
-     * @see #getLanguages()
-     * @see org.opengis.metadata.identification.DataIdentification#getCharacterSets()
-     * @see Charset#forName(String)
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-402">SIS-402</a>
-     *
      * @since 0.5
+     *
+     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.values()</code>.
      */
-    @Override
+    @Deprecated
+    @Dependencies("getLocalesAndCharsets")
     public Collection<Charset> getCharacterSets() {
-        return characterSets = nonNullCollection(characterSets, Charset.class);
+        // TODO: delete after SIS 1.0 release (method not needed by JAXB).
+        return FilterByVersion.LEGACY_METADATA.accept() ? LocaleAndCharset.getCharacterSets(getLocalesAndCharsets()) : null;
     }
 
     /**
@@ -616,9 +660,13 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param  newValues  the new character coding standards.
      *
      * @since 0.5
+     *
+     * @deprecated Replaced by putting values in {@link #getLocalesAndCharsets()} map.
      */
+    @Deprecated
     public void setCharacterSets(final Collection<? extends Charset> newValues) {
-        characterSets = writeCollection(newValues, characterSets, Charset.class);
+        // TODO: delete after SIS 1.0 release (method not needed by JAXB).
+        setLocalesAndCharsets(LocaleAndCharset.setCharacterSets(getLocalesAndCharsets(), newValues));
     }
 
     /**
@@ -626,29 +674,15 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @return character coding standard used for the metadata, or {@code null}.
      *
-     * @deprecated As of SIS 0.5, replaced by {@link #getCharacterSets()}.
+     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.values()</code>.
      */
     @Override
     @Deprecated
-    @Dependencies("getCharacterSets")
-    @XmlElement(name = "characterSet", namespace = LegacyNamespaces.GMD)
+    @Dependencies("getLocalesAndCharsets")
+    // @XmlElement at the end of this class.
     public CharacterSet getCharacterSet() {
-        if (FilterByVersion.LEGACY_METADATA.accept()) {
-            final Charset cs = LegacyPropertyAdapter.getSingleton(getCharacterSets(),
-                    Charset.class, null, DefaultMetadata.class, "getCharacterSet");
-            if (cs != null) {
-                final String name = cs.name();
-                for (final CharacterSet candidate : CharacterSet.values()) {
-                    for (final String n : candidate.names()) {
-                        if (name.equals(n)) {
-                            return candidate;
-                        }
-                    }
-                }
-                return CharacterSet.valueOf(name);
-            }
-        }
-        return null;
+        return CharacterSet.fromCharset(LegacyPropertyAdapter.getSingleton(getCharacterSets(),
+                Charset.class, null, DefaultMetadata.class, "getCharacterSet"));
     }
 
     /**
@@ -656,11 +690,11 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param  newValue  the new character set.
      *
-     * @deprecated As of SIS 0.5, replaced by {@link #setCharacterSets(Collection)}.
+     * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.put(…, newValue)</code>.
      */
     @Deprecated
     public void setCharacterSet(final CharacterSet newValue) {
-        setCharacterSets(LegacyPropertyAdapter.asCollection((newValue != null) ? newValue.toCharset() : null));
+        setCharacterSets(CollectionsExt.singletonOrEmpty((newValue != null) ? newValue.toCharset() : null));
     }
 
     /**
@@ -803,7 +837,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
-        checkWritePermission(valueIfDefined(metadataScopes));
+        checkWritePermission(MetadataUtilities.valueIfDefined(metadataScopes));
         ((LegacyPropertyAdapter<ScopeCode,?>) getHierarchyLevels()).setValues(newValues);
     }
 
@@ -854,7 +888,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setHierarchyLevelNames(final Collection<? extends String> newValues) {
-        checkWritePermission(valueIfDefined(metadataScopes));
+        checkWritePermission(MetadataUtilities.valueIfDefined(metadataScopes));
         ((LegacyPropertyAdapter<String,?>) getHierarchyLevelNames()).setValues(newValues);
     }
 
@@ -944,7 +978,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Deprecated
     public void setDateStamp(final Date newValue) {
-        checkWritePermission(valueIfDefined(dateInfo));
+        checkWritePermission(MetadataUtilities.valueIfDefined(dateInfo));
         Collection<CitationDate> newValues = dateInfo;      // See "Note about deprecated methods implementation"
         if (newValues == null) {
             if (newValue == null) {
@@ -1077,7 +1111,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * {@link #setMetadataStandardVersion(String)} methods.
      */
     private void setMetadataStandard(final boolean version, final String newValue) {
-        checkWritePermission(valueIfDefined(metadataStandards));
+        checkWritePermission(MetadataUtilities.valueIfDefined(metadataStandards));
         final InternationalString i18n = (newValue != null) ? new SimpleInternationalString(newValue) : null;
         final List<Citation> newValues = (metadataStandards != null)
                 ? new ArrayList<>(metadataStandards)
@@ -1236,7 +1270,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     public void setDataSetUri(final String newValue) throws URISyntaxException {
         final URI uri = new URI(newValue);
         Collection<Identification> info = identificationInfo;   // See "Note about deprecated methods implementation"
-        checkWritePermission(valueIfDefined(info));
+        checkWritePermission(MetadataUtilities.valueIfDefined(info));
         AbstractIdentification firstId = AbstractIdentification.castOrCopy(CollectionsExt.first(info));
         if (firstId == null) {
             firstId = new DefaultDataIdentification();
@@ -1251,10 +1285,10 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             firstOnline = new DefaultOnlineResource();
         }
         firstOnline.setLinkage(uri);
-        onlineResources = OtherLocales.setFirst(onlineResources, firstOnline);
+        onlineResources = MetadataUtilities.setFirst(onlineResources, firstOnline);
         citation.setOnlineResources(onlineResources);
         firstId.setCitation(citation);
-        info = OtherLocales.setFirst(info, firstId);
+        info = MetadataUtilities.setFirst(info, firstId);
         setIdentificationInfo(info);
     }
 
@@ -1564,7 +1598,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @SuppressWarnings("unused")
     private void beforeMarshal(final Marshaller marshaller) {
-        Context.push(CollectionsExt.first(languages));
+        Context.push(CollectionsExt.first(LocaleAndCharset.getLanguages(getLocalesAndCharsets())));
     }
 
     /**
@@ -1577,33 +1611,46 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Gets the default locale for this record (used in ISO 19115-3 format).
+     * Gets the default locale for this record (used in ISO 19115-3:2016 format).
      */
     @XmlElement(name = "defaultLocale")
-    private Locale getDefaultLocale() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? CollectionsExt.first(getLanguages()) : null;
+    private PT_Locale getDefaultLocale() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? PT_Locale.first(getLocalesAndCharsets()) : null;
     }
 
     /**
-     * Sets the default locale for this record (used in ISO 19115-3 format).
+     * Sets the default locale for this record (used in ISO 19115-3:2016 format).
      */
-    private void setDefaultLocale(final Locale newValue) {
-        setLanguages(OtherLocales.setFirst(languages, newValue)); // See "Note about deprecated methods implementation"
+    private void setDefaultLocale(final PT_Locale newValue) {
+        setLocalesAndCharsets(OtherLocales.setFirst(locales, newValue));
     }
 
     /**
-     * Gets the other locales for this record (used in ISO 19115-3 format).
+     * Gets the other locales for this record (used in ISO 19115-3:2016 format).
      */
     @XmlElement(name = "otherLocale")
-    private Collection<Locale> getOtherLocales() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? OtherLocales.filter(getLanguages()) : null;
+    private Collection<PT_Locale> getOtherLocales() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? OtherLocales.filter(getLocalesAndCharsets()) : null;
     }
 
     /**
-     * Sets the other locales for this record (used in ISO 19115-3 format).
+     * Returns the character coding for the metadata set (used in legacy ISO 19157 format).
      */
-    private void setOtherLocales(final Collection<? extends Locale> newValues) {
-        setLanguages(OtherLocales.merge(CollectionsExt.first(languages), newValues));
+    @Dependencies("getLocalesAndCharsets")
+    @XmlElement(name = "characterSet", namespace = LegacyNamespaces.GMD)
+    private Charset getCharset() {
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            return LegacyPropertyAdapter.getSingleton(getCharacterSets(),
+                    Charset.class, null, DefaultMetadata.class, "getCharacterSet");
+        }
+        return null;
+    }
+
+    /**
+     * Sets the character coding standard for the metadata set (used in legacy ISO 19157 format).
+     */
+    private void setCharset(final Charset newValue) {
+        setCharacterSets(CollectionsExt.singletonOrEmpty(newValue));
     }
 
     /**

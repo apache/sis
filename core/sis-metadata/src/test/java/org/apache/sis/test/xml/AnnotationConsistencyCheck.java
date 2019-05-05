@@ -209,6 +209,17 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
     }
 
     /**
+     * Returns the identifier specified by the given UML, taking only the first one if it compound.
+     * For example if the identifier is {@code "defaultLocale+otherLocale"}, then this method returns
+     * only {@code "defaultLocale"}.
+     */
+    private static String firstIdentifier(final UML uml) {
+        String identifier = uml.identifier();
+        final int s = identifier.indexOf('+');
+        return (s >= 0) ? identifier.substring(0, s) : identifier;
+    }
+
+    /**
      * Returns the beginning of expected namespace for an element defined by the given UML.
      * For example the namespace of most types defined by {@link Specification#ISO_19115}
      * starts with is {@code "http://standards.iso.org/iso/19115/-3/"}.
@@ -393,7 +404,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      * @see #testMethodAnnotations()
      */
     protected String getExpectedXmlElementName(final Class<?> enclosing, final UML uml) {
-        String name = uml.identifier();
+        String name = firstIdentifier(uml);
         switch (name) {
             case "stepDateTime": {
                 if (org.opengis.metadata.lineage.ProcessStep.class.isAssignableFrom(enclosing)) {
@@ -780,7 +791,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                      * for example verifying whether we are marshalling ISO 19139:2007 or ISO 19115-3:2016.
                      */
                     boolean wasPublic = false;
-                    final String identifier = uml.identifier();
+                    final String identifier = firstIdentifier(uml);
                     for (final Method pm : impl.getDeclaredMethods()) {
                         final XmlElement e = pm.getAnnotation(XmlElement.class);
                         if (e != null && identifier.equals(e.name())) {
@@ -796,7 +807,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                         }
                     }
                     /*
-                     * If a few case the annotation is not on a getter method, but directly on the field.
+                     * In a few case the annotation is not on a getter method, but directly on the field.
                      * The main case is the "pass" field in DefaultConformanceResult.
                      */
                     if (element == null) try {

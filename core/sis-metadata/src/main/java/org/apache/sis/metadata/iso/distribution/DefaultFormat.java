@@ -33,6 +33,7 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.metadata.MD_Medium;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
@@ -303,7 +304,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     public void setName(final InternationalString newValue) {
         checkWritePermission(formatSpecificationCitation);
         setFormatSpecificationCitation((citation, value) ->
-                citation.setAlternateTitles(LegacyPropertyAdapter.asCollection(value)), newValue);
+                citation.setAlternateTitles(CollectionsExt.singletonOrEmpty(value)), newValue);
     }
 
     /**
