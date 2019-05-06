@@ -370,7 +370,6 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *
      * @see #getCharacterSets()
      */
-    @Dependencies("getLocalesAndCharsets")
     @XmlElement(name = "characterSet", namespace = LegacyNamespaces.GMD)
     private Collection<Charset> getCharacterSet() {
         return FilterByVersion.LEGACY_METADATA.accept() ? LocaleAndCharset.getCharacterSets(getLocalesAndCharsets()) : null;
