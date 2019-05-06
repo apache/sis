@@ -31,10 +31,11 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.util.CollectionsExt;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 
@@ -560,7 +561,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @since 0.5
      */
     public void setRationale(final InternationalString newValue) {
-        rationales = writeCollection(LegacyPropertyAdapter.asCollection(newValue), rationales, InternationalString.class);
+        rationales = writeCollection(CollectionsExt.singletonOrEmpty(newValue), rationales, InternationalString.class);
     }
 
     /**

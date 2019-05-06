@@ -16,23 +16,32 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
+import java.util.Map;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 import java.nio.charset.Charset;
+import java.util.stream.Collectors;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.metadata.identification.TopicCategory;
 import org.opengis.metadata.identification.DataIdentification;
-import org.apache.sis.internal.metadata.OtherLocales;
-import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
+import org.apache.sis.internal.jaxb.lan.LocaleAndCharset;
+import org.apache.sis.internal.jaxb.lan.OtherLocales;
+import org.apache.sis.internal.jaxb.lan.PT_Locale;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.metadata.Dependencies;
+
+// Branch-specific imports
+import org.opengis.annotation.UML;
+import static org.opengis.annotation.Obligation.CONDITIONAL;
+import static org.opengis.annotation.Specification.ISO_19115;
+import org.apache.sis.internal.jaxb.code.MD_CharacterSetCode;
 
 
 /**
@@ -72,8 +81,8 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @module
  */
 @XmlType(name = "MD_DataIdentification_Type", propOrder = {
-    "language",                 // Legacy ISO 19115:2003
-    "characterSets",            // Legacy ISO 19115:2003
+    "languages",                // Legacy ISO 19115:2003
+    "characterSet",             // Legacy ISO 19115:2003
     "defaultLocale",            // New in ISO 19115:2014
     "otherLocales",             // New in ISO 19115:2014
     "environmentDescription",
@@ -93,17 +102,12 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 6104637930243499850L;
+    private static final long serialVersionUID = 7302901752833238436L;
 
     /**
-     * Language(s) used within the dataset.
+     * Language(s) and character set(s) used within the dataset.
      */
-    private Collection<Locale> languages;
-
-    /**
-     * Full name of the character coding standard used for the dataset.
-     */
-    private Collection<CharacterSet> characterSets;
+    private Map<Locale,Charset> locales;
 
     /**
      * Description of the dataset in the producers processing environment, including items
@@ -136,7 +140,9 @@ public class DefaultDataIdentification extends AbstractIdentification implements
                                      final TopicCategory topicCategory)
     {
         super(citation, abstracts);
-        languages = singleton(language, Locale.class);
+        if (language != null) {
+            locales = writeMap(Collections.singletonMap(language, null), null, Locale.class);
+        }
         super.setTopicCategories(singleton(topicCategory, TopicCategory.class));
     }
 
@@ -152,10 +158,13 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     public DefaultDataIdentification(final DataIdentification object) {
         super(object);
         if (object != null) {
-            languages                  = copyCollection(object.getLanguages(), Locale.class);
-            characterSets              = copyCollection(object.getCharacterSets(), CharacterSet.class);
-            environmentDescription     = object.getEnvironmentDescription();
-            supplementalInformation    = object.getSupplementalInformation();
+            if (object instanceof DefaultDataIdentification) {
+                locales = copyMap(((DefaultDataIdentification) object).getLocalesAndCharsets(), Locale.class);
+            } else {
+                setLanguages(object.getLanguages());
+            }
+            environmentDescription  = object.getEnvironmentDescription();
+            supplementalInformation = object.getSupplementalInformation();
         }
     }
 
@@ -185,6 +194,34 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
+     * Returns the language(s) and character set(s) used within the dataset.
+     * The first element in iteration order is the default language.
+     * All other elements, if any, are alternate language(s) used within the resource.
+     *
+     * @return language(s) and character set(s) used within the dataset.
+     *
+     * @since 1.0
+     */
+    @UML(identifier="defaultLocale+otherLocale", obligation=CONDITIONAL, specification=ISO_19115)
+    // @XmlElement at the end of this class.
+    public Map<Locale,Charset> getLocalesAndCharsets() {
+        return locales = nonNullMap(locales, Locale.class);
+    }
+
+    /**
+     * Sets the language(s) and character set(s) used within the dataset.
+     * The first element in iteration order should be the default language.
+     * All other elements, if any, are alternate language(s) used within the resource.
+     *
+     * @param  newValues  the new language(s) and character set(s) used within the dataset.
+     *
+     * @since 1.0
+     */
+    public void setLocalesAndCharsets(final Map<? extends Locale, ? extends Charset> newValues) {
+        locales = writeMap(newValues, locales, Locale.class);
+    }
+
+    /**
      * Returns the language(s) used within the resource.
      * The first element in iteration order shall be the default language.
      * All other elements, if any, are alternate language(s) used within the resource.
@@ -194,21 +231,27 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *
      * @return language(s) used.
      *
-     * @see Locale#getISO3Language()
+     * @deprecated Replaced by {@code getLocalesAndCharsets().keySet()}.
      */
     @Override
-    // @XmlElement at the end of this class.
+    @Deprecated
+    @Dependencies("getLocalesAndCharsets")
+    @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
     public Collection<Locale> getLanguages() {
-        return languages = nonNullCollection(languages, Locale.class);
+        return FilterByVersion.LEGACY_METADATA.accept() ? LocaleAndCharset.getLanguages(getLocalesAndCharsets()) : null;
     }
 
     /**
-     * Sets the language(s) used within the dataset.
+     * Sets the language(s) used within the resource.
      *
      * @param  newValues  the new languages.
+     *
+     * @deprecated Replaced by putting keys in {@link #getLocalesAndCharsets()} map.
      */
-    public void setLanguages(final Collection<? extends Locale> newValues)  {
-        languages = writeCollection(newValues, languages, Locale.class);
+    @Deprecated
+    public void setLanguages(final Collection<? extends Locale> newValues) {
+        // TODO: delete after SIS 1.0 release (method not needed by JAXB).
+        setLocalesAndCharsets(LocaleAndCharset.setLanguages(getLocalesAndCharsets(), newValues));
     }
 
     /**
@@ -219,11 +262,15 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * </div>
      *
      * @return character coding standard(s) used.
+     *
+     * @deprecated Replaced by {@code getLocalesAndCharsets().values()}.
      */
     @Override
-    @XmlElement(name = "characterSet", namespace = LegacyNamespaces.GMD)
+    @Deprecated
+    @Dependencies("getLocalesAndCharsets")
+    // @XmlElement at the end of this class.
     public Collection<CharacterSet> getCharacterSets() {
-        return characterSets = nonNullCollection(characterSets, CharacterSet.class);
+        return getLocalesAndCharsets().values().stream().map(MD_CharacterSetCode::fromCharset).collect(Collectors.toSet());
     }
 
     /**
@@ -234,9 +281,17 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * </div>
      *
      * @param  newValues  the new character sets.
+     *
+     * @deprecated Replaced by putting values in {@link #getLocalesAndCharsets()} map.
      */
+    @Deprecated
     public void setCharacterSets(final Collection<? extends CharacterSet> newValues) {
-        characterSets = writeCollection(newValues, characterSets, CharacterSet.class);
+        // TODO: delete after SIS 1.0 release (method not needed by JAXB).
+        Collection<Charset> c = null;
+        if (newValues != null) {
+            c = newValues.stream().map(CharacterSet::toCharset).collect(Collectors.toSet());
+        }
+        setLocalesAndCharsets(LocaleAndCharset.setCharacterSets(getLocalesAndCharsets(), c));
     }
 
     /**
@@ -300,33 +355,33 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * Gets the default locale for this record (used in ISO 19115-3 format).
      */
     @XmlElement(name = "defaultLocale")
-    private Locale getDefaultLocale() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? CollectionsExt.first(getLanguages()) : null;
+    private PT_Locale getDefaultLocale() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? PT_Locale.first(getLocalesAndCharsets()) : null;
     }
 
     /**
      * Sets the default locale for this record (used in ISO 19115-3 format).
      */
     @SuppressWarnings("unused")
-    private void setDefaultLocale(final Locale newValue) {
-        setLanguages(OtherLocales.setFirst(languages, newValue));
+    private void setDefaultLocale(final PT_Locale newValue) {
+        setLocalesAndCharsets(OtherLocales.setFirst(locales, newValue));
     }
 
     /**
      * Gets the other locales for this record (used in ISO 19115-3 format).
      */
     @XmlElement(name = "otherLocale")
-    private Collection<Locale> getOtherLocales() {
-        return FilterByVersion.CURRENT_METADATA.accept() ? OtherLocales.filter(getLanguages()) : null;
+    private Collection<PT_Locale> getOtherLocales() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? OtherLocales.filter(getLocalesAndCharsets()) : null;
     }
 
     /**
-     * Returns the locale to marshal if the XML document is to be written
-     * according the legacy ISO 19115:2003 model.
+     * Returns the character coding for the metadata set (used in legacy ISO 19157 format).
+     *
+     * @see #getCharacterSets()
      */
-    @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
-    @XmlJavaTypeAdapter(LocaleAdapter.class)
-    private Collection<Locale> getLanguage() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? getLanguages() : null;
+    @XmlElement(name = "characterSet", namespace = LegacyNamespaces.GMD)
+    private Collection<Charset> getCharacterSet() {
+        return FilterByVersion.LEGACY_METADATA.accept() ? LocaleAndCharset.getCharacterSets(getLocalesAndCharsets()) : null;
     }
 }

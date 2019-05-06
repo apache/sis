@@ -30,10 +30,11 @@ import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.RangeElementDescription;
 import org.opengis.util.RecordType;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 
 // Branch-specific imports
@@ -294,7 +295,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     @Deprecated
     public void setContentType(final CoverageContentType newValue) {
         checkWritePermission(valueIfDefined(attributeGroups));
-        final Collection<CoverageContentType> newValues = LegacyPropertyAdapter.asCollection(newValue);
+        final Collection<CoverageContentType> newValues = CollectionsExt.singletonOrEmpty(newValue);
         Collection<DefaultAttributeGroup> groups = attributeGroups;
         if (groups != null) {
             for (final DefaultAttributeGroup group : groups) {
@@ -330,7 +331,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
             /** Stores a legacy value into the new kind of value. */
             @Override protected DefaultAttributeGroup wrap(final RangeDimension value) {
                 final DefaultAttributeGroup container = new DefaultAttributeGroup();
-                container.setAttributes(asCollection(value));
+                container.setAttributes(CollectionsExt.singletonOrEmpty(value));
                 return container;
             }
 
@@ -343,7 +344,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
             /** Updates the legacy value in an existing instance of the new kind of value. */
             @Override protected boolean update(final DefaultAttributeGroup container, final RangeDimension value) {
                 if (container instanceof DefaultAttributeGroup) {
-                    container.setAttributes(asCollection(value));
+                    container.setAttributes(CollectionsExt.singletonOrEmpty(value));
                     return true;
                 }
                 return false;

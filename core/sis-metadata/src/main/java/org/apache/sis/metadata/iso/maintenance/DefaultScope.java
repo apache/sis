@@ -26,6 +26,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.Namespaces;
 
@@ -225,7 +226,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      */
     @Deprecated
     public void setExtent(final Extent newValue) {
-        setExtents(LegacyPropertyAdapter.asCollection(newValue));
+        setExtents(CollectionsExt.singletonOrEmpty(newValue));
     }
 
     /**

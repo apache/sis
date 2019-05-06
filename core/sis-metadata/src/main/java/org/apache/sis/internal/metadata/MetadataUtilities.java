@@ -17,7 +17,10 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
@@ -26,6 +29,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
@@ -195,6 +199,44 @@ public final class MetadataUtilities extends Static {
         } else {
             throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, name));
         }
+    }
+
+    /**
+     * Sets the first element in the given collection to the given value.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>If the given collection is null, a new collection will be returned.</li>
+     *   <li>If the given new value  is null, then the first element in the collection is removed.</li>
+     *   <li>Otherwise if the given collection is empty, the given value will be added to it.</li>
+     * </ul>
+     *
+     * @param  <T>       the type of elements in the collection.
+     * @param  values    the collection where to add the new value, or {@code null}.
+     * @param  newValue  the new value to set, or {@code null} for instead removing the first element.
+     * @return the collection (may or may not be the given {@code values} collection).
+     *
+     * @see org.apache.sis.internal.util.CollectionsExt#first(Iterable)
+     */
+    public static <T> Collection<T> setFirst(Collection<T> values, final T newValue) {
+        if (values == null) {
+            return CollectionsExt.singletonOrEmpty(newValue);
+        }
+        if (newValue == null) {
+            final Iterator<T> it = values.iterator();
+            if (it.hasNext()) {
+                it.next();
+                it.remove();
+            }
+        } else if (values.isEmpty()) {
+            values.add(newValue);
+        } else {
+            if (!(values instanceof List<?>)) {
+                values = new ArrayList<>(values);
+            }
+            ((List<T>) values).set(0, newValue);
+        }
+        return values;
     }
 
     /**

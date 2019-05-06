@@ -42,7 +42,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link Merger} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -66,8 +66,7 @@ public final strictfp class MergerTest extends TestCase {
         image.setCloudCoverPercentage(0.8);
         metadata.getContentInfo().add(image);
 
-        metadata.getLanguages().add(Locale.JAPANESE);
-        metadata.getCharacterSets().add(StandardCharsets.UTF_16);
+        metadata.setLocalesAndCharsets(Collections.singletonMap(Locale.JAPANESE, StandardCharsets.UTF_16));
         return metadata;
     }
 
@@ -86,7 +85,7 @@ public final strictfp class MergerTest extends TestCase {
         features.setIncludedWithDataset(Boolean.TRUE);
         metadata.getContentInfo().add(features);
 
-        metadata.getLanguages().add(Locale.FRENCH);
+        metadata.setLocalesAndCharsets(Collections.singletonMap(Locale.FRENCH, StandardCharsets.UTF_8));
         return metadata;
     }
 
@@ -101,8 +100,10 @@ public final strictfp class MergerTest extends TestCase {
         final Merger merger = new Merger(null);
         merger.copy(source, target);
 
-        assertSetEquals(Arrays.asList(Locale.JAPANESE, Locale.FRENCH),  target.getLanguages());
-        assertSetEquals(Collections.singleton(StandardCharsets.UTF_16), target.getCharacterSets());
+        assertSetEquals(Arrays.asList(Locale.JAPANESE, Locale.FRENCH),
+                        target.getLocalesAndCharsets().keySet());
+        assertSetEquals(Arrays.asList(StandardCharsets.UTF_16, StandardCharsets.UTF_8),
+                        target.getLocalesAndCharsets().values());
 
         final Iterator<ContentInformation> it       = target.getContentInfo().iterator();
         final ImageDescription             image    = (ImageDescription)            it.next();

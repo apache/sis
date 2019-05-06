@@ -16,11 +16,14 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.List;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Currency;
 import java.util.NoSuchElementException;
@@ -539,7 +542,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             if (state == FREEZING) {
                 /*
                  * transition(State.FINAL) is under progress. The source collection is already
-                 * an unmodifiable instance created by StageChanger.
+                 * an unmodifiable instance created by StateChanger.
                  */
                 assert (useSet != null) || collectionType(elementType).isInstance(source) : elementType;
                 return (Collection<E>) source;
@@ -571,6 +574,61 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
                     } else {
                         target = CollectionsExt.unmodifiableOrCopy((List<E>) target);
                     }
+                }
+            }
+        }
+        return target;
+    }
+
+    /**
+     * Writes the content of the {@code source} map into the {@code target} map,
+     * creating it if needed. This method performs the following steps:
+     *
+     * <ul>
+     *   <li>Invokes {@link #checkWritePermission(Object)} in order to ensure that this metadata is modifiable.</li>
+     *   <li>If {@code source} is null or empty, returns {@code null}
+     *       (meaning that the metadata property is not provided).</li>
+     *   <li>If {@code target} is null, creates a new {@link Map}.</li>
+     *   <li>Copies the content of the given {@code source} into the target.</li>
+     * </ul>
+     *
+     * @param  <K>      the type of keys represented by the {@code Class} argument.
+     * @param  <V>      the type of values in the map.
+     * @param  source   the source map, or {@code null}.
+     * @param  target   the target map, or {@code null} if not yet created.
+     * @param  keyType  the base type of keys to put in the map.
+     * @return a map (possibly the {@code target} instance) containing the {@code source} entries,
+     *         or {@code null} if the source was null.
+     * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
+     *
+     * @see #nonNullMap(Map, Class)
+     *
+     * @since 1.0
+     */
+    @SuppressWarnings("unchecked")
+    protected final <K,V> Map<K,V> writeMap(final Map<? extends K, ? extends V> source, Map<K,V> target,
+            Class<K> keyType) throws UnmodifiableMetadataException
+    {
+        /*
+         * Code in this method is a copy of write(Collection, Collection, Class) with some calls inlined.
+         * See the comments inside that write(…) method body for more information on the logic.
+         */
+        if (source != target) {
+            if (state == FREEZING) {
+                return (Map<K,V>) source;
+            }
+            checkWritePermission((target == null) || target.isEmpty() ? null : target);
+            if (isNullOrEmpty(source)) {
+                target = null;
+            } else {
+                if (target != null && state != COMPLETABLE) {
+                    target.clear();
+                } else {
+                    target = createMap(keyType, source);
+                }
+                target.putAll(source);
+                if (state == COMPLETABLE) {
+                    target = CollectionsExt.unmodifiableOrCopy(target);
                 }
             }
         }
@@ -646,6 +704,29 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     }
 
     /**
+     * Creates a map with the content of the {@code source} map,
+     * or returns {@code null} if the source is {@code null} or empty.
+     * This is a convenience method for copying fields in subclass copy constructors.
+     *
+     * @param  <K>      the type of keys represented by the {@code Class} argument.
+     * @param  <V>      the type of values in the map.
+     * @param  source   the source map, or {@code null}.
+     * @param  keyType  the base type of keys to put in the map.
+     * @return a map containing the {@code source} entries,
+     *         or {@code null} if the source was null or empty.
+     *
+     * @since 1.0
+     */
+    protected final <K,V> Map<K,V> copyMap(final Map<? extends K, ? extends V> source, final Class<K> keyType) {
+        if (isNullOrEmpty(source)) {
+            return null;
+        }
+        final Map<K,V> target = createMap(keyType, source);
+        target.putAll(source);
+        return target;
+    }
+
+    /**
      * Creates a singleton list or set containing only the given value, if non-null.
      * This is a convenience method for initializing fields in subclass constructors.
      *
@@ -684,13 +765,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     }
 
     /**
-     * Returns the specified list, or a new one if {@code c} is null.
+     * Returns the specified list, or a new one if {@code current} is null.
      * This is a convenience method for implementation of {@code getFoo()} methods.
      *
      * @param  <E>          the type represented by the {@code Class} argument.
      * @param  current      the existing list, or {@code null} if the list has not yet been created.
-     * @param  elementType  the element type (used only if {@code c} is null).
-     * @return {@code c}, or a new list if {@code c} is null.
+     * @param  elementType  the element type (used only if {@code current} is null).
+     * @return {@code current}, or a new list if {@code current} is null.
      */
     protected final <E> List<E> nonNullList(final List<E> current, final Class<E> elementType) {
         if (current != null) {
@@ -700,26 +781,19 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             return null;
         }
         if (state < FREEZING) {
-            /*
-             * Do not specify an initial capacity, because the list will stay empty in a majority of cases
-             * (i.e. the users will want to iterate over the list elements more often than they will want
-             * to add elements). JDK implementation of ArrayList has a lazy instantiation mechanism for
-             * initially empty lists, but as of JDK8 this lazy instantiation works only for list having
-             * the default capacity.
-             */
-            return new CheckedArrayList<>(elementType);
+            return createList(elementType, current);        // `current` given as a matter of principle even if null.
         }
         return Collections.emptyList();
     }
 
     /**
-     * Returns the specified set, or a new one if {@code c} is null.
+     * Returns the specified set, or a new one if {@code current} is null.
      * This is a convenience method for implementation of {@code getFoo()} methods.
      *
      * @param  <E>          the type represented by the {@code Class} argument.
      * @param  current      the existing set, or {@code null} if the set has not yet been created.
-     * @param  elementType  the element type (used only if {@code c} is null).
-     * @return {@code c}, or a new set if {@code c} is null.
+     * @param  elementType  the element type (used only if {@code current} is null).
+     * @return {@code current}, or a new set if {@code current} is null.
      */
     protected final <E> Set<E> nonNullSet(final Set<E> current, final Class<E> elementType) {
         if (current != null) {
@@ -729,13 +803,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             return null;
         }
         if (state < FREEZING) {
-            return createSet(elementType, null);
+            return createSet(elementType, current);     // `current` given as a matter of principle even if null.
         }
         return Collections.emptySet();
     }
 
     /**
-     * Returns the specified collection, or a new one if {@code c} is null.
+     * Returns the specified collection, or a new one if {@code current} is null.
      * This is a convenience method for implementation of {@code getFoo()} methods.
      *
      * <div class="section">Choosing a collection type</div>
@@ -747,8 +821,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * @param  <E>          the type represented by the {@code Class} argument.
      * @param  current      the existing collection, or {@code null} if the collection has not yet been created.
-     * @param  elementType  the element type (used only if {@code c} is null).
-     * @return {@code c}, or a new collection if {@code c} is null.
+     * @param  elementType  the element type (used only if {@code current} is null).
+     * @return {@code current}, or a new collection if {@code current} is null.
      */
     protected final <E> Collection<E> nonNullCollection(final Collection<E> current, final Class<E> elementType) {
         if (current != null) {
@@ -761,18 +835,42 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
         final boolean isModifiable = (state < FREEZING);
         if (useSet(elementType)) {
             if (isModifiable) {
-                return createSet(elementType, null);
+                return createSet(elementType, current);         // `current` given as a matter of principle even if null.
             } else {
                 return Collections.emptySet();
             }
         } else {
             if (isModifiable) {
-                // Do not specify an initial capacity for the reason explained in nonNullList(…).
-                return new CheckedArrayList<>(elementType);
+                return createList(elementType, current);        // `current` given as a matter of principle even if null.
             } else {
                 return Collections.emptyList();
             }
         }
+    }
+
+    /**
+     * Returns the specified map, or a new one if {@code current} is null.
+     * This is a convenience method for implementation of {@code getFoo()} methods.
+     *
+     * @param  <K>      the type of keys represented by the {@code Class} argument.
+     * @param  <V>      the type of values in the map.
+     * @param  current  the existing map, or {@code null} if the map has not yet been created.
+     * @param  keyType  the key type (used only if {@code current} is null).
+     * @return {@code current}, or a new map if {@code current} is null.
+     *
+     * @since 1.0
+     */
+    protected final <K,V> Map<K,V> nonNullMap(final Map<K,V> current, final Class<K> keyType) {
+        if (current != null) {
+            return current.isEmpty() && emptyCollectionAsNull() ? null : current;
+        }
+        if (emptyCollectionAsNull()) {
+            return null;
+        }
+        if (state < FREEZING) {
+            return createMap(keyType, current);         // `current` given as a matter of principle even if null.
+        }
+        return Collections.emptyMap();
     }
 
     /**
@@ -783,12 +881,23 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *                 only for computing initial capacity; it does not perform the actual copy.
      */
     private static <E> List<E> createList(final Class<E> elementType, final Collection<?> source) {
+        if (source == null) {
+            /*
+             * Do not specify an initial capacity, because the list will stay empty in a majority of cases
+             * (i.e. the users will want to iterate over the list elements more often than they will want
+             * to add elements). JDK implementation of ArrayList has a lazy instantiation mechanism for
+             * initially empty lists, but as of JDK 10 this lazy instantiation works only for list having
+             * the default capacity.
+             */
+            return new CheckedArrayList<>(elementType);
+        }
         return new CheckedArrayList<>(elementType, source.size());
     }
 
     /**
      * Creates a modifiable set for elements of the given type. This method will create an {@link EnumSet},
      * {@link CodeListSet} or {@link java.util.LinkedHashSet} depending on the {@code elementType} argument.
+     * The set must have a stable iteration order (this is needed by {@link TreeTableView}).
      *
      * @param  source  the collection to be copied in the new set, or {@code null} if unknown.
      *                 This method uses this information only for computing initial capacity;
@@ -808,6 +917,23 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
          * elements (often just a singleton).
          */
         return new CheckedHashSet<>(elementType, (source != null) ? Containers.hashMapCapacity(source.size()) : 4);
+    }
+
+    /**
+     * Creates a modifiable map for elements of the given type.
+     * The map must have a stable iteration order (this is needed by {@link TreeTableView}).
+     *
+     * @param  source  the map to be copied in the new map. This method uses this information
+     *                 only for computing initial capacity; it does not perform the actual copy.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    private static <K,V> Map<K,V> createMap(final Class<K> keyType, final Map<?,?> source) {
+        if (Enum.class.isAssignableFrom(keyType)) {
+            return new EnumMap(keyType);
+        } else {
+            // Must be LinkedHashMap, not HashMap, because TreeTableView needs stable iteration order.
+            return new LinkedHashMap<>((source != null) ? Containers.hashMapCapacity(source.size()) : 4);
+        }
     }
 
     /**

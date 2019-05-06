@@ -167,7 +167,7 @@ public final class Types extends Static {
      * <ul>
      *   <li>{@code getListName(ParameterDirection.IN_OUT)}      returns {@code "SV_ParameterDirection"}.</li>
      *   <li>{@code getListName(AxisDirection.NORTH)}            returns {@code "CS_AxisDirection"}.</li>
-     *   <li>{@code getListName(CharacterSet.UTF_8)}             returns {@code "MD_CharacterSetCode"}.</li>
+     *   <li>{@code getListName(TopicCategory.INLAND_WATERS)}    returns {@code "MD_TopicCategoryCode"}.</li>
      *   <li>{@code getListName(ImagingCondition.BLURRED_IMAGE)} returns {@code "MD_ImagingConditionCode"}.</li>
      * </ul>
      * </div>
@@ -192,7 +192,7 @@ public final class Types extends Static {
      * <ul>
      *   <li>{@code getCodeName(ParameterDirection.IN_OUT)}      returns {@code "in/out"}.</li>
      *   <li>{@code getCodeName(AxisDirection.NORTH)}            returns {@code "north"}.</li>
-     *   <li>{@code getCodeName(CharacterSet.UTF_8)}             returns {@code "utf8"}.</li>
+     *   <li>{@code getCodeName(TopicCategory.INLAND_WATERS)}    returns {@code "inlandWaters"}.</li>
      *   <li>{@code getCodeName(ImagingCondition.BLURRED_IMAGE)} returns {@code "blurredImage"}.</li>
      * </ul>
      * </div>
@@ -226,7 +226,7 @@ public final class Types extends Static {
      * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li>{@code getCodeLabel(AxisDirection.NORTH)} returns {@code "North"}.</li>
-     *   <li>{@code getCodeLabel(CharacterSet.UTF_8)} returns {@code "UTF-8"}.</li>
+     *   <li>{@code getCodeLabel(TopicCategory.INLAND_WATERS)} returns {@code "Inland waters"}.</li>
      *   <li>{@code getCodeLabel(ImagingCondition.BLURRED_IMAGE)} returns {@code "Blurred image"}.</li>
      * </ul>
      * </div>

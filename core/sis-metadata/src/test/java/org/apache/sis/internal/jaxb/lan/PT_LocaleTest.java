@@ -16,8 +16,9 @@
  */
 package org.apache.sis.internal.jaxb.lan;
 
-import java.util.Arrays;
+import java.util.Map;
 import java.util.Locale;
+import java.nio.charset.Charset;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.util.Version;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -64,7 +65,10 @@ public final strictfp class PT_LocaleTest extends TestUsingFile {
             throws JAXBException
     {
         final DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setLanguages(Arrays.asList(locales));
+        final Map<Locale,Charset> lc = metadata.getLocalesAndCharsets();
+        for (final Locale locale : locales) {
+            lc.put(locale, null);
+        }
         assertMarshalEqualsFile(filename, metadata, version, STRICT, ignoredNodes,
                 new String[] {"xmlns:*", "xsi:*"});
     }
@@ -99,7 +103,7 @@ public final strictfp class PT_LocaleTest extends TestUsingFile {
     @Test
     public void testUnmarshalling() throws JAXBException {
         final DefaultMetadata metadata = unmarshalFile(DefaultMetadata.class, XML2016+FILENAME);
-        assertArrayEquals(locales, metadata.getLanguages().toArray());
+        assertArrayEquals(locales, metadata.getLocalesAndCharsets().keySet().toArray());
     }
 
     /**
@@ -110,6 +114,6 @@ public final strictfp class PT_LocaleTest extends TestUsingFile {
     @Test
     public void testUnmarshallingLegacy() throws JAXBException {
         final DefaultMetadata metadata = unmarshalFile(DefaultMetadata.class, XML2007+FILENAME);
-        assertArrayEquals(locales, metadata.getLanguages().toArray());
+        assertArrayEquals(locales, metadata.getLocalesAndCharsets().keySet().toArray());
     }
 }

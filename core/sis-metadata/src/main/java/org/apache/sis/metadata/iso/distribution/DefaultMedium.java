@@ -24,18 +24,22 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Medium;
 import org.opengis.metadata.distribution.MediumName;
 import org.opengis.metadata.distribution.MediumFormat;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.internal.jaxb.gco.GO_Real;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.CodeLists;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
 import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
@@ -71,10 +75,10 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @since   0.3
  * @module
  */
-@TitleProperty(name = "name")
 @XmlType(name = "MD_Medium_Type", propOrder = {
     "identifier",           // New in ISO 19115-3
     "name",
+    "newName",              // From ISO 19115:2014
     "density",
     "densities",
     "densityUnits",
@@ -185,19 +189,27 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Returns the name of the medium on which the resource can be received.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * {@link MediumName} may be replaced by {@link Citation} in GeoAPI 4.0.
+     * </div>
+     *
      * @return name of the medium, or {@code null}.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-389">SIS-389</a>
      *
      */
     @Override
-    @XmlElement(name = "name")
+    @XmlElement(name = "name", namespace = LegacyNamespaces.GMD)
     public MediumName getName() {
-        return name;
+        return FilterByVersion.LEGACY_METADATA.accept() ? name : null;
     }
 
     /**
      * Sets the name of the medium on which the resource can be received.
+     *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * {@link MediumName} may be replaced by {@link Citation} in GeoAPI 4.0.
+     * </div>
      *
      * @param  newValue  the new name.
      */
@@ -234,7 +246,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     public void setDensity(final Double newValue) {
         checkWritePermission(valueIfDefined(densities));
         if (ensurePositive(DefaultMedium.class, "density", true, newValue)) {
-            densities = writeCollection(LegacyPropertyAdapter.asCollection(newValue), densities, Double.class);
+            densities = writeCollection(CollectionsExt.singletonOrEmpty(newValue), densities, Double.class);
         }
     }
 
@@ -373,5 +385,40 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     @Override
     public void setIdentifier(final Identifier newValue) {
         super.setIdentifier(newValue);
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////                                                                                  ////////
+    ////////                               XML support with JAXB                              ////////
+    ////////                                                                                  ////////
+    ////////        The following methods are invoked by JAXB using reflection (even if       ////////
+    ////////        they are private) or are helpers for other methods invoked by JAXB.       ////////
+    ////////        Those methods can be safely removed if Geographic Markup Language         ////////
+    ////////        (GML) support is not needed.                                              ////////
+    ////////                                                                                  ////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns the medium name as a code list.
+     */
+    @XmlElement(name = "name")
+    @XmlJavaTypeAdapter(CI_Citation.Since2014.class)
+    private Citation getNewName() {
+        return (name != null) ? new DefaultCitation(name.name()) : null;
+    }
+
+    /**
+     * Sets the name of the medium on which the resource can be received.
+     */
+    private void setNewName(final Citation newValue) {
+        if (newValue != null) {
+            final InternationalString title = newValue.getTitle();
+            if (title != null) {
+                name = CodeLists.forName(MediumName.class, title.toString(), false);
+            }
+        }
     }
 }

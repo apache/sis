@@ -241,25 +241,29 @@ public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsis
             final Class<?>  elementType = Numbers.primitiveToWrapper(accessor.type(i, TypeValuePolicy.ELEMENT_TYPE));
             assertNotNull(testingMethod, propertyType);
             assertNotNull(testingMethod, elementType);
+            final boolean isMap        =        Map.class.isAssignableFrom(propertyType);
             final boolean isCollection = Collection.class.isAssignableFrom(propertyType);
             assertFalse("Element type can not be Collection.", Collection.class.isAssignableFrom(elementType));
             assertEquals("Property and element types shall be the same if and only if not a collection.",
-                         !isCollection, propertyType == elementType);
+                         !(isMap | isCollection), propertyType == elementType);
             /*
              * Try to get a value.
              */
             Object value = accessor.get(i, instance);
             if (value == null) {
-                assertFalse("Null values are not allowed to be collections.", isCollection);
+                assertFalse("Null values are not allowed to be collections.", isMap | isCollection);
             } else {
                 assertTrue("Wrong property type.", propertyType.isInstance(value));
                 if (value instanceof CheckedContainer<?>) {
                     assertTrue("Wrong element type in collection.",
                             elementType.isAssignableFrom(((CheckedContainer<?>) value).getElementType()));
                 }
-                if (isCollection) {
+                if (isMap) {
+                    assertTrue("Collections shall be initially empty.", ((Map<?,?>) value).isEmpty());
+                    value = CollectionsExt.modifiableCopy((Map<?,?>) value);                          // Protect from changes.
+                } else if (isCollection) {
                     assertTrue("Collections shall be initially empty.", ((Collection<?>) value).isEmpty());
-                    value = CollectionsExt.modifiableCopy((Collection<?>) value); // Protect from changes.
+                    value = CollectionsExt.modifiableCopy((Collection<?>) value);                     // Protect from changes.
                 }
             }
             /*
@@ -274,13 +278,16 @@ public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsis
                     // Dates requires sis-temporal module, which is not available for sis-metadata.
                     continue;
                 }
+                if (isMap) {
+                    continue;
+                }
                 final Object newValue = sampleValueFor(property, elementType);
                 final Object oldValue = accessor.set(i, instance, newValue, PropertyAccessor.RETURN_PREVIOUS);
                 assertEquals("PropertyAccessor.set(…) shall return the value previously returned by get(…).", value, oldValue);
                 value = accessor.get(i, instance);
                 if (isCollection) {
                     if (newValue == null) {
-                        assertTrue("We didn't generated a random value for this type, consequently the "
+                        assertTrue("We did not generated a random value for this type, consequently the "
                                 + "collection should still empty.", ((Collection<?>) value).isEmpty());
                         value = null;
                     } else {

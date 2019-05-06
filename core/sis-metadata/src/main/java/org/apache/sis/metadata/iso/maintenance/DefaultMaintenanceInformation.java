@@ -39,6 +39,7 @@ import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.internal.util.CollectionsExt;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -425,7 +426,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
             /** Stores a legacy value into the new kind of value. */
             @Override protected Scope wrap(final ScopeDescription value) {
                 final DefaultScope container = new DefaultScope();
-                container.setLevelDescription(asCollection(value));
+                container.setLevelDescription(CollectionsExt.singletonOrEmpty(value));
                 return container;
             }
 
@@ -438,7 +439,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
             /** Updates the legacy value in an existing instance of the new kind of value. */
             @Override protected boolean update(final Scope container, final ScopeDescription value) {
                 if (container instanceof DefaultScope) {
-                    ((DefaultScope) container).setLevelDescription(asCollection(value));
+                    ((DefaultScope) container).setLevelDescription(CollectionsExt.singletonOrEmpty(value));
                     return true;
                 }
                 return false;

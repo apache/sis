@@ -112,10 +112,10 @@
     @XmlJavaTypeAdapter(MI_PolarisationOrientationCode.class),
     @XmlJavaTypeAdapter(MI_RangeElementDescription.class),
     @XmlJavaTypeAdapter(MI_TransferFunctionTypeCode.class),
-    @XmlJavaTypeAdapter(PT_Locale.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(UnitAdapter.class),
+    @XmlJavaTypeAdapter(LocaleAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
     @XmlJavaTypeAdapter(value=GO_Boolean.class, type=boolean.class)
 })
@@ -130,7 +130,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.lan.PT_Locale;
+import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
 import org.apache.sis.internal.jaxb.metadata.*;

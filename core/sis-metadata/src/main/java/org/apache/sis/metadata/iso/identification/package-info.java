@@ -122,7 +122,6 @@
     @XmlJavaTypeAdapter(MD_AggregateInformation.class),
     @XmlJavaTypeAdapter(MD_BrowseGraphic.class),
     @XmlJavaTypeAdapter(MD_CharacterSetCode.class),
-    @XmlJavaTypeAdapter(MD_CharacterSetLegacy.class),
     @XmlJavaTypeAdapter(MD_Constraints.class),
     @XmlJavaTypeAdapter(MD_DataIdentification.class),
     @XmlJavaTypeAdapter(MD_Format.class),
@@ -137,7 +136,6 @@
     @XmlJavaTypeAdapter(MD_StandardOrderProcess.class),
     @XmlJavaTypeAdapter(MD_TopicCategoryCode.class),
     @XmlJavaTypeAdapter(MD_Usage.class),
-    @XmlJavaTypeAdapter(PT_Locale.class),
     @XmlJavaTypeAdapter(SV_CoupledResource.class),
     @XmlJavaTypeAdapter(SV_OperationMetadata.class),
     @XmlJavaTypeAdapter(SV_OperationChainMetadata.class),
@@ -147,7 +145,8 @@
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(URIAdapter.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
-    @XmlJavaTypeAdapter(InternationalStringAdapter.class)
+    @XmlJavaTypeAdapter(InternationalStringAdapter.class),
+    @XmlJavaTypeAdapter(LocaleAdapter.class)
 })
 package org.apache.sis.metadata.iso.identification;
 
@@ -160,7 +159,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.jaxb.lan.PT_Locale;
+import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.gts.*;
 import org.apache.sis.internal.jaxb.code.*;

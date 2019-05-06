@@ -21,6 +21,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import org.opengis.metadata.identification.CharacterSet;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.internal.jaxb.Context;
@@ -104,5 +105,26 @@ public final class MD_CharacterSetCode extends XmlAdapter<MD_CharacterSetCode, C
      */
     public void setElement(final CodeListUID value) {
         identifier = value;
+    }
+
+    /**
+     * Converts the given Java Character Set to {@code CharacterSet}.
+     *
+     * @param  cs  the character set, or {@cod null}.
+     * @return a code list for the given character set, or {@code null} if the given {@code cs} was null.
+     */
+    public static CharacterSet fromCharset(final Charset cs) {
+        if (cs == null) {
+            return null;
+        }
+        final String name = cs.name();
+        for (final CharacterSet candidate : CharacterSet.values()) {
+            for (final String n : candidate.names()) {
+                if (name.equals(n)) {
+                    return candidate;
+                }
+            }
+        }
+        return CharacterSet.valueOf(name);
     }
 }

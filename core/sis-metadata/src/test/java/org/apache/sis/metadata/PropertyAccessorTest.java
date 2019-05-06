@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.Arrays;
@@ -149,6 +150,8 @@ public final strictfp class PropertyAccessorTest extends TestCase {
                         propertyType = Set.class;
                     }
                 }
+            } else if (propertyType == Map.class) {
+                elementType = Map.Entry.class;
             }
             assertEquals(propertyName,  propertyType, accessor.type(index, TypeValuePolicy.PROPERTY_TYPE));
             assertEquals(umlIdentifier, elementType,  accessor.type(index, TypeValuePolicy.ELEMENT_TYPE));
@@ -222,10 +225,9 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             Identification.class, "getResourceSpecificUsages",     "resourceSpecificUsages",     "resourceSpecificUsage",     "Resource specific usages",     Usage[].class,
             Identification.class, "getResourceConstraints",        "resourceConstraints",        "resourceConstraints",       "Resource constraints",         Constraints[].class,
     AbstractIdentification.class, "getAssociatedResources",        "associatedResources",        "associatedResource",        "Associated resources",         DefaultAssociatedResource[].class,
-        DataIdentification.class, "getLanguages",                  "languages",                  "language",                  "Languages",                    Locale[].class,
-        DataIdentification.class, "getCharacterSets",              "characterSets",              "characterSet",              "Character sets",               CharacterSet[].class,
         DataIdentification.class, "getEnvironmentDescription",     "environmentDescription",     "environmentDescription",    "Environment description",      InternationalString.class,
-        DataIdentification.class, "getSupplementalInformation",    "supplementalInformation",    "supplementalInformation",   "Supplemental information",     InternationalString.class);
+        DataIdentification.class, "getSupplementalInformation",    "supplementalInformation",    "supplementalInformation",   "Supplemental information",     InternationalString.class,
+ DefaultDataIdentification.class, "getLocalesAndCharsets",         "localesAndCharsets",         "defaultLocale+otherLocale", "Locales and charsets",         Map.class);
     }
 
     /**

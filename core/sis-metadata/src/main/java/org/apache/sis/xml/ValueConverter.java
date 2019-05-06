@@ -65,7 +65,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * See the {@link XML#CONVERTER} javadoc for an example of registering a custom
  * {@code ValueConverter} to a (un)marshaller.
  *
- * @author Martin Desruisseaux (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.3
  * @module

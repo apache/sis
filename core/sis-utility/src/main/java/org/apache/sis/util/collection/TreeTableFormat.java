@@ -241,8 +241,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     }
 
     /**
-     * Returns the table columns to parse and format, or {@code null} for the default list of
-     * columns. The default is:
+     * Returns the table columns to parse and format, or {@code null} for the default list of columns.
+     * The default is:
      *
      * <ul>
      *   <li>On parsing, a single column containing the node label as a {@link String}.</li>
@@ -701,10 +701,12 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             this.recursivityGuard = recursivityGuard;
             Predicate<TreeTable.Node> filter = nodeFilter;
             if (tree instanceof TreeFormatCustomization) {
-                final Predicate<TreeTable.Node> more = ((TreeFormatCustomization) tree).filter();
+                final TreeFormatCustomization custom = (TreeFormatCustomization) tree;
+                final Predicate<TreeTable.Node> more = custom.filter();
                 if (more != null) {
                     filter = (filter != null) ? more.and(filter) : more;
                 }
+            } else {
             }
             this.filter = filter;
             setTabulationExpanded(true);
@@ -778,6 +780,20 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 return;
             } else if (value instanceof Object[]) {
                 formatCollection(Arrays.asList((Object[]) value), recursive);
+                return;
+            } else if (value instanceof Map.Entry<?,?>) {
+                final Map.Entry<?,?> entry = (Map.Entry<?,?>) value;
+                final Object k = entry.getKey();
+                final Object v = entry.getValue();
+                if (k == null) {
+                    append(null);
+                } else {
+                    formatValue(k, recursive);
+                }
+                if (v != null) {
+                    append(" → ");
+                    formatValue(v, recursive);
+                }
                 return;
             } else {
                 /*
@@ -872,14 +888,12 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
              * may be followed by a non-null value, which is why we need to check all of them before to know how many
              * columns to omit.
              */
-            int n = 0;
             for (int i=0; i<columns.length; i++) {
-                if ((values[i] = node.getValue(columns[i])) != null) {
-                    n = i;
-                }
+                values[i] = node.getValue(columns[i]);
             }
-            if (!omitTrailingNulls) {
-                n = values.length - 1;
+            int n = values.length - 1;
+            if (omitTrailingNulls) {
+                while (n > 0 && values[n] == null) n--;
             }
             /*
              * Format the values that we fetched in above loop.
