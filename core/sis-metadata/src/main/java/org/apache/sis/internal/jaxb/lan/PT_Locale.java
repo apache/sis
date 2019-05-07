@@ -237,13 +237,6 @@ public final class PT_Locale {
     }
 
     /**
-     * Sets the character set to the given value.
-     */
-    final void setCharacterSet(final Charset encoding) {
-        element = new Wrapper(locale, encoding);
-    }
-
-    /**
      * Returns the Java locale wrapped by this {@link PT_Locale} instance.
      * This method returns a cached instance if possible.
      *
@@ -257,6 +250,20 @@ public final class PT_Locale {
     }
 
     /**
+     * Returns the character set, or {@code null} if none.
+     */
+    final Charset getCharacterSet() {
+        return (element != null) ? element.characterEncoding : null;
+    }
+
+    /**
+     * Sets the character set to the given value.
+     */
+    final void setCharacterSet(final Charset encoding) {
+        element = new Wrapper(locale, encoding);
+    }
+
+    /**
      * Infers a locale and character set from this wrapper and adds them as an entry in the given map.
      *
      * @param  addTo  the map where to add an entry for the locale and character set.
@@ -264,7 +271,7 @@ public final class PT_Locale {
      */
     final boolean addInto(final Map<Locale,Charset> addTo) {
         final Locale locale = getLocale();
-        final Charset encoding = (element != null) ? element.characterEncoding : null;
+        final Charset encoding = getCharacterSet();
         if (locale != null || encoding != null) {
             // We need a special check if (encoding == null) since put(…) != encoding will not work in that case.
             final boolean wasAbsent = (encoding == null) && !addTo.containsKey(locale);
