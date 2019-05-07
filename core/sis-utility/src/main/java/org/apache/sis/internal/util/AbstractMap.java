@@ -22,7 +22,6 @@ import java.util.Objects;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.AbstractCollection;
 import java.util.NoSuchElementException;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.resources.Errors;
@@ -465,7 +464,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      */
     @Override
     public Collection<V> values() {
-        return new AbstractCollection<V>() {
+        return new Bag<V>() {
             @Override public void        clear()            {       AbstractMap.this.clear();}
             @Override public boolean     isEmpty()          {return AbstractMap.this.isEmpty();}
             @Override public int         size()             {return AbstractMap.this.size();}
