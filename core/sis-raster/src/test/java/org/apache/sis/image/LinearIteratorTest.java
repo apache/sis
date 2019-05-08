@@ -22,8 +22,6 @@ import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import org.opengis.coverage.grid.SequenceType;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -71,13 +69,13 @@ public final strictfp class LinearIteratorTest extends DefaultIteratorTest {
      * that the given (x,y) should be the third point in iteration (iteration starts at index zero).
      * This method must be overridden for each kind of iterator to test.
      *
-     * @param  bounds  the image bounds.
      * @param  x       <var>x</var> coordinate for which the iterator position is desired.
      * @param  y       <var>y</var> coordinate for which the iterator position is desired.
      * @return point index in iterator order for the given (x,y) coordinates.
      */
     @Override
-    int getIndexOf(final Rectangle bounds, int x, int y) {
+    int getIndexOf(int x, int y) {
+        final Rectangle bounds = getImageBounds();
         x -= bounds.x;
         y -= bounds.y;
         return y * bounds.width + x;
@@ -124,11 +122,22 @@ public final strictfp class LinearIteratorTest extends DefaultIteratorTest {
     }
 
     /**
-     * Tests {@link PixelIterator#createWindow(TransferType)} on a tiled image.
+     * Returns the values of the given sub-region, organized in a {@link SequenceType#LINEAR} fashion.
+     * This method is invoked for {@link #verifyWindow(Dimension)} purpose.
+     *
+     * @param  window  the sub-region for which to get values in a linear fashion.
+     * @param  values  where to store the expected window values in linear order.
      */
-    @Test
     @Override
-    @Ignore("TODO")
-    public void testWindowOnImage() {
+    void getExpectedWindowValues(final Rectangle window, final float[] values) {
+        final Rectangle bounds = getImageBounds();
+        int index = 0;
+        int source = window.x + window.y * bounds.width;
+        for (int y=0; y<window.height; y++) {
+            final int length = window.width;
+            copyExpectedPixels(source, values, index, length);
+            source += bounds.width;
+            index += length;
+        }
     }
 }
