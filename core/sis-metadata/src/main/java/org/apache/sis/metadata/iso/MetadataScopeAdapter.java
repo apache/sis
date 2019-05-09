@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import org.opengis.metadata.MetadataScope;
-import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
 
 
 /**

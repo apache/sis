@@ -37,7 +37,7 @@ import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 import org.apache.sis.internal.metadata.legacy.MediumName;
 import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.util.CollectionsExt;
 
