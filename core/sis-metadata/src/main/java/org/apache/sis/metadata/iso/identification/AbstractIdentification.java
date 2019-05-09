@@ -44,7 +44,7 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.temporal.Duration;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;

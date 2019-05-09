@@ -69,6 +69,7 @@ import org.junit.BeforeClass;
     org.apache.sis.math.PlaneTest.class,
 
     // Collections.
+    org.apache.sis.internal.util.BagTest.class,
     org.apache.sis.internal.util.CheckedArrayListTest.class,
     org.apache.sis.internal.util.ListOfUnknownSizeTest.class,
     org.apache.sis.internal.system.ReferenceQueueConsumerTest.class,

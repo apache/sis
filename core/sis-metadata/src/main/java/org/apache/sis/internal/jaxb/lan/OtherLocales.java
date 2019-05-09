@@ -137,6 +137,9 @@ public final class OtherLocales extends AbstractSet<PT_Locale> {
                 keys   = addTo.keySet().toArray();
                 values = addTo.values().toArray();
                 addTo.clear();
+                if (newValue.getCharacterSet() == null) {
+                    newValue.setCharacterSet((Charset) values[0]);
+                }
             }
             newValue.addInto(addTo);
             if (keys != null) {

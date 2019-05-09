@@ -16,7 +16,14 @@
  */
 
 /**
- * Metadata objects from legacy standards.
+ * Metadata objects from legacy standards, or utility methods for supporting legacy properties.
+ * This package addresses the classes and properties defined by the UML in abstract models.
+ * It does not address the differences in XML schema.
+ *
+ * <strong>Do not use!</strong>
+ *
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

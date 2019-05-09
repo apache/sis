@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.metadata;
+package org.apache.sis.internal.metadata.legacy;
 
 import java.util.AbstractCollection;
 import java.util.Collection;
