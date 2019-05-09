@@ -121,7 +121,7 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
                 return null;
             }
             PT_Locale p = new PT_Locale(value);
-            p.setCharacterSet(null);                // For forcing creating of child element.
+            p.setCharacterSet(null);                // For forcing creation of child `element`.
             return p;
         }
 

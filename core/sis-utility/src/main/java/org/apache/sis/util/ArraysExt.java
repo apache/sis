@@ -1241,9 +1241,7 @@ public final class ArraysExt extends Static {
             int i = entries.length >>> 1;
             int j = i + (entries.length & 1);
             while (--i >= 0) {
-                final Object tmp = entries[i];
-                entries[i] = entries[j];
-                entries[j++] = tmp;
+                swap(entries, i, j++);
             }
         }
     }
@@ -1260,9 +1258,7 @@ public final class ArraysExt extends Static {
             int i = values.length >>> 1;
             int j = i + (values.length & 1);
             while (--i >= 0) {
-                final int tmp = values[i];
-                values[i] = values[j];
-                values[j++] = tmp;
+                swap(values, i, j++);
             }
         }
     }

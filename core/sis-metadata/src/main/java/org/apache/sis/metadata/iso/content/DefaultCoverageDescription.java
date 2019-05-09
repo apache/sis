@@ -33,7 +33,7 @@ import org.opengis.util.RecordType;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 

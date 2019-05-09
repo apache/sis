@@ -28,7 +28,7 @@ import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.Medium;
 import org.opengis.metadata.distribution.Distributor;
 import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.metadata.MD_Medium;

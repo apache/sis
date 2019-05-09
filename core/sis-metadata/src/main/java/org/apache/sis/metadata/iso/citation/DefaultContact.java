@@ -34,8 +34,8 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
 import org.apache.sis.internal.metadata.Dependencies;
-import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
 import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
+import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.util.CollectionsExt;
 

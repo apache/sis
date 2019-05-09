@@ -22,12 +22,13 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
+import java.awt.image.RasterFormatException;
 import org.apache.sis.internal.raster.Resources;
 
 
 /**
- * Linear iterator used when common line y line iteration is requiered.
- * This iterator uses the {@link Raster} API for traversing the pixels of the image.
+ * Iterator for the {@link SequenceType#LINEAR} traversal order.
+ * This iterator behaves as is the while image was a single tile.
  * Calls to {@link #next()} move the current position by increasing the following values, in order:
  *
  * <ol>
@@ -35,55 +36,87 @@ import org.apache.sis.internal.raster.Resources;
  *   <li>Row index in image (from top to bottom).</li>
  * </ol>
  *
+ * This class uses the {@link Raster} API for traversing the pixels of the image,
+ * i.e. it does not yet provide optimization for commonly used sample models.
+ *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
 final class LinearIterator extends DefaultIterator {
-
-    LinearIterator(Raster input, WritableRaster output, Rectangle subArea, Dimension window) {
+    /**
+     * Creates an iterator for the given region in the given raster.
+     *
+     * @param  input    the raster which contains the sample values to read.
+     * @param  output   the raster where to write the sample values, or {@code null} for read-only iterator.
+     * @param  subArea  the raster region where to perform the iteration, or {@code null} for iterating over all the raster domain.
+     * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
+     */
+    LinearIterator(final Raster input, final WritableRaster output, final Rectangle subArea, final Dimension window) {
         super(input, output, subArea, window);
     }
 
+    /**
+     * Creates an iterator for the given region in the given image.
+     *
+     * @param  input    the image which contains the sample values to read.
+     * @param  output   the image where to write the sample values, or {@code null} for read-only iterator.
+     * @param  subArea  the image region where to perform the iteration, or {@code null} for iterating over all the image domain.
+     * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
+     */
     LinearIterator(final RenderedImage input, final WritableRenderedImage output, final Rectangle subArea, final Dimension window) {
         super(input, output, subArea, window);
     }
 
+    /**
+     * Returns the order in which pixels are traversed.
+     */
     @Override
     public SequenceType getIterationOrder() {
         return SequenceType.LINEAR;
     }
 
+    /**
+     * Moves the iterator to the next pixel on the current row, or to the next row.
+     * This method behaves as if the whole image was a single tile.
+     *
+     * @return {@code true} if the current pixel is valid, or {@code false} if there is no more pixels.
+     * @throws IllegalStateException if this iterator already reached end of iteration in a previous call
+     *         to {@code next()}, and {@link #rewind()} or {@link #moveTo(int,int)} have not been invoked.
+     */
     @Override
     public boolean next() {
-
-        if (++x >= upperX) {
-            //move to next line
-            x = lowerX;
-            if (++y >= upperY) {
-                x = lowerX;
-                return false;
+        if (++x >= currentUpperX) {                 // Move to next column, potentially on a different tile.
+            if (x < upperX) {
+                close();                            // Must be invoked before `tileX` change.
+                tileX++;
+            } else {
+                x = lowerX;                         // Beginning of next row.
+                if (++y >= currentUpperY) {         // Move to next line.
+                    close();                        // Must be invoked before `tileY` change.
+                    if (++tileY >= tileUpperY) {
+                        endOfIteration();
+                        return false;
+                    }
+                } else if (tileX == tileLowerX) {
+                    return true;                    // Beginning of next row is in the same tile.
+                }
+                close();                            // Must be invoked before `tileX` change.
+                tileX = tileLowerX;
             }
-        } else if (y >= upperY) {
-            x = lowerX;
-            //second time or more get in the next method, raise error
-            throw new IllegalStateException(Resources.format(Resources.Keys.IterationIsFinished));
-        }
-
-        if (image != null) {
-            final int tx = Math.floorDiv(x - tileGridXOffset, tileWidth);
-            final int ty = Math.floorDiv(y - tileGridYOffset, tileHeight);
-            if (tx != tileX || ty != tileY) {
-                close(); // Release current writable raster, if any.
-                tileX = tx;
-                tileY = ty;
-                int ry = y;
-                fetchTile();
-                y = ry; //y is changed by fetchTile method
+            /*
+             * At this point the (x,y) pixel coordinates have been updated and are inside the domain of validity.
+             * We may need to change tile, either because we moved to the tile on the right or because we start a
+             * new row (in which case we need to move to the leftmost tile). The only case where we can skip tile
+             * change is when the image has only one tile width (in which case tileX == tileLowerX) and the next
+             * row is still on the same tile.
+             */
+            if (fetchTile() > y) {
+                throw new RasterFormatException(Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY));
             }
         }
         return true;
     }
-
 }

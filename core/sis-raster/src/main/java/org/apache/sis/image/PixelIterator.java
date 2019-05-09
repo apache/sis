@@ -289,6 +289,11 @@ public abstract class PixelIterator {
          */
         public PixelIterator create(final Raster data) {
             ArgumentChecks.ensureNonNull("data", data);
+            if (order == SequenceType.LINEAR) {
+                return new LinearIterator(data, null, subArea, window);
+            } else if (order != null) {
+                throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
+            }
             // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
             return new DefaultIterator(data, null, subArea, window);
         }
@@ -342,6 +347,11 @@ public abstract class PixelIterator {
         public WritablePixelIterator createWritable(final Raster input, final WritableRaster output) {
             ArgumentChecks.ensureNonNull("input",  input);
             ArgumentChecks.ensureNonNull("output", output);
+            if (order == SequenceType.LINEAR) {
+                return new LinearIterator(input, output, subArea, window);
+            } else if (order != null) {
+                throw new IllegalStateException(Errors.format(Errors.Keys.UnsupportedType_1, order));
+            }
             // TODO: check here for cases that we can optimize (after we ported corresponding implementations).
             return new DefaultIterator(input, output, subArea, window);
         }

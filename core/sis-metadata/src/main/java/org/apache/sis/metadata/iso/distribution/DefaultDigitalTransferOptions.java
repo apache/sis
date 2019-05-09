@@ -27,7 +27,7 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.distribution.DigitalTransferOptions;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.Medium;
-import org.apache.sis.internal.metadata.LegacyPropertyAdapter;
+import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.metadata.Dependencies;

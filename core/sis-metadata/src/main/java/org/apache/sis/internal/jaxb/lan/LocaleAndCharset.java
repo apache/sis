@@ -20,16 +20,16 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.AbstractSet;
 import java.util.AbstractList;
-import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.nio.charset.Charset;
 import java.util.Iterator;
+import org.apache.sis.internal.util.Bag;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable.Node;
-import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
@@ -283,6 +283,9 @@ public final class LocaleAndCharset implements Node {
             @Override public int size() {
                 return locales.size();
             }
+            @Override public void clear() {
+                locales.clear();                        // Default implementation would invoke Iterator.remove() anyway.
+            }
             @Override public boolean contains(Object o) {
                 return locales.containsKey(o);
             }
@@ -313,9 +316,12 @@ public final class LocaleAndCharset implements Node {
         if (locales == null) {
             return null;
         }
-        return new AbstractCollection<Charset>() {
+        return new Bag<Charset>() {
             @Override public int size() {
                 return locales.size();
+            }
+            @Override public void clear() {
+                locales.clear();                        // Default implementation would invoke Iterator.remove() anyway.
             }
             @Override public boolean contains(Object o) {
                 return locales.containsValue(o);

@@ -30,6 +30,7 @@ import java.nio.IntBuffer;
 import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
 import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -56,32 +57,33 @@ import org.apache.sis.util.ArgumentChecks;
 class DefaultIterator extends WritablePixelIterator {
     /**
      * Tile coordinate of {@link #currentRaster}.
+     * The {@code tileY >= tileUpperY} condition is used for detecting when we reached iteration end.
      */
-    protected int tileX, tileY;
+    int tileX, tileY;
 
     /**
      * Current column index in current raster.
+     * The {@code x >= lowerX} condition is used for detecting if iteration started.
      */
-    protected int x;
+    int x;
 
     /**
      * Current row index in current raster.
      */
-    protected int y;
+    int y;
 
     /**
      * Bounds of the region traversed by the iterator in current raster.
      * When iteration reaches the upper coordinates, the iterator needs to move to next tile.
      */
-    protected int currentLowerX, currentUpperX, currentUpperY;
+    int currentLowerX, currentUpperX, currentUpperY;
 
     /**
      * Creates an iterator for the given region in the given raster.
      *
      * @param  input    the raster which contains the sample values to read.
      * @param  output   the raster where to write the sample values, or {@code null} for read-only iterator.
-     * @param  subArea  the raster region where to perform the iteration, or {@code null}
-     *                  for iterating over all the raster domain.
+     * @param  subArea  the raster region where to perform the iteration, or {@code null} for iterating over all the raster domain.
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
      */
     DefaultIterator(final Raster input, final WritableRaster output, final Rectangle subArea, final Dimension window) {
@@ -98,8 +100,7 @@ class DefaultIterator extends WritablePixelIterator {
      *
      * @param  input    the image which contains the sample values to read.
      * @param  output   the image where to write the sample values, or {@code null} for read-only iterator.
-     * @param  subArea  the image region where to perform the iteration, or {@code null}
-     *                  for iterating over all the image domain.
+     * @param  subArea  the image region where to perform the iteration, or {@code null} for iterating over all the image domain.
      * @param  window   size of the window to use in {@link #createWindow(TransferType)} method, or {@code null} if none.
      */
     DefaultIterator(final RenderedImage input, final WritableRenderedImage output, final Rectangle subArea, final Dimension window) {
@@ -111,6 +112,14 @@ class DefaultIterator extends WritablePixelIterator {
         currentUpperY = lowerY;
         x = Math.decrementExact(lowerX);        // Set the position before first pixel.
         y = lowerY;
+        /*
+         * We need to ensure that `tileUpperY+1 > tileUpperY` will alway be true because `tileY` may be equal
+         * to `tileUpperY` when the `if (++tileY >= tileUpperY)` statement is excuted in the `next()` method.
+         * This is because `tileY` is used as a sentinel value for detecting when we reached iteration end.
+         */
+        if (tileUpperY == Integer.MAX_VALUE) {
+            throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
+        }
     }
 
     /**
@@ -149,6 +158,7 @@ class DefaultIterator extends WritablePixelIterator {
 
     /**
      * Returns the column (x) and row (y) indices of the current pixel.
+     * This implementation {@link #x} and {@link #tileY} for determining if the iteration is valid.
      *
      * @return column and row indices of current iterator position.
      * @throws IllegalStateException if this method is invoked before the first call to {@link #next()}
@@ -159,7 +169,7 @@ class DefaultIterator extends WritablePixelIterator {
         final short message;
         if (x < lowerX) {
             message = Resources.Keys.IterationNotStarted;
-        } else if (x >= upperX) {
+        } else if (tileY >= tileUpperY) {
             message = Resources.Keys.IterationIsFinished;
         } else {
             return new Point(x,y);
@@ -183,10 +193,12 @@ class DefaultIterator extends WritablePixelIterator {
             final int tx = Math.floorDiv(px - tileGridXOffset, tileWidth);
             final int ty = Math.floorDiv(py - tileGridYOffset, tileHeight);
             if (tx != tileX || ty != tileY) {
-                close();                                    // Release current writable raster, if any.
+                close();                                            // Release current writable raster, if any.
                 tileX = tx;
                 tileY = ty;
-                fetchTile();
+                if (fetchTile() > py || currentLowerX > px) {       // `fetchTile()` must be before `currentLowerX`.
+                    throw new RasterFormatException(Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY));
+                }
             }
         }
         x = px;
@@ -194,7 +206,8 @@ class DefaultIterator extends WritablePixelIterator {
     }
 
     /**
-     * Moves the iterator to the next pixel.
+     * Moves the iterator to the next pixel. This default implementation moves to the next tile only after
+     * all pixels in current tiles have been traversed, but subclasses may apply a different strategy.
      *
      * @return {@code true} if the current pixel is valid, or {@code false} if there is no more pixels.
      * @throws IllegalStateException if this iterator already reached end of iteration in a previous call
@@ -206,26 +219,13 @@ class DefaultIterator extends WritablePixelIterator {
             if (++y >= currentUpperY) {                     // Strict equality (==) would work, but use >= as a safety.
                 close();                                    // Release current writable raster, if any.
                 if (++tileX >= tileUpperX) {                // Strict equality (==) would work, but use >= as a safety.
-                    tileY = Math.incrementExact(tileY);     // 'incrementExact' because 'tileY > tileUpperY' is allowed.
-                    if (tileY >= tileUpperY) {
-                        /*
-                         * Paranoiac safety: keep the x, y and tileX values before their maximal values
-                         * in order to avoid overflow. The 'tileY' value is used for checking if next()
-                         * is invoked again, in order to avoid a common misuse pattern. In principle
-                         * 'tileY' needs to be compared only to 'tileUpperY', but we also compare to
-                         * 'tileLowerY + 1' for handling the empty iterator case.
-                         */
-                        x =  currentUpperX - 1;
-                        y =  currentUpperY - 1;
-                        tileX = tileUpperX - 1;
-                        if (tileY > Math.max(tileUpperY, tileLowerY + 1)) {
-                            throw new IllegalStateException(Resources.format(Resources.Keys.IterationIsFinished));
-                        }
+                    if (++tileY >= tileUpperY) {
+                        endOfIteration();
                         return false;
                     }
                     tileX = tileLowerX;
                 }
-                fetchTile();
+                y = fetchTile();
             }
             x = currentLowerX;
         }
@@ -234,10 +234,15 @@ class DefaultIterator extends WritablePixelIterator {
 
     /**
      * Fetches from the image a tile for the current {@link #tileX} and {@link #tileY} coordinates.
-     * All fields prefixed by {@code current} are updated by this method. This method also updates
-     * the {@link #y} field, but caller is responsible for updating the {@link #x} field.
+     * All fields prefixed by {@code current} are updated by this method. The caller is responsible
+     * for updating the {@link #x} and {@link #y} fields.
+     *
+     * <p>Note that there is no {@code currentLowerY} field in this {@code DefaultIterator} class.
+     * Instead, the value that would be have been set to that field is returned by this method.</p>
+     *
+     * @return the {@link #y} value of the first row of new tile.
      */
-    void fetchTile() {
+    final int fetchTile() {
         currentRaster = null;
         if (destination != null) {
             destRaster = destination.getWritableTile(tileX, tileY);
@@ -251,11 +256,35 @@ class DefaultIterator extends WritablePixelIterator {
         final int minX = currentRaster.getMinX();
         final int minY = currentRaster.getMinY();
         currentLowerX  = Math.max(lowerX, minX);
-        y              = Math.max(lowerY, minY);
         currentUpperX  = Math.min(upperX, minX + tileWidth);
         currentUpperY  = Math.min(upperY, minY + tileHeight);
         if (currentRaster.getNumBands() != numBands) {
             throw new RasterFormatException(Resources.format(Resources.Keys.IncompatibleTile_2, tileX, tileY));
+        }
+        return Math.max(lowerY, minY);
+    }
+
+    /**
+     * Invoked when a call to {@link #next()} moved to the end of iteration. This method sets fields to values
+     * that will allow {@link #moveTo(int,int)} and {@link #next()} to detect that we already finished iteration.
+     */
+    final void endOfIteration() {
+        /*
+         * The `tileY` value is used for checking if next() is invoked again, in order to avoid a
+         * common misuse pattern. In principle `tileY` needs to be compared only to `tileUpperY`,
+         * but we also compare to `tileLowerY + 1` for handling the empty iterator case.
+         */
+        final boolean error = tileY > Math.max(tileUpperY, tileLowerY + 1);
+        /*
+         * Paranoiac safety: keep the x, y and tileX variables before their limits
+         * in order to avoid overflow in the `if (++foo >= limit)` statements.
+         */
+        x =  currentUpperX - 1;
+        y =  currentUpperY - 1;
+        tileX = tileUpperX - 1;
+        tileY = tileUpperY;             // Sentinel value for detecting following error condition.
+        if (error) {
+            throw new IllegalStateException(Resources.format(Resources.Keys.IterationIsFinished));
         }
     }
 
@@ -615,7 +644,7 @@ class DefaultIterator extends WritablePixelIterator {
      * This method does nothing if the iterator is read-only.
      */
     @Override
-    public void close() {
+    public final void close() {
         if (destination != null && destRaster != null) {
             destRaster = null;
             destination.releaseWritableTile(tileX, tileY);

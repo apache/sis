@@ -240,6 +240,8 @@ public strictfp class DefaultIteratorTest extends TestCase {
      *
      * @param  subArea  the ranges of pixel coordinates in which to iterate.
      * @return sequence of (x,y) tuples inside the given ranges, in the order to be traversed by the iterator.
+     *
+     * @see #getExpectedWindowValues(Rectangle, float[])
      */
     int[] getCoordinatesInExpectedOrder(final Rectangle subArea) {
         final int[] coordinates = new int[subArea.width * subArea.height * 2];
@@ -267,21 +269,28 @@ public strictfp class DefaultIteratorTest extends TestCase {
      * that the given (x,y) should be the third point in iteration (iteration starts at index zero).
      * This method must be overridden for each kind of iterator to test.
      *
-     * @param  bounds  the image bounds.
-     * @param  x       <var>x</var> coordinate for which the iterator position is desired.
-     * @param  y       <var>y</var> coordinate for which the iterator position is desired.
+     * @param  x  <var>x</var> coordinate for which the iterator position is desired.
+     * @param  y  <var>y</var> coordinate for which the iterator position is desired.
      * @return point index in iterator order for the given (x,y) coordinates.
      */
-    int getIndexOf(final Rectangle bounds, int x, int y) {
-        x -= bounds.x;
-        y -= bounds.y;
+    int getIndexOf(int x, int y) {
+        x -= xmin;
+        y -= ymin;
         if (tileWidth == 0 && tileHeight == 0) {
-            return y * bounds.width + x;
+            return y * width + x;
         }
         final int tx = x / tileWidth;
         final int ty = y / tileHeight;
-        final int numTileX = (bounds.width + tileWidth - 1) / tileWidth;
+        final int numTileX = (width + tileWidth - 1) / tileWidth;
         return ((ty * (numTileX - 1) + tx) * tileHeight + y - tx) * tileWidth + x;
+    }
+
+    /**
+     * Returns the bounds of the image or raster to be tested.
+     * This method is provided for subclasses information purposes.
+     */
+    final Rectangle getImageBounds() {
+        return new Rectangle(xmin, ymin, width, height);
     }
 
     /**
@@ -1023,7 +1032,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
          * Compute index of the (x,y) position in the array of expected values.
          * Iteration verification will need to begin at that value.
          */
-        int i = getIndexOf(new Rectangle(xmin, ymin, width, height), x, y) * numBands;
+        int i = getIndexOf(x, y) * numBands;
         /*
          * Iteration verification happens here. Note that contrarily to 'verifyIteration(boolean)' method,
          * we use a do … while loop instead than a while loop because the call to 'moveTo(x, y)' should be
@@ -1081,26 +1090,18 @@ public strictfp class DefaultIteratorTest extends TestCase {
     private void verifyWindow(final Dimension window) {
         final PixelIterator.Window<FloatBuffer> w = iterator.createWindow(TransferType.FLOAT);
         final FloatBuffer values = w.values;
-        final int tileSize   = tileWidth * tileHeight;
-        final int tileStride = tileSize * (width / tileWidth);
+        final float[] windowValues = new float[window.width * window.height * numBands];
         while (iterator.next()) {
             final Point pos = iterator.getPosition();
             pos.translate(-xmin, -ymin);
             w.update();
+            getExpectedWindowValues(new Rectangle(pos, window), windowValues);
+            int indexOfExpected = 0;
             for (int y=0; y<window.height; y++) {
-                int p,t;
-                p  = pos.y + y;
-                t  = p / tileHeight;
-                p %=     tileHeight;
-                final int start = t * tileStride + p * tileWidth;
                 for (int x=0; x<window.width; x++) {
-                    p  = pos.x + x;
-                    t  = p / tileWidth;
-                    p %=     tileWidth;
-                    int offset = (start + t * tileSize + p) * numBands;
                     for (int b=0; b<numBands; b++) {
-                        final float e = expected[offset++];
                         final float a = values.get();
+                        final float e = windowValues[indexOfExpected++];
                         if (Float.floatToRawIntBits(a) != Float.floatToRawIntBits(e)) {
                             fail("Index (" + x + ", " + y + ") in window starting at index ("
                                     + pos.x + ", " + pos.y + "), band " + b + ": expected " + e + " but got " + a);
@@ -1110,6 +1111,52 @@ public strictfp class DefaultIteratorTest extends TestCase {
             }
             assertEquals("buffer.remaining()", 0, values.remaining());
         }
+    }
+
+    /**
+     * Returns the values of the given sub-region, organized in a {@link SequenceType#LINEAR} fashion.
+     * This method is invoked for {@link #verifyWindow(Dimension)} purpose. This method is responsible
+     * for reordering the {@link #expected} values in a linear order.
+     *
+     * @param  window  the sub-region for which to get values in a linear fashion.
+     * @param  values  where to store the expected window values in linear order.
+     */
+    void getExpectedWindowValues(final Rectangle window, final float[] values) {
+        final int tileSize   = tileWidth * tileHeight;
+        final int tileStride = tileSize * (width / tileWidth);
+        int index = 0;
+        for (int y=0; y<window.height; y++) {
+            int p,t;
+            p  = window.y + y;
+            t  = p / tileHeight;
+            p %=     tileHeight;
+            final int start = t * tileStride + p * tileWidth;
+            for (int x=0; x<window.width; x++) {
+                p  = window.x + x;
+                t  = p / tileWidth;
+                p %=     tileWidth;
+                final int offset = start + t * tileSize + p;
+                copyExpectedPixels(offset, values, index++, 1);
+            }
+        }
+        assertEquals(values.length, index * numBands);
+    }
+
+    /**
+     * Copies the expected values of all bands of pixels starting at the given index.
+     * The index arguments are indices of the points (not the indices of sample values);
+     * the number of bands will be multiplied to all given arguments.
+     *
+     * <p>This is a helper method for {@link #getExpectedWindowValues(Rectangle, float[])}
+     * implementation by subclasses.</p>
+     *
+     * @param  srcPts       index of the first pixel to copy.
+     * @param  destination  where to copy pixel values.
+     * @param  dstPts       index of the first pixel to write in the destination array.
+     * @param  numPixels    number of pixels to write.
+     */
+    final void copyExpectedPixels(final int srcPts, final float[] destination, final int dstPts, final int numPixels) {
+        System.arraycopy(expected, srcPts * numBands, destination, dstPts * numBands, numPixels * numBands);
     }
 
     /**
