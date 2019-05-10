@@ -31,6 +31,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultNameSpace;
@@ -1284,12 +1285,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
          * Get the actual type of the object. Returns the GeoAPI type if possible,
          * or fallback on the implementation class otherwise.
          */
-        final Class<?> actual;
-        if (object instanceof AbstractIdentifiedObject) {
-            actual = ((AbstractIdentifiedObject) object).getInterface();
-        } else {
-            actual = object.getClass();
-        }
+        final Class<?> actual = ReferencingUtilities.getInterface(object);
         /*
          * Get the authority from the object if possible, in order to avoid a call
          * to the potentially costly (for EPSGDataAccess) getAuthority() method.

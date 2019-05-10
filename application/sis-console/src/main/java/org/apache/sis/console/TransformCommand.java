@@ -214,7 +214,7 @@ final class TransformCommand extends FormattedOutputCommand {
                 }
             }
             try {
-                final GeographicCRS domainOfValidityCRS = ReferencingUtilities.toNormalizedGeographicCRS(sourceCRS);
+                final GeographicCRS domainOfValidityCRS = ReferencingUtilities.toNormalizedGeographicCRS(sourceCRS, false, false);
                 if (domainOfValidityCRS != null) {
                     toDomainOfValidity = CRS.findOperation(sourceCRS, domainOfValidityCRS, null).getMathTransform();
                     areaOfInterest = computeAreaOfInterest(points);
