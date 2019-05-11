@@ -16,16 +16,15 @@
  */
 package org.apache.sis.index.tree;
 
-//JDK imports
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
-//SIS imports
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.distance.DistanceUtils;
 import org.apache.sis.distance.LatLonPointRadius;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.GeodeticCalculator;
 
 /**
  * Implementation of Quad Tree Index. Insertion algorithm implemented based on
@@ -48,12 +47,14 @@ public class QuadTree {
     private static final double[] xf = new double[] { -0.25, 0.25, -0.25, 0.25 };
     private static final double[] yf = new double[] { 0.25, 0.25, -0.25, -0.25 };
 
-    private QuadTreeNode root;
+    private final QuadTreeNode root;
     private int size;
     private int nodeSize;
 
     private int maxDepth;
     private int capacity;
+
+    private final GeodeticCalculator calculator;
 
     /**
      * Creates a quad tree.
@@ -64,11 +65,9 @@ public class QuadTree {
      *            the maximum depth of the tree
      */
     public QuadTree(int capacity, int maxDepth) {
-        this.size = 0;
-        this.nodeSize = 0;
+        this();
         this.capacity = capacity;
         this.maxDepth = maxDepth;
-        this.root = new QuadTreeNode(NodeType.GRAY, this.nodeSize);
     }
 
     /**
@@ -76,11 +75,8 @@ public class QuadTree {
      * set the capacity and depth after quad tree construction.
      */
     public QuadTree() {
-        this.size = 0;
-        this.nodeSize = 0;
-        this.capacity = 0;
-        this.maxDepth = 0;
-        this.root = new QuadTreeNode(NodeType.GRAY, this.nodeSize);
+        root = new QuadTreeNode(NodeType.GRAY, this.nodeSize);
+        calculator = GeodeticCalculator.create(CommonCRS.SPHERE.geographic());
     }
 
     /**
@@ -351,8 +347,14 @@ public class QuadTree {
             else {
                 QuadTreeData[] data = node.getData();
                 for (int i = 0; i < node.getCount(); i++) {
-                    if (DistanceUtils.getHaversineDistance(data[i].getLatLon().y, data[i].getLatLon().x, point.y,
-                            point.x) <= radiusKM) {
+                    DirectPosition2D latLon = data[i].getLatLon();
+                    double distance;
+                    synchronized (calculator) {
+                        calculator.setStartPoint(latLon.y, latLon.x);
+                        calculator.setEndPoint(point.y, point.x);
+                        distance = calculator.getGeodesicDistance();
+                    }
+                    if (distance <= radiusKM) {
                         matches.add(data[i]);
                     }
                 }

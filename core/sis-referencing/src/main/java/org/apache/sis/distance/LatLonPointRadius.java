@@ -24,10 +24,13 @@ import java.awt.geom.Rectangle2D;
 
 // GeoAPI import
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.operation.TransformException;
 
 //SIS imports
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.GeodeticCalculator;
 
 /**
  * Represents a 2D point associated with a radius to enable great circle
@@ -79,10 +82,18 @@ public class LatLonPointRadius {
     double bearingIncrement = 0;
     if (numberOfPoints > 0) { bearingIncrement = 360/numberOfPoints; }
 
-    for (int i = 0; i < numberOfPoints; i++)
-    {
-      points[i] = DistanceUtils.getPointOnGreatCircle(center.getOrdinate(1),
-          center.getOrdinate(0), radius, i * bearingIncrement);
+    final GeodeticCalculator calculator = GeodeticCalculator.create(CommonCRS.SPHERE.geographic());
+    calculator.setStartPoint(center.getOrdinate(1), center.getOrdinate(0));
+
+    try {
+      for (int i = 0; i < numberOfPoints; i++)
+      {
+        calculator.setDirection(i * bearingIncrement, radius);
+        DirectPosition p = calculator.getEndPoint();
+        points[i] = new DirectPosition2D(p.getOrdinate(1), p.getOrdinate(0));
+      }
+    } catch (TransformException e) {
+      throw new IllegalStateException(e);       // Should never happen.
     }
 
     points[numberOfPoints] = points[0];
@@ -103,28 +114,33 @@ public class LatLonPointRadius {
     }
     int numberOfCrossOvers = 0;
 
+    final GeodeticCalculator calculator = GeodeticCalculator.create(CommonCRS.SPHERE.geographic());
+    calculator.setStartPoint(center.getOrdinate(1), center.getOrdinate(0));
+
     Path2D path = new Path2D.Double();
-    DirectPosition2D initPT = DistanceUtils.getPointOnGreatCircle(center.getOrdinate(1),
-        center.getOrdinate(0), radius, 0);
-    path.moveTo(initPT.x + 180.0, initPT.y + 90.0);
-
-    DirectPosition2D currPT = initPT;
-
-    for (int i = 1; i < 360; i++) {
-
-      DirectPosition2D pt = DistanceUtils.getPointOnGreatCircle(center.getOrdinate(1),
-          center.getOrdinate(0), radius, i);
-      path.lineTo(pt.x + 180.0, pt.y + 90.0);
-
-      if (dateLineCrossOver(Longitude.normalize(currPT.x), Longitude.normalize(pt.x))) {
-        numberOfCrossOvers++;
+    double initX = Double.NaN, previousX = Double.NaN;
+    try {
+      for (int i = 0; i < 360; i++) {
+        calculator.setDirection(i, radius);
+        DirectPosition pt = calculator.getEndPoint();
+        double x = pt.getOrdinate(1) + 180.0;
+        double y = pt.getOrdinate(0) + 90.0;
+        if (i == 0) {
+          initX = Longitude.normalize(x);
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+          if (dateLineCrossOver(previousX, previousX = Longitude.normalize(x))) {
+            numberOfCrossOvers++;
+          }
+        }
       }
-      currPT = pt;
+    } catch (TransformException e) {
+      throw new IllegalStateException(e);       // Should never happen.
     }
-    if (dateLineCrossOver(Longitude.normalize(initPT.x), Longitude.normalize(currPT.x))) {
+    if (dateLineCrossOver(previousX, initX)) {
       numberOfCrossOvers++;
     }
-
     /**
      * If the path crosses the dateline once, it's a special case, so take care
      * of it differently. It will need to include areas around the pole.
