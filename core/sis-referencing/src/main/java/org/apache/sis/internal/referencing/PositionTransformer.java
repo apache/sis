@@ -225,6 +225,6 @@ public final class PositionTransformer extends GeneralDirectPosition {
         if (inverse == null) {
             inverse = (forward != null) ? forward.inverse() : MathTransforms.identity(getDimension());
         }
-        return inverse.transform(this, null);
+        return inverse.transform(this, new GeneralDirectPosition(getCoordinateReferenceSystem()));
     }
 }

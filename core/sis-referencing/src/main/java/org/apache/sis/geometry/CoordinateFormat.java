@@ -62,8 +62,8 @@ import org.apache.sis.io.CompoundFormat;
  * using the following rules:
  *
  * <ul>
- *   <li>Ordinate values in angular units are formated as angles using {@link AngleFormat}.</li>
- *   <li>Ordinate values in temporal units are formated as dates using {@link DateFormat}.</li>
+ *   <li>Ordinate values in angular units are formatted as angles using {@link AngleFormat}.</li>
+ *   <li>Ordinate values in temporal units are formatted as dates using {@link DateFormat}.</li>
  *   <li>Other values are formatted as numbers using {@link NumberFormat} followed by the unit symbol
  *       formatted by {@link org.apache.sis.measure.UnitFormat}.</li>
  * </ul>

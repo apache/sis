@@ -68,6 +68,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AmbiguousEllipsoid_1 = 1;
 
         /**
+         * The azimuth and distance have not been specified.
+         */
+        public static final short AzimuthAndDistanceNotSet = 87;
+
+        /**
          * Can not create objects of type ‘{0}’ from combined URI.
          */
         public static final short CanNotCombineUriAsType_1 = 79;
@@ -195,6 +200,11 @@ public final class Resources extends IndexedResourceBundle {
          * three-dimensional {0,choice,0#geographic|1#projected} system instead.
          */
         public static final short EllipsoidalHeightNotAllowed_1 = 77;
+
+        /**
+         * The destination coordinates have not been specified.
+         */
+        public static final short EndPointNotSet = 88;
 
         /**
          * There is no local registry for version {1} of “{0}” authority. Fallback on default version
