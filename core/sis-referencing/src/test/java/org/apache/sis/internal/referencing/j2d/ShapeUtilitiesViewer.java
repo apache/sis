@@ -40,7 +40,7 @@ import org.apache.sis.util.CharSequences;
  * It is rather designed for explicit execution from an IDE or the command line for visual inspection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -52,9 +52,10 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
     private enum Method {
         INTERSECTION_POINT,
         NEAREAST_COLINEAR_POINT,
-        COLINEAR_POINT,
+        DISTANCED_COLINEAR_POINT,
         FIT_PARABOL,
-        FIT_HORIZONTAL_PARABOL,
+        FIT_PARABOL_HORIZONTAL,
+        FIT_CUBIC_CURVE,
         CIRCLE_CENTRE
     };
 
@@ -74,9 +75,10 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
     private final Path2D output;
 
     /**
-     * {@code true} if we should fill the output, or {@code false} for drawing the contour only.
+     * {@code true} if we should fill the input or output, or {@code false} for drawing the contour only.
+     * Note that the filling is used also for the little circles representing points.
      */
-    private boolean fillOutput;
+    private boolean fillInput, fillOutput;
 
     /**
      * Random number generator to use in the visual test.
@@ -123,6 +125,7 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
     final void assignRandomPoints(final Method method) {
         input .reset();
         output.reset();
+        fillInput  = true;
         fillOutput = true;
         boolean horizontal = false;
         final int x      = getX();
@@ -155,7 +158,7 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
                 out.printf(Locale.ENGLISH, "nearestColinearPoint(%d, %d, %d, %d, %d, %d)%n", x1, y1, x2, y2, x3, y3);
                 break;
             }
-            case COLINEAR_POINT: {
+            case DISTANCED_COLINEAR_POINT: {
                 final double distance = StrictMath.hypot(x4, y4);
                 input.moveTo(x1, y1);
                 input.lineTo(x2, y2);
@@ -164,7 +167,7 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
                 out.printf(Locale.ENGLISH, "colinearPoint(%d, %d, %d, %d, %d, %d, %g)%n", x1, y1, x2, y2, x3, y3, distance);
                 break;
             }
-            case FIT_HORIZONTAL_PARABOL: {
+            case FIT_PARABOL_HORIZONTAL: {
                 horizontal = true;
                 // Fall through
             }
@@ -177,12 +180,31 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
                 fillOutput = false;
                 break;
             }
+            case FIT_CUBIC_CURVE: {
+                addPoint(input, x1, y1);
+                addPoint(input, x2, y2);
+                addPoint(input, x3, y3);
+                final double α1 = (y4 - y1) / (double) (x4 - x1);      // (x4, y4) used as a point for computing tangents.
+                final double α2 = (y3 - y4) / (double) (x3 - x4);
+                input.moveTo(x1, y1);
+                input.lineTo(x4, y4);
+                input.lineTo(x3, y3);
+                output.append(ShapeUtilities.fitCubicCurve(x1, y1, x2, y2, x3, y3, α1, α2), false);
+                out.printf(Locale.ENGLISH, "fitCubicCurve(%d, %d, %d, %d, %d, %d, %g, %g)%n", x1, y1, x2, y2, x3, y3, α1, α2);
+                fillOutput = false;
+                fillInput = false;
+                break;
+            }
             case CIRCLE_CENTRE: {
                 addPoint(input, x1, y1);
                 addPoint(input, x2, y2);
                 addPoint(input, x3, y3);
-                addPoint(output, ShapeUtilities.circleCentre(x1, y1, x2, y2, x3, y3));
+                final Point2D.Double center = ShapeUtilities.circleCentre(x1, y1, x2, y2, x3, y3);
+                addPoint(output, center);
+                final double radius = StrictMath.hypot(center.x - x1, center.y - y1);
+                output.append(new Ellipse2D.Double(center.x - radius, center.y - radius, radius*2, radius*2), false);
                 out.printf(Locale.ENGLISH, "circleCentre(%d, %d, %d, %d, %d, %d)%n", x1, y1, x2, y2, x3, y3);
+                fillOutput = false;
                 break;
             }
         }
@@ -205,8 +227,10 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
         }
         g.setColor(Color.RED);
         g.draw(output);
-        g.setColor(Color.CYAN);
-        g.fill(input);
+        if (fillInput) {
+            g.setColor(Color.CYAN);
+            g.fill(input);
+        }
         g.setColor(Color.BLUE);
         g.draw(input);
     }

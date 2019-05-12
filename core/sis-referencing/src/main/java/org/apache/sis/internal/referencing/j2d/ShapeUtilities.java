@@ -356,6 +356,81 @@ public final class ShapeUtilities extends Static {
     }
 
     /**
+     * Returns a Bézier curve passing by the given points and with the given derivatives at end points.
+     * The curve equation is:
+     *
+     * <blockquote>B(t) = (1-t)³⋅P₁ + 3(1-t)²t⋅C₁ + 3(1-t)t²⋅C₂ + t³⋅P₂</blockquote>
+     *
+     * where t ∈ [0…1], P₁ and P₂ are end points of the curve and C₁ and C₂ are control points generally not on the curve.
+     * The (x₁,y₁) arguments give the coordinates of point P₁ at <var>t</var>=0.
+     * The (x<sub>m</sub>,y<sub>m</sub>) arguments give the coordinates of the point at <var>t</var>=½.
+     * The (x₂,y₂) arguments give the coordinates of point P₂ at <var>t</var>=1.
+     *
+     * @param  x1  <var>x</var> value of the starting point.
+     * @param  y1  <var>y</var> value of the starting point.
+     * @param  xm  <var>x</var> value of the mid-point.
+     * @param  ym  <var>y</var> value of the mid-point.
+     * @param  x2  <var>x</var> value of the ending point.
+     * @param  y2  <var>y</var> value of the ending point.
+     * @param  α1  the derivative (∂y/∂x) at starting point.
+     * @param  α2  the derivative (∂y/∂x) at ending point.
+     * @return the Bézier curve passing by the 3 given points and having the given derivatives at end points.
+     *
+     * @since 1.0
+     */
+    public static CubicCurve2D.Double fitCubicCurve(final double x1, final double y1,
+                                                          double xm,       double ym,
+                                                    final double x2, final double y2,
+                                                    final double α1, final double α2)
+    {
+        /*
+         * Bezier curve equation for starting point P₀, ending point P₃ and control points P₁ and P₂
+         * (note: not the same numbers than the ones in arguments and variables used in this method):
+         *
+         * t ∈ [0…1]:  B(t)  =  (1-t)³⋅P₀ + 3(1-t)²t⋅P₁ + 3(1-t)t²⋅P₂ + t³⋅P₃
+         * Midpoint:   B(½)  =  ⅛⋅(P₀ + P₃) + ⅜⋅(P₁ + P₂)
+         *
+         * Notation:   (x₀, y₀)   are coordinates of P₀ (same rule for P₁, P₂, P₃).
+         *             (xm, ym)   are coordinates of midpoint.
+         *             α₀ and α₃  are derivative (∂y/∂x) at P₀ and P₃ respectively.
+         *
+         * Some relationships:
+         *
+         *     xm = ⅛⋅(x₀ + x₃) + ⅜⋅(x₁ + x₂)
+         *     (y₁ - y₀) / (x₁ - x₀) = α₀
+         *     (y₃ - y₂) / (x₃ - x₂) = α₃
+         *
+         * Setting (x₀,y₀) = (0,0) for simplicity and rearranging above equations:
+         *
+         *     x₁ = (8⋅xm - x₃)/3 - x₂              where    x₂ = x₃ - (y₃ - y₂)/α₃
+         *     x₁ = (8⋅xm - 4⋅x₃)/3 + (y₃ - y₂)/α₃
+         *
+         * Doing similar rearrangement for y:
+         *
+         *     y₂ = (8⋅ym - y₃)/3 - y₁    where    y₁ = x₁⋅α₀
+         *     y₂ = (8⋅ym - y₃)/3 - x₁⋅α₀
+         *
+         * Putting together and isolating x₁:
+         *
+         *      x₁ = (8⋅xm - 4⋅x₃)/3 + (x₁⋅α₀ - (8⋅ym - 4⋅y₃)/3)/α₃
+         *      x₁ = (8⋅xm - 4⋅x₃ - (8⋅ym - 4⋅y₃)/α₃) / 3(1 - α₀/α₃)
+         *
+         * x₁ and x₂ are named cx1 and cx2 in the code below ("c" for "control").
+         * x₀ and x₃ are named x1 and x2 for consistency with Java2D usage.
+         * Same changes apply to y.
+         */
+        xm -= x1;
+        ym -= y1;
+        final double Δx  = x2 - x1;
+        final double Δy  = y2 - y1;
+        final double cx1 = ((8*xm - 4*Δx)*α2 - (8*ym - 4*Δy)) / (3*(α2 - α1));
+        final double cy1 = cx1 * α1;
+        final double cx2 = (8*xm - Δx)/3 - cx1;
+        final double cy2 = Δy - (Δx - cx2)*α2;
+        return new CubicCurve2D.Double(x1, y1, cx1 + x1, cy1 + y1, cx2 + x1, cy2 + y1, x2, y2);
+    }
+
+    /**
      * Returns the center of a circle passing by the 3 given points. The distance between the returned
      * point and any of the given points will be constant; it is the circle radius.
      *
