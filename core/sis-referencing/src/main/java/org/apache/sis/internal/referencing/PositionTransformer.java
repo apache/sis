@@ -130,7 +130,6 @@ public final class PositionTransformer extends GeneralDirectPosition {
         super(targetCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         this.defaultCRS = (defaultCRS != null) ? defaultCRS : targetCRS;
-        this.lastCRS    = defaultCRS;
         this.factory    = (factory != null) ? factory : DefaultFactories.forBuildin(CoordinateOperationFactory.class);
     }
 
