@@ -17,7 +17,6 @@
 package org.apache.sis.geometry;
 
 import java.util.Set;
-import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Ellipse2D;
@@ -148,33 +147,6 @@ public final class Shapes2D extends Static {
         return new Ellipse2D.Double(center.x - radius,
                                     center.y - radius,
                                     2*radius, 2*radius);
-    }
-
-    /**
-     * Returns a Bézier curve passing by the given points and with the given derivatives at end points.
-     * The curve equation is:
-     *
-     * <blockquote>B(t) = (1-t)³⋅P₁ + 3(1-t)²t⋅C₁ + 3(1-t)t²⋅C₂ + t³⋅P₂</blockquote>
-     *
-     * where t ∈ [0…1], P₁ and P₂ are start and end point respectively (given in argument to this method)
-     * and C₁ and C₂ are control points (computed by this method) generally not on the curve.
-     * The P₁ argument give the point on the curve at <var>t</var>=0.
-     * The P<sub>m</sub> argument give the point on the curve at <var>t</var>=½.
-     * The P₂ argument give the point on the curve at <var>t</var>=1.
-     *
-     * @param  P1  the starting point (<var>t</var> = 0).
-     * @param  Pm  the mid-point (<var>t</var> = ½).
-     * @param  P2  the end point (<var>t</var> = 1).
-     * @param  α1  the derivative (∂y/∂x) at starting point.
-     * @param  α2  the derivative (∂y/∂x) at ending point.
-     * @param  εx  maximal distance on <var>x</var> axis between the cubic Bézier curve and quadratic or linear simplifications.
-     * @param  εy  maximal distance on <var>y</var> axis between the cubic Bézier curve and quadratic or linear simplifications.
-     * @return the Bézier curve passing by the 3 given points and having the given derivatives at end points.
-     *
-     * @since 1.0
-     */
-    public static Shape fitCubicCurve(Point2D P1, Point2D Pm, Point2D P2, double α1, double α2, double εx, double εy) {
-        return ShapeUtilities.fitCubicCurve(P1.getX(), P1.getY(), Pm.getX(), Pm.getY(), P2.getX(), P2.getY(), α1, α2, εx, εy);
     }
 
     /**

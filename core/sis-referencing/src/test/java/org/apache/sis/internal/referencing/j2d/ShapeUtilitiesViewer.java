@@ -55,7 +55,7 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
         DISTANCED_COLINEAR_POINT,
         FIT_PARABOL,
         FIT_PARABOL_HORIZONTAL,
-        FIT_CUBIC_CURVE,
+        BEZIER,
         CIRCLE_CENTRE
     };
 
@@ -180,7 +180,7 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
                 fillOutput = false;
                 break;
             }
-            case FIT_CUBIC_CURVE: {
+            case BEZIER: {
                 addPoint(input, x1, y1);
                 addPoint(input, x2, y2);
                 addPoint(input, x3, y3);
@@ -189,7 +189,7 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
                 input.moveTo(x1, y1);
                 input.lineTo(x4, y4);
                 input.lineTo(x3, y3);
-                output.append(ShapeUtilities.fitCubicCurve(x1, y1, x2, y2, x3, y3, α1, α2, 1, 1), false);
+                output.append(ShapeUtilities.bezier(x1, y1, x2, y2, x3, y3, α1, α2, 1, 1), false);
                 out.printf(Locale.ENGLISH, "fitCubicCurve(%d, %d, %d, %d, %d, %d, %g, %g)%n", x1, y1, x2, y2, x3, y3, α1, α2);
                 fillOutput = false;
                 fillInput = false;

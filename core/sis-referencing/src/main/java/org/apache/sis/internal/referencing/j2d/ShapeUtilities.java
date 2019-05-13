@@ -360,14 +360,18 @@ public final class ShapeUtilities extends Static {
 
     /**
      * Returns a Bézier curve passing by the given points and with the given derivatives at end points.
-     * The curve equation is:
+     * The cubic curve equation is:
      *
      * <blockquote>B(t) = (1-t)³⋅P₁ + 3(1-t)²t⋅C₁ + 3(1-t)t²⋅C₂ + t³⋅P₂</blockquote>
      *
      * where t ∈ [0…1], P₁ and P₂ are end points of the curve and C₁ and C₂ are control points generally not on the curve.
-     * The (x₁,y₁) arguments give the coordinates of point P₁ at <var>t</var>=0.
+     * If the full equation is required for representing the curve, then this method builds a {@link CubicCurve2D}.
+     * If the same curve can be represented by a quadratic curve, then this method returns a {@link QuadCurve2D}.
+     * If the curve is actually a straight line, then this method returns a {@link Line2D}.
+     *
+     * <p>The (x₁,y₁) arguments give the coordinates of point P₁ at <var>t</var>=0.
      * The (x<sub>m</sub>,y<sub>m</sub>) arguments give the coordinates of the point at <var>t</var>=½.
-     * The (x₂,y₂) arguments give the coordinates of point P₂ at <var>t</var>=1.
+     * The (x₂,y₂) arguments give the coordinates of point P₂ at <var>t</var>=1.</p>
      *
      * @param  x1  <var>x</var> value of the starting point.
      * @param  y1  <var>y</var> value of the starting point.
@@ -385,11 +389,11 @@ public final class ShapeUtilities extends Static {
      *
      * @since 1.0
      */
-    public static Shape fitCubicCurve(final double x1, final double y1,
-                                            double xm,       double ym,
-                                      final double x2, final double y2,
-                                      final double α1, final double α2,
-                                      final double εx, final double εy)
+    public static Shape bezier(final double x1, final double y1,
+                                     double xm,       double ym,
+                               final double x2, final double y2,
+                               final double α1, final double α2,
+                               final double εx, final double εy)
     {
         /*
          * Equations in this method are simplified as if (x1,y1) coordinates are (0,0).
