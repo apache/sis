@@ -16,12 +16,14 @@
  */
 package org.apache.sis.referencing;
 
+import java.util.Random;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -87,10 +89,12 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
      */
     @Test
     public void testEquator() {
+        final Random random = TestUtilities.createRandomNumberGenerator();
         final GeodeticCalculator c = create();
         final double r = c.ellipsoid.getSemiMajorAxis() * (PI / 180);
         c.setStartPoint(0, 0);
-        for (double x=170; x<=180; x+=0.125) {
+        for (double i=0; i<100; i++) {
+            final double x = 180 * random.nextDouble();
             c.setEndPoint(0, x);
             assertEquals(x * r, c.getGeodesicDistance(), Formulas.LINEAR_TOLERANCE);
         }

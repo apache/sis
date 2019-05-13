@@ -23,6 +23,7 @@ import org.apache.sis.geometry.DirectPosition2D;
  * similar to Apache SIS but refractor to allow use of custom classes.
  *
  * @deprecated Replaced by {@link org.apache.sis.referencing.GeodeticCalculator}.
+ * See <a href="https://issues.apache.org/jira/browse/SIS-385">SIS-385</a>.
  */
 @Deprecated
 public final class DistanceUtils {

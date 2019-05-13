@@ -17,11 +17,11 @@
 package org.apache.sis.geometry;
 
 import java.util.Set;
+import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.CubicCurve2D;
 import java.awt.geom.AffineTransform;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -167,12 +167,14 @@ public final class Shapes2D extends Static {
      * @param  P2  the end point (<var>t</var> = 1).
      * @param  α1  the derivative (∂y/∂x) at starting point.
      * @param  α2  the derivative (∂y/∂x) at ending point.
+     * @param  εx  maximal distance on <var>x</var> axis between the cubic Bézier curve and quadratic or linear simplifications.
+     * @param  εy  maximal distance on <var>y</var> axis between the cubic Bézier curve and quadratic or linear simplifications.
      * @return the Bézier curve passing by the 3 given points and having the given derivatives at end points.
      *
      * @since 1.0
      */
-    public static CubicCurve2D fitCubicCurve(Point2D P1, Point2D Pm, Point2D P2, double α1, double α2) {
-        return ShapeUtilities.fitCubicCurve(P1.getX(), P1.getY(), Pm.getX(), Pm.getY(), P2.getX(), P2.getY(), α1, α2);
+    public static Shape fitCubicCurve(Point2D P1, Point2D Pm, Point2D P2, double α1, double α2, double εx, double εy) {
+        return ShapeUtilities.fitCubicCurve(P1.getX(), P1.getY(), Pm.getX(), Pm.getY(), P2.getX(), P2.getY(), α1, α2, εx, εy);
     }
 
     /**

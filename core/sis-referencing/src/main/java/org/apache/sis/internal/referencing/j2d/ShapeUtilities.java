@@ -25,7 +25,10 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.PathIterator;
 import org.apache.sis.util.Static;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
+import static java.lang.Math.hypot;
+import static java.lang.Double.isInfinite;
 
 
 /**
@@ -123,10 +126,10 @@ public final class ShapeUtilities extends Static {
                                                             double x,        double y)
     {
         final double slope = (y2-y1) / (x2-x1);
-        if (!Double.isInfinite(slope)) {
-            final double y0 = (y2 - slope*x2);
-            x = ((y - y0) * slope + x) / (slope*slope + 1);
-            y = x*slope + y0;
+        if (!isInfinite(slope)) {
+            final double yx0 = (y2 - slope*x2);                     // Value of y at x=0.
+            x = ((y - yx0) * slope + x) / (slope*slope + 1);
+            y = yx0 + x*slope;
         } else {
             x = x2;
         }
@@ -244,7 +247,7 @@ public final class ShapeUtilities extends Static {
      *
      * <ul>
      *   <li>A value of {@code true} means that the <var>x</var> axis must be horizontal. The quadratic curve
-     *       will then look like an ordinary parabolic curve as we see in mathematic school book.</li>
+     *       will then looks like an ordinary parabolic curve as we see in mathematic school book.</li>
      *   <li>A value of {@code false} means that the <var>x</var> axis must be parallel to the
      *       line segment joining the {@code P0} and {@code P2} ending points.</li>
      * </ul>
@@ -374,15 +377,46 @@ public final class ShapeUtilities extends Static {
      * @param  y2  <var>y</var> value of the ending point.
      * @param  α1  the derivative (∂y/∂x) at starting point.
      * @param  α2  the derivative (∂y/∂x) at ending point.
+     * @param  εx  maximal distance on <var>x</var> axis between the cubic Bézier curve and quadratic or linear simplifications.
+     * @param  εy  maximal distance on <var>y</var> axis between the cubic Bézier curve and quadratic or linear simplifications.
      * @return the Bézier curve passing by the 3 given points and having the given derivatives at end points.
+     *
+     * @see <a href="https://pomax.github.io/bezierinfo/">A Primer on Bézier Curves</a>
      *
      * @since 1.0
      */
-    public static CubicCurve2D.Double fitCubicCurve(final double x1, final double y1,
-                                                          double xm,       double ym,
-                                                    final double x2, final double y2,
-                                                    final double α1, final double α2)
+    public static Shape fitCubicCurve(final double x1, final double y1,
+                                            double xm,       double ym,
+                                      final double x2, final double y2,
+                                      final double α1, final double α2,
+                                      final double εx, final double εy)
     {
+        /*
+         * Equations in this method are simplified as if (x1,y1) coordinates are (0,0).
+         * Adjust (xm,ym) and (x2,y2) consequently. If derivatives are equal, equation
+         * for cubic curve will not work (division by zero). But we can return a line
+         * instead if derivatives are equal to Δy/Δx slope and mid-point is colinear.
+         */
+        xm -= x1;
+        ym -= y1;
+        final double Δx = x2 - x1;
+        final double Δy = y2 - y1;
+        if ((isInfinite(α1) || abs(Δx*α1 - Δy) <= εy) &&
+            (isInfinite(α2) || abs(Δx*α2 - Δy) <= εy))
+        {
+            /*
+             * Following tests are partially redundant with above tests, but may detect a larger
+             * error than above tests did. They are also necessary is a derivative was infinite.
+             */
+            if ((α1 == 0 || abs(Δy/α1 - Δx) <= εx) &&
+                (α2 == 0 || abs(Δy/α2 - Δx) <= εx))
+            {
+                final double slope = Δy / Δx;
+                if (abs(xm*slope - ym) <= εy && abs(ym/slope - xm) <= εx) {
+                    return new Line2D.Double(x1, y1, x2, y2);
+                }
+            }
+        }
         /*
          * Bezier curve equation for starting point P₀, ending point P₃ and control points P₁ and P₂
          * (note: not the same numbers than the ones in arguments and variables used in this method):
@@ -419,15 +453,37 @@ public final class ShapeUtilities extends Static {
          * x₀ and x₃ are named x1 and x2 for consistency with Java2D usage.
          * Same changes apply to y.
          */
-        xm -= x1;
-        ym -= y1;
-        final double Δx  = x2 - x1;
-        final double Δy  = y2 - y1;
         final double cx1 = ((8*xm - 4*Δx)*α2 - (8*ym - 4*Δy)) / (3*(α2 - α1));
         final double cy1 = cx1 * α1;
         final double cx2 = (8*xm - Δx)/3 - cx1;
         final double cy2 = Δy - (Δx - cx2)*α2;
-        return new CubicCurve2D.Double(x1, y1, cx1 + x1, cy1 + y1, cx2 + x1, cy2 + y1, x2, y2);
+        /*
+         * At this point we got the control points (cx1,cy1) and (cx2,cy2). Verify if we can simplify
+         * cubic curbe to a quadratic curve. If we were elevating the degree from quadratic to cubic,
+         * the control points C₁ and C₂ would be: (Q is the control point of the quadratic curve)
+         *
+         *     C₁  =  ⅓P₁ + ⅔Q
+         *     C₂  =  ⅓P₂ + ⅔Q
+         *
+         * We want Q instead, which can be computed in two ways:
+         *
+         *     Q   =  (3C₁ - P₁)/2
+         *     Q   =  (3C₂ - P₂)/2
+         *
+         * We compute Q both ways and check if they are close enough to each other:
+         *
+         *     ΔQ  =  (3⋅(C₂ - C₁) - (P₂ - P₁))/2
+         */
+        final double Δqx = (3*(cx2 - cx1) - Δx)/2;          // P₁ set to zero.
+        if (abs(Δqx) <= εx) {
+            final double Δqy = (3*(cy2 - cy1) - Δy)/2;
+            if (abs(Δqy) <= εy) {
+                final double qx = (3*cx1 + Δqx)/2;          // Take average of 2 control points.
+                final double qy = (3*cy1 + Δqy)/2;
+                return new QuadCurve2D.Double(x1, y1, qx+x1, qy+y1, x2, y2);
+            }
+        }
+        return new CubicCurve2D.Double(x1, y1, cx1+x1, cy1+y1, cx2+x1, cy2+y1, x2, y2);
     }
 
     /**
