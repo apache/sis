@@ -128,7 +128,8 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
          * Keep start point unchanged, but set above azimuth and distance.
          * Verify that we get the Shanghai coordinates.
          */
-        c.setDirection(-94.41, 18743000);
+        c.setStartingAzimuth(-94.41);
+        c.setGeodesicDistance(18743000);
         assertEquals("α₁",        -94.41, c.getStartingAzimuth(), 1E-12);           // Should be the specified value.
         assertEquals("α₂",        -78.42, c.getEndingAzimuth(),   0.01);
         assertEquals("distance",   18743, c.getGeodesicDistance() / 1000, STRICT);  // Should be the specified value.
@@ -164,7 +165,8 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
         c.setStartPoint(new DirectPosition2D(λ, φ));
         assertPositionEquals(λ, φ, c.getStartPoint(), Formulas.ANGULAR_TOLERANCE);
 
-        c.setDirection(-94.41, 18743000);
+        c.setStartingAzimuth(-94.41);
+        c.setGeodesicDistance(18743000);
         assertPositionEquals(121.8, 31.4, c.getEndPoint(), 0.01);
     }
 }

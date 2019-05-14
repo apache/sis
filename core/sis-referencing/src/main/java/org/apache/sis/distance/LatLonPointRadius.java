@@ -84,11 +84,12 @@ public class LatLonPointRadius {
 
     final GeodeticCalculator calculator = GeodeticCalculator.create(CommonCRS.SPHERE.geographic());
     calculator.setStartPoint(center.getOrdinate(1), center.getOrdinate(0));
+    calculator.setGeodesicDistance(radius);
 
     try {
       for (int i = 0; i < numberOfPoints; i++)
       {
-        calculator.setDirection(i * bearingIncrement, radius);
+        calculator.setStartingAzimuth(i * bearingIncrement);
         DirectPosition p = calculator.getEndPoint();
         points[i] = new DirectPosition2D(p.getOrdinate(1), p.getOrdinate(0));
       }
@@ -119,9 +120,10 @@ public class LatLonPointRadius {
 
     Path2D path = new Path2D.Double();
     double initX = Double.NaN, previousX = Double.NaN;
+    calculator.setGeodesicDistance(radius);
     try {
       for (int i = 0; i < 360; i++) {
-        calculator.setDirection(i, radius);
+        calculator.setStartingAzimuth(i);
         DirectPosition pt = calculator.getEndPoint();
         double x = pt.getOrdinate(1) + 180.0;
         double y = pt.getOrdinate(0) + 90.0;

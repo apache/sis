@@ -52,12 +52,13 @@ import static java.lang.Math.*;
  *
  * <p>This class uses the following information:</p>
  * <ul>
- *   <li>The {@linkplain #setStartPoint(Position) start point}, which is always considered valid.
- *     It is initially set at (0,0) and can only be changed to another valid value.</li>
- *   <li>One of the followings (the latest specified property overrides other properties and determines what will be calculated):
+ *   <li>The {@linkplain #setStartPoint(Position) start point}, which is always considered valid after the first call
+ *     to {@code setStartPoint(…)}. Its value can only be changed by another call to {@code setStartPoint(…)}.</li>
+ *   <li>One of the followings (the latest specified properties override other properties and determines what will be calculated):
  *     <ul>
  *       <li>the {@linkplain #setEndPoint(Position) end point}, or</li>
- *       <li>an {@linkplain #setDirection(double, double) azimuth and distance}.</li>
+ *       <li>the {@linkplain #setStartingAzimuth(double) azimuth at start point} together with
+ *           the {@linkplain #setGeodesicDistance(double) geodesic distance} from that point.</li>
  *     </ul>
  *   </li>
  * </ul>
@@ -104,18 +105,25 @@ public class GeodeticCalculator {
     /**
      * The (<var>latitude</var>, <var>longitude</var>) coordinates of the start point <strong>in radians</strong>.
      * This point is set by {@link #setStartPoint(double, double)}.
+     *
+     * @see #START_POINT
      */
     private double φ1, λ1;
 
     /**
      * The (<var>latitude</var>, <var>longitude</var>) coordinates of the end point <strong>in radians</strong>.
      * This point is set by {@link #setEndPoint(double, double)}.
+     *
+     * @see #END_POINT
      */
     private double φ2, λ2;
 
     /**
      * The azimuth at start point and end point, in radians between -π and +π.
      * 0° point toward North and values are increasing clockwise.
+     *
+     * @see #STARTING_AZIMUTH
+     * @see #ENDING_AZIMUTH
      */
     private double α1, α2;
 
@@ -123,21 +131,23 @@ public class GeodeticCalculator {
      * The distance from the starting point ({@link #φ1},{@link #λ1}) to the end point ({@link #φ2},{@link #λ2}).
      * The distance is in the same units than ellipsoid axes and the azimuth is in radians.
      *
+     * @see #GEODESIC_DISTANCE
      * @see #getDistanceUnit()
      */
-    private double distance;
+    private double geodesicDistance;
 
     /**
-     * Tells if the end point is valid.
-     * This is {@code false} if {@link #φ2} and {@link #λ2} need to be computed.
+     * A bitmask specifying which information are valid. For example if the {@link #END_POINT} bit is not set,
+     * then {@link #φ2} and {@link #λ2} need to be computed, which implies the computation of {@link #α1} and
+     * {@link #α2} as well. If the {@link #GEODESIC_DISTANCE} bit is not set, then {@link #geodesicDistance}
+     * needs to be computed, which implies recomputation of {@link #α1} and {@link #α2} as well.
      */
-    private boolean isEndPointValid;
+    private int validity;
 
     /**
-     * Tells if the azimuths and the distance are valid.
-     * If {@code false} then {@link #distance}, {@link #α1} and {@link #α2} need to be computed.
+     * Bitmask specifying which information are valid.
      */
-    private boolean isCourseValid;
+    private static final int START_POINT = 1, END_POINT = 2, STARTING_AZIMUTH = 4, ENDING_AZIMUTH = 8, GEODESIC_DISTANCE = 16;
 
     /**
      * Constructs a new geodetic calculator expecting coordinates in the supplied CRS.
@@ -225,8 +235,7 @@ public class GeodeticCalculator {
         ArgumentChecks.ensureFinite("longitude", longitude);
         φ1 = toRadians(latitude);
         λ1 = toRadians(longitude);
-        isEndPointValid = false;
-        isCourseValid = false;
+        validity = START_POINT;
     }
 
     /**
@@ -252,11 +261,16 @@ public class GeodeticCalculator {
      *
      * @return the starting point represented in the CRS specified at construction time.
      * @throws TransformException if the coordinates can not be transformed to {@linkplain #getPositionCRS() position CRS}.
+     * @throws IllegalStateException if the start point has not been specified.
      *
      * @see #getEndPoint()
      */
     public DirectPosition getStartPoint() throws TransformException {
-        return geographic(φ1, λ1).inverseTransform();
+        if ((validity & START_POINT) != 0) {
+            return geographic(φ1, λ1).inverseTransform();
+        } else {
+            throw new IllegalStateException(Resources.format(Resources.Keys.StartOrEndPointNotSet_1, 0));
+        }
     }
 
     /**
@@ -278,9 +292,8 @@ public class GeodeticCalculator {
 
     /**
      * Sets the destination as geographic (<var>latitude</var>, <var>longitude</var>) coordinates.
-     * The azimuth and geodesic distance values will be updated as an effect of this call.
-     * They will be recomputed next time that {@link #getStartingAzimuth()}, {@link #getEndingAzimuth()}
-     * or {@link #getGeodesicDistance()} is invoked.
+     * The {@linkplain #getStartingAzimuth() starting azimuth}, {@linkplain #getEndingAzimuth() ending azimuth}
+     * and {@linkplain #getGeodesicDistance() geodesic distance} will be updated as an effect of this call.
      *
      * @param  latitude   the latitude in degrees between {@value Latitude#MIN_VALUE}° and {@value Latitude#MAX_VALUE}°.
      * @param  longitude  the longitude in degrees.
@@ -293,8 +306,8 @@ public class GeodeticCalculator {
         ArgumentChecks.ensureFinite("longitude", longitude);
         φ2 = toRadians(latitude);
         λ2 = toRadians(longitude);
-        isEndPointValid = true;
-        isCourseValid = false;
+        validity |= END_POINT;
+        validity &= ~(STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE);
     }
 
     /**
@@ -314,11 +327,12 @@ public class GeodeticCalculator {
     }
 
     /**
-     * Returns or computes the destination in the CRS specified at construction time. This method returns the
-     * point specified in the last call to a {@link #setEndPoint(double, double) setEndPoint(…)} method, unless
-     * {@link #setDirection(double, double) setDirection(…)} has been invoked more recently. In the later case,
-     * the end point will be computed from the {@linkplain #getStartPoint() starting point} and the specified
-     * azimuth and distance.
+     * Returns or computes the destination in the CRS specified at construction time. This method returns
+     * the point specified in the last call to a {@link #setEndPoint(Position) setEndPoint(…)} method,
+     * unless the {@linkplain #setStartingAzimuth(double) starting azimuth} and
+     * {@linkplain #setGeodesicDistance(double) geodesic distance} have been set more recently.
+     * In the later case, the end point will be computed from the {@linkplain #getStartPoint() start point}
+     * and the current azimuth and distance.
      *
      * @return the destination (end point) represented in the CRS specified at construction time.
      * @throws TransformException if the coordinates can not be transformed to {@linkplain #getPositionCRS() position CRS}.
@@ -327,90 +341,97 @@ public class GeodeticCalculator {
      * @see #getStartPoint()
      */
     public DirectPosition getEndPoint() throws TransformException {
-        if (!isEndPointValid) {
+        if ((validity & END_POINT) == 0) {
             computeEndPoint();
         }
         return geographic(φ2, λ2).inverseTransform();
     }
 
     /**
-     * Sets the azimuth and the distance from the {@linkplain #getStartPoint() starting point}.
-     * The direction is relative to geographic North, with values increasing clockwise.
-     * The distance is usually a positive number, but negative numbers are accepted
-     * as courses in direction opposite to the given azimuth.
+     * Sets the angular heading (relative to geographic North) at the starting point.
+     * Azimuth is relative to geographic North with values increasing clockwise.
+     * The {@linkplain #getEndPoint() end point} and {@linkplain #getEndingAzimuth() ending azimuth}
+     * will be updated as an effect of this method call.
      *
-     * <p>The {@linkplain #getEndPoint() end point} will be updated as an effect of this method call;
-     * it will be recomputed the next time that {@link #getEndPoint()} is invoked.</p>
+     * @param  azimuth  the starting azimuth in degrees, with 0° toward north and values increasing clockwise.
      *
-     * @param  azimuth   the starting azimuth in degrees, with 0° toward north and values increasing clockwise.
-     * @param  distance  the geodesic distance in unit of measurement given by {@link #getDistanceUnit()}.
-     *
-     * @see #getStartingAzimuth()
-     * @see #getGeodesicDistance()
+     * @see #setGeodesicDistance(double)
      */
-    public void setDirection(double azimuth, double distance) {
-        ArgumentChecks.ensureFinite("azimuth",  azimuth);
-        ArgumentChecks.ensureFinite("distance", distance);
-        if (distance < 0) {
-            distance = -distance;
-            azimuth += 180;
-        }
-        α1              = toRadians(IEEEremainder(azimuth, 360));
-        this.distance   = distance;
-        isEndPointValid = false;
-        isCourseValid   = true;
+    public void setStartingAzimuth(final double azimuth) {
+        ArgumentChecks.ensureFinite("azimuth", azimuth);
+        α1 = toRadians(IEEEremainder(azimuth, 360));
+        validity |= STARTING_AZIMUTH;
+        validity &= ~(END_POINT | ENDING_AZIMUTH);
     }
 
     /**
-     * Returns the angular heading (relative to geographic North) at the starting point.
+     * Returns or computes the angular heading (relative to geographic North) at the starting point.
      * This method returns the azimuth normalized to [-180 … +180]° range given in last call to
-     * <code>{@linkplain #setDirection(double, double) setDirection}(azimuth, …)</code> method,
-     * unless the {@link #setEndPoint(double, double) setEndPoint(…)} method has been invoked more recently.
-     * In the later case, the azimuth will be computed from the {@linkplain #getStartPoint start point}.
+     * {@link #setStartingAzimuth(double)} method, unless the {@link #setEndPoint(Position) setEndPoint(…)}
+     * method has been invoked more recently. In the later case, the azimuth will be computed from the
+     * {@linkplain #getStartPoint() start point} and the current end point.
      *
      * @return the azimuth in degrees from -180° to +180°. 0° is toward North and values are increasing clockwise.
-     * @throws IllegalStateException if the destination point, azimuth or distance have not been set.
+     * @throws IllegalStateException if the end point, azimuth or distance have not been set.
      */
     public double getStartingAzimuth() {
-        if (!isCourseValid) {
-            computeCourse();
+        if ((validity & STARTING_AZIMUTH) == 0) {
+            computeTrack();
         }
         return toDegrees(α1);
     }
 
     /**
-     * Returns the angular heading (relative to geographic North) at the ending point.
+     * Computes the angular heading (relative to geographic North) at the ending point. This method computes the azimuth
+     * from the current {@linkplain #setStartPoint(Position) start point} and {@linkplain #setEndPoint(Position) end point},
+     * or from start point and the current {@linkplain #setStartingAzimuth(double) starting azimuth} and
+     * {@linkplain #setGeodesicDistance(double) geodesic distance}.
      *
      * @return the azimuth in degrees from -180° to +180°. 0° is toward North and values are increasing clockwise.
      * @throws IllegalStateException if the destination point, azimuth or distance have not been set.
      */
     public double getEndingAzimuth() {
-        if (!isCourseValid) {
-            computeCourse();
-        } else if (!isEndPointValid) {
-            computeEndPoint();
+        if ((validity & ENDING_AZIMUTH) == 0) {
+            if ((validity & END_POINT) == 0) {
+                computeEndPoint();                      // Compute also ending azimuth from start point and distance.
+            } else {
+                computeTrack();                         // Compute also ending azimuth from start point and end point.
+            }
         }
         return toDegrees(α2);
     }
 
     /**
-     * Returns the shortest distance from start point to end point.
-     * This is sometime called "great circle" or "orthodromic" distance.
-     * This method returns the absolute distance value set by the last call to
-     * {@link #setDirection(double,double) setDirection(…, distance)} method,
-     * unless the {@link #setEndPoint(double, double) setEndPoint(…)} method has been invoked more recently.
-     * In the later case, the distance will be computed from the {@linkplain #getStartPoint start point} to the end point.
+     * Sets the geodesic distance from the start point to the end point. The {@linkplain #getEndPoint() end point}
+     * and {@linkplain #getEndingAzimuth() ending azimuth} will be updated as an effect of this method call.
      *
-     * @return The shortest distance in the unit of measurement given by {@link #getDistanceUnit()}.
+     * @param  distance  the geodesic distance in unit of measurement given by {@link #getDistanceUnit()}.
+     *
+     * @see #setStartingAzimuth(double)
+     */
+    public void setGeodesicDistance(final double distance) {
+        ArgumentChecks.ensurePositive("distance", distance);
+        geodesicDistance = distance;
+        validity |= GEODESIC_DISTANCE;
+        validity &= ~(END_POINT | ENDING_AZIMUTH);
+    }
+
+    /**
+     * Returns or computes the shortest distance from start point to end point. This is sometime called "great circle"
+     * or "orthodromic" distance. This method returns the value given in last call to {@link #setGeodesicDistance(double)},
+     * unless the {@link #setEndPoint(Position) setEndPoint(…)} method has been invoked more recently. In the later case,
+     * the distance will be computed from the {@linkplain #getStartPoint() start point} and current end point.
+     *
+     * @return the shortest distance in the unit of measurement given by {@link #getDistanceUnit()}.
      * @throws IllegalStateException if the destination point has not been set.
      *
      * @see #getDistanceUnit()
      */
     public double getGeodesicDistance() {
-        if (!isCourseValid) {
-            computeCourse();
+        if ((validity & GEODESIC_DISTANCE) == 0) {
+            computeTrack();
         }
-        return distance;
+        return geodesicDistance;
     }
 
     /**
@@ -428,7 +449,7 @@ public class GeodeticCalculator {
     /**
      * Computes the end point from the start point, the azimuth and the geodesic distance.
      * This method should be invoked if the end point or ending azimuth is requested while
-     * {@link #isEndPointValid} is {@code false}.
+     * {@link #END_POINT} validity flag is not set.
      *
      * <p>The default implementation computes {@link #φ2}, {@link #λ2} and {@link #α2} using
      * spherical formulas. Subclasses should override if they can provide ellipsoidal formulas.</p>
@@ -436,10 +457,14 @@ public class GeodeticCalculator {
      * @throws IllegalStateException if the azimuth and the distance have not been set.
      */
     void computeEndPoint() {
-        if (!isCourseValid) {
-            throw new IllegalStateException(Resources.format(Resources.Keys.AzimuthAndDistanceNotSet));
+        if ((validity & (START_POINT | STARTING_AZIMUTH | GEODESIC_DISTANCE))
+                     != (START_POINT | STARTING_AZIMUTH | GEODESIC_DISTANCE))
+        {
+            throw new IllegalStateException((validity & START_POINT) == 0
+                    ? Resources.format(Resources.Keys.StartOrEndPointNotSet_1, 0)
+                    : Resources.format(Resources.Keys.AzimuthAndDistanceNotSet));
         }
-        final double Δσ    = distance / radius;
+        final double Δσ    = geodesicDistance / radius;
         final double sinΔσ = sin(Δσ);
         final double cosΔσ = cos(Δσ);
         final double sinφ1 = sin(φ1);
@@ -456,19 +481,29 @@ public class GeodeticCalculator {
         φ2 = atan(sinφ2 / hypot(Δλx, Δλy));                         // Improve accuracy close to poles.
         λ2 = IEEEremainder(λ1 + Δλ, 2*PI);
         α2 = atan2(sinα1, cosΔσ*cosα1 - sinφ1/cosφ1 * sinΔσ);
-        isEndPointValid = true;
+        validity |= END_POINT;
     }
 
     /**
      * Computes the geodetic distance and azimuths from the start point and end point.
      * This method should be invoked if the distance or an azimuth is requested while
-     * {@link #isCourseValid} is {@code false}.
+     * {@link #STARTING_AZIMUTH}, {@link #ENDING_AZIMUTH} or {@link #GEODESIC_DISTANCE}
+     * validity flag is not set.
+     *
+     * <p>Note on terminology:</p>
+     * <ul>
+     *   <li><b>Course:</b> the intended path of travel.</li>
+     *   <li><b>Track:</b>  the actual path traveled over ground.</li>
+     * </ul>
      *
      * @throws IllegalStateException if the distance or azimuth has not been set.
      */
-    private void computeCourse() {
-        if (!isEndPointValid) {
-            throw new IllegalStateException(Resources.format(Resources.Keys.EndPointNotSet));
+    private void computeTrack() {
+        if ((validity & (START_POINT | END_POINT))
+                     != (START_POINT | END_POINT))
+        {
+            throw new IllegalStateException(Resources.format(
+                    Resources.Keys.StartOrEndPointNotSet_1, Integer.signum(validity & START_POINT)));
         }
         final double Δλ    = λ2 - λ1;           // No need to reduce to −π … +π range.
         final double sinΔλ = sin(Δλ);
@@ -491,8 +526,8 @@ public class GeodeticCalculator {
          */
         double Δσ = sinφ1*sinφ2 + cosφ1*cosφ2*cosΔλ;        // Actually Δσ = acos(…).
         Δσ = atan2(hypot(α1x, α1y), Δσ);
-        distance = radius * Δσ;
-        isCourseValid = true;
+        geodesicDistance = radius * Δσ;
+        validity |= (STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE);
     }
 
     /**
@@ -541,7 +576,7 @@ public class GeodeticCalculator {
         } catch (IOException e) {
             throw new UncheckedIOException(e);      // Should never happen since we are writting in a StringBuilder.
         }
-        buffer.append(String.format(locale, " %f %s", distance, getDistanceUnit()));
+        buffer.append(String.format(locale, " %f %s", geodesicDistance, getDistanceUnit()));
         return buffer.toString();
     }
 }

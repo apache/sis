@@ -308,12 +308,13 @@ public class LocationServlet extends HttpServlet {
         double radiusKM = Double.parseDouble(radius);
         final GeodeticCalculator calculator = GeodeticCalculator.create(CommonCRS.SPHERE.geographic());
         calculator.setStartPoint(point.y, point.x);
+        calculator.setGeodesicDistance(radiusKM);
 
         StringBuilder regionStr = new StringBuilder();
 
         try {
           for (int i = 0; i <= 360; i += 10) {
-            calculator.setDirection(i, radiusKM);
+            calculator.setStartingAzimuth(i);
             DirectPosition pt = calculator.getEndPoint();
             regionStr.append(pt.getOrdinate(1)).append(',').append(pt.getOrdinate(0)).append(',');
           }

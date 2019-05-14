@@ -133,7 +133,7 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
     /**
      * Returns the coordinate reference system the envelope and the position.
      * Default implementation returns {@link CommonCRS#defaultGeographic()}.
-     * Subclasses must override this method if the another CRS.
+     * Subclasses must override this method if they use another CRS.
      */
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {

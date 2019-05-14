@@ -202,11 +202,6 @@ public final class Resources extends IndexedResourceBundle {
         public static final short EllipsoidalHeightNotAllowed_1 = 77;
 
         /**
-         * The destination coordinates have not been specified.
-         */
-        public static final short EndPointNotSet = 88;
-
-        /**
          * There is no local registry for version {1} of “{0}” authority. Fallback on default version
          * for objects creation.
          */
@@ -476,6 +471,11 @@ public final class Resources extends IndexedResourceBundle {
          * Matrix is singular.
          */
         public static final short SingularMatrix = 63;
+
+        /**
+         * The {0,choice,0#start|1#end} point has not been specified.
+         */
+        public static final short StartOrEndPointNotSet_1 = 88;
 
         /**
          * Combined URI contains unexpected components.
