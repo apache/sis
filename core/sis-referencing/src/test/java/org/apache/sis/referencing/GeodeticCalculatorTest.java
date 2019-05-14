@@ -16,9 +16,12 @@
  */
 package org.apache.sis.referencing;
 
+import java.awt.Shape;
+import java.awt.geom.Point2D;
 import java.util.Random;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.measure.Units;
@@ -168,5 +171,31 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
         c.setStartingAzimuth(-94.41);
         c.setGeodesicDistance(18743000);
         assertPositionEquals(121.8, 31.4, c.getEndPoint(), 0.01);
+    }
+
+    /**
+     * Tests {@link GeodeticCalculator#toGeodesicPath2D(double)}. This method uses a CRS
+     * that swap axis order as a way to verify that user-specified CRS is taken in account.
+     *
+     * @throws TransformException if an error occurred while transforming coordinates.
+     */
+    @Test
+    @DependsOnMethod("testUsingTransform")
+    public void testToGeodesicPath2D() throws TransformException {
+        final GeodeticCalculator c = new GeodeticCalculator(CommonCRS.SPHERE.normalizedGeographic());
+        c.setStartPoint(-33.0, -71.6);                  // Valparaíso
+        c.setEndPoint  ( 31.4, 121.8);                  // Shanghai
+        final Shape path = c.toGeodesicPath2D(1000);
+        assertPointEquals( -71.6, -33.0, ShapeUtilities.pointOnBezier(path, 0));
+        assertPointEquals( 121.8,  31.4, ShapeUtilities.pointOnBezier(path, 1));
+        assertPointEquals(-159.2,  -6.8, ShapeUtilities.pointOnBezier(path, 0.5));
+    }
+
+    /**
+     * Asserts that a Java2D point is equal to the expected value.
+     */
+    private static void assertPointEquals(final double x, final double y, final Point2D actual) {
+        assertEquals("x", x, actual.getX(), 0.05);
+        assertEquals("y", y, actual.getY(), 0.05);
     }
 }

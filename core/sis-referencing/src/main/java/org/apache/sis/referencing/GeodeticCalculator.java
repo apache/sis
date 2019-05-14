@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing;
 
+import java.awt.Shape;
 import java.util.Locale;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -23,6 +24,7 @@ import javax.measure.Unit;
 import javax.measure.quantity.Length;
 
 import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -35,6 +37,7 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.internal.referencing.PositionTransformer;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.util.resources.Vocabulary;
@@ -91,7 +94,7 @@ public class GeodeticCalculator {
      * The ellipsoid on which geodetic computations are performed.
      * This ellipsoid is inferred from the coordinate reference system specified at construction time.
      */
-    protected final Ellipsoid ellipsoid;
+    final Ellipsoid ellipsoid;
 
     /**
      * The radius of a hypothetical sphere having the same surface than the {@linkplain #ellipsoid}.
@@ -156,9 +159,12 @@ public class GeodeticCalculator {
      * Users should invoke {@link #create(CoordinateReferenceSystem)} instead, which will choose a subtype
      * based on the given coordinate reference system.
      *
+     * <p>This class is currently not designed for sub-classing outside this package. If in a future version we want to
+     * relax this restriction, we should revisit the package-private API in order to commit to a safer protected API.</p>
+     *
      * @param  crs  the reference system for the {@link Position} arguments and return values.
      */
-    protected GeodeticCalculator(final CoordinateReferenceSystem crs) {
+    GeodeticCalculator(final CoordinateReferenceSystem crs) {
         ArgumentChecks.ensureNonNull("crs", crs);
         final GeographicCRS geographic = ReferencingUtilities.toNormalizedGeographicCRS(crs, true, true);
         if (geographic == null) {
@@ -167,18 +173,6 @@ public class GeodeticCalculator {
         ellipsoid      = ReferencingUtilities.getEllipsoid(crs);
         radius         = Formulas.getAuthalicRadius(ellipsoid);
         userToGeodetic = new PositionTransformer(crs, geographic, null);
-    }
-
-    /**
-     * Creates a new geodetic calculator associated with default ellipsoid.
-     * The ellipsoid and the geodetic datum of {@linkplain #getPositionCRS() position CRS}
-     * are the ones associated to {@link CommonCRS#defaultGeographic()}.
-     * The axes are (<var>latitude</var>, <var>longitude</var>) in degrees.
-     *
-     * @return a new geodetic calculator using the default geodetic datum.
-     */
-    public static GeodeticCalculator create() {
-        return new GeodeticCalculator(CommonCRS.DEFAULT.geographic());
     }
 
     /**
@@ -376,7 +370,7 @@ public class GeodeticCalculator {
      */
     public double getStartingAzimuth() {
         if ((validity & STARTING_AZIMUTH) == 0) {
-            computeTrack();
+            computeDistance();
         }
         return toDegrees(α1);
     }
@@ -395,7 +389,7 @@ public class GeodeticCalculator {
             if ((validity & END_POINT) == 0) {
                 computeEndPoint();                      // Compute also ending azimuth from start point and distance.
             } else {
-                computeTrack();                         // Compute also ending azimuth from start point and end point.
+                computeDistance();                         // Compute also ending azimuth from start point and end point.
             }
         }
         return toDegrees(α2);
@@ -429,7 +423,7 @@ public class GeodeticCalculator {
      */
     public double getGeodesicDistance() {
         if ((validity & GEODESIC_DISTANCE) == 0) {
-            computeTrack();
+            computeDistance();
         }
         return geodesicDistance;
     }
@@ -444,6 +438,52 @@ public class GeodeticCalculator {
      */
     public Unit<Length> getDistanceUnit() {
         return ellipsoid.getAxisUnit();
+    }
+
+    /**
+     * Computes the geodetic distance and azimuths from the start point and end point.
+     * This method should be invoked if the distance or an azimuth is requested while
+     * {@link #STARTING_AZIMUTH}, {@link #ENDING_AZIMUTH} or {@link #GEODESIC_DISTANCE}
+     * validity flag is not set.
+     *
+     * <p>Note on terminology:</p>
+     * <ul>
+     *   <li><b>Course:</b> the intended path of travel.</li>
+     *   <li><b>Track:</b>  the actual path traveled over ground.</li>
+     * </ul>
+     *
+     * @throws IllegalStateException if the distance or azimuth has not been set.
+     */
+    private void computeDistance() {
+        if ((validity & (START_POINT | END_POINT))
+                     != (START_POINT | END_POINT))
+        {
+            throw new IllegalStateException(Resources.format(
+                    Resources.Keys.StartOrEndPointNotSet_1, Integer.signum(validity & START_POINT)));
+        }
+        final double Δλ    = λ2 - λ1;           // No need to reduce to −π … +π range.
+        final double sinΔλ = sin(Δλ);
+        final double cosΔλ = cos(Δλ);
+        final double sinφ1 = sin(φ1);
+        final double cosφ1 = cos(φ1);
+        final double sinφ2 = sin(φ2);
+        final double cosφ2 = cos(φ2);
+
+        final double cosφ1_sinφ2 = cosφ1 * sinφ2;
+        final double cosφ2_sinφ1 = cosφ2 * sinφ1;
+        final double α1y = cosφ2 * sinΔλ;
+        final double α1x = cosφ1_sinφ2 - cosφ2_sinφ1*cosΔλ;
+
+        α1 = atan2(α1y, α1x);
+        α2 = atan2(cosφ1*sinΔλ, cosφ1_sinφ2*cosΔλ - cosφ2_sinφ1);
+        /*
+         * Δσ = acos(sinφ₁⋅sinφ₂ + cosφ₁⋅cosφ₂⋅cosΔλ) is a first estimation inaccurate for small distances.
+         * Δσ = atan2(…) computes the same value but with better accuracy.
+         */
+        double Δσ = sinφ1*sinφ2 + cosφ1*cosφ2*cosΔλ;        // Actually Δσ = acos(…).
+        Δσ = atan2(hypot(α1x, α1y), Δσ);
+        geodesicDistance = radius * Δσ;
+        validity |= (STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE);
     }
 
     /**
@@ -485,49 +525,83 @@ public class GeodeticCalculator {
     }
 
     /**
-     * Computes the geodetic distance and azimuths from the start point and end point.
-     * This method should be invoked if the distance or an azimuth is requested while
-     * {@link #STARTING_AZIMUTH}, {@link #ENDING_AZIMUTH} or {@link #GEODESIC_DISTANCE}
-     * validity flag is not set.
+     * Creates an approximation of the geodesic track from start point to end point as a Java2D object.
+     * The coordinates are expressed in the coordinate reference system specified at creation time.
+     * The approximation uses linear, quadratic or cubic Bézier curves.
+     * The returned path has the following characteristics:
      *
-     * <p>Note on terminology:</p>
-     * <ul>
-     *   <li><b>Course:</b> the intended path of travel.</li>
-     *   <li><b>Track:</b>  the actual path traveled over ground.</li>
-     * </ul>
+     * <ol>
+     *   <li>The first point is {@link #getStartPoint()}.</li>
+     *   <li>The beginning of the curve (more specifically, the tangent at starting point) is oriented toward the direction given
+     *       by {@linkplain #getStartingAzimuth()}, adjusted for the map projection (if any) deformation at that location.</li>
+     *   <li>The curve passes at least by the midway point.</li>
+     *   <li>The end of the curve (more specifically, the tangent at ending point) is oriented toward the direction given by
+     *       {@linkplain #getEndingAzimuth()}, adjusted for the map projection (if any) deformation at that location.</li>
+     *   <li>The last point is {@link #getEndPoint()}.</li>
+     * </ol>
      *
-     * @throws IllegalStateException if the distance or azimuth has not been set.
+     * <b>Limitations:</b>
+     * current implementation builds a single linear, quadratic or cubic Bézier curve. It does not yet create a chain
+     * of Bézier curves. Consequently the errors may be larger than the given {@code tolerance} threshold. Another
+     * limitation is that this method depends on the presence of {@code java.desktop} module. Those limitations may be
+     * addressed in a future version (see <a href="https://issues.apache.org/jira/browse/SIS-453">SIS-453</a>).
+     *
+     * @param  tolerance  maximal error between the approximated curve and actual geodesic track
+     *                    in the units of measurement given by {@link #getDistanceUnit()}.
+     *                    <em>See limitations above</em>.
+     * @return an approximation of geodesic track as Bézier curves in a Java2D object.
+     * @throws TransformException if the coordinates can not be transformed to {@linkplain #getPositionCRS() position CRS}.
+     * @throws IllegalStateException if some required properties have not been specified.
      */
-    private void computeTrack() {
-        if ((validity & (START_POINT | END_POINT))
-                     != (START_POINT | END_POINT))
+    public Shape toGeodesicPath2D(double tolerance) throws TransformException {
+        if ((validity & (START_POINT | STARTING_AZIMUTH | END_POINT | ENDING_AZIMUTH | GEODESIC_DISTANCE))
+                     != (START_POINT | STARTING_AZIMUTH | END_POINT | ENDING_AZIMUTH | GEODESIC_DISTANCE))
         {
-            throw new IllegalStateException(Resources.format(
-                    Resources.Keys.StartOrEndPointNotSet_1, Integer.signum(validity & START_POINT)));
+            if ((validity & END_POINT) == 0) {
+                computeEndPoint();
+            } else {
+                computeDistance();
+            }
         }
-        final double Δλ    = λ2 - λ1;           // No need to reduce to −π … +π range.
-        final double sinΔλ = sin(Δλ);
-        final double cosΔλ = cos(Δλ);
-        final double sinφ1 = sin(φ1);
-        final double cosφ1 = cos(φ1);
-        final double sinφ2 = sin(φ2);
-        final double cosφ2 = cos(φ2);
+        tolerance *= (180/PI) / radius;                                     // Angular tolerance in degrees.
+        final double d1, x1, y1, d2, x2, y2;                                // Parameters for the Bezier curve.
+        final double[] transformed = new double[ReferencingUtilities.getDimension(userToGeodetic.defaultCRS)];
+        d1 = slope(α1, geographic(φ1, λ1).inverseTransform(transformed)); x1 = transformed[0]; y1 = transformed[1];
+        d2 = slope(α2, geographic(φ2, λ2).inverseTransform(transformed)); x2 = transformed[0]; y2 = transformed[1];
+        final double sφ2 = φ2;                                              // Save setting before modification.
+        final double sλ2 = λ2;
+        final double sα2 = α2;
+        final double sd  = geodesicDistance;
+        try {
+            geodesicDistance /= 2;
+            computeEndPoint();
+            final Matrix d = geographic(φ2, λ2).inverseTransform(transformed);      // Coordinates of midway point.
+            double εx;                                                              // Tolerance for φ (first coordinate).
+            double εy = tolerance / cos(φ2);                                        // Tolerance for λ (second coordinate).
+            εx = d.getElement(0,0)*tolerance + d.getElement(0,1)*εy;                // Tolerance for x in user CRS.
+            εy = d.getElement(1,0)*tolerance + d.getElement(1,1)*εy;                // Tolerance for y in user CRS.
+            return ShapeUtilities.bezier(x1, y1, transformed[0], transformed[1], x2, y2, d1, d2, εx, εy);
+        } finally {
+            φ2 = sφ2;                                                               // Restore the setting previously saved.
+            λ2 = sλ2;
+            α2 = sα2;
+            geodesicDistance = sd;
+        }
+    }
 
-        final double cosφ1_sinφ2 = cosφ1 * sinφ2;
-        final double cosφ2_sinφ1 = cosφ2 * sinφ1;
-        final double α1y = cosφ2 * sinΔλ;
-        final double α1x = cosφ1_sinφ2 - cosφ2_sinφ1*cosΔλ;
-
-        α1 = atan2(α1y, α1x);
-        α2 = atan2(cosφ1*sinΔλ, cosφ1_sinφ2*cosΔλ - cosφ2_sinφ1);
-        /*
-         * Δσ = acos(sinφ₁⋅sinφ₂ + cosφ₁⋅cosφ₂⋅cosΔλ) is a first estimation inaccurate for small distances.
-         * Δσ = atan2(…) computes the same value but with better accuracy.
-         */
-        double Δσ = sinφ1*sinφ2 + cosφ1*cosφ2*cosΔλ;        // Actually Δσ = acos(…).
-        Δσ = atan2(hypot(α1x, α1y), Δσ);
-        geodesicDistance = radius * Δσ;
-        validity |= (STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE);
+    /**
+     * Returns the tangent of the given angle converted to the user CRS space.
+     *
+     * @param  α  azimuth angle in radians, with 0 pointing toward north and values increasing clockwise.
+     * @param  d  Jacobian matrix from (φ,λ) to the user coordinate reference system.
+     * @return ∂y/∂x.
+     */
+    private double slope(final double α, final Matrix d) {
+        final double dx = cos(α);     // sin(π/2 - α) = -sin(α - π/2) = cos(α)
+        final double dy = sin(α);     // cos(π/2 - α) = +cos(α - π/2) = sin(α)
+        final double tx = d.getElement(0,0)*dx + d.getElement(0,1)*dy;
+        final double ty = d.getElement(1,0)*dx + d.getElement(1,1)*dy;
+        return ty / tx;
     }
 
     /**

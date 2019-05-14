@@ -491,6 +491,43 @@ public final class ShapeUtilities extends Static {
     }
 
     /**
+     * Returns a point on the given linear, quadratic or cubic Bézier curve.
+     *
+     * @param  bezier  a {@link Line2D}, {@link QuadCurve2D} or {@link CubicCurve2D}.
+     * @param  t       a parameter from 0 to 1 inclusive.
+     * @return a point on the curve for the given <var>t</var> parameter.
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/B%C3%A9zier_curve">Bézier curve on Wikipedia</a>
+     */
+    public static Point2D.Double pointOnBezier(final Shape bezier, final double t) {
+        final double x, y;
+        final double mt = 1 - t;
+        if (bezier instanceof Line2D) {
+            final Line2D z = (Line2D) bezier;
+            x = mt * z.getX1()  +  t * z.getX2();
+            y = mt * z.getY1()  +  t * z.getY2();
+        } else if (bezier instanceof QuadCurve2D) {
+            final QuadCurve2D z = (QuadCurve2D) bezier;
+            final double a = mt * mt;
+            final double b = mt * t * 2;
+            final double c =  t * t;
+            x = a * z.getX1()  +  b * z.getCtrlX()  +  c * z.getX2();
+            y = a * z.getY1()  +  b * z.getCtrlY()  +  c * z.getY2();
+        } else if (bezier instanceof CubicCurve2D) {
+            final CubicCurve2D z = (CubicCurve2D) bezier;
+            final double a = mt * mt * mt;
+            final double b = mt * mt * t  * 3;
+            final double c = mt * (t * t) * 3;
+            final double d =  t *  t * t;
+            x = a * z.getX1()  +  b * z.getCtrlX1()  +  c * z.getCtrlX2()  +  d * z.getX2();
+            y = a * z.getY1()  +  b * z.getCtrlY1()  +  c * z.getCtrlY2()  +  d * z.getY2();
+        } else {
+            throw new IllegalArgumentException();
+        }
+        return new Point2D.Double(x, y);
+    }
+
+    /**
      * Returns the center of a circle passing by the 3 given points. The distance between the returned
      * point and any of the given points will be constant; it is the circle radius.
      *

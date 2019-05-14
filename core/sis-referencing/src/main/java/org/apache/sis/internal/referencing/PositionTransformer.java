@@ -23,6 +23,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -109,6 +110,7 @@ public final class PositionTransformer extends GeneralDirectPosition {
      * Those fields are left to {@code null} value if the transform is identity.
      *
      * @see #setSourceCRS(CoordinateReferenceSystem)
+     * @see #inverse()
      */
     private transient MathTransform forward, inverse;
 
@@ -211,6 +213,19 @@ public final class PositionTransformer extends GeneralDirectPosition {
     }
 
     /**
+     * Returns the inverse transform, computed when first needed.
+     */
+    private MathTransform inverse() throws TransformException {
+        if (inverse == null) {
+            if (!Utilities.equalsIgnoreMetadata(lastCRS, defaultCRS)) {
+                setSourceCRS(defaultCRS);
+            }
+            inverse = (forward != null) ? forward.inverse() : MathTransforms.identity(getDimension());
+        }
+        return inverse;
+    }
+
+    /**
      * Returns a new point with the same coordinates than this one, but transformed to the default CRS.
      * This method never returns {@code this}, so the returned point does not need to be cloned.
      *
@@ -218,12 +233,18 @@ public final class PositionTransformer extends GeneralDirectPosition {
      * @throws TransformException if a coordinate transformation was required and failed.
      */
     public DirectPosition inverseTransform() throws TransformException {
-        if (!Utilities.equalsIgnoreMetadata(lastCRS, defaultCRS)) {
-            setSourceCRS(defaultCRS);
-        }
-        if (inverse == null) {
-            inverse = (forward != null) ? forward.inverse() : MathTransforms.identity(getDimension());
-        }
-        return inverse.transform(this, new GeneralDirectPosition(getCoordinateReferenceSystem()));
+        return inverse().transform(this, new GeneralDirectPosition(getCoordinateReferenceSystem()));
+    }
+
+    /**
+     * Transforms this point to the default CRS and stores the result in the given array, and returns the derivative.
+     * The {@code target} array length should be {@code ReferencingUtilities.getDimension(defaultCRS)}.
+     *
+     * @param  target  where to store the transformed coordinates.
+     * @return the derivative (Jacobian matrix) at the location of this point.
+     * @throws TransformException if a coordinate transformation was required and failed.
+     */
+    public Matrix inverseTransform(final double[] target) throws TransformException {
+        return MathTransforms.derivativeAndTransform(inverse(), ordinates, 0, target, 0);
     }
 }
