@@ -405,18 +405,23 @@ public final class ShapeUtilities extends Static {
         ym -= y1;
         final double Δx = x2 - x1;
         final double Δy = y2 - y1;
-        if ((isInfinite(α1) || abs(Δx*α1 - Δy) <= εy) &&
-            (isInfinite(α2) || abs(Δx*α2 - Δy) <= εy))
+        final boolean isVertical = abs(Δx) <= εx;
+        if (isVertical || ((isInfinite(α1) || abs(Δx*α1 - Δy) <= εy)
+                       &&  (isInfinite(α2) || abs(Δx*α2 - Δy) <= εy)))
         {
             /*
              * Following tests are partially redundant with above tests, but may detect a larger
-             * error than above tests did. They are also necessary is a derivative was infinite.
+             * error than above tests did. They are also necessary if a derivative was infinite,
+             * or if `isVertical` was true.
              */
-            if ((α1 == 0 || abs(Δy/α1 - Δx) <= εx) &&
-                (α2 == 0 || abs(Δy/α2 - Δx) <= εx))
+            final boolean isHorizontal = abs(Δy) <= εy;
+            if (isHorizontal || ((α1 == 0 || abs(Δy/α1 - Δx) <= εx)
+                             &&  (α2 == 0 || abs(Δy/α2 - Δx) <= εx)))
             {
                 final double slope = Δy / Δx;
-                if (abs(xm*slope - ym) <= εy && abs(ym/slope - xm) <= εx) {
+                if ((isVertical   || abs(xm*slope - ym) <= εy) &&
+                    (isHorizontal || abs(ym/slope - xm) <= εx))
+                {
                     return new Line2D.Double(x1, y1, x2, y2);
                 }
             }

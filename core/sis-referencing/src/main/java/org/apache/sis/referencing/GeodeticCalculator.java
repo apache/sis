@@ -223,6 +223,7 @@ public class GeodeticCalculator {
      * @throws IllegalArgumentException if the latitude is out of bounds.
      *
      * @see #setEndPoint(double, double)
+     * @see #moveToEndPoint()
      */
     public void setStartPoint(final double latitude, final double longitude) {
         ArgumentChecks.ensureBetween("latitude", Latitude.MIN_VALUE, Latitude.MAX_VALUE, latitude);
@@ -522,6 +523,24 @@ public class GeodeticCalculator {
         λ2 = IEEEremainder(λ1 + Δλ, 2*PI);
         α2 = atan2(sinα1, cosΔσ*cosα1 - sinφ1/cosφ1 * sinΔσ);
         validity |= END_POINT;
+    }
+
+    /**
+     * Sets the start point and starting azimuth to the current end point and ending azimuth values.
+     * The {@linkplain #getEndingAzimuth() ending azimuths}, the {@linkplain #getGeodesicDistance()
+     * geodesic distance} and the {@linkplain #getEndPoint() end point} are discarded by this method call;
+     * some of them will need to be specified again.
+     *
+     * @see #setStartPoint(double, double)
+     */
+    public void moveToEndPoint() {
+        if ((validity & END_POINT) == 0) {
+            computeEndPoint();
+        }
+        φ1 = φ2;
+        λ1 = λ2;
+        α1 = α2;
+        validity = START_POINT | STARTING_AZIMUTH;
     }
 
     /**
