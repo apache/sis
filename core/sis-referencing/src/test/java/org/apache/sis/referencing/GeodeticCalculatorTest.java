@@ -131,11 +131,12 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
             final double x = 180 * random.nextDouble();
             c.setEndPoint(0, x);
             assertEquals(x * r, c.getGeodesicDistance(), Formulas.LINEAR_TOLERANCE);
+            assertEquals(x * r, c.getRhumblineLength(),  Formulas.LINEAR_TOLERANCE);
         }
     }
 
     /**
-     * Tests spherical formulas with the example given in Wikipedia.
+     * Tests {@link GeodeticCalculator#getGeodesicDistance()} and azimuths with the example given in Wikipedia.
      * This computes the great circle route from Valparaíso (33°N 71.6W) to Shanghai (31.4°N 121.8°E).
      *
      * @throws TransformException if an error occurred while transforming coordinates.
@@ -143,7 +144,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
      * @see <a href="https://en.wikipedia.org/wiki/Great-circle_navigation#Example">Great-circle navigation on Wikipedia</a>
      */
     @Test
-    public void testWikipediaExample() throws TransformException {
+    public void testGeodesic() throws TransformException {
         final GeodeticCalculator c = create(false);
         c.setStartPoint(-33.0, -71.6);          // Valparaíso
         c.setEndPoint  ( 31.4, 121.8);          // Shanghai
@@ -175,12 +176,12 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     /**
      * Tests geodetic calculator involving a coordinate operation.
      * This test uses a simple CRS with only the axis order interchanged.
-     * The coordinates are the same than {@link #testWikipediaExample()}.
+     * The coordinates are the same than {@link #testGeodesic()}.
      *
      * @throws TransformException if an error occurred while transforming coordinates.
      */
     @Test
-    @DependsOnMethod("testWikipediaExample")
+    @DependsOnMethod("testGeodesic")
     public void testUsingTransform() throws TransformException {
         final GeodeticCalculator c = create(true);
         final double φ = -33.0;
@@ -271,17 +272,17 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
             180.00,  10000,  14142
         };
         final GeodeticCalculator c = create(false);
-        final double toTestValue = (60 * NAUTICAL_MILE * 180/PI) / 6371007 / 1000;
+        final double toTestValue = (60 * NAUTICAL_MILE * 180/PI) / 6371000 / 1000;
         for (int i=0; i<data.length; i+=3) {
             c.setStartPoint(45, 0);
             c.setEndPoint(45, data[i]);
             double geodesic  = c.getGeodesicDistance();
-//          double rhumbLine = c.getRhumbLineDistance();
+            double rhumbLine = c.getRhumblineLength();
             geodesic  *= toTestValue;
-//          rhumbLine *= toTestValue;
+            rhumbLine *= toTestValue;
             final double tolerance = data[i+1] / 1000;           // In kilometres.
             assertEquals("Geodesic distance",   data[i+1], geodesic,  tolerance);
-//          assertEquals("Rhumb line distance", data[i+2], rhumbLine, tolerance);
+            assertEquals("Rhumb line distance", data[i+2], rhumbLine, tolerance);
             assertEquals("Distance measured along geodesic path", geodesic, length(c) * toTestValue, tolerance * 20);
         }
     }

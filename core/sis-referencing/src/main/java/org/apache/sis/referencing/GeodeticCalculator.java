@@ -131,13 +131,22 @@ public class GeodeticCalculator {
     private double α1, α2;
 
     /**
-     * The distance from the starting point ({@link #φ1},{@link #λ1}) to the end point ({@link #φ2},{@link #λ2}).
+     * The shortest distance from the starting point ({@link #φ1},{@link #λ1}) to the end point ({@link #φ2},{@link #λ2}).
      * The distance is in the same units than ellipsoid axes and the azimuth is in radians.
      *
      * @see #GEODESIC_DISTANCE
      * @see #getDistanceUnit()
      */
     private double geodesicDistance;
+
+    /**
+     * Length of the rhumb line from the starting point ({@link #φ1},{@link #λ1}) to the end point ({@link #φ2},{@link #λ2}).
+     * The distance is in the same units than ellipsoid axes.
+     *
+     * @see #RHUMBLINE_LENGTH
+     * @see #getDistanceUnit()
+     */
+    private double rhumblineLength;
 
     /**
      * A bitmask specifying which information are valid. For example if the {@link #END_POINT} bit is not set,
@@ -150,7 +159,8 @@ public class GeodeticCalculator {
     /**
      * Bitmask specifying which information are valid.
      */
-    private static final int START_POINT = 1, END_POINT = 2, STARTING_AZIMUTH = 4, ENDING_AZIMUTH = 8, GEODESIC_DISTANCE = 16;
+    private static final int START_POINT = 1, END_POINT = 2, STARTING_AZIMUTH = 4, ENDING_AZIMUTH = 8,
+            GEODESIC_DISTANCE = 16, RHUMBLINE_LENGTH = 32;
 
     /**
      * Constructs a new geodetic calculator expecting coordinates in the supplied CRS.
@@ -189,6 +199,13 @@ public class GeodeticCalculator {
     }
 
     /**
+     * Returns {@code true} if at least one of the properties identified by the given mask is invalid.
+     */
+    private boolean isInvalid(final int mask) {
+        return (validity & mask) != mask;
+    }
+
+    /**
      * Returns the Coordinate Reference System (CRS) in which {@code Position}s are represented, unless otherwise specified.
      * This is the CRS of all {@link Position} instances returned by methods in this class. This is also the default CRS
      * assumed by methods receiving a {@link Position} argument when the given position does not specify its CRS.
@@ -215,7 +232,8 @@ public class GeodeticCalculator {
     /**
      * Sets the starting point as geographic (<var>latitude</var>, <var>longitude</var>) coordinates.
      * The {@linkplain #getStartingAzimuth() starting} and {@linkplain #getEndingAzimuth() ending azimuths},
-     * the {@linkplain #getGeodesicDistance() geodesic distance} and the {@linkplain #getEndPoint() end point}
+     * the {@linkplain #getEndPoint() end point}, the {@linkplain #getGeodesicDistance() geodesic distance}
+     * and the {@linkplain #getRhumblineLength() rhumb line length}
      * are discarded by this method call; some of them will need to be specified again.
      *
      * @param  latitude   the latitude in degrees between {@value Latitude#MIN_VALUE}° and {@value Latitude#MAX_VALUE}°.
@@ -261,11 +279,10 @@ public class GeodeticCalculator {
      * @see #getEndPoint()
      */
     public DirectPosition getStartPoint() throws TransformException {
-        if ((validity & START_POINT) != 0) {
-            return geographic(φ1, λ1).inverseTransform();
-        } else {
+        if (isInvalid(START_POINT)) {
             throw new IllegalStateException(Resources.format(Resources.Keys.StartOrEndPointNotSet_1, 0));
         }
+        return geographic(φ1, λ1).inverseTransform();
     }
 
     /**
@@ -288,7 +305,8 @@ public class GeodeticCalculator {
     /**
      * Sets the destination as geographic (<var>latitude</var>, <var>longitude</var>) coordinates.
      * The {@linkplain #getStartingAzimuth() starting azimuth}, {@linkplain #getEndingAzimuth() ending azimuth}
-     * and {@linkplain #getGeodesicDistance() geodesic distance} will be updated as an effect of this call.
+     * {@linkplain #getGeodesicDistance() geodesic distance} and {@linkplain #getRhumblineLength() rhumb line length}
+     * will be updated as an effect of this call.
      *
      * @param  latitude   the latitude in degrees between {@value Latitude#MIN_VALUE}° and {@value Latitude#MAX_VALUE}°.
      * @param  longitude  the longitude in degrees.
@@ -302,7 +320,7 @@ public class GeodeticCalculator {
         φ2 = toRadians(latitude);
         λ2 = toRadians(longitude);
         validity |= END_POINT;
-        validity &= ~(STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE);
+        validity &= ~(STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE | RHUMBLINE_LENGTH);
     }
 
     /**
@@ -336,7 +354,7 @@ public class GeodeticCalculator {
      * @see #getStartPoint()
      */
     public DirectPosition getEndPoint() throws TransformException {
-        if ((validity & END_POINT) == 0) {
+        if (isInvalid(END_POINT)) {
             computeEndPoint();
         }
         return geographic(φ2, λ2).inverseTransform();
@@ -345,7 +363,8 @@ public class GeodeticCalculator {
     /**
      * Sets the angular heading (relative to geographic North) at the starting point.
      * Azimuth is relative to geographic North with values increasing clockwise.
-     * The {@linkplain #getEndPoint() end point} and {@linkplain #getEndingAzimuth() ending azimuth}
+     * The {@linkplain #getEndingAzimuth() ending azimuth}, {@linkplain #getEndPoint() end point}
+     * and {@linkplain #getRhumblineLength() rhumb line length}
      * will be updated as an effect of this method call.
      *
      * @param  azimuth  the starting azimuth in degrees, with 0° toward north and values increasing clockwise.
@@ -356,7 +375,7 @@ public class GeodeticCalculator {
         ArgumentChecks.ensureFinite("azimuth", azimuth);
         α1 = toRadians(IEEEremainder(azimuth, 360));
         validity |= STARTING_AZIMUTH;
-        validity &= ~(END_POINT | ENDING_AZIMUTH);
+        validity &= ~(END_POINT | ENDING_AZIMUTH | RHUMBLINE_LENGTH);
     }
 
     /**
@@ -370,7 +389,7 @@ public class GeodeticCalculator {
      * @throws IllegalStateException if the end point, azimuth or distance have not been set.
      */
     public double getStartingAzimuth() {
-        if ((validity & STARTING_AZIMUTH) == 0) {
+        if (isInvalid(STARTING_AZIMUTH)) {
             computeDistance();
         }
         return toDegrees(α1);
@@ -386,8 +405,8 @@ public class GeodeticCalculator {
      * @throws IllegalStateException if the destination point, azimuth or distance have not been set.
      */
     public double getEndingAzimuth() {
-        if ((validity & ENDING_AZIMUTH) == 0) {
-            if ((validity & END_POINT) == 0) {
+        if (isInvalid(ENDING_AZIMUTH)) {
+            if (isInvalid(END_POINT)) {
                 computeEndPoint();                      // Compute also ending azimuth from start point and distance.
             } else {
                 computeDistance();                         // Compute also ending azimuth from start point and end point.
@@ -397,8 +416,9 @@ public class GeodeticCalculator {
     }
 
     /**
-     * Sets the geodesic distance from the start point to the end point. The {@linkplain #getEndPoint() end point}
-     * and {@linkplain #getEndingAzimuth() ending azimuth} will be updated as an effect of this method call.
+     * Sets the geodesic distance from the start point to the end point. The {@linkplain #getEndPoint() end point},
+     * {@linkplain #getEndingAzimuth() ending azimuth} and {@linkplain #getRhumblineLength() rhumb line length}
+     * will be updated as an effect of this method call.
      *
      * @param  distance  the geodesic distance in unit of measurement given by {@link #getDistanceUnit()}.
      *
@@ -408,7 +428,7 @@ public class GeodeticCalculator {
         ArgumentChecks.ensurePositive("distance", distance);
         geodesicDistance = distance;
         validity |= GEODESIC_DISTANCE;
-        validity &= ~(END_POINT | ENDING_AZIMUTH);
+        validity &= ~(END_POINT | ENDING_AZIMUTH | RHUMBLINE_LENGTH);
     }
 
     /**
@@ -418,15 +438,29 @@ public class GeodeticCalculator {
      * the distance will be computed from the {@linkplain #getStartPoint() start point} and current end point.
      *
      * @return the shortest distance in the unit of measurement given by {@link #getDistanceUnit()}.
-     * @throws IllegalStateException if the destination point has not been set.
+     * @throws IllegalStateException if a point has not been set.
      *
      * @see #getDistanceUnit()
      */
     public double getGeodesicDistance() {
-        if ((validity & GEODESIC_DISTANCE) == 0) {
+        if (isInvalid(GEODESIC_DISTANCE)) {
             computeDistance();
         }
         return geodesicDistance;
+    }
+
+    /**
+     * Returns or computes the length of rhumb line (part of constant heading) from start point to end point.
+     * This is sometime called "loxodrome". This is <strong>not</strong> the shortest path between two points.
+     *
+     * @return length of rhumb line in the unit of measurement given by {@link #getDistanceUnit()}.
+     * @throws IllegalStateException if a point has not been set.
+     */
+    public double getRhumblineLength() {
+        if (isInvalid(RHUMBLINE_LENGTH)) {
+            computeRhumbLine();
+        }
+        return rhumblineLength;
     }
 
     /**
@@ -439,6 +473,41 @@ public class GeodeticCalculator {
      */
     public Unit<Length> getDistanceUnit() {
         return ellipsoid.getAxisUnit();
+    }
+
+    /**
+     * Computes the length of rhumb line from start point to end point.
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Rhumb_line">Rhumb line on Wikipedia</a>
+     *
+     * @todo if {@literal Δλ > 180}, must split in two segments.
+     */
+    private void computeRhumbLine() {
+        if (isInvalid(START_POINT | END_POINT)) {
+            throw new IllegalStateException(Resources.format(
+                    Resources.Keys.StartOrEndPointNotSet_1, Integer.signum(validity & START_POINT)));
+        }
+        final double Δλ = λ2 - λ1;
+        final double Δφ = φ2 - φ2;
+        double factor;
+        if (abs(Δφ) < 1E-7) {
+            factor = Δλ * cos((φ1 + φ2)/2);
+        } else {
+            /*
+             * Inverse of Gudermannian function is log(tan(π/4 + φ/2)).
+             * The loxodrome formula involves the following difference:
+             *
+             *   ΔG  =  log(tan(π/4 + φ₁/2)) - log(tan(π/4 + φ₂/2))
+             *       =  log(tan(π/4 + φ₁/2) / tan(π/4 + φ₂/2))
+             *
+             * Note that ΔG=0 if φ₁=φ₂, which implies cos(α)=0.
+             */
+            final double ΔG = log(tan(PI/4 + φ1/2) / tan(PI/4 + φ2/2));
+            final double α = atan(Δλ / ΔG);
+            factor = abs(Δφ) / cos(α);
+        }
+        rhumblineLength = radius * factor;
+        validity |= RHUMBLINE_LENGTH;
     }
 
     /**
@@ -456,9 +525,7 @@ public class GeodeticCalculator {
      * @throws IllegalStateException if the distance or azimuth has not been set.
      */
     private void computeDistance() {
-        if ((validity & (START_POINT | END_POINT))
-                     != (START_POINT | END_POINT))
-        {
+        if (isInvalid(START_POINT | END_POINT)) {
             throw new IllegalStateException(Resources.format(
                     Resources.Keys.StartOrEndPointNotSet_1, Integer.signum(validity & START_POINT)));
         }
@@ -498,10 +565,8 @@ public class GeodeticCalculator {
      * @throws IllegalStateException if the azimuth and the distance have not been set.
      */
     void computeEndPoint() {
-        if ((validity & (START_POINT | STARTING_AZIMUTH | GEODESIC_DISTANCE))
-                     != (START_POINT | STARTING_AZIMUTH | GEODESIC_DISTANCE))
-        {
-            throw new IllegalStateException((validity & START_POINT) == 0
+        if (isInvalid(START_POINT | STARTING_AZIMUTH | GEODESIC_DISTANCE)) {
+            throw new IllegalStateException(isInvalid(START_POINT)
                     ? Resources.format(Resources.Keys.StartOrEndPointNotSet_1, 0)
                     : Resources.format(Resources.Keys.AzimuthAndDistanceNotSet));
         }
@@ -534,7 +599,7 @@ public class GeodeticCalculator {
      * @see #setStartPoint(double, double)
      */
     public void moveToEndPoint() {
-        if ((validity & END_POINT) == 0) {
+        if (isInvalid(END_POINT)) {
             computeEndPoint();
         }
         φ1 = φ2;
@@ -573,10 +638,8 @@ public class GeodeticCalculator {
      * @throws IllegalStateException if some required properties have not been specified.
      */
     public Shape toGeodesicPath2D(double tolerance) throws TransformException {
-        if ((validity & (START_POINT | STARTING_AZIMUTH | END_POINT | ENDING_AZIMUTH | GEODESIC_DISTANCE))
-                     != (START_POINT | STARTING_AZIMUTH | END_POINT | ENDING_AZIMUTH | GEODESIC_DISTANCE))
-        {
-            if ((validity & END_POINT) == 0) {
+        if (isInvalid(START_POINT | STARTING_AZIMUTH | END_POINT | ENDING_AZIMUTH | GEODESIC_DISTANCE)) {
+            if (isInvalid(END_POINT)) {
                 computeEndPoint();
             } else {
                 computeDistance();
