@@ -534,10 +534,10 @@ public class GeodeticCalculator {
      *   <li>The first point is {@link #getStartPoint()}.</li>
      *   <li>The beginning of the curve (more specifically, the tangent at starting point) is oriented toward the direction given
      *       by {@linkplain #getStartingAzimuth()}, adjusted for the map projection (if any) deformation at that location.</li>
-     *   <li>The curve passes at least by the midway point.</li>
+     *   <li>The point B(½) in the middle of the Bézier curve is a point of the geodesic path.</li>
      *   <li>The end of the curve (more specifically, the tangent at ending point) is oriented toward the direction given by
      *       {@linkplain #getEndingAzimuth()}, adjusted for the map projection (if any) deformation at that location.</li>
-     *   <li>The last point is {@link #getEndPoint()}.</li>
+     *   <li>The last point is {@link #getEndPoint()}, potentially with 360° added or subtracted to the longitude.</li>
      * </ol>
      *
      * <b>Limitations:</b>
@@ -564,10 +564,15 @@ public class GeodeticCalculator {
             }
         }
         tolerance *= (180/PI) / radius;                                     // Angular tolerance in degrees.
-        final double d1, x1, y1, d2, x2, y2;                                // Parameters for the Bezier curve.
+        double d1, x1, y1, d2, x2, y2;                                      // Parameters for the Bezier curve.
+        x2 = λ2;
+        final double sign = signum(α1);
+        if (sign == signum(λ1 - x2)) {
+            x2 += 2*PI * sign;                  // We need λ₁ < λ₂ if heading east, or λ₁ > λ₂ if heading west.
+        }
         final double[] transformed = new double[ReferencingUtilities.getDimension(userToGeodetic.defaultCRS)];
         d1 = slope(α1, geographic(φ1, λ1).inverseTransform(transformed)); x1 = transformed[0]; y1 = transformed[1];
-        d2 = slope(α2, geographic(φ2, λ2).inverseTransform(transformed)); x2 = transformed[0]; y2 = transformed[1];
+        d2 = slope(α2, geographic(φ2, x2).inverseTransform(transformed)); x2 = transformed[0]; y2 = transformed[1];
         final double sφ2 = φ2;                                              // Save setting before modification.
         final double sλ2 = λ2;
         final double sα2 = α2;

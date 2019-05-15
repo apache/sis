@@ -187,7 +187,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
         c.setEndPoint  ( 31.4, 121.8);                  // Shanghai
         final Shape path = c.toGeodesicPath2D(1000);
         assertPointEquals( -71.6, -33.0, ShapeUtilities.pointOnBezier(path, 0));
-        assertPointEquals( 121.8,  31.4, ShapeUtilities.pointOnBezier(path, 1));
+        assertPointEquals(-238.2,  31.4, ShapeUtilities.pointOnBezier(path, 1));            // λ₂ = 121.8° - 360°
         assertPointEquals(-159.2,  -6.8, ShapeUtilities.pointOnBezier(path, 0.5));
     }
 
