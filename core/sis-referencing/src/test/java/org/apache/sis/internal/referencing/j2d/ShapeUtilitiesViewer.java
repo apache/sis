@@ -45,7 +45,7 @@ import org.apache.sis.util.CharSequences;
  * @module
  */
 @SuppressWarnings("serial")
-final strictfp class ShapeUtilitiesViewer extends JPanel {
+public final strictfp class ShapeUtilitiesViewer extends JPanel {
     /**
      * The {@link ShapeUtilities} methods to test.
      */
@@ -93,6 +93,7 @@ final strictfp class ShapeUtilitiesViewer extends JPanel {
     /**
      * Creates a new panel where to paint the input and output values.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private ShapeUtilitiesViewer() {
         setBackground(Color.BLACK);
         input  = new Path2D.Float();
