@@ -29,15 +29,22 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import net.sf.geographiclib.Geodesic;
+import net.sf.geographiclib.GeodesicData;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.opengis.test.Assert.*;
-import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
 
 
 /**
- * Tests {@link GeodeticCalculator}.
+ * Tests {@link GeodeticCalculator}. Test values come from the following sources:
+ *
+ * <ul>
+ *   <li><a href="https://en.wikipedia.org/wiki/Great-circle_navigation#Example">Great-circle navigation on Wikipedia.</a></li>
+ *   <li><a href="http://doi.org/10.5281/zenodo.32156">Karney, C. F. F. (2010). Test set for geodesics [Data set]. Zenodo.</a></li>
+ *   <li>Charles Karney's <a href="https://geographiclib.sourceforge.io/">GeographicLib</a> implementation.</li>
+ * </ul>
  *
  * @version 1.0
  * @since 1.0
@@ -119,7 +126,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     }
 
     /**
-     * Tests geodesic distances on the equator.
+     * Tests geodesic distances and rhumb line length on the equator.
      */
     @Test
     public void testDistanceAtEquator() {
@@ -128,10 +135,11 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
         final double r = c.ellipsoid.getSemiMajorAxis() * (PI / 180);
         c.setStartPoint(0, 0);
         for (int i=0; i<100; i++) {
-            final double x = 180 * random.nextDouble();
+            final double x = 360 * random.nextDouble() - 180;
             c.setEndPoint(0, x);
-            assertEquals(x * r, c.getGeodesicDistance(), Formulas.LINEAR_TOLERANCE);
-            assertEquals(x * r, c.getRhumblineLength(),  Formulas.LINEAR_TOLERANCE);
+            final double expected = abs(x) * r;
+            assertEquals("Geodesic",   expected, c.getGeodesicDistance(), Formulas.LINEAR_TOLERANCE);
+            assertEquals("Rhumb line", expected, c.getRhumblineLength(),  Formulas.LINEAR_TOLERANCE);
         }
     }
 
@@ -144,7 +152,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
      * @see <a href="https://en.wikipedia.org/wiki/Great-circle_navigation#Example">Great-circle navigation on Wikipedia</a>
      */
     @Test
-    public void testGeodesic() throws TransformException {
+    public void testGeodesicDistanceAndAzimuths() throws TransformException {
         final GeodeticCalculator c = create(false);
         c.setStartPoint(-33.0, -71.6);          // Valparaíso
         c.setEndPoint  ( 31.4, 121.8);          // Shanghai
@@ -176,12 +184,12 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     /**
      * Tests geodetic calculator involving a coordinate operation.
      * This test uses a simple CRS with only the axis order interchanged.
-     * The coordinates are the same than {@link #testGeodesic()}.
+     * The coordinates are the same than {@link #testGeodesicDistanceAndAzimuths()}.
      *
      * @throws TransformException if an error occurred while transforming coordinates.
      */
     @Test
-    @DependsOnMethod("testGeodesic")
+    @DependsOnMethod("testGeodesicDistanceAndAzimuths")
     public void testUsingTransform() throws TransformException {
         final GeodeticCalculator c = create(true);
         final double φ = -33.0;
@@ -195,9 +203,10 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     }
 
     /**
-     * Tests {@link GeodeticCalculator#toGeodesicPath2D(double)}. This method uses a CRS
-     * that swap axis order as a way to verify that user-specified CRS is taken in account.
-     * The tested coordinates are from Wikipedia example.
+     * Tests {@link GeodeticCalculator#toGeodesicPath2D(double)}. This method uses a CRS that swap axis order
+     * as a way to verify that user-specified CRS is taken in account. The start point and end point are the
+     * same than in {@link #testGeodesicDistanceAndAzimuths()}. Note that this path crosses the anti-meridian,
+     * so the end point needs to be shifted by 360°.
      *
      * @throws TransformException if an error occurred while transforming coordinates.
      */
@@ -237,53 +246,35 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     }
 
     /**
-     * Tests path on the parallel at 45°N. This tests Data for this test have been taken from
-     * <a href="http://perso.univ-lemans.fr/~hainry/articles/loxonavi.html">Orthodromie et loxodromie</a> page.
+     * Tests geodesic path between random points. The coordinates are compared with values computed by
+     * <a href="https://geographiclib.sourceforge.io/">GeographicLib</a>, taken as reference implementation.
      *
      * @throws TransformException if an error occurred while transforming coordinates.
      */
     @Test
-    public void testOnParallel45() throws TransformException {
-        /*
-         * Following numbers assume a radius R = 60 * 180/π nautical miles ≈ 6366 km.
-         * (compare to 6371 km for authalic sphere, or (6356 / 6378) km for WGS84 semi-minor/major axis length).
-         *
-         * Column 1: Longitude difference in degrees.
-         * Column 2: Geodesic distance in kilometers.
-         * Column 3: Rhumb line distance in kilometers.
-         */
-        final double[] data = {
-              0.00,      0,      0,
-             11.25,    883,    884,
-             22.50,   1762,   1768,
-             33.75,   2632,   2652,
-             45.00,   3489,   3536,
-             56.25,   4327,   4419,
-             67.50,   5140,   5303,
-             78.75,   5923,   6187,
-             90.00,   6667,   7071,
-            101.25,   7363,   7955,
-            112.50,   8002,   8839,
-            123.75,   8573,   9723,
-            135.00,   9064,  10607,
-            146.25,   9463,  11490,
-            157.50,   9758,  12374,
-            168.75,   9939,  13258,
-            180.00,  10000,  14142
-        };
+    public void testBetweenRandomPoints() throws TransformException {
+        final Random random = TestUtilities.createRandomNumberGenerator();
         final GeodeticCalculator c = create(false);
-        final double toTestValue = (60 * NAUTICAL_MILE * 180/PI) / 6371000 / 1000;
-        for (int i=0; i<data.length; i+=3) {
-            c.setStartPoint(45, 0);
-            c.setEndPoint(45, data[i]);
-            double geodesic  = c.getGeodesicDistance();
-            double rhumbLine = c.getRhumblineLength();
-            geodesic  *= toTestValue;
-            rhumbLine *= toTestValue;
-            final double tolerance = data[i+1] / 1000;           // In kilometres.
-            assertEquals("Geodesic distance",   data[i+1], geodesic,  tolerance);
-            assertEquals("Rhumb line distance", data[i+2], rhumbLine, tolerance);
-            assertEquals("Distance measured along geodesic path", geodesic, length(c) * toTestValue, tolerance * 20);
+        final Geodesic reference = new Geodesic(c.ellipsoid.getSemiMajorAxis(), 1/c.ellipsoid.getInverseFlattening());
+        for (int i=0; i<100; i++) {
+            final double φ1 = random.nextDouble() * 180 -  90;
+            final double λ1 = random.nextDouble() * 360 - 180;
+            final double φ2 = random.nextDouble() * 180 -  90;
+            final double Δλ = random.nextDouble() * 360 - 180;
+            final double λ2 = IEEEremainder(λ1 + Δλ, 360);
+            c.setStartPoint(φ1, λ1);
+            c.setEndPoint  (φ2, λ2);
+            final double geodesic  = c.getGeodesicDistance();
+            final double rhumbLine = c.getRhumblineLength();
+            final GeodesicData expected = reference.Inverse(φ1, λ1, φ2, λ2);
+            assertEquals("Geodesic distance", expected.s12,  geodesic,               Formulas.LINEAR_TOLERANCE);
+            assertEquals("Starting azimuth",  expected.azi1, c.getStartingAzimuth(), Formulas.ANGULAR_TOLERANCE);
+            assertEquals("Ending azimuth",    expected.azi2, c.getEndingAzimuth(),   Formulas.ANGULAR_TOLERANCE);
+            assertTrue  ("Rhumb ≧ geodesic",  rhumbLine >= geodesic);
+            if (false) {
+                // Disabled because currently too inaccurate - see https://issues.apache.org/jira/browse/SIS-453
+                assertEquals("Distance measured along geodesic path", geodesic, length(c), Formulas.ANGULAR_TOLERANCE);
+            }
         }
     }
 

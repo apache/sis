@@ -488,7 +488,7 @@ public class GeodeticCalculator {
                     Resources.Keys.StartOrEndPointNotSet_1, Integer.signum(validity & START_POINT)));
         }
         final double Δλ = λ2 - λ1;
-        final double Δφ = φ2 - φ2;
+        final double Δφ = φ2 - φ1;
         double factor;
         if (abs(Δφ) < 1E-7) {
             factor = Δλ * cos((φ1 + φ2)/2);
@@ -504,9 +504,9 @@ public class GeodeticCalculator {
              */
             final double ΔG = log(tan(PI/4 + φ1/2) / tan(PI/4 + φ2/2));
             final double α = atan(Δλ / ΔG);
-            factor = abs(Δφ) / cos(α);
+            factor = Δφ / cos(α);
         }
-        rhumblineLength = radius * factor;
+        rhumblineLength = radius * abs(factor);
         validity |= RHUMBLINE_LENGTH;
     }
 
