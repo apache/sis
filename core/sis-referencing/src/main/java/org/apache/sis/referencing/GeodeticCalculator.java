@@ -215,7 +215,7 @@ public class GeodeticCalculator {
      * @return the default CRS for {@link Position} instances.
      */
     public CoordinateReferenceSystem getPositionCRS() {
-        return userToGeodetic.getCoordinateReferenceSystem();
+        return userToGeodetic.defaultCRS;
     }
 
     /**
@@ -226,7 +226,7 @@ public class GeodeticCalculator {
      * @return the coordinate reference system of (φ,λ) coordinates.
      */
     public GeographicCRS getGeographicCRS() {
-        return (GeographicCRS) userToGeodetic.defaultCRS;
+        return (GeographicCRS) userToGeodetic.getCoordinateReferenceSystem();
     }
 
     /**

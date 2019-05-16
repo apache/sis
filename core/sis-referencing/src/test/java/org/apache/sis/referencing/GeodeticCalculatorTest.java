@@ -21,6 +21,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.PathIterator;
 import java.util.Random;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.internal.referencing.Formulas;
@@ -192,6 +193,8 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     @DependsOnMethod("testGeodesicDistanceAndAzimuths")
     public void testUsingTransform() throws TransformException {
         final GeodeticCalculator c = create(true);
+        assertAxisDirectionsEqual("GeographicCRS", c.getGeographicCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual("PositionCRS",     c.getPositionCRS().getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
         final double φ = -33.0;
         final double λ = -71.6;
         c.setStartPoint(new DirectPosition2D(λ, φ));
