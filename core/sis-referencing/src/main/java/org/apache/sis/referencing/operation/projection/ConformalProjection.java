@@ -167,8 +167,8 @@ abstract class ConformalProjection extends NormalizedProjection {
      * This formula is also part of other projections, since Mercator can be considered as a special case of
      * Lambert Conic Conformal for instance.
      *
-     * <p>This function is <em>almost</em> the converse of the {@link #expOfNorthing(double, double)} function.
-     * In a Mercator inverse projection, the value of the {@code expOfSouthing} argument is {@code exp(-y)}.</p>
+     * <p>This function is <em>almost</em> the converse of the {@link #expΨ(double, double)} function.
+     * In a Mercator inverse projection, the value of the {@code rexpΨ} argument is {@code exp(-Ψ)}.</p>
      *
      * <p>The input should be a positive number, otherwise the result will be either outside
      * the [-π/2 … π/2] range, or will be NaN. Its behavior at some particular points is:</p>
@@ -184,14 +184,14 @@ abstract class ConformalProjection extends NormalizedProjection {
      * for the same precision, but this precision is achieved "only" for relatively small eccentricity like
      * the Earth's one. See the {@code MercatorMethodComparison} class in the test package for more discussion.
      *
-     * @param  expOfSouthing  the <em>reciprocal</em> of the value returned by {@link #expOfNorthing}.
+     * @param  rexpΨ  the <em>reciprocal</em> of the value returned by {@link #expΨ}.
      * @return the latitude in radians.
      * @throws ProjectionException if the iteration does not converge.
      *
-     * @see #expOfNorthing(double, double)
+     * @see #expΨ(double, double)
      * @see #dy_dφ(double, double)
      */
-    final double φ(final double expOfSouthing) throws ProjectionException {
+    final double φ(final double rexpΨ) throws ProjectionException {
         /*
          * Get a first approximation of φ from Snyder (7-11). The result below would be exact if the
          * ellipsoid was actually a sphere. But if the eccentricity is different than 0, then we will
@@ -200,7 +200,7 @@ abstract class ConformalProjection extends NormalizedProjection {
          * Note that the φ value computed by the line below is called χ in EPSG guide.
          * We name it φ in our code because we will modify that value in-place in order to get φ.
          */
-        double φ = (PI/2) - 2*atan(expOfSouthing);          // at this point == χ (conformal latitude).
+        double φ = (PI/2) - 2*atan(rexpΨ);                  // at this point == χ (conformal latitude).
         /*
          * Add a correction for the flattened shape of the Earth. The correction can be represented by an
          * infinite series. Here, we apply only the first 4 terms. Those terms are given by §1.3.3 in the
@@ -232,8 +232,8 @@ abstract class ConformalProjection extends NormalizedProjection {
         final double hℯ = 0.5 * eccentricity;
         for (int it=0; it<MAXIMUM_ITERATIONS; it++) {
             final double ℯsinφ = eccentricity * sin(φ);
-            final double Δφ = φ - (φ = PI/2 - 2*atan(expOfSouthing * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ)));
-            if (!(abs(Δφ) > ITERATION_TOLERANCE)) {     // Use '!' for accepting NaN.
+            final double Δφ = φ - (φ = PI/2 - 2*atan(rexpΨ * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ)));
+            if (!(abs(Δφ) > ITERATION_TOLERANCE)) {                 // Use '!' for accepting NaN.
                 return φ;
             }
         }
@@ -241,16 +241,18 @@ abstract class ConformalProjection extends NormalizedProjection {
     }
 
     /**
-     * Computes part of the Mercator projection for the given latitude. This formula is also part of
+     * Computes <code>{@linkplain Math#exp(double) exp}(Ψ)</code> where Ψ is the isometric latitude.
+     * This is part of the Mercator projection for the given latitude. This formula is also part of
      * Lambert Conic Conformal projection, since Mercator can be considered as a special case of that
      * Lambert projection with the equator as the single standard parallel.
      *
-     * <p>The Mercator projection is given by the {@linkplain Math#log(double) natural logarithm}
-     * of the value returned by this method. This function is <em>almost</em> the converse of
-     * {@link #φ(double)}.
+     * <p>The isometric latitude is given by the {@linkplain Math#log(double) natural logarithm} of the value returned
+     * by this method. The <em>reciprocal</em> of this function {@code 1/expΨ(φ)} is the converse of {@link #φ(double)}.
+     * Isometric latitude Ψ is related to conformal latitude χ by {@literal χ(φ) = gd(Ψ(φ))} where {@literal gd(x)} is the
+     * Gudermannian function. There is many representations of that function, e.g. {@literal gd(Ψ) = 2⋅atan(expΨ) - π/2}.</p>
      *
      * <p>In IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015,
-     * a function closely related to this one has the letter <var>t</var>.</p>
+     * a function closely related to this method has the letter <var>t</var>.</p>
      *
      *
      * <div class="section">Properties</div>
@@ -261,12 +263,12 @@ abstract class ConformalProjection extends NormalizedProjection {
      *
      * <p>Some values are:</p>
      * <ul>
-     *   <li>expOfNorthing(NaN)    =  NaN</li>
-     *   <li>expOfNorthing(±∞)     =  NaN</li>
-     *   <li>expOfNorthing(-π/2)   =   0</li>
-     *   <li>expOfNorthing( 0  )   =   1</li>
-     *   <li>expOfNorthing(+π/2)   →   ∞  (actually some large value like 1.633E+16)</li>
-     *   <li>expOfNorthing(-φ)     =  1 / expOfNorthing(φ)</li>
+     *   <li>expΨ(NaN)    =  NaN</li>
+     *   <li>expΨ(±∞)     =  NaN</li>
+     *   <li>expΨ(-π/2)   =   0</li>
+     *   <li>expΨ( 0  )   =   1</li>
+     *   <li>expΨ(+π/2)   →   ∞  (actually some large value like 1.633E+16)</li>
+     *   <li>expΨ(-φ)     =  1 / expΨ(φ)</li>
      * </ul>
      *
      *
@@ -293,12 +295,13 @@ abstract class ConformalProjection extends NormalizedProjection {
      *
      * @param  φ      the latitude in radians.
      * @param  ℯsinφ  the sine of the φ argument multiplied by {@link #eccentricity}.
-     * @return {@code Math.exp} of the Mercator projection of the given latitude.
+     * @return {@code Math.exp(Ψ)} where Ψ is the isometric latitude.
      *
      * @see #φ(double)
      * @see #dy_dφ(double, double)
+     * @see <a href="https://en.wikipedia.org/wiki/Latitude#Isometric_latitude">Isometric latitude on Wikipedia</a>
      */
-    final double expOfNorthing(final double φ, final double ℯsinφ) {
+    final double expΨ(final double φ, final double ℯsinφ) {
         /*
          * Note:   tan(π/4 - φ/2)  =  1 / tan(π/4 + φ/2)
          *
@@ -313,14 +316,14 @@ abstract class ConformalProjection extends NormalizedProjection {
      * Computes the partial derivative of a Mercator projection at the given latitude. This formula is also part of
      * other projections, since Mercator can be considered as a special case of Lambert Conic Conformal for instance.
      *
-     * <p>In order to get the derivative of the {@link #expOfNorthing(double, double)} function, call can multiply
-     * the returned value by by {@code expOfNorthing}.</p>
+     * <p>In order to get the derivative of the {@link #expΨ(double, double)} function, caller can multiply
+     * the returned value by by {@code expΨ}.</p>
      *
      * @param  sinφ  the sine of latitude.
      * @param  cosφ  the cosine of latitude.
      * @return the partial derivative of a Mercator projection at the given latitude.
      *
-     * @see #expOfNorthing(double, double)
+     * @see #expΨ(double, double)
      * @see #φ(double)
      */
     final double dy_dφ(final double sinφ, final double cosφ) {

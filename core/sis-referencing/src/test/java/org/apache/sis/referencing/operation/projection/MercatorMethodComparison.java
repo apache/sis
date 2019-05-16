@@ -106,7 +106,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      * Computes φ using the series expansion given by Geomatics Guidance Note number 7, part 2.
      * This is the first part of the {@link ConformalProjection#φ(double)} method.
      *
-     * @param  t  the {@code expOfSouthing} parameter value.
+     * @param  t  the {@code rexpΨ} parameter value.
      * @return the latitude (in radians) for the given parameter.
      */
     public double bySeriesExpansion(final double t) {
@@ -121,7 +121,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      * Computes φ using the iterative method used by USGS.
      * This is the second part of the {@link ConformalProjection#φ(double)} method.
      *
-     * @param  t  the {@code expOfSouthing} parameter value.
+     * @param  t  the {@code rexpΨ} parameter value.
      * @return the latitude (in radians) for the given parameter.
      * @throws ProjectionException if the iteration does not converge.
      */
@@ -142,9 +142,9 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     }
 
     /**
-     * Basically a copy of {@link ConformalProjection#expOfNorthing(double, double)}.
+     * Basically a copy of {@link ConformalProjection#expΨ(double, double)}.
      */
-    final double expOfNorthing(final double φ) {
+    final double expΨ(final double φ) {
         final double ℯsinφ = eccentricity * sin(φ);
         return tan(PI/4 + 0.5*φ) * pow((1 - ℯsinφ) / (1 + ℯsinφ), 0.5*eccentricity);
     }
@@ -172,7 +172,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
         final Random random = new Random();
         for (int i=0; i<numSamples; i++) {
             final double φ = random.nextDouble() * PI - PI/2;
-            final double t = 1 / expOfNorthing(φ);
+            final double t = 1 / expΨ(φ);
             final double byIterativeMethod = byIterativeMethod(t);
             final double bySeriesExpansion = bySeriesExpansion(t);
             final double byImplementation  = implementation.φ(t);
