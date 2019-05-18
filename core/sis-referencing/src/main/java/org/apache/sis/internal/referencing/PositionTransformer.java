@@ -233,7 +233,7 @@ public final class PositionTransformer extends GeneralDirectPosition {
      * @throws TransformException if a coordinate transformation was required and failed.
      */
     public DirectPosition inverseTransform() throws TransformException {
-        return inverse().transform(this, new GeneralDirectPosition(getCoordinateReferenceSystem()));
+        return inverse().transform(this, new GeneralDirectPosition(defaultCRS));
     }
 
     /**
