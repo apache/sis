@@ -31,6 +31,7 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.LocalizedParseException;
 
 import static java.lang.Double.NaN;
@@ -117,7 +118,7 @@ import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
  * </div>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see Angle
  * @see Latitude
@@ -415,7 +416,7 @@ public class AngleFormat extends Format implements Localized {
         degreesFieldWidth   = 1;
         minutesFieldWidth   = 2;
         secondsFieldWidth   = 2;
-        fractionFieldWidth  = 16;  // Number of digits for accurate representation of 1″ ULP.
+        fractionFieldWidth  = 16;       // Number of digits for representation up to Math.ulp(1).
         optionalFields      = (1 << DEGREES_FIELD) | (1 << MINUTES_FIELD) | (1 << SECONDS_FIELD);
         degreesSuffix       = "°";
         minutesSuffix       = "′";
@@ -787,6 +788,74 @@ public class AngleFormat extends Format implements Localized {
             }
         }
         return Math.rint(value);
+    }
+
+    /**
+     * Adjusts the number of fraction digits, and optionally the visible fields, for the given precision.
+     * If the {@code allowFieldChanges} argument is {@code false}, then this method adjusts only the
+     * {@linkplain #setMinimumFractionDigits(int) minimum} and {@linkplain #setMinimumFractionDigits(int)
+     * maximum fraction digits} in order to show angles with at least the specified precision.
+     * But if the {@code allowFieldChanges} argument is {@code true}, then this method may change the
+     * set of fields (degrees, minutes or seconds) to show before to adjust the number of fraction digits.
+     * In that case, this method selects the first row in the following table where the precision matches the condition:
+     *
+     * <table class="sis">
+     *   <caption>Selected fields for given precision</caption>
+     *   <tr><th>Precision</th> <th>Fields</th></tr>
+     *   <tr><td>≧ 1°</td>      <td>D°</td></tr>
+     *   <tr><td>≧ ⅒°</td>      <td>D.d°</td></tr>
+     *   <tr><td>≧ 1′</td>      <td>D°MM′</td></tr>
+     *   <tr><td>≧ ⅒′</td>      <td>D°MM.m′</td></tr>
+     *   <tr><td>≧ 1″</td>      <td>D°MM′SS″</td></tr>
+     *   <tr><td>≧ ⅒″</td>      <td>D°MM′SS.s″</td></tr>
+     *   <tr><td>other</td>     <td>D°MM′SS.ss…″</td></tr>
+     * </table>
+     *
+     * @param  resolution  the desired angle resolution, in decimal degrees.
+     * @param  allowFieldChanges  whether this method is allowed to change the set of fields (degrees, minutes or seconds).
+     *
+     * @since 1.0
+     */
+    @SuppressWarnings("PointlessBitwiseExpression")
+    public void setPrecision(double resolution, final boolean allowFieldChanges) {
+        ArgumentChecks.ensureFinite("resolution", resolution);
+        resolution = Math.abs(resolution);
+        if (resolution == 0) {
+            // Restore same setting than constructor.
+            resolution = 1E-16;                                                     // Math.ulp(1) ≈ 2E-16.
+        }
+        final int significandFractionDigits;
+        if (allowFieldChanges ? resolution >= 0.1 : minutesFieldWidth == 0) {
+            significandFractionDigits = 14;                                         // Math.ulp(360) ≈ 6E-14.
+            if (allowFieldChanges) {
+                minutesFieldWidth = 0;
+                secondsFieldWidth = 0;
+                optionalFields = (1 << MINUTES_FIELD) | (1 << SECONDS_FIELD);
+            }
+        } else {
+            resolution = Math.nextUp(resolution * 60);                              // nextUp(…) in case of 0.5 ULP error.
+            if (allowFieldChanges ? resolution >= 0.1 : secondsFieldWidth == 0) {
+                significandFractionDigits = 12;                                     // Math.ulp(360*60) ≈ 4E-12.
+                if (allowFieldChanges) {
+                    if (minutesFieldWidth == 0) {
+                        minutesFieldWidth = 2;
+                    }
+                    secondsFieldWidth = 0;
+                    optionalFields = (1 << SECONDS_FIELD);
+                }
+            } else {
+                resolution = Math.nextUp(resolution * 60);                          // nextUp(…) in case of 0.5 ULP error.
+                significandFractionDigits = 10;                                     // Math.ulp(360*60*60) ≈ 2E-10.
+                if (allowFieldChanges) {
+                    if (minutesFieldWidth == 0) minutesFieldWidth = 2;
+                    if (secondsFieldWidth == 0) secondsFieldWidth = 2;
+                    optionalFields = 0;
+                }
+            }
+        }
+        final int p = Numerics.suggestFractionDigits(resolution);
+        fractionFieldWidth = (byte) p;
+        minimumFractionDigits = (byte) Math.min(significandFractionDigits, p);
     }
 
     /**
