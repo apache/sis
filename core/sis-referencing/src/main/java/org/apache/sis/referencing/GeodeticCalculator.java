@@ -20,6 +20,7 @@ import java.awt.Shape;
 import java.util.Locale;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.text.NumberFormat;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 
@@ -32,14 +33,16 @@ import org.opengis.geometry.coordinate.Position;
 import org.opengis.geometry.DirectPosition;
 
 import org.apache.sis.io.TableAppender;
-import org.apache.sis.measure.Angle;
+import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Units;
 import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.internal.referencing.PositionTransformer;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -693,51 +696,88 @@ public class GeodeticCalculator {
 
     /**
      * Returns a string representation of start point, end point, azimuths and distance.
+     * The text representation is implementation-specific and may change in any future version.
+     * Current implementation is like below:
+     *
+     * {@preformat text
+     *   Coordinate reference system: Unspecified datum based upon the GRS 1980 Authalic Sphere
+     *   ┌─────────────┬─────────────────┬──────────────────┬─────────────┐
+     *   │             │    Latitude     │    Longitude     │   Azimuth   │
+     *   │ Start point │  9°39′06.1120″N │ 132°37′37.1248″W │  -17°10′37″ │
+     *   │ End point   │ 70°32′45.0206″N │ 109°50′05.0533″E │ -119°03′12″ │
+     *   └─────────────┴─────────────────┴──────────────────┴─────────────┘
+     *   Geodesic distance: 9,967,530.74 m
+     * }
      *
      * @return a string representation of this calculator state.
      */
     @Override
     public String toString() {
-        final Locale     locale    = Locale.getDefault();
-        final Vocabulary resources = Vocabulary.getResources(locale);
-        final StringBuilder buffer = new StringBuilder();
-        final String lineSeparator = System.lineSeparator();
-        final CoordinateReferenceSystem crs = userToGeodetic.getCoordinateReferenceSystem();
-        final boolean isGeographic = crs.equals(userToGeodetic.defaultCRS);
+        final StringBuilder buffer        = new StringBuilder();
+        final Locale        locale        = Locale.getDefault();
+        final Vocabulary    resources     = Vocabulary.getResources(locale);
+        final String        lineSeparator = System.lineSeparator();
+        final CoordinateReferenceSystem crs = getPositionCRS();
         try {
+            /*
+             * Header: name of the Coordinate Reference System.
+             */
             resources.appendLabel(Vocabulary.Keys.CoordinateRefSys, buffer);
             buffer.append(' ').append(crs.getName().getCode()).append(lineSeparator);
-            final TableAppender table = new TableAppender(buffer, " │ ");
-            table.appendHorizontalSeparator();
-            table.nextColumn(); if (isGeographic) table.append(resources.getString(Vocabulary.Keys.Latitude));
-            table.nextColumn(); if (isGeographic) table.append(resources.getString(Vocabulary.Keys.Longitude));
-            for (int i=crs.getCoordinateSystem().getDimension(); --i >= 2;) {
-                table.nextColumn();     // Insert space for additional coordinates, e.g. ellipsoidal height.
-            }
-            table.nextColumn();
-            table.append(resources.getString(Vocabulary.Keys.Azimuth)).nextLine();
-            final CoordinateFormat cf = new CoordinateFormat(locale, null);
-            cf.setSeparator("\t");      // For distributing coordinate values on different columns.
-            boolean endPoint = false;
-            do {
-                table.append(resources.getString(endPoint ? Vocabulary.Keys.EndPoint : Vocabulary.Keys.StartPoint))
-                     .nextColumn();
-                try {
-                    cf.format(endPoint ? getEndPoint() : getStartPoint(), table);
+            /*
+             * Start point and end point together with their azimuth, formatted as a table.
+             */
+            if ((validity & (START_POINT | STARTING_AZIMUTH | END_POINT | ENDING_AZIMUTH)) != 0) {
+                final String[] axes = ReferencingUtilities.getShortAxisNames(resources, crs);
+                final AngleFormat    azimuthFormat = new AngleFormat("DD°MM′SS″", locale);
+                final CoordinateFormat pointFormat = new CoordinateFormat(locale, null);
+                pointFormat.setSeparator("\t");      // For distributing coordinate values on different columns.
+                pointFormat.setDefaultCRS(crs);
+                pointFormat.setPrecision(Formulas.LINEAR_TOLERANCE, Units.METRE);
+                final TableAppender table = new TableAppender(buffer, " │ ");
+                table.setCellAlignment(TableAppender.ALIGN_CENTER);
+                table.appendHorizontalSeparator();
+                for (final String axis : axes) {
                     table.nextColumn();
-                    table.append(new Angle(endPoint ? getEndingAzimuth() : getStartingAzimuth()).toString());
-                } catch (IllegalStateException | TransformException e) {
-                    // Ignore.
+                    table.append(axis);
                 }
-                table.nextLine();
-            } while ((endPoint = !endPoint) == true);
-            table.appendHorizontalSeparator();
-            table.flush();
-            resources.appendLabel(Vocabulary.Keys.GeodesicDistance, buffer);
+                table.nextColumn();
+                table.append(resources.getString(Vocabulary.Keys.Azimuth)).nextLine();
+                boolean endPoint = false;
+                do {
+                    table.setCellAlignment(TableAppender.ALIGN_LEFT);
+                    table.append(resources.getString(endPoint ? Vocabulary.Keys.EndPoint : Vocabulary.Keys.StartPoint)).nextColumn();
+                    table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+                    try {
+                        pointFormat.format(endPoint ? getEndPoint() : getStartPoint(), table);
+                        table.nextColumn();
+                        table.append(azimuthFormat.format(endPoint ? getEndingAzimuth() : getStartingAzimuth()));
+                    } catch (IllegalStateException | TransformException e) {
+                        // Ignore.
+                    }
+                    table.nextLine();
+                } while ((endPoint = !endPoint) == true);
+                table.appendHorizontalSeparator();
+                table.flush();
+            }
+            /*
+             * Distances, formatted with a number of decimal fraction digits suitable for at least 1 centimetre precision.
+             */
+            try {
+                final Unit<Length> unit = getDistanceUnit();
+                final double distance   = getGeodesicDistance();
+                final double precision  = Units.METRE.getConverterTo(unit).convert(Formulas.LINEAR_TOLERANCE);
+                final NumberFormat nf = NumberFormat.getNumberInstance(locale);
+                nf.setMaximumFractionDigits(max(Numerics.suggestFractionDigits(precision), 0));
+                resources.appendLabel(Vocabulary.Keys.GeodesicDistance, buffer);
+                buffer.append(' ').append(nf.format(distance))
+                      .append(' ').append(unit).append(lineSeparator);
+            } catch (IllegalStateException e) {
+                // Ignore.
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);      // Should never happen since we are writting in a StringBuilder.
         }
-        buffer.append(String.format(locale, " %f %s", geodesicDistance, getDistanceUnit()));
         return buffer.toString();
     }
 }

@@ -44,6 +44,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -52,6 +53,7 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
+import org.apache.sis.internal.metadata.AxisDirections;
 
 import static java.util.Collections.singletonMap;
 
@@ -558,5 +560,40 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return mapping;
+    }
+
+    /**
+     * Returns short names for all axes of the given CRS. This method uses short names like "Latitude" or "Height",
+     * even if the full ISO 19111 names are "Geodetic latitude" or "Ellipsoidal height". This is suitable as header
+     * for columns in a table. This method does not include abbreviation or units in the returned names.
+     *
+     * @param  resources  the resources from which to get "latitude" and "longitude" localized labels.
+     * @param  crs        the coordinate reference system from which to get axis names.
+     * @return axis names, localized if possible.
+     */
+    public static String[] getShortAxisNames(final Vocabulary resources, final CoordinateReferenceSystem crs) {
+        final boolean isGeographic = (crs instanceof GeographicCRS);
+        final boolean isProjected  = (crs instanceof ProjectedCRS);
+        final CoordinateSystem cs = crs.getCoordinateSystem();
+        final String[] names = new String[cs.getDimension()];
+        for (int i=0; i<names.length; i++) {
+            short key = 0;
+            final CoordinateSystemAxis axis = cs.getAxis(i);
+            final AxisDirection direction = axis.getDirection();
+            if (AxisDirections.isCardinal(direction)) {
+                final boolean isMeridional = AxisDirection.NORTH.equals(direction) || AxisDirection.SOUTH.equals(direction);
+                if (isGeographic) {
+                    key = isMeridional ? Vocabulary.Keys.Latitude : Vocabulary.Keys.Longitude;
+                } else if (isProjected) {
+                    // We could add "Easting" / "Northing" here for ProjectedCRS in a future version.
+                }
+            } else if (AxisDirection.UP.equals(direction)) {
+                if (isGeographic | isProjected) {
+                    key = Vocabulary.Keys.Height;
+                }
+            }
+            names[i] = (key != 0) ? resources.getString(key) : axis.getName().getCode();
+        }
+        return names;
     }
 }
