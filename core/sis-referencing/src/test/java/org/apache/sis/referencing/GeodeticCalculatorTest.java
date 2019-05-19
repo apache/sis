@@ -19,14 +19,19 @@ package org.apache.sis.referencing;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.PathIterator;
+import java.util.Arrays;
 import java.util.Random;
+import java.io.IOException;
+import java.io.LineNumberReader;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
+import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -306,5 +311,111 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
             iterator.next();
         }
         return length;
+    }
+
+    /**
+     * Compares computations against values provided in <cite>Karney (2010) Test set for geodesics</cite>.
+     * This is an optional test executed only if the {@code $SIS_DATA/Tests/GeodTest.dat} file is found.
+     *
+     * @throws IOException if an error occurred while reading the test file.
+     * @throws TransformException if an error occurred while transforming coordinates.
+     */
+    @Test
+    public void compareAgainstDataset() throws IOException, TransformException {
+        try (LineNumberReader reader = OptionalTestData.GEODESIC.reader()) {
+            final GeodeticCalculator c = new GeodeticCalculator(CommonCRS.WGS84.geographic());
+            final Geodesic reference = new Geodesic(Formulas.getAuthalicRadius(c.ellipsoid), 0);
+            final Random random = TestUtilities.createRandomNumberGenerator();
+            final double[] data = new double[7];
+            try {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    Arrays.fill(data, Double.NaN);
+                    final CharSequence[] split = CharSequences.split(line, ' ');
+                    for (int i=min(split.length, data.length); --i >= 0;) {
+                        data[i] = Double.parseDouble(split[i].toString());
+                    }
+                    /*
+                     * We aim for an 1 cm accuracy. However when spherical formulas are used instead
+                     * than ellipsoidal formulas, an error up to 1% is expected (Wikipedia).
+                     */
+                    final double tolerance = data[6] * 0.01;                // 1% of distance.
+                    final double cosφ = abs(cos(toRadians(data[3])));       // For adjusting longitude tolerance.
+                    c.setStartPoint(data[0], data[1]);                      // (φ₁, λ₁)
+                    if (random.nextBoolean()) {
+                        /*
+                         * Computes the end point from a distance and azimuth. The angular tolerance
+                         * is derived from the linear tolerance, except at pole where we disable the
+                         * check of longitude and azimuth values.
+                         */
+                        c.setStartingAzimuth (data[2]);
+                        c.setGeodesicDistance(data[6]);
+                        final double latitudeTolerance = tolerance * (1d/6371007 * (180/PI));
+                        final double longitudeTolerance;
+                        if (data[3] > 89.5) {
+                            longitudeTolerance = 180;               // TODO: remove after we use spherical formulas.
+                        } else {
+                            longitudeTolerance = latitudeTolerance / cosφ;
+                        }
+                        final double azimuthTolerance = 0.5 / cosφ;
+                        compareGeodeticData(data, c, latitudeTolerance, longitudeTolerance,
+                                            azimuthTolerance, Formulas.LINEAR_TOLERANCE);
+                        /*
+                         * Replace the distance and azimuth values by values computed using spherical formulas,
+                         * then compare again with values computed by GeodeticCalculator but with low tolerance.
+                         */
+                        final GeodesicData gd = reference.Direct(data[0], data[1], data[2], data[6]);
+                        data[3] = gd.lat2;
+                        data[4] = gd.lon2;
+                        data[5] = gd.azi2;
+                    } else {
+                        /*
+                         * Compute the distance and azimuth values between two points. We perform
+                         * this test or the above test randomly instead of always executing both
+                         * of them for making sure that GeodeticCalculator never see the expected
+                         * values.
+                         */
+                        c.setEndPoint(data[3], data[4]);            // (φ₂, λ₂)
+                        compareGeodeticData(data, c,
+                                Formulas.ANGULAR_TOLERANCE,         // Latitude tolerance
+                                Formulas.ANGULAR_TOLERANCE,         // Longitude tolerance
+                                100 / cosφ, tolerance);             // Azimuth is inaccurate for reason not yet identified.
+                        /*
+                         * Replace the distance and azimuth values by values computed using spherical formulas,
+                         * then compare again with values computed by GeodeticCalculator but with low tolerance.
+                         */
+                        final GeodesicData gd = reference.Inverse(data[0], data[1], data[3], data[4]);
+                        data[2] = gd.azi1;
+                        data[5] = gd.azi2;
+                        data[6] = gd.s12;
+                    }
+                    compareGeodeticData(data, c, Formulas.ANGULAR_TOLERANCE,
+                            Formulas.ANGULAR_TOLERANCE, 1E-4, Formulas.LINEAR_TOLERANCE);
+                }
+            } catch (AssertionError e) {
+                out.printf("Test failure at line %d%nGeodetic calculator is:%n", reader.getLineNumber());
+                out.println(c);
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Verifies that geodetic calculator results are equal to the given values.
+     * Order in the {@code data} array is as documented in {@link OptionalTestData#GEODESIC}.
+     */
+    private static void compareGeodeticData(final double[] expected, final GeodeticCalculator c,
+            final double latitudeTolerance, final double longitudeTolerance, final double azimuthTolerance,
+            final double linearTolerance) throws TransformException
+    {
+        final DirectPosition start = c.getStartPoint();
+        final DirectPosition end   = c.getEndPoint();
+        assertEquals("φ₁",  expected[0], start.getOrdinate(0),    Formulas.ANGULAR_TOLERANCE);
+        assertEquals("λ₁",  expected[1], start.getOrdinate(1),    Formulas.ANGULAR_TOLERANCE);
+        assertEquals("α₁",  expected[2], c.getStartingAzimuth(),  azimuthTolerance);
+        assertEquals("φ₂",  expected[3], end.getOrdinate(0),      latitudeTolerance);
+        assertEquals("λ₂",  expected[4], end.getOrdinate(1),      longitudeTolerance);
+        assertEquals("α₂",  expected[5], c.getEndingAzimuth(),    azimuthTolerance);
+        assertEquals("s₁₂", expected[6], c.getGeodesicDistance(), linearTolerance);
     }
 }
