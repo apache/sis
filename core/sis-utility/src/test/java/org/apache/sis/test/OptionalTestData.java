@@ -82,7 +82,7 @@ public enum OptionalTestData {
     }
 
     /**
-     * Returns the path to the test file if {@code $IS_DATA} is defined an the file exists, or {@code null} otherwise.
+     * Returns the path to the test file if {@code $SIS_DATA} is defined an the file exists, or {@code null} otherwise.
      *
      * @return path to the test file, or {@code null} if none.
      */
@@ -107,7 +107,7 @@ public enum OptionalTestData {
      */
     public InputStream open() throws IOException {
         final Path path = path();
-        assumeNotNull(name(), path);
+        assumeNotNull("File “$SIS_DATA/Tests/" + filename + "” has not been found.", path);
         return Files.newInputStream(path);
     }
 
