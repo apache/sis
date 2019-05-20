@@ -21,6 +21,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import org.apache.sis.test.TestConfiguration;
 
 
 /**
@@ -34,19 +35,24 @@ import javax.swing.JPanel;
  */
 public final strictfp class VisualCheck {
     /**
+     * Whether to show widgets.
+     */
+    public static final boolean SHOW_WIDGET = Boolean.getBoolean(TestConfiguration.SHOW_WIDGET_KEY);
+
+    /**
      * Do not allows instantiation of this class.
      */
     private VisualCheck() {
     }
 
     /**
-     * Visualizes the given shape in its own window. The shape is resized to fill most of the window,
-     * with <var>y</var> axis oriented toward up. The bounding box is drawn in gray color behind the shape.
+     * Visualizes the given shapes in a window. The shapes are resized to fill most of the window,
+     * with <var>y</var> axis oriented toward up. The bounding box is drawn in gray color behind the shapes.
      *
-     * @param  shape  the shape to visualize.
+     * @param  shapes  the shapes to visualize.
      */
-    public static void show(final Shape shape) {
-        show(new ShapeViewer(shape));
+    public static void show(final Shape... shapes) {
+        show(new ShapeViewer(shapes));
     }
 
     /**

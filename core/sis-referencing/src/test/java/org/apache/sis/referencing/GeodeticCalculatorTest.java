@@ -17,6 +17,7 @@
 package org.apache.sis.referencing;
 
 import java.awt.Shape;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.PathIterator;
 import java.util.Arrays;
@@ -26,11 +27,12 @@ import java.io.LineNumberReader;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
+import org.apache.sis.internal.referencing.j2d.ShapeUtilitiesExt;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
+import org.apache.sis.test.widget.VisualCheck;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
@@ -223,12 +225,23 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     public void testGeodesicPath2D() throws TransformException {
         final GeodeticCalculator c = create(true);
         final double tolerance = 0.05;
-        c.setStartPoint(-33.0, -71.6);                  // Valparaíso
-        c.setEndPoint  ( 31.4, 121.8);                  // Shanghai
-        final Shape path = c.toGeodesicPath2D(1000);
-        assertPointEquals( -71.6, -33.0, ShapeUtilities.pointOnBezier(path, 0),   tolerance);
-        assertPointEquals(-238.2,  31.4, ShapeUtilities.pointOnBezier(path, 1),   tolerance);       // λ₂ = 121.8° - 360°
-        assertPointEquals(-159.2,  -6.8, ShapeUtilities.pointOnBezier(path, 0.5), tolerance);
+        c.setStartPoint(-33.0, -71.6);                                              // Valparaíso
+        c.setEndPoint  ( 31.4, 121.8);                                              // Shanghai
+        final Shape singleCurve = c.toGeodesicPath2D(Double.POSITIVE_INFINITY);
+        final Shape multiCurves = c.toGeodesicPath2D(10000);                        // 10 km tolerance.
+        /*
+         * The approximation done by a single curve is not very good, but is easier to test.
+         */
+        assertPointEquals( -71.6, -33.0, ShapeUtilitiesExt.pointOnBezier(singleCurve, 0),   tolerance);
+        assertPointEquals(-238.2,  31.4, ShapeUtilitiesExt.pointOnBezier(singleCurve, 1),   tolerance);       // λ₂ = 121.8° - 360°
+        assertPointEquals(-159.2,  -6.8, ShapeUtilitiesExt.pointOnBezier(singleCurve, 0.5), tolerance);
+        /*
+         * The more accurate curve can not be simplified to a Java2D primitive.
+         */
+        assertInstanceOf("Multicurves", Path2D.class, multiCurves);
+        if (VisualCheck.SHOW_WIDGET) {
+            VisualCheck.show(singleCurve, multiCurves);
+        }
     }
 
     /**

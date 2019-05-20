@@ -26,7 +26,7 @@ import javax.swing.JPanel;
 
 
 /**
- * A simple viewer of {@link Shape} object. The shape is resized to fill most of the window,
+ * A simple viewer of {@link Shape} objects. The shapes are resized to fill most of the window,
  * with <var>y</var> axis oriented toward up. The bounding box is drawn in gray color behind.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -44,14 +44,21 @@ final strictfp class ShapeViewer extends JPanel {
     /**
      * The shape to visualize.
      */
-    private final Shape shape;
+    private final Shape[] shapes;
+
+    /**
+     * Colors to use for drawing shapes.
+     */
+    private final Color[] colors = {
+        Color.RED, Color.GREEN, Color.BLUE
+    };
 
     /**
      * Creates a new panel for rendering the given shape.
      */
-    ShapeViewer(final Shape shape) {
+    ShapeViewer(final Shape[] shapes) {
         setBackground(Color.BLACK);
-        this.shape = shape;
+        this.shapes = shapes;
     }
 
     /**
@@ -61,14 +68,23 @@ final strictfp class ShapeViewer extends JPanel {
     protected void paintComponent(final Graphics graphics) {
         super.paintComponent(graphics);
         final Graphics2D g = (Graphics2D) graphics;
-        Rectangle2D bounds = shape.getBounds2D();
-        g.translate(MARGIN, MARGIN);
-        g.scale((getWidth() - 2*MARGIN) / bounds.getWidth(), (2*MARGIN - getHeight()) / bounds.getHeight());
-        g.translate(-bounds.getMinX(), -bounds.getMaxY());
-        g.setStroke(new BasicStroke(0));
-        g.setColor(Color.GRAY);
-        g.draw(bounds);
-        g.setColor(Color.RED);
-        g.draw(shape);
+        Rectangle2D bounds = null;
+        for (final Shape shape : shapes) {
+            final Rectangle2D b = shape.getBounds2D();
+            if (bounds == null) bounds = b;
+            else bounds.add(b);
+        }
+        if (bounds != null) {
+            g.translate(MARGIN, MARGIN);
+            g.scale((getWidth() - 2*MARGIN) / bounds.getWidth(), (2*MARGIN - getHeight()) / bounds.getHeight());
+            g.translate(-bounds.getMinX(), -bounds.getMaxY());
+            g.setStroke(new BasicStroke(0));
+            g.setColor(Color.GRAY);
+            g.draw(bounds);
+            for (int i=0; i<shapes.length; i++) {
+                g.setColor(colors[i % colors.length]);
+                g.draw(shapes[i]);
+            }
+        }
     }
 }

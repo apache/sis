@@ -40,6 +40,7 @@ import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.internal.referencing.PositionTransformer;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
+import org.apache.sis.internal.referencing.j2d.Bezier;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.Numerics;
@@ -492,8 +493,8 @@ public class GeodeticCalculator {
         }
         final double Δλ = λ2 - λ1;
         final double Δφ = φ2 - φ1;
-        double factor;
-        if (abs(Δφ) < 1E-7) {
+        final double factor;
+        if (abs(Δφ) < Formulas.ANGULAR_TOLERANCE) {
             factor = Δλ * cos((φ1 + φ2)/2);
         } else {
             /*
@@ -628,19 +629,16 @@ public class GeodeticCalculator {
      * </ol>
      *
      * <b>Limitations:</b>
-     * current implementation builds a single linear, quadratic or cubic Bézier curve. It does not yet create a chain
-     * of Bézier curves. Consequently the errors may be larger than the given {@code tolerance} threshold. Another
-     * limitation is that this method depends on the presence of {@code java.desktop} module. Those limitations may be
-     * addressed in a future version (see <a href="https://issues.apache.org/jira/browse/SIS-453">SIS-453</a>).
+     * This method depends on the presence of {@code java.desktop} module. This limitations may be addressed
+     * in a future Apache SIS version (see <a href="https://issues.apache.org/jira/browse/SIS-453">SIS-453</a>).
      *
      * @param  tolerance  maximal error between the approximated curve and actual geodesic track
      *                    in the units of measurement given by {@link #getDistanceUnit()}.
-     *                    <em>See limitations above</em>.
      * @return an approximation of geodesic track as Bézier curves in a Java2D object.
      * @throws TransformException if the coordinates can not be transformed to {@linkplain #getPositionCRS() position CRS}.
      * @throws IllegalStateException if some required properties have not been specified.
      */
-    public Shape toGeodesicPath2D(double tolerance) throws TransformException {
+    public Shape toGeodesicPath2D(final double tolerance) throws TransformException {
         if (isInvalid(START_POINT | STARTING_AZIMUTH | END_POINT | ENDING_AZIMUTH | GEODESIC_DISTANCE)) {
             if (isInvalid(END_POINT)) {
                 computeEndPoint();
@@ -648,50 +646,113 @@ public class GeodeticCalculator {
                 computeDistance();
             }
         }
-        tolerance *= (180/PI) / radius;                                     // Angular tolerance in degrees.
-        double d1, x1, y1, d2, x2, y2;                                      // Parameters for the Bezier curve.
-        x2 = λ2;
-        final double sign = signum(α1);
-        if (sign == signum(λ1 - x2)) {
-            x2 += 2*PI * sign;                  // We need λ₁ < λ₂ if heading east, or λ₁ > λ₂ if heading west.
-        }
-        final double[] transformed = new double[ReferencingUtilities.getDimension(userToGeodetic.defaultCRS)];
-        d1 = slope(α1, geographic(φ1, λ1).inverseTransform(transformed)); x1 = transformed[0]; y1 = transformed[1];
-        d2 = slope(α2, geographic(φ2, x2).inverseTransform(transformed)); x2 = transformed[0]; y2 = transformed[1];
-        final double sφ2 = φ2;                                              // Save setting before modification.
-        final double sλ2 = λ2;
-        final double sα2 = α2;
-        final double sd  = geodesicDistance;
+        final PathBuilder bezier = new PathBuilder(toDegrees(tolerance / radius));
+        final Shape path;
         try {
-            geodesicDistance /= 2;
-            computeEndPoint();
-            final Matrix d = geographic(φ2, λ2).inverseTransform(transformed);      // Coordinates of midway point.
-            double εx;                                                              // Tolerance for φ (first coordinate).
-            double εy = tolerance / cos(φ2);                                        // Tolerance for λ (second coordinate).
-            εx = d.getElement(0,0)*tolerance + d.getElement(0,1)*εy;                // Tolerance for x in user CRS.
-            εy = d.getElement(1,0)*tolerance + d.getElement(1,1)*εy;                // Tolerance for y in user CRS.
-            return ShapeUtilities.bezier(x1, y1, transformed[0], transformed[1], x2, y2, d1, d2, εx, εy);
+            path = bezier.build();
         } finally {
-            φ2 = sφ2;                                                               // Restore the setting previously saved.
-            λ2 = sλ2;
-            α2 = sα2;
-            geodesicDistance = sd;
+            bezier.reset();
         }
+        return ShapeUtilities.toPrimitive(path);
     }
 
     /**
-     * Returns the tangent of the given angle converted to the user CRS space.
-     *
-     * @param  α  azimuth angle in radians, with 0 pointing toward north and values increasing clockwise.
-     * @param  d  Jacobian matrix from (φ,λ) to the user coordinate reference system.
-     * @return ∂y/∂x.
+     * Builds a geodesic path as a sequence of Bézier curves. The start point and end points are the points
+     * in enclosing {@link GeodeticCalculator} at the time this class is instantiated. The start coordinates
+     * given by {@link #φ1} and {@link #λ1} shall never change for this whole builder lifetime. However the
+     * end coordinates ({@link #φ2}, {@link #λ2}) will vary at each step.
      */
-    private double slope(final double α, final Matrix d) {
-        final double dx = cos(α);     // sin(π/2 - α) = -sin(α - π/2) = cos(α)
-        final double dy = sin(α);     // cos(π/2 - α) = +cos(α - π/2) = sin(α)
-        final double tx = d.getElement(0,0)*dx + d.getElement(0,1)*dy;
-        final double ty = d.getElement(1,0)*dx + d.getElement(1,1)*dy;
-        return ty / tx;
+    private final class PathBuilder extends Bezier {
+        /**
+         * End point coordinates and derivative, together with geodesic and loxodromic distances.
+         * Saved for later restoration by {@link #reset()}.
+         */
+        private final double φf, λf, αf, distance, length;
+
+        /**
+         * {@link #validity} flags at the time {@code PathBuilder} is instantiated.
+         * Saved for later restoration by {@link #reset()}.
+         */
+        private final int flags;
+
+        /**
+         * Angular tolerance at equator in degrees.
+         */
+        private final double tolerance;
+
+        /**
+         * Creates a builder for the given tolerance at equator in degrees.
+         */
+        PathBuilder(final double tolerance) {
+            super(ReferencingUtilities.getDimension(userToGeodetic.defaultCRS));
+            this.tolerance = tolerance;
+            φf       = φ2;
+            λf       = λ2;
+            αf       = α2;
+            distance = geodesicDistance;
+            length   = rhumblineLength;
+            flags    = validity;
+        }
+
+        /**
+         * Invoked for computing a new point on the Bézier curve. This method is invoked with a <var>t</var> value varying from
+         * 0 (start point) to 1 (end point) inclusive. This method stores the point coordinates in the {@link #point} array with
+         * <var>x</var> coordinate in the first element and <var>y</var> coordinate in the second element. The returned value is
+         * the derivative (∂y/∂x) at that location.
+         *
+         * @param  t  desired point on the curve, from 0 (start point) to 1 (end point) inclusive.
+         * @return derivative (∂y/∂x) at the point.
+         * @throws TransformException if the point coordinates can not be computed.
+         */
+        @Override
+        protected double evaluateAt(final double t) throws TransformException {
+            if (t == 0) {
+                φ2 = φ1;                        // Start point requested.
+                λ2 = λ1;
+                α2 = α1;
+            } else if (t == 1) {
+                φ2 = φf;                        // End point requested.
+                λ2 = λf;
+                α2 = αf;
+            } else {
+                geodesicDistance = distance * t;
+                computeEndPoint();
+            }
+            final double sign = signum(α1);
+            if (sign == signum(λ1 - λ2)) {
+                λ2 += 2*PI * sign;              // We need λ₁ < λ₂ if heading east, or λ₁ > λ₂ if heading west.
+            }
+            final Matrix d = geographic(φ2, λ2).inverseTransform(point);    // Coordinates and Jacobian of point.
+            final double m00 = d.getElement(0,0);
+            final double m01 = d.getElement(0,1);
+            final double m10 = d.getElement(1,0);
+            final double m11 = d.getElement(1,1);
+            εy = tolerance / cos(abs(φ2));                                  // Tolerance for λ (second coordinate).
+            εx = m00*tolerance + m01*εy;                                    // Tolerance for x in user CRS.
+            εy = m10*tolerance + m11*εy;                                    // Tolerance for y in user CRS.
+            /*
+             * Returns the tangent of the ending azimuth converted to the user CRS space.
+             * α2 is azimuth angle in radians, with 0 pointing toward north and values increasing clockwise.
+             * d  is the Jacobian matrix from (φ,λ) to the user coordinate reference system.
+             */
+            final double dx = cos(α2);          // sin(π/2 - α) = -sin(α - π/2) = cos(α)
+            final double dy = sin(α2);          // cos(π/2 - α) = +cos(α - π/2) = sin(α)
+            final double tx = m00*dx + m01*dy;
+            final double ty = m10*dx + m11*dy;
+            return ty / tx;
+        }
+
+        /**
+         * Restores the enclosing {@link GeodeticCalculator} to the state that it has at {@code PathBuilder} instantiation time.
+         */
+        void reset() {
+            φ2 = φf;
+            λ2 = λf;
+            α2 = αf;
+            geodesicDistance = distance;
+            rhumblineLength  = length;
+            validity         = flags;
+        }
     }
 
     /**

@@ -142,7 +142,7 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
                                                final double x2,  final double y2,
                                                final double α1,  final double α2)
     {
-        final CubicCurve2D p = (CubicCurve2D) ShapeUtilities.bezier(x1, y1, xm, ym, x2, y2, α1, α2, 1, 1);
+        final CubicCurve2D p = (CubicCurve2D) ShapeUtilitiesExt.bezier(x1, y1, xm, ym, x2, y2, α1, α2, 1, 1);
         assertPointEquals( x1,  y1, p.getP1());
         assertPointEquals( x2,  y2, p.getP2());
         assertPointEquals(cx1, cy1, p.getCtrlP1());
@@ -150,7 +150,7 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
     }
 
     /**
-     * Tests {@link ShapeUtilities#bezier(double, double, double, double, double, double, double, double, double, double)}.
+     * Tests {@link ShapeUtilitiesExt#bezier(double, double, double, double, double, double, double, double, double, double)}.
      * This is an anti-regression test with values computed by {@link ShapeUtilitiesViewer}.
      */
     @Test
@@ -159,7 +159,7 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
          * Case when the curve can be simplified to a straight line.
          * This test uses a line starting from (100,200) with a slope of 1.3333…
          */
-        final Line2D c1 = (Line2D) ShapeUtilities.bezier(
+        final Line2D c1 = (Line2D) ShapeUtilitiesExt.bezier(
                 100, 200,                           // Start point:  P1
                 175, 300,                           // Midle point:  Pm = P1 + (75,100)
                 250, 400,                           // End point:    P2 = Pm + (75,100)
@@ -183,7 +183,7 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
          *     C₁  =  ⅓P₁ + ⅔Q  = (300, 266.666…)
          *     C₂  =  ⅓P₂ + ⅔Q  = (450, 400.0)
          */
-        final QuadCurve2D c2 = (QuadCurve2D) ShapeUtilities.bezier(
+        final QuadCurve2D c2 = (QuadCurve2D) ShapeUtilitiesExt.bezier(
                 100,   200,                         // Start point
                 362.5, 350,                         // Midway point
                 550,   600,                         // End point

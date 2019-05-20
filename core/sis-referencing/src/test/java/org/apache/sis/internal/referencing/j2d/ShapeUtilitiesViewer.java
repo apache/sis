@@ -190,7 +190,7 @@ public final strictfp class ShapeUtilitiesViewer extends JPanel {
                 input.moveTo(x1, y1);
                 input.lineTo(x4, y4);
                 input.lineTo(x3, y3);
-                output.append(ShapeUtilities.bezier(x1, y1, x2, y2, x3, y3, α1, α2, 1, 1), false);
+                output.append(ShapeUtilitiesExt.bezier(x1, y1, x2, y2, x3, y3, α1, α2, 1, 1), false);
                 out.printf(Locale.ENGLISH, "fitCubicCurve(%d, %d, %d, %d, %d, %d, %g, %g)%n", x1, y1, x2, y2, x3, y3, α1, α2);
                 fillOutput = false;
                 fillInput = false;
