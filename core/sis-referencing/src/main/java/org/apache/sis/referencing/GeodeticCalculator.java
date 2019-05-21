@@ -639,6 +639,7 @@ public class GeodeticCalculator {
      * @throws IllegalStateException if some required properties have not been specified.
      */
     public Shape toGeodesicPath2D(final double tolerance) throws TransformException {
+        ArgumentChecks.ensureStrictlyPositive("tolerance", tolerance);
         if (isInvalid(START_POINT | STARTING_AZIMUTH | END_POINT | ENDING_AZIMUTH | GEODESIC_DISTANCE)) {
             if (isInvalid(END_POINT)) {
                 computeEndPoint();

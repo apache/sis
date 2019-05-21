@@ -170,7 +170,7 @@ public abstract class Bezier {
      * The (x₂,y₂) arguments give the coordinates of the point at <var>t</var>=½ (2/4).
      * The (x₄,y₄) arguments give the coordinates of point P₄ at <var>t</var>=1 (4/4).
      *
-     * <p>The P₁ and P₃ points are for quality control. They shall be points at <var>t</var>=¼ <var>t</var>=¾ respectively.
+     * <p>The P₁ and P₃ points are for quality control. They should be points at <var>t</var>≈¼ <var>t</var>≈¾ respectively.
      * Those points are not used for computing the curve, but are used for checking if the curve is an accurate approximation.
      * If the curve is not accurate enough, then this method does nothing and return {@code false}. In that case, the caller
      * should split the curve in two smaller parts and invoke this method again.</p>
@@ -179,21 +179,21 @@ public abstract class Bezier {
      * If the same curve can be represented by a quadratic curve, then this method appends a {@link java.awt.geom.QuadCurve2D}.
      * If the curve is actually a straight line, then this method appends a {@link java.awt.geom.Line2D}.</p>
      *
-     * @param  x1  <var>x</var> coordinate at <var>t</var>=¼ (quality control, may be NaN).
-     * @param  y1  <var>y</var> coordinate at <var>t</var>=¼ (quality control, may be NaN).
+     * @param  x1  <var>x</var> coordinate at <var>t</var>≈¼ (quality control, may be NaN).
+     * @param  y1  <var>y</var> coordinate at <var>t</var>≈¼ (quality control, may be NaN).
      * @param  x2  <var>x</var> coordinate at <var>t</var>=½ (mid-point).
      * @param  y2  <var>y</var> coordinate at <var>t</var>=½ (mid-point).
-     * @param  x3  <var>x</var> coordinate at <var>t</var>=¾ (quality control, may be NaN).
-     * @param  y3  <var>y</var> coordinate at <var>t</var>=¾ (quality control, may be NaN).
+     * @param  x3  <var>x</var> coordinate at <var>t</var>≈¾ (quality control, may be NaN).
+     * @param  y3  <var>y</var> coordinate at <var>t</var>≈¾ (quality control, may be NaN).
      * @param  x4  <var>x</var> coordinate at <var>t</var>=1 (end point).
      * @param  y4  <var>y</var> coordinate at <var>t</var>=1 (end point).
      * @param  α4  the derivative (∂y/∂x) at ending point.
      * @return {@code true} if the curve has been added to the path, or {@code false} if the approximation is not sufficient.
      */
-    final boolean curve(double x1, double y1,
-                        double x2, double y2,
-                        double x3, double y3,
-                        final double x4, final double y4, final double α4)
+    private boolean curve(double x1, double y1,
+                          double x2, double y2,
+                          double x3, double y3,
+                          final double x4, final double y4, final double α4)
     {
         /*
          * Equations in this method are simplified as if (x₀,y₀) coordinates are (0,0).
@@ -279,12 +279,69 @@ public abstract class Bezier {
          *     P(¾) = (   P₀ +  9⋅A + 27⋅B + 27⋅P₄)/64
          *
          * If any of (x₁,y₁) and (x₃,y₃) coordinates is NaN, then this method accepts the curve as valid.
-         * This allows `evaluateAt(t)` method to return NaN if it can not provide a point for a given `t` value.
+         * This allows `evaluateAt(t)` to return NaN if it can not provide a point for a given `t` value.
          */
-        if (abs(27./64*ax + 9./64*bx + 1./64*Δx - x1) > εx || abs(9./64*ax + 27./64*bx + 27./64*Δx - x3) > εx ||
-            abs(27./64*ay + 9./64*by + 1./64*Δy - y1) > εy || abs(9./64*ay + 27./64*by + 27./64*Δy - y3) > εy)
-        {
-            return false;
+        double xi = 27./64*ax + 9./64*bx + 1./64*Δx;        // "xi" is for "x interpolated (on curve)".
+        double yi = 27./64*ay + 9./64*by + 1./64*Δy;
+        if (abs(xi - x1) > εx || abs(yi - y1) > εy) {
+            /*
+             * Above code tested (x,y) coordinates at t=¼ exactly (we will test t=¾ later). However this t value does not
+             * necessarily correspond to one quarter of the distance, because the speed at which t varies is not the same
+             * than the speed at which Bézier curve length increases. Unfortunately computing the t values at a given arc
+             * length is complicated. We tested an approach based on computing the y value on the curve for a given x value
+             * by starting from the Bézier curve equation:
+             *
+             *     x(t) = x₀(1-t)³ + 3a(1-t)²t + 3b(1-t)t² + x₄t³
+             *
+             * rearranged as:
+             *
+             *     (-x₀ + 3a - 3b + x₄)t³ + (3x₀ - 6a + 3b)t² + (-3x₀ + 3a)t + x₀ - x = 0
+             *
+             * and finding the roots with the CubicCurve2D.solveCubic(…) method. However the results were worst than using
+             * fixed t values. If we want to improve on that in a future version, we would need a function for computing
+             * arc length (for example based on https://pomax.github.io/bezierinfo/#arclength), then use iterative method
+             * like https://www.geometrictools.com/Documentation/MovingAlongCurveSpecifiedSpeed.pdf (retrieved May 2019).
+             *
+             * Instead we perform another test using the tangent of the curve at point P₁ (and later P₃).
+             *
+             *     x′(t) = 3(1-t)²(a-x₀) + 6(1-t)t(b-a) + 3t²(x₄ - b)       and same for y′(t).
+             *
+             * The derivatives give us a straight line (the tangent) as an approximation of the curve around P₁.
+             * We can then compute the point on that line which is nearest to P₁. It should be close to current
+             * (xi,yi) coordinates, but may vary a little bit.
+             */
+            double slope  = (27./16*ay + 18./16*(by-ay) + 3./16*(y4-by))
+                          / (27./16*ax + 18./16*(bx-ax) + 3./16*(x4-bx));       // ∂y/∂x at t=¼.
+            double offset = (yi - slope*xi);                                    // Value of y at x=0.
+            xi = ((y1 - offset) * slope + x1) / (slope*slope + 1);              // Closer (xi,yi) coordinates.
+            yi = offset + xi*slope;
+            xi = abs(xi - x1);                                                  // At this point (xi,yi) are distances.
+            yi = abs(yi - y1);
+            if ((xi > εx && xi != Double.POSITIVE_INFINITY) ||
+                (yi > εy && yi != Double.POSITIVE_INFINITY))
+            {
+                return false;
+            }
+        }
+        /*
+         * Same than above, but with point P₁ replaced by P₃ and t=¼ replaced by t=¾.
+         * The change of t value changes the coefficients in formulas below.
+         */
+        xi = 9./64*ax + 27./64*bx + 27./64*Δx;
+        yi = 9./64*ay + 27./64*by + 27./64*Δy;
+        if (abs(xi - x3) > εx || abs(yi - y3) > εy) {
+            double slope  = (3./16*ay + 18./16*(by-ay) + 27./16*(y4-by))
+                          / (3./16*ax + 18./16*(bx-ax) + 27./16*(x4-bx));
+            double offset = (yi - slope*xi);
+            xi = ((y3 - offset) * slope + x3) / (slope*slope + 1);
+            yi = offset + xi*slope;
+            xi = abs(xi - x3);
+            yi = abs(yi - y3);
+            if ((xi > εx && xi != Double.POSITIVE_INFINITY) ||
+                (yi > εy && yi != Double.POSITIVE_INFINITY))
+            {
+                return false;
+            }
         }
         /*
          * Verify if we can simplify cubic curve to a quadratic curve. If we were elevating the Bézier curve degree from
