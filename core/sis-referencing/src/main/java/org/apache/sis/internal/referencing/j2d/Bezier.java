@@ -17,6 +17,9 @@
 package org.apache.sis.internal.referencing.j2d;
 
 import java.awt.geom.Path2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.QuadCurve2D;
+import java.awt.geom.CubicCurve2D;
 import org.opengis.referencing.operation.TransformException;
 
 import static java.lang.Math.abs;
@@ -24,7 +27,17 @@ import static java.lang.Double.isInfinite;
 
 
 /**
- * Helper class for appending Bézier curves to a path.
+ * Helper class for appending Bézier curves to a path. This class computes cubic Bézier from 3 points and two slopes.
+ * The three points are the start point (t=0), middle point (t=½) and end point (t=1). The slopes are at start point
+ * and end point. The Bézier curve will obey exactly to those conditions (up to rounding errors).
+ *
+ * <p>After creating each Bézier curve, this class performs a quality control using 2 additional points located at
+ * one quarter (t≈¼) and three quarters (t≈¾) of the curve. If the distance between given points and a close point
+ * on the curve is greater than {@linkplain #εx} and {@linkplain #εy} thresholds, then the curve is divided in two
+ * smaller curves and the process is repeated until curves meet the quality controls.</p>
+ *
+ * <p>If a quadratic curve degenerates to a cubic curve or a straight line, ignoring errors up to {@linkplain #εx}
+ * and {@linkplain #εy}, then {@link CubicCurve2D} are replaced by {@link QuadCurve2D} or {@link Line2D}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -36,14 +49,22 @@ import static java.lang.Double.isInfinite;
  */
 public abstract class Bezier {
     /**
+     * Limit the maximal depth for avoiding shapes of unreasonable size.
+     *
+     * @see #depth
+     */
+    private static final int DEPTH_LIMIT = 10;
+
+    /**
      * The path where to append Bézier curves.
      */
     private final Path2D path;
 
     /**
-     * Maximal distance on <var>x</var> and <var>y</var> axis between the cubic Bézier curve and quadratic
-     * or linear simplifications. Initial value is zero. Subclasses should set the values either in their
-     * constructor or at {@link #evaluateAt(double)} method call.
+     * Maximal distance (approximate) on <var>x</var> and <var>y</var> axis between the cubic Bézier curve and quadratic
+     * or linear simplifications. Initial value is zero. Subclasses should set the values either in their constructor or
+     * at {@link #evaluateAt(double)} method call. Can be set to infinity or NaN for disabling the quality checks, or to
+     * a negative value for forcing an unconditional division of a Bézier curve in two more curves.
      */
     protected double εx, εy;
 
@@ -58,6 +79,13 @@ public abstract class Bezier {
      * Other elements (if any) are ignored.
      */
     protected final double[] point;
+
+    /**
+     * The number of times a curve has been divided in smaller curves.
+     *
+     * @see #DEPTH_LIMIT
+     */
+    protected int depth;
 
     /**
      * Creates a new builder.
@@ -89,6 +117,26 @@ public abstract class Bezier {
      * @throws TransformException if the point coordinates can not be computed.
      */
     protected abstract double evaluateAt(double t) throws TransformException;
+
+    /**
+     * Returns whether we should accept the given coordinates. This method is invoked when this {@code Bezier} class thinks
+     * that the given point is not valid, but can not said for sure because computing an exact answer would be expansive
+     * (because of the difficulty to map Bézier parameter <var>t</var>=¼ and ¾ to a distance on the curve).
+     *
+     * <p>The default implementation returns always {@code false}, since this method is invoked only when this class
+     * thinks that the point is not valid.</p>
+     *
+     * @param  x  first coordinate value of a point on the curve to evaluate for fitness.
+     * @param  y  second coordinate value of a point on the curve to evaluate for fitness.
+     * @return whether the given point is close enough to a valid point.
+     * @throws TransformException if a coordinate operations was required and failed.
+     *
+     * @todo This method is a hack. We should replace it by a computation of the Bézier <var>t</var> parameter
+     *       of the point closest to the given (x₁,y₁) and (x₃,y₃) points.
+     */
+    protected boolean isValid(double x, double y) throws TransformException {
+        return false;
+    }
 
     /**
      * Creates a sequence of Bézier curves from the position given by {@code evaluateAt(0)} to the position given
@@ -140,20 +188,24 @@ public abstract class Bezier {
         final double tx = εx;
         final double ty = εy;
         final double α1 = evaluateAt(0.75*tmin + 0.25*tmax);            // `point` become (x₁,y₁) with this method call.
+        final double xi = point[0];                                     // Must be after the call to `evaluateAt(t₁)`.
+        final double yi = point[1];
         if (tx < εx) εx = tx;                                           // Take smallest tolerance values.
         if (ty < εy) εy = ty;
-        if (curve(point[0], point[1], x2, y2, x3, y3, x4, y4, α4)) {    // Must be after the call to `evaluateAt(t₁)`.
+        if (curve(xi, yi, x2, y2, x3, y3, x4, y4, α4)) {
             x0 = x4;
             y0 = y4;
             α0 = α4;
         } else {
+            depth++;
             final double εxo = εx;
             final double εyo = εy;
             final double th = 0.5 * (tmin + tmax);
-            sequence(tmin, th, point[0], point[1], α1, x2, y2, α2);
-            sequence(th, tmax, x3,       y3,       α3, x4, y4, α4);
+            sequence(tmin, th, xi, yi, α1, x2, y2, α2);
+            sequence(th, tmax, x3, y3, α3, x4, y4, α4);
             εx = εxo;
             εy = εyo;
+            depth--;
         }
     }
 
@@ -175,9 +227,9 @@ public abstract class Bezier {
      * If the curve is not accurate enough, then this method does nothing and return {@code false}. In that case, the caller
      * should split the curve in two smaller parts and invoke this method again.</p>
      *
-     * <p>If the full equation is required for representing the curve, then this method appends a {@link java.awt.geom.CubicCurve2D}.
-     * If the same curve can be represented by a quadratic curve, then this method appends a {@link java.awt.geom.QuadCurve2D}.
-     * If the curve is actually a straight line, then this method appends a {@link java.awt.geom.Line2D}.</p>
+     * <p>If the full equation is required for representing the curve, then this method appends a {@link CubicCurve2D}.
+     * If the same curve can be represented by a quadratic curve, then this method appends a {@link QuadCurve2D}.
+     * If the curve is actually a straight line, then this method appends a {@link Line2D}.</p>
      *
      * @param  x1  <var>x</var> coordinate at <var>t</var>≈¼ (quality control, may be NaN).
      * @param  y1  <var>y</var> coordinate at <var>t</var>≈¼ (quality control, may be NaN).
@@ -193,7 +245,8 @@ public abstract class Bezier {
     private boolean curve(double x1, double y1,
                           double x2, double y2,
                           double x3, double y3,
-                          final double x4, final double y4, final double α4)
+                          final double x4, final double y4,
+                          final double α4) throws TransformException
     {
         /*
          * Equations in this method are simplified as if (x₀,y₀) coordinates are (0,0).
@@ -224,11 +277,13 @@ public abstract class Bezier {
                  * they are not used in Line2D computation. This allows `evaluateAt(t)` method to return NaN if it can
                  * not provide a point for a given `t` value.
                  */
-                final double slope = Δy / Δx;
-                if ((!isVertical   && (abs(x2*slope - y2) > εy || abs(x1*slope - y1) > εy || abs(x3*slope - y3) > εy)) ||
-                    (!isHorizontal && (abs(y2/slope - x2) > εx || abs(y1/slope - x1) > εx || abs(y3/slope - x3) > εx)))
-                {
-                    return false;
+                if (depth < DEPTH_LIMIT) {
+                    final double slope = Δy / Δx;
+                    if ((!isVertical   && (abs(x2*slope - y2) > εy || abs(x1*slope - y1) > εy || abs(x3*slope - y3) > εy)) ||
+                        (!isHorizontal && (abs(y2/slope - x2) > εx || abs(y1/slope - x1) > εx || abs(y3/slope - x3) > εx)))
+                    {
+                        return false;
+                    }
                 }
                 path.lineTo(x4, y4);
                 return true;
@@ -281,66 +336,74 @@ public abstract class Bezier {
          * If any of (x₁,y₁) and (x₃,y₃) coordinates is NaN, then this method accepts the curve as valid.
          * This allows `evaluateAt(t)` to return NaN if it can not provide a point for a given `t` value.
          */
-        double xi = 27./64*ax + 9./64*bx + 1./64*Δx;        // "xi" is for "x interpolated (on curve)".
-        double yi = 27./64*ay + 9./64*by + 1./64*Δy;
-        if (abs(xi - x1) > εx || abs(yi - y1) > εy) {
-            /*
-             * Above code tested (x,y) coordinates at t=¼ exactly (we will test t=¾ later). However this t value does not
-             * necessarily correspond to one quarter of the distance, because the speed at which t varies is not the same
-             * than the speed at which Bézier curve length increases. Unfortunately computing the t values at a given arc
-             * length is complicated. We tested an approach based on computing the y value on the curve for a given x value
-             * by starting from the Bézier curve equation:
-             *
-             *     x(t) = x₀(1-t)³ + 3a(1-t)²t + 3b(1-t)t² + x₄t³
-             *
-             * rearranged as:
-             *
-             *     (-x₀ + 3a - 3b + x₄)t³ + (3x₀ - 6a + 3b)t² + (-3x₀ + 3a)t + x₀ - x = 0
-             *
-             * and finding the roots with the CubicCurve2D.solveCubic(…) method. However the results were worst than using
-             * fixed t values. If we want to improve on that in a future version, we would need a function for computing
-             * arc length (for example based on https://pomax.github.io/bezierinfo/#arclength), then use iterative method
-             * like https://www.geometrictools.com/Documentation/MovingAlongCurveSpecifiedSpeed.pdf (retrieved May 2019).
-             *
-             * Instead we perform another test using the tangent of the curve at point P₁ (and later P₃).
-             *
-             *     x′(t) = 3(1-t)²(a-x₀) + 6(1-t)t(b-a) + 3t²(x₄ - b)       and same for y′(t).
-             *
-             * The derivatives give us a straight line (the tangent) as an approximation of the curve around P₁.
-             * We can then compute the point on that line which is nearest to P₁. It should be close to current
-             * (xi,yi) coordinates, but may vary a little bit.
-             */
-            double slope  = (27./16*ay + 18./16*(by-ay) + 3./16*(y4-by))
-                          / (27./16*ax + 18./16*(bx-ax) + 3./16*(x4-bx));       // ∂y/∂x at t=¼.
-            double offset = (yi - slope*xi);                                    // Value of y at x=0.
-            xi = ((y1 - offset) * slope + x1) / (slope*slope + 1);              // Closer (xi,yi) coordinates.
-            yi = offset + xi*slope;
-            xi = abs(xi - x1);                                                  // At this point (xi,yi) are distances.
-            yi = abs(yi - y1);
-            if ((xi > εx && xi != Double.POSITIVE_INFINITY) ||
-                (yi > εy && yi != Double.POSITIVE_INFINITY))
-            {
-                return false;
+        if (depth < DEPTH_LIMIT) {
+            double xi = 27./64*ax + 9./64*bx + 1./64*Δx;        // "xi" is for "x interpolated (on curve)".
+            double yi = 27./64*ay + 9./64*by + 1./64*Δy;
+            if (abs(xi - x1) > εx || abs(yi - y1) > εy) {
+                /*
+                 * Above code tested (x,y) coordinates at t=¼ exactly (we will test t=¾ later). However this t value does not
+                 * necessarily correspond to one quarter of the distance, because the speed at which t varies is not the same
+                 * than the speed at which Bézier curve length increases. Unfortunately computing the t values at a given arc
+                 * length is complicated. We tested an approach based on computing the y value on the curve for a given x value
+                 * by starting from the Bézier curve equation:
+                 *
+                 *     x(t) = x₀(1-t)³ + 3aₓ(1-t)²t + 3bₓ(1-t)t² + x₄t³
+                 *
+                 * rearranged as:
+                 *
+                 *     (-x₀ + 3aₓ - 3bₓ + x₄)t³ + (3x₀ - 6aₓ + 3bₓ)t² + (-3x₀ + 3aₓ)t + x₀ - x = 0
+                 *
+                 * and finding the roots with the CubicCurve2D.solveCubic(…) method. However the results were worst than using
+                 * fixed t values. If we want to improve on that in a future version, we would need a function for computing
+                 * arc length (for example based on https://pomax.github.io/bezierinfo/#arclength), then use iterative method
+                 * like https://www.geometrictools.com/Documentation/MovingAlongCurveSpecifiedSpeed.pdf (retrieved May 2019).
+                 *
+                 * Instead we perform another test using the tangent of the curve at point P₁ (and later P₃).
+                 *
+                 *     x′(t) = 3(1-t)²(aₓ - x₀) + 6t(1-t)(bₓ - aₓ) + 3t²(x₄ - bₓ)           and same for y′(t).
+                 *
+                 * The derivatives give us a straight line (the tangent) as an approximation of the curve around P₁.
+                 * We can then compute the point on that line which is nearest to P₁. It should be close to current
+                 * (xi,yi) coordinates, but may vary a little bit.
+                 */
+                double slope  = (27./16*ay + 18./16*(by-ay) + 3./16*(y4-by))
+                              / (27./16*ax + 18./16*(bx-ax) + 3./16*(x4-bx));       // ∂y/∂x at t=¼.
+                double offset = (yi - slope*xi);                                    // Value of y at x=0.
+                xi = ((y1 - offset) * slope + x1) / (slope*slope + 1);              // NaN if slope is infinite.
+                yi = offset + xi*slope;                                             // Closer (xi,yi) coordinates.
+                if (abs(xi - x1) > εx || abs(yi - y1) > εy) {
+                    if (!isValid(xi + x0, yi + y0)) return false;
+                }
+                /*
+                 * At this point we consider (x₁,y₁) close enough even if the initial test considered it too far.
+                 * This decision is based on the assumption that the straight line is an approximation good enough
+                 * in the vicinity of P₁. We did not verified that assumption. If we want to improve on that in a
+                 * future version, we could use the second derivative:
+                 *
+                 *     x″(t) = 6(1-t)(x₀ - 2aₓ + bₓ) + 6t(aₓ - 2bₓ + x₄)                and same for y″(t).
+                 *
+                 *     Applying chain rule:     ∂²y/∂x² = y″/x′² + y′/x″
+                 *
+                 * We could then estimate the change of slope at the new (xi,yi) compared to the initial (xi,yi)
+                 * and verify that this change is below some threshold. We do not perform that check for now on
+                 * the assumption that the Bézier curve is smooth enough in the context of map projections.
+                 */
             }
-        }
-        /*
-         * Same than above, but with point P₁ replaced by P₃ and t=¼ replaced by t=¾.
-         * The change of t value changes the coefficients in formulas below.
-         */
-        xi = 9./64*ax + 27./64*bx + 27./64*Δx;
-        yi = 9./64*ay + 27./64*by + 27./64*Δy;
-        if (abs(xi - x3) > εx || abs(yi - y3) > εy) {
-            double slope  = (3./16*ay + 18./16*(by-ay) + 27./16*(y4-by))
-                          / (3./16*ax + 18./16*(bx-ax) + 27./16*(x4-bx));
-            double offset = (yi - slope*xi);
-            xi = ((y3 - offset) * slope + x3) / (slope*slope + 1);
-            yi = offset + xi*slope;
-            xi = abs(xi - x3);
-            yi = abs(yi - y3);
-            if ((xi > εx && xi != Double.POSITIVE_INFINITY) ||
-                (yi > εy && yi != Double.POSITIVE_INFINITY))
-            {
-                return false;
+            /*
+             * Same than above, but with point P₁ replaced by P₃ and t=¼ replaced by t=¾.
+             * The change of t value changes the coefficients in formulas below.
+             */
+            xi = 9./64*ax + 27./64*bx + 27./64*Δx;
+            yi = 9./64*ay + 27./64*by + 27./64*Δy;
+            if (abs(xi - x3) > εx || abs(yi - y3) > εy) {
+                double slope  = (3./16*ay + 18./16*(by-ay) + 27./16*(y4-by))
+                              / (3./16*ax + 18./16*(bx-ax) + 27./16*(x4-bx));
+                double offset = (yi - slope*xi);
+                xi = ((y3 - offset) * slope + x3) / (slope*slope + 1);
+                yi = offset + xi*slope;
+                if (abs(xi - x3) > εx || abs(yi - y3) > εy) {
+                    if (!isValid(xi + x0, yi + y0)) return false;
+                }
             }
         }
         /*
@@ -358,10 +421,13 @@ public abstract class Bezier {
          * We compute C both ways and check if they are close enough to each other:
          *
          *     ΔC  =  (3⋅(B - A) - (P₄ - P₀))/2
+         *
+         * We multiply tolerance factor by 2 because of moving the quadratic curve control point by 1 can move the closest
+         * point on the curve by at most ½.
          */
         final double Δqx, Δqy;
-        if (abs(Δqx = (3*(bx - ax) - Δx)/2) <= εx &&        // P₀ is zero.
-            abs(Δqy = (3*(by - ay) - Δy)/2) <= εy)
+        if (abs(Δqx = (3*(bx - ax) - Δx)/2) <= 2*εx &&      // P₀ is zero.
+            abs(Δqy = (3*(by - ay) - Δy)/2) <= 2*εy)
         {
             final double qx = (3*ax + Δqx)/2;               // Take average of 2 control points.
             final double qy = (3*ay + Δqy)/2;

@@ -181,6 +181,24 @@ public final class PositionTransformer extends GeneralDirectPosition {
     }
 
     /**
+     * Transforms the given position from the CRS of this position to the default CRS.
+     * The result is stored in the given array.
+     *
+     * @param  point  the coordinates of the point to transform in-place.
+     * @throws TransformException if a coordinate transformation was required and failed.
+     */
+    public void transform(final double[] point) throws TransformException {
+        if (point != null) {
+            if (lastCRS != defaultCRS) {
+                setSourceCRS(defaultCRS);
+            }
+            if (forward != null) {
+                forward.transform(point, 0, point, 0, 1);
+            }
+        }
+    }
+
+    /**
      * Transforms a given position from its CRS to the CRS of this {@code PositionTransformer}.
      * If the CRS associated to the given position is {@code null}, then that CRS is assumed to
      * be the default CRS specified at construction time. Otherwise if that CRS is not equal to

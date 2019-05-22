@@ -17,6 +17,7 @@
 package org.apache.sis.referencing;
 
 import java.awt.Shape;
+import java.awt.geom.Path2D;
 import java.util.Locale;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -628,17 +629,22 @@ public class GeodeticCalculator {
      *   <li>The last point is {@link #getEndPoint()}, potentially with 360° added or subtracted to the longitude.</li>
      * </ol>
      *
+     * This method tries to stay within the given tolerance threshold of the geodesic track.
+     * The {@code tolerance} parameter should not be too small for avoiding creation of unreasonably long chain of Bézier curves.
+     * For example a value of 1/10 of geodesic length may be sufficient.
+     *
      * <b>Limitations:</b>
      * This method depends on the presence of {@code java.desktop} module. This limitations may be addressed
      * in a future Apache SIS version (see <a href="https://issues.apache.org/jira/browse/SIS-453">SIS-453</a>).
      *
      * @param  tolerance  maximal error between the approximated curve and actual geodesic track
      *                    in the units of measurement given by {@link #getDistanceUnit()}.
+     *                    This is approximate; the actual errors may vary around that value.
      * @return an approximation of geodesic track as Bézier curves in a Java2D object.
      * @throws TransformException if the coordinates can not be transformed to {@linkplain #getPositionCRS() position CRS}.
      * @throws IllegalStateException if some required properties have not been specified.
      */
-    public Shape toGeodesicPath2D(final double tolerance) throws TransformException {
+    public Shape createGeodesicPath2D(final double tolerance) throws TransformException {
         ArgumentChecks.ensureStrictlyPositive("tolerance", tolerance);
         if (isInvalid(START_POINT | STARTING_AZIMUTH | END_POINT | ENDING_AZIMUTH | GEODESIC_DISTANCE)) {
             if (isInvalid(END_POINT)) {
@@ -647,8 +653,8 @@ public class GeodeticCalculator {
                 computeDistance();
             }
         }
-        final PathBuilder bezier = new PathBuilder(toDegrees(tolerance / radius));
-        final Shape path;
+        final PathBuilder bezier = new PathBuilder(tolerance);
+        final Path2D path;
         try {
             path = bezier.build();
         } finally {
@@ -658,17 +664,53 @@ public class GeodeticCalculator {
     }
 
     /**
+     * Creates an approximation of the region at a constant geodesic distance around the start point.
+     * The returned shape is circlelike with the {@linkplain #getStartPoint() start point} in its center.
+     * The coordinates are expressed in the coordinate reference system specified at creation time.
+     * The approximation uses cubic Bézier curves.
+     *
+     * <p>This method tries to stay within the given tolerance threshold of the geodesic track.
+     * The {@code tolerance} parameter should not be too small for avoiding creation of unreasonably long chain of Bézier curves.
+     * For example a value of 1/10 of geodesic length may be sufficient.</p>
+     *
+     * <b>Limitations:</b>
+     * This method depends on the presence of {@code java.desktop} module. This limitations may be addressed
+     * in a future Apache SIS version (see <a href="https://issues.apache.org/jira/browse/SIS-453">SIS-453</a>).
+     *
+     * @param  tolerance  maximal error in the units of measurement given by {@link #getDistanceUnit()}.
+     *                    This is approximate; the actual errors may vary around that value.
+     * @return an approximation of circular region as a Java2D object.
+     * @throws TransformException if the coordinates can not be transformed to {@linkplain #getPositionCRS() position CRS}.
+     * @throws IllegalStateException if some required properties have not been specified.
+     */
+    public Shape createCircularRegion2D(final double tolerance) throws TransformException {
+        ArgumentChecks.ensureStrictlyPositive("tolerance", tolerance);
+        if (isInvalid(START_POINT | GEODESIC_DISTANCE)) {
+            computeDistance();
+        }
+        final CircularPath bezier = new CircularPath(tolerance);
+        final Path2D path;
+        try {
+            path = bezier.build();
+        } finally {
+            bezier.reset();
+        }
+        path.closePath();
+        return path;
+    }
+
+    /**
      * Builds a geodesic path as a sequence of Bézier curves. The start point and end points are the points
      * in enclosing {@link GeodeticCalculator} at the time this class is instantiated. The start coordinates
      * given by {@link #φ1} and {@link #λ1} shall never change for this whole builder lifetime. However the
      * end coordinates ({@link #φ2}, {@link #λ2}) will vary at each step.
      */
-    private final class PathBuilder extends Bezier {
+    private class PathBuilder extends Bezier {
         /**
-         * End point coordinates and derivative, together with geodesic and loxodromic distances.
+         * The initial (i) and final (f) coordinates and derivatives, together with geodesic and loxodromic distances.
          * Saved for later restoration by {@link #reset()}.
          */
-        private final double φf, λf, αf, distance, length;
+        private final double αi, αf, φf, λf, distance, length;
 
         /**
          * {@link #validity} flags at the time {@code PathBuilder} is instantiated.
@@ -682,17 +724,19 @@ public class GeodeticCalculator {
         private final double tolerance;
 
         /**
-         * Creates a builder for the given tolerance at equator in degrees.
+         * Creates a builder for the given tolerance at equator in metres.
          */
-        PathBuilder(final double tolerance) {
+        PathBuilder(final double εx) {
             super(ReferencingUtilities.getDimension(userToGeodetic.defaultCRS));
-            this.tolerance = tolerance;
-            φf       = φ2;
-            λf       = λ2;
-            αf       = α2;
-            distance = geodesicDistance;
-            length   = rhumblineLength;
-            flags    = validity;
+            αi        = α1;
+            αf        = α2;
+            φf        = φ2;
+            λf        = λ2;
+            α1        = IEEEremainder(α1, 2*PI);            // For reliable signum(α1) result.
+            tolerance = toDegrees(εx / radius);
+            distance  = geodesicDistance;
+            length    = rhumblineLength;
+            flags     = validity;
         }
 
         /**
@@ -717,11 +761,20 @@ public class GeodeticCalculator {
                 α2 = αf;
             } else {
                 geodesicDistance = distance * t;
+                validity |= GEODESIC_DISTANCE;
                 computeEndPoint();
             }
-            final double sign = signum(α1);
-            if (sign == signum(λ1 - λ2)) {
-                λ2 += 2*PI * sign;              // We need λ₁ < λ₂ if heading east, or λ₁ > λ₂ if heading west.
+            return evaluateAtEndPoint();
+        }
+
+        /**
+         * Implementation of {@link #evaluateAt(double)} using the current φ₂, λ₂ and α₂ values.
+         * This method stores the projected coordinates in the {@link #point} array and returns
+         * the derivative ∂y/∂x.
+         */
+        final double evaluateAtEndPoint() throws TransformException {
+            if ((λ2 - λ1) * α1 < 0) {
+                λ2 += 2*PI * signum(α1);          // We need λ₁ < λ₂ if heading east, or λ₁ > λ₂ if heading west.
             }
             final Matrix d = geographic(φ2, λ2).inverseTransform(point);    // Coordinates and Jacobian of point.
             final double m00 = d.getElement(0,0);
@@ -736,23 +789,99 @@ public class GeodeticCalculator {
              * α2 is azimuth angle in radians, with 0 pointing toward north and values increasing clockwise.
              * d  is the Jacobian matrix from (φ,λ) to the user coordinate reference system.
              */
-            final double dx = cos(α2);          // sin(π/2 - α) = -sin(α - π/2) = cos(α)
-            final double dy = sin(α2);          // cos(π/2 - α) = +cos(α - π/2) = sin(α)
+            final double dx = cos(α2);              // sin(π/2 - α) = -sin(α - π/2) = cos(α)
+            final double dy = sin(α2);              // cos(π/2 - α) = +cos(α - π/2) = sin(α)
             final double tx = m00*dx + m01*dy;
             final double ty = m10*dx + m11*dy;
             return ty / tx;
         }
 
         /**
+         * Returns whether the point at given (<var>x</var>, <var>y</var>) coordinates is close to the geodesic path.
+         * This method is invoked when the {@link Bezier} helper class thinks that the point is not on the path, but
+         * could be wrong because of the difficulty to evaluate the Bézier <var>t</var> parameter of closest point.
+         */
+        @Override
+        protected boolean isValid(final double x, final double y) throws TransformException {
+            /*
+             * Following code is equivalent to `setEndPoint(new DirectPosition2D(x, y))` but without checks
+             * for argument validity and with less temporary objects creation (we recycle the `point` array).
+             */
+            point[0] = x;
+            point[1] = y;
+            for (int i=2; i<point.length; i++) {
+                point[i] = 0;
+            }
+            userToGeodetic.transform(point);
+            φ2 = toRadians(point[0]);
+            λ2 = toRadians(point[1]);
+            validity |= END_POINT;
+            /*
+             * Computes the azimuth to the given point. This azimuth may be different than the azimuth of the
+             * geodesic path we are building. Compute the point that we would have if the azimuth was correct
+             * and check the distance between those two points.
+             */
+            computeDistance();
+            α1 = αi;
+            computeEndPoint();
+            final DirectPosition p = geographic(φ2, λ2).inverseTransform();
+            return abs(p.getOrdinate(0) - x) <= εx &&
+                   abs(p.getOrdinate(1) - y) <= εy;
+        }
+
+        /**
          * Restores the enclosing {@link GeodeticCalculator} to the state that it has at {@code PathBuilder} instantiation time.
          */
-        void reset() {
+        final void reset() {
+            α1 = αi;
+            α2 = αf;
             φ2 = φf;
             λ2 = λf;
-            α2 = αf;
             geodesicDistance = distance;
             rhumblineLength  = length;
             validity         = flags;
+        }
+    }
+
+    /**
+     * Builds a circular region around the start point. The shape is created as a sequence of Bézier curves.
+     */
+    private final class CircularPath extends PathBuilder {
+        /**
+         * Creates a builder for the given tolerance at equator in degrees.
+         */
+        CircularPath(final double εx) {
+            super(εx);
+        }
+
+        /**
+         * Invoked for computing a new point on the circular path. This method is invoked with a <var>t</var> value varying from
+         * 0 to 1 inclusive. The <var>t</var> value is multiplied by 2π for getting an angle. This method stores the coordinates
+         * in the {@link #point} array and returns the derivative (∂y/∂x) at that location.
+         *
+         * @param  t  angle fraction from 0 to 1 inclusive.
+         * @return derivative (∂y/∂x) at the point.
+         * @throws TransformException if the point coordinates can not be computed.
+         */
+        @Override
+        protected double evaluateAt(final double t) throws TransformException {
+            α1 = IEEEremainder((t - 0.5) * (2*PI), 2*PI);
+            validity |= STARTING_AZIMUTH;
+            computeEndPoint();
+            final double d = evaluateAtEndPoint();
+            if (depth <= 1) {
+                // Force division of the curve in two smaller curves. We want at least 4 Bézier curves in an ellipse.
+                εx = εy = -1;
+            }
+            return d;
+        }
+
+        /**
+         * No additional test (compared to {@link Bezier} base class) for determining if the point is close enough.
+         */
+        @Override
+        protected boolean isValid(final double x, final double y) throws TransformException {
+            return false;
         }
     }
 

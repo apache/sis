@@ -31,6 +31,8 @@ import org.apache.sis.internal.referencing.j2d.ShapeUtilitiesExt;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.math.StatisticsFormat;
+import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.widget.VisualCheck;
 import org.apache.sis.test.OptionalTestData;
@@ -213,9 +215,27 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     }
 
     /**
-     * Tests {@link GeodeticCalculator#toGeodesicPath2D(double)}. This method uses a CRS that swap axis order
-     * as a way to verify that user-specified CRS is taken in account. The start point and end point are the
-     * same than in {@link #testGeodesicDistanceAndAzimuths()}. Note that this path crosses the anti-meridian,
+     * Tests {@link GeodeticCalculator#createCircularRegion2D(double)}.
+     *
+     * @throws TransformException if an error occurred while transforming coordinates.
+     */
+    @Test
+    @DependsOnMethod("testUsingTransform")
+    public void testCircularRegion2D() throws TransformException {
+        final GeodeticCalculator c = create(true);
+        c.setStartPoint(-33.0, -71.6);                          // Valparaíso
+        c.setGeodesicDistance(100000);                          // 100 km
+        Shape region = c.createCircularRegion2D(10000);
+        if (VisualCheck.SHOW_WIDGET) {
+            VisualCheck.show(region);
+        }
+        // TODO: test bounding box.
+    }
+
+    /**
+     * Tests {@link GeodeticCalculator#createGeodesicPath2D(double)}. This method uses a CRS that swap axis order
+     * as a way to verify that user-specified CRS is taken in account. The start point and end point are the same
+     * than in {@link #testGeodesicDistanceAndAzimuths()}. Note that this path crosses the anti-meridian,
      * so the end point needs to be shifted by 360°.
      *
      * @throws TransformException if an error occurred while transforming coordinates.
@@ -225,10 +245,10 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     public void testGeodesicPath2D() throws TransformException {
         final GeodeticCalculator c = create(true);
         final double tolerance = 0.05;
-        c.setStartPoint(-33.0, -71.6);                                              // Valparaíso
-        c.setEndPoint  ( 31.4, 121.8);                                              // Shanghai
-        final Shape singleCurve = c.toGeodesicPath2D(Double.POSITIVE_INFINITY);
-        final Shape multiCurves = c.toGeodesicPath2D(10000);                        // 10 km tolerance.
+        c.setStartPoint(-33.0, -71.6);                                                  // Valparaíso
+        c.setEndPoint  ( 31.4, 121.8);                                                  // Shanghai
+        final Shape singleCurve = c.createGeodesicPath2D(Double.POSITIVE_INFINITY);
+        final Shape multiCurves = c.createGeodesicPath2D(10000);                        // 10 km tolerance.
         /*
          * The approximation done by a single curve is not very good, but is easier to test.
          */
@@ -257,7 +277,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
         c.setEndPoint  (0, 12);
         assertEquals(-90, c.getStartingAzimuth(), tolerance);
         assertEquals(-90, c.getEndingAzimuth(),   tolerance);
-        final Shape geodeticCurve = c.toGeodesicPath2D(1);
+        final Shape geodeticCurve = c.createGeodesicPath2D(1);
         final double[] coords = new double[2];
         for (final PathIterator it = geodeticCurve.getPathIterator(null, 1); !it.isDone(); it.next()) {
             it.currentSegment(coords);
@@ -277,6 +297,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
         final Random random = TestUtilities.createRandomNumberGenerator();
         final GeodeticCalculator c = create(false);
         final Geodesic reference = new Geodesic(c.ellipsoid.getSemiMajorAxis(), 1/c.ellipsoid.getInverseFlattening());
+        final StatisticsFormat sf = VERBOSE ? StatisticsFormat.getInstance() : null;
         for (int i=0; i<100; i++) {
             final double φ1 = random.nextDouble() * 180 -  90;
             final double λ1 = random.nextDouble() * 360 - 180;
@@ -292,38 +313,53 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
             assertEquals("Starting azimuth",  expected.azi1, c.getStartingAzimuth(), Formulas.ANGULAR_TOLERANCE);
             assertEquals("Ending azimuth",    expected.azi2, c.getEndingAzimuth(),   Formulas.ANGULAR_TOLERANCE);
             assertTrue  ("Rhumb ≧ geodesic",  rhumbLine >= geodesic);
-            if (false) {
-                // Disabled because currently too inaccurate - see https://issues.apache.org/jira/browse/SIS-453
-                assertEquals("Distance measured along geodesic path", geodesic, length(c), Formulas.ANGULAR_TOLERANCE);
+            if (sf != null) {
+                // Checks the geodesic path on only 10% of test data, because this computation is expensive.
+                if ((i % 10) == 0) {
+                    out.println(c);
+                    out.println(sf.format(geodesicPathFitness(c, 1000)));
+                }
             }
         }
     }
 
     /**
-     * Measures an estimation of the length of the path returned by {@link GeodeticCalculator#toGeodesicPath2D(double)}.
-     * This method iterates over line segments and use the given calculator for computing the geodesic distance of each
-     * segment. The state of the given calculator is modified by this method.
+     * Estimates the differences between the points on the Bézier curves and the points computed by geodetic calculator.
+     * This method estimates the length of the path returned by {@link GeodeticCalculator#createGeodesicPath2D(double)}
+     * and compares with the expected distance and azimuth at each point, by iterating over line segments and computing
+     * the geodesic distance of each segment. The state of the given calculator is modified by this method.
+     *
+     * @param  resolution  tolerance threshold for the curve approximation, in metres.
+     * @return statistics about errors relative to the resolution.
      */
-    private static double length(final GeodeticCalculator c) throws TransformException {
-        final PathIterator iterator = c.toGeodesicPath2D(10).getPathIterator(null, 100);
-        final double[] buffer = new double[2];
-        double length=0;
+    private static Statistics[] geodesicPathFitness(final GeodeticCalculator c, final double resolution) throws TransformException {
+        final PathIterator iterator = c.createGeodesicPath2D(resolution).getPathIterator(null, Formulas.ANGULAR_TOLERANCE);
+        final Statistics   xError   = new Statistics("Δx/r");
+        final Statistics   yError   = new Statistics("Δy/r");
+        final Statistics   aErrors  = new Statistics("Δα (°)");
+        final double       azimuth  = c.getStartingAzimuth();
+        final double       toMetres = (PI/180) * Formulas.getAuthalicRadius(c.ellipsoid);
+        final double[]     buffer   = new double[2];
         while (!iterator.isDone()) {
             switch (iterator.currentSegment(buffer)) {
-                default: fail("Unexpected path"); break;
-                case PathIterator.SEG_MOVETO: {
-                    c.setStartPoint(buffer[0], buffer[1]);
-                    break;
-                }
+                default: fail("Unexpected segment"); break;
+                case PathIterator.SEG_MOVETO: break;
                 case PathIterator.SEG_LINETO: {
                     c.setEndPoint(buffer[0], buffer[1]);
-                    length += c.getGeodesicDistance();
-                    c.moveToEndPoint();
+                    aErrors.accept(abs(c.getStartingAzimuth() - azimuth));
+                    c.setStartingAzimuth(azimuth);
+                    DirectPosition endPoint = c.getEndPoint();
+                    final double φ = endPoint.getOrdinate(0);
+                    final double λ = endPoint.getOrdinate(1);
+                    double dy =              (buffer[0] - φ)      * toMetres;
+                    double dx = IEEEremainder(buffer[1] - λ, 360) * toMetres * cos(toRadians(φ));
+                    yError.accept(abs(dy) / resolution);
+                    xError.accept(abs(dx) / resolution);
                 }
             }
             iterator.next();
         }
-        return length;
+        return new Statistics[] {xError, yError, aErrors};
     }
 
     /**
