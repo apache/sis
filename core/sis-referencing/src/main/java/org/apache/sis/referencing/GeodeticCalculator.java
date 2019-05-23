@@ -235,25 +235,38 @@ public class GeodeticCalculator {
     }
 
     /**
-     * Sets the starting point as geographic (<var>latitude</var>, <var>longitude</var>) coordinates.
-     * The {@linkplain #getStartingAzimuth() starting} and {@linkplain #getEndingAzimuth() ending azimuths},
-     * the {@linkplain #getEndPoint() end point}, the {@linkplain #getGeodesicDistance() geodesic distance}
-     * and the {@linkplain #getRhumblineLength() rhumb line length}
-     * are discarded by this method call; some of them will need to be specified again.
+     * Sets {@link #userToGeodetic} to the given coordinates.
+     * All coordinates in dimension 2 and above (typically the ellipsoidal height) are set to zero.
      *
-     * @param  latitude   the latitude in degrees between {@value Latitude#MIN_VALUE}° and {@value Latitude#MAX_VALUE}°.
-     * @param  longitude  the longitude in degrees.
-     * @throws IllegalArgumentException if the latitude is out of bounds.
-     *
-     * @see #setEndPoint(double, double)
-     * @see #moveToEndPoint()
+     * @param  φ  the latitude value to set, in radians.
+     * @param  λ  the longitude value to set, in radians.
+     * @return {@link #userToGeodetic} for convenience.
      */
-    public void setStartPoint(final double latitude, final double longitude) {
-        ArgumentChecks.ensureBetween("latitude", Latitude.MIN_VALUE, Latitude.MAX_VALUE, latitude);
-        ArgumentChecks.ensureFinite("longitude", longitude);
-        φ1 = toRadians(latitude);
-        λ1 = toRadians(longitude);
-        validity = START_POINT;
+    private PositionTransformer geographic(final double φ, final double λ) {
+        userToGeodetic.setOrdinate(0, toDegrees(φ));
+        userToGeodetic.setOrdinate(1, toDegrees(λ));
+        for (int i=userToGeodetic.getDimension(); --i >= 2;) {
+            userToGeodetic.setOrdinate(i, 0);                   // Set height to ellipsoid surface.
+        }
+        return userToGeodetic;
+    }
+
+    /**
+     * Returns the starting point in the CRS specified at construction time.
+     * This method returns the last point given to a {@code setStartPoint(…)} method,
+     * transformed to the {@linkplain #getPositionCRS() position CRS}.
+     *
+     * @return the starting point represented in the CRS specified at construction time.
+     * @throws TransformException if the coordinates can not be transformed to {@linkplain #getPositionCRS() position CRS}.
+     * @throws IllegalStateException if the start point has not yet been specified.
+     *
+     * @see #getEndPoint()
+     */
+    public DirectPosition getStartPoint() throws TransformException {
+        if (isInvalid(START_POINT)) {
+            throw new IllegalStateException(Resources.format(Resources.Keys.StartOrEndPointNotSet_1, 0));
+        }
+        return geographic(φ1, λ1).inverseTransform();
     }
 
     /**
@@ -273,75 +286,24 @@ public class GeodeticCalculator {
     }
 
     /**
-     * Returns the starting point in the CRS specified at construction time.
-     * This method returns the last point given to a {@code setStartPoint(…)} method,
-     * transformed to the {@linkplain #getPositionCRS() position CRS}.
-     *
-     * @return the starting point represented in the CRS specified at construction time.
-     * @throws TransformException if the coordinates can not be transformed to {@linkplain #getPositionCRS() position CRS}.
-     * @throws IllegalStateException if the start point has not been specified.
-     *
-     * @see #getEndPoint()
-     */
-    public DirectPosition getStartPoint() throws TransformException {
-        if (isInvalid(START_POINT)) {
-            throw new IllegalStateException(Resources.format(Resources.Keys.StartOrEndPointNotSet_1, 0));
-        }
-        return geographic(φ1, λ1).inverseTransform();
-    }
-
-    /**
-     * Sets {@link #userToGeodetic} to the given coordinates.
-     * All coordinates in dimension 2 and above (typically the ellipsoidal height) are set to zero.
-     *
-     * @param  φ  the latitude value to set, in radians.
-     * @param  λ  the longitude value to set, in radians.
-     * @return {@link #userToGeodetic} for convenience.
-     */
-    private PositionTransformer geographic(final double φ, final double λ) {
-        userToGeodetic.setOrdinate(0, toDegrees(φ));
-        userToGeodetic.setOrdinate(1, toDegrees(λ));
-        for (int i=userToGeodetic.getDimension(); --i >= 2;) {
-            userToGeodetic.setOrdinate(i, 0);                   // Set height to ellipsoid surface.
-        }
-        return userToGeodetic;
-    }
-
-    /**
-     * Sets the destination as geographic (<var>latitude</var>, <var>longitude</var>) coordinates.
-     * The {@linkplain #getStartingAzimuth() starting azimuth}, {@linkplain #getEndingAzimuth() ending azimuth}
-     * {@linkplain #getGeodesicDistance() geodesic distance} and {@linkplain #getRhumblineLength() rhumb line length}
-     * will be updated as an effect of this call.
+     * Sets the starting point as geographic (<var>latitude</var>, <var>longitude</var>) coordinates.
+     * The {@linkplain #getStartingAzimuth() starting} and {@linkplain #getEndingAzimuth() ending azimuths},
+     * the {@linkplain #getEndPoint() end point}, the {@linkplain #getGeodesicDistance() geodesic distance}
+     * and the {@linkplain #getRhumblineLength() rhumb line length}
+     * are discarded by this method call; some of them will need to be specified again.
      *
      * @param  latitude   the latitude in degrees between {@value Latitude#MIN_VALUE}° and {@value Latitude#MAX_VALUE}°.
      * @param  longitude  the longitude in degrees.
-     * @throws IllegalArgumentException if the latitude is out of bounds.
      *
-     * @see #setStartPoint(double, double)
+     * @see #setEndPoint(double, double)
+     * @see #moveToEndPoint()
      */
-    public void setEndPoint(final double latitude, final double longitude) {
-        ArgumentChecks.ensureBetween("latitude", Latitude.MIN_VALUE, Latitude.MAX_VALUE, latitude);
+    public void setStartPoint(final double latitude, final double longitude) {
+        ArgumentChecks.ensureFinite("latitude",  latitude);
         ArgumentChecks.ensureFinite("longitude", longitude);
-        φ2 = toRadians(latitude);
-        λ2 = toRadians(longitude);
-        validity |= END_POINT;
-        validity &= ~(STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE | RHUMBLINE_LENGTH);
-    }
-
-    /**
-     * Sets the destination as coordinates in arbitrary reference system. This method transforms the given
-     * coordinates to geographic coordinates, then delegates to {@link #setEndPoint(double, double)}.
-     * If the given point is not associated to a Coordinate Reference System (CRS), then this method assumes
-     * the CRS specified at construction time.
-     *
-     * @param  position  the destination (end point) in any coordinate reference system.
-     * @throws TransformException if the coordinates can not be transformed.
-     *
-     * @see #setStartPoint(Position)
-     */
-    public void setEndPoint(final Position position) throws TransformException {
-        final DirectPosition p = userToGeodetic.transform(position.getDirectPosition());
-        setEndPoint(p.getOrdinate(0), p.getOrdinate(1));
+        φ1 = toRadians(max(Latitude.MIN_VALUE, min(Latitude.MAX_VALUE, latitude)));
+        λ1 = toRadians(longitude);
+        validity = START_POINT;
     }
 
     /**
@@ -366,21 +328,39 @@ public class GeodeticCalculator {
     }
 
     /**
-     * Sets the angular heading (relative to geographic North) at the starting point.
-     * Azimuth is relative to geographic North with values increasing clockwise.
-     * The {@linkplain #getEndingAzimuth() ending azimuth}, {@linkplain #getEndPoint() end point}
-     * and {@linkplain #getRhumblineLength() rhumb line length}
-     * will be updated as an effect of this method call.
+     * Sets the destination as coordinates in arbitrary reference system. This method transforms the given
+     * coordinates to geographic coordinates, then delegates to {@link #setEndPoint(double, double)}.
+     * If the given point is not associated to a Coordinate Reference System (CRS), then this method assumes
+     * the CRS specified at construction time.
      *
-     * @param  azimuth  the starting azimuth in degrees, with 0° toward north and values increasing clockwise.
+     * @param  position  the destination (end point) in any coordinate reference system.
+     * @throws TransformException if the coordinates can not be transformed.
      *
-     * @see #setGeodesicDistance(double)
+     * @see #setStartPoint(Position)
      */
-    public void setStartingAzimuth(final double azimuth) {
-        ArgumentChecks.ensureFinite("azimuth", azimuth);
-        α1 = toRadians(IEEEremainder(azimuth, 360));
-        validity |= STARTING_AZIMUTH;
-        validity &= ~(END_POINT | ENDING_AZIMUTH | RHUMBLINE_LENGTH);
+    public void setEndPoint(final Position position) throws TransformException {
+        final DirectPosition p = userToGeodetic.transform(position.getDirectPosition());
+        setEndPoint(p.getOrdinate(0), p.getOrdinate(1));
+    }
+
+    /**
+     * Sets the destination as geographic (<var>latitude</var>, <var>longitude</var>) coordinates.
+     * The {@linkplain #getStartingAzimuth() starting azimuth}, {@linkplain #getEndingAzimuth() ending azimuth}
+     * {@linkplain #getGeodesicDistance() geodesic distance} and {@linkplain #getRhumblineLength() rhumb line length}
+     * will be updated as an effect of this call.
+     *
+     * @param  latitude   the latitude in degrees between {@value Latitude#MIN_VALUE}° and {@value Latitude#MAX_VALUE}°.
+     * @param  longitude  the longitude in degrees.
+     *
+     * @see #setStartPoint(double, double)
+     */
+    public void setEndPoint(final double latitude, final double longitude) {
+        ArgumentChecks.ensureFinite("latitude",  latitude);
+        ArgumentChecks.ensureFinite("longitude", longitude);
+        φ2 = toRadians(max(Latitude.MIN_VALUE, min(Latitude.MAX_VALUE, latitude)));
+        λ2 = toRadians(longitude);
+        validity |= END_POINT;
+        validity &= ~(STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE | RHUMBLINE_LENGTH);
     }
 
     /**
@@ -398,6 +378,24 @@ public class GeodeticCalculator {
             computeDistance();
         }
         return toDegrees(α1);
+    }
+
+    /**
+     * Sets the angular heading (relative to geographic North) at the starting point.
+     * Azimuth is relative to geographic North with values increasing clockwise.
+     * The {@linkplain #getEndingAzimuth() ending azimuth}, {@linkplain #getEndPoint() end point}
+     * and {@linkplain #getRhumblineLength() rhumb line length}
+     * will be updated as an effect of this method call.
+     *
+     * @param  azimuth  the starting azimuth in degrees, with 0° toward north and values increasing clockwise.
+     *
+     * @see #setGeodesicDistance(double)
+     */
+    public void setStartingAzimuth(final double azimuth) {
+        ArgumentChecks.ensureFinite("azimuth", azimuth);
+        α1 = toRadians(IEEEremainder(azimuth, 360));
+        validity |= STARTING_AZIMUTH;
+        validity &= ~(END_POINT | ENDING_AZIMUTH | RHUMBLINE_LENGTH);
     }
 
     /**
@@ -421,22 +419,6 @@ public class GeodeticCalculator {
     }
 
     /**
-     * Sets the geodesic distance from the start point to the end point. The {@linkplain #getEndPoint() end point},
-     * {@linkplain #getEndingAzimuth() ending azimuth} and {@linkplain #getRhumblineLength() rhumb line length}
-     * will be updated as an effect of this method call.
-     *
-     * @param  distance  the geodesic distance in unit of measurement given by {@link #getDistanceUnit()}.
-     *
-     * @see #setStartingAzimuth(double)
-     */
-    public void setGeodesicDistance(final double distance) {
-        ArgumentChecks.ensurePositive("distance", distance);
-        geodesicDistance = distance;
-        validity |= GEODESIC_DISTANCE;
-        validity &= ~(END_POINT | ENDING_AZIMUTH | RHUMBLINE_LENGTH);
-    }
-
-    /**
      * Returns or computes the shortest distance from start point to end point. This is sometime called "great circle"
      * or "orthodromic" distance. This method returns the value given in last call to {@link #setGeodesicDistance(double)},
      * unless the {@link #setEndPoint(Position) setEndPoint(…)} method has been invoked more recently. In the later case,
@@ -452,6 +434,22 @@ public class GeodeticCalculator {
             computeDistance();
         }
         return geodesicDistance;
+    }
+
+    /**
+     * Sets the geodesic distance from the start point to the end point. The {@linkplain #getEndPoint() end point},
+     * {@linkplain #getEndingAzimuth() ending azimuth} and {@linkplain #getRhumblineLength() rhumb line length}
+     * will be updated as an effect of this method call.
+     *
+     * @param  distance  the geodesic distance in unit of measurement given by {@link #getDistanceUnit()}.
+     *
+     * @see #setStartingAzimuth(double)
+     */
+    public void setGeodesicDistance(final double distance) {
+        ArgumentChecks.ensurePositive("distance", distance);
+        geodesicDistance = distance;
+        validity |= GEODESIC_DISTANCE;
+        validity &= ~(END_POINT | ENDING_AZIMUTH | RHUMBLINE_LENGTH);
     }
 
     /**
@@ -800,19 +798,13 @@ public class GeodeticCalculator {
          */
         @Override
         protected boolean isValid(final double x, final double y) throws TransformException {
-            /*
-             * Following code is equivalent to `setEndPoint(new DirectPosition2D(x, y))` but without checks
-             * for argument validity and with less temporary objects creation (we recycle the `point` array).
-             */
             point[0] = x;
             point[1] = y;
             for (int i=2; i<point.length; i++) {
                 point[i] = 0;
             }
             userToGeodetic.transform(point);
-            φ2 = toRadians(point[0]);
-            λ2 = toRadians(point[1]);
-            validity |= END_POINT;
+            setEndPoint(point[0], point[1]);
             /*
              * Computes the azimuth to the given point. This azimuth may be different than the azimuth of the
              * geodesic path we are building. Compute the point that we would have if the azimuth was correct
