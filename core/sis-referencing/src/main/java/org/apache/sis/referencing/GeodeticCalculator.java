@@ -741,16 +741,14 @@ public class GeodeticCalculator {
 
         /**
          * Invoked for computing a new point on the Bézier curve. This method is invoked with a <var>t</var> value varying from
-         * 0 (start point) to 1 (end point) inclusive. This method stores the point coordinates in the {@link #point} array with
-         * <var>x</var> coordinate in the first element and <var>y</var> coordinate in the second element. The returned value is
-         * the derivative (∂y/∂x) at that location.
+         * 0 (start point) to 1 (end point) inclusive. This method stores the coordinates in the {@link #point} array and the
+         * derivative (∂y/∂x) in the {@linkplain #dx dx} and {@linkplain #dy dy} fields.
          *
          * @param  t  desired point on the curve, from 0 (start point) to 1 (end point) inclusive.
-         * @return derivative (∂y/∂x) at the point.
          * @throws TransformException if the point coordinates can not be computed.
          */
         @Override
-        protected double evaluateAt(final double t) throws TransformException {
+        protected void evaluateAt(final double t) throws TransformException {
             if (t == 0) {
                 φ2 = φ1;                        // Start point requested.
                 λ2 = λ1;
@@ -764,7 +762,7 @@ public class GeodeticCalculator {
                 validity |= GEODESIC_DISTANCE;
                 computeEndPoint();
             }
-            return evaluateAtEndPoint();
+            evaluateAtEndPoint();
         }
 
         /**
@@ -772,7 +770,7 @@ public class GeodeticCalculator {
          * This method stores the projected coordinates in the {@link #point} array and returns
          * the derivative ∂y/∂x.
          */
-        final double evaluateAtEndPoint() throws TransformException {
+        final void evaluateAtEndPoint() throws TransformException {
             if ((λ2 - λ1) * α1 < 0) {
                 λ2 += 2*PI * signum(α1);          // We need λ₁ < λ₂ if heading east, or λ₁ > λ₂ if heading west.
             }
@@ -789,11 +787,10 @@ public class GeodeticCalculator {
              * α2 is azimuth angle in radians, with 0 pointing toward north and values increasing clockwise.
              * d  is the Jacobian matrix from (φ,λ) to the user coordinate reference system.
              */
-            final double dx = cos(α2);              // sin(π/2 - α) = -sin(α - π/2) = cos(α)
-            final double dy = sin(α2);              // cos(π/2 - α) = +cos(α - π/2) = sin(α)
-            final double tx = m00*dx + m01*dy;
-            final double ty = m10*dx + m11*dy;
-            return ty / tx;
+            final double αx = cos(α2);              // sin(π/2 - α) = -sin(α - π/2) = cos(α)
+            final double αy = sin(α2);              // cos(π/2 - α) = +cos(α - π/2) = sin(α)
+            dx = m00*αx + m01*αy;
+            dy = m10*αx + m11*αy;
         }
 
         /**
@@ -857,23 +854,24 @@ public class GeodeticCalculator {
         /**
          * Invoked for computing a new point on the circular path. This method is invoked with a <var>t</var> value varying from
          * 0 to 1 inclusive. The <var>t</var> value is multiplied by 2π for getting an angle. This method stores the coordinates
-         * in the {@link #point} array and returns the derivative (∂y/∂x) at that location.
+         * in the {@link #point} array and the derivative (∂y/∂x) in the {@linkplain #dx dx} and {@linkplain #dy dy} fields.
          *
          * @param  t  angle fraction from 0 to 1 inclusive.
-         * @return derivative (∂y/∂x) at the point.
          * @throws TransformException if the point coordinates can not be computed.
          */
         @Override
-        protected double evaluateAt(final double t) throws TransformException {
+        protected void evaluateAt(final double t) throws TransformException {
             α1 = IEEEremainder((t - 0.5) * (2*PI), 2*PI);
             validity |= STARTING_AZIMUTH;
             computeEndPoint();
-            final double d = evaluateAtEndPoint();
+            evaluateAtEndPoint();
             if (depth <= 1) {
                 // Force division of the curve in two smaller curves. We want at least 4 Bézier curves in an ellipse.
                 εx = εy = -1;
             }
-            return d;
+            final double d = dx;
+            dx = dy;
+            dy = -d;        // Perpendicular direction.
         }
 
         /**

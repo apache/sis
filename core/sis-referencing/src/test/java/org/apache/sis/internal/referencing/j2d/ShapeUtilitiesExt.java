@@ -75,7 +75,7 @@ public final class ShapeUtilitiesExt {
                                final double εx, final double εy)
     {
         final Bezier bezier = new Bezier(2) {
-            @Override protected double evaluateAt(final double t) {
+            @Override protected void evaluateAt(final double t) {
                 final double x, y, α;
                 if (t == 0) {
                     x = x1;
@@ -96,7 +96,8 @@ public final class ShapeUtilitiesExt {
                 }
                 point[0] = x;
                 point[1] = y;
-                return α;
+                dx = 2.5;           // Artificial factor for testing purpose. Otherwise could be 1.
+                dy = dx * α;
             }
         };
         bezier.εx = εx;
