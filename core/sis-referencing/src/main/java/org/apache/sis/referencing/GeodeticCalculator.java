@@ -801,6 +801,8 @@ public class GeodeticCalculator {
          * Returns whether the point at given (<var>x</var>, <var>y</var>) coordinates is close to the geodesic path.
          * This method is invoked when the {@link Bezier} helper class thinks that the point is not on the path, but
          * could be wrong because of the difficulty to evaluate the Bézier <var>t</var> parameter of closest point.
+         *
+         * @see <a href="https://issues.apache.org/jira/browse/SIS-455">SIS-455</a>
          */
         @Override
         protected boolean isValid(final double x, final double y) throws TransformException {

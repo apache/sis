@@ -144,6 +144,8 @@ public abstract class Bezier {
      *
      * @todo This method is a hack. We should replace it by a computation of the Bézier <var>t</var> parameter
      *       of the point closest to the given (x₁,y₁) and (x₃,y₃) points.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-455">SIS-455</a>
      */
     protected boolean isValid(double x, double y) throws TransformException {
         return false;
@@ -383,6 +385,7 @@ public abstract class Bezier {
                  * fixed t values. If we want to improve on that in a future version, we would need a function for computing
                  * arc length (for example based on https://pomax.github.io/bezierinfo/#arclength), then use iterative method
                  * like https://www.geometrictools.com/Documentation/MovingAlongCurveSpecifiedSpeed.pdf (retrieved May 2019).
+                 * See https://issues.apache.org/jira/browse/SIS-455 for more information.
                  *
                  * Instead we perform another test using the tangent of the curve at point P₁ (and later P₃).
                  *
