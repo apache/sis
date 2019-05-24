@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.awt.Shape;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.PathIterator;
 import java.util.Arrays;
 import java.util.Random;
@@ -229,7 +230,11 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
         if (VisualCheck.SHOW_WIDGET) {
             VisualCheck.show(region);
         }
-        // TODO: test bounding box.
+        final Rectangle2D bounds = region.getBounds2D();
+        assertEquals("xmin", -72.67228, bounds.getMinX(), 5E-6);
+        assertEquals("ymin", -33.89932, bounds.getMinY(), 5E-6);
+        assertEquals("xmax", -70.52772, bounds.getMaxX(), 5E-6);
+        assertEquals("ymax", -32.10068, bounds.getMaxY(), 5E-6);
     }
 
     /**
