@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Messages;
  * Sub-directories of {@code SIS_DATA} where SIS looks for EPSG database, datum shift grids and other resources.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
@@ -54,7 +54,14 @@ public enum DataDirectory {
      * The {@code "DomainsOfValidity"} directory.
      * This directory is used for storing shapefiles for the CRS domains of validity.
      */
-    DOMAINS_OF_VALIDITY;
+    DOMAINS_OF_VALIDITY,
+
+    /**
+     * The {@code "Tests" directory}.
+     * This directory is used for optional test files that are too large for inclusion in source code repository.
+     * This is used at build time of Apache SIS project, but not used during normal execution.
+     */
+    TESTS;
 
     /**
      * The name of the environment variable.
@@ -215,11 +222,14 @@ public enum DataDirectory {
     }
 
     /**
-     * If the given path is relative, returns the path as a child of the directory represented this enum.
+     * If the given path is relative, returns the path as a child of the directory represented by this enum.
      * If no valid directory is configured by the {@code SIS_DATA} environment variable, then the relative
      * path is returned as-is.
      *
-     * @param  file The path to resolve, or {@code null}.
+     * <p>This method is invoked for files that may be user-specified, for example datum shift file specified
+     * in {@link org.opengis.parameter.ParameterValue}.</p>
+     *
+     * @param  file  the path to resolve, or {@code null}.
      * @return the path to use, or {@code null} if the given path was null.
      */
     public Path resolve(Path file) {

@@ -107,6 +107,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short AxisChanges = 8;
 
         /**
+         * Azimuth
+         */
+        public static final short Azimuth = 168;
+
+        /**
          * Band {0}
          */
         public static final short Band_1 = 161;
@@ -337,6 +342,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short EndDate = 134;
 
         /**
+         * End point
+         */
+        public static final short EndPoint = 169;
+
+        /**
          * {0} entr{0,choice,0#y|2#ies}
          */
         public static final short EntryCount_1 = 121;
@@ -380,6 +390,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Geocentric radius
          */
         public static final short GeocentricRadius = 44;
+
+        /**
+         * Geodesic distance
+         */
+        public static final short GeodesicDistance = 170;
 
         /**
          * Geodetic dataset
@@ -745,6 +760,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Start date
          */
         public static final short StartDate = 139;
+
+        /**
+         * Start point
+         */
+        public static final short StartPoint = 171;
 
         /**
          * Subset of {0}

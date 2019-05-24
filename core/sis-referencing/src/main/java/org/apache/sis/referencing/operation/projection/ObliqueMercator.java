@@ -172,7 +172,7 @@ public class ObliqueMercator extends ConformalProjection {
         final double D   = Br / (cosφ * sqrt(rν2));
         final double sD1 = sqrt(Math.max(D*D - 1, 0));
         final double F   = D + copySign(sD1, φc);
-        H = F * pow(expOfNorthing(φc, eccentricity*sinφ), -B);                          // expOfNorthing(…) = 1/t
+        H = F * pow(expΨ(φc, eccentricity*sinφ), -B);                                   // expΨ(…) = 1/t
         /*
          * Next coefficients depend on whether the user specified azimuth or two points.
          * Only the azimuth case is described in EPSG guidance notes.
@@ -214,8 +214,8 @@ public class ObliqueMercator extends ConformalProjection {
             final double φ2 = toRadians(initializer.getAndStore(ObliqueMercatorTwoPoints.LAT_OF_2ND_POINT));
             final double λ1 = toRadians(initializer.getAndStore(ObliqueMercatorTwoPoints.LONG_OF_1ST_POINT));
                   double λ2 = toRadians(initializer.getAndStore(ObliqueMercatorTwoPoints.LONG_OF_2ND_POINT));
-            final double H1 = pow(expOfNorthing(φ1, sin(eccentricity*φ1)), -B);
-            final double L  = pow(expOfNorthing(φ2, sin(eccentricity*φ2)), -B);
+            final double H1 = pow(expΨ(φ1, sin(eccentricity*φ1)), -B);
+            final double L  = pow(expΨ(φ2, sin(eccentricity*φ2)), -B);
             final double E2 = H * H;
             final double LH = L * H1;
             final double J  = (E2 - LH) / (E2 + LH);
@@ -315,7 +315,7 @@ public class ObliqueMercator extends ConformalProjection {
          * From EPSG guidance notes:
          *
          *      t  =  tan(π/4 – φ/2) / [(1 – ℯ⋅sinφ) / (1 + ℯ⋅sinφ)]^(ℯ/2)
-         *      Q  =  H / t^B                                                   — note: t = 1/expOfNorthing
+         *      Q  =  H / t^B                                                   — note: t = 1/expΨ
          *      S  =  (Q – 1/Q) / 2
          *      T  =  (Q + 1/Q) / 2
          *      V  =  sin(B⋅(λ – λ₀))
@@ -329,7 +329,7 @@ public class ObliqueMercator extends ConformalProjection {
          *      y  =  u/A
          */
         final double sinφ  = sin(φ);
-        final double Q     = H * pow(expOfNorthing(φ, eccentricity*sinφ), B);
+        final double Q     = H * pow(expΨ(φ, eccentricity*sinφ), B);
         final double iQ    = 1 / Q;
         final double S     = (Q - iQ) * 0.5;
         final double T     = (Q + iQ) * 0.5;

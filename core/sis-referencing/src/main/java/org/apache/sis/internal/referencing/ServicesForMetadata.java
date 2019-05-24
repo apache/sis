@@ -312,7 +312,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             final String findOpCaller) throws TransformException
     {
         final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
-        GeographicCRS normalizedCRS = ReferencingUtilities.toNormalizedGeographicCRS(crs);
+        GeographicCRS normalizedCRS = ReferencingUtilities.toNormalizedGeographicCRS(crs, false, false);
         if (normalizedCRS == null) {
             if (crs != null) {
                 normalizedCRS = CommonCRS.defaultGeographic();
@@ -403,7 +403,7 @@ public final class ServicesForMetadata extends ReferencingServices {
                 box = new DefaultGeographicBoundingBox();
                 spatialExtents.add(box);
             }
-            GeographicCRS normalizedCRS = ReferencingUtilities.toNormalizedGeographicCRS(crs);
+            GeographicCRS normalizedCRS = ReferencingUtilities.toNormalizedGeographicCRS(crs, false, false);
             if (normalizedCRS == null) {
                 normalizedCRS = CommonCRS.defaultGeographic();
             }

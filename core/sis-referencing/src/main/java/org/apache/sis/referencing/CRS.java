@@ -850,7 +850,7 @@ public final class CRS extends Static {
                  * the amount of transformation needed.
                  */
                 final SingleCRS targetCRS = getHorizontalComponent(crs);
-                final GeographicCRS sourceCRS = ReferencingUtilities.toNormalizedGeographicCRS(targetCRS);
+                final GeographicCRS sourceCRS = ReferencingUtilities.toNormalizedGeographicCRS(targetCRS, false, false);
                 if (sourceCRS != null) {
                     envelope = merged = new GeneralEnvelope(bounds);
                     merged.translate(-getGreenwichLongitude(sourceCRS), 0);
@@ -1057,7 +1057,7 @@ public final class CRS extends Static {
     }
 
     /**
-     * If the given CRS would quality as horizontal except for its number of dimensions, returns that number.
+     * If the given CRS would qualify as horizontal except for its number of dimensions, returns that number.
      * Otherwise returns 0. The number of dimensions can only be 2 or 3.
      */
     private static int horizontalCode(final CoordinateReferenceSystem crs) {

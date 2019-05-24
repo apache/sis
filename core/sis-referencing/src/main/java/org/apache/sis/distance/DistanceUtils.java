@@ -16,17 +16,16 @@
  */
 package org.apache.sis.distance;
 
-// SIS imports
 import org.apache.sis.geometry.DirectPosition2D;
 
 /**
  * Class to calculate distances on earth surface. Actual calculation code very
  * similar to Apache SIS but refractor to allow use of custom classes.
  *
- * <div class="warning"><b>Warning:</b> This class may change in a future SIS version. Current implementation
- * performs computations on a sphere of hard-coded radius. A future implementation should perform computations
- * on a given ellipsoid.</div>
+ * @deprecated Replaced by {@link org.apache.sis.referencing.GeodeticCalculator}.
+ * See <a href="https://issues.apache.org/jira/browse/SIS-385">SIS-385</a>.
  */
+@Deprecated
 public final class DistanceUtils {
   private DistanceUtils() {
   }
@@ -46,7 +45,10 @@ public final class DistanceUtils {
    * @param bearing
    *          the great circle bearing
    * @return a coordinate at the specified bearing
+   *
+   * @deprecated Replaced by {@link org.apache.sis.referencing.GeodeticCalculator#getEndPoint()}.
    */
+  @Deprecated
   public static DirectPosition2D getPointOnGreatCircle(double latitude, double longitude,
       double d, double bearing) {
     double angularDistance = d / EARTH_RADIUS;
@@ -82,7 +84,10 @@ public final class DistanceUtils {
    * @param longitude2
    *          longitude of second coordinate
    * @return great circle distance between specified lat/lon coordinates
+   *
+   * @deprecated Replaced by {@link org.apache.sis.referencing.GeodeticCalculator#getGeodesicDistance()}.
    */
+  @Deprecated
   public static double getHaversineDistance(double latitude1,
       double longitude1, double latitude2, double longitude2) {
     double longRadian1 = Math.toRadians(longitude1);

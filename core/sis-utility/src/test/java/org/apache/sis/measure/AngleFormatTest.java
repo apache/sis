@@ -34,7 +34,7 @@ import static org.apache.sis.test.TestUtilities.*;
  * Tests parsing and formatting done by the {@link AngleFormat} class.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -319,6 +319,26 @@ public final strictfp class AngleFormatTest extends TestCase {
         assertEquals("D°",  f.toPattern());
         assertEquals("8°",  f.format(new Angle( 8.123456)));
         assertEquals("20°", f.format(new Angle(20.123456)));
+    }
+
+    /**
+     * Tests {@link AngleFormat#setPrecision(double, boolean)}.
+     */
+    @Test
+    public void testSetPrecision() {
+        final AngleFormat f = new AngleFormat(Locale.CANADA);
+        f.setPrecision(1,        true); assertEquals("D°",         f.toPattern());
+        f.setPrecision(1./10,    true); assertEquals("D.d°",       f.toPattern());
+        f.setPrecision(1./60,    true); assertEquals("D°MM′",      f.toPattern());
+        f.setPrecision(1./600,   true); assertEquals("D°MM.m′",    f.toPattern());
+        f.setPrecision(1./3600,  true); assertEquals("D°MM′SS″",   f.toPattern());
+        f.setPrecision(1./4000,  true); assertEquals("D°MM′SS.s″", f.toPattern());
+        f.setPrecision(1./100,   true); assertEquals("D°MM.m′",    f.toPattern());
+        f.setPrecision(1./8000, false); assertEquals("D°MM.mmm′",  f.toPattern());
+        f.setPrecision(1./1000, false); assertEquals("D°MM.mm′",   f.toPattern());
+        f.setPrecision(10,       true); assertEquals("D°",         f.toPattern());
+        f.setPrecision(1./1000, false); assertEquals("D.ddd°",     f.toPattern());
+        f.setPrecision(1./1001, false); assertEquals("D.dddd°",    f.toPattern());
     }
 
     /**

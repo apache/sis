@@ -50,7 +50,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */

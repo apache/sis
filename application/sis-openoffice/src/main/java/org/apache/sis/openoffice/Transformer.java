@@ -72,7 +72,7 @@ final class Transformer {
         /*
          * Computes the area of interest.
          */
-        final GeographicCRS domainCRS = ReferencingUtilities.toNormalizedGeographicCRS(sourceCRS);
+        final GeographicCRS domainCRS = ReferencingUtilities.toNormalizedGeographicCRS(sourceCRS, false, false);
         if (domainCRS != null) {
             final MathTransform toDomainOfValidity = CRS.findOperation(sourceCRS, domainCRS, null).getMathTransform();
             final int dimension = toDomainOfValidity.getSourceDimensions();

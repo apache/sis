@@ -20,6 +20,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.internal.util.Numerics;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.apache.sis.referencing.datum.DefaultEllipsoid;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.atanh;
@@ -97,19 +98,6 @@ public final class Formulas extends Static {
     }
 
     /**
-     * Returns the size of a planet described by the given ellipsoid compared to earth.
-     * This method returns a ratio of given planet authalic radius compared to WGS84.
-     * This can be used for adjusting {@link #LINEAR_TOLERANCE} and {@link #ANGULAR_TOLERANCE} to another planet.
-     *
-     * @param  planet  ellipsoid of the other planet to compare to Earth.
-     * @return ratio of planet authalic radius on WGS84 authalic radius.
-     */
-    public static double scaleComparedToEarth(final Ellipsoid planet) {
-        return getAuthalicRadius(planet.getSemiMajorAxis(),
-                                 planet.getSemiMinorAxis()) / 6371007.180918474;
-    }
-
-    /**
      * Returns 3ⁿ for very small (less than 10) positive values of <var>n</var>.
      * Note that this method overflow for any value equals or greater than 20.
      *
@@ -139,6 +127,35 @@ public final class Formulas extends Static {
     public static boolean isPoleToPole(final double ymin, final double ymax) {
         return abs(ymin - Latitude.MIN_VALUE) <= ANGULAR_TOLERANCE &&
                abs(ymax - Latitude.MAX_VALUE) <= ANGULAR_TOLERANCE;
+    }
+
+    /**
+     * Returns the size of a planet described by the given ellipsoid compared to earth.
+     * This method returns a ratio of given planet authalic radius compared to WGS84.
+     * This can be used for adjusting {@link #LINEAR_TOLERANCE} and {@link #ANGULAR_TOLERANCE} to another planet.
+     *
+     * @param  planet  ellipsoid of the other planet to compare to Earth, or {@code null}.
+     * @return ratio of planet authalic radius on WGS84 authalic radius, or {@code NaN} if the given ellipsoid is null.
+     */
+    public static double scaleComparedToEarth(final Ellipsoid planet) {
+        return getAuthalicRadius(planet) / 6371007.180918474;
+    }
+
+    /**
+     * Returns the radius of a hypothetical sphere having the same surface than the given ellipsoid.
+     *
+     * @param  ellipsoid  the ellipsoid for which to get the radius, or {@code null}.
+     * @return the authalic radius, or {@link Double#NaN} if the given ellipsoid is null.
+     */
+    public static double getAuthalicRadius(final Ellipsoid ellipsoid) {
+        if (ellipsoid == null) {
+            return Double.NaN;
+        } else if (ellipsoid instanceof DefaultEllipsoid) {
+            return ((DefaultEllipsoid) ellipsoid).getAuthalicRadius();      // Give a chance to subclasses to override.
+        } else {
+            return getAuthalicRadius(ellipsoid.getSemiMajorAxis(),
+                                     ellipsoid.getSemiMinorAxis());
+        }
     }
 
     /**

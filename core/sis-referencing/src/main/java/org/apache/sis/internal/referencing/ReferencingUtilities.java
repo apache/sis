@@ -44,12 +44,16 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
+import org.apache.sis.internal.metadata.AxisDirections;
 
 import static java.util.Collections.singletonMap;
 
@@ -147,6 +151,23 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
+     * Returns the GeoAPI interface implemented by the given object, or the implementation class
+     * if the interface is unknown.
+     *
+     * @param  object  the object for which to get the GeoAPI interface, or {@code null}.
+     * @return GeoAPI interface or implementation class of the given object, or {@code null} if the given object is null.
+     */
+    public static Class<?> getInterface(final IdentifiedObject object) {
+        if (object == null) {
+            return null;
+        } else if (object instanceof AbstractIdentifiedObject) {
+             return ((AbstractIdentifiedObject) object).getInterface();
+        } else {
+             return object.getClass();
+        }
+    }
+
+    /**
      * Copies all {@link SingleCRS} components from the given source to the given collection.
      * For each {@link CompoundCRS} element found in the iteration, this method replaces the
      * {@code CompoundCRS} by its {@linkplain CompoundCRS#getComponents() components}, which
@@ -203,6 +224,17 @@ public final class ReferencingUtilities extends Static {
 
     /**
      * Returns the ellipsoid used by the given coordinate reference system, or {@code null} if none.
+     * More specifically:
+     *
+     * <ul>
+     *   <li>If the given CRS is an instance of {@link SingleCRS} and its datum is a {@link GeodeticDatum},
+     *       then this method returns the datum ellipsoid.</li>
+     *   <li>Otherwise if the given CRS is an instance of {@link CompoundCRS}, then this method
+     *       invokes itself recursively for each component until a geodetic datum is found.</li>
+     *   <li>Otherwise this method returns {@code null}.</li>
+     * </ul>
+     *
+     * Note that this method does not check if there is more than one ellipsoid (it should never be the case).
      *
      * @param  crs  the coordinate reference system for which to get the ellipsoid.
      * @return the ellipsoid, or {@code null} if none.
@@ -262,16 +294,18 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Derives a geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order in decimal degrees.
+     * Derives a geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis in the specified order and in decimal degrees.
      * If no such CRS can be obtained or created, returns {@code null}.
      *
      * <p>This method does not set the prime meridian to Greenwich.
      * Meridian rotation, if needed, shall be performed by the caller.</p>
      *
-     * @param  crs  a source CRS, or {@code null}.
+     * @param  crs      a source CRS, or {@code null}.
+     * @param  latlon   {@code true} for (latitude, longitude) axis order, or {@code false} for (longitude, latitude).
+     * @param  allow3D  whether this method is allowed to return three-dimensional CRS (with ellipsoidal height).
      * @return a two-dimensional geographic CRS with standard axes, or {@code null} if none.
      */
-    public static GeographicCRS toNormalizedGeographicCRS(CoordinateReferenceSystem crs) {
+    public static GeographicCRS toNormalizedGeographicCRS(CoordinateReferenceSystem crs, final boolean latlon, final boolean allow3D) {
         /*
          * ProjectedCRS instances always have a GeographicCRS as their base.
          * More generally, derived CRS are always derived from a base, which
@@ -283,21 +317,42 @@ public final class ReferencingUtilities extends Static {
         if (crs instanceof GeodeticCRS) {
             /*
              * At this point we usually have a GeographicCRS, but it could also be a GeocentricCRS.
+             * If we can let `forConvention` do its job, do that first since it may return a cached
+             * instance. If the CRS is a `GeographicCRS` but not a `DefaultGeographicCRS`, create a
+             * CRS in this code instead than invoking `DefaultGeographicCRS.castOrCopy(…)` in order
+             * to create only one CRS instead of two.
              */
-            if (crs instanceof DefaultGeographicCRS && crs.getCoordinateSystem().getDimension() == 2) {
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            if (!latlon && crs instanceof DefaultGeographicCRS && (allow3D || cs.getDimension() == 2)) {
                 return ((DefaultGeographicCRS) crs).forConvention(AxesConvention.NORMALIZED);
             }
-            final CoordinateSystem cs = CommonCRS.defaultGeographic().getCoordinateSystem();
-            if (crs instanceof GeographicCRS && Utilities.equalsIgnoreMetadata(cs, crs.getCoordinateSystem())) {
+            /*
+             * Get a normalized coordinate system with the number of dimensions authorized by the
+             * `allow3D` argument. We do not check if we can invoke `cs.forConvention(…)` because
+             * it is unlikely that `cs` will be an instance of `DefaultEllipsoidalCS` is `crs` is
+             * not a `DefaultGeographicCRS`. The code below has more chances to use cached instance.
+             */
+            EllipsoidalCS normalizedCS;
+            if (allow3D && cs.getDimension() >= 3) {
+                normalizedCS = CommonCRS.WGS84.geographic3D().getCoordinateSystem();
+                if (!latlon) {
+                    normalizedCS = DefaultEllipsoidalCS.castOrCopy(normalizedCS).forConvention(AxesConvention.NORMALIZED);
+                }
+            } else if (latlon) {
+                normalizedCS = CommonCRS.WGS84.geographic().getCoordinateSystem();
+            } else {
+                normalizedCS = CommonCRS.defaultGeographic().getCoordinateSystem();
+            }
+            if (crs instanceof GeographicCRS && Utilities.equalsIgnoreMetadata(normalizedCS, cs)) {
                 return (GeographicCRS) crs;
             }
             return new DefaultGeographicCRS(
                     singletonMap(DefaultGeographicCRS.NAME_KEY, NilReferencingObject.UNNAMED),
-                    ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
+                    ((GeodeticCRS) crs).getDatum(), normalizedCS);
         }
         if (crs instanceof CompoundCRS) {
             for (final CoordinateReferenceSystem e : ((CompoundCRS) crs).getComponents()) {
-                final GeographicCRS candidate = toNormalizedGeographicCRS(e);
+                final GeographicCRS candidate = toNormalizedGeographicCRS(e, latlon, allow3D);
                 if (candidate != null) {
                     return candidate;
                 }
@@ -505,5 +560,40 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return mapping;
+    }
+
+    /**
+     * Returns short names for all axes of the given CRS. This method uses short names like "Latitude" or "Height",
+     * even if the full ISO 19111 names are "Geodetic latitude" or "Ellipsoidal height". This is suitable as header
+     * for columns in a table. This method does not include abbreviation or units in the returned names.
+     *
+     * @param  resources  the resources from which to get "latitude" and "longitude" localized labels.
+     * @param  crs        the coordinate reference system from which to get axis names.
+     * @return axis names, localized if possible.
+     */
+    public static String[] getShortAxisNames(final Vocabulary resources, final CoordinateReferenceSystem crs) {
+        final boolean isGeographic = (crs instanceof GeographicCRS);
+        final boolean isProjected  = (crs instanceof ProjectedCRS);
+        final CoordinateSystem cs = crs.getCoordinateSystem();
+        final String[] names = new String[cs.getDimension()];
+        for (int i=0; i<names.length; i++) {
+            short key = 0;
+            final CoordinateSystemAxis axis = cs.getAxis(i);
+            final AxisDirection direction = axis.getDirection();
+            if (AxisDirections.isCardinal(direction)) {
+                final boolean isMeridional = AxisDirection.NORTH.equals(direction) || AxisDirection.SOUTH.equals(direction);
+                if (isGeographic) {
+                    key = isMeridional ? Vocabulary.Keys.Latitude : Vocabulary.Keys.Longitude;
+                } else if (isProjected) {
+                    // We could add "Easting" / "Northing" here for ProjectedCRS in a future version.
+                }
+            } else if (AxisDirection.UP.equals(direction)) {
+                if (isGeographic | isProjected) {
+                    key = Vocabulary.Keys.Height;
+                }
+            }
+            names[i] = (key != 0) ? resources.getString(key) : axis.getName().getCode();
+        }
+        return names;
     }
 }

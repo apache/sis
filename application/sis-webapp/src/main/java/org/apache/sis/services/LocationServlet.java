@@ -50,15 +50,19 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.operation.TransformException;
+
 //SIS imports
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.distance.DistanceUtils;
 import org.apache.sis.index.tree.GeoRSSData;
 import org.apache.sis.index.tree.QuadTree;
 import org.apache.sis.index.tree.QuadTreeData;
 import org.apache.sis.index.tree.QuadTreeReader;
 import org.apache.sis.index.tree.QuadTreeWriter;
+import org.apache.sis.referencing.GeodeticCalculator;
+import org.apache.sis.referencing.CommonCRS;
 
 //ROME imports
 import com.sun.syndication.feed.WireFeed;
@@ -157,8 +161,7 @@ public class LocationServlet extends HttpServlet {
             depth = Integer.parseInt(depthNode.item(0).getFirstChild()
                 .getNodeValue());
           }
-          this.tree = new QuadTree(capacity, depth); // TODO make this
-          // configurable
+          this.tree = new QuadTree(capacity, depth); // TODO make this configurable
 
           NodeList urlNodes = configDoc.getElementsByTagName("url");
           for (int i = 0; i < urlNodes.getLength(); i++) {
@@ -303,15 +306,21 @@ public class LocationServlet extends HttpServlet {
         }
 
         double radiusKM = Double.parseDouble(radius);
+        final GeodeticCalculator calculator = GeodeticCalculator.create(CommonCRS.SPHERE.geographic());
+        calculator.setStartGeographicPoint(point.y, point.x);
+        calculator.setGeodesicDistance(radiusKM);
 
-        String regionStr = "";
+        StringBuilder regionStr = new StringBuilder();
 
-        for (int i = 0; i < 360; i += 10) {
-          DirectPosition2D pt = DistanceUtils.getPointOnGreatCircle(point.y, point.x, radiusKM, i);
-          regionStr += pt.y + "," + pt.x + ",";
+        try {
+          for (int i = 0; i <= 360; i += 10) {
+            calculator.setStartingAzimuth(i);
+            DirectPosition pt = calculator.getEndPoint();
+            regionStr.append(pt.getOrdinate(1)).append(',').append(pt.getOrdinate(0)).append(',');
+          }
+        } catch (TransformException e) {
+          throw new ServletException(e);            // Should never happen.
         }
-        DirectPosition2D pt = DistanceUtils.getPointOnGreatCircle(point.y, point.x, radiusKM, 0);
-        regionStr += pt.y + "," + pt.x + ",";
         regions.add(regionStr.substring(0, regionStr.length() - 1));
 
         beforeTime = System.currentTimeMillis();

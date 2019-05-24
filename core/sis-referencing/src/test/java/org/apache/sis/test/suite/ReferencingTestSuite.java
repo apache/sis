@@ -219,7 +219,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.factory.GIGS2008.class,
     org.apache.sis.referencing.factory.GIGS2009.class,
 
-    // Following tests use indirectly EPSG factory.
+    // Following tests may use indirectly EPSG factory.
     org.apache.sis.referencing.CommonCRSTest.class,
     org.apache.sis.referencing.factory.CommonAuthorityFactoryTest.class,
     org.apache.sis.referencing.factory.AuthorityFactoryProxyTest.class,
@@ -234,6 +234,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.AuthorityFactoriesTest.class,
     org.apache.sis.referencing.cs.CodesTest.class,
     org.apache.sis.referencing.CRSTest.class,
+    org.apache.sis.referencing.GeodeticCalculatorTest.class,
     org.apache.sis.internal.referencing.DefinitionVerifierTest.class,
     org.apache.sis.internal.referencing.CoordinateOperationsTest.class,
 
