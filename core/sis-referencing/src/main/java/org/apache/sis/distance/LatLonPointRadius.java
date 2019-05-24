@@ -83,7 +83,7 @@ public class LatLonPointRadius {
     if (numberOfPoints > 0) { bearingIncrement = 360/numberOfPoints; }
 
     final GeodeticCalculator calculator = GeodeticCalculator.create(CommonCRS.SPHERE.geographic());
-    calculator.setStartPoint(center.getOrdinate(1), center.getOrdinate(0));
+    calculator.setStartGeographicPoint(center.getOrdinate(1), center.getOrdinate(0));
     calculator.setGeodesicDistance(radius);
 
     try {
@@ -116,7 +116,7 @@ public class LatLonPointRadius {
     int numberOfCrossOvers = 0;
 
     final GeodeticCalculator calculator = GeodeticCalculator.create(CommonCRS.SPHERE.geographic());
-    calculator.setStartPoint(center.getOrdinate(1), center.getOrdinate(0));
+    calculator.setStartGeographicPoint(center.getOrdinate(1), center.getOrdinate(0));
 
     Path2D path = new Path2D.Double();
     double initX = Double.NaN, previousX = Double.NaN;

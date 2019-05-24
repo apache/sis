@@ -350,8 +350,8 @@ public class QuadTree {
                     DirectPosition2D latLon = data[i].getLatLon();
                     double distance;
                     synchronized (calculator) {
-                        calculator.setStartPoint(latLon.y, latLon.x);
-                        calculator.setEndPoint(point.y, point.x);
+                        calculator.setStartGeographicPoint(latLon.y, latLon.x);
+                        calculator.setEndGeographicPoint(point.y, point.x);
                         distance = calculator.getGeodesicDistance();
                     }
                     if (distance <= radiusKM) {

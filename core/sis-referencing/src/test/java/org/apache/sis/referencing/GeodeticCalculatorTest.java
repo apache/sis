@@ -108,11 +108,11 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     public void testCardinalAzimuths() {
         final GeodeticCalculator c = create(false);
         final double tolerance = 0.2;
-        c.setStartPoint(20, 12);
-        c.setEndPoint(20, 13);  assertEquals("East",   90, c.getStartingAzimuth(), tolerance);
-        c.setEndPoint(21, 12);  assertEquals("North",   0, c.getStartingAzimuth(), tolerance);
-        c.setEndPoint(20, 11);  assertEquals("West",  -90, c.getStartingAzimuth(), tolerance);
-        c.setEndPoint(19, 12);  assertEquals("South", 180, c.getStartingAzimuth(), tolerance);
+        c.setStartGeographicPoint(20, 12);
+        c.setEndGeographicPoint(20, 13);  assertEquals("East",   90, c.getStartingAzimuth(), tolerance);
+        c.setEndGeographicPoint(21, 12);  assertEquals("North",   0, c.getStartingAzimuth(), tolerance);
+        c.setEndGeographicPoint(20, 11);  assertEquals("West",  -90, c.getStartingAzimuth(), tolerance);
+        c.setEndGeographicPoint(19, 12);  assertEquals("South", 180, c.getStartingAzimuth(), tolerance);
     }
 
     /**
@@ -122,18 +122,18 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     public void testAzimuthAtPoles() {
         final GeodeticCalculator c = create(false);
         final double tolerance = 0.2;
-        c.setStartPoint( 90,  30);
-        c.setEndPoint  ( 20,  20);  assertEquals(-170, c.getStartingAzimuth(), tolerance);
-        c.setEndPoint  ( 20,  40);  assertEquals( 170, c.getStartingAzimuth(), tolerance);
-        c.setEndPoint  ( 20,  30);  assertEquals( 180, c.getStartingAzimuth(), tolerance);
-        c.setEndPoint  (-20,  30);  assertEquals( 180, c.getStartingAzimuth(), tolerance);
-        c.setEndPoint  (-90,  30);  assertEquals( 180, c.getStartingAzimuth(), tolerance);
+        c.setStartGeographicPoint( 90,  30);
+        c.setEndGeographicPoint  ( 20,  20);  assertEquals(-170, c.getStartingAzimuth(), tolerance);
+        c.setEndGeographicPoint  ( 20,  40);  assertEquals( 170, c.getStartingAzimuth(), tolerance);
+        c.setEndGeographicPoint  ( 20,  30);  assertEquals( 180, c.getStartingAzimuth(), tolerance);
+        c.setEndGeographicPoint  (-20,  30);  assertEquals( 180, c.getStartingAzimuth(), tolerance);
+        c.setEndGeographicPoint  (-90,  30);  assertEquals( 180, c.getStartingAzimuth(), tolerance);
 
-        c.setStartPoint( 90,   0);
-        c.setEndPoint  ( 20,  20);  assertEquals( 160, c.getStartingAzimuth(), tolerance);
-        c.setEndPoint  ( 20, -20);  assertEquals(-160, c.getStartingAzimuth(), tolerance);
-        c.setEndPoint  ( 20,   0);  assertEquals( 180, c.getStartingAzimuth(), tolerance);
-        c.setEndPoint  (-90,   0);  assertEquals( 180, c.getStartingAzimuth(), tolerance);
+        c.setStartGeographicPoint( 90,   0);
+        c.setEndGeographicPoint  ( 20,  20);  assertEquals( 160, c.getStartingAzimuth(), tolerance);
+        c.setEndGeographicPoint  ( 20, -20);  assertEquals(-160, c.getStartingAzimuth(), tolerance);
+        c.setEndGeographicPoint  ( 20,   0);  assertEquals( 180, c.getStartingAzimuth(), tolerance);
+        c.setEndGeographicPoint  (-90,   0);  assertEquals( 180, c.getStartingAzimuth(), tolerance);
     }
 
     /**
@@ -144,10 +144,10 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
         final Random random = TestUtilities.createRandomNumberGenerator();
         final GeodeticCalculator c = create(false);
         final double r = c.ellipsoid.getSemiMajorAxis() * (PI / 180);
-        c.setStartPoint(0, 0);
+        c.setStartGeographicPoint(0, 0);
         for (int i=0; i<100; i++) {
             final double x = 360 * random.nextDouble() - 180;
-            c.setEndPoint(0, x);
+            c.setEndGeographicPoint(0, x);
             final double expected = abs(x) * r;
             assertEquals("Geodesic",   expected, c.getGeodesicDistance(), Formulas.LINEAR_TOLERANCE);
             assertEquals("Rhumb line", expected, c.getRhumblineLength(),  Formulas.LINEAR_TOLERANCE);
@@ -165,8 +165,8 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     @Test
     public void testGeodesicDistanceAndAzimuths() throws TransformException {
         final GeodeticCalculator c = create(false);
-        c.setStartPoint(-33.0, -71.6);          // Valparaíso
-        c.setEndPoint  ( 31.4, 121.8);          // Shanghai
+        c.setStartGeographicPoint(-33.0, -71.6);            // Valparaíso
+        c.setEndGeographicPoint  ( 31.4, 121.8);            // Shanghai
         /*
          * Wikipedia example gives:
          *
@@ -224,7 +224,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     @DependsOnMethod("testUsingTransform")
     public void testCircularRegion2D() throws TransformException {
         final GeodeticCalculator c = create(true);
-        c.setStartPoint(-33.0, -71.6);                          // Valparaíso
+        c.setStartGeographicPoint(-33.0, -71.6);                // Valparaíso
         c.setGeodesicDistance(100000);                          // 100 km
         Shape region = c.createCircularRegion2D(10000);
         if (VisualCheck.SHOW_WIDGET) {
@@ -250,8 +250,8 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     public void testGeodesicPath2D() throws TransformException {
         final GeodeticCalculator c = create(true);
         final double tolerance = 0.05;
-        c.setStartPoint(-33.0, -71.6);                                                  // Valparaíso
-        c.setEndPoint  ( 31.4, 121.8);                                                  // Shanghai
+        c.setStartGeographicPoint(-33.0, -71.6);                                        // Valparaíso
+        c.setEndGeographicPoint  ( 31.4, 121.8);                                        // Shanghai
         final Shape singleCurve = c.createGeodesicPath2D(Double.POSITIVE_INFINITY);
         final Shape multiCurves = c.createGeodesicPath2D(10000);                        // 10 km tolerance.
         /*
@@ -278,8 +278,8 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     public void testGeodesicPathOnEquator() throws TransformException {
         final GeodeticCalculator c = create(false);
         final double tolerance = 1E-12;
-        c.setStartPoint(0, 20);
-        c.setEndPoint  (0, 12);
+        c.setStartGeographicPoint(0, 20);
+        c.setEndGeographicPoint  (0, 12);
         assertEquals(-90, c.getStartingAzimuth(), tolerance);
         assertEquals(-90, c.getEndingAzimuth(),   tolerance);
         final Shape geodeticCurve = c.createGeodesicPath2D(1);
@@ -309,8 +309,8 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
             final double φ2 = random.nextDouble() * 180 -  90;
             final double Δλ = random.nextDouble() * 360 - 180;
             final double λ2 = IEEEremainder(λ1 + Δλ, 360);
-            c.setStartPoint(φ1, λ1);
-            c.setEndPoint  (φ2, λ2);
+            c.setStartGeographicPoint(φ1, λ1);
+            c.setEndGeographicPoint  (φ2, λ2);
             final double geodesic  = c.getGeodesicDistance();
             final double rhumbLine = c.getRhumblineLength();
             final GeodesicData expected = reference.Inverse(φ1, λ1, φ2, λ2);
@@ -350,7 +350,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
                 default: fail("Unexpected segment"); break;
                 case PathIterator.SEG_MOVETO: break;
                 case PathIterator.SEG_LINETO: {
-                    c.setEndPoint(buffer[0], buffer[1]);
+                    c.setEndGeographicPoint(buffer[0], buffer[1]);
                     aErrors.accept(abs(c.getStartingAzimuth() - azimuth));
                     c.setStartingAzimuth(azimuth);
                     DirectPosition endPoint = c.getEndPoint();
@@ -395,7 +395,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
                      */
                     final double tolerance = data[6] * 0.01;                // 1% of distance.
                     final double cosφ = abs(cos(toRadians(data[3])));       // For adjusting longitude tolerance.
-                    c.setStartPoint(data[0], data[1]);                      // (φ₁, λ₁)
+                    c.setStartGeographicPoint(data[0], data[1]);            // (φ₁, λ₁)
                     if (random.nextBoolean()) {
                         /*
                          * Computes the end point from a distance and azimuth. The angular tolerance
@@ -429,7 +429,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
                          * of them for making sure that GeodeticCalculator never see the expected
                          * values.
                          */
-                        c.setEndPoint(data[3], data[4]);            // (φ₂, λ₂)
+                        c.setEndGeographicPoint(data[3], data[4]);  // (φ₂, λ₂)
                         compareGeodeticData(data, c,
                                 Formulas.ANGULAR_TOLERANCE,         // Latitude tolerance
                                 Formulas.ANGULAR_TOLERANCE,         // Longitude tolerance

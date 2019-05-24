@@ -112,7 +112,7 @@ public class GeodeticCalculator {
 
     /**
      * The (<var>latitude</var>, <var>longitude</var>) coordinates of the start point <strong>in radians</strong>.
-     * This point is set by {@link #setStartPoint(double, double)}.
+     * This point is set by {@link #setStartGeographicPoint(double, double)}.
      *
      * @see #START_POINT
      */
@@ -120,7 +120,7 @@ public class GeodeticCalculator {
 
     /**
      * The (<var>latitude</var>, <var>longitude</var>) coordinates of the end point <strong>in radians</strong>.
-     * This point is set by {@link #setEndPoint(double, double)}.
+     * This point is set by {@link #setEndGeographicPoint(double, double)}.
      *
      * @see #END_POINT
      */
@@ -284,7 +284,7 @@ public class GeodeticCalculator {
 
     /**
      * Sets the starting point as coordinates in arbitrary reference system. This method transforms the given
-     * coordinates to geographic coordinates, then delegates to {@link #setStartPoint(double, double)}.
+     * coordinates to geographic coordinates, then delegates to {@link #setStartGeographicPoint(double, double)}.
      * If the given point is not associated to a Coordinate Reference System (CRS), then this method assumes
      * the CRS specified at construction time.
      *
@@ -295,7 +295,7 @@ public class GeodeticCalculator {
      */
     public void setStartPoint(final Position point) throws TransformException {
         final DirectPosition p = userToGeodetic.transform(point.getDirectPosition());
-        setStartPoint(p.getOrdinate(0), p.getOrdinate(1));
+        setStartGeographicPoint(p.getOrdinate(0), p.getOrdinate(1));
     }
 
     /**
@@ -308,10 +308,10 @@ public class GeodeticCalculator {
      * @param  latitude   the latitude in degrees between {@value Latitude#MIN_VALUE}° and {@value Latitude#MAX_VALUE}°.
      * @param  longitude  the longitude in degrees.
      *
-     * @see #setEndPoint(double, double)
+     * @see #setEndGeographicPoint(double, double)
      * @see #moveToEndPoint()
      */
-    public void setStartPoint(final double latitude, final double longitude) {
+    public void setStartGeographicPoint(final double latitude, final double longitude) {
         ArgumentChecks.ensureFinite("latitude",  latitude);
         ArgumentChecks.ensureFinite("longitude", longitude);
         φ1 = toRadians(max(Latitude.MIN_VALUE, min(Latitude.MAX_VALUE, latitude)));
@@ -342,7 +342,7 @@ public class GeodeticCalculator {
 
     /**
      * Sets the destination as coordinates in arbitrary reference system. This method transforms the given
-     * coordinates to geographic coordinates, then delegates to {@link #setEndPoint(double, double)}.
+     * coordinates to geographic coordinates, then delegates to {@link #setEndGeographicPoint(double, double)}.
      * If the given point is not associated to a Coordinate Reference System (CRS), then this method assumes
      * the CRS specified at construction time.
      *
@@ -353,7 +353,7 @@ public class GeodeticCalculator {
      */
     public void setEndPoint(final Position position) throws TransformException {
         final DirectPosition p = userToGeodetic.transform(position.getDirectPosition());
-        setEndPoint(p.getOrdinate(0), p.getOrdinate(1));
+        setEndGeographicPoint(p.getOrdinate(0), p.getOrdinate(1));
     }
 
     /**
@@ -365,9 +365,9 @@ public class GeodeticCalculator {
      * @param  latitude   the latitude in degrees between {@value Latitude#MIN_VALUE}° and {@value Latitude#MAX_VALUE}°.
      * @param  longitude  the longitude in degrees.
      *
-     * @see #setStartPoint(double, double)
+     * @see #setStartGeographicPoint(double, double)
      */
-    public void setEndPoint(final double latitude, final double longitude) {
+    public void setEndGeographicPoint(final double latitude, final double longitude) {
         ArgumentChecks.ensureFinite("latitude",  latitude);
         ArgumentChecks.ensureFinite("longitude", longitude);
         φ2 = toRadians(max(Latitude.MIN_VALUE, min(Latitude.MAX_VALUE, latitude)));
@@ -614,7 +614,7 @@ public class GeodeticCalculator {
      * geodesic distance} and the {@linkplain #getEndPoint() end point} are discarded by this method call;
      * some of them will need to be specified again.
      *
-     * @see #setStartPoint(double, double)
+     * @see #setStartGeographicPoint(double, double)
      */
     public void moveToEndPoint() {
         if (isInvalid(END_POINT)) {
@@ -812,7 +812,7 @@ public class GeodeticCalculator {
                 point[i] = 0;
             }
             userToGeodetic.transform(point);
-            setEndPoint(point[0], point[1]);
+            setEndGeographicPoint(point[0], point[1]);
             /*
              * Computes the azimuth to the given point. This azimuth may be different than the azimuth of the
              * geodesic path we are building. Compute the point that we would have if the azimuth was correct

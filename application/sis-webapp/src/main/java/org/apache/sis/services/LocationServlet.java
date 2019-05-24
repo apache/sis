@@ -307,7 +307,7 @@ public class LocationServlet extends HttpServlet {
 
         double radiusKM = Double.parseDouble(radius);
         final GeodeticCalculator calculator = GeodeticCalculator.create(CommonCRS.SPHERE.geographic());
-        calculator.setStartPoint(point.y, point.x);
+        calculator.setStartGeographicPoint(point.y, point.x);
         calculator.setGeodesicDistance(radiusKM);
 
         StringBuilder regionStr = new StringBuilder();
