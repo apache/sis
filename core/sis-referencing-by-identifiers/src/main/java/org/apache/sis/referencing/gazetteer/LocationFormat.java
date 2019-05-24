@@ -281,7 +281,7 @@ public class LocationFormat extends TabularFormat<AbstractLocation> {
                     }
                 }
                 if (bbox != null) {     // Compute geographic position only if there is a geographic bounding box.
-                    GeographicCRS geogCRS = ReferencingUtilities.toNormalizedGeographicCRS(posCRS);
+                    GeographicCRS geogCRS = ReferencingUtilities.toNormalizedGeographicCRS(posCRS, false, false);
                     if (geogCRS != null) {
                         geopos = transform(position, posCRS, geogCRS);
                     }

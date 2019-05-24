@@ -25,7 +25,10 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.PathIterator;
 import org.apache.sis.util.Static;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
+import static java.lang.Math.hypot;
+import static java.lang.Double.isInfinite;
 
 
 /**
@@ -123,10 +126,10 @@ public final class ShapeUtilities extends Static {
                                                             double x,        double y)
     {
         final double slope = (y2-y1) / (x2-x1);
-        if (!Double.isInfinite(slope)) {
-            final double y0 = (y2 - slope*x2);
-            x = ((y - y0) * slope + x) / (slope*slope + 1);
-            y = x*slope + y0;
+        if (!isInfinite(slope)) {
+            final double yx0 = (y2 - slope*x2);                     // Value of y at x=0.
+            x = ((y - yx0) * slope + x) / (slope*slope + 1);
+            y = yx0 + x*slope;
         } else {
             x = x2;
         }
@@ -244,7 +247,7 @@ public final class ShapeUtilities extends Static {
      *
      * <ul>
      *   <li>A value of {@code true} means that the <var>x</var> axis must be horizontal. The quadratic curve
-     *       will then look like an ordinary parabolic curve as we see in mathematic school book.</li>
+     *       will then looks like an ordinary parabolic curve as we see in mathematic school book.</li>
      *   <li>A value of {@code false} means that the <var>x</var> axis must be parallel to the
      *       line segment joining the {@code P0} and {@code P2} ending points.</li>
      * </ul>

@@ -258,7 +258,7 @@ public class Mercator extends ConformalProjection {
             denormalize.convertBefore(0, null, offset);
         }
         if (φ0 != 0) {
-            denormalize.convertBefore(1, null, new DoubleDouble(-log(expOfNorthing(φ0, eccentricity * sin(φ0)))));
+            denormalize.convertBefore(1, null, new DoubleDouble(-log(expΨ(φ0, eccentricity * sin(φ0)))));
         }
         if (variant == MILLER) {
             normalize  .convertBefore(1, 0.80, null);
@@ -355,7 +355,7 @@ public class Mercator extends ConformalProjection {
                  */
                 final double a = abs(φ);
                 if (a < PI/2) {
-                    y = log(expOfNorthing(φ, eccentricity * sinφ));                 // Snyder (7-7)
+                    y = log(expΨ(φ, eccentricity * sinφ));                      // Snyder (7-7)
                 } else if (a <= (PI/2 + ANGULAR_TOLERANCE)) {
                     y = copySign(POSITIVE_INFINITY, φ);
                 } else {
@@ -401,7 +401,7 @@ public class Mercator extends ConformalProjection {
                     final double a = abs(φ);
                     final double y;
                     if (a < PI/2) {
-                        y = log(expOfNorthing(φ, eccentricity * sin(φ)));
+                        y = log(expΨ(φ, eccentricity * sin(φ)));
                     } else if (a <= (PI/2 + ANGULAR_TOLERANCE)) {
                         y = copySign(POSITIVE_INFINITY, φ);
                     } else {

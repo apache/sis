@@ -88,7 +88,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     }
 
     /**
-     * Tests the {@link ConformalProjection#expOfNorthing(double, double)} function.
+     * Tests the {@link ConformalProjection#expΨ(double, double)} function.
      *
      * {@preformat text
      *   Forward:  y = -log(t(φ))
@@ -103,7 +103,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     }
 
     /**
-     * Tests {@link ConformalProjection#expOfNorthing(double, double)} on some known values.
+     * Tests {@link ConformalProjection#expΨ(double, double)} on some known values.
      *
      * @param  ellipsoidal  {@code true} for an ellipsoidal case, or {@code false} for a spherical case.
      */
@@ -111,13 +111,13 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
         transform = new NoOp(ellipsoidal);
         tolerance = TOLERANCE;
 
-        assertEquals("f(NaN) = NaN",       NaN, expOfNorthing(NaN),               tolerance);
-        assertEquals("f( ±∞) = NaN",       NaN, expOfNorthing(NEGATIVE_INFINITY), tolerance);
-        assertEquals("f( ±∞) = NaN",       NaN, expOfNorthing(POSITIVE_INFINITY), tolerance);
-        assertEquals("f(  0°) = 1",          1, expOfNorthing(0),                 tolerance);
-        assertEquals("f(-90°) = 0",          0, expOfNorthing(-PI/2),             tolerance);
-        assertTrue  ("f(< -90°) < 0",           expOfNorthing(-PI/2 - 0.1)        < 0);
-        assertTrue  ("f(< -90°) < 0",           expOfNorthing(nextDown(-PI/2))    < 0);
+        assertEquals("f(NaN) = NaN",       NaN, expΨ(NaN),               tolerance);
+        assertEquals("f( ±∞) = NaN",       NaN, expΨ(NEGATIVE_INFINITY), tolerance);
+        assertEquals("f( ±∞) = NaN",       NaN, expΨ(POSITIVE_INFINITY), tolerance);
+        assertEquals("f(  0°) = 1",          1, expΨ(0),                 tolerance);
+        assertEquals("f(-90°) = 0",          0, expΨ(-PI/2),             tolerance);
+        assertTrue  ("f(< -90°) < 0",           expΨ(-PI/2 - 0.1)        < 0);
+        assertTrue  ("f(< -90°) < 0",           expΨ(nextDown(-PI/2))    < 0);
         /*
          * Values around π/2 are a special case. Theoretically the result should be positive infinity.
          * But since we do not have an exact representatation of π/2, we instead get a high number.
@@ -129,31 +129,31 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
          *      π/2           =   1.570796326794896619…
          *      nextUp(PI/2)  =   1.570796326794896780…
          */
-        assertTrue("f(+90°) → ∞",   expOfNorthing(+PI/2) > exp(LN_INFINITY));
-        assertTrue("f(> +90°) < 0", expOfNorthing(+PI/2 + 0.1) < 0);
-        assertTrue("f(> +90°) < 0", expOfNorthing(nextUp(nextUp(+PI/2))) < 0);
+        assertTrue("f(+90°) → ∞",   expΨ(+PI/2) > exp(LN_INFINITY));
+        assertTrue("f(> +90°) < 0", expΨ(+PI/2 + 0.1) < 0);
+        assertTrue("f(> +90°) < 0", expΨ(nextUp(nextUp(+PI/2))) < 0);
         /*
-         * Test function periodicity. This is not a strong requirement for the expOfNorthing(…) function,
+         * Test function periodicity. This is not a strong requirement for the expΨ(…) function,
          * but we nevertheless try to ensure that the method behaves correctly with unexpected values.
          */
-        assertEquals("f(+360°)",  1, expOfNorthing(+2*PI),   tolerance);
-        assertEquals("f(+270°)",  0, expOfNorthing(+PI*3/2), tolerance);
-        assertEquals("f(+180°)", -1, expOfNorthing(+PI),     tolerance);
-        assertEquals("f(-180°)", -1, expOfNorthing(-PI),     tolerance);
-        assertTrue  ("f(-270°) → ∞", expOfNorthing(-PI*3/2)  < exp(-LN_INFINITY));
-        assertEquals("f(-360°)",  1, expOfNorthing(-2*PI),   tolerance);
-        assertEquals("f(-450°)",  0, expOfNorthing(-PI*5/2), tolerance);
+        assertEquals("f(+360°)",  1, expΨ(+2*PI),   tolerance);
+        assertEquals("f(+270°)",  0, expΨ(+PI*3/2), tolerance);
+        assertEquals("f(+180°)", -1, expΨ(+PI),     tolerance);
+        assertEquals("f(-180°)", -1, expΨ(-PI),     tolerance);
+        assertTrue  ("f(-270°) → ∞", expΨ(-PI*3/2)  < exp(-LN_INFINITY));
+        assertEquals("f(-360°)",  1, expΨ(-2*PI),   tolerance);
+        assertEquals("f(-450°)",  0, expΨ(-PI*5/2), tolerance);
         /*
          * Use in a way close to (but not identical)
          * to the way the Mercator projection need it.
          */
-        assertEquals("Mercator(0°)",   0,                 log(expOfNorthing(0)),     tolerance);
-        assertEquals("Mercator(90°S)", NEGATIVE_INFINITY, log(expOfNorthing(-PI/2)), tolerance);
-        assertTrue  ("Mercator(90°N)", LN_INFINITY <      log(expOfNorthing(+PI/2)));
+        assertEquals("Mercator(0°)",   0,                 log(expΨ(0)),     tolerance);
+        assertEquals("Mercator(90°S)", NEGATIVE_INFINITY, log(expΨ(-PI/2)), tolerance);
+        assertTrue  ("Mercator(90°N)", LN_INFINITY <      log(expΨ(+PI/2)));
     }
 
     /**
-     * Computes {@link ConformalProjection#expOfNorthing(double, double)} for the given latitude.
+     * Computes {@link ConformalProjection#expΨ(double, double)} for the given latitude.
      * The {@link #transform} field must have been set before this method is invoked.
      *
      * @param  φ  the latitude in radians.
@@ -161,9 +161,9 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
      *
      * @see #φ(double)
      */
-    private double expOfNorthing(final double φ) {
+    private double expΨ(final double φ) {
         final ConformalProjection projection = (ConformalProjection) transform;
-        return projection.expOfNorthing(φ, projection.eccentricity * sin(φ));
+        return projection.expΨ(φ, projection.eccentricity * sin(φ));
     }
 
     /**
@@ -187,7 +187,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
         final NoOp projection = new NoOp(ellipsoidal);
         transform = new AbstractMathTransform1D() {
             @Override public double transform(final double φ) {
-                return projection.expOfNorthing(φ, projection.eccentricity * sin(φ));
+                return projection.expΨ(φ, projection.eccentricity * sin(φ));
             }
             @Override public double derivative(final double φ) {
                 final double sinφ = sin(φ);
@@ -200,19 +200,19 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
      * Computes {@link ConformalProjection#φ(double)}.
      * The {@link #transform} field must have been set before this method is invoked.
      *
-     * @param  expOfSouthing  the reciprocal of the value returned by {@link #expOfNorthing(double)}.
+     * @param  rexpΨ  the reciprocal of the value returned by {@link #expΨ(double)}.
      * @return the latitude in radians.
      * @throws ProjectionException if the iteration does not converge.
      *
-     * @see #expOfNorthing(double)
+     * @see #expΨ(double)
      */
-    private double φ(final double expOfSouthing) throws ProjectionException {
-        return ((ConformalProjection) transform).φ(expOfSouthing);
+    private double φ(final double rexpΨ) throws ProjectionException {
+        return ((ConformalProjection) transform).φ(rexpΨ);
     }
 
     /**
      * Tests the {@link ConformalProjection#φ(double)} function. We expect it to be
-     * the converse of the {@link ConformalProjection#expOfNorthing(double, double)} function.
+     * the converse of the {@link ConformalProjection#expΨ(double, double)} function.
      * In theory only the [-90° … +90°] range needs to be tested. However the function is still
      * consistent in the [-90° … +270°] range so we test that range for tracking this fact.
      *
@@ -226,7 +226,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     }
 
     /**
-     * Tests {@link ConformalProjection#φ(double)} on known values and as the reverse of {@code expOfNorthing(φ)}.
+     * Tests {@link ConformalProjection#φ(double)} on known values and as the reverse of {@code expΨ(φ)}.
      */
     private void test_φ(final boolean ellipsoidal) throws ProjectionException {
         transform = new NoOp(ellipsoidal);
@@ -247,7 +247,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
          */
         for (int i=-90; i<=270; i+=5) {
             final double φ   = toRadians(i);
-            final double t    = 1 / expOfNorthing(φ);
+            final double t    = 1 / expΨ(φ);
             final double back = toDegrees(φ(t));
             if (i <= 90) {
                 assertTrue("φ(t) in valid range should be positive.", t >= 0);
@@ -281,7 +281,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
         final int numSamples = 2000;
         for (int i=0; i<numSamples; i++) {
             final double φ = random.nextDouble() * PI - PI/2;
-            final double t = 1 / comparator.expOfNorthing(φ);
+            final double t = 1 / comparator.expΨ(φ);
             final double byIterativeMethod = comparator.byIterativeMethod(t);
             final double bySeriesExpansion = comparator.bySeriesExpansion(t);
             final double byImplementation  = projection.φ(t);
@@ -293,7 +293,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
              * than the original formulas. The main purpose of this test is to detect mistake during
              * the application of identities.
              */
-            assertEquals(byImplementation, bySeriesExpansion, 1E-15);  // Tolerance threshold close to 1 ULP of 2π.
+            assertEquals(byImplementation, bySeriesExpansion, 1E-15);       // Tolerance threshold close to 1 ULP of 2π.
         }
     }
 }

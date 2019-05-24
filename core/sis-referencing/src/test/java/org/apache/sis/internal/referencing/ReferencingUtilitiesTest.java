@@ -74,13 +74,13 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
     private static void assertNormalizedEqualsWGS84(final String message, final boolean createExpected,
             final CoordinateReferenceSystem crs)
     {
-        final GeographicCRS normalizedCRS = toNormalizedGeographicCRS(crs);
+        final GeographicCRS normalizedCRS = toNormalizedGeographicCRS(crs, false, false);
         assertTrue(message, Utilities.equalsIgnoreMetadata(HardCodedCRS.WGS84, normalizedCRS));
         assertEquals("New CRS instance expected:", createExpected, normalizedCRS != HardCodedCRS.WGS84);
     }
 
     /**
-     * Tests {@link ReferencingUtilities#toNormalizedGeographicCRS(CoordinateReferenceSystem)}.
+     * Tests {@link ReferencingUtilities#toNormalizedGeographicCRS(CoordinateReferenceSystem, boolean, boolean)}.
      */
     @Test
     public void testToNormalizedGeographicCRS() {
@@ -89,7 +89,7 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
         assertNormalizedEqualsWGS84("Shall extract the 2D component.", false, HardCodedCRS.GEOID_4D);
         assertNormalizedEqualsWGS84("Shall build a the 2D component.", true,  HardCodedCRS.WGS84_3D);
         assertNormalizedEqualsWGS84("Shall normalize axis order.",     true,  HardCodedCRS.WGS84_φλ);
-        assertNull(toNormalizedGeographicCRS(null));
+        assertNull(toNormalizedGeographicCRS(null, false, false));
     }
 
     /**

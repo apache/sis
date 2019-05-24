@@ -235,11 +235,10 @@ public class LambertConicConformal extends ConformalProjection {
          *
          *     t = tan(π/4 – φ/2) / [(1 – ℯ⋅sinφ)/(1 + ℯ⋅sinφ)] ^ (ℯ/2)
          *
-         * while our 'expOfNorthing' function is defined like above, but with   tan(π/4 + φ/2)   instead of
-         * tan(π/4 - φ/2). Those two expressions are the reciprocal of each other if we reverse the sign of
-         * φ (see 'expOfNorthing' for trigonometric identities), but their accuracies are not equivalent:
-         * the hemisphere having values closer to zero is favorized. The EPSG formulas favorize the North
-         * hemisphere.
+         * while our 'expΨ' function is defined like above, but with tan(π/4 + φ/2) instead of tan(π/4 - φ/2).
+         * Those two expressions are the reciprocal of each other if we reverse the sign of φ (see 'expΨ' for
+         * trigonometric identities), but their accuracies are not equivalent: the hemisphere having values
+         * closer to zero is favorized. The EPSG formulas favorize the North hemisphere.
          *
          * Since Apache SIS's formula uses the + operator instead of -, we need to reverse the sign of φ
          * values in order to match the EPSG formulas, but we will do that only if the map projection is
@@ -260,13 +259,13 @@ public class LambertConicConformal extends ConformalProjection {
         φ2 = toRadians(φ2);
         /*
          * Compute constants. We do not need to use special formulas for the spherical case below,
-         * since rν(sinφ) = 1 and expOfNorthing(φ) = tan(π/4 + φ/2) when the eccentricity is zero.
+         * since   rν(sinφ) = 1   and   expΨ(φ) = tan(π/4 + φ/2)   when the eccentricity is zero.
          * However we need special formulas for φ1 ≈ φ2 in the calculation of n, otherwise we got
          * a 0/0 indetermination.
          */
         final double sinφ1 = sin(φ1);
         final double m1 = initializer.scaleAtφ(sinφ1, cos(φ1));
-        final double t1 = expOfNorthing(φ1, eccentricity*sinφ1);
+        final double t1 = expΨ(φ1, eccentricity*sinφ1);
         /*
          * Compute n = (ln m₁ – ln m₂) / (ln t₁ – ln t₂), which we rewrite as ln(m₁/m₂) / ln(t₁/t₂)
          * for reducing the amount of calls to the logarithmic function. Note that this equation
@@ -275,7 +274,7 @@ public class LambertConicConformal extends ConformalProjection {
         if (abs(φ1 - φ2) >= ANGULAR_TOLERANCE) {                    // Should be 'true' for 2SP case.
             final double sinφ2 = sin(φ2);
             final double m2 = initializer.scaleAtφ(sinφ2, cos(φ2));
-            final double t2 = expOfNorthing(φ2, eccentricity*sinφ2);
+            final double t2 = expΨ(φ2, eccentricity*sinφ2);
             n = log(m1/m2) / log(t1/t2);                            // Tend toward 0/0 if φ1 ≈ φ2.
         } else {
             n = -sinφ1;
@@ -297,14 +296,14 @@ public class LambertConicConformal extends ConformalProjection {
          * Compute the radius of the parallel of latitude of the false origin.
          * This is related to the "ρ₀" term in Snyder. From EPG guide:
          *
-         *    r = a⋅F⋅tⁿ     where (in our case) a=1 and t is our 'expOfNorthing' function.
+         *    r = a⋅F⋅tⁿ     where (in our case) a=1 and t is our 'expΨ' function.
          *
          * EPSG uses this term in the computation of  y = FN + rF – r⋅cos(θ).
          */
         DoubleDouble rF = null;
-        if (φ0 != copySign(PI/2, -n)) {    // For reducing the rounding error documented in expOfNorthing(+π/2).
+        if (φ0 != copySign(PI/2, -n)) {    // For reducing the rounding error documented in expΨ(+π/2).
             rF = new DoubleDouble(F);
-            rF.multiply(pow(expOfNorthing(φ0, eccentricity*sin(φ0)), n));
+            rF.multiply(pow(expΨ(φ0, eccentricity*sin(φ0)), n));
         }
         /*
          * At this point, all parameters have been processed. Now store
@@ -413,7 +412,7 @@ public class LambertConicConformal extends ConformalProjection {
         final double ρ;     // EPSG guide uses "r", but we keep the symbol from Snyder p. 108 for consistency with PolarStereographic.
         if (absφ < PI/2) {
             sinφ = sin(φ);
-            ρ = pow(expOfNorthing(φ, eccentricity*sinφ), n);
+            ρ = pow(expΨ(φ, eccentricity*sinφ), n);
         } else if (absφ < PI/2 + ANGULAR_TOLERANCE) {
             sinφ = 1;
             ρ = (φ*n >= 0) ? POSITIVE_INFINITY : 0;

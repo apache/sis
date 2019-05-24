@@ -68,6 +68,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AmbiguousEllipsoid_1 = 1;
 
         /**
+         * The azimuth and distance have not been specified.
+         */
+        public static final short AzimuthAndDistanceNotSet = 87;
+
+        /**
          * Can not create objects of type ‘{0}’ from combined URI.
          */
         public static final short CanNotCombineUriAsType_1 = 79;
@@ -466,6 +471,11 @@ public final class Resources extends IndexedResourceBundle {
          * Matrix is singular.
          */
         public static final short SingularMatrix = 63;
+
+        /**
+         * The {0,choice,0#start|1#end} point has not been specified.
+         */
+        public static final short StartOrEndPointNotSet_1 = 88;
 
         /**
          * Combined URI contains unexpected components.

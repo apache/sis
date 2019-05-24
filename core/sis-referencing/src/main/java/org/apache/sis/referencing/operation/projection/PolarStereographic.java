@@ -219,7 +219,7 @@ public class PolarStereographic extends ConformalProjection {
              *
              * In our case:
              *
-             *   tF = expOfNorthing(φ1, ℯ⋅sinφ1)
+             *   tF = expΨ(φ1, ℯ⋅sinφ1)
              *   mF = cos(φ1) / rν(sinφ1)
              *   ρ  = mF / tF
              *   k₀ = ρ⋅√[…]/2  but we do not need that value.
@@ -228,7 +228,7 @@ public class PolarStereographic extends ConformalProjection {
              */
             final double sinφ1 = sin(φ1);
             final double mF = initializer.scaleAtφ(sinφ1, cos(φ1));
-            ρ = new DoubleDouble(mF / expOfNorthing(φ1, eccentricity*sinφ1));
+            ρ = new DoubleDouble(mF / expΨ(φ1, eccentricity*sinφ1));
             ρF = (variant == C) ? new DoubleDouble(-mF) : null;
         }
         /*
@@ -303,7 +303,7 @@ public class PolarStereographic extends ConformalProjection {
          * The next step is to compute ρ = 2⋅a⋅k₀⋅t / …, but those steps are
          * applied by the denormalization matrix and shall not be done here.
          */
-        final double t = expOfNorthing(φ, eccentricity*sinφ);
+        final double t = expΨ(φ, eccentricity*sinφ);
         final double x = t * sinθ;
         final double y = t * cosθ;
         if (dstPts != null) {

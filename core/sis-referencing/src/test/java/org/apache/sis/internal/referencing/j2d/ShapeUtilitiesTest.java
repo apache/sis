@@ -53,6 +53,7 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
 
     /**
      * Tests {@link ShapeUtilities#intersectionPoint(double, double, double, double, double, double, double, double)}.
+     * This is an anti-regression test with values computed by {@link ShapeUtilitiesViewer}.
      */
     @Test
     public void testIntersectionPoint() {
@@ -67,6 +68,7 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
 
     /**
      * Tests {@link ShapeUtilities#nearestColinearPoint(double, double, double, double, double, double)}.
+     * This is an anti-regression test with values computed by {@link ShapeUtilitiesViewer}.
      */
     @Test
     public void testNearestColinearPoint() {
@@ -79,6 +81,7 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
 
     /**
      * Tests {@link ShapeUtilities#colinearPoint(double, double, double, double, double, double, double)}.
+     * This is an anti-regression test with values computed by {@link ShapeUtilitiesViewer}.
      */
     @Test
     public void testColinearPoint() {
@@ -91,8 +94,8 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
     }
 
     /**
-     * Invokes {@code ShapeUtilities.fitParabol(x1, y1, px, py, x2, y2, horizontal)}, then verifies that the control
-     * point of the returned curve is equals to {@code (cx, cy)}.
+     * Invokes {@code ShapeUtilities.fitParabol(x1, y1, px, py, x2, y2, horizontal)},
+     * then verifies that the control point of the returned curve is equals to {@code (cx, cy)}.
      */
     private static void assertParabolEquals(final double cx, final double cy,
                                             final double x1, final double y1,
@@ -109,6 +112,7 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
     /**
      * Tests {@link ShapeUtilities#fitParabol(double, double, double, double, double, double, boolean)}
      * with a {@code false} boolean argument.
+     * This is an anti-regression test with values computed by {@link ShapeUtilitiesViewer}.
      */
     @Test
     public void testFitParabol() {
@@ -120,14 +124,85 @@ public final strictfp class ShapeUtilitiesTest extends TestCase {
     /**
      * Tests {@link ShapeUtilities#fitParabol(double, double, double, double, double, double, boolean)}
      * with a {@code true} boolean argument.
+     * This is an anti-regression test with values computed by {@link ShapeUtilitiesViewer}.
      */
     @Test
-    public void testFitHorizontalParabol() {
+    public void testFitParabolHorizontal() {
         assertParabolEquals(327.0, 272.41465201465195, 538, 197, 473, 213, 116, 43, true);
     }
 
     /**
+     * Invokes {@code ShapeUtilities.fitCubicCurve(x1, y1, xm, ym, x2, y2, α1, α2)}, then verifies that
+     * the control points of the returned curve are equal to {@code (cx1, cy1)} and {@code (cx2, cy2)}.
+     */
+    private static void assertCubicCurveEquals(final double cx1, final double cy1,
+                                               final double cx2, final double cy2,
+                                               final double x1,  final double y1,
+                                               final double xm,  final double ym,
+                                               final double x2,  final double y2,
+                                               final double α1,  final double α2)
+    {
+        final CubicCurve2D p = (CubicCurve2D) ShapeUtilitiesExt.bezier(x1, y1, xm, ym, x2, y2, α1, α2, 1, 1);
+        assertPointEquals( x1,  y1, p.getP1());
+        assertPointEquals( x2,  y2, p.getP2());
+        assertPointEquals(cx1, cy1, p.getCtrlP1());
+        assertPointEquals(cx2, cy2, p.getCtrlP2());
+    }
+
+    /**
+     * Tests {@link ShapeUtilitiesExt#bezier(double, double, double, double, double, double, double, double, double, double)}.
+     * This is an anti-regression test with values computed by {@link ShapeUtilitiesViewer}.
+     */
+    @Test
+    public void testBezier() {
+        /*
+         * Case when the curve can be simplified to a straight line.
+         * This test uses a line starting from (100,200) with a slope of 1.3333…
+         */
+        final Line2D c1 = (Line2D) ShapeUtilitiesExt.bezier(
+                100, 200,                           // Start point:  P1
+                175, 300,                           // Midle point:  Pm = P1 + (75,100)
+                250, 400,                           // End point:    P2 = Pm + (75,100)
+                100./75, 100./75,                   // Slope
+                1, 1);                              // Tolerance
+        assertPointEquals(100, 200, c1.getP1());
+        assertPointEquals(250, 400, c1.getP2());
+        /*
+         * Case when the curve can be simplified to a quadratic curve. First we build a quadratic curve at points
+         *
+         *     P₁=(100,200), Q=(400.0, 300), P₂=(550,600)   where    Q is the control point (not the midway point).
+         *                  Pm=(362.5, 350)                 where   Pm is the midway point B(½) = ¼P₁ + ½Q + ¼P₂
+         *
+         * Derivatives are:
+         *
+         *     α₁  =  2(Q - P₁)  =  (600, 200)  = 1/3
+         *     α₂  =  2(P₂ - Q)  =  (300, 600)  = 2
+         *
+         * The control point of a cubic curve are below (can be verified in the debugger):
+         *
+         *     C₁  =  ⅓P₁ + ⅔Q  = (300, 266.666…)
+         *     C₂  =  ⅓P₂ + ⅔Q  = (450, 400.0)
+         */
+        final QuadCurve2D c2 = (QuadCurve2D) ShapeUtilitiesExt.bezier(
+                100,   200,                         // Start point
+                362.5, 350,                         // Midway point
+                550,   600,                         // End point
+                1./3,    2,                         // Derivatives
+                  1,     1);                        // Tolerance
+        assertPointEquals(100, 200, c2.getP1());
+        assertPointEquals(550, 600, c2.getP2());
+        assertPointEquals(400, 300, c2.getCtrlPt());
+        /*
+         * Cubic case (empirical values from ShapeUtilitiesViewer).
+         */
+        assertCubicCurveEquals(886.54566341452,   354.9913859188133,
+                               635.1210032521466, 438.6752807478533,                        // Expected control points.
+                               1143, 62, 739, 345, 204, 317, -1.14247, 0.282230);
+    }
+
+    /**
      * Tests {@link ShapeUtilities#circleCentre(double, double, double, double, double, double)}.
+     * This is an anti-regression test with values computed by {@link ShapeUtilitiesViewer}.
      */
     @Test
     public void testCircleCentre() {

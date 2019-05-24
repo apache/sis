@@ -458,6 +458,12 @@
         <scope>test</scope>
       </dependency>
       <dependency>
+        <groupId>net.sf.geographiclib</groupId>
+        <artifactId>GeographicLib-Java</artifactId>
+        <version>1.49</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>javax</groupId>
         <artifactId>javaee-api</artifactId>
         <version>8.0</version>

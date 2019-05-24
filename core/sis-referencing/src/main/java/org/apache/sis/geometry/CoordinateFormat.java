@@ -40,8 +40,13 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
+import org.opengis.referencing.datum.Ellipsoid;
+import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
@@ -62,8 +67,8 @@ import org.apache.sis.io.CompoundFormat;
  * using the following rules:
  *
  * <ul>
- *   <li>Ordinate values in angular units are formated as angles using {@link AngleFormat}.</li>
- *   <li>Ordinate values in temporal units are formated as dates using {@link DateFormat}.</li>
+ *   <li>Ordinate values in angular units are formatted as angles using {@link AngleFormat}.</li>
+ *   <li>Ordinate values in temporal units are formatted as dates using {@link DateFormat}.</li>
  *   <li>Other values are formatted as numbers using {@link NumberFormat} followed by the unit symbol
  *       formatted by {@link org.apache.sis.measure.UnitFormat}.</li>
  * </ul>
@@ -77,7 +82,7 @@ import org.apache.sis.io.CompoundFormat;
  * transform the position} before to format it.</p>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see AngleFormat
  * @see org.apache.sis.measure.UnitFormat
@@ -272,11 +277,18 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
          * Otherwise (if a CRS is given), infer the format subclasses from the axes.
          */
         final CoordinateSystem cs = crs.getCoordinateSystem();
+        if (cs == null) {
+            return;                                    // Paranoiac check (should never be null).
+        }
         final int dimension = cs.getDimension();
         final byte[]   types   = new byte  [dimension];
         final Format[] formats = new Format[dimension];
         for (int i=0; i<dimension; i++) {
             final CoordinateSystemAxis axis = cs.getAxis(i);
+            if (axis == null) {                                               // Paranoiac check.
+                formats[i] = getFormat(Number.class);
+                continue;
+            }
             final Unit<?> unit = axis.getUnit();
             /*
              * Formatter for angular units. Target unit is DEGREE_ANGLE.
@@ -367,6 +379,187 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      */
     private boolean isNegative(final int dimension) {
         return (negate & Numerics.bitmask(dimension)) != 0;
+    }
+
+    /**
+     * Adjusts the number of fraction digits to show in coordinates for achieving the given precision.
+     * The {@link NumberFormat} and {@link AngleFormat} are configured for coordinates expressed in the
+     * {@linkplain #getDefaultCRS() default coordinate reference system} defined at the moment this method is invoked.
+     * The number of fraction digits is <em>not</em> updated if a different CRS is specified after this method call
+     * or if the coordinates to format are associated to a different CRS.
+     *
+     * <p>The given resolution will be converted to the units used by coordinate system axes. For example if a 10 metres
+     * resolution is specified but the {@linkplain #getDefaultCRS() default CRS} axes use kilometres, then this method
+     * converts the resolution to 0.01 kilometre and uses that value for inferring that coordinates should be formatted
+     * with 2 fraction digits. If the resolution is specified in an angular units such as degrees, this method uses the
+     * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius() ellipsoid authalic radius} for
+     * computing an equivalent resolution in linear units. For example if the ellipsoid of default CRS is WGS84,
+     * then this method considers a resolution of 1 second of angle as equivalent to a resolution of about 31 meters.
+     * Conversions work also in the opposite direction (from linear to angular units) and are also used for choosing
+     * which angle fields (degrees, minutes or seconds) to show.</p>
+     *
+     * @param  resolution  the desired resolution.
+     * @param  unit        unit of the desired resolution.
+     *
+     * @see NumberFormat#setMaximumFractionDigits(int)
+     * @see AngleFormat#setPrecision(double, boolean)
+     *
+     * @since 1.0
+     */
+    @SuppressWarnings("null")
+    public void setPrecision(double resolution, Unit<?> unit) {
+        ArgumentChecks.ensureFinite("resolution", resolution);
+        ArgumentChecks.ensureNonNull("unit", unit);
+        resolution = Math.abs(resolution);
+        if (Units.isTemporal(unit)) {
+            return;                                 // Setting temporal resolution is not yet implemented.
+        }
+        /*
+         * If the given resolution is linear (for example in metres), compute an equivalent resolution in degrees
+         * assuming a sphere of radius computed from the CRS.  Conversely if the resolution is angular (typically
+         * in degrees), computes an equivalent linear resolution. For all other kind of units, do nothing.
+         */
+        Resolution specified = new Resolution(resolution, unit, Units.isAngular(unit));
+        Resolution related   = null;
+        IncommensurableException error = null;
+        if (specified.isAngular || Units.isLinear(unit)) try {
+            related = specified.related(ReferencingUtilities.getEllipsoid(defaultCRS));
+        } catch (IncommensurableException e) {
+            error = e;
+        }
+        /*
+         * We now have the requested resolution in both linear and angular units, if equivalence has been established.
+         * Convert those resolutions to the units actually used by the CRS. If some axes use different units, keep the
+         * units which result in the finest resolution.
+         */
+        boolean relatedUsed = false;
+        if (defaultCRS != null) {
+            final CoordinateSystem cs = defaultCRS.getCoordinateSystem();
+            if (cs != null) {                                                   // Paranoiac check (should never be null).
+                final int dimension = cs.getDimension();
+                for (int i=0; i<dimension; i++) {
+                    final CoordinateSystemAxis axis = cs.getAxis(i);
+                    if (axis != null) {                                         // Paranoiac check.
+                        final Unit<?> axisUnit = axis.getUnit();
+                        if (axisUnit != null) try {
+                            final double maxValue = Math.max(Math.abs(axis.getMinimumValue()),
+                                                             Math.abs(axis.getMaximumValue()));
+                            if (!specified.forAxis(maxValue, axisUnit) && related != null) {
+                                relatedUsed |= related.forAxis(maxValue, axisUnit);
+                            }
+                        } catch (IncommensurableException e) {
+                            if (error == null) error = e;
+                            else error.addSuppressed(e);
+                        }
+                    }
+                }
+            }
+        }
+        if (error != null) {
+            Logging.unexpectedException(Logging.getLogger(Loggers.MEASURE), CoordinateFormat.class, "setPrecision", error);
+        }
+        specified.setPrecision(this);
+        if (relatedUsed) {
+            related.setPrecision(this);
+        }
+    }
+
+    /**
+     * Desired resolution in a given units, together with methods for converting to the units of a coordinate system axis.
+     * This is a helper class for {@link CoordinateFormat#setPrecision(double, Unit)} implementation. An execution of that
+     * method typically creates two instances of this {@code Resolution} class: one for the resolution in metres and another
+     * one for the resolution in degrees.
+     */
+    private static final class Resolution {
+        /** The desired resolution in the unit of measurement given by {@link #unit}. */
+        private double resolution;
+
+        /** Maximal absolute value that we may format in unit of measurement given by {@link #unit}. */
+        private double magnitude;
+
+        /** Unit of measurement of {@link #resolution} or {@link #magnitude}. */
+        private Unit<?> unit;
+
+        /** Whether {@link #unit} is an angular unit. */
+        final boolean isAngular;
+
+        /** Creates a new instance initialized to the given resolution. */
+        Resolution(final double resolution, final Unit<?> unit, final boolean isAngular) {
+            this.resolution = resolution;
+            this.unit       = unit;
+            this.isAngular  = isAngular;
+        }
+
+        /**
+         * If this resolution is in metres, returns equivalent resolution in degrees. Or conversely if this resolution
+         * is in degrees, returns an equivalent resolution in metres. Other linear and angular units are accepted too;
+         * they will be converted as needed.
+         *
+         * @param  ellipsoid  the ellipsoid, or {@code null} if none.
+         * @return the related resolution, or {@code null} if none.
+         */
+        Resolution related(final Ellipsoid ellipsoid) throws IncommensurableException {
+            final double radius = Formulas.getAuthalicRadius(ellipsoid);
+            if (radius > 0) {                                       // Indirectly filter null ellipsoid.
+                Unit<?> relatedUnit = ellipsoid.getAxisUnit();      // Angular if `unit` is linear, or linear if `unit` is angular.
+                if (relatedUnit != null) {                          // Paranoiac check (should never be null).
+                    double related;
+                    if (isAngular) {
+                        // Linear resolution  =  angular resolution in radians  ×  radius.
+                        related = unit.getConverterToAny(Units.RADIAN).convert(resolution) * radius;
+                    } else {
+                        // Angular resolution in radians  =  linear resolution  /  radius
+                        related = Math.toDegrees(unit.getConverterToAny(relatedUnit).convert(resolution) / radius);
+                        relatedUnit = Units.DEGREE;
+                    }
+                    return new Resolution(related, relatedUnit, !isAngular);
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Adjusts the resolution units for the given coordinate system axis. This methods select the units which
+         * result in the smallest absolute value of {@link #resolution}.
+         *
+         * @param  maxValue  the maximal absolute value that a coordinate on the axis may have.
+         * @param  axisUnit  {@link CoordinateSystemAxis#getUnit()}.
+         * @return whether the given axis unit is compatible with the expected unit.
+         */
+        boolean forAxis(double maxValue, final Unit<?> axisUnit) throws IncommensurableException {
+            if (!axisUnit.isCompatible(unit)) {
+                return false;
+            }
+            final UnitConverter c = unit.getConverterToAny(axisUnit);
+            final double r = Math.abs(c.convert(resolution));
+            if (r < resolution) {
+                resolution = r;                                         // To units producing the smallest value.
+                unit = axisUnit;
+            } else {
+                maxValue = Math.abs(c.inverse().convert(maxValue));     // From axis units to selected units.
+            }
+            if (maxValue > magnitude) {
+                magnitude = maxValue;
+            }
+            return true;
+        }
+
+        /**
+         * Configures the {@link NumberFormat} or {@link AngleFormat} for a number of fraction digits
+         * sufficient for the given resolution.
+         */
+        void setPrecision(final CoordinateFormat owner) {
+            final Format format = owner.getFormat(isAngular ? Angle.class : Number.class);
+            if (format instanceof NumberFormat) {
+                if (resolution == 0) resolution = 1E-6;                     // Arbitrary value.
+                final int p = Numerics.suggestFractionDigits(resolution);
+                final int m = Numerics.suggestFractionDigits(Math.ulp(magnitude));
+                ((NumberFormat) format).setMinimumFractionDigits(Math.min(p, m));
+                ((NumberFormat) format).setMaximumFractionDigits(p);
+            } else if (format instanceof AngleFormat) {
+                ((AngleFormat) format).setPrecision(resolution, true);
+            }
+        }
     }
 
     /**

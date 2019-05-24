@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.Collections;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
+import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -34,6 +35,9 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.TimeCS;
+import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.datum.DatumFactory;
+import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
@@ -61,6 +65,11 @@ import org.apache.sis.referencing.CommonCRS;
  * @module
  */
 public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
+    /**
+     * The geodetic datum, or {@code null} if none.
+     */
+    private GeodeticDatum datum;
+
     /**
      * The name of the conversion to use for creating a {@code ProjectedCRS} or {@code DerivedCRS}.
      * This name is for information purpose; its value does not impact the numerical results of coordinate operations.
@@ -122,6 +131,26 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
             final DefaultExtent extent = new DefaultExtent(description, bbox, null, null);
             properties.put(CoordinateReferenceSystem.DOMAIN_OF_VALIDITY_KEY, extent);
         }
+        return this;
+    }
+
+    /**
+     * Creates a geodetic datum with an ellipsoid of the given shape.
+     *
+     * @param  name               ellipsoid and datum name.
+     * @param  semiMajorAxis      equatorial radius in supplied linear units.
+     * @param  inverseFlattening  eccentricity of ellipsoid. An infinite value creates a sphere.
+     * @param  units              linear units of major axis.
+     * @return {@code this}, for method call chaining.
+     * @throws FactoryException if the datum can not be created.
+     */
+    public GeodeticObjectBuilder setFlattenedSphere(final String name, final double semiMajorAxis,
+            final double inverseFlattening, final Unit<Length> units) throws FactoryException
+    {
+        final DatumFactory factory = factories.getDatumFactory();
+        final Ellipsoid ellipsoid = factory.createFlattenedSphere(
+                Collections.singletonMap(Ellipsoid.NAME_KEY, name), semiMajorAxis, inverseFlattening, units);
+        datum = factory.createGeodeticDatum(name(ellipsoid), ellipsoid, CommonCRS.WGS84.primeMeridian());
         return this;
     }
 
@@ -325,6 +354,34 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         } finally {
             onCreate(true);
         }
+    }
+
+    /**
+     * Creates a projected CRS with base CRS on the specified datum and with default axes.
+     * The base CRS uses the ellipsoid specified by {@link #setFlattenedSphere(String, double, double, Unit)}.
+     *
+     * @return the projected CRS.
+     * @throws FactoryException if an error occurred while building the projected CRS.
+     */
+    public ProjectedCRS createProjectedCRS() throws FactoryException {
+        GeographicCRS crs = CommonCRS.WGS84.geographic();
+        if (datum != null) {
+            crs = factories.getCRSFactory().createGeographicCRS(name(datum), datum, crs.getCoordinateSystem());
+        }
+        return createProjectedCRS(crs, ReferencingUtilities.standardProjectedCS(factories.getCSAuthorityFactory()));
+    }
+
+    /**
+     * Creates a geographic CRS.
+     *
+     * @param  normalized  whether axes should be in (longitude, latitude) order instead than (latitude, longitude).
+     * @return the geographic coordinate reference system.
+     * @throws FactoryException if an error occurred while building the geographic CRS.
+     */
+    public GeographicCRS createGeographicCRS(final boolean normalized) throws FactoryException {
+        final GeographicCRS crs = normalized ? CommonCRS.WGS84.geographic() : CommonCRS.defaultGeographic();
+        if (datum != null) properties.putIfAbsent(GeographicCRS.NAME_KEY, datum.getName());
+        return factories.getCRSFactory().createGeographicCRS(properties, datum, crs.getCoordinateSystem());
     }
 
     /**
