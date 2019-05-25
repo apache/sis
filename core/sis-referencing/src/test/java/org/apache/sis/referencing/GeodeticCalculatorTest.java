@@ -30,6 +30,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilitiesExt;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.math.StatisticsFormat;
@@ -94,9 +95,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
      * @param  normalized  whether to force (longitude, latitude) axis order.
      */
     private static GeodeticCalculator create(final boolean normalized) {
-        return new GeodeticCalculator(normalized
-                ? CommonCRS.SPHERE.normalizedGeographic()
-                : CommonCRS.SPHERE.geographic());
+        return new GeodeticCalculator(normalized ? HardCodedCRS.SPHERE : HardCodedCRS.SPHERE_φλ);
     }
 
     /**
@@ -377,7 +376,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     @Test
     public void compareAgainstDataset() throws IOException, TransformException {
         try (LineNumberReader reader = OptionalTestData.GEODESIC.reader()) {
-            final GeodeticCalculator c = new GeodeticCalculator(CommonCRS.WGS84.geographic());
+            final GeodeticCalculator c = new GeodeticCalculator(HardCodedCRS.WGS84_φλ);
             final Geodesic reference = new Geodesic(Formulas.getAuthalicRadius(c.ellipsoid), 0);
             final Random random = TestUtilities.createRandomNumberGenerator();
             final double[] data = new double[7];
