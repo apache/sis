@@ -52,7 +52,14 @@ public abstract class Bezier {
      *
      * @see #depth
      */
-    private static final int DEPTH_LIMIT = 10;
+    private static final int DEPTH_LIMIT = 12;
+
+    /**
+     * Maximum number of iterations for iterative computations. We use a small value because failure to provide
+     * an answer with a small number of iterations probably means that the curve needs to be separated again in
+     * two smaller curves.
+     */
+    private static final int MAXIMUM_ITERATIONS = 4;
 
     /**
      * The path where to append Bézier curves.
@@ -128,28 +135,6 @@ public abstract class Bezier {
      * @throws TransformException if the point coordinates can not be computed.
      */
     protected abstract void evaluateAt(double t) throws TransformException;
-
-    /**
-     * Returns whether we should accept the given coordinates. This method is invoked when this {@code Bezier} class thinks
-     * that the given point is not valid, but can not said for sure because computing an exact answer would be expansive
-     * (because of the difficulty to map Bézier parameter <var>t</var>=¼ and ¾ to a distance on the curve).
-     *
-     * <p>The default implementation returns always {@code false}, since this method is invoked only when this class
-     * thinks that the point is not valid.</p>
-     *
-     * @param  x  first coordinate value of a point on the curve to evaluate for fitness.
-     * @param  y  second coordinate value of a point on the curve to evaluate for fitness.
-     * @return whether the given point is close enough to a valid point.
-     * @throws TransformException if a coordinate operations was required and failed.
-     *
-     * @todo This method is a hack. We should replace it by a computation of the Bézier <var>t</var> parameter
-     *       of the point closest to the given (x₁,y₁) and (x₃,y₃) points.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-455">SIS-455</a>
-     */
-    protected boolean isValid(double x, double y) throws TransformException {
-        return false;
-    }
 
     /**
      * Creates a sequence of Bézier curves from the position given by {@code evaluateAt(0)} to the position given
@@ -271,7 +256,7 @@ public abstract class Bezier {
                           double x2, double y2,
                           double x3, double y3,
                           final double  x4, final double  y4,
-                          final double dx4, final double dy4) throws TransformException
+                          final double dx4, final double dy4)
     {
         /*
          * Equations in this method are simplified as if (x₀,y₀) coordinates are (0,0).
@@ -365,9 +350,9 @@ public abstract class Bezier {
          * This allows `evaluateAt(t)` to return NaN if it can not provide a point for a given `t` value.
          */
         if (depth < DEPTH_LIMIT) {
-            double xi = 27./64*ax + 9./64*bx + 1./64*Δx;        // "xi" is for "x interpolated (on curve)".
-            double yi = 27./64*ay + 9./64*by + 1./64*Δy;
-            if (abs(xi - x1) > εx || abs(yi - y1) > εy) {
+            double x = 27./64*ax + 9./64*bx + 1./64*Δx;
+            double y = 27./64*ay + 9./64*by + 1./64*Δy;
+            if (abs(x - x1) > εx || abs(y - y1) > εy) {
                 /*
                  * Above code tested (x,y) coordinates at t=¼ exactly (we will test t=¾ later). However this t value does not
                  * necessarily correspond to one quarter of the distance, because the speed at which t varies is not the same
@@ -382,12 +367,7 @@ public abstract class Bezier {
                  *     (−x₀ + 3aₓ − 3bₓ + x₄)t³ + (3x₀ − 6aₓ + 3bₓ)t² + (−3x₀ + 3aₓ)t + x₀ − x = 0
                  *
                  * and finding the roots with the CubicCurve2D.solveCubic(…) method. However the results were worst than using
-                 * fixed t values. If we want to improve on that in a future version, we would need a function for computing
-                 * arc length (for example based on https://pomax.github.io/bezierinfo/#arclength), then use iterative method
-                 * like https://www.geometrictools.com/Documentation/MovingAlongCurveSpecifiedSpeed.pdf (retrieved May 2019).
-                 * See https://issues.apache.org/jira/browse/SIS-455 for more information.
-                 *
-                 * Instead we perform another test using the tangent of the curve at point P₁ (and later P₃).
+                 * fixed t values. Instead we perform another test using the tangent of the curve at point P₁ (and later P₃).
                  *
                  *     x′(t) = 3(1−t)²(aₓ − x₀) + 6t(1−t)(bₓ − aₓ) + 3t²(x₄ − bₓ)           and same for y′(t).
                  *
@@ -395,43 +375,29 @@ public abstract class Bezier {
                  * We can then compute the point on that line which is nearest to P₁. It should be close to current
                  * (xi,yi) coordinates, but may vary a little bit.
                  */
-                double slope  = (27./16*ay + 18./16*(by-ay) + 3./16*(y4-by))
-                              / (27./16*ax + 18./16*(bx-ax) + 3./16*(x4-bx));       // ∂y/∂x at t=¼.
-                double offset = (yi - slope*xi);                                    // Value of y at x=0.
-                xi = ((y1 - offset) * slope + x1) / (slope*slope + 1);              // NaN if slope is infinite.
-                yi = offset + xi*slope;                                             // Closer (xi,yi) coordinates.
-                if (abs(xi - x1) > εx || abs(yi - y1) > εy) {
-                    if (!isValid(xi + x0, yi + y0)) return false;
+                if (!isNear(x,  y,  0.25,           // Point at t=¼
+                           ax, ay, 27./16,          // Coefficient for t=¼
+                           bx, by, 18./16,
+                           Δx, Δy,  3./16,
+                           x1, y1))                 // Point for which to evaluate the distance.
+                {
+                    return false;
                 }
-                /*
-                 * At this point we consider (x₁,y₁) close enough even if the initial test considered it too far.
-                 * This decision is based on the assumption that the straight line is an approximation good enough
-                 * in the vicinity of P₁. We did not verified that assumption. If we want to improve on that in a
-                 * future version, we could use the second derivative:
-                 *
-                 *     x″(t) = 6(1−t)(x₀ − 2aₓ + bₓ) + 6t(aₓ − 2bₓ + x₄)                and same for y″(t).
-                 *
-                 *     Applying chain rule:     ∂²y/∂x² = y″/x′² + y′/x″
-                 *
-                 * We could then estimate the change of slope at the new (xi,yi) compared to the initial (xi,yi)
-                 * and verify that this change is below some threshold. We do not perform that check for now on
-                 * the assumption that the Bézier curve is smooth enough in the context of map projections.
-                 */
             }
             /*
              * Same than above, but with point P₁ replaced by P₃ and t=¼ replaced by t=¾.
              * The change of t value changes the coefficients in formulas below.
              */
-            xi = 9./64*ax + 27./64*bx + 27./64*Δx;
-            yi = 9./64*ay + 27./64*by + 27./64*Δy;
-            if (abs(xi - x3) > εx || abs(yi - y3) > εy) {
-                double slope  = (3./16*ay + 18./16*(by-ay) + 27./16*(y4-by))
-                              / (3./16*ax + 18./16*(bx-ax) + 27./16*(x4-bx));
-                double offset = (yi - slope*xi);
-                xi = ((y3 - offset) * slope + x3) / (slope*slope + 1);
-                yi = offset + xi*slope;
-                if (abs(xi - x3) > εx || abs(yi - y3) > εy) {
-                    if (!isValid(xi + x0, yi + y0)) return false;
+            x = 9./64*ax + 27./64*bx + 27./64*Δx;
+            y = 9./64*ay + 27./64*by + 27./64*Δy;
+            if (abs(x - x3) > εx || abs(y - y3) > εy) {
+                if (!isNear(x,  y,  0.75,
+                           ax, ay,  3./16,
+                           bx, by, 18./16,
+                           Δx, Δy, 27./16,
+                           x3, y3))
+                {
+                    return false;
                 }
             }
         }
@@ -465,5 +431,100 @@ public abstract class Bezier {
             path.curveTo(ax+x0, ay+y0, bx+x0, by+y0, x4, y4);
         }
         return true;
+    }
+
+    /**
+     * Returns {@code true} if the point specified by the ({@code xp}, {@code yp}) coordinates is close to the Bézier curve
+     * specified by the given control points. All given control points shall be shifted as if (x₀,y₀) coordinates are (0,0).
+     * If this method can not determine for sure that the given point is close, it conservatively returns {@code false}.
+     * This is okay since failure to determine whether the point is close may mean that the curvature is strong, in which
+     * case we should probably split the curves in two smaller curves again.
+     *
+     * @param  ax  the <var>x</var> coordinate of first control point.
+     * @param  ay  the <var>y</var> coordinate of first control point.
+     * @param  bx  the <var>x</var> coordinate of mid-point.
+     * @param  by  the <var>y</var> coordinate of mid-point.
+     * @param  x4  the <var>x</var> coordinate of last control point.
+     * @param  y4  the <var>y</var> coordinate of last control point.
+     * @param  xp  the <var>x</var> coordinate of the point to test for proximity.
+     * @param  yp  the <var>y</var> coordinate of the point to test for proximity.
+     * @param   x  the <var>x</var> coordinate of a close point on the curve.
+     * @param   y  the <var>y</var> coordinate of a close point on the curve.
+     * @param   t  the <var>t</var> parameter of Bézier curve where (<var>x</var>,<var>y</var>), and <var>m</var> are evaluated.
+     * @param  am  the 3(1−t)²      multiplication factor of {@code ax} and {@code ay} coordinates for given <var>t</var> value.
+     * @param  bm  the 6t(1−t)      multiplication factor of {@code bx} and {@code by} coordinates for given <var>t</var> value.
+     * @param  cm  the 3t²          multiplication factor of {@code x4} and {@code y4} coordinates for given <var>t</var> value.
+     * @return {@code true} if the given point is close to the Bézier curve, or {@code false} otherwise or in case of doubt.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-455">SIS-455</a>
+     */
+    private boolean isNear(double x, double y, double t,
+            final double ax, final double ay, double am,
+            final double bx, final double by, double bm,
+            final double x4, final double y4, double cm,
+            final double xp, final double yp)
+    {
+        final double Δax = bx - ax;
+        final double Δay = by - ay;
+        final double Δbx = x4 - bx;
+        final double Δby = y4 - by;
+        int n = MAXIMUM_ITERATIONS;
+        for (;;) {
+            /*
+             * Tangent of the curve:
+             *
+             *     x′(t) = 3(1−t)²(aₓ − x₀) + 6t(1−t)(bₓ − aₓ) + 3t²(x₄ − bₓ)           and same for y′(t).
+             *
+             * The derivatives give us a straight line (the tangent) as an approximation of the curve around t.
+             * Then we compute the point on that line which is nearest to the given point (xp,yp). It should be
+             * close to current (x,y) coordinates, but may vary a little bit.
+             */
+            final double tx = am * ax  +  bm * Δax  +  cm * Δbx;            // ∂x/∂t
+            final double ty = am * ay  +  bm * Δay  +  cm * Δby;            // ∂y/∂t
+            double xi, yi;
+            if (abs(tx) >= abs(ty)) {
+                final double slope  = ty / tx;                              // ∂y/∂x at t=¼.
+                final double offset = (y - slope*x);                        // Value of y at x=0.
+                xi = ((yp - offset) * slope + xp) / (slope*slope + 1);      // Move closer to (xp,yp).
+                t += (xi - x) / tx;                                         // Using ∆x≈(∂x/∂t)⋅∆t
+            } else {
+                final double slope  = tx / ty;
+                final double offset = (x - slope*y);
+                yi = ((xp - offset) * slope + yp) / (slope*slope + 1);
+                t += (yi - y) / ty;
+            }
+            if      (t < 0) t = 0;
+            else if (t > 1) t = 1;
+            /*
+             * At this point we got the xi or yi coordinate or the closest point on the linear approximation,
+             * and an estimation of the t Bézier parameter for that point. Use that t value for finding the
+             * (xi,yi) coordinates on the Bézier curve.
+             */
+            am = 1 - t;                                             // New coefficients for the x(t) and y(t).
+            bm = 3*am;
+            cm = t*t;
+            xi = ((ax*am + t*bx)*bm + x4*cm)*t;                     // 3(1−t)²t⋅aₓ + 3(1−t)t²⋅bₓ + t³⋅x₄
+            yi = ((ay*am + t*by)*bm + y4*cm)*t;
+            if (abs(xi - xp) <= εx && abs(yi - yp) <= εy) {
+                return true;                                        // Point is close enough.
+            }
+            if (--n >= 0 && (abs(xi - x) > εx/2 || abs(yi - y) > εy/2)) {
+                /*
+                 * We need one more iteration. Change the coefficients for making them apply
+                 * to the x′(t) and y′(t) derivatives instead of the x(t) and y(t) functions.
+                 */
+                am *= bm;           // 3(1−t)²
+                bm *= 2*t;          // 6t(1−t)
+                cm *= 3;            // 3t²
+                x = xi;
+                y = yi;
+            } else {
+                /*
+                 * Too many iterations, or a coordinate value is NaN, or we find the nearest point
+                 * but that point is too far from the given (xp,yp) coordinates.
+                 */
+                return false;
+            }
+        }
     }
 }
