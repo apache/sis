@@ -39,6 +39,33 @@ import static org.junit.Assume.assumeNotNull;
  */
 public enum OptionalTestData {
     /**
+     * Transverse Mercator projection on the WGS84 ellipsoid. Central meridian is 0° and scale factor is 0.9996.
+     *
+     * <dl>
+     *   <dt>File:</dt>
+     *   <dd>{@code TMcoords.dat}</dd>
+     *   <dt>Size:</dt>
+     *   <dd>34422206 bytes (34 Mb)</dd>
+     *   <dt>MD5 sum:</dt>
+     *   <dd>{@code 91b817eae34aef3cd8d67b5a4e8e798f}</dd>
+     *   <dt>Source:</dt>
+     *   <dd><a href="http://doi.org/10.5281/zenodo.32470">Karney, C. F. F. (2009). Test data for the transverse Mercator projection [Data set]. Zenodo.</a></dd>
+     * </dl>
+     *
+     * Each line in the test file gives the following numbers (space delimited):
+     *
+     * <ol>
+     *   <li>φ — latitude (degrees)</li>
+     *   <li>λ — longitude (degrees)</li>
+     *   <li>E — easting (metres)</li>
+     *   <li>N — Northing (metres)</li>
+     *   <li>meridian convergence (degrees)</li>
+     *   <li>scale</li>
+     * </ol>
+     */
+    TRANSVERSE_MERCATOR("TMcoords.dat"),
+
+    /**
      * Geodesic distances, rhumb line length and azimuths on WGS84 ellipsoid computed from a set of points.
      *
      * <dl>
