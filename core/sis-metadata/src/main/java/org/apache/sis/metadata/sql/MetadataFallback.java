@@ -117,20 +117,20 @@ final class MetadataFallback extends MetadataSource {
         switch (key) {
             case "ISO 19115-1": {
                 title     = "Geographic Information — Metadata Part 1: Fundamentals";
-                edition   = "ISO 19115-1:2014(E)";
+                edition   = "ISO 19115-1:2014";
                 code      = "19115-1";
                 codeSpace = "ISO";
-                version   = "2014(E)";
+                version   = "2014";
                 citedResponsibleParty = "International Organization for Standardization";
                 presentationForm = PresentationForm.DOCUMENT_DIGITAL;
                 break;
             }
             case "ISO 19115-2": {
                 title     = "Geographic Information — Metadata Part 2: Extensions for imagery and gridded data";
-                edition   = "ISO 19115-2:2009(E)";
+                edition   = "ISO 19115-2:2019";
                 code      = "19115-2";
                 codeSpace = "ISO";
-                version   = "2009(E)";
+                version   = "2019";
                 copyFrom  = "ISO 19115-1";
                 presentationForm = PresentationForm.DOCUMENT_DIGITAL;
                 break;

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.parameter;
 
+import java.lang.reflect.Array;
 import java.util.Objects;
 import java.nio.file.Path;
 import java.io.Serializable;
@@ -47,6 +48,7 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
@@ -108,14 +110,14 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * <ul>
  *   <li>All getter methods will invoke {@link #getValue()} and {@link #getUnit()} (if needed),
  *       then perform their processing on the values returned by those methods.</li>
- *   <li>All setter methods delegates to the {@link #setValue(Object, Unit)} method.</li>
+ *   <li>All setter methods delegate to the {@link #setValue(Object, Unit)} method.</li>
  * </ul>
  *
  * Consequently, the above-cited methods provide single points that subclasses can override
  * for modifying the behavior of all getter and setter methods.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @param  <T>  the type of the value stored in this parameter.
  *
@@ -482,20 +484,12 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     @Override
     public URI valueFile() throws IllegalStateException {
         final T value = getValue();
-        if (value instanceof URI) {
-            return (URI) value;
-        }
-        if (value instanceof File) {
-            return ((File) value).toURI();
-        }
-        if (value instanceof Path) {
-            return ((Path) value).toUri();
-        }
+        if (value instanceof URI)  return   (URI) value;
+        if (value instanceof File) return ((File) value).toURI();
+        if (value instanceof Path) return ((Path) value).toUri();
         Exception cause = null;
-        try {
-            if (value instanceof URL) {
-                return ((URL) value).toURI();
-            }
+        if (value instanceof URL) try {
+            return ((URL) value).toURI();
         } catch (URISyntaxException exception) {
             cause = exception;
         }
@@ -547,14 +541,36 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     }
 
     /**
+     * Converts the given number to the expected type, with a special case for conversion from float to double type.
+     * Widening conversions are aimed to be exact in base 10 instead than base 2. If {@code expectedClass} is not a
+     * {@link Number} subtype, then this method does nothing. If the cast would result in information lost, than
+     * this method returns the given value unchanged for allowing a more accurate error message to happen later.
+     *
+     * @param  value          the value to cast (can be {@code null}).
+     * @param  expectedClass  the desired class as a wrapper class (not a primitive type).
+     * @return value converted to the desired class, or {@code value} if no cast is needed or can be done.
+     */
+    @SuppressWarnings("unchecked")
+    private static Number cast(final Number value, final Class<?> expectedClass) {
+        if (expectedClass == Double.class && value instanceof Float) {
+            return DecimalFunctions.floatToDouble(value.floatValue());
+        } else if (Number.class.isAssignableFrom(expectedClass)) {
+            final Number n = Numbers.cast(value, (Class<? extends Number>) expectedClass);
+            if (Numerics.equals(n.doubleValue(), value.doubleValue())) {
+                return n;
+            }
+        }
+        return value;
+    }
+
+    /**
      * Sets the parameter value as an object. The object type is typically (but not limited to) {@link Double},
      * {@code double[]}, {@link Integer}, {@code int[]}, {@link Boolean}, {@link String} or {@link URI}.
      * If the given value is {@code null}, then this parameter is set to the
      * {@linkplain DefaultParameterDescriptor#getDefaultValue() default value}.
-     *
-     * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.
-     * This implementation does not clone the given value. In particular, references to {@code int[]}
-     * and {@code double[]} arrays are stored <cite>as-is</cite>.</p>
+     * If the given value is not an instance of the expected type, then this method may perform automatically
+     * a type conversion (for example from {@link Float} to {@link Double} or from {@link Path} to {@link URI})
+     * if such conversion can be done without information lost.
      *
      * @param  newValue  the parameter value, or {@code null} to restore the default.
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
@@ -568,27 +584,60 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
          * Try to convert the value only for a limited amount of types. In particular we want to allow conversions
          * between java.io.File and java.nio.file.Path for easier transition between JDK6 and JDK7. We do not want
          * to allow too many conversions for reducing the risk of unexpected behavior.  If we fail to convert, try
-         * to set the value anyway since the user may have redefined the setValue(Object, Unit) method.
+         * to set the value anyway since the user may have redefined the `setValue(Object, Unit)` method.
          */
-        if (isOrNeedFile(newValue)) try {
-            newValue = ObjectConverters.convert(newValue, descriptor.getValueClass());
-        } catch (UnconvertibleObjectException e) {
-            // Level.FINE (not WARNING) because this log duplicates the exception
-            // that 'setValue(Object, Unit)' may throw (with a better message).
-            Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
-                    DefaultParameterValue.class, "setValue", e);
+        if (newValue != null) {
+            final Class<?> expectedClass = descriptor.getValueClass();
+            if (!expectedClass.isInstance(newValue)) {
+                if (newValue instanceof Number) {
+                    newValue = cast((Number) newValue, expectedClass);
+                } else if (isOrNeedFile(newValue)) try {
+                    newValue = ObjectConverters.convert(newValue, expectedClass);
+                } catch (UnconvertibleObjectException e) {
+                    /*
+                     * Level.FINE (not WARNING) because this log duplicates the exception
+                     * that `setValue(Object, Unit)` may throw (with a better message).
+                     */
+                    Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                            DefaultParameterValue.class, "setValue", e);
+                } else {
+                    /*
+                     * If the given value is an array, verify if array elements need to be converted
+                     * for example from `float` to `double`. This is a "all or nothing" operation:
+                     * if at least one element can not be converted, then the whole array is unchanged.
+                     */
+                    Class<?> componentType = expectedClass.getComponentType();
+convert:            if (componentType != null) {
+                        final Object array = newValue.getClass().isArray() ? newValue : new Object[] {newValue};
+                        final int length = Array.getLength(array);
+                        if (length > 0) {
+                            final Object copy = Array.newInstance(componentType, length);
+                            componentType = Numbers.primitiveToWrapper(componentType);
+                            for (int i=0; i<length; i++) {
+                                Object element = Array.get(array, i);
+                                if (element != null) {
+                                    if (!(element instanceof Number)) break convert;
+                                    element = cast((Number) element, componentType);
+                                    if (!(componentType.isInstance(element))) break convert;
+                                    Array.set(copy, i, element);
+                                }
+                            }
+                            newValue = copy;
+                        }
+                    }
+                }
+            }
         }
         /*
-         * Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
-         * to be involved in this method. We just want the current unit setting to be unchanged.
+         * Code below uses `unit` instead than `getUnit()` despite class Javadoc claim because units are not expected
+         * to be involved in this method. We access this field only as a matter of principle, for making sure that no
+         * property other than the value is altered by this method call.
          */
         setValue(newValue, unit);
     }
 
     /**
      * Sets the parameter value as a boolean.
-     *
-     * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
      *
      * @param  newValue  the parameter value.
      * @throws InvalidParameterValueException if the boolean type is inappropriate for this parameter.
@@ -597,16 +646,18 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public void setValue(final boolean newValue) throws InvalidParameterValueException {
-        // Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
-        // to be involved in this method. We just want the current unit setting to be unchanged.
         setValue(newValue, unit);
+        /*
+         * Above code used `unit` instead than `getUnit()` despite class Javadoc claim because units are not expected
+         * to be involved in this method. We access this field only as a matter of principle, for making sure that no
+         * property other than the value is altered by this method call.
+         */
     }
 
     /**
-     * Sets the parameter value as an integer.
-     *
-     * <p>The default implementation wraps the given integer in an object of the type specified by the
-     * {@linkplain #getDescriptor() descriptor}, then delegates to {@link #setValue(Object, Unit)}.</p>
+     * Sets the parameter value as an integer. This method automatically wraps the given integer
+     * in an object of the type specified by the {@linkplain #getDescriptor() descriptor} if that
+     * conversion can be done without information lost.
      *
      * @param  newValue  the parameter value.
      * @throws InvalidParameterValueException if the integer type is inappropriate for this parameter,
@@ -617,21 +668,20 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     @Override
     public void setValue(final int newValue) throws InvalidParameterValueException {
         Number n = newValue;
-        final Class<T> valueClass = descriptor.getValueClass();
-        if (Number.class.isAssignableFrom(valueClass)) {
-            @SuppressWarnings("unchecked")
-            final Number c = Numbers.cast(newValue, (Class<? extends Number>) valueClass);
-            if (c.intValue() == newValue) {
-                n = c;
-            }
-        }
+        Number c = cast(n, descriptor.getValueClass());
+        if (c.intValue() == newValue) n = c;
         setValue(n, unit);
-        // Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
-        // to be involved in this method. We just want the current unit setting to be unchanged.
+        /*
+         * Above code used `unit` instead than `getUnit()` despite class Javadoc claim because units are not expected
+         * to be involved in this method. We access this field only as a matter of principle, for making sure that no
+         * property other than the value is altered by this method call.
+         */
     }
 
     /**
      * Wraps the given value in a type compatible with the expected value class, if possible.
+     * If the value can not be wrapped, then this method fallbacks on the {@link Double} class
+     * consistently with this method being invoked only by {@code setValue(double, …)} methods.
      *
      * @throws IllegalArgumentException if the given value can not be converted to the given type.
      */
@@ -645,10 +695,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     }
 
     /**
-     * Sets the parameter value as a floating point. The unit, if any, stay unchanged.
-     *
-     * <p>The default implementation wraps the given number in an object of the type specified by the
-     * {@linkplain #getDescriptor() descriptor}, then delegates to {@link #setValue(Object, Unit)}.</p>
+     * Sets the parameter value as a floating point. The unit, if any, stay unchanged. This method automatically
+     * wraps the given number in an object of the type specified by the {@linkplain #getDescriptor() descriptor}.
      *
      * @param  newValue  the parameter value.
      * @throws InvalidParameterValueException if the floating point type is inappropriate for this parameter,
@@ -659,20 +707,24 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public void setValue(final double newValue) throws InvalidParameterValueException {
+        final Number n;
         try {
-            // Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
-            // to be involved in this method. We just want the current unit setting to be unchanged.
-            setValue(wrap(newValue, descriptor.getValueClass()), unit);
+            n = wrap(newValue, descriptor.getValueClass());
         } catch (IllegalArgumentException e) {
-            throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), newValue);
+            throw (InvalidParameterValueException) new InvalidParameterValueException(
+                    e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), newValue).initCause(e);
         }
+        setValue(n, unit);
+        /*
+         * Above code used `unit` instead than `getUnit()` despite class Javadoc claim because units are not expected
+         * to be involved in this method. We access this field only as a matter of principle, for making sure that no
+         * property other than the value is altered by this method call.
+         */
     }
 
     /**
-     * Sets the parameter value as a floating point and its associated unit.
-     *
-     * <p>The default implementation wraps the given number in an object of the type specified by the
-     * {@linkplain #getDescriptor() descriptor}, then delegates to {@link #setValue(Object, Unit)}.</p>
+     * Sets the parameter value as a floating point and its associated unit. This method automatically wraps
+     * the given number in an object of the type specified by the {@linkplain #getDescriptor() descriptor}.
      *
      * @param  newValue  the parameter value.
      * @param  unit      the unit for the specified value.
@@ -684,20 +736,18 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      */
     @Override
     public void setValue(final double newValue, final Unit<?> unit) throws InvalidParameterValueException {
+        final Number n;
         try {
-            setValue(wrap(newValue, descriptor.getValueClass()), unit);
-        } catch (InvalidParameterValueException e) {
-            throw e;        // Need to be thrown explicitly because it is a subclass of IllegalArgumentException.
+            n = wrap(newValue, descriptor.getValueClass());
         } catch (IllegalArgumentException e) {
             throw (InvalidParameterValueException) new InvalidParameterValueException(
                     e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), newValue).initCause(e);
         }
+        setValue(n, unit);
     }
 
     /**
      * Sets the parameter value as an array of floating point and their associated unit.
-     *
-     * <p>The default implementation delegates to {@link #setValue(Object, Unit)}.</p>
      *
      * @param  newValues  the parameter values.
      * @param  unit       the unit for the specified value.
@@ -713,9 +763,14 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Sets the parameter value and its associated unit.
      * If the given value is {@code null}, then this parameter is set to the
      * {@linkplain DefaultParameterDescriptor#getDefaultValue() default value}.
+     * Otherwise the given value shall be an instance of the class expected by the {@linkplain #getDescriptor() descriptor}.
      *
-     * <p>Current implementation does not clone the given value. In particular, references to
-     * {@code int[]} and {@code double[]} arrays are stored <cite>as-is</cite>.</p>
+     * <ul>
+     *   <li>This method does not perform any type conversion. Type conversion, if desired, should be
+     *       applied by the public {@code setValue(…)} methods before to invoke this protected method.</li>
+     *   <li>This method does not clone the given value. In particular, references to {@code int[]} and
+     *       {@code double[]} arrays are stored <cite>as-is</cite>.</li>
+     * </ul>
      *
      * <div class="section">Implementation note for subclasses</div>
      * This method is invoked by all setter methods in this class, thus providing a single point that
@@ -774,8 +829,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            // Slight optimization
-            return true;
+            return true;            // Slight optimization
         }
         if (object != null) {
             if (mode == ComparisonMode.STRICT) {
@@ -911,7 +965,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *     PARAMETER[“scale_factor”, 0.99987742],
      *     PARAMETER[“false_easting”, 600.0],           // In kilometres
      *     PARAMETER[“false_northing”, 2200.0],         // In kilometres
-     *     UNIT[“kilometre”, 1000]]                            // Unit for all lengths
+     *     UNIT[“kilometre”, 1000]]                     // Unit for all lengths
      * }
      *
      * <p><b>WKT 2:</b></p>
@@ -979,13 +1033,17 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
             try {
                 value = doubleValue(unit);
             } catch (IllegalStateException exception) {
-                // May happen if a parameter is mandatory (e.g. "semi-major")
-                // but no value has been set for this parameter.
+                /*
+                 * May happen if a parameter is mandatory (e.g. "semi-major")
+                 * but no value has been set for this parameter.
+                 */
                 if (descriptor != null) {
                     formatter.setInvalidWKT(descriptor, exception);
                 } else {
-                    // Null descriptor should be illegal but may happen after unmarshalling of invalid GML.
-                    // We make this WKT formatting robust since it is used by 'toString()' implementation.
+                    /*
+                     * Null descriptor should be illegal but may happen after unmarshalling of invalid GML.
+                     * We make this WKT formatting robust since it is used by 'toString()' implementation.
+                     */
                     formatter.setInvalidWKT(DefaultParameterValue.class, exception);
                 }
                 value = Double.NaN;
@@ -1013,8 +1071,10 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                     if (descriptor != null) {
                         formatter.setInvalidWKT(descriptor, null);
                     } else {
-                        // Null descriptor should be illegal but may happen after unmarshalling of invalid GML.
-                        // We make this WKT formatting robust since it is used by 'toString()' implementation.
+                        /*
+                         * Null descriptor should be illegal but may happen after unmarshalling of invalid GML.
+                         * We make this WKT formatting robust since it is used by 'toString()' implementation.
+                         */
                         formatter.setInvalidWKT(DefaultParameterValue.class, null);
                     }
                 }

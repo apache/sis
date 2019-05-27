@@ -719,10 +719,10 @@ public class GeodeticCalculator {
      */
     private class PathBuilder extends Bezier {
         /**
-         * The initial (i) and final (f) coordinates and derivatives, together with geodesic and loxodromic distances.
+         * The final (f) coordinates and derivatives, together with geodesic and loxodromic distances.
          * Saved for later restoration by {@link #reset()}.
          */
-        private final double dφi, dλi, dφf, dλf, φf, λf, distance, length;
+        private final double dφf, dλf, φf, λf, distance, length;
 
         /**
          * {@link #validity} flags at the time {@code PathBuilder} is instantiated.
@@ -740,7 +740,6 @@ public class GeodeticCalculator {
          */
         PathBuilder(final double εx) {
             super(ReferencingUtilities.getDimension(userToGeodetic.defaultCRS));
-            dφi = dφ1;  dλi = dλ1;
             dφf = dφ2;  dλf = dλ2;  φf = φ2;  λf = λ2;
             tolerance = toDegrees(εx / radius);
             distance  = geodesicDistance;
@@ -798,41 +797,11 @@ public class GeodeticCalculator {
         }
 
         /**
-         * Returns whether the point at given (<var>x</var>, <var>y</var>) coordinates is close to the geodesic path.
-         * This method is invoked when the {@link Bezier} helper class thinks that the point is not on the path, but
-         * could be wrong because of the difficulty to evaluate the Bézier <var>t</var> parameter of closest point.
-         *
-         * @see <a href="https://issues.apache.org/jira/browse/SIS-455">SIS-455</a>
-         */
-        @Override
-        protected boolean isValid(final double x, final double y) throws TransformException {
-            point[0] = x;
-            point[1] = y;
-            for (int i=2; i<point.length; i++) {
-                point[i] = 0;
-            }
-            userToGeodetic.transform(point);
-            setEndGeographicPoint(point[0], point[1]);
-            /*
-             * Computes the azimuth to the given point. This azimuth may be different than the azimuth of the
-             * geodesic path we are building. Compute the point that we would have if the azimuth was correct
-             * and check the distance between those two points.
-             */
-            computeDistance();
-            dφ1 = dφi;
-            dλ1 = dλi;
-            computeEndPoint();
-            final DirectPosition p = geographic(φ2, λ2).inverseTransform();
-            return abs(p.getOrdinate(0) - x) <= εx &&
-                   abs(p.getOrdinate(1) - y) <= εy;
-        }
-
-        /**
          * Restores the enclosing {@link GeodeticCalculator} to the state that it has at {@code PathBuilder} instantiation time.
          */
-        final void reset() {
-            dφ1 = dφi;  dφ2 = dφf;  φ2 = φf;
-            dλ1 = dλi;  dλ2 = dλf;  λ2 = λf;
+        void reset() {
+            dφ2 = dφf;  φ2 = φf;
+            dλ2 = dλf;  λ2 = λf;
             geodesicDistance = distance;
             rhumblineLength  = length;
             validity         = flags;
@@ -844,10 +813,17 @@ public class GeodeticCalculator {
      */
     private final class CircularPath extends PathBuilder {
         /**
+         * The initial (i) derivatives, saved for later restoration by {@link #reset()}.
+         */
+        private final double dφi, dλi;
+
+        /**
          * Creates a builder for the given tolerance at equator in degrees.
          */
         CircularPath(final double εx) {
             super(εx);
+            dφi = dφ1;
+            dλi = dλ1;
         }
 
         /**
@@ -860,7 +836,7 @@ public class GeodeticCalculator {
          */
         @Override
         protected void evaluateAt(final double t) throws TransformException {
-            double α1 = IEEEremainder((t - 0.5) * (2*PI), 2*PI);
+            final double α1 = t * (2*PI) + PI/4;        // Add 45° for hiding little corners in multiple of 90°.
             dλ1 = sin(α1);
             dφ1 = cos(α1);
             validity |= STARTING_AZIMUTH;
@@ -876,11 +852,13 @@ public class GeodeticCalculator {
         }
 
         /**
-         * No additional test (compared to {@link Bezier} base class) for determining if the point is close enough.
+         * Restores the enclosing {@link GeodeticCalculator} to the state that it has at {@code PathBuilder} instantiation time.
          */
         @Override
-        protected boolean isValid(final double x, final double y) throws TransformException {
-            return false;
+        void reset() {
+            dφ1 = dφi;
+            dλ1 = dλi;
+            super.reset();
         }
     }
 

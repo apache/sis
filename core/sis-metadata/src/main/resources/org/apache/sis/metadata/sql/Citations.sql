@@ -182,8 +182,8 @@ FOREIGN KEY ("authority") REFERENCES metadata."Citation" ("ID") ON UPDATE RESTRI
 -- There is almost a one-to-one relationship between identifiers and citations.
 --
 INSERT INTO metadata."Identifier" ("ID", "code", "codeSpace", "version") VALUES
-  ('ISO 19115-1', '19115-1', 'ISO',         '2014(E)'),
-  ('ISO 19115-2', '19115-2', 'ISO',         '2009(E)'),
+  ('ISO 19115-1', '19115-1', 'ISO',         '2014'),
+  ('ISO 19115-2', '19115-2', 'ISO',         '2019'),
   ('IHO S-57',    'S-57',    'IHO',         '3.1'),
   ('WMS',         'WMS',     'OGC',         '1.3'),
   ('EPSG',        'EPSG',    'IOGP',         NULL),
@@ -193,18 +193,18 @@ INSERT INTO metadata."Identifier" ("ID", "code", "codeSpace", "version") VALUES
   ('SIS',         'SIS',     'Apache',       NULL);
 
 INSERT INTO metadata."Citation" ("ID", "onlineResource", "edition", "citedResponsibleParty", "presentationForm", "alternateTitle" , "title") VALUES
-  ('ISBN',       'ISBN',  NULL,                 'ISBN',    NULL,             'ISBN',         'International Standard Book Number'),
-  ('ISSN',       'ISSN',  NULL,                 'ISSN',    NULL,             'ISSN',         'International Standard Serial Number'),
-  ('ISO 19115-1', NULL,  'ISO 19115-1:2014(E)', 'ISO',    'documentDigital', 'ISO 19115-1',  'Geographic Information — Metadata Part 1: Fundamentals'),
-  ('ISO 19115-2', NULL,  'ISO 19115-2:2009(E)', 'ISO',    'documentDigital', 'ISO 19115-2',  'Geographic Information — Metadata Part 2: Extensions for imagery and gridded data'),
-  ('IHO S-57',    NULL,  '3.1',                 'IHO',    'documentDigital', 'S-57',         'IHO transfer standard for digital hydrographic data'),
-  ('MGRS',        NULL,   NULL,                 'NATO',   'documentDigital',  NULL,          'Military Grid Reference System'),
-  ('WMS',        'WMS',  '1.3',                 'OGC',    'documentDigital', 'WMS',          'Web Map Server'),
-  ('EPSG',       'EPSG',  NULL,                 'IOGP',   'tableDigital',    'EPSG Dataset', 'EPSG Geodetic Parameter Dataset'),
-  ('ArcGIS',     'ESRI',  NULL,                 'ESRI',    NULL,              NULL,          'ArcGIS'),
-  ('MapInfo',     NULL,   NULL,                 'MapInfo', NULL,             'MapInfo',      'MapInfo Pro'),
-  ('Proj4',      'Proj4', NULL,                 'OSGeo',   NULL,             'Proj',         'PROJ coordinate transformation software library'),
-  ('SIS',        'SIS',   NULL,                 'Apache',  NULL,             'Apache SIS',   'Apache Spatial Information System');
+  ('ISBN',       'ISBN',  NULL,              'ISBN',    NULL,             'ISBN',         'International Standard Book Number'),
+  ('ISSN',       'ISSN',  NULL,              'ISSN',    NULL,             'ISSN',         'International Standard Serial Number'),
+  ('ISO 19115-1', NULL,  'ISO 19115-1:2014', 'ISO',    'documentDigital', 'ISO 19115-1',  'Geographic Information — Metadata Part 1: Fundamentals'),
+  ('ISO 19115-2', NULL,  'ISO 19115-2:2019', 'ISO',    'documentDigital', 'ISO 19115-2',  'Geographic Information — Metadata Part 2: Extensions for imagery and gridded data'),
+  ('IHO S-57',    NULL,  '3.1',              'IHO',    'documentDigital', 'S-57',         'IHO transfer standard for digital hydrographic data'),
+  ('MGRS',        NULL,   NULL,              'NATO',   'documentDigital',  NULL,          'Military Grid Reference System'),
+  ('WMS',        'WMS',  '1.3',              'OGC',    'documentDigital', 'WMS',          'Web Map Server'),
+  ('EPSG',       'EPSG',  NULL,              'IOGP',   'tableDigital',    'EPSG Dataset', 'EPSG Geodetic Parameter Dataset'),
+  ('ArcGIS',     'ESRI',  NULL,              'ESRI',    NULL,              NULL,          'ArcGIS'),
+  ('MapInfo',     NULL,   NULL,              'MapInfo', NULL,             'MapInfo',      'MapInfo Pro'),
+  ('Proj4',      'Proj4', NULL,              'OSGeo',   NULL,             'Proj',         'PROJ coordinate transformation software library'),
+  ('SIS',        'SIS',   NULL,              'Apache',  NULL,             'Apache SIS',   'Apache Spatial Information System');
 
 
 

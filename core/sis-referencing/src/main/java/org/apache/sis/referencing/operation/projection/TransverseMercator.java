@@ -74,6 +74,25 @@ public class TransverseMercator extends NormalizedProjection {
     private static final long serialVersionUID = -627685138188387835L;
 
     /**
+     * Distance from central meridian, in degrees, at which errors are considered too important.
+     * This threshold is determined by comparisons of computed values against values provided by
+     * <cite>Karney (2009) Test data for the transverse Mercator projection</cite> data file.
+     * On the WGS84 ellipsoid we observed:
+     *
+     * <ul>
+     *   <li>For ∆λ below 60°, errors below 1 centimetre.</li>
+     *   <li>For ∆λ between 60° and 66°, errors up to 0.1 metre.</li>
+     *   <li>For ∆λ between 66° and 70°, errors up to 1 metre.</li>
+     *   <li>For ∆λ between 70° and 72°, errors up to 2 metres.</li>
+     *   <li>For ∆λ between 72° and 74°, errors up to 10 metres.</li>
+     *   <li>For ∆λ between 74° and 76°, errors up to 30 metres.</li>
+     *   <li>For ∆λ between 76° and 78°, errors up to 1 kilometre.</li>
+     *   <li>For ∆λ greater than 85°, results are chaotic.</li>
+     * </ul>
+     */
+    static final double DOMAIN_OF_VALIDITY = 70;
+
+    /**
      * {@code false} for using the original formulas as published by EPSG, or {@code true} for using formulas
      * modified using trigonometric identities. The use of trigonometric identities is for reducing the amount
      * of calls to the {@link Math#sin(double)} and similar methods. Some identities used are:
@@ -350,7 +369,7 @@ public class TransverseMercator extends NormalizedProjection {
                             final boolean derivate) throws ProjectionException
     {
         final double λ = srcPts[srcOff];
-        if (abs(λ) >= (0.9*PI/2)) {
+        if (abs(λ) >= DOMAIN_OF_VALIDITY * (PI/180)) {
             /*
              * The Transverse Mercator projection is conceptually a Mercator projection rotated by 90°.
              * In Mercator projection, y values tend toward infinity for latitudes close to ±90°.
@@ -652,9 +671,27 @@ public class TransverseMercator extends NormalizedProjection {
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate) throws ProjectionException
         {
-            final double λ = srcPts[srcOff  ];
+            final double λ = srcPts[srcOff];
+            /*
+             * The Transverse Mercator projection is conceptually a Mercator projection rotated by 90°.
+             * In Mercator projection, y values tend toward infinity for latitudes close to ±90° while
+             * in Transverse Mercator, x values tend toward infinity for longitudes close to ±90° from
+             * central meridian (and at equator). After we pass the 90° limit, the Transverse Mercator
+             * results at (90° + Δ) are the same as for (90° - Δ).
+             *
+             * Problem is that 90° is an ordinary longitude value, not even close to the limit of longitude
+             * values range (±180°).  So having f(π/2+Δ, φ) = f(π/2-Δ, φ) results in wrong behavior in some
+             * algorithms like the one used by Envelopes.transform(CoordinateOperation, Envelope).  Since a
+             * distance of 90° from central meridian is outside projection domain of validity anyway, we do
+             * not let the user go further.
+             *
+             * Note that in the case of ellipsoidal formulas (implemented by parent class), we put the
+             * limit to a lower value (DOMAIN_OF_VALIDITY) because experience shows that results close
+             * to equator become chaotic after 85° when using WGS84 ellipsoid. We do not need to reduce
+             * the limit for the spherical formulas, because the mathematic are simpler and the function
+             * still smooth until 90°.
+             */
             if (abs(λ) > PI/2) {
-                // See comment in the overridden class.
                 throw new ProjectionException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
             }
             final double φ    = srcPts[srcOff+1];

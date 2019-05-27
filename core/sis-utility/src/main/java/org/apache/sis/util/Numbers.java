@@ -150,7 +150,7 @@ public final class Numbers extends Static {
      * Returns {@code true} if the given {@code type} is a floating point type. The floating point types
      * are {@link Float}, {@code float}, {@link Double}, {@code double} and {@link BigDecimal}.
      *
-     * @param  type  the type to test (may be {@code null}).
+     * @param  type  the primitive type or wrapper class to test (can be {@code null}).
      * @return {@code true} if {@code type} is one of the known types capable to represent floating point numbers.
      *
      * @see #isInteger(Class)
@@ -165,7 +165,7 @@ public final class Numbers extends Static {
      * {@link Byte}, {@code byte}, {@link Short}, {@code short}, {@link Integer}, {@code int},
      * {@link Long}, {@code long} and {@link BigInteger}.
      *
-     * @param  type  the type to test (may be {@code null}).
+     * @param  type  the primitive type or wrapper class to test (can be {@code null}).
      * @return {@code true} if {@code type} is an integer type.
      *
      * @see #isFloat(Class)
@@ -179,7 +179,7 @@ public final class Numbers extends Static {
      * Returns the number of bits used by primitive of the specified type.
      * The given type must be a primitive type or its wrapper class.
      *
-     * @param  type  the primitive type (may be {@code null}).
+     * @param  type  the primitive type (can be {@code null}).
      * @return the number of bits, or 0 if {@code type} is null.
      * @throws IllegalArgumentException if the given type is unknown.
      */
@@ -201,7 +201,7 @@ public final class Numbers extends Static {
      * Changes a primitive class to its wrapper (for example {@code int} to {@link Integer}).
      * If the specified class is not a primitive type, then it is returned unchanged.
      *
-     * @param  type  the primitive type (may be {@code null}).
+     * @param  type  the primitive type (can be {@code null}).
      * @return the type as a wrapper.
      *
      * @see #wrapperToPrimitive(Class)
@@ -215,7 +215,7 @@ public final class Numbers extends Static {
      * Changes a wrapper class to its primitive (for example {@link Integer} to {@code int}).
      * If the specified class is not a wrapper type, then it is returned unchanged.
      *
-     * @param  type  the wrapper type (may be {@code null}).
+     * @param  type  the wrapper type (can be {@code null}).
      * @return the type as a primitive.
      *
      * @see #primitiveToWrapper(Class)
@@ -545,7 +545,11 @@ public final class Numbers extends Static {
                 } else if (isInteger(number.getClass())) {
                     c = BigDecimal.valueOf(number.longValue());
                 } else {
-                    c = BigDecimal.valueOf(number.doubleValue());
+                    /*
+                     * Same implementation as BigDecimal.valueOf(double)
+                     * but better result if number is a Float instance.
+                     */
+                    c = new BigDecimal(number.toString());
                 }
                 return (N) c;
             }
@@ -753,7 +757,7 @@ public final class Numbers extends Static {
      * {@link #SHORT}, {@link #BYTE}, {@link #CHARACTER}, {@link #BOOLEAN}, or {@link #OTHER}
      * constants for the given type. This is a commodity for usage in {@code switch} statements.
      *
-     * @param  type  a type (usually either a primitive type or its wrapper).
+     * @param  type  a type (usually either a primitive type or its wrapper), or {@code null}.
      * @return the constant for the given type, or {@link #OTHER} if unknown.
      */
     public static byte getEnumConstant(final Class<?> type) {

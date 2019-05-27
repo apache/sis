@@ -88,6 +88,7 @@ import org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription;
 import org.apache.sis.metadata.iso.content.DefaultRangeElementDescription;
 import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
@@ -189,6 +190,15 @@ public class MetadataBuilder {
      * </table>
      */
     private final Map<Object,Object> sharedValues = new HashMap<>();
+
+    /**
+     * Whether to add ISO 19115-1 and ISO 19115-2 entries in "metadata standards" node.
+     * Those entries will be added only if the metadata object would be otherwise non-empty.
+     * A value of 1 will add ISO 19115-1. A value of 2 will add both ISO 19115-1 and ISO 19115-2.
+     *
+     * @see #setISOStandards(boolean)
+     */
+    private byte standardISO;
 
     // Other fields declared below together with closely related methods.
 
@@ -2928,6 +2938,21 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Sets the metadata standards to ISO 19115-1, and optionally to ISO 19115-2 too.
+     * Those metadata citations are added only if the metadata object is otherwise non-empty.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/metadataStandards}</li>
+     * </ul>
+     *
+     * @param  part2  whether to set ISO 19115-2 in addition to ISO 19115-1.
+     */
+    public final void setISOStandards(final boolean part2) {
+        standardISO = part2 ? (byte) 2 : (byte) 1;
+    }
+
+    /**
      * Returns the metadata (optionally as an unmodifiable object), or {@code null} if none.
      * If {@code freeze} is {@code true}, then the returned metadata instance can not be modified.
      *
@@ -2945,8 +2970,17 @@ parse:      for (int i = 0; i < length;) {
         newLineage();
         final DefaultMetadata md = metadata;
         metadata = null;
-        if (freeze && md != null) {
-            md.transition(DefaultMetadata.State.FINAL);
+        if (md != null) {
+            if (standardISO != 0) {
+                List<Citation> c = Citations.ISO_19115;
+                if (standardISO == 1) {
+                    c = Collections.singletonList(c.get(0));
+                }
+                md.setMetadataStandards(c);
+            }
+            if (freeze) {
+                md.transition(DefaultMetadata.State.FINAL);
+            }
         }
         return md;
     }

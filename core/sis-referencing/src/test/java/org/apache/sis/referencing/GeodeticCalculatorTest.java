@@ -29,6 +29,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilitiesExt;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.math.StatisticsFormat;
@@ -93,9 +94,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
      * @param  normalized  whether to force (longitude, latitude) axis order.
      */
     private static GeodeticCalculator create(final boolean normalized) {
-        return new GeodeticCalculator(normalized
-                ? CommonCRS.SPHERE.normalizedGeographic()
-                : CommonCRS.SPHERE.geographic());
+        return new GeodeticCalculator(normalized ? HardCodedCRS.SPHERE : HardCodedCRS.SPHERE_φλ);
     }
 
     /**
@@ -228,10 +227,10 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
             VisualCheck.show(region);
         }
         final Rectangle2D bounds = region.getBounds2D();
-        assertEquals("xmin", -72.67228, bounds.getMinX(), 5E-6);
-        assertEquals("ymin", -33.89932, bounds.getMinY(), 5E-6);
-        assertEquals("xmax", -70.52772, bounds.getMaxX(), 5E-6);
-        assertEquals("ymax", -32.10068, bounds.getMaxY(), 5E-6);
+        assertEquals("x",    -71.6, bounds.getCenterX(), 1E-3);
+        assertEquals("y",    -33.0, bounds.getCenterY(), 1E-3);
+        assertEquals("width",  2.8, bounds.getWidth(),   0.1);      // Would have expected 2.1 if box was tight.
+        assertEquals("height", 2.0, bounds.getHeight(),  0.1);      // Would have expected 1.8 if box was tight.
     }
 
     /**
@@ -374,7 +373,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     @Test
     public void compareAgainstDataset() throws IOException, TransformException {
         try (LineNumberReader reader = OptionalTestData.GEODESIC.reader()) {
-            final GeodeticCalculator c = new GeodeticCalculator(CommonCRS.WGS84.geographic());
+            final GeodeticCalculator c = new GeodeticCalculator(HardCodedCRS.WGS84_φλ);
             final Geodesic reference = new Geodesic(Formulas.getAuthalicRadius(c.ellipsoid), 0);
             final Random random = TestUtilities.createRandomNumberGenerator();
             final double[] data = new double[7];

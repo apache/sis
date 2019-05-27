@@ -16,27 +16,34 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import java.util.Arrays;
 import java.util.Random;
+import java.io.IOException;
+import java.io.LineNumberReader;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
+import static java.lang.StrictMath.min;
 import static java.lang.StrictMath.toRadians;
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.internal.referencing.provider.TransverseMercator.LATITUDE_OF_ORIGIN;
 
 
 /**
  * Tests the {@link TransverseMercator} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -51,7 +58,7 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
         final org.apache.sis.internal.referencing.provider.TransverseMercator method =
                 new org.apache.sis.internal.referencing.provider.TransverseMercator();
         final Parameters parameters = parameters(method, ellipsoidal);
-        parameters.getOrCreate(org.apache.sis.internal.referencing.provider.TransverseMercator.LATITUDE_OF_ORIGIN).setValue(latitudeOfOrigin);
+        parameters.getOrCreate(LATITUDE_OF_ORIGIN).setValue(latitudeOfOrigin);
         transform = new TransverseMercator(method, parameters);
         tolerance = NORMALIZED_TOLERANCE;
         validate();
@@ -99,7 +106,7 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
                 0.5,        // Central meridian
                 2.5,        // Latitude of origin
                 NaN,        // Standard parallel 1 (none)
-                NaN,        // Standard parallel 1 (none)
+                NaN,        // Standard parallel 2 (none)
                 0.997,      // Scale factor
                 200,        // False easting
                 100);       // False northing
@@ -166,5 +173,55 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
         transform = assertSerializedEquals(transform);
         tolerance = Formulas.LINEAR_TOLERANCE;
         verifyTransform(source, target);
+    }
+
+    /**
+     * Compares with <cite>Karney (2009) Test data for the transverse Mercator projection</cite>.
+     * This is an optional test executed only if the {@code $SIS_DATA/Tests/TMcoords.dat} file is found.
+     *
+     * @throws IOException if an error occurred while reading the test file.
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while transforming coordinates.
+     */
+    @Test
+    public void compareAgainstDataset() throws IOException, FactoryException, TransformException {
+        try (LineNumberReader reader = OptionalTestData.TRANSVERSE_MERCATOR.reader()) {
+            createCompleteProjection(new org.apache.sis.internal.referencing.provider.TransverseMercator(),
+                    WGS84_A,    // Semi-major axis length
+                    WGS84_B,    // Semi-minor axis length
+                    0,          // Central meridian
+                    0,          // Latitude of origin
+                    NaN,        // Standard parallel 1 (none)
+                    NaN,        // Standard parallel 2 (none)
+                    0.9996,     // Scale factor
+                    0,          // False easting
+                    0);         // False northing
+            final double[] source = new double[2];
+            final double[] target = new double[2];
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Arrays.fill(source, Double.NaN);
+                final CharSequence[] split = CharSequences.split(line, ' ');
+                for (int i=min(split.length, 4); --i >= 0;) {
+                    final double value = Double.parseDouble(split[i].toString());
+                    if (i <= 1) source[i ^ 1] = value;                              // Swap axis order.
+                    else        target[i - 2] = value;
+                }
+                // Relax tolerance for longitudes very far from central meridian.
+                final double longitude = StrictMath.abs(source[0]);
+                if (longitude < TransverseMercator.DOMAIN_OF_VALIDITY) {
+                    if (StrictMath.abs(source[1]) >= 89.9) tolerance = 0.1;
+                    else if (longitude <= 60) tolerance = Formulas.LINEAR_TOLERANCE;
+                    else if (longitude <= 66) tolerance = 0.1;
+                    else if (longitude <= 70) tolerance = 1;
+                    else if (longitude <= 72) tolerance = 2;
+                    else if (longitude <= 74) tolerance = 10;
+                    else if (longitude <= 76) tolerance = 30;
+                    else                      tolerance = 1000;
+                    transform.transform(source, 0, source, 0, 1);
+                    assertCoordinateEquals(line, target, source, reader.getLineNumber(), false);
+                }
+            }
+        }
     }
 }

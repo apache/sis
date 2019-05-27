@@ -47,7 +47,6 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
@@ -954,6 +953,7 @@ final class LandsatReader {
          * then continue adding some more specific metadata elements by ourself. For example information about
          * bands are splitted in 3 different AttributeGroups based on their grid size.
          */
+        metadata.setISOStandards(true);
         final DefaultMetadata result = metadata.build(false);
         if (result != null) {
             /*
@@ -978,7 +978,6 @@ final class LandsatReader {
                     }
                 }
             }
-            result.setMetadataStandards(Citations.ISO_19115);
             result.transition(DefaultMetadata.State.FINAL);
         }
         return result;
