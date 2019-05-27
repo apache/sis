@@ -94,8 +94,8 @@ public final class Citations extends Static {
      * and in the way that SIS support them. The current content is:
      *
      * <ul>
-     *   <li>{@linkplain org.opengis.annotation.Specification#ISO_19115   ISO 19115-1:2014(E)} at index 0.</li>
-     *   <li>{@linkplain org.opengis.annotation.Specification#ISO_19115_2 ISO 19115-2:2009(E)} at index 1.</li>
+     *   <li>{@linkplain org.opengis.annotation.Specification#ISO_19115   ISO 19115-1:2014} at index 0.</li>
+     *   <li>{@linkplain org.opengis.annotation.Specification#ISO_19115_2 ISO 19115-2:2019} at index 1.</li>
      * </ul>
      *
      * <div class="section">Main usage</div>
