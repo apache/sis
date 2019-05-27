@@ -441,12 +441,8 @@ public class Convention {
         definition.put(CF.GRID_MAPPING_NAME, method);
         for (final String name : node.getAttributeNames()) {
             final String ln = name.toLowerCase(Locale.US);
-            final Object value;
-            if (ln.endsWith("_name")) {
-                value = node.getAttributeAsString(name);
-                if (value == null) continue;
-                break;
-            } else switch (ln) {
+            Object value;
+            switch (ln) {
                 case CF.GRID_MAPPING_NAME: continue;        // Already stored.
                 case TOWGS84: {
                     /*
@@ -470,14 +466,29 @@ public class Convention {
                     continue;
                 }
                 default: {
+                    if (ln.endsWith("_name")) {
+                        value = node.getAttributeAsString(name);
+                        if (value == null) continue;
+                    }
                     /*
                      * Assume that all map projection parameters in netCDF files are numbers or array of numbers.
+                     * If the array contains float value, returns a `float[]` array for letting the caller know
+                     * that it may need to use base 10 for conversion to `double[]` array.
                      */
                     final Object[] values = node.getAttributeValues(name, true);
                     switch (values.length) {
                         case 0:  continue;                       // Attribute not found or not numeric.
                         case 1:  value = values[0]; break;       // This is the usual case.
-                        default: value = Vector.create(values, false).doubleValues(); break;
+                        default: {
+                            boolean isFloat = false;
+                            for (final Object e : values) {
+                                isFloat = (e instanceof Float);
+                                if (!isFloat) break;
+                            }
+                            final Vector v = Vector.create(values, false);
+                            value = isFloat ? v.floatValues() : v.doubleValues();
+                            break;
+                        }
                     }
                     break;
                 }

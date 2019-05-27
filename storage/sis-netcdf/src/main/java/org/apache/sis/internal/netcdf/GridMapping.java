@@ -208,7 +208,7 @@ final class GridMapping {
             for (final Map.Entry<String,Object> entry : definition.entrySet()) {
                 final String name  = entry.getKey();
                 final Object value = entry.getValue();
-                if (value instanceof Number || value instanceof double[]) try {
+                if (value instanceof Number || value instanceof double[] || value instanceof float[]) try {
                     parameters.parameter(name).setValue(value);
                 } catch (IllegalArgumentException ex) {
                     warning(node, ex, Resources.Keys.CanNotSetProjectionParameter_5, node.decoder.getFilename(),
