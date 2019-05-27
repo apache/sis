@@ -40,7 +40,7 @@ final class MetadataCommand extends FormattedOutputCommand {
      */
     static EnumSet<Option> options() {
         return EnumSet.of(Option.FORMAT, Option.LOCALE, Option.TIMEZONE,
-                Option.ENCODING, Option.COLORS, Option.HELP, Option.DEBUG);
+                Option.ENCODING, Option.COLORS, Option.VERBOSE, Option.HELP, Option.DEBUG);
     }
 
     /**
@@ -89,6 +89,9 @@ final class MetadataCommand extends FormattedOutputCommand {
      */
     @Override
     Predicate<TreeTable.Node> getNodeFilter() {
+        if (options.containsKey(Option.VERBOSE)) {
+            return null;
+        }
         return (node) -> !"metadataStandard".equals(node.getValue(TableColumn.IDENTIFIER));
     }
 }

@@ -45,6 +45,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.internal.simple.SimpleMetadata;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -81,7 +82,7 @@ import org.opengis.metadata.citation.Responsibility;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -419,6 +420,16 @@ public final class Metadata extends SimpleMetadata {
             return Collections.singletonList(f);
         }
         return super.getResourceFormats();
+    }
+
+    /**
+     * Citation(s) for the standard(s) to which the metadata conform.
+     *
+     * @return ISO 19115-1 citation.
+     */
+    @Override
+    public Collection<Citation> getMetadataStandards() {
+        return Collections.singleton(Citations.ISO_19115.get(0));
     }
 
     /**
