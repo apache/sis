@@ -104,6 +104,7 @@ abstract strictfp class MapProjectionTestCase extends MathTransformTestCase {
 
     /**
      * Initializes a complete projection (including conversion from degrees to radians) for the given provider.
+     * Base CRS axis order is (longitude, latitude).
      */
     final void createCompleteProjection(final DefaultOperationMethod provider,
             final double semiMajor,

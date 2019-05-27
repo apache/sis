@@ -257,7 +257,7 @@ public final strictfp class DefaultMetadataTest extends TestCase {
         assertNull("metadataStandardVersion", metadata.getMetadataStandardVersion());
 
         String name = "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data";
-        String version = "ISO 19115-2:2009(E)";
+        String version = "ISO 19115-2:2019";
         metadata.setMetadataStandardName(name);
         metadata.setMetadataStandardVersion(version);
         assertEquals("metadataStandardName",    name,    metadata.getMetadataStandardName());

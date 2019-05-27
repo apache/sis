@@ -47,7 +47,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * In such case, the error message is given by {@link #message(Map, String, Object)}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -99,6 +99,9 @@ final class Verifier {
      * {@linkplain ParameterDescriptor#getValidValues() set of valid values}.
      * If the value fails any of those tests, then an exception is thrown.
      *
+     * <p>This method does not attempt to convert the given value (for example from {@link Float} to {@link Double}) because
+     * such conversions should be done by the caller if desired. See {@link DefaultParameterValue#setValue(Object, Unit)}.</p>
+     *
      * @param  <T>         the type of parameter value. The given {@code value} should typically be an instance of this class.
      *                     This is not required by this method signature but is checked by this method implementation.
      * @param  descriptor  the parameter descriptor to check against.
@@ -111,11 +114,14 @@ final class Verifier {
     static <T> T ensureValidValue(final ParameterDescriptor<T> descriptor, final Object value, final Unit<?> unit)
             throws InvalidParameterValueException
     {
-        final Class<T> valueClass = descriptor.getValueClass();
+        final Class<T> expectedClass = descriptor.getValueClass();
         /*
-         * Before to verify if the given value is inside the bounds, we need to convert the value
-         * to the units used by the parameter descriptor. The first part of this block verifies
-         * the validity of the unit argument, so we execute it even if 'value' is null.
+         * Convert the given value to the units used by the parameter descriptor.
+         * Notes:
+         *
+         *   1) We need to perform this conversion before to verify if the given value is inside the bounds.
+         *   2) This conversion may change the type (e.g. from java.lang.Float to Double) as a side effect.
+         *   3) We execute this code even if value is null because it contains a check of unit validity.
          */
         UnitConverter converter = null;
         Object convertedValue = value;
@@ -134,58 +140,58 @@ final class Verifier {
                     throw new IllegalArgumentException(Errors.format(expectedID, unit));
                 }
                 /*
-                 * Verify the type of the user's value before to perform the unit conversion,
-                 * because the conversion will create a new object not necessarily of the same type.
+                 * Verify the value type before to perform unit conversion. This will indirectly verifies that the value
+                 * is an instance of `java.lang.Number` or an array of numbers because non-null units are associated to
+                 * `MeasurementRange` in SIS implementation, which accepts only numeric values.
                  */
                 if (value != null) {
-                    if (!valueClass.isInstance(value)) {
+                    if (!expectedClass.isInstance(value)) {
                         final String name = getDisplayName(descriptor);
                         throw new InvalidParameterValueException(
                                 Resources.format(Resources.Keys.IllegalParameterValueClass_3,
-                                name, valueClass, value.getClass()), name, value);
+                                name, expectedClass, value.getClass()), name, value);
                     }
                     /*
                      * From this point we will perform the actual unit conversion. The value may be either
                      * a Number instance, or an array of numbers (typically an array of type double[]). In
-                     * the array case, we will store the converted values in a new array of the same type.
+                     * the array case, we will store the converted values in a new array of expected type.
                      */
                     try {
                         converter = unit.getConverterToAny(def);
                     } catch (IncommensurableException e) {
                         throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2, unit, def), e);
                     }
-                    Class<?> componentType = valueClass.getComponentType();
-                    if (componentType == null) {
-                        /*
-                         * Usual case where the value is not an array. Convert the value directly.
-                         * Note that the value can only be a number because the unit is associated
-                         * to MeasurementRange, which accepts only numbers.
-                         */
-                        Number n = converter.convert(((Number) value).doubleValue());
-                        try {
-                            convertedValue = Numbers.cast(n, valueClass.asSubclass(Number.class));
-                        } catch (IllegalArgumentException e) {
-                            throw new InvalidParameterValueException(e.getLocalizedMessage(),
-                                    getDisplayName(descriptor), value);
+                    final Class<?> componentType = expectedClass.getComponentType();
+                    if (componentType != null) {
+                        final int length = Array.getLength(value);
+                        if (length != 0) {
+                            final Class<? extends Number> numberType = Numbers.primitiveToWrapper(componentType).asSubclass(Number.class);
+                            convertedValue = Array.newInstance(componentType, length);
+                            int i = 0;
+                            try {
+                                do {
+                                    Number n = (Number) Array.get(value, i);
+                                    n = converter.convert(n);                       // Value in units that we can compare.
+                                    n = Numbers.cast(n, numberType);
+                                    Array.set(convertedValue, i, n);
+                                } while (++i < length);
+                            } catch (IllegalArgumentException e) {
+                                throw (InvalidParameterValueException) new InvalidParameterValueException(e.getLocalizedMessage(),
+                                        Strings.toIndexed(getDisplayName(descriptor), i), value).initCause(e);
+                            }
                         }
                     } else {
                         /*
-                         * The value is an array. Creates a new array and store the converted values
-                         * using Array reflection.
+                         * Usual case where the expected value is a singleton. A ClassCastException below could be
+                         * a bug in our code logic since non-null units is allowed only with numeric values in SIS
+                         * implementation. However the given descriptor could be a "foreigner" implementation.
                          */
-                        final int length = Array.getLength(value);
-                        convertedValue = Array.newInstance(componentType, length);
-                        componentType = Numbers.primitiveToWrapper(componentType);
-                        for (int i=0; i<length; i++) {
-                            Number n = (Number) Array.get(value, i);
-                            n = converter.convert(n.doubleValue());         // Value in units that we can compare.
-                            try {
-                                n = Numbers.cast(n, componentType.asSubclass(Number.class));
-                            } catch (IllegalArgumentException e) {
-                                throw new InvalidParameterValueException(e.getLocalizedMessage(),
-                                        Strings.toIndexed(getDisplayName(descriptor), i), value);
-                            }
-                            Array.set(convertedValue, i, n);
+                        try {
+                            Number n = converter.convert((Number) value);
+                            convertedValue = Numbers.cast(n, expectedClass.asSubclass(Number.class));
+                        } catch (ClassCastException | IllegalArgumentException e) {
+                            throw (InvalidParameterValueException) new InvalidParameterValueException(
+                                    e.getLocalizedMessage(), getDisplayName(descriptor), value).initCause(e);
                         }
                     }
                 }
@@ -200,10 +206,10 @@ final class Verifier {
             final Verifier error;
             final Set<T> validValues = descriptor.getValidValues();
             if (descriptor instanceof DefaultParameterDescriptor<?>) {
-                error = ensureValidValue(valueClass, validValues,
+                error = ensureValidValue(expectedClass, validValues,
                         ((DefaultParameterDescriptor<?>) descriptor).getValueDomain(), convertedValue);
             } else {
-                error = ensureValidValue(valueClass, validValues,
+                error = ensureValidValue(expectedClass, validValues,
                         descriptor.getMinimumValue(), descriptor.getMaximumValue(), convertedValue);
             }
             /*
@@ -225,7 +231,7 @@ final class Verifier {
                 }
             }
         }
-        return valueClass.cast(convertedValue);
+        return expectedClass.cast(convertedValue);
     }
 
     /**

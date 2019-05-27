@@ -84,43 +84,40 @@ public final class Classes extends Static {
 
     /**
      * Changes the array dimension by the given amount. The given class can be a primitive type,
-     * a Java object, or an array of the above. If the given {@code dimension} is positive, then
-     * the array dimension will be increased by that amount. For example a change of dimension 1
-     * will change a {@code int} class into {@code int[]}, and a {@code String[]} class into
-     * {@code String[][]}. A change of dimension 2 is like applying a change of dimension 1 two
-     * times.
+     * a Java object, or an array of the above. If the given {@code change} is positive, then the
+     * array dimension will be increased by that amount. For example a change of +1 dimension will
+     * change an {@code int} class into {@code int[]}, and a {@code String[]} class into {@code String[][]}.
+     * A change of +2 dimensions is like applying two times a change of +1 dimension.
      *
-     * <p>The change of dimension can also be negative. For example a change of dimension -1 will
+     * <p>The change of dimension can also be negative. For example a change of -1 dimension will
      * change a {@code String[]} class into a {@code String}. More specifically:</p>
      *
      * <ul>
      *   <li>If the given {@code element} is null, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given {@code dimension} change is 0, then the given {@code element}
-     *       is returned unchanged.</li>
-     *   <li>Otherwise if the given {@code dimension} change is negative, then
-     *       {@link Class#getComponentType()} is invoked {@code abs(dimension)} times.
-     *       The result is a {@code null} value if {@code abs(dimension)} is greater
-     *       than the array dimension.</li>
-     *   <li>Otherwise if {@code element} is {@link Void#TYPE}, then this method returns
-     *       {@code Void.TYPE} since arrays of {@code void} don't exist.</li>
-     *   <li>Otherwise this method returns a class that represents an array of the given
-     *       class augmented by the given amount of dimensions.</li>
+     *   <li>Otherwise if the given {@code change} is 0, then the given {@code element} is returned unchanged.</li>
+     *   <li>Otherwise if the given {@code change} is negative, then {@link Class#getComponentType()} is invoked
+     *       {@code abs(change)} times. The result is a {@code null} value if {@code abs(change)} is greater than
+     *       the array dimension.</li>
+     *   <li>Otherwise if {@code element} is {@link Void#TYPE}, then this method returns {@code Void.TYPE}
+     *       since arrays of {@code void} do not exist.</li>
+     *   <li>Otherwise this method returns a class that represents an array of the given class augmented by
+     *       the given amount of dimensions.</li>
      * </ul>
      *
-     * @param  element    the type of elements in the array.
-     * @param  dimension  the change of dimension, as a negative or positive number.
+     * @param  element  the type of elements in the array.
+     * @param  change   the change of dimension, as a negative or positive number.
      * @return the type of an array of the given element type augmented by the given
      *         number of dimensions (which may be negative), or {@code null}.
      */
-    public static Class<?> changeArrayDimension(Class<?> element, int dimension) {
-        if (dimension != 0 && element != null) {
-            if (dimension < 0) {
+    public static Class<?> changeArrayDimension(Class<?> element, int change) {
+        if (change != 0 && element != null) {
+            if (change < 0) {
                 do element = element.getComponentType();
-                while (element!=null && ++dimension != 0);
+                while (element!=null && ++change != 0);
             } else if (element != Void.TYPE) {
                 final StringBuilder buffer = new StringBuilder();
                 do buffer.insert(0, '[');
-                while (--dimension != 0);
+                while (--change != 0);
                 if (element.isPrimitive()) {
                     buffer.append(Numbers.getInternal(element));
                 } else if (element.isArray()) {

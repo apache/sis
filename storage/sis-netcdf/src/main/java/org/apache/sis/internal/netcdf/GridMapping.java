@@ -128,14 +128,17 @@ final class GridMapping {
             if (gm != null) {
                 return gm;
             }
-            final Node mapping = variable.decoder.findNode(name);
-            if (mapping != null) {
-                gm = parseProjectionParameters(mapping);
-                if (gm == null) {
-                    gm = parseGeoTransform(mapping);
+            /*
+             * Value may be null if we already tried and failed to process that grid.
+             * We detect those cases in order to avoid logging the same warning twice.
+             */
+            if (!gridMapping.containsKey(name)) {
+                final Node mapping = variable.decoder.findNode(name);
+                if (mapping != null) {
+                    gm = parse(mapping);
                 }
+                gridMapping.put(name, gm);                      // Store even if null.
                 if (gm != null) {
-                    gridMapping.put(name, gm);
                     return gm;
                 }
             }
@@ -146,13 +149,31 @@ final class GridMapping {
          */
         GridMapping gm = gridMapping.get(variable);
         if (gm == null) {
-            gm = parseProjectionParameters(variable);
+            final String name = variable.getName();
+            gm = gridMapping.get(name);
+            if (gm == null && !gridMapping.containsKey(name)) {
+                gm = parse(variable);
+                gridMapping.put(name, gm);                      // Store even if null.
+            }
             if (gm == null) {
                 gm = parseNonStandard(variable);
             }
             if (gm != null) {
                 gridMapping.put(variable, gm);
             }
+        }
+        return gm;
+    }
+
+    /**
+     * Parses the map projection parameters defined as attribute associated to the given variable.
+     * This method tries to parse CF-compliant attributes first. If none are found, non-standard
+     * extensions (for example GDAL usage) are tried next.
+     */
+    private static GridMapping parse(final Node mapping) {
+        GridMapping gm = parseProjectionParameters(mapping);
+        if (gm == null) {
+            gm = parseGeoTransform(mapping);
         }
         return gm;
     }
@@ -187,7 +208,7 @@ final class GridMapping {
             for (final Map.Entry<String,Object> entry : definition.entrySet()) {
                 final String name  = entry.getKey();
                 final Object value = entry.getValue();
-                if (value instanceof Number || value instanceof double[]) try {
+                if (value instanceof Number || value instanceof double[] || value instanceof float[]) try {
                     parameters.parameter(name).setValue(value);
                 } catch (IllegalArgumentException ex) {
                     warning(node, ex, Resources.Keys.CanNotSetProjectionParameter_5, node.decoder.getFilename(),
@@ -460,7 +481,7 @@ final class GridMapping {
      * @param  variable  the variable for which to create a grid geometry.
      * @param  template  template to use for completing missing information.
      * @param  anchor    whether we computed "grid to CRS" transform relative to pixel center or pixel corner.
-     * @return the grid geometry with modified CRS and "grid to CRS" transform, or {@code null} if case of failure.
+     * @return the grid geometry with modified CRS and "grid to CRS" transform, or {@code null} in case of failure.
      */
     GridGeometry adaptGridCRS(final Variable variable, final GridGeometry template, final PixelInCell anchor) {
         CoordinateReferenceSystem givenCRS = crs;

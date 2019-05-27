@@ -1046,13 +1046,16 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          * Add the dimension information, if any. This metadata node
          * is built from the netCDF CoordinateSystem objects.
          */
+        boolean hasGrids = false;
         for (final Grid cs : decoder.getGrids()) {
             if (cs.getSourceDimensions() >= Grid.MIN_DIMENSION &&
                 cs.getTargetDimensions() >= Grid.MIN_DIMENSION)
             {
                 addSpatialRepresentationInfo(cs);
+                hasGrids = true;
             }
         }
+        setISOStandards(hasGrids);
         addFileIdentifier();
         /*
          * Deperture: UnidataDD2MI.xsl puts the source in Metadata.dataQualityInfo.lineage.statement.
@@ -1066,7 +1069,6 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         }
         decoder.setSearchPath(searchPath);
         final DefaultMetadata metadata = build(false);
-        metadata.setMetadataStandards(Citations.ISO_19115);
         addCompleteMetadata(createURI(stringValue(METADATA_LINK)));
         metadata.transition(DefaultMetadata.State.FINAL);
         return metadata;

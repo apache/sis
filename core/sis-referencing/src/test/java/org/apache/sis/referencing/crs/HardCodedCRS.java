@@ -42,7 +42,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 public final strictfp class HardCodedCRS {
     /**
      * A two-dimensional geographic coordinate reference system using the WGS84 datum.
-     * This CRS uses (<var>latitude</var>, <var>longitude</var>) ordinates with latitude values
+     * This CRS uses (<var>latitude</var>, <var>longitude</var>) coordinates with latitude values
      * increasing towards the North and longitude values increasing towards the East.
      * The angular units are decimal degrees and the prime meridian is Greenwich.
      *
@@ -53,7 +53,7 @@ public final strictfp class HardCodedCRS {
 
     /**
      * A two-dimensional geographic coordinate reference system using the WGS84 datum.
-     * This CRS uses (<var>longitude</var>, <var>latitude</var>) ordinates with longitude values
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>) coordinates with longitude values
      * increasing towards the East and latitude values increasing towards the North.
      * The angular units are decimal degrees and the prime meridian is Greenwich.
      *
@@ -65,7 +65,7 @@ public final strictfp class HardCodedCRS {
 
     /**
      * A three-dimensional geographic coordinate reference system using the WGS84 datum.
-     * This CRS uses (<var>longitude</var>, <var>latitude</var>, <var>height</var>) ordinates with longitude values
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>, <var>height</var>) coordinates with longitude values
      * increasing towards East, latitude values increasing towards North and height positive above the ellipsoid.
      * The angular units are decimal degrees, the height unit is the metre, and the prime meridian is Greenwich.
      *
@@ -77,7 +77,7 @@ public final strictfp class HardCodedCRS {
 
     /**
      * A two-dimensional geographic coordinate reference system using the Paris prime meridian.
-     * This CRS uses (<var>longitude</var>, <var>latitude</var>) ordinates with longitude values
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>) coordinates with longitude values
      * increasing towards the East and latitude values increasing towards the North.
      * The angular units for the prime meridian and the axes are grads.
      *
@@ -92,7 +92,7 @@ public final strictfp class HardCodedCRS {
 
     /**
      * A two-dimensional geographic coordinate reference system using the Paris prime meridian.
-     * This CRS uses (<var>longitude</var>, <var>latitude</var>) ordinates with longitude values
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>) coordinates with longitude values
      * increasing towards the East and latitude values increasing towards the North.
      * The angular units are decimal degrees except for the prime meridian (Paris),
      * which is measured in grads.
@@ -110,7 +110,7 @@ public final strictfp class HardCodedCRS {
 
     /**
      * A three-dimensional geographic coordinate reference system using the Tokyo datum.
-     * This CRS uses (<var>longitude</var>, <var>latitude</var>, <var>height</var>) ordinates
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>, <var>height</var>) coordinates
      * with longitude values increasing towards the East, latitude values increasing towards
      * the North and ellipsoidal eight increasing toward up.
      * The angular units are decimal degrees and the linear units are metres.
@@ -126,7 +126,7 @@ public final strictfp class HardCodedCRS {
 
     /**
      * A two-dimensional geographic coordinate reference system using the JGD2000 datum.
-     * This CRS uses (<var>longitude</var>, <var>latitude</var>, <var>height</var>) ordinates
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>, <var>height</var>) coordinates
      * with longitude values increasing towards the East, latitude values increasing towards
      * the North and ellipsoidal eight increasing toward up.
      * The angular units are decimal degrees and the linear units are metres.
@@ -142,12 +142,21 @@ public final strictfp class HardCodedCRS {
 
     /**
      * A two-dimensional geographic coordinate reference system using a spherical datum.
-     * This CRS uses (<var>longitude</var>, <var>latitude</var>) ordinates with longitude values
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>) coordinates with longitude values
      * increasing towards the East and latitude values increasing towards the North.
      * The angular units are decimal degrees and the prime meridian is Greenwich.
      */
     public static final DefaultGeographicCRS SPHERE = new DefaultGeographicCRS(
             getProperties(HardCodedDatum.SPHERE), HardCodedDatum.SPHERE, HardCodedCS.GEODETIC_2D);
+
+    /**
+     * A two-dimensional geographic coordinate reference system using a spherical datum.
+     * This CRS uses (<var>latitude</var>, <var>longitude</var>) coordinates with latitude
+     * values increasing towards the North and longitude values increasing towards the East.
+     * The angular units are decimal degrees and the prime meridian is Greenwich.
+     */
+    public static final DefaultGeographicCRS SPHERE_φλ = new DefaultGeographicCRS(
+            getProperties(HardCodedDatum.SPHERE), HardCodedDatum.SPHERE, HardCodedCS.GEODETIC_φλ);
 
     /**
      * A geocentric CRS with a spherical coordinate system.

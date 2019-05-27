@@ -50,7 +50,7 @@ final strictfp class ShapeViewer extends JPanel {
      * Colors to use for drawing shapes.
      */
     private final Color[] colors = {
-        Color.RED, Color.GREEN, Color.BLUE
+        Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA
     };
 
     /**
