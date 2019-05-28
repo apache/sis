@@ -337,31 +337,41 @@ final class VariableWrapper extends Variable {
      */
     @Override
     protected Object getAttributeValue(final String attributeName) {
-        return getAttributeValues(raw.findAttributeIgnoreCase(attributeName));
+        return getAttributeValue(raw.findAttributeIgnoreCase(attributeName));
     }
 
     /**
      * Implementation of {@link #getAttributeValue(String)} shared with {@link GroupWrapper}.
      */
-    static Object getAttributeValues(final Attribute attribute) {
+    static Object getAttributeValue(final Attribute attribute) {
         if (attribute != null) {
             final int length = attribute.getLength();
-            if (length != 0) {
-                boolean hasValues = false;
-                final boolean isString = attribute.isString();
-                final Object[] values = isString ? new String[length] : new Number[length];
-                for (int i=0; i<values.length; i++) {
-                    final Object value;
-                    if (isString) {
-                        value = Utils.nonEmpty(attribute.getStringValue(i));
-                    } else {
-                        value = Utils.fixSign(attribute.getNumericValue(i), attribute.isUnsigned());
+            switch (length) {
+                case 0: break;
+                case 1: {
+                    final Object value = attribute.getValue(0);
+                    if (value instanceof String) {
+                        return Utils.nonEmpty((String) value);
+                    } else if (value instanceof Number) {
+                        return Utils.fixSign((Number) value, attribute.isUnsigned());
                     }
-                    values[i] = value;
-                    hasValues |= (value != null);
+                    break;
                 }
-                if (hasValues) {
-                    return (values.length == 1) ? values[0] : Vector.create(values, attribute.isUnsigned());
+                default: {
+                    if (attribute.isString()) {
+                        boolean hasValues = false;
+                        final String[] values = new String[length];
+                        for (int i=0; i<length; i++) {
+                            values[i] = Utils.nonEmpty(attribute.getStringValue(i));
+                            hasValues |= (values[i] != null);
+                        }
+                        if (hasValues) {
+                            return values;
+                        }
+                    } else {
+                        final Array array = attribute.getValues();
+                        return createDecimalVector(array.get1DJavaArray(array.getElementType()), attribute.isUnsigned());
+                    }
                 }
             }
         }

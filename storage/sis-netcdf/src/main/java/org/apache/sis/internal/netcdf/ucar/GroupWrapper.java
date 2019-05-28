@@ -75,6 +75,6 @@ final class GroupWrapper extends Node {
      */
     @Override
     protected Object getAttributeValue(final String attributeName) {
-        return VariableWrapper.getAttributeValues(group.findAttributeIgnoreCase(attributeName));
+        return VariableWrapper.getAttributeValue(group.findAttributeIgnoreCase(attributeName));
     }
 }

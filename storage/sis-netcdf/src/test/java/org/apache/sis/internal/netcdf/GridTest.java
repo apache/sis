@@ -144,6 +144,6 @@ public strictfp class GridTest extends TestCase {
         assertEquals("Latitude of false origin",           25,    pg.parameter("Latitude of false origin")         .doubleValue(), STRICT);
         assertEquals("Longitude of false origin",         -95,    pg.parameter("Longitude of false origin")        .doubleValue(), STRICT);
         assertEquals("Latitude of 1st standard parallel",  25,    pg.parameter("Latitude of 1st standard parallel").doubleValue(), STRICT);
-        assertEquals("Latitude of 2nd standard parallel",  25.05, pg.parameter("Latitude of 2nd standard parallel").doubleValue(), 1E-6);
+        assertEquals("Latitude of 2nd standard parallel",  25.05, pg.parameter("Latitude of 2nd standard parallel").doubleValue(), STRICT);
     }
 }

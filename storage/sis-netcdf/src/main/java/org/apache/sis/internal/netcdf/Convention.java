@@ -474,12 +474,10 @@ public class Convention {
                      * Assume that all map projection parameters in netCDF files are numbers or array of numbers.
                      * If values are array, then they are converted to an array of {@code double[]} type.
                      */
-                    final Vector data = node.getAttributeAsVector(name);
-                    if (data == null) continue;
-                    switch (data.size()) {
-                        case 0:  continue;
-                        case 1:  value = data.get(0); break;
-                        default: value = data.doubleValues(); break;
+                    value = node.getAttributeValue(name);
+                    if (value == null) continue;
+                    if (value instanceof Vector) {
+                        value = ((Vector) value).doubleValues();
                     }
                     break;
                 }
@@ -654,7 +652,7 @@ public class Convention {
             if (values != null) {
                 final int length = values.size();
                 for (int j=0; j<length; j++) try {
-                    pads.merge(values.get(i), 1 << i, (v1, v2) -> ((Integer) v1) | ((Integer) v2));
+                    pads.merge(values.get(j), 1 << i, (v1, v2) -> ((Integer) v1) | ((Integer) v2));
                 } catch (NumberFormatException e) {
                     data.decoder.illegalAttributeValue(name, values.stringValue(i), e);
                 }
