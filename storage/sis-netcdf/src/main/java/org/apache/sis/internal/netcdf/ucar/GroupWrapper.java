@@ -69,10 +69,12 @@ final class GroupWrapper extends Node {
     }
 
     /**
-     * Returns the sequence of values for the given attribute, or an empty array if none.
+     * Returns the single value or vector of values for the given attribute, or {@code null} if none.
+     * The returned value can be an instance of {@link String}, {@link Number},
+     * {@link org.apache.sis.math.Vector} or {@code String[]}.
      */
     @Override
-    public Object[] getAttributeValues(final String attributeName, final boolean numeric) {
-        return VariableWrapper.getAttributeValues(group.findAttributeIgnoreCase(attributeName), numeric);
+    protected Object getAttributeValue(final String attributeName) {
+        return VariableWrapper.getAttributeValues(group.findAttributeIgnoreCase(attributeName));
     }
 }

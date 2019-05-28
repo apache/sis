@@ -311,6 +311,9 @@ final class VariableWrapper extends Variable {
      */
     static Class<?> getAttributeType(final Attribute attribute) {
         if (attribute != null) {
+            if (attribute.isArray()) {
+                return Vector.class;
+            }
             switch (attribute.getDataType()) {
                 case BYTE:   return Byte.class;
                 case SHORT:  return Short.class;
@@ -326,42 +329,43 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the sequence of values for the given attribute, or an empty array if none.
-     * The elements will be of class {@link String} if {@code numeric} is {@code false},
-     * or {@link Number} if {@code numeric} is {@code true}.
+     * Returns the single value or vector of values for the given attribute, or {@code null} if none.
+     * The returned value can be an instance of {@link String}, {@link Number}, {@link Vector} or {@code String[]}.
+     *
+     * @param  attributeName  the name of the attribute for which to get the values.
+     * @return value(s) for the named attribute, or {@code null} if none.
      */
     @Override
-    public Object[] getAttributeValues(final String attributeName, final boolean numeric) {
-        return getAttributeValues(raw.findAttributeIgnoreCase(attributeName), numeric);
+    protected Object getAttributeValue(final String attributeName) {
+        return getAttributeValues(raw.findAttributeIgnoreCase(attributeName));
     }
 
     /**
-     * Implementation of {@link #getAttributeValues(String, boolean)} shared with {@link GroupWrapper}.
+     * Implementation of {@link #getAttributeValue(String)} shared with {@link GroupWrapper}.
      */
-    static Object[] getAttributeValues(final Attribute attribute, final boolean numeric) {
+    static Object getAttributeValues(final Attribute attribute) {
         if (attribute != null) {
-            boolean hasValues = false;
-            final Object[] values = new Object[attribute.getLength()];
-            for (int i=0; i<values.length; i++) {
-                if (numeric) {
-                    values[i] = Utils.fixSign(attribute.getNumericValue(i), attribute.isUnsigned());
-                    hasValues |= (values[i] != null);
-                } else {
-                    Object value = attribute.getValue(i);
-                    if (value != null) {
-                        String text = Utils.nonEmpty(value.toString());
-                        if (text != null) {
-                            values[i] = text;
-                            hasValues = true;
-                        }
+            final int length = attribute.getLength();
+            if (length != 0) {
+                boolean hasValues = false;
+                final boolean isString = attribute.isString();
+                final Object[] values = isString ? new String[length] : new Number[length];
+                for (int i=0; i<values.length; i++) {
+                    final Object value;
+                    if (isString) {
+                        value = Utils.nonEmpty(attribute.getStringValue(i));
+                    } else {
+                        value = Utils.fixSign(attribute.getNumericValue(i), attribute.isUnsigned());
                     }
+                    values[i] = value;
+                    hasValues |= (value != null);
+                }
+                if (hasValues) {
+                    return (values.length == 1) ? values[0] : Vector.create(values, attribute.isUnsigned());
                 }
             }
-            if (hasValues) {
-                return values;
-            }
         }
-        return new Object[0];
+        return null;
     }
 
     /**

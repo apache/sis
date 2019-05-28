@@ -18,7 +18,9 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Locale;
 import java.util.Collection;
+import org.apache.sis.math.Vector;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -54,8 +56,8 @@ public abstract class Node extends NamedElement {
     public abstract Collection<String> getAttributeNames();
 
     /**
-     * Returns the type of the attribute of the given name,
-     * or {@code null} if the given attribute is not found.
+     * Returns the type of the attribute of the given name, or {@code null} if the given attribute is not found.
+     * If the attribute contains more than one value, then this method returns {@code Vector.class}.
      *
      * @param  attributeName  the name of the attribute for which to get the type.
      * @return type of the given attribute, or {@code null} if the attribute does not exist.
@@ -65,53 +67,108 @@ public abstract class Node extends NamedElement {
     public abstract Class<?> getAttributeType(String attributeName);
 
     /**
-     * Returns the sequence of values for the given attribute, or an empty array if none.
-     * The elements will be of class {@link String} if {@code numeric} is {@code false},
-     * or {@link Number} if {@code numeric} is {@code true}. Some elements may be null
-     * if they are not of the expected type.
+     * Returns the single value or vector of values for the given attribute, or {@code null} if none.
+     * The returned value can be an instance of:
+     *
+     * <ul>
+     *   <li>{@link String} if the attribute contains a single textual value.</li>
+     *   <li>{@link Number} if the attribute contains a single numerical value.</li>
+     *   <li>{@link Vector} if the attribute contains many numerical values.</li>
+     *   <li>{@code String[]} if the attribute contains many textual values.</li>
+     * </ul>
+     *
+     * If the value is a {@code String}, then leading and trailing spaces and control characters
+     * should be trimmed by {@link String#trim()}.
      *
      * @param  attributeName  the name of the attribute for which to get the values.
-     * @param  numeric        {@code true} if the values are expected to be numeric, or {@code false} for strings.
-     * @return the sequence of {@link String} or {@link Number} values for the named attribute.
-     *         May contain null elements.
+     * @return value(s) for the named attribute, or {@code null} if none.
      */
-    public abstract Object[] getAttributeValues(String attributeName, boolean numeric);
+    protected abstract Object getAttributeValue(String attributeName);
 
     /**
-     * Returns the singleton value for the given attribute, or {@code null} if none or ambiguous.
+     * Returns the value of the given attribute as a non-blank string with leading/trailing spaces removed.
      *
      * @param  attributeName  the name of the attribute for which to get the value.
-     * @param  numeric        {@code true} if the value is expected to be numeric, or {@code false} for string.
-     * @return the {@link String} or {@link Number} value for the named attribute.
+     * @return the singleton attribute value, or {@code null} if none, empty, blank or ambiguous.
      */
-    private Object getAttributeValue(final String attributeName, final boolean numeric) {
-        Object singleton = null;
-        for (final Object value : getAttributeValues(attributeName, numeric)) {
-            if (value != null) {
-                if (singleton != null && !singleton.equals(value)) {              // Paranoiac check.
-                    return null;
-                }
-                singleton = value;
+    public final String getAttributeAsString(final String attributeName) {
+        final Object value = getAttributeValue(attributeName);
+        if (value == null || value instanceof String) {
+            return (String) value;
+        }
+        final String[] values = toArray(value);
+        if (values == null) {
+            return value.toString();
+        }
+        String singleton = null;
+        for (final String c : values) {
+            if (singleton == null) {
+                singleton = c;
+            } else if (!singleton.equals(c)) {
+                return null;
             }
         }
         return singleton;
     }
 
     /**
-     * Returns the value of the given attribute as a non-blank string with leading/trailing spaces removed.
-     * This is a convenience method for {@link #getAttributeValues(String, boolean)} when a singleton value
-     * is expected and blank strings ignored.
+     * Returns the values of the given attribute as an array of non-blank texts.
+     * If the attribute is not stored as an array in the netCDF file, then this
+     * method splits the single {@link String} value around the given separator.
      *
-     * @param  attributeName  the name of the attribute for which to get the value.
-     * @return the singleton attribute value, or {@code null} if none, empty, blank or ambiguous.
+     * @param  attributeName  the name of the attribute for which to get the values.
+     * @param  separator      separator to use for splitting a single {@link String} value into a list of values.
+     * @return the attribute values, or {@code null} if none.
      */
-    public String getAttributeAsString(final String attributeName) {
-        final Object value = getAttributeValue(attributeName, false);
+    public final CharSequence[] getAttributeAsStrings(final String attributeName, final char separator) {
+        final Object value = getAttributeValue(attributeName);
         if (value != null) {
-            final String text = value.toString().trim();
-            if (!text.isEmpty()) return text;
+            CharSequence[] ts = toArray(value);
+            if (ts == null) {
+                ts = CharSequences.split(value.toString(), separator);
+            }
+            if (ts.length != 0) {
+                return ts;
+            }
         }
         return null;
+    }
+
+    /**
+     * Converts the given value into an array of strings, or returns {@code null}
+     * if the given value is not an array or a vector or contains only null values.
+     */
+    private static String[] toArray(final Object value) {
+        final String[] array;
+        if (value instanceof Object[]) {
+            final Object[] values = (Object[]) value;
+            array = new String[values.length];
+            for (int i=0; i<array.length; i++) {
+                final Object e = values[i];
+                if (e != null) {
+                    array[i] = e.toString();
+                }
+            }
+        } else if (value instanceof Vector) {
+            final Vector values = (Vector) value;
+            array = new String[values.size()];
+            for (int i=0; i<array.length; i++) {
+                array[i] = values.stringValue(i);
+            }
+        } else {
+            return null;
+        }
+        boolean hasValues = false;
+        for (int i=0; i<array.length; i++) {
+            String e = array[i];
+            if (e != null) {
+                e = e.trim();
+                if (e.isEmpty()) e = null;
+                else hasValues = true;
+                array[i] = e;
+            }
+        }
+        return hasValues ? array : null;
     }
 
     /**
@@ -123,16 +180,55 @@ public abstract class Node extends NamedElement {
      * @return the singleton attribute value, or {@code NaN} if none or ambiguous.
      */
     public final double getAttributeAsNumber(final String attributeName) {
-        final Object value = getAttributeValue(attributeName, true);
+        final Object value = getAttributeValue(attributeName);
+        Number singleton = null;
         if (value instanceof Number) {
-            double dp = ((Number) value).doubleValue();
-            final float sp = (float) dp;
-            if (sp == dp) {                              // May happen even if the number was stored as a double.
-                dp = DecimalFunctions.floatToDouble(sp);
+            singleton = (Number) value;
+        } else if (value instanceof String) {
+            singleton = decoder.parseNumber(attributeName, (String) value);
+        } else if (value instanceof Vector) {
+            final Vector data = (Vector) value;
+            final int length = data.size();
+            for (int i=0; i<length; i++) {
+                final Number n = data.get(i);
+                if (n != null) {
+                    if (singleton == null) {
+                        singleton = n;
+                    } else if (!singleton.equals(n)) {
+                        return Double.NaN;
+                    }
+                }
             }
-            return dp;
         }
-        return Double.NaN;
+        if (singleton == null) {
+            return Double.NaN;
+        }
+        double dp = singleton.doubleValue();
+        final float sp = (float) dp;
+        if (sp == dp) {                                     // May happen even if the number was stored as a double.
+            dp = DecimalFunctions.floatToDouble(sp);
+        }
+        return dp;
+    }
+
+    /**
+     * Returns the values of the given attribute as a vector of numbers, or {@code null} if none.
+     * If the numbers are stored with single-precision, they are assumed casted from a representation in base 10.
+     *
+     * @param  attributeName  the name of the attribute for which to get the values.
+     * @return the attribute values, or {@code null} if none, ambiguous or not a vector.
+     */
+    public final Vector getAttributeAsVector(final String attributeName) {
+        final Object value = getAttributeValue(attributeName);
+        if (value instanceof Vector) {
+            return (Vector) value;
+        } else if (value instanceof Float) {
+            return Vector.createForDecimal(new float[] {(Float) value});
+        } else if (value instanceof Number) {
+            return Vector.create(new Number[] {(Number) value}, false);
+        } else {
+            return null;
+        }
     }
 
     /**

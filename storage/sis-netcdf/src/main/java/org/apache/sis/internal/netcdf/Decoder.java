@@ -229,24 +229,45 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     /**
      * Convenience method for {@link #numericValue(String)} implementation.
      *
+     * @param  name   the attribute name, used only in case of error.
      * @param  value  the attribute value to parse.
      * @return the parsed attribute value, or {@code null} if the given value can not be parsed.
      */
-    protected final Number parseNumber(String value) {
+    protected final Number parseNumber(final String name, String value) {
         final int s = value.indexOf(' ');
         if (s >= 0) {
             /*
              * Sometime, numeric values as string are followed by
-             * a unit of measurement. We ignore that unit for now...
+             * a unit of measurement. We ignore that unit for now.
              */
             value = value.substring(0, s);
         }
+        Number n;
         try {
-            return Double.valueOf(value);
+            if (value.indexOf('.') >= 0) {
+                n = Double.valueOf(value);
+            } else {
+                n = Long.valueOf(value);
+            }
         } catch (NumberFormatException e) {
-            listeners.warning(null, e);
+            illegalAttributeValue(name, value, e);
+            n = null;
         }
-        return null;
+        return n;
+    }
+
+    /**
+     * Logs a warning for an illegal attribute value. This may be due to a failure to parse a string as a number.
+     * This method should be invoked from methods that are invoked only once per attribute because we do not keep
+     * track of which warnings have already been emitted.
+     *
+     * @param  name   the attribute name.
+     * @param  value  the illegal value.
+     * @param  e      the exception, or {@code null} if none.
+     */
+    final void illegalAttributeValue(final String name, final String value, final NumberFormatException e) {
+        listeners.warning(Resources.forLocale(listeners.getLocale()).getString(
+                Resources.Keys.IllegalAttributeValue_3, getFilename(), name, value), e);
     }
 
     /**

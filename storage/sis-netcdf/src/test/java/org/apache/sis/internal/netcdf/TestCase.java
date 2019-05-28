@@ -61,7 +61,7 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
 
     /**
      * The decoders cached by {@link #selectDataset(TestData)}.
-     * The make is non-empty only during the execution of a single test class.
+     * The map is non-empty only during the execution of a single test class.
      *
      * @see #closeAllDecoders()
      */

@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Matcher;
-import java.lang.reflect.Array;
 import java.io.IOException;
 import javax.measure.Unit;
 import ucar.nc2.constants.CF;
@@ -47,6 +46,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
@@ -64,11 +64,6 @@ import org.apache.sis.math.Vector;
  * @module
  */
 final class VariableInfo extends Variable implements Comparable<VariableInfo> {
-    /**
-     * The array to be returned by {@link #numberValues(Object)} when the given value is null.
-     */
-    private static final Number[] EMPTY = new Number[0];
-
     /**
      * The names of attributes where to look for the description to be returned by {@link #getDescription()}.
      * We use the same attributes than the one documented in the {@link ucar.nc2.Variable#getDescription()} javadoc.
@@ -127,17 +122,13 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Values can be:
      *
      * <ul>
-     *   <li>a {@link String}</li>
-     *   <li>A {@link Number}</li>
-     *   <li>an array of primitive type</li>
+     *   <li>{@link String} if the attribute contains a single textual value.</li>
+     *   <li>{@link Number} if the attribute contains a single numerical value.</li>
+     *   <li>{@link Vector} if the attribute contains many numerical values.</li>
      * </ul>
      *
      * If the value is a {@code String}, then leading and trailing spaces and control characters
      * should be trimmed by {@link String#trim()}.
-     *
-     * @see #stringValues(Object)
-     * @see #numberValues(Object)
-     * @see #booleanValue(Object)
      */
     private final Map<String,Object> attributes;
 
@@ -211,8 +202,8 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         this.dimensions = dimensions;
         this.attributes = attributes;
         final Object isUnsigned = getAttributeValue(CDM.UNSIGNED, "_unsigned");
-        if (isUnsigned != null) {
-            dataType = dataType.unsigned(booleanValue(isUnsigned));
+        if (isUnsigned instanceof String) {
+            dataType = dataType.unsigned(Boolean.valueOf((String) isUnsigned));
         }
         this.dataType = dataType;
         /*
@@ -272,15 +263,13 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
          * enumeration since those attributes may be verbose and "pollute" the variable definition.
          */
         if (!attributes.isEmpty()) {    // For avoiding UnsupportedOperationException if unmodifiable map.
-            String[] meanings = stringValues(attributes.remove(AttributeNames.FLAG_MEANINGS));
-            switch (meanings.length) {
-                case 0: meanings = null; break;
-                case 1: meanings = (String[]) CharSequences.split(meanings[0], ' '); break;
+            final Object flags = attributes.remove(AttributeNames.FLAG_MEANINGS);
+            if (flags != null) {
+                meanings = (String[]) CharSequences.split(flags.toString(), ' ');
+                return;
             }
-            this.meanings = meanings;
-        } else {
-            meanings = null;
         }
+        meanings = null;
     }
 
     /**
@@ -514,18 +503,15 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Returns the type of the attribute of the given name,
-     * or {@code null} if the given attribute is not found.
+     * Returns the type of the attribute of the given name, or {@code null} if the given attribute is not found.
+     * If the attribute contains more than one value, then this method returns a {@code Vector.class} subtype.
+     *
+     * @param  attributeName  the name of the attribute for which to get the type, preferably in lowercase.
+     * @return type of the given attribute, or {@code null} if the attribute does not exist.
      */
     @Override
     public Class<?> getAttributeType(final String attributeName) {
-        final Object value = getAttributeValue(attributeName);
-        if (value != null) {
-            final Class<?> type = value.getClass();
-            final Class<?> c = type.getComponentType();
-            return (c != null) ? c : type;
-        }
-        return null;
+        return Classes.getClass(getAttributeValue(attributeName));
     }
 
     /**
@@ -549,108 +535,15 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * This method does not search the lower-case variant of the given name because the argument given to this method
      * is usually a hard-coded value from {@link CF} or {@link CDM} conventions, which are already in lower-cases.
      *
-     * <p>All {@code getAttributeValue(…)} methods in this class ultimately invokes this method.
-     * This provide a single point to override if the functionality needs to be extended.</p>
+     * <p>All other {@code getAttributeFoo(…)} methods in this class or parent class ultimately invoke this method.
+     * This provides a single point to override if the functionality needs to be extended.</p>
      *
      * @param  attributeName  name of attribute to search, in the expected case.
      * @return variable attribute value of the given name, or {@code null} if none.
      */
-    final Object getAttributeValue(final String attributeName) {
+    @Override
+    protected Object getAttributeValue(final String attributeName) {
         return attributes.get(attributeName);
-    }
-
-    /**
-     * Returns the sequence of values for the given attribute, or an empty array if none.
-     * The elements will be of class {@link String} if {@code numeric} is {@code false},
-     * or {@link Number} if {@code numeric} is {@code true}.
-     */
-    @Override
-    public Object[] getAttributeValues(final String attributeName, final boolean numeric) {
-        final Object value = getAttributeValue(attributeName);
-        return numeric ? numberValues(value) : stringValues(value);
-    }
-
-    /**
-     * Returns the value of the given attribute as a non-blank string, or {@code null} if none.
-     */
-    @Override
-    public String getAttributeAsString(final String attributeName) {
-        final Object value = getAttributeValue(attributeName);
-        if (value instanceof String) {
-            final String text = ((String) value).trim();
-            if (!text.isEmpty()) return text;
-        }
-        return null;
-    }
-
-    /**
-     * Returns the attribute values as an array of {@link String}s, or an empty array if none.
-     * The given argument is typically a value of the {@link #attributes} map.
-     *
-     * @see #getAttributeValues(String, boolean)
-     */
-    static String[] stringValues(final Object value) {
-        if (value == null) {
-            return CharSequences.EMPTY_ARRAY;
-        }
-        if (value.getClass().isArray()) {
-            final String[] values = new String[Array.getLength(value)];
-            for (int i=0; i<values.length; i++) {
-                values[i] = Array.get(value, i).toString();
-            }
-            return values;
-        }
-        return new String[] {value.toString()};
-    }
-
-    /**
-     * Returns the attribute values as an array of {@link Number}, or an empty array if none.
-     * The given argument is typically a value of the {@link #attributes} map.
-     *
-     * @see #getAttributeValues(String, boolean)
-     */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    static Number[] numberValues(final Object value) {
-        if (value != null) {
-            if (value instanceof Number) {
-                return new Number[] {(Number) value};
-            }
-            if (value.getClass().isArray()) {
-                final Number[] values = new Number[Array.getLength(value)];
-                for (int i=0; i<values.length; i++) {
-                    final Object element = Array.get(value, i);
-                    final Number n;
-                    if (element instanceof Number) {
-                        n = (Number) element;
-                    } else if (element instanceof String) {
-                        final String t = (String) element;
-                        try {
-                            if (t.indexOf('.') >= 0) {
-                                n = Double.valueOf(t);
-                            } else {
-                                n = Long.valueOf(t);
-                            }
-                        } catch (NumberFormatException e) {
-                            // TODO: log warning. See also Decoder.parseNumber(String).
-                            continue;
-                        }
-                    } else {
-                        continue;
-                    }
-                    values[i] = n;
-                }
-                return values;
-            }
-        }
-        return EMPTY;
-    }
-
-    /**
-     * Returns the attribute value as a boolean, or {@code false} if the attribute is not a boolean.
-     * The given argument is typically a value of the {@link #attributes} map.
-     */
-    private static boolean booleanValue(final Object value) {
-        return (value instanceof String) && Boolean.valueOf((String) value);
     }
 
     /**

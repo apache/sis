@@ -156,8 +156,8 @@ final class FeaturesInfo extends DiscreteSampling {
      * Returns {@code true} if the given attribute value is one of the {@code cf_role} attribute values
      * supported by this implementation.
      */
-    private static boolean isSupportedRole(final Object role) {
-        return (role instanceof String) && ((String) role).equalsIgnoreCase(CF.TRAJECTORY_ID);
+    private static boolean isSupportedRole(final String role) {
+        return CF.TRAJECTORY_ID.equalsIgnoreCase(role);
     }
 
     /**
@@ -186,10 +186,10 @@ search: for (final VariableInfo counts : decoder.variables) {
              *             counts:sample_dimension = "points";
              */
             if (counts.dimensions.length == 1 && counts.getDataType().isInteger) {
-                final Object sampleDimName = counts.getAttributeValue(CF.SAMPLE_DIMENSION);
-                if (sampleDimName instanceof String) {
+                final String sampleDimName = counts.getAttributeAsString(CF.SAMPLE_DIMENSION);
+                if (sampleDimName != null) {
                     final DimensionInfo featureDimension = counts.dimensions[0];
-                    final DimensionInfo sampleDimension = decoder.findDimension((String) sampleDimName);
+                    final DimensionInfo sampleDimension = decoder.findDimension(sampleDimName);
                     if (sampleDimension == null) {
                         decoder.listeners.warning(decoder.resources().getString(Resources.Keys.DimensionNotFound_3,
                                 decoder.getFilename(), counts.getName(), sampleDimName), null);
@@ -203,11 +203,11 @@ search: for (final VariableInfo counts : decoder.variables) {
                      * part of CF convention and will be accepted only if there is no ambiguity.
                      */
                     VariableInfo identifiers = decoder.findVariable(featureDimension.name);
-                    if (identifiers == null || !isSupportedRole(identifiers.getAttributeValue(CF.CF_ROLE))) {
+                    if (identifiers == null || !isSupportedRole(identifiers.getAttributeAsString(CF.CF_ROLE))) {
                         VariableInfo replacement = null;
                         for (final VariableInfo alt : decoder.variables) {
                             if (alt.dimensions.length != 0 && alt.dimensions[0] == featureDimension
-                                    && isSupportedRole(alt.getAttributeValue(CF.CF_ROLE)))
+                                    && isSupportedRole(alt.getAttributeAsString(CF.CF_ROLE)))
                             {
                                 if (replacement != null) {
                                     replacement = null;
@@ -267,10 +267,10 @@ search: for (final VariableInfo counts : decoder.variables) {
                     final List<VariableInfo> properties  = new ArrayList<>();
                     for (final VariableInfo data : decoder.variables) {
                         if (data.dimensions.length == 1 && data.dimensions[0] == sampleDimension) {
-                            final Object axisType = data.getAttributeValue(CF.AXIS);
+                            final String axisType = data.getAttributeAsString(CF.AXIS);
                             if (axisType == null) {
                                 properties.add(data);
-                            } else if (coordinates.put(axisType.toString(), data) != null) {
+                            } else if (coordinates.put(axisType, data) != null) {
                                 continue search;    // Two axes of the same type: abort.
                             }
                         }

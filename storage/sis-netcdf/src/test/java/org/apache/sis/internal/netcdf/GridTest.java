@@ -17,13 +17,15 @@
 package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
+import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.opengis.test.dataset.TestData;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -124,5 +126,24 @@ public strictfp class GridTest extends TestCase {
         assertEquals(19, y.getSize());
         assertEquals( 4, z.getSize());
         assertEquals( 1, t.getSize());
+    }
+
+    /**
+     * Tests {@link GridMapping#forVariable(Variable)} with a projected CRS.
+     *
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    @Test
+    public void testGridMapping() throws IOException, DataStoreException {
+        final Node data = selectDataset(TestData.NETCDF_4D_PROJECTED).findNode("CIP");
+        final GridMapping mapping = GridMapping.forVariable((Variable) data);
+        assertNotNull("mapping", mapping);
+        assertInstanceOf("crs", ProjectedCRS.class, mapping.crs);
+        final ParameterValueGroup pg = ((ProjectedCRS) mapping.crs).getConversionFromBase().getParameterValues();
+        assertEquals("Latitude of false origin",           25,    pg.parameter("Latitude of false origin")         .doubleValue(), STRICT);
+        assertEquals("Longitude of false origin",         -95,    pg.parameter("Longitude of false origin")        .doubleValue(), STRICT);
+        assertEquals("Latitude of 1st standard parallel",  25,    pg.parameter("Latitude of 1st standard parallel").doubleValue(), STRICT);
+        assertEquals("Latitude of 2nd standard parallel",  25.05, pg.parameter("Latitude of 2nd standard parallel").doubleValue(), 1E-6);
     }
 }

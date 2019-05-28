@@ -294,7 +294,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                     }
                     String asString = Utils.nonEmpty(attribute.getStringValue());
                     if (asString != null) {
-                        return parseNumber(asString);
+                        return parseNumber(name, asString);
                     }
                 }
             }

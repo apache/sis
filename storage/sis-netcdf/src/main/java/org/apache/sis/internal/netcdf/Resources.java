@@ -118,6 +118,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DuplicatedAxis_2 = 7;
 
         /**
+         * Illegal value “{2}” for attribute “{1}” in netCDF file “{0}”.
+         */
+        public static final short IllegalAttributeValue_3 = 21;
+
+        /**
          * Illegal value range {2,number} … {3,number} for variable “{1}” in netCDF file “{0}”.
          */
         public static final short IllegalValueRange_4 = 16;
