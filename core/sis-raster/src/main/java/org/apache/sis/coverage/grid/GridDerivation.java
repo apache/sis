@@ -210,7 +210,9 @@ public class GridDerivation {
      * This setting modifies computations performed by the following methods
      * (it has no effect on other methods in this {@code GridDerivation} class):
      * <ul>
+     *   <li>{@link #subgrid(GridGeometry)}</li>
      *   <li>{@link #subgrid(Envelope, double...)}</li>
+     *   <li>{@link #resize(GridExtent, double...)}</li>
      * </ul>
      *
      * For each dimension <var>i</var> of the grid computed by above methods, the {@linkplain GridExtent#getLow(int) low} grid
