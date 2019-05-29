@@ -921,14 +921,13 @@ public final class CRS extends Static {
                 break;
             }
         }
-        final Map<String,?> properties = EllipsoidalHeightCombiner.properties(components);
         return new EllipsoidalHeightCombiner() {
             @Override public void initialize(final int factoryTypes) {
                 if ((factoryTypes & CRS)       != 0) crsFactory = DefaultFactories.forBuildin(CRSFactory.class);
                 if ((factoryTypes & CS)        != 0) csFactory  = DefaultFactories.forBuildin(CSFactory.class);
                 if ((factoryTypes & OPERATION) != 0) opFactory  = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
             }
-        }.createCompoundCRS(properties, components);
+        }.createCompoundCRS(components);
     }
 
     /**

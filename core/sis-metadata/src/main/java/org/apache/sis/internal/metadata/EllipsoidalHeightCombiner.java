@@ -44,7 +44,7 @@ import org.apache.sis.util.ArraysExt;
  * three-dimensional CRS. This is the converse of {@link org.apache.sis.referencing.EllipsoidalHeightSeparator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.referencing.EllipsoidalHeightSeparator
  *
@@ -104,6 +104,17 @@ public class EllipsoidalHeightCombiner {
      * @param  factoryTypes  a bitwise combination of {@link #CRS}, {@link #CS} and {@link #OPERATION}.
      */
     protected void initialize(final int factoryTypes) {
+    }
+
+    /**
+     * Creates a compound CRS using properties inferred from the given components.
+     *
+     * @param  components  ordered array of {@code CoordinateReferenceSystem} objects.
+     * @return the coordinate reference system for the given properties.
+     * @throws FactoryException if the object creation failed.
+     */
+    public final CoordinateReferenceSystem createCompoundCRS(CoordinateReferenceSystem... components) throws FactoryException {
+        return createCompoundCRS(properties(components), components);
     }
 
     /**
@@ -219,7 +230,7 @@ public class EllipsoidalHeightCombiner {
      * @param  components  the components for which to get a default set of properties.
      * @return suggested properties in a modifiable map. Callers can modify the returned map.
      */
-    public static Map<String,Object> properties(final CoordinateReferenceSystem... components) {
+    static Map<String,Object> properties(final CoordinateReferenceSystem... components) {
         final StringBuilder name = new StringBuilder(40);
         Extent domain = null;
         for (int i=0; i<components.length; i++) {
