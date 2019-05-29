@@ -1337,8 +1337,8 @@ public final class CRS extends Static {
      *   <li>Otherwise (i.e. no component match), this method returns {@code null}.</li>
      * </ul>
      *
-     * This method does <strong>not</strong> attempt to build new CRS from the components.
-     * For example it does not attempt to create a 3D geographic CRS from a 2D one + a vertical component.
+     * This method does <strong>not</strong> build new CRS from the components. For example this method does not
+     * create a {@link CompoundCRS} or a three-dimensional CRS if the given range spans more than one component.
      *
      * @param  crs    the coordinate reference system to decompose, or {@code null}.
      * @param  lower  the first dimension to keep, inclusive.
