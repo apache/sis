@@ -57,7 +57,6 @@ import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.provider.PseudoPlateCarree;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
@@ -230,7 +229,7 @@ final class GridMapping {
             } else {
                 Map<String,?> properties = properties(definition, Convention.CONVERSION_NAME, node.getName());
                 final Conversion conversion = opFactory.createDefiningConversion(properties, method, parameters);
-                final CartesianCS cs = ReferencingUtilities.standardProjectedCS(node.decoder.getCSAuthorityFactory());
+                final CartesianCS cs = node.decoder.getStandardProjectedCS();
                 properties = properties(definition, Convention.PROJECTED_CRS_NAME, conversion);
                 final ProjectedCRS p = node.decoder.getCRSFactory().createProjectedCRS(properties, baseCRS, conversion, cs);
                 baseToCRS = p.getConversionFromBase().getMathTransform();

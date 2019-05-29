@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing;
 import java.util.Map;
 import java.util.Date;
 import java.util.Collections;
+import java.util.Locale;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import javax.measure.quantity.Length;
@@ -96,10 +97,25 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     private final ReferencingFactoryContainer factories;
 
     /**
+     * The locale for error messages, or {@code null} for default locale.
+     */
+    private final Locale locale;
+
+    /**
      * Creates a new builder.
      */
     public GeodeticObjectBuilder() {
+        this(null);
+    }
+
+    /**
+     * Creates a new builder using the given locale for message in exceptions.
+     *
+     * @param  locale  the locale for error message in exceptions.
+     */
+    public GeodeticObjectBuilder(final Locale locale) {
         factories = new ReferencingFactoryContainer();
+        this.locale = locale;
     }
 
     /**
@@ -175,7 +191,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      */
     public GeodeticObjectBuilder setConversionMethod(final String name) throws FactoryException {
         if (method != null) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, "OperationMethod"));
+            throw new IllegalStateException(Errors.getResources(locale).getString(Errors.Keys.ElementAlreadyPresent_1, "OperationMethod"));
         }
         method = factories.getCoordinateOperationFactory().getOperationMethod(name);
         parameters = method.getParameters().createValue();
@@ -195,11 +211,26 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     }
 
     /**
+     * Sets the conversion method together with all parameters. This method does not set the conversion name.
+     * If a name different than the default is desired, {@link #setConversionName(String)} should be invoked.
+     *
+     * @param  parameters  the map projection parameter values.
+     * @return {@code this}, for method calls chaining.
+     * @throws FactoryException if the operation method can not be obtained.
+     */
+    public GeodeticObjectBuilder setConversion(final ParameterValueGroup parameters) throws FactoryException {
+        ArgumentChecks.ensureNonNull("parameters", parameters);
+        method = factories.getCoordinateOperationFactory().getOperationMethod(parameters.getDescriptor().getName().getCode());
+        this.parameters = parameters;           // Set only if above line succeed.
+        return this;
+    }
+
+    /**
      * Ensures that {@link #setConversionMethod(String)} has been invoked.
      */
     private void ensureConversionMethodSet() {
         if (parameters == null) {
-            throw new IllegalStateException();  // TODO: provide an error message.
+            throw new IllegalStateException(Resources.forLocale(locale).getString(Resources.Keys.UnspecifiedParameterValues));
         }
     }
 
@@ -368,7 +399,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         if (datum != null) {
             crs = factories.getCRSFactory().createGeographicCRS(name(datum), datum, crs.getCoordinateSystem());
         }
-        return createProjectedCRS(crs, ReferencingUtilities.standardProjectedCS(factories.getCSAuthorityFactory()));
+        return createProjectedCRS(crs, factories.getStandardProjectedCS());
     }
 
     /**

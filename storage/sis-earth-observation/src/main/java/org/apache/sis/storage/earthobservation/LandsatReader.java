@@ -19,7 +19,6 @@ package org.apache.sis.storage.earthobservation;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -40,7 +39,6 @@ import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.ProjectedCRS;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.util.FactoryException;
 
@@ -62,11 +60,11 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.provider.PolarStereographicB;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Strings;
@@ -102,7 +100,7 @@ import static org.apache.sis.internal.util.CollectionsExt.singletonOrNull;
  * @since   0.8
  * @module
  */
-final class LandsatReader {
+final class LandsatReader extends MetadataBuilder {
     /**
      * Names of Landsat bands.
      *
@@ -213,11 +211,6 @@ final class LandsatReader {
     private String filename;
 
     /**
-     * Helper class for building the ISO 19115 metadata instance.
-     */
-    private final MetadataBuilder metadata;
-
-    /**
      * Where to send the warnings.
      */
     private final WarningListeners<DataStore> listeners;
@@ -291,6 +284,11 @@ final class LandsatReader {
     private ParameterValueGroup projection;
 
     /**
+     * The referencing objects factories.
+     */
+    private final ReferencingFactoryContainer factories;
+
+    /**
      * Creates a new metadata parser.
      *
      * @param  filename   an identifier of the file being read, or {@code null} if unknown.
@@ -299,7 +297,7 @@ final class LandsatReader {
     LandsatReader(final String filename, final WarningListeners<DataStore> listeners) {
         this.filename  = filename;
         this.listeners = listeners;
-        this.metadata  = new MetadataBuilder();
+        this.factories = new ReferencingFactoryContainer();
         this.bands     = new DefaultBand[BAND_NAMES.length];
         this.gridSizes = new int[NUM_GROUPS * DIM];
         this.corners   = new double[GEOGRAPHIC + (4*DIM)];      // GEOGRAPHIC is the last group of corners to store.
@@ -317,7 +315,7 @@ final class LandsatReader {
      * @throws DataStoreException if the content is not a Landsat file.
      */
     void read(final BufferedReader reader) throws IOException, DataStoreException {
-        metadata.newCoverage(true);   // Starts the description of a new image.
+        newCoverage(true);              // Starts the description of a new image.
         String line;
         while ((line = reader.readLine()) != null) {
             int end  = CharSequences.skipTrailingWhitespaces(line, 0, line.length());
@@ -386,7 +384,7 @@ final class LandsatReader {
      * @throws  NumberFormatException if the given value can not be parsed.
      */
     private Double parseDouble(final String value) throws NumberFormatException {
-        return metadata.shared(Double.valueOf(value));
+        return shared(Double.valueOf(value));
     }
 
     /**
@@ -445,10 +443,10 @@ final class LandsatReader {
             case "ORIGIN": {
                 final Matcher m = CREDIT.matcher(value);
                 if (m.find()) {
-                    metadata.newParty(MetadataBuilder.PartyType.ORGANISATION);
-                    metadata.addAuthor(value.substring(m.end()));
+                    newParty(MetadataBuilder.PartyType.ORGANISATION);
+                    addAuthor(value.substring(m.end()));
                 }
-                metadata.addCredits(value);
+                addCredits(value);
                 break;
             }
             /*
@@ -457,7 +455,7 @@ final class LandsatReader {
              * Example: "0501403126384_00011"
              */
             case "REQUEST_ID": {
-                metadata.addAcquisitionRequirement(null, value);
+                addAcquisitionRequirement(null, value);
                 break;
             }
             /*
@@ -466,7 +464,7 @@ final class LandsatReader {
              * Example: "LC81230522014071LGN00".
              */
             case "LANDSAT_SCENE_ID": {
-                metadata.addTitleOrIdentifier(value, MetadataBuilder.Scope.ALL);
+                addTitleOrIdentifier(value, MetadataBuilder.Scope.ALL);
                 break;
             }
             /*
@@ -476,8 +474,8 @@ final class LandsatReader {
              * Example: "2014-03-12T06:06:35Z".
              */
             case "FILE_DATE": {
-                metadata.addCitationDate(StandardDateFormat.toDate(OffsetDateTime.parse(value)),
-                                         DateType.CREATION, MetadataBuilder.Scope.ALL);
+                addCitationDate(StandardDateFormat.toDate(OffsetDateTime.parse(value)),
+                                DateType.CREATION, MetadataBuilder.Scope.ALL);
                 break;
             }
             /*
@@ -501,7 +499,7 @@ final class LandsatReader {
              * Value can be "L1T" or "L1GT".
              */
             case "DATA_TYPE": {
-                metadata.setProcessingLevelCode("Landsat", value);
+                setProcessingLevelCode("Landsat", value);
                 break;
             }
             /*
@@ -509,8 +507,7 @@ final class LandsatReader {
              * Value can be "GLS2000", "RAMP" or "GTOPO30".
              */
             case "ELEVATION_SOURCE": {
-                metadata.addSource(value, ScopeCode.MODEL,
-                        Vocabulary.formatInternational(Vocabulary.Keys.DigitalElevationModel));
+                addSource(value, ScopeCode.MODEL, Vocabulary.formatInternational(Vocabulary.Keys.DigitalElevationModel));
                 break;
             }
             /*
@@ -520,12 +517,12 @@ final class LandsatReader {
             case "OUTPUT_FORMAT": {
                 if (Constants.GEOTIFF.equalsIgnoreCase(value)) try {
                     value = Constants.GEOTIFF;              // Because 'metadata.setFormat(…)' is case-sensitive.
-                    metadata.setFormat(value);
+                    setFormat(value);
                     break;
                 } catch (MetadataStoreException e) {
                     warning(key, null, e);
                 }
-                metadata.addFormatName(value);
+                addFormatName(value);
                 break;
             }
             /*
@@ -533,7 +530,7 @@ final class LandsatReader {
              * Example: "LANDSAT_8".
              */
             case "SPACECRAFT_ID": {
-                metadata.addPlatform(null, value);
+                addPlatform(null, value);
                 break;
             }
             /*
@@ -541,7 +538,7 @@ final class LandsatReader {
              * Example: "OLI", "TIRS" or "OLI_TIRS".
              */
             case "SENSOR_ID": {
-                metadata.addInstrument(null, value);
+                addInstrument(null, value);
                 break;
             }
             /*
@@ -617,7 +614,7 @@ final class LandsatReader {
             case "GRID_CELL_SIZE_PANCHROMATIC":
             case "GRID_CELL_SIZE_REFLECTIVE":
             case "GRID_CELL_SIZE_THERMAL": {
-                metadata.addResolution(Double.parseDouble(value));
+                addResolution(Double.parseDouble(value));
                 break;
             }
             /*
@@ -652,7 +649,7 @@ final class LandsatReader {
              */
             case "CLOUD_COVER": {
                 final double v = Double.parseDouble(value);
-                if (v >= 0) metadata.setCloudCoverPercentage(v);
+                if (v >= 0) setCloudCoverPercentage(v);
                 break;
             }
             /*
@@ -662,7 +659,7 @@ final class LandsatReader {
              * A negative value indicates angles to the west or counterclockwise from the north.
              */
             case "SUN_AZIMUTH": {
-                metadata.setIlluminationAzimuthAngle(Double.parseDouble(value));
+                setIlluminationAzimuthAngle(Double.parseDouble(value));
                 break;
             }
             /*
@@ -672,7 +669,7 @@ final class LandsatReader {
              * Note: for reflectance calculation, the sun zenith angle is needed, which is 90 - sun elevation angle.
              */
             case "SUN_ELEVATION": {
-                metadata.setIlluminationElevationAngle(Double.parseDouble(value));
+                setIlluminationElevationAngle(Double.parseDouble(value));
                 break;
             }
 
@@ -738,7 +735,7 @@ final class LandsatReader {
                 if ("UTM".equalsIgnoreCase(value)) {
                     projection = null;
                 } else if ("PS".equalsIgnoreCase(value)) try {
-                    projection = DefaultFactories.forBuildin(MathTransformFactory.class)
+                    projection = factories.getMathTransformFactory()
                                     .getDefaultParameters(Constants.EPSG + ':' + PolarStereographicB.IDENTIFIER);
                     utmZone = -1;
                 } catch (NoSuchIdentifierException e) {
@@ -849,9 +846,9 @@ final class LandsatReader {
         if (st != null) {
             sceneTime = null;                   // Clear now in case an exception it thrown below.
             final Date t = StandardDateFormat.toDate(st);
-            metadata.addAcquisitionTime(t);
+            addAcquisitionTime(t);
             try {
-                metadata.addTemporalExtent(t, t);
+                addTemporalExtent(t, t);
             } catch (UnsupportedOperationException e) {
                 // May happen if the temporal module (which is optional) is not on the classpath.
                 warning(null, null, e);
@@ -896,9 +893,9 @@ final class LandsatReader {
      * @throws FactoryException if an error occurred while creating the Coordinate Reference System.
      */
     final Metadata getMetadata() throws FactoryException {
-        metadata.addLanguage(Locale.ENGLISH, MetadataBuilder.Scope.METADATA);
-        metadata.addResourceScope(ScopeCode.COVERAGE, null);
-        metadata.addTopicCategory(TopicCategory.GEOSCIENTIFIC_INFORMATION);
+        addLanguage(Locale.ENGLISH, MetadataBuilder.Scope.METADATA);
+        addResourceScope(ScopeCode.COVERAGE, null);
+        addTopicCategory(TopicCategory.GEOSCIENTIFIC_INFORMATION);
         try {
             flushSceneTime();
         } catch (DateTimeException e) {
@@ -908,11 +905,11 @@ final class LandsatReader {
         /*
          * Create the Coordinate Reference System. We normally have only one of UTM or Polar Stereographic,
          * but this block is nevertheless capable to take both (such metadata are likely to be invalid, but
-         * we can not guess which of the two CRS is correct).
+         * we can not guess which one of the two CRS is correct).
          */
         if (datum != null) {
             if (utmZone > 0) {
-                metadata.addReferenceSystem(datum.universal(1, TransverseMercator.Zoner.UTM.centralMeridian(utmZone)));
+                addReferenceSystem(datum.universal(1, TransverseMercator.Zoner.UTM.centralMeridian(utmZone)));
             }
             if (projection != null) {
                 final double sp = projection.parameter(Constants.STANDARD_PARALLEL_1).doubleValue();
@@ -924,28 +921,28 @@ final class LandsatReader {
                         || projection.parameter(Constants.FALSE_NORTHING)  .doubleValue() != 0
                         || projection.parameter(Constants.CENTRAL_MERIDIAN).doubleValue() != 0)
                 {
-                    crs = ReferencingUtilities.createProjectedCRS(
-                            Collections.singletonMap(ProjectedCRS.NAME_KEY, "Polar stereographic"),
-                            datum.geographic(), projection, crs.getCoordinateSystem());
+                    crs = new GeodeticObjectBuilder(listeners.getLocale())
+                            .addName("Polar stereographic").setConversion(projection)
+                            .createProjectedCRS(datum.geographic(), crs.getCoordinateSystem());
                 }
-                metadata.addReferenceSystem(crs);
+                addReferenceSystem(crs);
             }
         }
         /*
          * Set information about envelope (or geographic area) and grid size.
          */
         if (toBoundingBox(GEOGRAPHIC)) {
-            metadata.addExtent(corners, GEOGRAPHIC);
+            addExtent(corners, GEOGRAPHIC);
         }
         for (int i = 0; i < gridSizes.length; i += DIM) {
             final int width  = gridSizes[i  ];
             final int height = gridSizes[i+1];
             if ((width | height) != 0) {
-                metadata.newGridRepresentation(MetadataBuilder.GridType.GEORECTIFIED);
-                metadata.setAxisName(0, DimensionNameType.SAMPLE);
-                metadata.setAxisName(1, DimensionNameType.LINE);
-                metadata.setAxisSize(0, Integer.toUnsignedLong(width));
-                metadata.setAxisSize(1, Integer.toUnsignedLong(height));
+                newGridRepresentation(MetadataBuilder.GridType.GEORECTIFIED);
+                setAxisName(0, DimensionNameType.SAMPLE);
+                setAxisName(1, DimensionNameType.LINE);
+                setAxisSize(0, Integer.toUnsignedLong(width));
+                setAxisSize(1, Integer.toUnsignedLong(height));
             }
         }
         /*
@@ -953,8 +950,8 @@ final class LandsatReader {
          * then continue adding some more specific metadata elements by ourself. For example information about
          * bands are splitted in 3 different AttributeGroups based on their grid size.
          */
-        metadata.setISOStandards(true);
-        final DefaultMetadata result = metadata.build(false);
+        setISOStandards(true);
+        final DefaultMetadata result = build(false);
         if (result != null) {
             /*
              * Set information about all non-null bands. The bands are categorized in three groups:
