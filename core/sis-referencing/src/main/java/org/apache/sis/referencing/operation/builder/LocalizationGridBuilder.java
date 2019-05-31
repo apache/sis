@@ -548,16 +548,17 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @param  direction  the direction to walk through: 0 for columns or 1 for rows.
      *                    The recommended direction is the direction of most stable values, typically 1 (rows) for longitudes.
      * @param  period     that wraparound range (typically 360° for longitudes). Must be strictly positive.
+     * @return the range of coordinate values in the specified dimension after correction for wraparound values.
      * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      *
      * @since 1.0
      */
-    public void resolveWraparoundAxis(final int dimension, final int direction, final double period) {
+    public NumberRange<Double> resolveWraparoundAxis(final int dimension, final int direction, final double period) {
         ensureModifiable();
         ArgumentChecks.ensureBetween("dimension", 0, linear.getTargetDimensions() - 1, dimension);
         ArgumentChecks.ensureBetween("direction", 0, linear.getSourceDimensions() - 1, direction);
         ArgumentChecks.ensureStrictlyPositive("period", period);
-        linear.resolveWraparoundAxis(dimension, direction, period);
+        return linear.resolveWraparoundAxis(dimension, direction, period);
     }
 
     /**
