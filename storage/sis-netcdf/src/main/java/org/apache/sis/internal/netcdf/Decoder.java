@@ -377,8 +377,9 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
          * Consequently if such information is present, grid CRS may be inaccurate.
          */
         if (list.isEmpty()) {
+            final List<Exception> warnings = new ArrayList<>();     // For internal usage by Grid.
             for (final Grid grid : getGrids()) {
-                addIfNotPresent(list, grid.getCoordinateReferenceSystem(this));
+                addIfNotPresent(list, grid.getCoordinateReferenceSystem(this, warnings));
             }
         }
         return list;

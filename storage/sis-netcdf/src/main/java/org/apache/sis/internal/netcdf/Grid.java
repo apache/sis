@@ -41,6 +41,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -83,7 +84,7 @@ public abstract class Grid extends NamedElement {
      * The coordinate reference system, created when first needed.
      * May be {@code null} even after we attempted to create it.
      *
-     * @see #getCoordinateReferenceSystem(Decoder)
+     * @see #getCoordinateReferenceSystem(Decoder, List)
      */
     private CoordinateReferenceSystem crs;
 
@@ -270,12 +271,15 @@ public abstract class Grid extends NamedElement {
      * this method because this CRS will be used for adjusting axis order or for completion if grid mapping does not include
      * information for all dimensions.</p>
      *
-     * @param   decoder  the decoder for which CRS are constructed.
+     * @param   decoder   the decoder for which CRS are constructed.
+     * @param   warnings  previous warnings, for avoiding to log the same message twice. Can be null.
      * @return  the CRS for this grid geometry, or {@code null}.
      * @throws  IOException if an I/O operation was necessary but failed.
      * @throws  DataStoreException if the CRS can not be constructed.
      */
-    final CoordinateReferenceSystem getCoordinateReferenceSystem(final Decoder decoder) throws IOException, DataStoreException {
+    final CoordinateReferenceSystem getCoordinateReferenceSystem(final Decoder decoder, final List<Exception> warnings)
+            throws IOException, DataStoreException
+    {
         if (!isCRSDetermined) try {
             isCRSDetermined = true;                             // Set now for avoiding new attempts if creation fail.
             final List<CRSBuilder<?,?>> builders = new ArrayList<>();
@@ -293,9 +297,27 @@ public abstract class Grid extends NamedElement {
                                         Collections.singletonMap(CoordinateSystem.NAME_KEY, getName()), components);
             }
         } catch (FactoryException | NullArgumentException ex) {
-            canNotCreate(decoder, "getCoordinateReferenceSystem", Resources.Keys.CanNotCreateCRS_3, ex);
+            if (isNewWarning(ex, warnings)) {
+                canNotCreate(decoder, "getCoordinateReferenceSystem", Resources.Keys.CanNotCreateCRS_3, ex);
+            }
         }
         return crs;
+    }
+
+    /**
+     * Returns {@code true} if the given exception has not already been logged.
+     * If {@code true}, then this method add the given exception to the warnings list.
+     */
+    private static boolean isNewWarning(final Exception ex, final List<Exception> warnings) {
+        if (warnings != null) {
+            for (final Exception previous : warnings) {
+                if (Exceptions.messageEquals(ex, previous)) {
+                    return false;
+                }
+            }
+            warnings.add(ex);
+        }
+        return true;
     }
 
     /**
@@ -488,7 +510,7 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
              * to be at the centers of the cells, but we do not require that in this standard". We nevertheless check
              * if an axis thinks otherwise.
              */
-            final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(decoder);
+            final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(decoder, null);
             if (CRS.getHorizontalComponent(crs) instanceof GeographicCRS) {
                 for (final Axis axis : axes) {
                     if (axis.isCellCorner()) {

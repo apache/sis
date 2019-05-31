@@ -493,7 +493,9 @@ public final class Axis extends NamedElement {
      * @param  order    0 if creating the first axis, 1 if creating the second axis, <i>etc</i>.
      * @return the ISO axis.
      */
-    final CoordinateSystemAxis toISO(final CSFactory factory, final int order) throws FactoryException {
+    final CoordinateSystemAxis toISO(final CSFactory factory, final int order)
+            throws DataStoreException, FactoryException, IOException
+    {
         /*
          * The axis name is stored without namespace, because the variable name in a netCDF file can be anything;
          * this is not controlled vocabulary. However the standard name, if any, is stored with "NetCDF" namespace
@@ -545,6 +547,15 @@ public final class Axis extends NamedElement {
                 case 'H': case 'h':                                 // Gravity-related and ellipsoidal height.
                 case 'E': case 'N': unit = Units.METRE;  break;     // Projected easting and northing.
                 case 't':           unit = Units.SECOND; break;     // Time.
+                case 'x': case 'y': {
+                    final Vector values = coordinates.read();
+                    final Number increment = values.increment(0);
+                    if (increment != null && increment.doubleValue() == 1) {
+                        // Do not test values.doubleValue(0) since different conventions exit (0-based, 1-based, etc).
+                        unit = Units.PIXEL;
+                    }
+                    break;
+                }
             }
         }
         AxisDirection dir = direction;
