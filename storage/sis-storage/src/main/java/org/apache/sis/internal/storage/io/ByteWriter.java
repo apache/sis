@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage.io;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -54,7 +55,8 @@ public abstract class ByteWriter {
      * @return a writer from given source to target.
      */
     public static ByteWriter create(final Vector source, final byte[] target) {
-        return create(source.buffer().orElseGet(() -> DoubleBuffer.wrap(source.doubleValues())), ByteBuffer.wrap(target));
+        return create(source.buffer().orElseGet(() -> DoubleBuffer.wrap(source.doubleValues())),
+                      ByteBuffer.wrap(target).order(ByteOrder.nativeOrder()));
     }
 
     /**
