@@ -419,6 +419,11 @@ final class VariableWrapper extends Variable {
             final Array array = variable.read();                // May be already cached by the UCAR library.
             values = createDecimalVector(get1DJavaArray(array), variable.isUnsigned());
             values = SHARED_VECTORS.unique(values);
+            /*
+             * Do not invoke Vector.compress(…). Compressing vectors is useful only if the original array
+             * is discarded. But the UCAR library has its own cache mechanism which may keep references to
+             * the original arrays. Consequently compressing vectors may result in data being duplicated.
+             */
         }
         return values;
     }

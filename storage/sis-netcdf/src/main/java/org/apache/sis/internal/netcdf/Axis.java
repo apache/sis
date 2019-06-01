@@ -18,8 +18,10 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Arrays;
 import java.io.IOException;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
@@ -31,6 +33,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.util.Numerics;
@@ -41,6 +44,7 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.Longitude;
@@ -691,53 +695,102 @@ public final class Axis extends NamedElement {
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      */
-    final LocalizationGridBuilder createLocalizationGrid(final Axis other) throws IOException, DataStoreException {
-        if (getDimension() == 2 && other.getDimension() == 2) {
-            final int xd =  this.sourceDimensions[0];
-            final int yd =  this.sourceDimensions[1];
-            final int xo = other.sourceDimensions[0];
-            final int yo = other.sourceDimensions[1];
-            if ((xo == xd && yo == yd) || (xo == yd && yo == xd)) {
-                /*
-                 * Found two axes for the same set of dimensions, which implies that they have the same
-                 * shape (width and height) unless the two axes ignored a different amount of NaN values.
-                 * Negative width and height means that their actual values overflow the 'int' capacity,
-                 * which we can not process here.
-                 */
-                final int ri = (xd <= yd) ? 0 : 1;      // Take in account that mainDimensionFirst(…) may have reordered values.
-                final int ro = (xo <= yo) ? 0 : 1;
-                final int width  = getSize(ri ^ 1);     // Fastest varying is right-most dimension (when in netCDF order).
-                final int height = getSize(ri    );     // Slowest varying is left-most dimension (when in netCDF order).
-                if (other.sourceSizes[ro ^ 1] == width &&
-                    other.sourceSizes[ro    ] == height)
-                {
-                    final LocalizationGridBuilder grid = new LocalizationGridBuilder(width, height);
-                    final Vector vx =  this.read();
-                    final Vector vy = other.read();
-                    grid.setControlPoints(vx, vy);
-                    /*
-                     * At this point we finished to set values in the localization grid, but did not computed the transform yet.
-                     * Before to use the grid for calculation, we need to repair discontinuities sometime found with longitudes.
-                     * If the grid crosses the anti-meridian, some values may suddenly jump from +180° to -180° or conversely.
-                     * Even when not crossing the anti-meridian, we still observe apparently random 360° jumps in some files,
-                     * especially close to poles. The methods invoked below try to make the longitude grid more continuous.
-                     * The "ri" or "ro" argument specifies which dimension varies slowest, i.e. which dimension have values
-                     * that do not change much when increasing longitudes. This is usually 1 (the rows).
-                     */
-                    double period;
-                    if (!Double.isNaN(period = wraparoundRange())) {
-                        grid.resolveWraparoundAxis(0, ri, period);
-                    }
-                    if (!Double.isNaN(period = other.wraparoundRange())) {
-                        grid.resolveWraparoundAxis(1, ro, period);
-                    }
-                    return grid;
-                } else {
-                    warning(null, Errors.Keys.MismatchedGridGeometry_2, getName(), other.getName());
-                }
-            }
+    final MathTransform createLocalizationGrid(final Axis other) throws IOException, FactoryException, DataStoreException {
+        if (getDimension() != 2 || other.getDimension() != 2) {
+            return null;
         }
-        return null;
+        final int xd =  this.sourceDimensions[0];
+        final int yd =  this.sourceDimensions[1];
+        final int xo = other.sourceDimensions[0];
+        final int yo = other.sourceDimensions[1];
+        if ((xo != xd | yo != yd) & (xo != yd | yo != xd)) {
+            return null;
+        }
+        /*
+         * Found two axes for the same set of dimensions, which implies that they have the same
+         * shape (width and height) unless the two axes ignored a different amount of NaN values.
+         * Negative width and height means that their actual values overflow the 'int' capacity,
+         * which we can not process here.
+         */
+        final int ri = (xd <= yd) ? 0 : 1;          // Take in account that mainDimensionFirst(…) may have reordered values.
+        final int ro = (xo <= yo) ? 0 : 1;
+        final int width  = getSize(ri ^ 1);         // Fastest varying is right-most dimension (when in netCDF order).
+        final int height = getSize(ri    );         // Slowest varying is left-most dimension (when in netCDF order).
+        if (other.sourceSizes[ro ^ 1] != width ||
+            other.sourceSizes[ro    ] != height)
+        {
+            warning(null, Errors.Keys.MismatchedGridGeometry_2, getName(), other.getName());
+            return null;
+        }
+        /*
+         * First, verify if the localization grid has already been created previously. It happens if the netCDF file
+         * contains data with different number of dimensions. For example a file may have a variable with (longitude,
+         * latitude) and another variable with (longitude, latitude, depth) dimensions, with both variables using the
+         * same localization grid for the (longitude, latitude) part.
+         */
+        final Decoder decoder = coordinates.decoder;
+        final GridCacheKey keyLocal = new GridCacheKey(width, height, this, other);
+        MathTransform tr = keyLocal.cached(decoder);
+        if (tr != null) {
+            return tr;
+        }
+        /*
+         * If there is no localization grid in the cache locale to the netCDF decoder, try again in the global cache.
+         * This check is more expensive since it computes MD5 sum of all coordinate values.
+         */
+        final long time = System.nanoTime();
+        final Vector vx =  this.read();
+        final Vector vy = other.read();
+        final Set<Linearizer> linearizers = decoder.convention().linearizers(decoder);
+        final GridCacheKey.Global keyGlobal = new GridCacheKey.Global(keyLocal, vx, vy, linearizers);
+        final Cache.Handler<MathTransform> handler = keyGlobal.lock();
+        try {
+            tr = handler.peek();
+            if (tr == null) {
+                final LocalizationGridBuilder grid = new LocalizationGridBuilder(width, height);
+                grid.setControlPoints(vx, vy);
+                /*
+                 * At this point we finished to set values in the localization grid, but did not computed the transform yet.
+                 * Before to use the grid for calculation, we need to repair discontinuities sometime found with longitudes.
+                 * If the grid crosses the anti-meridian, some values may suddenly jump from +180° to -180° or conversely.
+                 * Even when not crossing the anti-meridian, we still observe apparently random 360° jumps in some files,
+                 * especially close to poles. The methods invoked below try to make the longitude grid more continuous.
+                 * The "ri" or "ro" argument specifies which dimension varies slowest, i.e. which dimension have values
+                 * that do not change much when increasing longitudes. This is usually 1 (the rows).
+                 */
+                double period;
+                if (!Double.isNaN(period = wraparoundRange())) {
+                    grid.resolveWraparoundAxis(0, ri, period);
+                }
+                if (!Double.isNaN(period = other.wraparoundRange())) {
+                    grid.resolveWraparoundAxis(1, ro, period);
+                }
+                /*
+                 * Forward coordinate conversions are straightforward interpolations in the localization grid.
+                 * But inverse conversions are more difficult to perform as they require iterations. They will
+                 * converge better if the grid is close to linear.
+                 */
+                final MathTransformFactory factory = decoder.getMathTransformFactory();
+                if (!linearizers.isEmpty()) {
+                    Linearizer.applyTo(linearizers, factory, grid, this, other);
+                }
+                /*
+                 * There is usually a one-to-one relationship between localization grid cells and image pixels.
+                 * Consequently an accuracy set to a fraction of cell should be enough.
+                 *
+                 * TODO: take in account the case where Variable.Adjustment.dataToGridIndices() returns a value
+                 * smaller than 1. For now we set the desired precision to a value 10 times smaller in order to
+                 * take in account the case where dataToGridIndices() returns 0.1.
+                 */
+                grid.setDesiredPrecision(0.001);
+                tr = grid.create(factory);
+                tr = keyLocal.cache(decoder, tr);
+            }
+        } finally {
+            handler.putAndUnlock(tr);
+        }
+        decoder.performance(Grid.class, "getGridGeometry", Resources.Keys.ComputeLocalizationGrid_2, time);
+        return tr;
     }
 
     /**
@@ -773,5 +826,33 @@ public final class Axis extends NamedElement {
         } else {
             throw new DataStoreException(coordinates.resources().getString(Resources.Keys.CanNotUseAxis_1, getName()));
         }
+    }
+
+    /**
+     * Compares this axis with the given object for equality.
+     *
+     * @param  other  the other object to compare with this axis.
+     * @return whether the other object describes the same axis than this object.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other instanceof Axis) {
+            final Axis that = (Axis) other;
+            return that.abbreviation == abbreviation && that.direction == direction
+                    && Arrays.equals(that.sourceDimensions, sourceDimensions)
+                    && Arrays.equals(that.sourceSizes, sourceSizes)
+                    && coordinates.equals(that.coordinates);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this axis. This method uses only properties that are quick to compute.
+     *
+     * @return a hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return abbreviation + Arrays.hashCode(sourceDimensions) + Arrays.hashCode(sourceSizes);
     }
 }

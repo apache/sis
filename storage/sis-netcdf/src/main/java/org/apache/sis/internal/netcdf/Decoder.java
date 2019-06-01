@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.LogRecord;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -31,14 +33,18 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 
 
@@ -115,6 +121,19 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     final Map<Object,GridMapping> gridMapping;
 
     /**
+     * Cache of localization grids created for a given pair of (<var>x</var>,<var>y</var>) axes. Localization grids
+     * are expensive to compute and consume a significant amount of memory.  The {@link Grid} instances returned by
+     * {@link #getGrids()} allow to share localization grids only between variables using the exact same list of dimensions.
+     * This {@code localizationGrids} cache allows to cover other cases.
+     * For example a netCDF file may have a variable with (<var>longitude</var>, <var>latitude</var>) dimensions
+     * and another variable with (<var>longitude</var>, <var>latitude</var>, <var>depth</var>) dimensions,
+     * with both variables using the same localization grid for the (<var>longitude</var>, <var>latitude</var>) part.
+     *
+     * @see GridCacheKey#cached(Decoder)
+     */
+    final Map<GridCacheKey,MathTransform> localizationGrids;
+
+    /**
      * Where to send the warnings.
      */
     public final WarningListeners<DataStore> listeners;
@@ -133,11 +152,12 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      */
     protected Decoder(final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners) {
         Objects.requireNonNull(listeners);
-        this.geomlib     = geomlib;
-        this.listeners   = listeners;
-        this.nameFactory = DefaultFactories.forBuildin(NameFactory.class);
-        this.datumCache  = new Datum[CRSBuilder.DATUM_CACHE_SIZE];
-        this.gridMapping = new HashMap<>();
+        this.geomlib      = geomlib;
+        this.listeners    = listeners;
+        this.nameFactory  = DefaultFactories.forBuildin(NameFactory.class);
+        this.datumCache   = new Datum[CRSBuilder.DATUM_CACHE_SIZE];
+        this.gridMapping  = new HashMap<>();
+        localizationGrids = new HashMap<>();
     }
 
     /**
@@ -409,4 +429,22 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @return the variable or group of the given name, or {@code null} if none.
      */
     protected abstract Node findNode(String name);
+
+    /**
+     * Logs a message about a potentially slow operation. This method does use the listeners registered to the netCDF reader
+     * because this is not a warning.
+     *
+     * @param  caller       the class to report as the source.
+     * @param  method       the method to report as the source.
+     * @param  resourceKey  a {@link Resources} key expecting filename as first argument and elapsed time as second argument.
+     * @param  time         value of {@link System#nanoTime()} when the operation started.
+     */
+    final void performance(final Class<?> caller, final String method, final short resourceKey, long time) {
+        time = System.nanoTime() - time;
+        final LogRecord record = Resources.forLocale(listeners.getLocale()).getLogRecord(
+                PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS), resourceKey,
+                getFilename(), time / (double) StandardDateFormat.NANOS_PER_SECOND);
+        record.setLoggerName(Modules.NETCDF);
+        Logging.log(caller, method, record);
+    }
 }

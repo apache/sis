@@ -555,10 +555,10 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     final void setValues(final Object array) {
         Vector data = createDecimalVector(array, dataType.isUnsigned);
         /*
-         * This method is usually invoked with vector of increasing or decreasing values.  Set a tolerance threshold to the
-         * precision of gratest (in magnitude) number, provided that this precision is not larger than increment. If values
+         * This method is usually invoked with vector of increasing or decreasing values. Set a tolerance threshold to the
+         * precision of greatest (in magnitude) number, provided that this precision is not larger than increment. If values
          * are not sorted in increasing or decreasing order, the tolerance computed below will be smaller than it could be.
-         * This is okay it will cause more conservative compression (i.e. it does not increase the risk of data loss).
+         * This is okay since it will cause more conservative compression (i.e. it does not increase the risk of data loss).
          */
         double tolerance = 0;
         if (Numbers.isFloat(data.getElementType())) {

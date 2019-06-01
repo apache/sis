@@ -108,6 +108,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotUseUCAR = 4;
 
         /**
+         * Computed localization grid for “{0}” in {1} seconds.
+         */
+        public static final short ComputeLocalizationGrid_2 = 22;
+
+        /**
          * Dimension “{2}” declared by attribute “{1}” is not found in the “{0}” file.
          */
         public static final short DimensionNotFound_3 = 1;
