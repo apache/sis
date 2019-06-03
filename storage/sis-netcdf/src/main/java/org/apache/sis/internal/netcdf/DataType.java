@@ -94,7 +94,7 @@ public enum DataType {
     USHORT(Numbers.SHORT, true, true, (byte) 3, DataBuffer.TYPE_USHORT),
 
     /**
-     * 43 bits unsigned integer (netCDF type 9).
+     * 32 bits unsigned integer (netCDF type 9).
      * Not available in netCDF classic format.
      */
     UINT(Numbers.INTEGER, true, true, (byte) 4, DataBuffer.TYPE_INT),

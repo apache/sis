@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing;
 
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CSAuthorityFactory;
 import org.opengis.referencing.crs.CRSFactory;
@@ -36,6 +37,8 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 
 /**
  * A container of factories frequently used together.
+ * Provides also some utility methods working with factories.
+ *
  * This class may be temporary until we choose a dependency injection framework
  * See <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>.
  *
@@ -211,5 +214,16 @@ public class ReferencingFactoryContainer {
             mtFactory = DefaultFactories.forBuildin(MathTransformFactory.class);
         }
         return mtFactory;
+    }
+
+    /**
+     * Returns the a coordinate system for map projections with (easting, northing) axes in metres.
+     * EPSG::4400 — Cartesian 2D CS. Axes: easting, northing (E,N). Orientations: east, north. UoM: m.
+     *
+     * @return a coordinate system with (easting, northing) axes in metres.
+     * @throws FactoryException if an error occurred while creating the coordinate system.
+     */
+    public final CartesianCS getStandardProjectedCS() throws FactoryException {
+        return getCSAuthorityFactory().createCartesianCS("4400");
     }
 }

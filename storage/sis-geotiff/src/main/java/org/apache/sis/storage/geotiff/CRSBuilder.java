@@ -1373,7 +1373,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 final Unit<Angle>   angularUnit = createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
                 final GeographicCRS baseCRS     = createGeographicCRS(false, angularUnit);
                 final Conversion    projection  = createConversion(name, angularUnit, linearUnit);
-                CartesianCS cs = ReferencingUtilities.standardProjectedCS(getCSAuthorityFactory());
+                CartesianCS cs = getStandardProjectedCS();
                 if (!Units.METRE.equals(linearUnit)) {
                     cs = replaceLinearUnit(cs, linearUnit);
                 }

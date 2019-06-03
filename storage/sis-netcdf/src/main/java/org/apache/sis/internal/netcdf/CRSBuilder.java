@@ -45,7 +45,6 @@ import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.internal.referencing.provider.Equirectangular;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.storage.DataStoreContentException;
@@ -676,7 +675,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
             sphericalDatum = decoder.convention().defaultHorizontalCRS(true);
             datum = sphericalDatum.datum();
             if (isPredefinedCS(Units.METRE)) {
-                coordinateSystem = ReferencingUtilities.standardProjectedCS(decoder.getCSAuthorityFactory());
+                coordinateSystem = decoder.getStandardProjectedCS();
             }
         }
 

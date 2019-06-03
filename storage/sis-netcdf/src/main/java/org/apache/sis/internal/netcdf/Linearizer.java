@@ -119,7 +119,7 @@ public enum Linearizer {
      * @param  axes         coordinate system axes in CRS order.
      */
     static void applyTo(final Set<Linearizer> linearizers, final MathTransformFactory factory,
-                        final LocalizationGridBuilder grid, final Axis[] axes)
+                        final LocalizationGridBuilder grid, final Axis... axes)
     {
         int xdim = -1, ydim = -1;
         for (int i=axes.length; --i >= 0;) {

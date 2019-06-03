@@ -22,9 +22,6 @@ import org.apache.sis.internal.netcdf.VariableTest;
 import org.apache.sis.internal.netcdf.TestData;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 
 /**
@@ -56,15 +53,5 @@ public final strictfp class VariableInfoTest extends VariableTest {
     @Override
     protected Decoder createDecoder(final TestData file) throws IOException, DataStoreException {
         return ChannelDecoderTest.createChannelDecoder(file);
-    }
-
-    /**
-     * Tests the {@link VariableInfo#numberValues(Object)} and {@link VariableInfo#stringValues(Object)} methods.
-     */
-    @Test
-    public void testNumberValues() {
-        final float[] a = new float[] {10, 20, 1};
-        assertArrayEquals("numberValues", new Number[] { 10f,    20f,    1f  }, VariableInfo.numberValues(a));
-        assertArrayEquals("stringValues", new String[] {"10.0", "20.0", "1.0"}, VariableInfo.stringValues(a));
     }
 }

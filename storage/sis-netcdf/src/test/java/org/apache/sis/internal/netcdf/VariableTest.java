@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf;
 
 import java.util.List;
+import java.util.Arrays;
 import java.io.IOException;
 import java.time.Instant;
 import org.apache.sis.math.Vector;
@@ -226,7 +227,7 @@ public strictfp class VariableTest extends TestCase {
     }
 
     /**
-     * Tests {@link Variable#getAttributeValues(String, boolean)}.
+     * Tests {@link Variable#getAttributeValue(String)} and related methods.
      *
      * @throws IOException if an I/O error occurred while opening the file.
      * @throws DataStoreException if a logical error occurred.
@@ -236,15 +237,47 @@ public strictfp class VariableTest extends TestCase {
         final Variable[] variables = getVariablesCIP(selectDataset(TestData.NETCDF_4D_PROJECTED));
         Variable variable = variables[6];
         assertEquals("CIP", variable.getName());
-        assertArrayEquals("CIP:_FillValue", new Number[] { -1f  }, variable.getAttributeValues("_FillValue", true));
-        assertArrayEquals("CIP:_FillValue", new String[] {"-1.0"}, variable.getAttributeValues("_FillValue", false));
-        assertArrayEquals("CIP:units",      new String[] {   "%"}, variable.getAttributeValues("units",      false));
-        assertArrayEquals("CIP:units",      new Number[] {      }, variable.getAttributeValues("units",      true));
+        assertSingletonEquals(variable, "_FillValue", -1f);
+        assertSingletonEquals(variable, "units",      "%");
 
         variable = variables[0];
         assertEquals("grid_mapping_0", variable.getName());
-        assertArrayEquals("standard_parallel", new Number[] { 25.f,   25.05f}, variable.getAttributeValues("standard_parallel", true));
-        assertArrayEquals("standard_parallel", new String[] {"25.0", "25.05"}, variable.getAttributeValues("standard_parallel", false));
+        assertVectorEquals(variable, "standard_parallel", 25.f, 25.05f);
+    }
+
+    /**
+     * Asserts that the attribute of given name contains a value equals to the expected value.
+     * This method is used for attributes that are expected to contain singleton.
+     */
+    private static void assertSingletonEquals(final Node variable, final String name, final Object expected) {
+        final String t = expected.toString();
+        assertEquals     ("getAttributeValue",     expected,         variable.getAttributeValue    (name));
+        assertEquals     ("getAttributeAsString",  t,                variable.getAttributeAsString (name));
+        assertArrayEquals("getAttributeAsStrings", new String[] {t}, variable.getAttributeAsStrings(name, ' '));
+        if (expected instanceof Number) {
+            final double en = ((Number) expected).doubleValue();
+            assertEquals("getAttributeAsNumber", en, variable.getAttributeAsNumber(name), STRICT);
+            final Vector vector = variable.getAttributeAsVector(name);
+            assertNotNull("getAttributeAsVector", vector);
+            assertEquals(1, vector.size());
+            assertEquals(en, vector.get(0).doubleValue(), STRICT);
+        } else {
+            assertNull("getAttributeAsVector", variable.getAttributeAsVector(name));
+        }
+    }
+
+    /**
+     * Asserts that the attribute of given name contains a value equals to the expected value.
+     * This method is used for attributes that are expected to contain vector.
+     */
+    private static void assertVectorEquals(final Node variable, final String name, final Number... expected) {
+        final Vector values = variable.getAttributeAsVector(name);
+        assertNotNull(name, values);
+        assertEquals ("size", expected.length, values.size());
+        assertTrue   ("getAttributeAsNumber", Double.isNaN(variable.getAttributeAsNumber(name)));
+        assertEquals ("getAttributeValue", values, variable.getAttributeValue(name));
+        final Object[] texts = Arrays.stream(expected).map(Object::toString).toArray();
+        assertArrayEquals("getAttributeAsStrings", texts, variable.getAttributeAsStrings(name, ' '));
     }
 
     /**

@@ -311,6 +311,9 @@ final class VariableWrapper extends Variable {
      */
     static Class<?> getAttributeType(final Attribute attribute) {
         if (attribute != null) {
+            if (attribute.isArray()) {
+                return Vector.class;
+            }
             switch (attribute.getDataType()) {
                 case BYTE:   return Byte.class;
                 case SHORT:  return Short.class;
@@ -326,42 +329,53 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the sequence of values for the given attribute, or an empty array if none.
-     * The elements will be of class {@link String} if {@code numeric} is {@code false},
-     * or {@link Number} if {@code numeric} is {@code true}.
+     * Returns the single value or vector of values for the given attribute, or {@code null} if none.
+     * The returned value can be an instance of {@link String}, {@link Number}, {@link Vector} or {@code String[]}.
+     *
+     * @param  attributeName  the name of the attribute for which to get the values.
+     * @return value(s) for the named attribute, or {@code null} if none.
      */
     @Override
-    public Object[] getAttributeValues(final String attributeName, final boolean numeric) {
-        return getAttributeValues(raw.findAttributeIgnoreCase(attributeName), numeric);
+    protected Object getAttributeValue(final String attributeName) {
+        return getAttributeValue(raw.findAttributeIgnoreCase(attributeName));
     }
 
     /**
-     * Implementation of {@link #getAttributeValues(String, boolean)} shared with {@link GroupWrapper}.
+     * Implementation of {@link #getAttributeValue(String)} shared with {@link GroupWrapper}.
      */
-    static Object[] getAttributeValues(final Attribute attribute, final boolean numeric) {
+    static Object getAttributeValue(final Attribute attribute) {
         if (attribute != null) {
-            boolean hasValues = false;
-            final Object[] values = new Object[attribute.getLength()];
-            for (int i=0; i<values.length; i++) {
-                if (numeric) {
-                    values[i] = Utils.fixSign(attribute.getNumericValue(i), attribute.isUnsigned());
-                    hasValues |= (values[i] != null);
-                } else {
-                    Object value = attribute.getValue(i);
-                    if (value != null) {
-                        String text = Utils.nonEmpty(value.toString());
-                        if (text != null) {
-                            values[i] = text;
-                            hasValues = true;
+            final int length = attribute.getLength();
+            switch (length) {
+                case 0: break;
+                case 1: {
+                    final Object value = attribute.getValue(0);
+                    if (value instanceof String) {
+                        return Utils.nonEmpty((String) value);
+                    } else if (value instanceof Number) {
+                        return Utils.fixSign((Number) value, attribute.isUnsigned());
+                    }
+                    break;
+                }
+                default: {
+                    if (attribute.isString()) {
+                        boolean hasValues = false;
+                        final String[] values = new String[length];
+                        for (int i=0; i<length; i++) {
+                            values[i] = Utils.nonEmpty(attribute.getStringValue(i));
+                            hasValues |= (values[i] != null);
                         }
+                        if (hasValues) {
+                            return values;
+                        }
+                    } else {
+                        final Array array = attribute.getValues();
+                        return createDecimalVector(array.get1DJavaArray(array.getElementType()), attribute.isUnsigned());
                     }
                 }
             }
-            if (hasValues) {
-                return values;
-            }
         }
-        return new Object[0];
+        return null;
     }
 
     /**
@@ -405,6 +419,11 @@ final class VariableWrapper extends Variable {
             final Array array = variable.read();                // May be already cached by the UCAR library.
             values = createDecimalVector(get1DJavaArray(array), variable.isUnsigned());
             values = SHARED_VECTORS.unique(values);
+            /*
+             * Do not invoke Vector.compress(…). Compressing vectors is useful only if the original array
+             * is discarded. But the UCAR library has its own cache mechanism which may keep references to
+             * the original arrays. Consequently compressing vectors may result in data being duplicated.
+             */
         }
         return values;
     }

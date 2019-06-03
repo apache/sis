@@ -33,7 +33,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.geometry.coordinate.Position;
 import org.opengis.geometry.DirectPosition;
 
-import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
@@ -48,6 +47,7 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.io.TableAppender;
 
 import static java.lang.Math.*;
 
@@ -494,6 +494,21 @@ public class GeodeticCalculator {
     }
 
     /**
+     * Computes (∂y/∂φ)⁻¹ where (∂y/∂φ) is the partial derivative of Northing values in a Mercator projection
+     * at the given latitude on an ellipsoid with semi-major axis length of 1. There is no method for partial
+     * derivative of Easting values since it is 1 everywhere. This derivative is cos(φ) on a sphere and close
+     * but slightly different on an ellipsoid.
+     *
+     * @param  φ  the latitude in radians.
+     * @return the northing derivative of a Mercator projection at the given latitude on an ellipsoid with a=1.
+     *
+     * @see org.apache.sis.referencing.operation.projection.ConformalProjection#dy_dφ
+     */
+    private double dφ_dy(final double φ) {
+        return cos(φ);
+    }
+
+    /**
      * Computes the length of rhumb line from start point to end point.
      *
      * @see <a href="https://en.wikipedia.org/wiki/Rhumb_line">Rhumb line on Wikipedia</a>
@@ -780,20 +795,28 @@ public class GeodeticCalculator {
             if ((λ2 - λ1) * dλ1 < 0) {            // Reminder: Δλ or dλ₁ may be zero.
                 λ2 += 2*PI * signum(dλ1);         // We need λ₁ < λ₂ if heading east, or λ₁ > λ₂ if heading west.
             }
-            final Matrix d = geographic(φ2, λ2).inverseTransform(point);    // Coordinates and Jacobian of point.
+            final Matrix d = geographic(φ2, λ2).inverseTransform(point);    // `point` coordinates in user-specified CRS.
+            final double dφ_dy = dφ_dy(φ2);                                 // ∂φ/∂y = cos(φ) for Mercator on a sphere of radius 1.
             final double m00 = d.getElement(0,0);
             final double m01 = d.getElement(0,1);
             final double m10 = d.getElement(1,0);
             final double m11 = d.getElement(1,1);
-            εy = tolerance / cos(abs(φ2));                                  // Tolerance for λ (second coordinate).
-            εx = m00*tolerance + m01*εy;                                    // Tolerance for x in user CRS.
-            εy = m10*tolerance + m11*εy;                                    // Tolerance for y in user CRS.
+            double t = tolerance / dφ_dy;                                   // Tolerance for λ (second coordinate).
+            εx = m00*tolerance + m01*t;                                     // Tolerance for x in user CRS.
+            εy = m10*tolerance + m11*t;                                     // Tolerance for y in user CRS.
             /*
-             * Returns the tangent of the ending azimuth converted to the user CRS space.
-             * d is the Jacobian matrix from (φ,λ) to the user coordinate reference system.
+             * Return the tangent of the ending azimuth converted to the user CRS space. Note that if we draw the shape on
+             * screen with (longitude, latitude) axes, the angles seen on screen are not the real angles measured on Earth.
+             * In order to see the "real" angles, we need to draw the shape on a conformal projection such as Mercator.
+             * Said otherwise, the angle value computed from the (dx,dy) vector is "real" only in a conformal projection.
+             * Consequently if the output CRS is a Mercator projection, then the angle computed from the (dx,dy) vector
+             * at the end of this method should be the ending azimuth angle unchanged. We achieve this equivalence by
+             * multiplying dφ by a factor which will cancel the ∂y/∂φ factor of Mercator projection at that latitude.
+             * Note that there is no need to modify dλ since ∂x/∂λ = 1 everywhere on Mercator projection with a=1.
              */
-            dx = m00*dφ2 + m01*dλ2;                                         // Reminder: coordinates in (φ,λ) order.
-            dy = m10*dφ2 + m11*dλ2;
+            t  = dφ2 * dφ_dy;
+            dx = m00*t + m01*dλ2;                                           // Reminder: coordinates in (φ,λ) order.
+            dy = m10*t + m11*dλ2;
         }
 
         /**
@@ -818,12 +841,13 @@ public class GeodeticCalculator {
         private final double dφi, dλi;
 
         /**
-         * Creates a builder for the given tolerance at equator in degrees.
+         * Creates a builder for the given tolerance in degrees at equator.
          */
         CircularPath(final double εx) {
             super(εx);
             dφi = dφ1;
             dλi = dλ1;
+            forceCubic = true;
         }
 
         /**
@@ -836,7 +860,7 @@ public class GeodeticCalculator {
          */
         @Override
         protected void evaluateAt(final double t) throws TransformException {
-            final double α1 = t * (2*PI) + PI/4;        // Add 45° for hiding little corners in multiple of 90°.
+            final double α1 = t * (2*PI);
             dλ1 = sin(α1);
             dφ1 = cos(α1);
             validity |= STARTING_AZIMUTH;

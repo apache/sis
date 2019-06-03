@@ -45,8 +45,8 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jdk9.JDK9;
@@ -500,24 +500,22 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * @return {@code true} if flag attributes have been found, or {@code false} otherwise.
      */
     private static boolean createEnumeration(final SampleDimension.Builder builder, final Variable band, final int index) {
-        Object[] names = band.getAttributeValues(AttributeNames.FLAG_NAMES, false);
-        if (names.length == 0) {
-            names = band.getAttributeValues(AttributeNames.FLAG_MEANINGS, false);
-            if (names.length == 0) return false;
+        CharSequence[] names = band.getAttributeAsStrings(AttributeNames.FLAG_NAMES, ' ');
+        if (names == null) {
+            names = band.getAttributeAsStrings(AttributeNames.FLAG_MEANINGS, ' ');
+            if (names == null) return false;
         }
-        Object[] values = band.getAttributeValues(AttributeNames.FLAG_VALUES, true);
-        if (values.length == 0) {
-            values = band.getAttributeValues(AttributeNames.FLAG_MASKS, true);
-            if (values.length == 0) return false;
+        Vector values = band.getAttributeAsVector(AttributeNames.FLAG_VALUES);
+        if (values == null) {
+            values = band.getAttributeAsVector(AttributeNames.FLAG_MASKS);
+            if (values == null) return false;
         }
-        if (names.length == 1) {
-            names = CharSequences.split((CharSequence) names[0], ' ');
-        }
-        for (int i=0; i<values.length; i++) {
-            final Number value = (Number) values[i];
+        final int length = values.size();
+        for (int i=0; i<length; i++) {
+            final Number value = values.get(i);
             final CharSequence name;
             if (i < names.length) {
-                name = (CharSequence) names[i];
+                name = names[i];
             } else {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.Unnamed);
             }

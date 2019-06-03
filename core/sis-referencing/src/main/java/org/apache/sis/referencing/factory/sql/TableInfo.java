@@ -169,7 +169,7 @@ final class TableInfo {
     /**
      * The table name for SQL queries. May contains a {@code "JOIN"} clause.
      *
-     * @see #tableName()
+     * @see #unquoted()
      */
     final String table;
 
@@ -231,7 +231,7 @@ final class TableInfo {
     /**
      * Returns the table name without brackets.
      */
-    final String tableName() {
+    final String unquoted() {
         return table.substring(1, table.length() - 1);
     }
 

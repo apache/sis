@@ -19,6 +19,7 @@ package org.apache.sis.util;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Objects;
 import java.sql.SQLException;
 import java.io.UncheckedIOException;
 import java.nio.file.DirectoryIteratorException;
@@ -32,7 +33,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * Static methods working with {@link Exception} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -128,6 +129,28 @@ public final class Exceptions extends Static {
         }
         ne.setStackTrace(exception.getStackTrace());
         return (T) ne;
+    }
+
+    /**
+     * Returns {@code true} if the given exceptions are of the same class and contains the same message.
+     * This method does not compare the {@linkplain Throwable#getStackTrace() stack trace},
+     * {@linkplain Throwable#getCause() cause} or {@linkplain Throwable#getSuppressed() suppressed exceptions}.
+     *
+     * @param  first   the first exception, or {@code null}.
+     * @param  second  the second exception, or {@code null}.
+     * @return {@code true} if both exceptions are {@code null}, or both exceptions are non-null,
+     *         of the same class and with the same {@linkplain Throwable#getMessage() message}.
+     *
+     * @since 1.0
+     */
+    public static boolean messageEquals(final Throwable first, final Throwable second) {
+        if (first == second) {
+            return true;
+        }
+        if (first == null || second == null) {
+            return false;
+        }
+        return first.getClass() == second.getClass() && Objects.equals(first.getMessage(), second.getMessage());
     }
 
     /**
