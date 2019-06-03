@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing;
 import java.util.Map;
 import java.util.Date;
 import java.util.Collections;
+import java.util.Locale;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import javax.measure.quantity.Length;
@@ -31,6 +32,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
+import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CartesianCS;
@@ -43,6 +45,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
@@ -51,6 +54,7 @@ import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.referencing.Builder;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 
 
 /**
@@ -64,7 +68,7 @@ import org.apache.sis.referencing.CommonCRS;
  * @since   0.6
  * @module
  */
-public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
+public final class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     /**
      * The geodetic datum, or {@code null} if none.
      */
@@ -96,10 +100,43 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     private final ReferencingFactoryContainer factories;
 
     /**
+     * The locale for error messages, or {@code null} for default locale.
+     */
+    private final Locale locale;
+
+    /**
      * Creates a new builder.
      */
     public GeodeticObjectBuilder() {
+        this(null);
+    }
+
+    /**
+     * Creates a new builder using the given locale for message in exceptions.
+     *
+     * @param  locale  the locale for error message in exceptions.
+     */
+    public GeodeticObjectBuilder(final Locale locale) {
         factories = new ReferencingFactoryContainer();
+        this.locale = locale;
+    }
+
+    /**
+     * Creates a new builder using the given factories and locale.
+     *
+     * @param  factories  the factories to use for geodetic objects creation.
+     * @param  locale     the locale for error message in exceptions.
+     */
+    public GeodeticObjectBuilder(final ReferencingFactoryContainer factories, final Locale locale) {
+        this.factories = factories;
+        this.locale = locale;
+    }
+
+    /**
+     * Creates a map of properties containing only the name of the given object.
+     */
+    private static Map<String,Object> name(final IdentifiedObject template) {
+        return Collections.singletonMap(IdentifiedObject.NAME_KEY, template.getName());
     }
 
     /**
@@ -175,7 +212,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      */
     public GeodeticObjectBuilder setConversionMethod(final String name) throws FactoryException {
         if (method != null) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, "OperationMethod"));
+            throw new IllegalStateException(Errors.getResources(locale).getString(Errors.Keys.ElementAlreadyPresent_1, "OperationMethod"));
         }
         method = factories.getCoordinateOperationFactory().getOperationMethod(name);
         parameters = method.getParameters().createValue();
@@ -195,11 +232,26 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     }
 
     /**
+     * Sets the conversion method together with all parameters. This method does not set the conversion name.
+     * If a name different than the default is desired, {@link #setConversionName(String)} should be invoked.
+     *
+     * @param  parameters  the map projection parameter values.
+     * @return {@code this}, for method calls chaining.
+     * @throws FactoryException if the operation method can not be obtained.
+     */
+    public GeodeticObjectBuilder setConversion(final ParameterValueGroup parameters) throws FactoryException {
+        ArgumentChecks.ensureNonNull("parameters", parameters);
+        method = factories.getCoordinateOperationFactory().getOperationMethod(parameters.getDescriptor().getName().getCode());
+        this.parameters = parameters;           // Set only if above line succeed.
+        return this;
+    }
+
+    /**
      * Ensures that {@link #setConversionMethod(String)} has been invoked.
      */
     private void ensureConversionMethodSet() {
         if (parameters == null) {
-            throw new IllegalStateException();  // TODO: provide an error message.
+            throw new IllegalStateException(Resources.forLocale(locale).getString(Resources.Keys.UnspecifiedParameterValues));
         }
     }
 
@@ -368,7 +420,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         if (datum != null) {
             crs = factories.getCRSFactory().createGeographicCRS(name(datum), datum, crs.getCoordinateSystem());
         }
-        return createProjectedCRS(crs, ReferencingUtilities.standardProjectedCS(factories.getCSAuthorityFactory()));
+        return createProjectedCRS(crs, factories.getStandardProjectedCS());
     }
 
     /**
@@ -467,9 +519,66 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     }
 
     /**
-     * Creates a map of properties containing only the name of the given object.
+     * Replaces the component starting at given index by the given component. This method can be used for replacing
+     * e.g. the horizontal component of a CRS, or the vertical component, <i>etc.</i>. If a new compound CRS needs
+     * to be created and a {@linkplain #addName(org.opengis.util.GenericName) name has been specified}, that name
+     * will be used.
+     *
+     * <p><b>Limitations:</b></p>
+     * Current implementation can replace exactly one component of {@link CompoundCRS}.
+     * If the given replacement spans more than one component, then this method will fail.
+     *
+     * @param  source          the coordinate reference system in which to replace a component.
+     * @param  firstDimension  index of the first dimension to replace.
+     * @param  replacement     the component to insert in place of the CRS component at given index.
+     * @return a CRS with the component replaced.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see org.apache.sis.referencing.CRS#getComponentAt(CoordinateReferenceSystem, int, int)
      */
-    private static Map<String,Object> name(final IdentifiedObject template) {
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, template.getName());
+    public CoordinateReferenceSystem replaceComponent(final CoordinateReferenceSystem source,
+            final int firstDimension, final CoordinateReferenceSystem replacement) throws FactoryException
+    {
+        final int srcDim = ReferencingUtilities.getDimension(source);
+        final int repDim = ReferencingUtilities.getDimension(replacement);
+        if (firstDimension == 0 && srcDim == repDim) {
+            return replacement;
+        }
+        ArgumentChecks.ensureValidIndex(srcDim - repDim, firstDimension);
+        if (source instanceof CompoundCRS) {
+            final CoordinateReferenceSystem[] components = CollectionsExt.toArray(((CompoundCRS) source).getComponents(), CoordinateReferenceSystem.class);
+            int lower = 0;
+            for (int i=0; i<components.length; i++) {
+                final CoordinateReferenceSystem c = components[i];
+                if (firstDimension >= lower) {
+                    /*
+                     * Reached the index of the CRS component to replace. Invoke this method recursively in case we have nested
+                     * components, but without using the names and identifiers that may have been specified for the final CRS.
+                     */
+                    Object name  = properties.remove(IdentifiedObject.NAME_KEY);
+                    Object alias = properties.remove(IdentifiedObject.ALIAS_KEY);
+                    Object ids   = properties.remove(IdentifiedObject.IDENTIFIERS_KEY);
+                    final CoordinateReferenceSystem nc = replaceComponent(c, firstDimension - lower, replacement);
+                    /*
+                     * Restore the names and identifiers before to create the final CompoundCRS. If no name was specified,
+                     * reuse the primary name of existing CRS but not the identifiers.
+                     */
+                    if (name == null) {
+                        name = source.getName();
+                    }
+                    properties.put(IdentifiedObject.NAME_KEY, name);
+                    properties.put(IdentifiedObject.ALIAS_KEY, alias);
+                    properties.put(IdentifiedObject.IDENTIFIERS_KEY, ids);
+                    if (nc == c) {
+                        return source;                      // No change.
+                    }
+                    components[i] = nc;
+                    return createCompoundCRS(components);
+                }
+                lower += ReferencingUtilities.getDimension(c);
+            }
+        }
+        throw new IllegalArgumentException(Resources.forLocale(locale).getString(
+                Resources.Keys.CanNotSeparateCRS_1, IdentifiedObjects.getName(source, null)));
     }
 }

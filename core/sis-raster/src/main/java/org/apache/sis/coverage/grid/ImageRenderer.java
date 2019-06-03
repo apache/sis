@@ -126,39 +126,46 @@ public class ImageRenderer {
     private final int height;
 
     /**
-     * Number of data elements between two samples in the data {@link #buffer}. A <cite>sample stride</cite> is defined
-     * in this class as the number of data elements between two samples in the data {@link #buffer}. This is implicitly
-     * 1 in Java2D because {@link java.awt.image} supports <cite>pixel stride</cite> and <cite>scanline stride</cite>
-     * in {@link SampleModel}, but does not support stride in {@link DataBuffer} banks. This is theoretically not needed
-     * because "sample stride" can be represented as {@link #pixelStride}. This is what we do in the end, but the concept
-     * of "sample stride" needs to exist temporarily in this builder before the final pixel stride is computed.
-     *
-     * <div class="note"><b>Note:</b>
-     * this stride is <strong>not</strong> equivalent to applying a subsampling on the image, because we do not divide
-     * the image width or height by the given stride. This field should be used only for describing a particular layout
-     * of data in the buffers.</div>
-     *
-     * @see #setInterleavedPixelOffsets(int, int[])
-     */
-    private int sampleStride;
-
-    /**
      * Number of data elements between two samples for the same band on the same line.
-     * This is set to the product of {@linkplain GridExtent#getSize(int) grid sizes} of enclosing
-     * {@code GridCoverage} in all dimensions before the dimension of image {@linkplain #width}.
+     * This is the product of {@linkplain GridExtent#getSize(int) grid sizes} of enclosing {@code GridCoverage}
+     * in all dimensions before the dimension of image {@linkplain #width}. This stride does <strong>not</strong>
+     * include the multiplication factor for the number of bands in a <cite>pixel interleaved sample model</cite>
+     * because whether this factor is needed or not depends on the data {@linkplain #buffer}, which is not known
+     * at construction time.
      *
+     * @see #strideFactor
      * @see java.awt.image.ComponentSampleModel#pixelStride
      */
     private final int pixelStride;
 
     /**
      * Number of data elements between a given sample and the corresponding sample in the same column of the next line.
-     * This is set to the product of {@linkplain GridExtent#getSize(int) grid sizes} of enclosing {@code GridCoverage}
-     * in all dimensions before the dimension of image {@linkplain #height}.
+     * This is the product of {@linkplain GridExtent#getSize(int) grid sizes} of enclosing {@code GridCoverage} in all
+     * dimensions before the dimension of image {@linkplain #height}. This stride does <strong>not</strong> include the
+     * multiplication factor for the number of bands in a <cite>pixel interleaved sample model</cite> because whether
+     * this factor is needed or not depends on the data {@linkplain #buffer}, which is not known at construction time.
      *
+     * @see #strideFactor
      * @see java.awt.image.ComponentSampleModel#scanlineStride
      */
     private final int scanlineStride;
+
+    /**
+     * Multiplication factor for {@link #pixelStride} and {@link #scanlineStride}. This is the number of data elements
+     * between two samples in the data {@link #buffer}. There is no direct equivalent in {@link java.awt.image} because
+     * <cite>pixel stride</cite> and <cite>scanline stride</cite> in {@link SampleModel} are pre-multiplied by this factor,
+     * but we need to keep this information separated in this builder because its value depends on which methods are invoked:
+     *
+     * <ul>
+     *   <li>If {@link #setInterleavedPixelOffsets(int, int[])} is invoked, this is the value given to that method.</li>
+     *   <li>Otherwise if {@link #setData(DataBuffer)} is invoked and the given buffer has only
+     *       {@linkplain DataBuffer#getNumBanks() one bank}, then this is {@link #getNumBands()}.</li>
+     *   <li>Otherwise this is 1.</li>
+     * </ul>
+     *
+     * @see #setInterleavedPixelOffsets(int, int[])
+     */
+    private int strideFactor;
 
     /**
      * The sample dimensions, to be used for defining the bands.
@@ -397,12 +404,13 @@ public class ImageRenderer {
      *
      * @param  pixelStride  the number of data elements between each pixel in the data vector or buffer.
      * @param  bandOffsets  offsets to add to sample index in each band. This is typically {0, 1, 2, …}.
+     *                      The length of this array shall be equal to {@link #getNumBands()}.
      */
     public void setInterleavedPixelOffsets(final int pixelStride, final int[] bandOffsets) {
         ArgumentChecks.ensureStrictlyPositive("pixelStride", pixelStride);
         ArgumentChecks.ensureNonNull("bandOffsets", bandOffsets);
         ensureExpectedBandCount(bandOffsets.length, false);
-        this.sampleStride = pixelStride;
+        this.strideFactor = pixelStride;
         this.bandOffsets = bandOffsets.clone();
     }
 
@@ -419,12 +427,12 @@ public class ImageRenderer {
         if (buffer == null) {
             throw new IllegalStateException(Resources.format(Resources.Keys.UnspecifiedRasterData));
         }
-        int ps = pixelStride;
-        int ls = scanlineStride;
-        if (bandOffsets != null) {
-            ls = Math.multiplyExact(ls, sampleStride);
-            ps *= sampleStride;                         // Can not fail if above operation did not fail.
+        final boolean isInterleaved = (buffer.getNumBanks() == 1);
+        if (bandOffsets == null) {
+            strideFactor = isInterleaved ? getNumBands() : 1;
         }
+        final int ls = Math.multiplyExact(scanlineStride, strideFactor);    // Real scanline stride.
+        final int ps = pixelStride * strideFactor;                          // Can not fail if above operation did not fail.
         /*
          * Number of data elements from the first element of the bank to the first sample of the band.
          * This is usually 0 for all bands, unless the upper-left corner (minX, minY) is not (0,0).
@@ -441,7 +449,7 @@ public class ImageRenderer {
             for (int i=0; i<offsets.length; i++) {
                 offsets[i] = Math.addExact(offsets[i], bandOffsets[i]);
             }
-        } else if (buffer.getNumBanks() == 1) {
+        } else if (isInterleaved) {
             for (int i=1; i<offsets.length; i++) {
                 offsets[i] = Math.addExact(offsets[i], i);
             }

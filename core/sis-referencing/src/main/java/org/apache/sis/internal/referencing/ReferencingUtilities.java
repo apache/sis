@@ -25,7 +25,6 @@ import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.cs.*;
@@ -37,9 +36,6 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
-import org.opengis.util.FactoryException;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
@@ -488,46 +484,6 @@ public final class ReferencingUtilities extends Static {
             context.setTarget(targetCS);
         }
         return context;
-    }
-
-    /**
-     * Creates a projected CRS from the given parameters using the default factories.
-     *
-     * @param  properties   the name and other properties, to be given both to the conversion and the CRS.
-     * @param  baseCRS      the base geographic CRS.
-     * @param  parameters   the map projection parameters.
-     * @param  cs           the projected coordinate system.
-     * @return the projected coordinate reference system.
-     * @throws FactoryException if an error occurred while creating the CRS.
-     *
-     * @since 0.8
-     */
-    public static ProjectedCRS createProjectedCRS(final Map<String,String> properties,
-            final GeographicCRS baseCRS, final ParameterValueGroup parameters, final CartesianCS cs)
-            throws FactoryException
-    {
-        final CoordinateOperationFactory factory = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
-        return DefaultFactories.forBuildin(CRSFactory.class).createProjectedCRS(properties, baseCRS,
-                factory.createDefiningConversion(properties,
-                        factory.getOperationMethod(parameters.getDescriptor().getName().getCode()), parameters), cs);
-    }
-
-    /**
-     * Returns the a coordinate system for map projections with (easting, northing) axes in metres.
-     * EPSG::4400 — Cartesian 2D CS. Axes: easting, northing (E,N). Orientations: east, north. UoM: m.
-     *
-     * @param  factory the EPSG factory to use for creating the coordinate system.
-     * @return a coordinate system with (easting, northing) axes in metres.
-     * @throws FactoryException if an error occurred while creating the coordinate system.
-     *
-     * @since 1.0
-     */
-    public static CartesianCS standardProjectedCS(final CSAuthorityFactory factory) throws FactoryException {
-        /*
-         * Note: we may provide a default factory in a future SIS version.
-         * We may need to mimic ReferencingFactoryContainer.getCSAuthorityFactory().
-         */
-        return factory.createCartesianCS("4400");
     }
 
     /**

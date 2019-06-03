@@ -108,6 +108,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotUseUCAR = 4;
 
         /**
+         * Computed localization grid for “{0}” in {1} seconds.
+         */
+        public static final short ComputeLocalizationGrid_2 = 22;
+
+        /**
          * Dimension “{2}” declared by attribute “{1}” is not found in the “{0}” file.
          */
         public static final short DimensionNotFound_3 = 1;
@@ -116,6 +121,11 @@ public final class Resources extends IndexedResourceBundle {
          * Duplicated axis “{1}” in a grid of netCDF file “{0}”.
          */
         public static final short DuplicatedAxis_2 = 7;
+
+        /**
+         * Illegal value “{2}” for attribute “{1}” in netCDF file “{0}”.
+         */
+        public static final short IllegalAttributeValue_3 = 21;
 
         /**
          * Illegal value range {2,number} … {3,number} for variable “{1}” in netCDF file “{0}”.

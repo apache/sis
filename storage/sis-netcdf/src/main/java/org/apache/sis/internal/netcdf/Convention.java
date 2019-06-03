@@ -439,7 +439,7 @@ public class Convention {
         }
         final Map<String,Object> definition = new HashMap<>();
         definition.put(CF.GRID_MAPPING_NAME, method);
-        for (final String name : node.getAttributeNames()) {
+        for (final String name : node.getAttributeNames()) try {
             final String ln = name.toLowerCase(Locale.US);
             Object value;
             switch (ln) {
@@ -450,10 +450,10 @@ public class Convention {
                      * with the CRS is deprecated (the hard-coded WGS84 target datum is not always suitable) but still
                      * a common practice as of 2019. We require at least the 3 translation parameters.
                      */
-                    final Object[] values = node.getAttributeValues(name, true);
-                    if (values.length < 3) continue;
+                    final Vector values = node.getAttributeAsVector(name);
+                    if (values == null || values.size() < 3) continue;
                     final BursaWolfParameters bp = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
-                    bp.setValues(Vector.create(values, false).doubleValues());
+                    bp.setValues(values.doubleValues());
                     value = bp;
                     break;
                 }
@@ -472,23 +472,12 @@ public class Convention {
                     }
                     /*
                      * Assume that all map projection parameters in netCDF files are numbers or array of numbers.
-                     * If the array contains float value, returns a `float[]` array for letting the caller know
-                     * that it may need to use base 10 for conversion to `double[]` array.
+                     * If values are array, then they are converted to an array of {@code double[]} type.
                      */
-                    final Object[] values = node.getAttributeValues(name, true);
-                    switch (values.length) {
-                        case 0:  continue;                       // Attribute not found or not numeric.
-                        case 1:  value = values[0]; break;       // This is the usual case.
-                        default: {
-                            boolean isFloat = false;
-                            for (final Object e : values) {
-                                isFloat = (e instanceof Float);
-                                if (!isFloat) break;
-                            }
-                            final Vector v = Vector.create(values, false);
-                            value = isFloat ? v.floatValues() : v.doubleValues();
-                            break;
-                        }
+                    value = node.getAttributeValue(name);
+                    if (value == null) continue;
+                    if (value instanceof Vector) {
+                        value = ((Vector) value).doubleValues();
                     }
                     break;
                 }
@@ -496,6 +485,9 @@ public class Convention {
             if (definition.putIfAbsent(name, value) != null) {
                 node.error(Convention.class, "projection", null, Errors.Keys.DuplicatedIdentifier_1, name);
             }
+        } catch (NumberFormatException e) {
+            // May happen in the vector contains number stored as texts.
+            node.decoder.illegalAttributeValue(name, node.getAttributeAsString(name), e);
         }
         return definition;
     }
@@ -574,24 +566,28 @@ public class Convention {
         Number maximum = null;
         Class<? extends Number> type = null;
         for (final String attribute : RANGE_ATTRIBUTES) {
-            for (final Object element : data.getAttributeValues(attribute, true)) {
-                if (element instanceof Number) {
-                    Number value = (Number) element;
-                    if (element instanceof Float) {
-                        final float fp = (Float) element;
+            final Vector values = data.getAttributeAsVector(attribute);
+            if (values != null) {
+                final int length = values.size();
+                for (int i=0; i<length; i++) try {
+                    Number value = values.get(i);           // May throw NumberFormatException if value was stored as text.
+                    if (value instanceof Float) {
+                        final float fp = (Float) value;
                         if      (fp == +Float.MAX_VALUE) value = Float.POSITIVE_INFINITY;
                         else if (fp == -Float.MAX_VALUE) value = Float.NEGATIVE_INFINITY;
-                    } else if (element instanceof Double) {
-                        final double fp = (Double) element;
+                    } else if (value instanceof Double) {
+                        final double fp = (Double) value;
                         if      (fp == +Double.MAX_VALUE) value = Double.POSITIVE_INFINITY;
                         else if (fp == -Double.MAX_VALUE) value = Double.NEGATIVE_INFINITY;
                     }
-                    type = Numbers.widestClass(type, value.getClass());
+                    type    = Numbers.widestClass(type, value.getClass());
                     minimum = Numbers.cast(minimum, type);
                     maximum = Numbers.cast(maximum, type);
                     value   = Numbers.cast(value,   type);
                     if (!attribute.endsWith("max") && (minimum == null || compare(value, minimum) < 0)) minimum = value;
                     if (!attribute.endsWith("min") && (maximum == null || compare(value, maximum) > 0)) maximum = value;
+                } catch (NumberFormatException e) {
+                    data.decoder.illegalAttributeValue(attribute, values.stringValue(i), e);
                 }
             }
             if (minimum != null && maximum != null) {
@@ -651,9 +647,14 @@ public class Convention {
     public Map<Number,Object> nodataValues(final Variable data) {
         final Map<Number,Object> pads = new LinkedHashMap<>();
         for (int i=0; i < NODATA_ATTRIBUTES.length; i++) {
-            for (final Object value : data.getAttributeValues(NODATA_ATTRIBUTES[i], true)) {
-                if (value instanceof Number) {
-                    pads.merge((Number) value, 1 << i, (v1, v2) -> ((Integer) v1) | ((Integer) v2));
+            final String name = NODATA_ATTRIBUTES[i];
+            final Vector values = data.getAttributeAsVector(name);
+            if (values != null) {
+                final int length = values.size();
+                for (int j=0; j<length; j++) try {
+                    pads.merge(values.get(j), 1 << i, (v1, v2) -> ((Integer) v1) | ((Integer) v2));
+                } catch (NumberFormatException e) {
+                    data.decoder.illegalAttributeValue(name, values.stringValue(i), e);
                 }
             }
         }

@@ -107,6 +107,13 @@ public abstract class Bezier {
     protected int depth;
 
     /**
+     * Whether to force the creation of {@link QuadCurve2D}. The default value is {@code false}, which allows simplification
+     * to {@link CubicCurve2D} or {@link Line2D}. This flag can be set to {@code true} when building circular shapes, in which
+     * case simplifications to {@link CubicCurve2D} produce bad results.
+     */
+    protected boolean forceCubic;
+
+    /**
      * Creates a new builder.
      *
      * @param  dimension  length of the {@link #point} array. Must be at least 2.
@@ -201,8 +208,8 @@ public abstract class Bezier {
         if (tx < εx) εx = tx;                                       // Take smallest tolerance values.
         if (ty < εy) εy = ty;
         if (curve(x1, y1, x2, y2, x3, y3, x4, y4, dx4, dy4)) {
-            x0  = x4;
-            y0  = y4;
+            x0  =  x4;
+            y0  =  y4;
             dx0 = dx4;
             dy0 = dy4;
         } else {
@@ -268,8 +275,8 @@ public abstract class Bezier {
         y1 -= y0;  y2 -= y0;  y3 -= y0;
         final double Δx = x4 - x0;
         final double Δy = y4 - y0;
-        if ((abs(dx0) >= abs(dy0) ? abs(Δx*(dy0/dx0) - Δy) <= εy : abs(Δy*(dx0/dy0) - Δx) <= εx) &&
-            (abs(dx4) >= abs(dy4) ? abs(Δx*(dy4/dx4) - Δy) <= εy : abs(Δy*(dx4/dy4) - Δx) <= εx))
+        if (!forceCubic && (abs(dx0) >= abs(dy0) ? abs(Δx*(dy0/dx0) - Δy) <= εy : abs(Δy*(dx0/dy0) - Δx) <= εx) &&
+                           (abs(dx4) >= abs(dy4) ? abs(Δx*(dy4/dx4) - Δy) <= εy : abs(Δy*(dx4/dy4) - Δx) <= εx))
         {
             /*
              * Verify that all points are on the line joining P₀ to P₄. If any coordinate tested below is NaN,
@@ -417,12 +424,12 @@ public abstract class Bezier {
          *
          *     ΔC  =  (3⋅(B − A) − (P₄ − P₀))/2
          *
-         * We multiply tolerance factor by 2 because of moving the quadratic curve control point by 1 can move the closest
+         * We multiply tolerance factor by 2 because moving the quadratic curve control point by 1 can move the closest
          * point on the curve by at most ½.
          */
         final double Δqx, Δqy;
-        if (abs(Δqx = (3*(bx - ax) - Δx)/2) <= 2*εx &&      // P₀ is zero.
-            abs(Δqy = (3*(by - ay) - Δy)/2) <= 2*εy)
+        if (!forceCubic && abs(Δqx = (3*(bx - ax) - Δx)/2) <= 2*εx &&           // P₀ is zero.
+                           abs(Δqy = (3*(by - ay) - Δy)/2) <= 2*εy)
         {
             final double qx = (3*ax + Δqx)/2;               // Take average of 2 control points.
             final double qy = (3*ay + Δqy)/2;

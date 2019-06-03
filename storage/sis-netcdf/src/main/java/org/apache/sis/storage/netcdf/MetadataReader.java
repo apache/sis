@@ -71,6 +71,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.measure.Units;
+import org.apache.sis.math.Vector;
 
 // The following dependency is used only for static final String constants.
 // Consequently the compiled class files should not have this dependency.
@@ -893,6 +894,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * Adds information about all netCDF variables. This is the {@code <mdb:contentInfo>} element in XML.
      * This method groups variables by their domains, i.e. variables having the same set of axes are grouped together.
      */
+    @SuppressWarnings("null")
     private void addContentInfo() {
         final Map<List<String>, List<Variable>> contents = new HashMap<>(4);
         for (final Variable variable : decoder.getVariables()) {
@@ -916,17 +918,21 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             setProcessingLevelCode(null, processingLevel);
             for (final Variable variable : group) {
                 addSampleDimension(variable);
-                final Object[] names    = variable.getAttributeValues(FLAG_NAMES,    false);
-                final Object[] meanings = variable.getAttributeValues(FLAG_MEANINGS, false);
-                final Object[] masks    = variable.getAttributeValues(FLAG_MASKS,    true);
-                final Object[] values   = variable.getAttributeValues(FLAG_VALUES,   true);
-                final int length = Math.max(masks.length, Math.max(values.length, Math.max(names.length, meanings.length)));
+                final CharSequence[] names    = variable.getAttributeAsStrings(FLAG_NAMES, ' ');
+                final CharSequence[] meanings = variable.getAttributeAsStrings(FLAG_MEANINGS, ' ');
+                final Vector         masks    = variable.getAttributeAsVector (FLAG_MASKS);
+                final Vector         values   = variable.getAttributeAsVector (FLAG_VALUES);
+                final int s1 = (names    != null) ? names.length    : 0;
+                final int s2 = (meanings != null) ? meanings.length : 0;
+                final int s3 = (masks    != null) ? masks .size()   : 0;
+                final int s4 = (values   != null) ? values.size()   : 0;
+                final int length = Math.max(s1, Math.max(s2, Math.max(s3, s4)));
                 for (int i=0; i<length; i++) {
                     addSampleValueDescription(variable,
-                            (i < names   .length) ? (String) names   [i] : null,
-                            (i < meanings.length) ? (String) meanings[i] : null,
-                            (i < masks   .length) ? (Number) masks   [i] : null,
-                            (i < values  .length) ? (Number) values  [i] : null);
+                            (i < s1) ? names     [i] : null,
+                            (i < s2) ? meanings  [i] : null,
+                            (i < s3) ? masks .get(i) : null,
+                            (i < s4) ? values.get(i) : null);
                 }
             }
         }
@@ -975,7 +981,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * @param  value     one of the elements in the {@link AttributeNames#FLAG_VALUES} attribute or {@code null}.
      */
     private void addSampleValueDescription(final Variable variable,
-            final String name, final String meaning, final Number mask, final Number value)
+            final CharSequence name, final CharSequence meaning, final Number mask, final Number value)
     {
         addSampleValueDescription(name, meaning);
         // TODO: create a record from values (and possibly from the masks).

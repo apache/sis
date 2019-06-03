@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.LogRecord;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -31,14 +33,18 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 
 
@@ -115,6 +121,19 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     final Map<Object,GridMapping> gridMapping;
 
     /**
+     * Cache of localization grids created for a given pair of (<var>x</var>,<var>y</var>) axes. Localization grids
+     * are expensive to compute and consume a significant amount of memory.  The {@link Grid} instances returned by
+     * {@link #getGrids()} allow to share localization grids only between variables using the exact same list of dimensions.
+     * This {@code localizationGrids} cache allows to cover other cases.
+     * For example a netCDF file may have a variable with (<var>longitude</var>, <var>latitude</var>) dimensions
+     * and another variable with (<var>longitude</var>, <var>latitude</var>, <var>depth</var>) dimensions,
+     * with both variables using the same localization grid for the (<var>longitude</var>, <var>latitude</var>) part.
+     *
+     * @see GridCacheKey#cached(Decoder)
+     */
+    final Map<GridCacheKey,MathTransform> localizationGrids;
+
+    /**
      * Where to send the warnings.
      */
     public final WarningListeners<DataStore> listeners;
@@ -133,11 +152,12 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      */
     protected Decoder(final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners) {
         Objects.requireNonNull(listeners);
-        this.geomlib     = geomlib;
-        this.listeners   = listeners;
-        this.nameFactory = DefaultFactories.forBuildin(NameFactory.class);
-        this.datumCache  = new Datum[CRSBuilder.DATUM_CACHE_SIZE];
-        this.gridMapping = new HashMap<>();
+        this.geomlib      = geomlib;
+        this.listeners    = listeners;
+        this.nameFactory  = DefaultFactories.forBuildin(NameFactory.class);
+        this.datumCache   = new Datum[CRSBuilder.DATUM_CACHE_SIZE];
+        this.gridMapping  = new HashMap<>();
+        localizationGrids = new HashMap<>();
     }
 
     /**
@@ -229,24 +249,45 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     /**
      * Convenience method for {@link #numericValue(String)} implementation.
      *
+     * @param  name   the attribute name, used only in case of error.
      * @param  value  the attribute value to parse.
      * @return the parsed attribute value, or {@code null} if the given value can not be parsed.
      */
-    protected final Number parseNumber(String value) {
+    protected final Number parseNumber(final String name, String value) {
         final int s = value.indexOf(' ');
         if (s >= 0) {
             /*
              * Sometime, numeric values as string are followed by
-             * a unit of measurement. We ignore that unit for now...
+             * a unit of measurement. We ignore that unit for now.
              */
             value = value.substring(0, s);
         }
+        Number n;
         try {
-            return Double.valueOf(value);
+            if (value.indexOf('.') >= 0) {
+                n = Double.valueOf(value);
+            } else {
+                n = Long.valueOf(value);
+            }
         } catch (NumberFormatException e) {
-            listeners.warning(null, e);
+            illegalAttributeValue(name, value, e);
+            n = null;
         }
-        return null;
+        return n;
+    }
+
+    /**
+     * Logs a warning for an illegal attribute value. This may be due to a failure to parse a string as a number.
+     * This method should be invoked from methods that are invoked only once per attribute because we do not keep
+     * track of which warnings have already been emitted.
+     *
+     * @param  name   the attribute name.
+     * @param  value  the illegal value.
+     * @param  e      the exception, or {@code null} if none.
+     */
+    final void illegalAttributeValue(final String name, final String value, final NumberFormatException e) {
+        listeners.warning(Resources.forLocale(listeners.getLocale()).getString(
+                Resources.Keys.IllegalAttributeValue_3, getFilename(), name, value), e);
     }
 
     /**
@@ -356,8 +397,9 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
          * Consequently if such information is present, grid CRS may be inaccurate.
          */
         if (list.isEmpty()) {
+            final List<Exception> warnings = new ArrayList<>();     // For internal usage by Grid.
             for (final Grid grid : getGrids()) {
-                addIfNotPresent(list, grid.getCoordinateReferenceSystem(this));
+                addIfNotPresent(list, grid.getCoordinateReferenceSystem(this, warnings));
             }
         }
         return list;
@@ -387,4 +429,22 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @return the variable or group of the given name, or {@code null} if none.
      */
     protected abstract Node findNode(String name);
+
+    /**
+     * Logs a message about a potentially slow operation. This method does use the listeners registered to the netCDF reader
+     * because this is not a warning.
+     *
+     * @param  caller       the class to report as the source.
+     * @param  method       the method to report as the source.
+     * @param  resourceKey  a {@link Resources} key expecting filename as first argument and elapsed time as second argument.
+     * @param  time         value of {@link System#nanoTime()} when the operation started.
+     */
+    final void performance(final Class<?> caller, final String method, final short resourceKey, long time) {
+        time = System.nanoTime() - time;
+        final LogRecord record = Resources.forLocale(listeners.getLocale()).getLogRecord(
+                PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS), resourceKey,
+                getFilename(), time / (double) StandardDateFormat.NANOS_PER_SECOND);
+        record.setLoggerName(Modules.NETCDF);
+        Logging.log(caller, method, record);
+    }
 }

@@ -317,7 +317,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      * other projections, since Mercator can be considered as a special case of Lambert Conic Conformal for instance.
      *
      * <p>In order to get the derivative of the {@link #expΨ(double, double)} function, caller can multiply
-     * the returned value by by {@code expΨ}.</p>
+     * the returned value by {@code expΨ}.</p>
      *
      * @param  sinφ  the sine of latitude.
      * @param  cosφ  the cosine of latitude.

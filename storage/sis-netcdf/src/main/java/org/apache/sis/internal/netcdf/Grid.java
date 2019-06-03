@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import java.util.Set;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -34,13 +33,13 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -83,7 +82,7 @@ public abstract class Grid extends NamedElement {
      * The coordinate reference system, created when first needed.
      * May be {@code null} even after we attempted to create it.
      *
-     * @see #getCoordinateReferenceSystem(Decoder)
+     * @see #getCoordinateReferenceSystem(Decoder, List)
      */
     private CoordinateReferenceSystem crs;
 
@@ -270,12 +269,15 @@ public abstract class Grid extends NamedElement {
      * this method because this CRS will be used for adjusting axis order or for completion if grid mapping does not include
      * information for all dimensions.</p>
      *
-     * @param   decoder  the decoder for which CRS are constructed.
+     * @param   decoder   the decoder for which CRS are constructed.
+     * @param   warnings  previous warnings, for avoiding to log the same message twice. Can be null.
      * @return  the CRS for this grid geometry, or {@code null}.
      * @throws  IOException if an I/O operation was necessary but failed.
      * @throws  DataStoreException if the CRS can not be constructed.
      */
-    final CoordinateReferenceSystem getCoordinateReferenceSystem(final Decoder decoder) throws IOException, DataStoreException {
+    final CoordinateReferenceSystem getCoordinateReferenceSystem(final Decoder decoder, final List<Exception> warnings)
+            throws IOException, DataStoreException
+    {
         if (!isCRSDetermined) try {
             isCRSDetermined = true;                             // Set now for avoiding new attempts if creation fail.
             final List<CRSBuilder<?,?>> builders = new ArrayList<>();
@@ -293,9 +295,27 @@ public abstract class Grid extends NamedElement {
                                         Collections.singletonMap(CoordinateSystem.NAME_KEY, getName()), components);
             }
         } catch (FactoryException | NullArgumentException ex) {
-            canNotCreate(decoder, "getCoordinateReferenceSystem", Resources.Keys.CanNotCreateCRS_3, ex);
+            if (isNewWarning(ex, warnings)) {
+                canNotCreate(decoder, "getCoordinateReferenceSystem", Resources.Keys.CanNotCreateCRS_3, ex);
+            }
         }
         return crs;
+    }
+
+    /**
+     * Returns {@code true} if the given exception has not already been logged.
+     * If {@code true}, then this method add the given exception to the warnings list.
+     */
+    private static boolean isNewWarning(final Exception ex, final List<Exception> warnings) {
+        if (warnings != null) {
+            for (final Exception previous : warnings) {
+                if (Exceptions.messageEquals(ex, previous)) {
+                    return false;
+                }
+            }
+            warnings.add(ex);
+        }
+        return true;
     }
 
     /**
@@ -376,7 +396,7 @@ public abstract class Grid extends NamedElement {
              * dimension which is not already taken by another row. If we have choice, we give preference to the dimension
              * which seems most closely oriented toward axis direction (i.e. the first element in axis.sourceDimensions).
              *
-             * Example: if the 'axes' array contains (longitude, latitude) in that order, and if the longitude axis said
+             * Example: if the `axes` array contains (longitude, latitude) in that order, and if the longitude axis said
              * that its preferred dimension is 1 (after conversion to "natural" order) while the latitude axis said that
              * its preferred dimension is 0, then we build the following matrix:
              *
@@ -386,7 +406,7 @@ public abstract class Grid extends NamedElement {
              *    │ 0  0  1 │
              *    └         ┘
              *
-             * The preferred grid dimensions are stored in the 'sourceDimensions' array. In above example this is {1, 0}.
+             * The preferred grid dimensions are stored in the `sourceDimensions` array. In above example this is {1, 0}.
              */
             final int[] sourceDimensions = new int[nonLinears.size()];
             Arrays.fill(sourceDimensions, -1);
@@ -410,15 +430,14 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
              * two-dimensional localization grid. Those transforms require two variables, i.e. "two-dimensional"
              * axes come in pairs.
              */
-            final MathTransformFactory factory = decoder.getMathTransformFactory();
             for (int i=0; i<nonLinears.size(); i++) {         // Length of 'nonLinears' may change in this loop.
                 if (nonLinears.get(i) == null) {
                     for (int j=i; ++j < nonLinears.size();) {
                         if (nonLinears.get(j) == null) {
                             /*
                              * Found a pair of axes.  Prepare an array of length 2, to be reordered later in the
-                             * axis order declared in 'sourceDimensions'. This is not necessarily the same order
-                             * than iteration order because it depends on values of 'axis.sourceDimensions[0]'.
+                             * axis order declared in `sourceDimensions`. This is not necessarily the same order
+                             * than iteration order because it depends on values of `axis.sourceDimensions[0]`.
                              * Those values take in account what is the "main" dimension of each axis.
                              */
                             final Axis[] gridAxes = new Axis[] {
@@ -432,26 +451,13 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
                                 case +1: ArraysExt.swap(gridAxes, 0, 1); break;
                                 default: continue;            // Needs axes at consecutive source dimensions.
                             }
-                            final LocalizationGridBuilder grid = gridAxes[0].createLocalizationGrid(gridAxes[1]);
+                            final MathTransform grid = gridAxes[0].createLocalizationGrid(gridAxes[1]);
                             if (grid != null) {
-                                final Set<Linearizer> linearizers = decoder.convention().linearizers(decoder);
-                                if (!linearizers.isEmpty()) {
-                                    Linearizer.applyTo(linearizers, factory, grid, gridAxes);
-                                }
-                                /*
-                                 * There is usually a one-to-one relationship between localization grid cells and image pixels.
-                                 * Consequently an accuracy set to a fraction of cell should be enough.
-                                 *
-                                 * TODO: take in account the case where Variable.Adjustment.dataToGridIndices() returns a value
-                                 * smaller than 1. For now we set the desired precision to a value 10 times smaller in order to
-                                 * take in account the case where dataToGridIndices() returns 0.1.
-                                 */
-                                grid.setDesiredPrecision(0.001);
                                 /*
                                  * Replace the first transform by the two-dimensional localization grid and
                                  * remove the other transform. Removals need to be done in arrays too.
                                  */
-                                nonLinears.set(i, grid.create(factory));
+                                nonLinears.set(i, grid);
                                 nonLinears.remove(j);
                                 final int n = nonLinears.size() - j;
                                 System.arraycopy(deferred,         j+1, deferred,         j, n);
@@ -471,6 +477,7 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
              */
             MathTransform gridToCRS = null;
             final int nonLinearCount = nonLinears.size();
+            final MathTransformFactory factory = decoder.getMathTransformFactory();
             nonLinears.add(factory.createAffineTransform(affine));
             for (int i=0; i <= nonLinearCount; i++) {
                 MathTransform tr = nonLinears.get(i);
@@ -488,7 +495,7 @@ findFree:       for (int srcDim : axis.sourceDimensions) {                      
              * to be at the centers of the cells, but we do not require that in this standard". We nevertheless check
              * if an axis thinks otherwise.
              */
-            final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(decoder);
+            final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(decoder, null);
             if (CRS.getHorizontalComponent(crs) instanceof GeographicCRS) {
                 for (final Axis axis : axes) {
                     if (axis.isCellCorner()) {

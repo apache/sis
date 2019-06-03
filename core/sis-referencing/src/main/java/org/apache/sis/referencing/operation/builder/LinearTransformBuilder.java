@@ -42,6 +42,7 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Line;
 import org.apache.sis.math.Plane;
 import org.apache.sis.math.Vector;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.geometry.DirectPosition1D;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
@@ -1084,9 +1085,10 @@ search:         for (int j=domain(); --j >= 0;) {
      *                    Value can be from 0 inclusive to {@link #getSourceDimensions()} exclusive.
      *                    The recommended direction is the direction of most stable values, typically 1 (rows) for longitudes.
      * @param  period     that wraparound range (typically 360° for longitudes). Must be strictly positive.
+     * @return the range of coordinate values in the specified dimension after correction for wraparound values.
      * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      */
-    final void resolveWraparoundAxis(final int dimension, final int direction, final double period) {
+    final NumberRange<Double> resolveWraparoundAxis(final int dimension, final int direction, final double period) {
         // ensureModifiable() invoked by LocalizationGridBuilder; it does not need to be invoked again here.
         final double[] coordinates = targets[dimension];
         int stride = 1;
@@ -1136,14 +1138,19 @@ search:         for (int j=domain(); --j >= 0;) {
             }
         }
         /*
-         * If some coordinates have been shifted, the range may become unreasonable. For example we may get a
-         * range of [-440 … -160]° of longitude. Shift again in the direction that provide the best intersection
-         * with original range.
+         * If some coordinates have been shifted, the range may become unreasonable. For example we may get a range
+         * of [-440 … -160]° of longitude. Shift again in the direction that provide the best intersection with the
+         * original range. Note that original range itself is sometime "unreasonable". In that case we fallback on
+         * values centered around zero, which matches common practice and reduces the risk of rounding errors.
          */
+        double shift = 0;
+        if (maxValue - minValue > period) {
+            minValue = -period;
+            maxValue = +period;
+        }
         final double Δmin = minValue - minAfter;
         final double Δmax = maxValue - maxAfter;
         if (Δmin != 0 || Δmax != 0) {
-            double shift = 0;
             double intersection = 0;
             final double minCycles = Math.floor(Math.min(Δmin, Δmax) / period);
             final double maxCycles = Math.ceil (Math.max(Δmin, Δmax) / period);
@@ -1161,6 +1168,7 @@ search:         for (int j=domain(); --j >= 0;) {
                 }
             }
         }
+        return NumberRange.create(minAfter + shift, true, maxAfter + shift, true);
     }
 
     /**

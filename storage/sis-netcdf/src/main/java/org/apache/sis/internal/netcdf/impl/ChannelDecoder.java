@@ -57,11 +57,13 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.measure.Units;
+import org.apache.sis.math.Vector;
 import ucar.nc2.constants.CF;
 
 
@@ -184,6 +186,7 @@ public final class ChannelDecoder extends Decoder {
     /**
      * The attributes found in the netCDF file.
      * Values in this map give directly the attribute value (there is no {@code Attribute} object).
+     * Values are {@link String}, wrappers such as {@link Double}, or {@link Vector} objects.
      *
      * @see #findAttribute(String)
      */
@@ -416,8 +419,8 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * Returns the values of the given type. In the given type is {@code CHAR}, then this method returns the values
-     * as a {@link String}. Otherwise this method returns the value as an array of the corresponding primitive type
-     * and the given length.
+     * as a {@link String}. Otherwise if the length is 1, then this method returns the primitive value in its wrapper.
+     * Otherwise this method returns the value as a {@link Vector} of the corresponding primitive type and given length.
      *
      * <p>If the value is a {@code String}, then leading and trailing spaces and control characters have been trimmed
      * by {@link String#trim()}.</p>
@@ -425,10 +428,10 @@ public final class ChannelDecoder extends Decoder {
      * @return the value, or {@code null} if it was an empty string or an empty array.
      */
     private Object readValues(final DataType type, final int length) throws IOException, DataStoreContentException {
-        if (length == 0) {
-            return null;
-        }
-        if (length < 0) {
+        if (length <= 0) {
+            if (length == 0) {
+                return null;
+            }
             throw malformedHeader();
         }
         if (length == 1) {
@@ -444,6 +447,7 @@ public final class ChannelDecoder extends Decoder {
                 case DOUBLE: return input.readDouble();
             }
         }
+        final Object data;
         switch (type) {
             case CHAR: {
                 final String text = input.readString(length, encoding);
@@ -455,41 +459,49 @@ public final class ChannelDecoder extends Decoder {
                 final byte[] array = new byte[length];
                 input.readFully(array);
                 align(length);
-                return array;
+                data = array;
+                break;
             }
             case SHORT:
             case USHORT: {
                 final short[] array = new short[length];
                 input.readFully(array, 0, length);
                 align(length << 1);
-                return array;
+                data = array;
+                break;
             }
             case INT:
             case UINT: {
                 final int[] array = new int[length];
                 input.readFully(array, 0, length);
-                return array;
+                data =  array;
+                break;
             }
             case INT64:
             case UINT64: {
                 final long[] array = new long[length];
                 input.readFully(array, 0, length);
-                return array;
+                data = array;
+                break;
             }
             case FLOAT: {
                 final float[] array = new float[length];
                 input.readFully(array, 0, length);
-                return array;
+                return Vector.createForDecimal(array);
             }
             case DOUBLE: {
                 final double[] array = new double[length];
                 input.readFully(array, 0, length);
-                return array;
+                final float[] asFloats = ArraysExt.copyAsFloatsIfLossless(array);
+                if (asFloats != null) return Vector.createForDecimal(asFloats);
+                data = array;
+                break;
             }
             default: {
                 throw malformedHeader();
             }
         }
+        return Vector.create(data, type.isUnsigned);
     }
 
     /**
@@ -532,8 +544,9 @@ public final class ChannelDecoder extends Decoder {
      *   <li>The actual values as a variable length list    (use {@link #readValues(DataType,int)})</li>
      * </ul>
      *
-     * If the value is a {@code String}, then leading and trailing spaces and control characters
-     * have been trimmed by {@link String#trim()}.
+     * If the value is a {@code String}, then leading and trailing spaces and control characters have been
+     * trimmed by {@link String#trim()}. If the value has more than one element, then the values are stored
+     * in a {@link Vector}.
      *
      * @param  nelems  the number of attributes to read.
      */
@@ -813,11 +826,15 @@ public final class ChannelDecoder extends Decoder {
     @Override
     public Number numericValue(final String name) {
         final Object value = findAttribute(name);
-        if (value instanceof String) {
-            return parseNumber((String) value);
+        if (value instanceof Number) {
+            return (Number) value;
+        } else if (value instanceof String) {
+            return parseNumber(name, (String) value);
+        } else if (value instanceof Vector) {
+            return ((Vector) value).get(0);
+        } else {
+            return null;
         }
-        final Number[] v = VariableInfo.numberValues(value);
-        return (v.length != 0) ? v[0] : null;
     }
 
     /**

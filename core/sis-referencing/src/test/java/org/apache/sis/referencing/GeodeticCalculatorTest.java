@@ -232,8 +232,8 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
         final Rectangle2D bounds = region.getBounds2D();
         assertEquals("x",    -71.6, bounds.getCenterX(), 1E-3);
         assertEquals("y",    -33.0, bounds.getCenterY(), 1E-3);
-        assertEquals("width",  2.8, bounds.getWidth(),   0.1);      // Would have expected 2.1 if box was tight.
-        assertEquals("height", 2.0, bounds.getHeight(),  0.1);      // Would have expected 1.8 if box was tight.
+        assertEquals("width",  2.1, bounds.getWidth(),   0.1);
+        assertEquals("height", 1.8, bounds.getHeight(),  0.1);
     }
 
     /**

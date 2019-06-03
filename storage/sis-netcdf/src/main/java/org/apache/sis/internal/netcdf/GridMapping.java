@@ -42,7 +42,6 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PixelInCell;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.AbstractCRS;
@@ -57,7 +56,7 @@ import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.referencing.provider.PseudoPlateCarree;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
@@ -230,7 +229,7 @@ final class GridMapping {
             } else {
                 Map<String,?> properties = properties(definition, Convention.CONVERSION_NAME, node.getName());
                 final Conversion conversion = opFactory.createDefiningConversion(properties, method, parameters);
-                final CartesianCS cs = ReferencingUtilities.standardProjectedCS(node.decoder.getCSAuthorityFactory());
+                final CartesianCS cs = node.decoder.getStandardProjectedCS();
                 properties = properties(definition, Convention.PROJECTED_CRS_NAME, conversion);
                 final ProjectedCRS p = node.decoder.getCRSFactory().createProjectedCRS(properties, baseCRS, conversion, cs);
                 baseToCRS = p.getConversionFromBase().getMathTransform();
@@ -518,28 +517,12 @@ final class GridMapping {
                  * Replace the grid CRS (or a component of it) by the CRS parsed from WKT or EPSG code with same (if possible)
                  * axis order. If the grid CRS contains more axes (for example elevation or time axis), we try to keep them.
                  */
-                CoordinateReferenceSystem[] components = {
-                    CRS.getComponentAt(templateCRS, 0, firstAffectedCoordinate), givenCRS,
-                    CRS.getComponentAt(templateCRS, firstAffectedCoordinate + subCS.getDimension(), cs.getDimension())
-                };
-                int count = 0;
-                for (CoordinateReferenceSystem c : components) {
-                    if (c != null) components[count++] = c;
-                }
-                switch (count) {
-                    case 0: /* Keep givenCRS as-is */ break;                // Should never happen.
-                    case 1: givenCRS = components[0]; break;
-                    default: {
-                        components = ArraysExt.resize(components, count);
-                        Map<String,?> properties = IdentifiedObjects.getProperties(templateCRS);
-                        try {
-                            givenCRS = variable.decoder.getCRSFactory().createCompoundCRS(properties, components);
-                        } catch (FactoryException e) {
-                            canNotCreate(variable, Resources.Keys.CanNotCreateCRS_3, e);
-                            return null;
-                        }
-                        break;
-                    }
+                try {
+                    givenCRS = new GeodeticObjectBuilder(variable.decoder, variable.decoder.listeners.getLocale())
+                                                .replaceComponent(templateCRS, firstAffectedCoordinate, givenCRS);
+                } catch (FactoryException e) {
+                    canNotCreate(variable, Resources.Keys.CanNotCreateCRS_3, e);
+                    return null;
                 }
                 isSameGrid = templateCRS.equals(givenCRS);
                 if (isSameGrid) {
