@@ -112,6 +112,13 @@
   </dependencies>
 
 
+  <!--
+    Note about build configuration: we do not declare the "collect-jars" goal here
+    because not all sub-modules are of worldwide interest. The JARs to be included
+    in the distribution will be selected on a case-by-case basis.
+  -->
+
+
   <!-- ===========================================================
            Sub-modules included in the build
        =========================================================== -->
