@@ -104,6 +104,23 @@
       <artifactId>sis-netcdf</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>edu.ucar</groupId>
+      <artifactId>cdm</artifactId>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
+
+  <!--  UCAR repository from which to download the netCDF library. -->
+  <repositories>
+    <repository>
+      <id>UCAR</id>
+      <name>UCAR repository</name>
+      <url>https://artifacts.unidata.ucar.edu/repository/unidata-releases</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
 </project>

@@ -40,6 +40,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.measure.NumberRange;
+import ucar.nc2.constants.CF;
 
 
 /**
@@ -346,7 +347,7 @@ public final class GCOM_C extends Convention {
             return super.projection(node);
         }
         final Map<String,Object> definition = new HashMap<>(4);
-        definition.put("grid_mapping_name", method);
+        definition.put(CF.GRID_MAPPING_NAME, method);
         definition.put(CONVERSION_NAME, name);
         return definition;
     }
