@@ -27,7 +27,7 @@
 
   <parent>
     <groupId>org.apache.sis</groupId>
-    <artifactId>parent</artifactId>
+    <artifactId>profiles</artifactId>
     <version>2.0-SNAPSHOT</version>
   </parent>
 
@@ -35,11 +35,11 @@
   <!-- ===========================================================
            Module Description
        =========================================================== -->
-  <artifactId>profiles</artifactId>
-  <packaging>pom</packaging>
-  <name>Apache SIS profiles</name>
+  <groupId>org.apache.sis.profiles</groupId>
+  <artifactId>sis-japan-profile</artifactId>
+  <name>Apache SIS Japanese profiles</name>
   <description>
-    Group of modules for extensions specific to some organizations or countries.
+    Extensions to netCDF reader for file formats published by Japanese Aerospace Exploration Agency (JAXA).
   </description>
 
 
@@ -59,28 +59,28 @@
       </roles>
     </developer>
   </developers>
-  <contributors>
-    <contributor>
-      <name>Cédric Briançon</name>
-      <email>cedric.briancon@geomatys.com</email>
-      <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
-      <timezone>+1</timezone>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </contributor>
-    <contributor>
-      <name>Guilhem Legal</name>
-      <email>guilhem.legal@geomatys.com</email>
-      <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
-      <timezone>+1</timezone>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </contributor>
-  </contributors>
+
+
+  <!-- ===========================================================
+           Build configuration
+       =========================================================== -->
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>
+                org.apache.sis.profile.japan
+              </Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 
   <!-- ===========================================================
@@ -88,36 +88,10 @@
        =========================================================== -->
   <dependencies>
     <dependency>
-      <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-utility</artifactId>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-netcdf</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-pending</artifactId>
-    </dependency>
-
-    <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-conformance</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-utility</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
     </dependency>
   </dependencies>
-
-
-  <!-- ===========================================================
-           Sub-modules included in the build
-       =========================================================== -->
-  <modules>
-    <module>sis-french-profile</module>
-    <module>sis-japan-profile</module>
-  </modules>
 
 </project>
