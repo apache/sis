@@ -22,7 +22,7 @@
  * The French profile also added two properties to the ISO 19115:2003 standard.
  * Equivalent properties have been added to the 2013 revision of ISO 19115,
  * so the French profile should not be needed anymore except for compatibility with oldest specifications.
- * The following table lists the French extentions and their replacement in the newer ISO standard:
+ * The following table lists the French extensions and their replacement in the newer ISO standard:
  *
  * <table class="sis">
  *   <caption>AFNOR to ISO mapping</caption>

@@ -36,12 +36,12 @@
                 <root id="src.xmlstore.dir" name="XMLStore"/>
                 <root id="src.storage.dir" name="Storage"/>
                 <root id="src.feature.dir" name="Feature"/>
-                <root id="src.raster.dir" name="Raster"/>
                 <root id="src.referencing.dir" name="Referencing"/>
                 <root id="src.ref-by-id.dir" name="Referencing by identifiers"/>
                 <root id="src.metadata.dir" name="Metadata"/>
                 <root id="src.utility.dir" name="Utility"/>
                 <root id="src.fra-profile.dir" name="French profile"/>
+                <root id="src.jpn-profile.dir" name="Japanese profile"/>
                 <root id="src.gdal.dir" name="GDAL/Proj4"/>
                 <root id="src.c.gdal.dir" name="GDAL/Proj4 JNI"/>
             </source-roots>
@@ -58,12 +58,12 @@
                 <root id="test.xmlstore.dir" name="Test XMLStore"/>
                 <root id="test.storage.dir" name="Test Storage"/>
                 <root id="test.feature.dir" name="Test Feature"/>
-                <root id="test.raster.dir" name="Test Raster"/>
                 <root id="test.referencing.dir" name="Test Referencing"/>
                 <root id="test.ref-by-id.dir" name="Test Referencing by identifiers"/>
                 <root id="test.metadata.dir" name="Test Metadata"/>
                 <root id="test.utility.dir" name="Test Utility"/>
                 <root id="test.fra-profile.dir" name="Test French profile"/>
+                <root id="test.jpn-profile.dir" name="Test Japanese profile"/>
                 <root id="test.gdal.dir" name="Test GDAL/Proj4"/>
             </test-roots>
         </data>

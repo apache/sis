@@ -125,12 +125,6 @@
       <artifactId>sis-storage</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.sis.storage</groupId>
-      <artifactId>sis-netcdf</artifactId>
-      <version>${project.version}</version>
-      <optional>true</optional>
-    </dependency>
   </dependencies>
 
 </project>
