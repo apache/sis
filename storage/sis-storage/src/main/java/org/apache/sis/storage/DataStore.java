@@ -48,8 +48,17 @@ import org.apache.sis.referencing.NamedIdentifier;
  * while a {@code DataStore} for netCDF files will implement the {@link Aggregate} interface.</p>
  *
  * <div class="section">Thread safety policy</div>
- * This {@code DataStore} base class is thread-safe. However subclasses do not need to be thread-safe.
- * Unless otherwise specified, users should assume that {@code DataStore} instances are not thread-safe.
+ * Data stores should be thread-safe, but their synchronization lock is implementation-dependent.
+ * This base class uses only the {@code synchronized} keyword, applied on the following methods:
+ *
+ * <ul>
+ *   <li>{@link #getLocale()}</li>
+ *   <li>{@link #setLocale(Locale)}</li>
+ * </ul>
+ *
+ * Since above properties are used only for information purpose, concurrent modifications during a read or write
+ * operation should be harmless. Consequently subclasses are free use their own synchronization mechanism instead
+ * than {@code synchronized(this)} lock.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -208,6 +217,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
         ArgumentChecks.ensureNonNull("locale", locale);
         this.locale = locale;
     }
+    // See class javadoc for a note on synchronization.
 
     /**
      * The locale to use for formatting warnings and other messages. This locale if for user interfaces
