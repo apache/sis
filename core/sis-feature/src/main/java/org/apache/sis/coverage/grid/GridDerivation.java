@@ -823,8 +823,18 @@ public class GridDerivation {
     /**
      * Requests a grid geometry for a slice at the given relative position.
      * The relative position is specified by a ratio between 0 and 1 where 0 maps to {@linkplain GridExtent#getLow(int) low}
-     * grid coordinates, 1 maps to {@linkplain GridExtent#getHigh(int) high grid coordinates} and 0.5 maps the median point.
+     * grid coordinates, 1 maps to {@linkplain GridExtent#getHigh(int) high grid coordinates} and 0.5 maps to the median position.
      * The slicing is applied on all dimensions except the specified dimensions to keep.
+     *
+     * <div class="note"><b>Example:</b>
+     * given a <var>n</var>-dimensional cube, the following call creates a slice of the two first dimensions
+     * (numbered 0 and 1, typically the dimensions of <var>x</var> and <var>y</var> axes)
+     * located at the center (ratio 0.5) of all other dimensions (typically <var>z</var> and/or <var>t</var> axes):
+     *
+     * {@preformat java
+     *     gridGeometry.derive().sliceByRatio(0.5, 0, 1).build();
+     * }
+     * </div>
      *
      * @param  sliceRatio        the ratio to apply on all grid dimensions except the ones to keep.
      * @param  dimensionsToKeep  the grid dimension to keep unchanged.
