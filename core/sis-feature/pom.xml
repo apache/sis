@@ -40,6 +40,7 @@
   <name>Apache SIS features</name>
   <description>
     Representations of geographic features.
+    Includes access to both vector and raster data.
   </description>
 
 
@@ -63,13 +64,45 @@
       <organizationUrl>http://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
-        <role>developer</role>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Johann Sorel</name>
+      <id>jsorel</id>
+      <email>johann.sorel@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Rémi Maréchal</name>
+      <id>rmarechal</id>
+      <email>rmarechal@apache.org</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>committer</role>
       </roles>
     </developer>
   </developers>
   <contributors>
     <contributor>
       <name>Marc le Bihan</name>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Alexis manin</name>
+      <email>alexis.manin@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
       <roles>
         <role>developer</role>
       </roles>

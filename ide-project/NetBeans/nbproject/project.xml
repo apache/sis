@@ -36,7 +36,6 @@
                 <root id="src.xmlstore.dir" name="XMLStore"/>
                 <root id="src.storage.dir" name="Storage"/>
                 <root id="src.feature.dir" name="Feature"/>
-                <root id="src.raster.dir" name="Raster"/>
                 <root id="src.referencing.dir" name="Referencing"/>
                 <root id="src.ref-by-id.dir" name="Referencing by identifiers"/>
                 <root id="src.metadata.dir" name="Metadata"/>
@@ -59,7 +58,6 @@
                 <root id="test.xmlstore.dir" name="Test XMLStore"/>
                 <root id="test.storage.dir" name="Test Storage"/>
                 <root id="test.feature.dir" name="Test Feature"/>
-                <root id="test.raster.dir" name="Test Raster"/>
                 <root id="test.referencing.dir" name="Test Referencing"/>
                 <root id="test.ref-by-id.dir" name="Test Referencing by identifiers"/>
                 <root id="test.metadata.dir" name="Test Metadata"/>
