@@ -194,7 +194,7 @@ public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsis
                 final Class<?> impl = getImplementation(type);
                 if (impl != null) {
                     assertTrue("Not an implementation of expected interface.", type.isAssignableFrom(impl));
-                    testPropertyValues(new PropertyAccessor(standard.getCitation(), type, impl, impl));
+                    testPropertyValues(new PropertyAccessor(type, impl, impl));
                 }
             }
         }
@@ -333,7 +333,7 @@ public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsis
                 if (an != null) {
                     final String name = an.name();
                     final String message = impl.getSimpleName() + '.' + name;
-                    final PropertyAccessor accessor = new PropertyAccessor(standard.getCitation(), type, impl, impl);
+                    final PropertyAccessor accessor = new PropertyAccessor(type, impl, impl);
 
                     // Property shall exist.
                     final int index = accessor.indexOf(name, false);

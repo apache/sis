@@ -29,7 +29,6 @@ import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.Classes;
@@ -113,11 +112,6 @@ class PropertyAccessor {
             throw new AssertionError(e);                                // Should never happen.
         }
     }
-
-    /**
-     * The standard which define the {@link #type} interface.
-     */
-    private final Citation standard;
 
     /**
      * The implemented metadata interface.
@@ -229,22 +223,20 @@ class PropertyAccessor {
      * The array will be created when first needed. A {@code null} element means that
      * the information at that index has not yet been computed.
      *
-     * @see #information(int)
+     * @see #information(Citation, int)
      */
     private transient ExtendedElementInformation[] informations;
 
     /**
      * Creates a new property accessor for the specified metadata implementation.
      *
-     * @param  standard        the standard which define the {@code type} interface.
      * @param  type            the interface implemented by the metadata class.
      * @param  implementation  the class of metadata implementations, or {@code type} if none.
      * @param  standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
      *                         This is the same than {@code implementation} unless a custom implementation is used.
      */
-    PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation, final Class<?> standardImpl) {
+    PropertyAccessor(final Class<?> type, final Class<?> implementation, final Class<?> standardImpl) {
         assert type.isAssignableFrom(implementation) : implementation;
-        this.standard       = standard;
         this.type           = type;
         this.implementation = implementation;
         this.getters        = getGetters(type, implementation, standardImpl);
@@ -645,13 +637,14 @@ class PropertyAccessor {
      * Returns the information for the property at the given index.
      * The information are created when first needed.
      *
-     * @param  index  the index of the property for which to get the information.
+     * @param  standard  the standard which define the {@link #type} interface.
+     * @param  index     the index of the property for which to get the information.
      * @return the information for the property at the given index, or {@code null} if the index is out of bounds.
      *
      * @see PropertyInformation
      */
     @SuppressWarnings({"unchecked","rawtypes"})
-    final synchronized ExtendedElementInformation information(final int index) {
+    final synchronized ExtendedElementInformation information(final Citation standard, final int index) {
         ExtendedElementInformation[] informations = this.informations;
         if (informations == null) {
             this.informations = informations = new PropertyInformation<?>[standardCount];
@@ -1297,7 +1290,7 @@ class PropertyAccessor {
      * Output example:
      *
      * {@preformat text
-     *     PropertyAccessor[13 getters & 13 setters in DefaultCitation:Citation from “ISO 19115”]
+     *     PropertyAccessor[13 getters & 13 setters in DefaultCitation:Citation]
      * }
      */
     @Override
@@ -1321,6 +1314,6 @@ class PropertyAccessor {
         if (type != implementation) {
             buffer.append(':').append(Classes.getShortName(type));
         }
-        return buffer.append(" from “").append(Citations.getIdentifier(standard, false)).append("”]").toString();
+        return buffer.append(']').toString();
     }
 }

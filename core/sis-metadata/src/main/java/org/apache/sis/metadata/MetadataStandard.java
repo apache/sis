@@ -380,9 +380,9 @@ public class MetadataStandard implements Serializable {
             final Class<?> standardImpl = getImplementation(type);
             final PropertyAccessor accessor;
             if (SpecialCases.isSpecialCase(type)) {
-                accessor = new SpecialCases(citation, type, k.type, standardImpl);
+                accessor = new SpecialCases(type, k.type, standardImpl);
             } else {
-                accessor = new PropertyAccessor(citation, type, k.type, standardImpl);
+                accessor = new PropertyAccessor(type, k.type, standardImpl);
             }
             return accessor;
         });
@@ -768,7 +768,7 @@ public class MetadataStandard implements Serializable {
     {
         ensureNonNull("type",     type);
         ensureNonNull("keyNames", keyPolicy);
-        return new InformationMap(getAccessor(createCacheKey(type), true), keyPolicy);
+        return new InformationMap(citation, getAccessor(createCacheKey(type), true), keyPolicy);
     }
 
     /**

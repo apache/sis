@@ -80,6 +80,8 @@ public final strictfp class AboutCommandTest extends TestCase {
 
     /**
      * Tests the sub-command with the {@code --verbose} option.
+     * Current implementation performs the same test than {@link #testDefault()}.
+     * We do not check the extra information because they depend on the environment.
      *
      * @throws Exception should never happen.
      */
@@ -87,11 +89,7 @@ public final strictfp class AboutCommandTest extends TestCase {
     public void testVerbose() throws Exception {
         final AboutCommand test = new AboutCommand(0, CommandRunner.TEST, "--verbose");
         test.run();
-        final String result = test.outputBuffer.toString();
-        verify(result);
-
-        // Check for a dependency which should be present.
-        assertTrue("geoapi", result.contains("geoapi"));
+        verify(test.outputBuffer.toString());
     }
 
     /**
