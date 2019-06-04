@@ -30,7 +30,7 @@ import java.nio.IntBuffer;
 import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
 import org.opengis.coverage.grid.SequenceType;
-import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 

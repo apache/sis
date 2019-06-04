@@ -45,7 +45,7 @@ import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;

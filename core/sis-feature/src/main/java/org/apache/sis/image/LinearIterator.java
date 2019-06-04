@@ -24,7 +24,7 @@ import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.RasterFormatException;
 import org.opengis.coverage.grid.SequenceType;
-import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.internal.feature.Resources;
 
 
 /**

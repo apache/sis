@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.internal.metadata.AxisDirections;
-import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.geometry.AbstractEnvelope;

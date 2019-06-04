@@ -27,7 +27,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
 import org.apache.sis.io.wkt.UnformattableObjectException;
 import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.NumberRange;

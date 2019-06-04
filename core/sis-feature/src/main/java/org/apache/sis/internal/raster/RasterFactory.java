@@ -37,6 +37,7 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.feature.Resources;
 
 
 /**

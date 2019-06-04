@@ -33,7 +33,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.resources.Vocabulary;

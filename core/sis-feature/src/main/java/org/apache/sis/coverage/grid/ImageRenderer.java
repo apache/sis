@@ -33,7 +33,7 @@ import org.apache.sis.coverage.MismatchedCoverageRangeException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.raster.ColorModelFactory;
 import org.apache.sis.internal.raster.RasterFactory;
-import org.apache.sis.internal.raster.Resources;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.resources.Errors;
