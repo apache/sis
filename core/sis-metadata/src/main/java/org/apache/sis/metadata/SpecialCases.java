@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata;
 
-import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
@@ -43,15 +42,14 @@ final class SpecialCases extends PropertyAccessor {
     /**
      * Creates a new property accessor for the specified metadata implementation.
      *
-     * @param  standard        the standard which define the {@code type} interface.
      * @param  type            the interface implemented by the metadata, which must be
      *                         the value returned by {@link MetadataStandard#findInterface(CacheKey)}.
      * @param  implementation  the class of metadata implementations, or {@code type} if none.
      * @param  standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
      *                         This is the same than {@code implementation} unless a custom implementation is used.
      */
-    SpecialCases(final Citation standard, final Class<?> type, final Class<?> implementation, final Class<?> standardImpl) {
-        super(standard, type, implementation, standardImpl);
+    SpecialCases(final Class<?> type, final Class<?> implementation, final Class<?> standardImpl) {
+        super(type, implementation, standardImpl);
         assert isSpecialCase(type) : type;
         westBoundLongitude = indexOf("westBoundLongitude", true);
         eastBoundLongitude = indexOf("eastBoundLongitude", true);

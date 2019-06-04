@@ -19,6 +19,7 @@ package org.apache.sis.metadata;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
 
 
@@ -37,13 +38,20 @@ import org.opengis.metadata.ExtendedElementInformation;
  */
 final class InformationMap extends PropertyMap<ExtendedElementInformation> {
     /**
+     * The standard which define the {@link PropertyAccessor#type} interface.
+     */
+    private final Citation standard;
+
+    /**
      * Creates an information map for the specified accessor.
      *
+     * @param standard   the standard which define the {@code accessor.type} interface.
      * @param accessor   the accessor to use for the metadata.
      * @param keyPolicy  determines the string representation of keys in the map.
      */
-    InformationMap(final PropertyAccessor accessor, final KeyNamePolicy keyPolicy) {
+    InformationMap(final Citation standard, final PropertyAccessor accessor, final KeyNamePolicy keyPolicy) {
         super(accessor, keyPolicy);
+        this.standard = standard;
     }
 
     /**
@@ -53,7 +61,7 @@ final class InformationMap extends PropertyMap<ExtendedElementInformation> {
     @Override
     public ExtendedElementInformation get(final Object key) {
         if (key instanceof String) {
-            return accessor.information(accessor.indexOf((String) key, false));
+            return accessor.information(standard, accessor.indexOf((String) key, false));
         }
         return null;
     }
@@ -66,7 +74,7 @@ final class InformationMap extends PropertyMap<ExtendedElementInformation> {
         return new Iter() {
             @Override
             public Map.Entry<String,ExtendedElementInformation> next() {
-                final ExtendedElementInformation value = accessor.information(index);
+                final ExtendedElementInformation value = accessor.information(standard, index);
                 if (value == null) {
                     // PropertyAccessor.information(int) never return null if the index is valid.
                     throw new NoSuchElementException();

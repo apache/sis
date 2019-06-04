@@ -239,9 +239,7 @@ public final class Store extends StaxDataStore implements FeatureSet {
      * @throws ConcurrentReadException if the {@code features} stream was provided by this data store.
      * @throws DataStoreException if an error occurred while writing the data.
      */
-    public synchronized void write(final Metadata metadata, final Stream<? extends Feature> features)
-            throws DataStoreException
-    {
+    public synchronized void write(final Metadata metadata, final Stream<? extends Feature> features) throws DataStoreException {
         try {
             /*
              * If we created a reader for reading metadata, we need to close that reader now otherwise the call
