@@ -56,8 +56,7 @@ public final strictfp class SpecialCasesTest extends TestCase {
      * Creates a new test case.
      */
     public SpecialCasesTest() {
-        accessor = new SpecialCases(HardCodedCitations.ISO_19115,
-                GeographicBoundingBox.class, DefaultGeographicBoundingBox.class, DefaultGeographicBoundingBox.class);
+        accessor = new SpecialCases(GeographicBoundingBox.class, DefaultGeographicBoundingBox.class, DefaultGeographicBoundingBox.class);
     }
 
     /**
@@ -187,11 +186,12 @@ public final strictfp class SpecialCasesTest extends TestCase {
     }
 
     /**
-     * Tests {@link SpecialCases#information(int)}.
+     * Tests {@link SpecialCases#information(Citation, int)}.
      */
     @Test
     public void testPropertyInformation() {
-        final ExtendedElementInformation info = accessor.information(accessor.indexOf("westBoundLongitude", true));
+        final ExtendedElementInformation info = accessor.information(
+                HardCodedCitations.ISO_19115, accessor.indexOf("westBoundLongitude", true));
         final InternationalString domain = info.getDomainValue();
         assertInstanceOf("Expected numerical information about range.", NumberRange.class, domain);
         final NumberRange<?> range = (NumberRange) domain;

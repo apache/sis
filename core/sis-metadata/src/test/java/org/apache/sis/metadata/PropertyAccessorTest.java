@@ -91,7 +91,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * Creates a new property accessor for the {@link DefaultCitation} class.
      */
     private static PropertyAccessor createPropertyAccessor() {
-        return new PropertyAccessor(HardCodedCitations.ISO_19115, Citation.class, DefaultCitation.class, DefaultCitation.class);
+        return new PropertyAccessor(Citation.class, DefaultCitation.class, DefaultCitation.class);
     }
 
     /**
@@ -201,7 +201,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @Test
     @DependsOnMethod("testConstructor")
     public void testConstructorWithInheritance() {
-        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO_19115, DataIdentification.class, DefaultDataIdentification.class, DefaultDataIdentification.class),
+        assertMappingEquals(new PropertyAccessor(DataIdentification.class, DefaultDataIdentification.class, DefaultDataIdentification.class),
         //……Declaring type………………………Method………………………………………………………………………JavaBeans………………………………………………………UML identifier………………………………………Sentence……………………………………………………………Type………………………………………………………………
             Identification.class, "getCitation",                   "citation",                   "citation",                  "Citation",                     Citation.class,
             Identification.class, "getAbstract",                   "abstract",                   "abstract",                  "Abstract",                     InternationalString.class,
@@ -236,7 +236,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @DependsOnMethod("testConstructorWithInheritance")
     public void testConstructorWithCovariantReturnType() {
         final Class<?> type = GeographicCRS.class;
-        assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO_19111, type, type, type),
+        assertMappingEquals(new PropertyAccessor(type, type, type),
         //……Declaring type……………………………Method……………………………………………JavaBeans……………………………UML identifier………………Sentence…………………………………Type…………………………………………………………
             GeographicCRS.class,    "getCoordinateSystem", "coordinateSystem", "coordinateSystem", "Coordinate system",  EllipsoidalCS.class,       // Covariant return type
             GeodeticCRS.class,      "getDatum",            "datum",            "datum",            "Datum",              GeodeticDatum.class,       // Covariant return type
@@ -249,15 +249,15 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
-     * Tests the {@link PropertyAccessor#information(int)} method.
+     * Tests the {@link PropertyAccessor#information(Citation, int)} method.
      * This method delegates to some {@link PropertyInformationTest} methods.
      */
     @Test
     @DependsOnMethod("testConstructor")
     public void testInformation() {
         final PropertyAccessor accessor = createPropertyAccessor();
-        PropertyInformationTest.validateTitle           (accessor.information(accessor.indexOf("title",            true)));
-        PropertyInformationTest.validatePresentationForm(accessor.information(accessor.indexOf("presentationForm", true)));
+        PropertyInformationTest.validateTitle           (accessor.information(HardCodedCitations.ISO_19115, accessor.indexOf("title",            true)));
+        PropertyInformationTest.validatePresentationForm(accessor.information(HardCodedCitations.ISO_19115, accessor.indexOf("presentationForm", true)));
     }
 
     /**
@@ -365,8 +365,8 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @Test
     @DependsOnMethod("testSet")
     public void testSetDeprecated() {
-        final PropertyAccessor accessor = new PropertyAccessor(HardCodedCitations.ISO_19115,
-                CoverageDescription.class, DefaultCoverageDescription.class, DefaultCoverageDescription.class);
+        final PropertyAccessor accessor = new PropertyAccessor(CoverageDescription.class,
+                    DefaultCoverageDescription.class, DefaultCoverageDescription.class);
         final int indexOfDeprecated  = accessor.indexOf("contentType", true);
         final int indexOfReplacement = accessor.indexOf("attributeGroup", true);
         assertTrue("Deprecated elements shall be sorted after non-deprecated ones.",
@@ -622,7 +622,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @Test
     public void testToString() {
         final PropertyAccessor accessor = createPropertyAccessor();
-        assertEquals("PropertyAccessor[14 getters (+1 ext.) & 15 setters in DefaultCitation:Citation from “ISO 19115”]", accessor.toString());
+        assertEquals("PropertyAccessor[14 getters (+1 ext.) & 15 setters in DefaultCitation:Citation]", accessor.toString());
     }
 
     /**
