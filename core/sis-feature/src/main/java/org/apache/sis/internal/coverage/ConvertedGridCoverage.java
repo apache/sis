@@ -384,7 +384,7 @@ final class ConvertedGridCoverage extends GridCoverage {
      * of {@link SampleConverter}. This class may be replaced by another mechanism (creating new tiles) in
      * a future SIS version.</p>
      *
-     * @see org.apache.sis.internal.raster.ScaledColorSpace
+     * @see org.apache.sis.internal.coverage.ScaledColorSpace
      */
     private static final class ScaledColorModel extends ColorModel {
 
