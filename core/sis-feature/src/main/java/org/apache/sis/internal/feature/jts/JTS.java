@@ -26,6 +26,12 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.internal.system.Loggers;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
 
@@ -33,6 +39,9 @@ import org.locationtech.jts.geom.Geometry;
  * Utilities for Java Topology Suite (JTS) objects.
  * We use this class for functionalities not supported by Apache SIS with other libraries.
  * For library-agnostic functionalities, see {@link org.apache.sis.internal.feature.Geometries} instead.
+ *
+ * <p>This method may be modified or removed in any future version.
+ * For example we may replace it by a more general mechanism working also on other geometry libraries.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
@@ -45,7 +54,7 @@ public final class JTS extends Static {
      *
      * @see #getCoordinateReferenceSystem(Geometry)
      */
-    public static final String CRS_KEY = "CRS";
+    static final String CRS_KEY = "CRS";
 
     /**
      * Do not allow instantiation of this class.
@@ -93,9 +102,14 @@ public final class JTS extends Static {
     }
 
     /**
-     * Transform the given geometry to the specified Coordinate Reference System (CRS).
+     * Transforms the given geometry to the specified Coordinate Reference System (CRS).
      * If the given CRS or the given geometry is null, the geometry is returned unchanged.
      * If the geometry has no Coordinate Reference System, a {@link TransformException} is thrown.
+     *
+     * <p><b>This operation may be slow!</b>
+     * If many geometries need to be transformed, it is better to fetch the {@link CoordinateOperation} only once,
+     * then invoke {@link #transform(Geometry, CoordinateOperation)} for each geometry. Alternatively the geometries
+     * can be stored in a single geometry collection in order to invoke this method only once.</p>
      *
      * @param  geometry   the geometry to transform, or {@code null}.
      * @param  targetCRS  the target coordinate reference system, or {@code null}.
@@ -109,10 +123,18 @@ public final class JTS extends Static {
         if (geometry != null && targetCRS != null) {
             final CoordinateReferenceSystem sourceCRS = getCoordinateReferenceSystem(geometry);
             if (sourceCRS == null) {
-                throw new TransformException("Geometry CRS is undefined.");
+                throw new TransformException(Errors.format(Errors.Keys.UnspecifiedCRS));
             }
             if (!Utilities.equalsIgnoreMetadata(sourceCRS, targetCRS)) {
-                geometry = transform(geometry, CRS.findOperation(sourceCRS, targetCRS, null));
+                DefaultGeographicBoundingBox areaOfInterest = new DefaultGeographicBoundingBox();
+                try {
+                    final Envelope e = geometry.getEnvelopeInternal();
+                    areaOfInterest.setBounds(new Envelope2D(sourceCRS, e.getMinX(), e.getMinY(), e.getWidth(), e.getHeight()));
+                } catch (TransformException ex) {
+                    areaOfInterest = null;
+                    Logging.ignorableException(Logging.getLogger(Loggers.GEOMETRY), JTS.class, "transform", ex);
+                }
+                geometry = transform(geometry, CRS.findOperation(sourceCRS, targetCRS, areaOfInterest));
             }
         }
         return geometry;

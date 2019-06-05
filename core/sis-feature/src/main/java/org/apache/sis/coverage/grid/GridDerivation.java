@@ -618,7 +618,6 @@ public class GridDerivation {
     {
         if (dimension < cornerToCRS.getSourceDimensions()) {
             final TransformSeparator sep = new TransformSeparator(cornerToCRS);
-            sep.setTrimSourceDimensions(true);
             cornerToCRS = sep.separate();
             modifiedDimensions = sep.getSourceDimensions();
             if (modifiedDimensions.length != dimension) {

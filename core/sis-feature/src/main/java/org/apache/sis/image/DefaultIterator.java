@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.util.Optional;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -149,11 +150,11 @@ class DefaultIterator extends WritablePixelIterator {
      * Returns the order in which pixels are traversed.
      */
     @Override
-    public SequenceType getIterationOrder() {
+    public Optional<SequenceType> getIterationOrder() {
         if (image == null || (tileUpperX - tileLowerX) <=1 && (tileUpperY - tileLowerY) <= 1) {
-            return SequenceType.LINEAR;
+            return Optional.of(SequenceType.LINEAR);
         } else {
-            return null;            // Undefined order.
+            return Optional.empty();                // Undefined order.
         }
     }
 

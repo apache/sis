@@ -2013,12 +2013,9 @@ cmp:    while (ia < lga) {
      * then this method returns the {@code text} unchanged.
      * Otherwise this method returns a new character sequence with all occurrences replaced by {@code replaceBy}.
      *
-     * <p>This method is similar to {@link String#replace(CharSequence, CharSequence)} except for the following:</p>
-     * <ul>
-     *   <li>This method accepts arbitrary {@code CharSequence} objects.</li>
-     *   <li>This method <strong>does not use regular expression</strong>.
-     *       The {@code toSearch} value is searched verbatim.</li>
-     * </ul>
+     * <p>This method is similar to {@link String#replace(CharSequence, CharSequence)} except that is accepts
+     * arbitrary {@code CharSequence} objects. As of Java 10, another difference is that this method does not
+     * create a new {@code String} if {@code toSearch} is equals to {@code replaceBy}.</p>
      *
      * @param  text       the character sequence in which to perform the replacements, or {@code null}.
      * @param  toSearch   the string to replace.
@@ -2036,6 +2033,9 @@ cmp:    while (ia < lga) {
         ArgumentChecks.ensureNonEmpty("toSearch",  toSearch);
         ArgumentChecks.ensureNonNull ("replaceBy", replaceBy);
         if (text != null && !toSearch.equals(replaceBy)) {
+            if (text instanceof String) {
+                return ((String) text).replace(toSearch, replaceBy);
+            }
             final int length = text.length();
             int i = indexOf(text, toSearch, 0, length);
             if (i >= 0) {

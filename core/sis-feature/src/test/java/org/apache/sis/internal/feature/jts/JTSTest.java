@@ -48,8 +48,8 @@ public final strictfp class JTSTest extends TestCase {
      */
     @Test
     public void testGetCoordinateReferenceSystem() throws FactoryException {
-        final GeometryFactory gf = new GeometryFactory();
-        final Geometry geometry = gf.createPoint(new Coordinate(5, 6));
+        final GeometryFactory factory = new GeometryFactory();
+        final Geometry geometry = factory.createPoint(new Coordinate(5, 6));
 
         CoordinateReferenceSystem crs = JTS.getCoordinateReferenceSystem(geometry);
         assertNull(crs);
@@ -72,7 +72,8 @@ public final strictfp class JTSTest extends TestCase {
     }
 
     /**
-     * Tests various {@code transform} methods. This include (sometime indirectly):
+     * Tests various {@code transform} methods. This includes (sometime indirectly):
+     *
      * <ul>
      *   <li>{@link JTS#transform(Geometry, CoordinateReferenceSystem)}</li>
      *   <li>{@link JTS#transform(Geometry, CoordinateOperation)}</li>
@@ -84,8 +85,8 @@ public final strictfp class JTSTest extends TestCase {
      */
     @Test
     public void testTransform() throws FactoryException, TransformException {
-        final GeometryFactory gf = new GeometryFactory();
-        final Geometry in = gf.createPoint(new Coordinate(5, 6));
+        final GeometryFactory factory = new GeometryFactory();
+        final Geometry in = factory.createPoint(new Coordinate(5, 6));
         /*
          * Test exception when transforming geometry without CRS.
          */
