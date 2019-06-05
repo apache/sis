@@ -16,6 +16,7 @@
  */
 package org.apache.sis.console;
 
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -28,7 +29,7 @@ import static org.junit.Assert.*;
  * Tests the {@link CRSCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -39,7 +40,13 @@ public final strictfp class CRSCommandTest extends TestCase {
      * This string uses the native line separator. Consequently test cases comparing
      * against this pattern are expected to use that line separator for every lines.
      */
-    private final String WGS84 =
+    private String WGS84;
+
+    /**
+     * Creates a new test.
+     */
+    public CRSCommandTest() {
+        WGS84 =
             "\\QGeodeticCRS[\"WGS 84\",\n" +
             "  Datum[\"World Geodetic System 1984\",\n" +
             "    Ellipsoid[\"WGS 84\", 6378137.0, 298.257223563]],\n" +
@@ -50,8 +57,14 @@ public final strictfp class CRSCommandTest extends TestCase {
             "  Scope[\"Horizontal component of 3D system.\\E.*\\Q\"],\n" +                      // EPSG geodetic dataset provides more details here.
             "  Area[\"\\E.*\\Q\"],\n" +                                                         // Language may vary because of SIS localization.
             "  BBox[-90.00, -180.00, 90.00, 180.00],\n" +
-            "  Id[\"EPSG\", 4326,\\E.*\\Q URI[\"urn:ogc:def:crs:EPSG:\\E.*\\Q:4326\"]]]\n\\E"   // Version number of EPSG dataset may vary.
-            .replace("\n", System.lineSeparator());
+            "  Id[\"EPSG\", 4326,\\E.*\\Q URI[\"urn:ogc:def:crs:EPSG:\\E.*\\Q:4326\"]]]\n\\E";  // Version number of EPSG dataset may vary.
+        /*
+         * Insert the native line separator in the expected string. We modify the expected string
+         * instead than modifying the `test.outputBuffer` result because we want to verify that the
+         * native line separator appears in every output lines.
+         */
+        WGS84 = CharSequences.replace(WGS84, "\n", System.lineSeparator()).toString();
+    }
 
     /**
      * Tests fetching the CRS from a simple code ({@code "EPSG:4326"}).
