@@ -141,6 +141,7 @@ public final strictfp class TransformSeparatorTest extends TestCase {
         });
         s.clear();
         s.addTargetDimensions(0, 2);
+        s.addSourceDimensionRange(0, 3);
         assertMatrixEquals("transform", matrix, ((LinearTransform) s.separate()).getMatrix(), STRICT);
         assertArrayEquals("sourceDimensions", new int[] {0, 1, 2}, s.getSourceDimensions());
         assertArrayEquals("targetDimensions", new int[] {0, 2},    s.getTargetDimensions());
@@ -263,6 +264,7 @@ public final strictfp class TransformSeparatorTest extends TestCase {
         });
         s.clear();
         s.addTargetDimensions(1, 2, 7);
+        s.addSourceDimensionRange(0, 7);
         MathTransform result = s.separate();
         assertArrayEquals("sourceDimensions", new int[] {0, 1, 2, 3, 4, 5, 6}, s.getSourceDimensions());
         assertArrayEquals("targetDimensions", new int[] {1, 2, 7}, s.getTargetDimensions());
@@ -280,6 +282,7 @@ public final strictfp class TransformSeparatorTest extends TestCase {
         });
         s.clear();
         s.addTargetDimensions(1, 5, 7);
+        s.addSourceDimensionRange(0, 7);
         result = s.separate();
         assertArrayEquals ("sourceDimensions", new int[] {0, 1, 2, 3, 4, 5, 6}, s.getSourceDimensions());
         assertArrayEquals ("targetDimensions", new int[] {1, 5, 7}, s.getTargetDimensions());
@@ -413,13 +416,13 @@ public final strictfp class TransformSeparatorTest extends TestCase {
     }
 
     /**
-     * Tests {@link TransformSeparator#getTrimSourceDimensions()}.
+     * Tests {@link TransformSeparator} with removal of unused source dimensions.
      *
      * @throws FactoryException if an error occurred while creating a new transform.
      */
     @Test
     @DependsOnMethod("testLinearTransform")
-    public void testGetTrimSourceDimensions() throws FactoryException {
+    public void testTrimSourceDimensions() throws FactoryException {
         MathTransform tr = MathTransforms.linear(Matrices.create(3, 4, new double[] {
             0,   0.5, 0,  -90,
             0.5, 0,   0, -180,
@@ -428,7 +431,7 @@ public final strictfp class TransformSeparatorTest extends TestCase {
          * Verify that TransformSeparator does not trim anything if not requested so.
          */
         TransformSeparator s = new TransformSeparator(tr);
-        assertFalse("trimSourceDimensions", s.getTrimSourceDimensions());
+        s.addSourceDimensionRange(0, tr.getSourceDimensions());
         assertSame("No source dimensions should be trimmed if not requested.", tr, s.separate());
         assertArrayEquals(new int[] {0, 1, 2}, s.getSourceDimensions());
         assertArrayEquals(new int[] {0, 1   }, s.getTargetDimensions());
@@ -439,8 +442,7 @@ public final strictfp class TransformSeparatorTest extends TestCase {
             0,   0.5, -90,
             0.5, 0,  -180,
             0,   0,     1);
-        s.setTrimSourceDimensions(true);
-        assertTrue("trimSourceDimensions", s.getTrimSourceDimensions());
+        s.clear();
         MathTransform reduced = s.separate();
         assertNotEquals("separate()", tr, reduced);
         assertArrayEquals(new int[] {0, 1}, s.getSourceDimensions());
@@ -455,7 +457,6 @@ public final strictfp class TransformSeparatorTest extends TestCase {
             0, 0,   0,     1}));
 
         s = new TransformSeparator(tr);
-        s.setTrimSourceDimensions(true);
         reduced = s.separate();
         assertNotEquals("separate()", tr, reduced);
         assertArrayEquals(new int[] {1, 2}, s.getSourceDimensions());

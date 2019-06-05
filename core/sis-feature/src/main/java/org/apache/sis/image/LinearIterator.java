@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.util.Optional;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
@@ -74,8 +75,8 @@ final class LinearIterator extends DefaultIterator {
      * Returns the order in which pixels are traversed.
      */
     @Override
-    public SequenceType getIterationOrder() {
-        return SequenceType.LINEAR;
+    public Optional<SequenceType> getIterationOrder() {
+        return Optional.of(SequenceType.LINEAR);
     }
 
     /**

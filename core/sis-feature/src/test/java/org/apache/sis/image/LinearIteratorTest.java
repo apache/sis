@@ -97,7 +97,7 @@ public final strictfp class LinearIteratorTest extends DefaultIteratorTest {
     @Override
     void createPixelIterator(WritableRaster raster, Rectangle subArea) {
         iterator = new LinearIterator(raster, isWritable ? raster : null, subArea, null);
-        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder().get());
         assertEquals("isWritable", isWritable, iterator.isWritable());
     }
 

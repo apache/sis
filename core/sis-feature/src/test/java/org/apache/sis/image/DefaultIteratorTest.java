@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.util.Optional;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -304,6 +305,15 @@ public strictfp class DefaultIteratorTest extends TestCase {
     }
 
     /**
+     * Verifies that actual iteration order is equals to the expected one.
+     *
+     * @param  singleTile  {@code true} if iteration occurs in a single tile, or {@code false} for the whole image.
+     */
+    private void verifyIterationOrder(final boolean singleTile) {
+        assertEquals("getIterationOrder()", Optional.ofNullable(getIterationOrder(singleTile)), iterator.getIterationOrder());
+    }
+
+    /**
      * Creates a {@code PixelIterator} for a sub-area of given raster.
      * The iterator shall be assigned to the {@link #iterator} field.
      *
@@ -315,7 +325,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
      */
     void createPixelIterator(WritableRaster raster, Rectangle subArea) {
         iterator = new DefaultIterator(raster, isWritable ? raster : null, subArea, null);
-        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder());
+        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder().get());
         assertEquals("isWritable", isWritable, iterator.isWritable());
     }
 
@@ -625,7 +635,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         tileHeight =   5;
         numBands   =   3;
         createPixelIterator(createImage(null), null);
-        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
+        verifyIterationOrder(false);
         verifyIteration(false);
     }
 
@@ -645,7 +655,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         tileHeight =   5;
         numBands   =   2;
         createPixelIterator(createImage(null), null);
-        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
+        verifyIterationOrder(false);
         verifyIteration(false);
 
         iterator.rewind();
@@ -672,7 +682,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(-10, -20, 8, 28);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", getIterationOrder(true), iterator.getIterationOrder());
+        verifyIterationOrder(true);
         verifyIteration(false);
     }
 
@@ -696,7 +706,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(45, -20, 30, 29);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", getIterationOrder(true), iterator.getIterationOrder());
+        verifyIterationOrder(true);
         verifyIteration(false);
     }
 
@@ -721,7 +731,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(68, 5, 4, 4);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", getIterationOrder(true), iterator.getIterationOrder());
+        verifyIterationOrder(true);
         verifyIteration(false);
     }
 
@@ -746,7 +756,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(0, 0, 9, 50);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", getIterationOrder(true), iterator.getIterationOrder());
+        verifyIterationOrder(true);
         verifyIteration(false);
     }
 
@@ -769,7 +779,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(6, 20, 4, 5);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", getIterationOrder(true), iterator.getIterationOrder());
+        verifyIterationOrder(true);
         verifyIteration(false);
     }
 
@@ -793,7 +803,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(-10, -5, 25, 22);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
+        verifyIterationOrder(false);
         verifyIteration(false);
     }
 
@@ -817,7 +827,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(27, -20, 30, 37);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
+        verifyIterationOrder(false);
         verifyIteration(false);
     }
 
@@ -841,7 +851,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(36, 8, 12, 20);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
+        verifyIterationOrder(false);
         verifyIteration(false);
     }
 
@@ -865,7 +875,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(-20, -1, 30, 20);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
+        verifyIterationOrder(false);
         verifyIteration(false);
     }
 
@@ -888,7 +898,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(20, 10, 30, 25);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
+        verifyIterationOrder(false);
         verifyIteration(false);
     }
 
@@ -910,7 +920,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Rectangle subArea = new Rectangle(-10, -10, 150, 80);
         createPixelIterator(createImage(subArea), subArea);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
+        verifyIterationOrder(false);
         verifyIteration(false);
     }
 
@@ -1175,7 +1185,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Dimension window = new Dimension(3, 4);
         createWindowIterator(createImage(null), window);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", getIterationOrder(true), iterator.getIterationOrder());
+        verifyIterationOrder(true);
         verifyWindow(window);
     }
 
@@ -1197,7 +1207,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         final Dimension window = new Dimension(2, 3);
         createWindowIterator(createImage(null), window);
         assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        assertEquals("getIterationOrder()", getIterationOrder(false), iterator.getIterationOrder());
+        verifyIterationOrder(false);
         verifyWindow(window);
     }
 

@@ -17,7 +17,6 @@
 package org.apache.sis.internal.feature.jts;
 
 import org.locationtech.jts.geom.CoordinateSequence;
-import org.locationtech.jts.geom.CoordinateSequenceFactory;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -26,6 +25,7 @@ import org.opengis.referencing.operation.TransformException;
 /**
  * A geometry transformer which uses a {@link MathTransform} for changing coordinate values.
  * This class does not change the number of points.
+ * This class is not thread-safe.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
@@ -38,45 +38,55 @@ final class GeometryCoordinateTransform extends GeometryTransform {
      */
     private final MathTransform transform;
 
-    public GeometryCoordinateTransform(MathTransform transform) {
+    /**
+     * A temporary buffer holding coordinates to transform.
+     * Created when first needed in order to have an estimation of size needed.
+     */
+    private double[] coordinates;
+
+    /**
+     * Creates a new geometry transformer using the given coordinate transform.
+     * It is caller's responsibility to ensure that the number of source and target dimensions
+     * of the given transform are equal to the number of dimensions of the geometries to transform.
+     *
+     * @param  transform  the transform to apply on coordinate values.
+     * @param  factory    the factory to use for creating geometries. Shall not be null.
+     */
+    GeometryCoordinateTransform(final MathTransform transform, final GeometryFactory factory) {
+        super(factory);
         this.transform = transform;
     }
 
-    public GeometryCoordinateTransform(MathTransform transform, final CoordinateSequenceFactory csf) {
-        super(csf);
-        this.transform = transform;
-    }
-
-    public GeometryCoordinateTransform(MathTransform transform, final GeometryFactory gf) {
-        super(gf);
-        this.transform = transform;
-    }
-
+    /**
+     * Transforms the given sequence of coordinate tuples, producing a new sequence of tuples.
+     * This method tries to transform coordinates in batches, in order to reduce the amount of
+     * calls to {@link MathTransform#transform(double[], int, double[], int, int)}.
+     *
+     * @param  sequence   sequence of coordinate tuples to transform.
+     * @param  minPoints  minimum number of points to preserve.
+     * @return the transformed sequence of coordinate tuples.
+     * @throws TransformException if an error occurred while transforming a tuple.
+     */
     @Override
-    protected CoordinateSequence transform(CoordinateSequence in, int minpoints) throws TransformException {
-        final int dim = in.getDimension();
-        final int size = in.size();
-        final CoordinateSequence out = coordinateFactory.create(size, dim);
-
-        final double[] val = new double[dim];
-        for (int i = 0; i<size; i++) {
-            switch (dim) {
-                case 3 :
-                    val[0] = in.getOrdinate(i, 0);
-                    val[1] = in.getOrdinate(i, 1);
-                    val[2] = in.getOrdinate(i, 2);
-                    transform.transform(val, 0, val, 0, 1);
-                    out.setOrdinate(i, 0, val[0]);
-                    out.setOrdinate(i, 1, val[1]);
-                    out.setOrdinate(i, 2, val[2]);
-                    break;
-                default :
-                    val[0] = in.getOrdinate(i, 0);
-                    val[1] = in.getOrdinate(i, 1);
-                    transform.transform(val, 0, val, 0, 1);
-                    out.setOrdinate(i, 0, val[0]);
-                    out.setOrdinate(i, 1, val[1]);
-                    break;
+    protected CoordinateSequence transform(final CoordinateSequence sequence, final int minPoints) throws TransformException {
+        final int srcDim   = transform.getSourceDimensions();
+        final int tgtDim   = transform.getTargetDimensions();
+        final int maxDim   = Math.max(srcDim, tgtDim);
+        final int count    = sequence.size();
+        final int capacity = Math.max(4, Math.min(100, count));
+        final CoordinateSequence out = coordinateFactory.create(count, sequence.getDimension());
+        if (coordinates == null || coordinates.length / maxDim < capacity) {
+            coordinates = new double[capacity * maxDim];
+        }
+        for (int base=0, n; (n = Math.min(count - base, capacity)) > 0; base += n) {
+            int batch = n * srcDim;
+            for (int i=0; i<batch; i++) {
+                coordinates[i] = sequence.getOrdinate(base + i/srcDim, i % srcDim);
+            }
+            transform.transform(coordinates, 0, coordinates, 0, n);
+            batch = n * tgtDim;
+            for (int i=0; i<batch; i++) {
+                out.setOrdinate(base + i/tgtDim, i % tgtDim, coordinates[i]);
             }
         }
         return out;
