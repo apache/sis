@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.Dimension;
@@ -474,11 +475,11 @@ public abstract class PixelIterator {
     /**
      * Returns the order in which pixels are traversed. {@link SequenceType#LINEAR} means that pixels on the first
      * row are traversed from left to right, then pixels on the second row from left to right, <i>etc.</i>
-     * A {@code null} value means that the iteration order is unspecified.
+     * An empty value means that the iteration order is unspecified.
      *
-     * @return order in which pixels are traversed, or {@code null} if unspecified.
+     * @return order in which pixels are traversed.
      */
-    public abstract SequenceType getIterationOrder();
+    public abstract Optional<SequenceType> getIterationOrder();
 
     /**
      * Returns the number of bands (samples per pixel) in the image or raster.
