@@ -97,15 +97,6 @@ public class TransformSeparator {
     private final MathTransformsOrFactory factory;
 
     /**
-     * Whether {@link #sourceDimensions} have been specified explicitly. If {@code false}, then {@link #separate()}
-     * will try to reduce the set of source dimensions to the smallest set required for computing the target dimensions.
-     *
-     * <p>The default value is {@code false}. The value become {@code true} if the user specified explicitly the desired
-     * source dimensions, in which case removing source dimensions become disallowed.</p>
-     */
-    private boolean isSourceSpecified;
-
-    /**
      * Constructs a separator for the given transform.
      *
      * @param transform  the transform to separate.
@@ -133,9 +124,8 @@ public class TransformSeparator {
      * for example an horizontal and a vertical component.
      */
     public void clear() {
-        sourceDimensions  = null;
-        targetDimensions  = null;
-        isSourceSpecified = false;
+        sourceDimensions = null;
+        targetDimensions = null;
     }
 
     /**
@@ -254,7 +244,6 @@ public class TransformSeparator {
     public void addSourceDimensions(final int... dimensions) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("dimensions", dimensions);
         sourceDimensions = add(sourceDimensions, dimensions, transform.getSourceDimensions());
-        isSourceSpecified = true;
     }
 
     /**
@@ -268,7 +257,6 @@ public class TransformSeparator {
      */
     public void addSourceDimensionRange(final int lower, final int upper) throws IllegalArgumentException {
         sourceDimensions = add(sourceDimensions, lower, upper, transform.getSourceDimensions());
-        isSourceSpecified = true;
     }
 
     /**
@@ -375,6 +363,10 @@ public class TransformSeparator {
      *
      *   <li>If target dimensions were unspecified, then the returned transform will expect only the specified
      *       source dimensions as inputs, and the target dimensions will be inferred automatically.</li>
+     *
+     *   <li>If neither source and target positions were specified, then the returned transform will have the same
+     *       set of target dimensions, but only the set of source dimensions required for computing those targets.
+     *       In other words, this method drops unused source dimensions.</li>
      * </ul>
      *
      * The source and target dimensions actually used can be queried by calls to {@link #getSourceDimensions()}
@@ -385,6 +377,7 @@ public class TransformSeparator {
      */
     public MathTransform separate() throws FactoryException {
         MathTransform tr = transform;
+        final boolean isSourceSpecified = (sourceDimensions != null);
         if (sourceDimensions == null || containsAll(sourceDimensions, 0, tr.getSourceDimensions())) {
             if (targetDimensions != null && !containsAll(targetDimensions, 0, tr.getTargetDimensions())) {
                 tr = filterTargetDimensions(tr, targetDimensions);
@@ -690,7 +683,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
 
     /**
      * Removes the sources dimensions that are not required for computing the target dimensions.
-     * This method is invoked only if {@link #isSourceSpecified} is {@code false}.
+     * This method is invoked only if {@link #sourceDimensions} is non-null at {@link #separate()} invocation time.
      * This method can operate only on the first transform of a transformation chain.
      * If this method succeed, then {@link #sourceDimensions} will be updated.
      *
