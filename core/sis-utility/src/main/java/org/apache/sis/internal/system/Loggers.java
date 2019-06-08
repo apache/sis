@@ -35,7 +35,7 @@ import org.apache.sis.util.logging.Logging;
  * However we also have a few more specialized loggers, which are listed here.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -76,6 +76,11 @@ public final class Loggers extends Static {
      * Note that WKT formatting often occurs in different packages.
      */
     public static final String WKT = "org.apache.sis.io.wkt";
+
+    /**
+     * The logger for operations related to filters.
+     */
+    public static final String FILTER = "org.apache.sis.filter";
 
     /**
      * The logger for operations related to geometries.
