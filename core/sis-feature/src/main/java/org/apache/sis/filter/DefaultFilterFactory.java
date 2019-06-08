@@ -30,7 +30,6 @@ import org.opengis.filter.capability.SpatialOperator;       // Resolve ambiguity
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -91,8 +90,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public BBOX bbox(final Expression e, final Envelope bounds)
-    {
+    public BBOX bbox(final Expression e, final Envelope bounds) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -185,7 +183,8 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public DWithin dwithin(final String propertyName, final Geometry geometry,
-            final double distance, final String units) {
+            final double distance, final String units)
+    {
         final PropertyName name = property(propertyName);
         final Literal geom = literal(geometry);
         return dwithin(name, geom, distance, units);
@@ -196,7 +195,8 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public DWithin dwithin(final Expression left, final Expression right,
-            final double distance, final String units) {
+            final double distance, final String units)
+    {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -297,7 +297,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public FeatureId featureId(final String id) {
-        return new DefaultFeatureId(id);
+        return new DefaultObjectId(id);
     }
 
     /**
@@ -305,7 +305,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public GmlObjectId gmlObjectId(final String id) {
-        return new DefaultFeatureId(id);
+        return new DefaultObjectId(id);
     }
 
     // FILTERS /////////////////////////////////////////////////////////////////
@@ -315,8 +315,6 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public And and(final Filter filter1, final Filter filter2) {
-        ArgumentChecks.ensureNonNull("filter1", filter1);
-        ArgumentChecks.ensureNonNull("filter2", filter2);
         return and(Arrays.asList(filter1, filter2));
     }
 
@@ -325,7 +323,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public And and(final List<Filter> filters) {
-        return new DefaultAnd(filters);
+        return new LogicalFunction.And(filters);
     }
 
     /**
@@ -333,8 +331,6 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Or or(final Filter filter1, final Filter filter2) {
-        ArgumentChecks.ensureNonNull("filter1", filter1);
-        ArgumentChecks.ensureNonNull("filter2", filter2);
         return or(Arrays.asList(filter1, filter2));
     }
 
@@ -343,7 +339,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Or or(final List<Filter> filters) {
-        return new DefaultOr(filters);
+        return new LogicalFunction.Or(filters);
     }
 
     /**
@@ -351,7 +347,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Not not(final Filter filter) {
-        return new DefaultNot(filter);
+        return new UnaryFunction.Not(filter);
     }
 
     /**
@@ -359,7 +355,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Id id(final Set<? extends Identifier> ids) {
-        return new DefaultId(ids);
+        return new FilterByIdentifier(ids);
     }
 
     /**
@@ -371,20 +367,20 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * Creates a new expression retrieving values from a property of the given name.
+     *
+     * @param  name  name of the property (usually a feature attribute).
      */
     @Override
     public PropertyName property(final String name) {
-        ArgumentChecks.ensureNonNull("name", name);
-        return new DefaultPropertyName(name);
+        return new LeafExpression.Property(name);
     }
 
     /**
      * {@inheritDoc }
      */
     @Override
-    public PropertyIsBetween between(final Expression expr,
-            final Expression lower, final Expression upper) {
+    public PropertyIsBetween between(final Expression expression, final Expression lower, final Expression upper) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -392,8 +388,8 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public PropertyIsEqualTo equals(final Expression expr1, final Expression expr2) {
-        return equal(expr1, expr2, true, MatchAction.ANY);
+    public PropertyIsEqualTo equals(final Expression expression1, final Expression expression2) {
+        return equal(expression1, expression2, true, MatchAction.ANY);
     }
 
     /**
@@ -401,28 +397,127 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyIsEqualTo equal(final Expression expression1, final Expression expression2,
-                                   final boolean matchCase, final MatchAction matchAction)
+                                   final boolean isMatchingCase, final MatchAction matchAction)
     {
-        ArgumentChecks.ensureNonNull("expression1", expression1);
-        ArgumentChecks.ensureNonNull("expression2", expression2);
-        ArgumentChecks.ensureNonNull("matchAction", matchAction);
-        return new DefaultPropertyIsEqualTo(expression1, expression2, matchCase, matchAction);
+        return new ComparisonFunction.EqualTo(expression1, expression2, isMatchingCase, matchAction);
     }
 
     /**
      * {@inheritDoc }
      */
     @Override
-    public PropertyIsNotEqualTo notEqual(final Expression expr1, final Expression expr2) {
-        return notEqual(expr1, expr2,false, MatchAction.ANY);
+    public PropertyIsNotEqualTo notEqual(final Expression expression1, final Expression expression2) {
+        return notEqual(expression1, expression2, true, MatchAction.ANY);
     }
 
     /**
      * {@inheritDoc }
      */
     @Override
-    public PropertyIsNotEqualTo notEqual(final Expression expr1,
-            final Expression expr2, final boolean matchCase, final MatchAction matchAction) {
+    public PropertyIsNotEqualTo notEqual(final Expression expression1, final Expression expression2,
+                                         final boolean isMatchingCase, final MatchAction matchAction)
+    {
+        return new ComparisonFunction.NotEqualTo(expression1, expression2, isMatchingCase, matchAction);
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public PropertyIsGreaterThan greater(final Expression expression1, final Expression expression2) {
+        return greater(expression1,expression2,false, MatchAction.ANY);
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public PropertyIsGreaterThan greater(final Expression expression1, final Expression expression2,
+                                         final boolean isMatchingCase, final MatchAction matchAction)
+    {
+        return new ComparisonFunction.GreaterThan(expression1, expression2, isMatchingCase, matchAction);
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public PropertyIsGreaterThanOrEqualTo greaterOrEqual(final Expression expression1, final Expression expression2) {
+        return greaterOrEqual(expression1, expression2,false, MatchAction.ANY);
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public PropertyIsGreaterThanOrEqualTo greaterOrEqual(final Expression expression1, final Expression expression2,
+                                                         final boolean isMatchingCase, final MatchAction matchAction)
+    {
+        return new ComparisonFunction.GreaterThanOrEqualTo(expression1, expression2, isMatchingCase, matchAction);
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public PropertyIsLessThan less(final Expression expression1, final Expression expression2) {
+        return less(expression1, expression2, false, MatchAction.ANY);
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public PropertyIsLessThan less(final Expression expression1, final Expression expression2,
+                                   final boolean isMatchingCase, MatchAction matchAction)
+    {
+        return new ComparisonFunction.LessThan(expression1, expression2, isMatchingCase, matchAction);
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public PropertyIsLessThanOrEqualTo lessOrEqual(final Expression expression1, final Expression expression2) {
+        return lessOrEqual(expression1, expression2, false, MatchAction.ANY);
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public PropertyIsLessThanOrEqualTo lessOrEqual(final Expression expression1, final Expression expression2,
+                                                   final boolean isMatchingCase, final MatchAction matchAction)
+    {
+        return new ComparisonFunction.LessThanOrEqualTo(expression1, expression2, isMatchingCase, matchAction);
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public PropertyIsLike like(final Expression expression, final String pattern) {
+        return like(expression, pattern, "*", "?", "\\");
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public PropertyIsLike like(final Expression expression, final String pattern,
+            final String wildcard, final String singleChar, final String escape)
+    {
+        return like(expression,pattern,wildcard,singleChar,escape,false);
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public PropertyIsLike like(final Expression expression, final String pattern,
+            final String wildcard, final String singleChar,
+            final String escape, final boolean isMatchingCase)
+    {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -430,114 +525,15 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public PropertyIsGreaterThan greater(final Expression expr1,
-            final Expression expr2) {
-        return greater(expr1,expr2,false, MatchAction.ANY);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public PropertyIsGreaterThan greater(final Expression expr1,
-            final Expression expr2, final boolean matchCase, final MatchAction matchAction) {
-        return new DefaultPropertyIsGreaterThan(expr1, expr2, matchCase, matchAction);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public PropertyIsGreaterThanOrEqualTo greaterOrEqual(
-            final Expression expr1, final Expression expr2) {
-        return greaterOrEqual(expr1, expr2,false, MatchAction.ANY);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public PropertyIsGreaterThanOrEqualTo greaterOrEqual(
-            final Expression expr1, final Expression expr2, final boolean matchCase, final MatchAction matchAction) {
-        return new DefaultPropertyIsGreaterThanOrEqualTo(expr1, expr2, matchCase, matchAction);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public PropertyIsLessThan less(final Expression expr1, final Expression expr2) {
-        return less(expr1, expr2, false, MatchAction.ANY);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public PropertyIsLessThan less(final Expression expr1,
-            final Expression expr2, final boolean matchCase, MatchAction matchAction) {
-        return new DefaultPropertyIsLessThan(expr1, expr2, matchCase, matchAction);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public PropertyIsLessThanOrEqualTo lessOrEqual(
-            final Expression expr1, final Expression expr2) {
-        return lessOrEqual(expr1, expr2, false, MatchAction.ANY);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public PropertyIsLessThanOrEqualTo lessOrEqual(final Expression expr1,
-            final Expression expr2, final boolean matchCase, final MatchAction matchAction) {
-        return new DefaultPropertyIsLessThanOrEqualTo(expr1, expr2, matchCase, matchAction);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public PropertyIsLike like(final Expression expr, final String pattern) {
-        return like(expr, pattern, "*", "?", "\\");
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public PropertyIsLike like(final Expression expr, final String pattern,
-            final String wildcard, final String singleChar, final String escape) {
-        return like(expr,pattern,wildcard,singleChar,escape,false);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public PropertyIsLike like(final Expression expr, final String pattern,
-            final String wildcard, final String singleChar,
-            final String escape, final boolean matchCase) {
-        return new DefaultPropertyIsLike(expr, pattern, wildcard, singleChar, escape, matchCase);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
     public PropertyIsNull isNull(final Expression expression) {
-        ArgumentChecks.ensureNonNull("expression", expression);
-        return new DefaultPropertyIsNull(expression);
+        return new UnaryFunction.IsNull(expression);
     }
 
     /**
      * {@inheritDoc }
      */
     @Override
-    public PropertyIsNil isNil(Expression expr) {
+    public PropertyIsNil isNil(Expression expression) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -547,7 +543,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public After after(Expression expr1, Expression expr2) {
+    public After after(Expression expression1, Expression expression2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -555,7 +551,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public AnyInteracts anyInteracts(Expression expr1, Expression expr2) {
+    public AnyInteracts anyInteracts(Expression expression1, Expression expression2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -563,7 +559,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public Before before(Expression expr1, Expression expr2) {
+    public Before before(Expression expression1, Expression expression2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -571,7 +567,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public Begins begins(Expression expr1, Expression expr2) {
+    public Begins begins(Expression expression1, Expression expression2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -579,7 +575,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public BegunBy begunBy(Expression expr1, Expression expr2) {
+    public BegunBy begunBy(Expression expression1, Expression expression2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -587,7 +583,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public During during(Expression expr1, Expression expr2) {
+    public During during(Expression expression1, Expression expression2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -595,7 +591,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public Ends ends(Expression expr1, Expression expr2) {
+    public Ends ends(Expression expression1, Expression expression2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -603,7 +599,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public EndedBy endedBy(Expression expr1, Expression expr2) {
+    public EndedBy endedBy(Expression expression1, Expression expression2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -611,7 +607,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public Meets meets(Expression expr1, Expression expr2) {
+    public Meets meets(Expression expression1, Expression expression2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -619,7 +615,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public MetBy metBy(Expression expr1, Expression expr2) {
+    public MetBy metBy(Expression expression1, Expression expression2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -627,7 +623,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public OverlappedBy overlappedBy(Expression expr1, Expression expr2) {
+    public OverlappedBy overlappedBy(Expression expression1, Expression expression2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -635,7 +631,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public TContains tcontains(Expression expr1, Expression expr2) {
+    public TContains tcontains(Expression expression1, Expression expression2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -643,7 +639,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public TEquals tequals(Expression expr1, Expression expr2) {
+    public TEquals tequals(Expression expression1, Expression expression2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -651,7 +647,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public TOverlaps toverlaps(Expression expr1, Expression expr2) {
+    public TOverlaps toverlaps(Expression expression1, Expression expression2) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -661,32 +657,32 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public Add add(final Expression expr1, final Expression expr2) {
-        return new DefaultAdd(expr1, expr2);
+    public Add add(final Expression expression1, final Expression expression2) {
+        return new ArithmeticFunction.Add(expression1, expression2);
     }
 
     /**
      * {@inheritDoc }
      */
     @Override
-    public Divide divide(final Expression expr1, final Expression expr2) {
-        return new DefaultDivide(expr1, expr2);
+    public Divide divide(final Expression expression1, final Expression expression2) {
+        return new ArithmeticFunction.Divide(expression1, expression2);
     }
 
     /**
      * {@inheritDoc }
      */
     @Override
-    public Multiply multiply(final Expression expr1, final Expression expr2) {
-        return new DefaultMultiply(expr1, expr2);
+    public Multiply multiply(final Expression expression1, final Expression expression2) {
+        return new ArithmeticFunction.Multiply(expression1, expression2);
     }
 
     /**
      * {@inheritDoc }
      */
     @Override
-    public Subtract subtract(final Expression expr1, final Expression expr2) {
-        return new DefaultSubtract(expr1, expr2);
+    public Subtract subtract(final Expression expression1, final Expression expression2) {
+        return new ArithmeticFunction.Subtract(expression1, expression2);
     }
 
     /**
@@ -702,8 +698,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final Object value) {
-        ArgumentChecks.ensureNonNull("value", value);
-        return new DefaultLiteral<>(value);
+        return new LeafExpression.Literal(value);
     }
 
     /**
@@ -711,7 +706,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final byte value) {
-        return new DefaultLiteral<>(value);
+        return new LeafExpression.Literal(value);
     }
 
     /**
@@ -719,7 +714,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final short value) {
-        return new DefaultLiteral<>(value);
+        return new LeafExpression.Literal(value);
     }
 
     /**
@@ -727,7 +722,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final int value) {
-        return new DefaultLiteral<>(value);
+        return new LeafExpression.Literal(value);
     }
 
     /**
@@ -735,7 +730,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final long value) {
-        return new DefaultLiteral<>(value);
+        return new LeafExpression.Literal(value);
     }
 
     /**
@@ -743,7 +738,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final float value) {
-        return new DefaultLiteral<>(value);
+        return new LeafExpression.Literal(value);
     }
 
     /**
@@ -751,7 +746,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final double value) {
-        return new DefaultLiteral<>(value);
+        return new LeafExpression.Literal(value);
     }
 
     /**
@@ -759,7 +754,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final char value) {
-        return new DefaultLiteral<>(value);
+        return new LeafExpression.Literal(value);
     }
 
     /**
@@ -767,7 +762,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final boolean value) {
-        return new DefaultLiteral<>(value);
+        return new LeafExpression.Literal(value);
     }
 
     // SORT BY /////////////////////////////////////////////////////////////////
@@ -794,8 +789,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public SpatialOperator spatialOperator(final String name,
-            final GeometryOperand[] geometryOperands) {
+    public SpatialOperator spatialOperator(final String name, final GeometryOperand[] geometryOperands) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -38,7 +38,7 @@ public interface FeatureExpression {
      * {@link org.opengis.feature.AttributeType} or a {@link org.opengis.feature.FeatureAssociationRole}
      * but not an {@link org.opengis.feature.Operation}.
      *
-     * @param  type the type of features on which to apply this expression.
+     * @param  type  the type of features on which to apply this expression.
      * @return expected expression result type.
      * @throws IllegalArgumentException if this method can not determine the property type for the given feature type.
      */
