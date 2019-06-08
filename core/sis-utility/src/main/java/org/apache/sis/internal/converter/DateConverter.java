@@ -118,7 +118,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
     public static final class Long extends DateConverter<java.lang.Long> {
         private static final long serialVersionUID = 5145114630594761657L;
 
-        public Long() { // Instantiated by ServiceLoader.
+        public Long() {                     // Instantiated by ServiceLoader.
             super(java.lang.Long.class);
             inverse = new Inverse(this);
         }
@@ -139,7 +139,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
     public static final class SQL extends DateConverter<java.sql.Date> {
         private static final long serialVersionUID = -7444502675467008640L;
 
-        public SQL() { // Instantiated by ServiceLoader.
+        public SQL() {                      // Instantiated by ServiceLoader.
             super(java.sql.Date.class);
             inverse = new IdentityConverter<>(targetClass, Date.class, this);
         }
@@ -159,7 +159,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
     public static final class Timestamp extends DateConverter<java.sql.Timestamp> {
         private static final long serialVersionUID = 7629460512978844462L;
 
-        public Timestamp() { // Instantiated by ServiceLoader.
+        public Timestamp() {                    // Instantiated by ServiceLoader.
             super(java.sql.Timestamp.class);
             inverse = new IdentityConverter<>(targetClass, Date.class, this);
         }
@@ -171,4 +171,13 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
             return new java.sql.Timestamp(source.getTime());
         }
     }
+
+    /*
+     * We do not yet provide converter to java.time.Instant. If we do so, we need to create an InstantConverter class
+     * doing the inverse conversion.  Reminder: java.sql.Date and java.sql.Time are not convertible to Instant (their
+     * Date.toInstant() method throws UnsupportedOperationException), but java.sql.Timestamp is.
+     *
+     * If conversion to/from java.time.Instant is added, see if some code can be shared with
+     * org.apache.sis.filter.ComparisonFunction.
+     */
 }

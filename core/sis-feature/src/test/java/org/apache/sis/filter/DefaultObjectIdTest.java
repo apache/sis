@@ -18,24 +18,23 @@ package org.apache.sis.filter;
 
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import static org.apache.sis.test.Assert.assertSerializedEquals;
 import org.apache.sis.test.TestCase;
-import org.junit.Assert;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
 import org.opengis.filter.FilterFactory2;
 
+import static org.apache.sis.test.Assert.*;
+
+
 /**
- * Tests {@link DefaultFeatureId}.
+ * Tests {@link DefaultObjectId}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public class DefaultFeatureIdTest extends TestCase {
+public final strictfp class DefaultObjectIdTest extends TestCase {
     /**
      * Test factory.
      */
@@ -47,40 +46,48 @@ public class DefaultFeatureIdTest extends TestCase {
     }
 
     /**
+     * Creates 3 features for testing purpose. Features are (in that order):
+     *
+     * <ol>
+     *   <li>A feature type with an identifier as a string.</li>
+     *   <li>A feature type with an integer identifier.</li>
+     *   <li>A feature type with no identifier.</li>
+     * </ol>
+     */
+    private static Feature[] features() {
+        final Feature[] features = new Feature[3];
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
+        ftb.setName("type1");
+        ftb.addAttribute(String.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        Feature f = ftb.build().newInstance();
+        f.setPropertyValue("att", "123");
+        features[0] = f;
+
+        ftb.clear();
+        ftb.setName("type2");
+        ftb.addAttribute(Integer.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        f = ftb.build().newInstance();
+        f.setPropertyValue("att", 123);
+        features[1] = f;
+
+        ftb.clear();
+        ftb.setName("type3");
+        f = ftb.build().newInstance();
+        features[2] = f;
+
+        return features;
+    }
+
+    /**
      * Tests evaluation.
      */
     @Test
     public void testEvaluate() {
-        final DefaultFeatureId fid = new DefaultFeatureId("123");
-
-        // a feature type with a string identifier
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.setName("type1");
-        ftb.addAttribute(String.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
-        final FeatureType typeString = ftb.build();
-
-        // a feature type with an integer identifier
-        ftb.clear();
-        ftb.setName("type2");
-        ftb.addAttribute(Integer.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
-        final FeatureType typeInt = ftb.build();
-
-        // a feature type with no identifier
-        ftb.clear();
-        ftb.setName("type3");
-        final FeatureType typeNone = ftb.build();
-
-        final Feature feature1 = typeString.newInstance();
-        feature1.setPropertyValue("att", "123");
-
-        final Feature feature2 = typeInt.newInstance();
-        feature2.setPropertyValue("att", 123);
-
-        final Feature feature3 = typeNone.newInstance();
-
-        Assert.assertTrue(fid.matches(feature1));
-        Assert.assertTrue(fid.matches(feature2));
-        Assert.assertFalse(fid.matches(feature3));
+        final DefaultObjectId fid = new DefaultObjectId("123");
+        final Feature[] features = features();
+        assertTrue (fid.matches(features[0]));
+        assertTrue (fid.matches(features[1]));
+        assertFalse(fid.matches(features[2]));
     }
 
     /**
@@ -88,7 +95,6 @@ public class DefaultFeatureIdTest extends TestCase {
      */
     @Test
     public void testSerialize() {
-        assertSerializedEquals(new DefaultFeatureId("abc"));
+        assertSerializedEquals(new DefaultObjectId("abc"));
     }
-
 }

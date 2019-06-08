@@ -21,31 +21,35 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import static org.apache.sis.test.Assert.assertSerializedEquals;
 import org.apache.sis.test.TestCase;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.identity.Identifier;
 
+import static org.apache.sis.test.Assert.*;
+
+
 /**
- * Tests {@link DefaultId}.
+ * Tests {@link FilterByIdentifier}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public class DefaultIdTest extends TestCase {
+public final strictfp class FilterByIdentifierTest extends TestCase {
+    /**
+     * The factory to use for creating the objects to test.
+     */
+    private final FilterFactory2 factory = new DefaultFilterFactory();
+
     /**
      * Test factory.
      */
     @Test
     public void testConstructor() {
-        final FilterFactory2 factory = new DefaultFilterFactory();
         assertNotNull(factory.id(Collections.singleton(factory.featureId("abc"))));
     }
 
@@ -54,13 +58,10 @@ public class DefaultIdTest extends TestCase {
      */
     @Test
     public void testEvaluate() {
-        final FilterFactory2 factory = new DefaultFilterFactory();
-
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         ftb.setName("type");
         ftb.addAttribute(String.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
         final FeatureType type = ftb.build();
-
 
         final Feature feature1 = type.newInstance();
         feature1.setPropertyValue("att", "123");
@@ -74,11 +75,11 @@ public class DefaultIdTest extends TestCase {
         final Set<Identifier> ids = new HashSet<>();
         ids.add(factory.featureId("abc"));
         ids.add(factory.featureId("123"));
-        final DefaultId id = new DefaultId(ids);
+        final FilterByIdentifier id = new FilterByIdentifier(ids);
 
-        assertEquals(true, id.evaluate(feature1));
-        assertEquals(true, id.evaluate(feature2));
-        assertEquals(false, id.evaluate(feature3));
+        assertTrue (id.evaluate(feature1));
+        assertTrue (id.evaluate(feature2));
+        assertFalse(id.evaluate(feature3));
     }
 
     /**
@@ -86,8 +87,6 @@ public class DefaultIdTest extends TestCase {
      */
     @Test
     public void testSerialize() {
-        final FilterFactory2 factory = new DefaultFilterFactory();
-        assertSerializedEquals(new DefaultId(Collections.singleton(factory.featureId("abc"))));
+        assertSerializedEquals(new FilterByIdentifier(Collections.singleton(factory.featureId("abc"))));
     }
-
 }
