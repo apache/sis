@@ -134,6 +134,24 @@ public final strictfp class FractionTest extends TestCase {
     }
 
     /**
+     * Tests the {@link Fraction#valueOf(double)} method.
+     */
+    @Test
+    public void testValueOfDouble() {
+        assertEquals(new Fraction(  0,  1), Fraction.valueOf(0));
+        assertEquals(new Fraction(  0, -1), Fraction.valueOf(-0d));
+        assertEquals(new Fraction(100,  1), Fraction.valueOf(100));
+        assertEquals(new Fraction(256,  1), Fraction.valueOf(256));
+        assertEquals(new Fraction(-27,  2), Fraction.valueOf(-13.5));
+        assertEquals(new Fraction(  1,  8), Fraction.valueOf(  0.125));
+        assertEquals(new Fraction( -1,  8), Fraction.valueOf( -0.125));
+        assertEquals(new Fraction(  1, 10), Fraction.valueOf(  0.1));
+        assertEquals(new Fraction( -1, 50), Fraction.valueOf( -0.02));
+        assertEquals(new Fraction( -5,  3), Fraction.valueOf(-5/3d));
+        assertEquals(new Fraction(  8, 27), Fraction.valueOf(8/27d));
+    }
+
+    /**
      * Tests the {@link Fraction#toString()} method.
      */
     @Test

@@ -16,8 +16,11 @@
  */
 package org.apache.sis.util;
 
-import org.junit.Test;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import org.apache.sis.math.Fraction;
 import org.apache.sis.test.TestCase;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.util.Numbers.*;
@@ -27,7 +30,7 @@ import static org.apache.sis.util.Numbers.*;
  * Tests the {@link Numbers} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -37,20 +40,23 @@ public final strictfp class NumbersTest extends TestCase {
      */
     @Test
     public void testIsInteger() {
-        assertTrue (isInteger(Byte     .TYPE));
-        assertTrue (isInteger(Short    .TYPE));
-        assertTrue (isInteger(Integer  .TYPE));
-        assertTrue (isInteger(Long     .TYPE));
-        assertFalse(isInteger(Float    .TYPE));
-        assertFalse(isInteger(Double   .TYPE));
-        assertTrue (isInteger(Byte     .class));
-        assertTrue (isInteger(Short    .class));
-        assertTrue (isInteger(Integer  .class));
-        assertTrue (isInteger(Long     .class));
-        assertFalse(isInteger(Float    .class));
-        assertFalse(isInteger(Double   .class));
-        assertFalse(isInteger(String   .class));
-        assertFalse(isInteger(Character.class));
+        assertTrue (isInteger(Byte      .TYPE));
+        assertTrue (isInteger(Short     .TYPE));
+        assertTrue (isInteger(Integer   .TYPE));
+        assertTrue (isInteger(Long      .TYPE));
+        assertFalse(isInteger(Float     .TYPE));
+        assertFalse(isInteger(Double    .TYPE));
+        assertTrue (isInteger(Byte      .class));
+        assertTrue (isInteger(Short     .class));
+        assertTrue (isInteger(Integer   .class));
+        assertTrue (isInteger(Long      .class));
+        assertFalse(isInteger(Float     .class));
+        assertFalse(isInteger(Double    .class));
+        assertFalse(isInteger(String    .class));
+        assertFalse(isInteger(Character .class));
+        assertFalse(isInteger(Fraction  .class));
+        assertTrue (isInteger(BigInteger.class));
+        assertFalse(isInteger(BigDecimal.class));
     }
 
     /**
@@ -58,20 +64,23 @@ public final strictfp class NumbersTest extends TestCase {
      */
     @Test
     public void testIsFloat() {
-        assertFalse(isFloat(Byte     .TYPE));
-        assertFalse(isFloat(Short    .TYPE));
-        assertFalse(isFloat(Integer  .TYPE));
-        assertFalse(isFloat(Long     .TYPE));
-        assertTrue (isFloat(Float    .TYPE));
-        assertTrue (isFloat(Double   .TYPE));
-        assertFalse(isFloat(Byte     .class));
-        assertFalse(isFloat(Short    .class));
-        assertFalse(isFloat(Integer  .class));
-        assertFalse(isFloat(Long     .class));
-        assertTrue (isFloat(Float    .class));
-        assertTrue (isFloat(Double   .class));
-        assertFalse(isFloat(String   .class));
-        assertFalse(isFloat(Character.class));
+        assertFalse(isFloat(Byte      .TYPE));
+        assertFalse(isFloat(Short     .TYPE));
+        assertFalse(isFloat(Integer   .TYPE));
+        assertFalse(isFloat(Long      .TYPE));
+        assertTrue (isFloat(Float     .TYPE));
+        assertTrue (isFloat(Double    .TYPE));
+        assertFalse(isFloat(Byte      .class));
+        assertFalse(isFloat(Short     .class));
+        assertFalse(isFloat(Integer   .class));
+        assertFalse(isFloat(Long      .class));
+        assertTrue (isFloat(Float     .class));
+        assertTrue (isFloat(Double    .class));
+        assertFalse(isFloat(String    .class));
+        assertFalse(isFloat(Character .class));
+        assertTrue (isFloat(Fraction  .class));
+        assertFalse(isFloat(BigInteger.class));
+        assertTrue (isFloat(BigDecimal.class));
     }
 
     /**
@@ -187,7 +196,7 @@ public final strictfp class NumbersTest extends TestCase {
      */
     @Test
     public void testCast() {
-        @SuppressWarnings("UnnecessaryBoxing")
+        @SuppressWarnings({"deprecation", "UnnecessaryBoxing"})
         final Integer value = new Integer(10); // Intentionally a new instance.
         assertEquals(Byte   .valueOf((byte)   10), cast(value, Byte   .class));
         assertEquals(Short  .valueOf((short)  10), cast(value, Short  .class));

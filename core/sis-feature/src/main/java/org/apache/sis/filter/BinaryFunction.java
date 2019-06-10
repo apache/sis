@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.math.BigInteger;
 import java.math.BigDecimal;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.math.Fraction;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -119,6 +120,10 @@ abstract class BinaryFunction extends Node {
                 return applyAsInteger(Numbers.cast(left,  BigInteger.class),
                                       Numbers.cast(right, BigInteger.class));
             }
+            case Numbers.FRACTION: {
+                return applyAsFraction(Numbers.cast(left,  Fraction.class),
+                                       Numbers.cast(right, Fraction.class));
+            }
             case Numbers.LONG:
             case Numbers.INTEGER:
             case Numbers.SHORT:
@@ -145,6 +150,13 @@ abstract class BinaryFunction extends Node {
      * Otherwise the result is usually a {@link Double}.
      */
     protected abstract Number applyAsDouble(double left, double right);
+
+    /**
+     * Calculates this function using given operands of {@code Fraction} type. If this function is a filter,
+     * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
+     * Otherwise the result is usually a {@link Fraction}.
+     */
+    protected abstract Number applyAsFraction(Fraction left, Fraction right);
 
     /**
      * Calculates this function using given operands of {@code BigInteger} type. If this function is a filter,

@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.chrono.ChronoLocalDate;
+import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
@@ -307,8 +308,9 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
     protected boolean compare(Instant left, Instant right) {return fromCompareTo(left.compareTo(right));}
 
     /** Delegates to {@link BigDecimal#compareTo(BigDecimal)} and interprets the result with {@link #fromCompareTo(int)}. */
-    @Override protected final Number applyAsDecimal(BigDecimal left, BigDecimal right) {return number(fromCompareTo(left.compareTo(right)));}
-    @Override protected final Number applyAsInteger(BigInteger left, BigInteger right) {return number(fromCompareTo(left.compareTo(right)));}
+    @Override protected final Number applyAsDecimal (BigDecimal left, BigDecimal right) {return number(fromCompareTo(left.compareTo(right)));}
+    @Override protected final Number applyAsInteger (BigInteger left, BigInteger right) {return number(fromCompareTo(left.compareTo(right)));}
+    @Override protected final Number applyAsFraction(Fraction   left, Fraction   right) {return number(fromCompareTo(left.compareTo(right)));}
 
 
     /**

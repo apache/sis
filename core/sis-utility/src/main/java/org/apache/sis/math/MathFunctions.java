@@ -299,24 +299,47 @@ public final class MathFunctions extends Static {
     }
 
     /**
-     * Computes 10 raised to the power of <var>x</var>. Invoking this method is equivalent to invoking
-     * <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>, but is slightly more accurate
-     * in the special case where the given argument is an integer.
+     * Computes the result of {@code base} argument raised to the power given by {@code exponent} argument.
+     * This method computes the same value than {@link Math#pow(double, double)} but using only integer arithmetic.
+     * The result must be representable as a 64 bits integers ({@code long} primitive type),
+     * otherwise an {@link ArithmeticException} is thrown. The result is guaranteed exact,
+     * in contrast to results represented as {@code double} floating point values
+     * which may be approximate for magnitudes greater than 2<sup>52</sup>.
+     * This method may also be faster.
      *
-     * @param  x  the exponent.
-     * @return 10 raised to the given exponent.
+     * <div class="note"><b>Implementation note:</b> this method uses
+     * <a href="https://en.wikipedia.org/wiki/Exponentiation_by_squaring">exponentiation by squaring</a> technic.</div>
      *
-     * @see #pow10(int)
+     * The type of the {@code base} argument is {@code long} for convenience, since this method is used in contexts
+     * where relatively large integers are handled. However any value greater than the capacity of {@code int} type
+     * is guaranteed to fail with {@link ArithmeticException} unless {@code exponent} is 0 or 1.
+     * Likewise any {@code exponent} value greater than 62 is guaranteed to fail unless {@code base} is 0 or 1.
+     *
+     * @param  base      the value to raise to an exponent.
+     * @param  exponent  the exponent, as zero or positive number.
+     * @return the value <var>base</var><sup><var>exponent</var></sup> as a 64 bits integer.
+     * @throws ArithmeticException if the given exponent is negative, or if the result overflow integer arithmetic.
+     *
      * @see Math#pow(double, double)
-     * @see Math#log10(double)
+     *
+     * @since 1.0
      */
-    public static double pow10(final double x) {
-        final int ix = (int) x;
-        if (ix == x) {
-            return DecimalFunctions.pow10(ix);
-        } else {
-            return Math.pow(10, x);
+    public static long pow(long base, int exponent) {
+        long result = 1;
+        if (exponent >= 1) {
+            if ((exponent & 1) != 0) {
+                result = base;
+            }
+            while ((exponent >>>= 1) != 0) {
+                base = Math.multiplyExact(base, base);
+                if ((exponent & 1) != 0) {
+                    result = Math.multiplyExact(result, base);
+                }
+            }
+        } else if (exponent < 0) {
+            throw new ArithmeticException(Errors.format(Errors.Keys.NegativeArgument_2, "exponent", exponent));
         }
+        return result;
     }
 
     /**
@@ -346,6 +369,27 @@ public final class MathFunctions extends Static {
      */
     public static double pow10(final int x) {
         return DecimalFunctions.pow10(x);
+    }
+
+    /**
+     * Computes 10 raised to the power of <var>x</var>. Invoking this method is equivalent to invoking
+     * <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>, but is slightly more accurate
+     * in the special case where the given argument is an integer.
+     *
+     * @param  x  the exponent.
+     * @return 10 raised to the given exponent.
+     *
+     * @see #pow10(int)
+     * @see Math#pow(double, double)
+     * @see Math#log10(double)
+     */
+    public static double pow10(final double x) {
+        final int ix = (int) x;
+        if (ix == x) {
+            return DecimalFunctions.pow10(ix);
+        } else {
+            return Math.pow(10, x);
+        }
     }
 
     /**
