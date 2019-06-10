@@ -114,7 +114,12 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
     @Override
     public T apply(final S source) {
         final double sourceValue = source.doubleValue();
-        T target = Numbers.cast(source, targetClass);
+        T target;
+        try {
+            target = Numbers.cast(source, targetClass);
+        } catch (IllegalArgumentException e) {
+            throw new UnconvertibleObjectException(formatErrorMessage(source), e);
+        }
         final double targetValue = target.doubleValue();
         if (Double.doubleToLongBits(targetValue) != Double.doubleToLongBits(sourceValue)) {
             /*

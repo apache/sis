@@ -21,6 +21,7 @@ import java.math.BigInteger;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.feature.FeatureExpression;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.Fraction;
 
 // Branch-dependent imports
@@ -94,14 +95,20 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
     @SuppressWarnings("unchecked")
     public final <T> T evaluate(final Object feature, final Class<T> target) {
         ArgumentChecks.ensureNonNull("target", target);
-        if (Number.class.isAssignableFrom(target)) {
+        if (Number.class.isAssignableFrom(target)) try {
             final Number left = (Number) expression1.evaluate(feature, target);
             if (left != null) {
                 final Number right = (Number) expression2.evaluate(feature, target);
                 if (right != null) {
-                    return (T) Numbers.cast(apply(left, right), (Class<? extends Number>) target);
+                    final Number result = apply(left, right);
+                    final Number casted = Numbers.cast(result, (Class<? extends Number>) target);
+                    if (Numerics.equals(result.doubleValue(), casted.doubleValue())) {
+                        return (T) casted;
+                    }
                 }
             }
+        } catch (ArithmeticException e) {
+            warning(e);
         }
         return null;
     }

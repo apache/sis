@@ -80,7 +80,7 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
         try {
             return ObjectConverters.convert(value, target);
         } catch (UnconvertibleObjectException e) {
-            warning("evaluate", e);
+            warning(e);
             return null;                    // As per method contract.
         }
     }
@@ -137,7 +137,7 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
             if (candidate instanceof Feature) try {
                 return ((Feature) candidate).getPropertyValue(name);
             } catch (PropertyNotFoundException ex) {
-                warning("evaluate", ex);
+                warning(ex);
                 // Null will be returned below.
             } else if (candidate instanceof Map<?,?>) {
                 return ((Map<?,?>) candidate).get(name);

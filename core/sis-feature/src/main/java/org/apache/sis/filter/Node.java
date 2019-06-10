@@ -162,10 +162,11 @@ abstract class Node implements Serializable {
 
     /**
      * Reports that an operation failed because of the given exception.
+     * This method assumes that the warning occurred in an {@code evaluate(…)} method.
      *
      * @todo Consider defining a {@code Context} class providing, among other information, listeners where to report warnings.
      */
-    final void warning(final String caller, final Exception e) {
-        Logging.recoverableException(Logging.getLogger(Loggers.FILTER), getClass(), caller, e);
+    final void warning(final Exception e) {
+        Logging.recoverableException(Logging.getLogger(Loggers.FILTER), getClass(), "evaluate", e);
     }
 }
