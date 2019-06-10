@@ -24,11 +24,13 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.SortedMap;
+import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.Resources;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
@@ -251,12 +253,35 @@ next:       for (final String name : axisNames) {
         for (final SortedMap.Entry<VariableInfo,Integer> entry : variables.entrySet()) {
             final int targetDim = entry.getValue();
             final VariableInfo axis = entry.getKey();
+            /*
+             * In Apache SIS implementation, the abbreviation determines the axis type. If a "_coordinateaxistype" attribute
+             * exists, il will have precedence over all other heuristic rules in this method. Otherwise check "degrees_east"
+             * and "degrees_west" units before other heuristic rules.
+             */
             char abbreviation = getAxisType(axis.getAxisType());
             if (abbreviation == 0) {
-                abbreviation = getAxisType(axis.getName());
+                if (Units.isAngular(axis.getUnit())) {
+                    final AxisDirection direction = AxisDirections.absolute(Axis.direction(axis.getUnitsString()));
+                    if (AxisDirection.EAST.equals(direction)) {
+                        abbreviation = 'λ';
+                    } else if (AxisDirection.NORTH.equals(direction)) {
+                        abbreviation = 'φ';
+                    }
+                }
+                /*
+                 * If the abbreviation is still unknown, look at the "long_name", "description", "title" or "standard_name"
+                 * attributes. The long name is sometime "Longitude" or "Latitude" while the variable name is only "x" or "y".
+                 * We test the variable name last because that name is more at risk of being an uninformative "x" or "y" name.
+                 */
                 if (abbreviation == 0) {
-                    if (Units.isTemporal(axis.getUnit())) {
-                        abbreviation = 't';
+                    abbreviation = getAxisType(axis.getDescription());
+                    if (abbreviation == 0) {
+                        abbreviation = getAxisType(axis.getName());
+                        if (abbreviation == 0) {
+                            if (Units.isTemporal(axis.getUnit())) {
+                                abbreviation = 't';
+                            }
+                        }
                     }
                 }
             }
