@@ -20,6 +20,7 @@ import java.io.Serializable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -73,6 +74,113 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
     }
 
     /**
+     * Converts the given IEEE 754 double-precision value to a fraction. If successful, this method returns a fraction
+     * such as {@link #doubleValue()} is equal to the given value in the sense of {@link Double#equals(Object)}:
+     * infinities, positive and negative zeros are preserved, but various NaN values are collapsed to a single NaN value.
+     *
+     * <div class="note"><b>Design note:</b>
+     * this method does not return approximated values because it is difficult to choose which fraction is best.
+     * For example choosing an approximated fraction for π value is quite arbitrary, and searching the fraction
+     * closer than any other fraction representable by this class is computationally expansive.
+     * Even with common fractions, the algorithm currently implemented in this class can detect that 1.6666666666666667
+     * {@linkplain Double#equals(Object) is equal to} 5⁄3 but can not detect easily that 1.66666666666666 (same number
+     * with two decimal digits dropped) is close to 5⁄3.</div>
+     *
+     * This method accepts only values between {@value Integer#MIN_VALUE} and {@value Integer#MAX_VALUE} inclusive,
+     * i.e. values in the range of 32-bits integers. If the given value has fraction digits, then the validity range
+     * will be smaller depending on the {@linkplain #denominator} required for representing that value.
+     *
+     * @param  value  the double-precision value to convert to a fraction.
+     * @return a fraction such as {@link #doubleValue()} is equals to the given value.
+     * @throws IllegalArgumentException if the given value can not be converted to a fraction.
+     *
+     * @since 1.0
+     */
+    public static Fraction valueOf(final double value) {
+        if (value == 0) {
+            return new Fraction(0, MathFunctions.isNegativeZero(value) ? -1 : +1);
+        }
+        if (!Double.isFinite(value)) {
+            return new Fraction(Double.isNaN(value) ? 0 : (value >= 0) ? 1 : -1, 0);
+        }
+        /*
+         * If the value has fraction digits, converting that value into a fraction requires that we assume a base,
+         * since the fraction denominator will be a multiple of that base. We will try base 2, 10, 3, 5, 7, 13, …,
+         * in that order. Base 2 is tried first because it is fast, produces exact results (if successful) and its
+         * implementation works with integer numbers too. Base 10 is tried next because it is likely to match user
+         * input. Then prime numbers are tried until `doubleValue()` produce a result identical to `value`. If no
+         * exact match is found, the best match will be taken.
+         */
+        long significand = Numerics.getSignificand(value);
+        int  exponent    = Math.getExponent(value) - Numerics.SIGNIFICAND_SIZE;                 // Power of 2.
+        int  shift       = Long.numberOfTrailingZeros(significand);
+        significand >>>= shift;
+        exponent      += shift;
+        if (exponent > -Integer.SIZE && exponent < Long.numberOfLeadingZeros(significand)) {
+            /*
+             * Build the fraction using arithmetic in base 2. This path is also executed for all integer values,
+             * because they have exact representation in base 2. We do not need to simplify the fraction because
+             * the denominator is always a power of 2 while the numerator is always odd; such fractions can not
+             * be simplified. Since we do not need to invoke `simplify(…)`, this is the fatest path.
+             */
+            final int den;
+            if (exponent >= 0) {
+                significand <<= exponent;
+                den = 1;
+            } else {
+                den = 1 << -exponent;
+            }
+            if ((significand & ~Integer.MAX_VALUE) == 0) {
+                if (value < 0) significand = -significand;
+                return new Fraction((int) significand, den);
+            }
+        } else {
+            /*
+             * Can not build the fraction using exact arithmetic in base 2. Try approximations using arithmetic in other bases,
+             * starting with base 10. We will multiply the numerator and denominator by the largest power of 10 (or other base)
+             * that can be used without causing an overflow, then simplify the fraction.
+             */
+            final double toMaximalSignificand = ((1L << Numerics.SIGNIFICAND_SIZE) - 1) / Math.ceil(Math.abs(value));
+            if (toMaximalSignificand > 1) {
+                exponent = Numerics.toExp10(Math.getExponent(toMaximalSignificand));                // Power of 10.
+                double factor = DecimalFunctions.pow10(exponent + 1);
+                if (factor > toMaximalSignificand) {
+                    factor = DecimalFunctions.pow10(exponent);
+                }
+                assert factor >= 1 && factor <= (1L << Numerics.SIGNIFICAND_SIZE) - 1 : factor;     // For use as denominator.
+                try {
+                    final Fraction f = simplify(null, Math.round(value * factor), Math.round(factor));
+                    if (f.doubleValue() == value) return f;
+                } catch (ArithmeticException e) {
+                    // Ignore. We will try other bases below.
+                }
+                /*
+                 * Arithmetic in base 10 failed too. Try prime numbers. This is the same approach
+                 * than the one we used for base 10 above, but slower because using more costly math.
+                 * The factor is:
+                 *                      factor = Bⁿ
+                 *
+                 * where n is the greatest integer such as factor ≦ toMaximalSignificand.
+                 */
+                final double logMaxFactor = Math.log(toMaximalSignificand);
+                for (int i=1; i<MathFunctions.PRIMES_LENGTH_16_BITS; i++) {
+                    final int base = MathFunctions.primeNumberAt(i);
+                    if (base > toMaximalSignificand) break;                             // Stop if exponent would be < 1.
+                    exponent = (int) (logMaxFactor / Math.log(base));                   // Power of base.
+                    final long den = MathFunctions.pow(base, exponent);
+                    try {
+                        final Fraction f = simplify(null, Math.round(value * den), den);
+                        if (f.doubleValue() == value) return f;
+                    } catch (ArithmeticException e) {
+                        // Ignore. More tries in the loop.
+                    }
+                }
+            }
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, Fraction.class));
+    }
+
+    /**
      * Returns a unique fraction instance equals to {@code this}.
      * If this method has been invoked previously on another {@code Fraction} with the same value than {@code this},
      * then that previous instance is returned (provided that it has not yet been garbage collected). Otherwise this
@@ -96,7 +204,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @return the simplest fraction equivalent to this fraction.
      */
     public Fraction simplify() {
-        return simplify(numerator, denominator);
+        return simplify(this, numerator, denominator);
     }
 
     /**
@@ -114,7 +222,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      *
      * Above result still slightly smaller in magnitude than {@code Long.MIN_VALUE}.
      */
-    private Fraction simplify(long num, long den) {
+    private static Fraction simplify(final Fraction f, long num, long den) {
         if (num == Long.MIN_VALUE || den == Long.MIN_VALUE) {
             throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
         }
@@ -151,7 +259,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
                 }
             }
         }
-        return (num == numerator && den == denominator) ? this
+        return (f != null && num == f.numerator && den == f.denominator) ? f
                : new Fraction(Math.toIntExact(num), Math.toIntExact(den));
     }
 
@@ -186,7 +294,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
         // Intermediate result must be computed in a type wider that the 'numerator' and 'denominator' type.
         final long td = this .denominator;
         final long od = other.denominator;
-        return simplify(Math.addExact(od * numerator, td * other.numerator), od * td);
+        return simplify(this, Math.addExact(od * numerator, td * other.numerator), od * td);
     }
 
     /**
@@ -200,7 +308,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
         // Intermediate result must be computed in a type wider that the 'numerator' and 'denominator' type.
         final long td = this .denominator;
         final long od = other.denominator;
-        return simplify(Math.subtractExact(od * numerator, td * other.numerator), od * td);
+        return simplify(this, Math.subtractExact(od * numerator, td * other.numerator), od * td);
     }
 
     /**
@@ -211,8 +319,8 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @throws ArithmeticException if the result overflows.
      */
     public Fraction multiply(final Fraction other) {
-        return simplify(numerator   * (long) other.numerator,
-                        denominator * (long) other.denominator);
+        return simplify(this, numerator   * (long) other.numerator,
+                              denominator * (long) other.denominator);
     }
 
     /**
@@ -223,8 +331,8 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @throws ArithmeticException if the result overflows.
      */
     public Fraction divide(final Fraction other) {
-        return simplify(numerator   * (long) other.denominator,
-                        denominator * (long) other.numerator);
+        return simplify(this, numerator   * (long) other.denominator,
+                              denominator * (long) other.numerator);
     }
 
     /**

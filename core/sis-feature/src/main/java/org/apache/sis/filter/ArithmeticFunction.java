@@ -21,6 +21,9 @@ import java.math.BigInteger;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.feature.FeatureExpression;
+import org.apache.sis.math.Fraction;
+
+// Branch-dependent imports
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
@@ -125,10 +128,11 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         @Override protected char symbol() {return '+';}
 
         /** Applies this expression to the given operands. */
-        @Override protected Number applyAsDouble (double     left, double     right) {return left + right;}
-        @Override protected Number applyAsDecimal(BigDecimal left, BigDecimal right) {return left.add(right);}
-        @Override protected Number applyAsInteger(BigInteger left, BigInteger right) {return left.add(right);}
-        @Override protected Number applyAsLong   (long       left, long       right) {return Math.addExact(left, right);}
+        @Override protected Number applyAsDouble  (double     left, double     right) {return left + right;}
+        @Override protected Number applyAsFraction(Fraction   left, Fraction   right) {return left.add(right);}
+        @Override protected Number applyAsDecimal (BigDecimal left, BigDecimal right) {return left.add(right);}
+        @Override protected Number applyAsInteger (BigInteger left, BigInteger right) {return left.add(right);}
+        @Override protected Number applyAsLong    (long       left, long       right) {return Math.addExact(left, right);}
 
         /** Implementation of the visitor pattern. */
         @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
@@ -158,10 +162,11 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         @Override protected char symbol() {return '−';}
 
         /** Applies this expression to the given operands. */
-        @Override protected Number applyAsDouble (double     left, double     right) {return left - right;}
-        @Override protected Number applyAsDecimal(BigDecimal left, BigDecimal right) {return left.subtract(right);}
-        @Override protected Number applyAsInteger(BigInteger left, BigInteger right) {return left.subtract(right);}
-        @Override protected Number applyAsLong   (long       left, long       right) {return Math.subtractExact(left, right);}
+        @Override protected Number applyAsDouble  (double     left, double     right) {return left - right;}
+        @Override protected Number applyAsFraction(Fraction   left, Fraction   right) {return left.subtract(right);}
+        @Override protected Number applyAsDecimal (BigDecimal left, BigDecimal right) {return left.subtract(right);}
+        @Override protected Number applyAsInteger (BigInteger left, BigInteger right) {return left.subtract(right);}
+        @Override protected Number applyAsLong    (long       left, long       right) {return Math.subtractExact(left, right);}
 
         /** Implementation of the visitor pattern. */
         @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
@@ -191,10 +196,11 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         @Override protected char symbol() {return '×';}
 
         /** Applies this expression to the given operands. */
-        @Override protected Number applyAsDouble (double     left, double     right) {return left * right;}
-        @Override protected Number applyAsDecimal(BigDecimal left, BigDecimal right) {return left.multiply(right);}
-        @Override protected Number applyAsInteger(BigInteger left, BigInteger right) {return left.multiply(right);}
-        @Override protected Number applyAsLong   (long       left, long       right) {return Math.multiplyExact(left, right);}
+        @Override protected Number applyAsDouble  (double     left, double     right) {return left * right;}
+        @Override protected Number applyAsFraction(Fraction   left, Fraction   right) {return left.multiply(right);}
+        @Override protected Number applyAsDecimal (BigDecimal left, BigDecimal right) {return left.multiply(right);}
+        @Override protected Number applyAsInteger (BigInteger left, BigInteger right) {return left.multiply(right);}
+        @Override protected Number applyAsLong    (long       left, long       right) {return Math.multiplyExact(left, right);}
 
         /** Implementation of the visitor pattern. */
         @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
@@ -224,9 +230,10 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         @Override protected char symbol() {return '÷';}
 
         /** Applies this expression to the given operands. */
-        @Override protected Number applyAsDouble (double     left, double     right) {return left / right;}
-        @Override protected Number applyAsDecimal(BigDecimal left, BigDecimal right) {return left.divide(right);}
-        @Override protected Number applyAsInteger(BigInteger left, BigInteger right) {
+        @Override protected Number applyAsDouble  (double     left, double     right) {return left / right;}
+        @Override protected Number applyAsFraction(Fraction   left, Fraction   right) {return left.divide(right);}
+        @Override protected Number applyAsDecimal (BigDecimal left, BigDecimal right) {return left.divide(right);}
+        @Override protected Number applyAsInteger (BigInteger left, BigInteger right) {
             BigInteger[] r = left.divideAndRemainder(right);
             if (BigInteger.ZERO.equals(r[1])) {
                 return r[0];

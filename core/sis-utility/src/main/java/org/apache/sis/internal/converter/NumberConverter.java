@@ -37,8 +37,9 @@ import org.apache.sis.util.resources.Errors;
  * value is converted. However performance is not the primary concern here, since those converters
  * will typically be used by code doing more costly work (e.g. the {@code sis-metadata} module
  * providing {@code Map} views using Java reflection). So we rather try to be more compact.
- * If nevertheless performance appears to be a problem, consider reverting to revision 1455255
- * of this class, which was using one subclass per target type as described above.
+ * If nevertheless performance appears to be a problem, consider reverting to revision
+ * {@code d73a10558dda4b41723d4f5652a792ae9c24f69e} (subversion: 1455255) of this class,
+ * which was using one subclass per target type as described above.
  *
  * <div class="section">Immutability and thread safety</div>
  * This class and all inner classes are immutable, and thus inherently thread-safe.
@@ -121,7 +122,7 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
              * in a (double → long) cast, in which case the difference should be smaller than 1.
              */
             final double delta = Math.abs(targetValue - sourceValue);
-            if (!(delta < 0.5)) { // Use '!' for catching NaN.
+            if (!(delta < 0.5)) {                                       // Use '!' for catching NaN.
                 if (delta < 1) {
                     target = Numbers.cast(Math.round(sourceValue), targetClass);
                 } else {
