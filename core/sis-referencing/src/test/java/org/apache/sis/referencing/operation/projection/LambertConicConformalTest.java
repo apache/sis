@@ -169,7 +169,7 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
         if (transform == null) {                                // May have been initialized by 'testSphericalCase'.
             createNormalizedProjection(true, 40);               // Elliptical case
         }
-        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         tolerance = 1E-9;
         verifyDerivative(toRadians( 0), toRadians( 0));

@@ -58,7 +58,7 @@ public final class Utilities extends Static {
      * </ul>
      *
      * If a more lenient comparison allowing slight differences in numerical values is wanted,
-     * then {@link #equalsApproximatively(Object, Object)} can be used instead.
+     * then {@link #equalsApproximately(Object, Object)} can be used instead.
      *
      * <div class="section">Implementation note</div>
      * This is a convenience method for the following method call:
@@ -108,8 +108,18 @@ public final class Utilities extends Static {
      * @see #deepEquals(Object, Object, ComparisonMode)
      * @see ComparisonMode#APPROXIMATE
      */
-    public static boolean equalsApproximatively(final Object object1, final Object object2) {
+    public static boolean equalsApproximately(final Object object1, final Object object2) {
         return deepEquals(object1, object2, ComparisonMode.APPROXIMATE);
+    }
+
+    /**
+     * @deprecated Renamed {@link #equalsApproximately(Object, Object)}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-440">SIS-440</a>
+     */
+    @Deprecated
+    public static boolean equalsApproximatively(final Object object1, final Object object2) {
+        return equalsApproximately(object1, object2);
     }
 
     /**
@@ -127,7 +137,7 @@ public final class Utilities extends Static {
      * @return {@code true} if both objects are equal for the given level of strictness.
      *
      * @see #equalsIgnoreMetadata(Object, Object)
-     * @see #equalsApproximatively(Object, Object)
+     * @see #equalsApproximately(Object, Object)
      */
     public static boolean deepEquals(final Object object1, final Object object2, final ComparisonMode mode) {
         if (object1 == object2) {
