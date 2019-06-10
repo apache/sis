@@ -423,7 +423,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
                     isMaxIncluded = isMinIncluded;
                     isMinIncluded = sb;
                 }
-                if (band.getDataType().number < Numbers.FLOAT && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
+                if (band.getDataType().number <= Numbers.LONG && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
                     range = NumberRange.create(Math.round(minimum), isMinIncluded, Math.round(maximum), isMaxIncluded);
                 } else {
                     range = NumberRange.create(minimum, isMinIncluded, maximum, isMaxIncluded);

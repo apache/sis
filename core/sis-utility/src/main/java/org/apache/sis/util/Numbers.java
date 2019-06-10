@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import org.apache.sis.math.Fraction;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -38,7 +39,7 @@ import static java.lang.Double.doubleToLongBits;
  * Static methods working with {@link Number} objects, and a few primitive types by extension.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.math.MathFunctions
  *
@@ -52,19 +53,21 @@ import static java.lang.Double.doubleToLongBits;
 public final class Numbers extends Static {
     /**
      * Constant of value {@value} used in {@code switch} statements or as index in arrays.
-     * This enumeration provides the following guarantees (some Apache SIS code rely on them):
+     * This enumeration provides the following guarantees (some Apache SIS codes rely on them):
      *
      * <ul>
      *   <li>{@code OTHER} value is 0.</li>
-     *   <li>Primitive types are enumerated in this exact order (from lower value to higher value):
+     *   <li>Primitive types are enumerated in this exact order
+     *       (from lower value to higher value, but not necessarily as consecutive values):
      *       {@code BYTE}, {@code SHORT}, {@code INTEGER}, {@code LONG}, {@code FLOAT}, {@code DOUBLE}.</li>
-     *   <li>{@link java.math} types of greater capacity that primitive types ({@code BIG_DECIMAL}
+     *   <li>{@link java.math} types of greater capacity than primitive types ({@code BIG_DECIMAL}
      *       and {@code BIG_INTEGER}) have higher enumeration values.</li>
+     *   <li>{@link Fraction} is considered as a kind of floating point value.</li>
      * </ul>
      */
     public static final byte
-            BIG_DECIMAL=10, BIG_INTEGER=9,
-            DOUBLE=8, FLOAT=7, LONG=6, INTEGER=5, SHORT=4, BYTE=3, CHARACTER=2, BOOLEAN=1, OTHER=0;
+            BIG_DECIMAL=11, BIG_INTEGER=10, FRACTION=7,
+            DOUBLE=9, FLOAT=8, LONG=6, INTEGER=5, SHORT=4, BYTE=3, CHARACTER=2, BOOLEAN=1, OTHER=0;
 
     /**
      * Mapping between a primitive type and its wrapper, if any.
@@ -74,12 +77,13 @@ public final class Numbers extends Static {
      * behavior since {@code Class} is final and does not override the {@code equals(Object)} and {@code hashCode()}
      * methods. The {@code IdentityHashMap} Javadoc claims that it is faster than the regular {@code HashMap}.
      * But maybe the most interesting property is that it allocates less objects since {@code IdentityHashMap}
-     * implementation doesn't need the chain of objects created by {@code HashMap}.</div>
+     * implementation does not need the chain of objects created by {@code HashMap}.</div>
      */
-    private static final Map<Class<?>,Numbers> MAPPING = new IdentityHashMap<>(11);
+    private static final Map<Class<?>,Numbers> MAPPING = new IdentityHashMap<>(12);
     static {
         new Numbers(BigDecimal.class, true, false, BIG_DECIMAL);
         new Numbers(BigInteger.class, false, true, BIG_INTEGER);
+        new Numbers(Fraction  .class, true, false, FRACTION);
         new Numbers(Double   .TYPE, Double   .class, true,  false, (byte) Double   .SIZE, DOUBLE,    'D', Numerics .valueOf(Double.NaN));
         new Numbers(Float    .TYPE, Float    .class, true,  false, (byte) Float    .SIZE, FLOAT,     'F', Float    .valueOf(Float .NaN));
         new Numbers(Long     .TYPE, Long     .class, false, true,  (byte) Long     .SIZE, LONG,      'J', Long     .valueOf(        0L));
@@ -110,10 +114,10 @@ public final class Numbers extends Static {
         this.isInteger = isInteger;
         this.size      = -1;
         this.ordinal   = ordinal;
-        this.internal  = 'L'; // Defined by Java, and tested elsewhere in this class.
+        this.internal  = 'L';                           // Defined by Java, and tested elsewhere in this class.
         this.nullValue = null;
         if (MAPPING.put(type, this) != null) {
-            throw new AssertionError(); // Should never happen.
+            throw new AssertionError();                 // Should never happen.
         }
     }
 
@@ -135,7 +139,7 @@ public final class Numbers extends Static {
         this.internal  = internal;
         this.nullValue = nullValue;
         if (MAPPING.put(primitive, this) != null || MAPPING.put(wrapper, this) != null) {
-            throw new AssertionError(); // Should never happen.
+            throw new AssertionError();                         // Should never happen.
         }
     }
 
@@ -149,6 +153,7 @@ public final class Numbers extends Static {
     /**
      * Returns {@code true} if the given {@code type} is a floating point type. The floating point types
      * are {@link Float}, {@code float}, {@link Double}, {@code double} and {@link BigDecimal}.
+     * {@link Fraction} is also considered as a kind of floating point values.
      *
      * @param  type  the primitive type or wrapper class to test (can be {@code null}).
      * @return {@code true} if {@code type} is one of the known types capable to represent floating point numbers.
@@ -181,7 +186,7 @@ public final class Numbers extends Static {
      *
      * @param  type  the primitive type (can be {@code null}).
      * @return the number of bits, or 0 if {@code type} is null.
-     * @throws IllegalArgumentException if the given type is unknown.
+     * @throws IllegalArgumentException if the given type is not one of the types supported by this {@code Numbers} class.
      */
     public static int primitiveBitCount(final Class<?> type) throws IllegalArgumentException {
         final Numbers mapping = MAPPING.get(type);
@@ -190,8 +195,7 @@ public final class Numbers extends Static {
             if (size >= 0) {
                 return size;
             }
-        }
-        if (type == null) {
+        } else if (type == null) {
             return 0;
         }
         throw unknownType(type);
@@ -228,46 +232,44 @@ public final class Numbers extends Static {
     /**
      * Returns the widest type of two numbers. Numbers {@code n1} and {@code n2} can be instance of
      * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
-     * {@link BigInteger} or {@link BigDecimal} types.
+     * {@link Fraction}, {@link BigInteger} or {@link BigDecimal} types.
      *
      * <p>If one of the given argument is null, then this method returns the class of the non-null argument.
      * If both arguments are null, then this method returns {@code null}.</p>
      *
      * @param  n1  the first number, or {@code null}.
      * @param  n2  the second number, or {@code null}.
-     * @return the widest type of the given numbers, or {@code null} if not {@code n1} and {@code n2} are null.
-     * @throws IllegalArgumentException if a number is not of a known type.
+     * @return the widest type of the given numbers, or {@code null} if both {@code n1} and {@code n2} are null.
+     * @throws IllegalArgumentException if a number is not an instance of a supported type.
      *
      * @see #widestClass(Number, Number)
      * @see #narrowestClass(Number, Number)
      */
-    public static Class<? extends Number> widestClass(final Number n1, final Number n2)
-            throws IllegalArgumentException
-    {
+    public static Class<? extends Number> widestClass(final Number n1, final Number n2) throws IllegalArgumentException {
         return widestClass((n1 != null) ? n1.getClass() : null,
                            (n2 != null) ? n2.getClass() : null);
     }
 
     /**
      * Returns the widest of the given types. Classes {@code c1} and {@code c2} can be
-     * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float},
-     * {@link Double}, {@link BigInteger} or {@link BigDecimal} types.
+     * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
+     * {@link Fraction}, {@link BigInteger} or {@link BigDecimal} types.
      *
      * <p>If one of the given argument is null, then this method returns the non-null argument.
      * If both arguments are null, then this method returns {@code null}.</p>
      *
-     * Example:
+     * <div class="note"><b>Example:</b>
+     * in the following code, {@code type} is set to {@code Long.class}:
      *
      * {@preformat java
-     *     widestClass(Short.class, Long.class);
+     *     Class<?> type = widestClass(Short.class, Long.class);
      * }
-     *
-     * returns {@code Long.class}.
+     * </div>
      *
      * @param  c1  the first number type, or {@code null}.
      * @param  c2  the second number type, or {@code null}.
      * @return the widest of the given types, or {@code null} if both {@code c1} and {@code c2} are null.
-     * @throws IllegalArgumentException if one of the given types is unknown.
+     * @throws IllegalArgumentException if one of the given types is not supported by this {@code Numbers} class.
      *
      * @see #widestClass(Class, Class)
      * @see #narrowestClass(Number, Number)
@@ -290,14 +292,14 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Returns the narrowest type of two numbers. Numbers {@code n1} and {@code n2} must be instance
-     * of any of {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}
-     * {@link Double}, {@link BigInteger} or {@link BigDecimal} types.
+     * Returns the narrowest type of two numbers. Numbers {@code n1} and {@code n2} can be instance of
+     * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
+     * {@link Fraction}, {@link BigInteger} or {@link BigDecimal} types.
      *
-     * @param  n1  the first number.
-     * @param  n2  the second number.
-     * @return the narrowest type of the given numbers.
-     * @throws IllegalArgumentException if a number is not of a known type.
+     * @param  n1  the first number, or {@code null}.
+     * @param  n2  the second number, or {@code null}.
+     * @return the narrowest type of the given numbers, or {@code null} if both {@code n1} and {@code n2} are null.
+     * @throws IllegalArgumentException if a number is not an instance of a supported type.
      *
      * @see #narrowestClass(Class, Class)
      * @see #widestClass(Class, Class)
@@ -311,24 +313,24 @@ public final class Numbers extends Static {
 
     /**
      * Returns the narrowest of the given types. Classes {@code c1} and {@code c2} can be
-     * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float},
-     * {@link Double}, {@link BigInteger} or {@link BigDecimal} types.
+     * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
+     * {@link Fraction}, {@link BigInteger} or {@link BigDecimal} types.
      *
      * <p>If one of the given argument is null, then this method returns the non-null argument.
      * If both arguments are null, then this method returns {@code null}.</p>
      *
-     * Example:
+     * <div class="note"><b>Example:</b>
+     * in the following code, {@code type} is set to {@code Short.class}:
      *
      * {@preformat java
-     *     narrowestClass(Short.class, Long.class);
+     *     Class<?> type = widestClass(Short.class, Long.class);
      * }
-     *
-     * returns {@code Short.class}.
+     * </div>
      *
      * @param  c1  the first number type, or {@code null}.
      * @param  c2  the second number type, or {@code null}.
      * @return the narrowest of the given types, or {@code null} if both {@code c1} and {@code c2} are null.
-     * @throws IllegalArgumentException if one of the given types is unknown.
+     * @throws IllegalArgumentException if one of the given types is not supported by this {@code Numbers} class.
      *
      * @see #narrowestClass(Number, Number)
      * @see #widestClass(Class, Class)
@@ -356,9 +358,9 @@ public final class Numbers extends Static {
      *
      * <ul>
      *   <li>If the given value is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given value can not be casted from {@code double} to an other type
+     *   <li>Otherwise if the given value can not be casted from {@code double} to another type
      *       without precision lost, return {@code Double.class}.</li>
-     *   <li>Otherwise if the given value can not be casted from {@code float} to an other type
+     *   <li>Otherwise if the given value can not be casted from {@code float} to another type
      *       without precision lost, return {@code Float.class}.</li>
      *   <li>Otherwise if the given value is between {@value java.lang.Byte#MIN_VALUE} and
      *       {@value java.lang.Byte#MAX_VALUE}, then this method returns {@code Byte.class};</li>
@@ -472,8 +474,10 @@ public final class Numbers extends Static {
      * @see #narrowestNumber(Number)
      */
     public static Number narrowestNumber(final String value) throws NumberFormatException {
-        // Do not trim whitespaces. It is up to the caller to do that if he wants.
-        // For such low level function, we are better to avoid hidden initiative.
+        /*
+         * Do not trim whitespaces. It is up to the caller to do that if he wants.
+         * For such low level function, we are better to avoid hidden initiative.
+         */
         final int length = value.length();
         for (int i=0; i<length; i++) {
             final char c = value.charAt(i);
@@ -487,7 +491,7 @@ public final class Numbers extends Static {
     /**
      * Casts a number to the specified type. The target type can be one of {@link Byte},
      * {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
-     * {@link BigInteger} or {@link BigDecimal}.
+     * {@link Fraction}, {@link BigInteger} or {@link BigDecimal}.
      * This method makes the following choice:
      *
      * <ul>
@@ -509,22 +513,22 @@ public final class Numbers extends Static {
      * @param  number  the number to cast, or {@code null}.
      * @param  type    the destination type.
      * @return the number casted to the given type, or {@code null} if the given value was null.
-     * @throws IllegalArgumentException if the given type is not one of the primitive wrappers for numeric types.
+     * @throws IllegalArgumentException if the given type is not supported by this {@code Numbers} class,
+     *         or the type is {@link #FRACTION} and the given number can not be converted to that type.
      */
     @SuppressWarnings("unchecked")
-    public static <N extends Number> N cast(final Number number, final Class<N> type)
-            throws IllegalArgumentException
-    {
+    public static <N extends Number> N cast(final Number number, final Class<N> type) throws IllegalArgumentException {
         if (number == null || number.getClass() == type) {
             return (N) number;
         }
         switch (getEnumConstant(type)) {
-            case BYTE:    return (N) Byte    .valueOf(number.  byteValue());
-            case SHORT:   return (N) Short   .valueOf(number. shortValue());
-            case INTEGER: return (N) Integer .valueOf(number.   intValue());
-            case LONG:    return (N) Long    .valueOf(number.  longValue());
-            case FLOAT:   return (N) Float   .valueOf(number. floatValue());
-            case DOUBLE:  return (N) Numerics.valueOf(number.doubleValue());
+            case BYTE:     return (N) Byte    .valueOf(number.  byteValue());
+            case SHORT:    return (N) Short   .valueOf(number. shortValue());
+            case INTEGER:  return (N) Integer .valueOf(number.   intValue());
+            case LONG:     return (N) Long    .valueOf(number.  longValue());
+            case FLOAT:    return (N) Float   .valueOf(number. floatValue());
+            case DOUBLE:   return (N) Numerics.valueOf(number.doubleValue());
+            case FRACTION: return (N) Fraction.valueOf(number.doubleValue());
             case BIG_INTEGER: {
                 final BigInteger c;
                 if (number instanceof BigInteger) {
@@ -565,7 +569,7 @@ public final class Numbers extends Static {
     /**
      * Wraps the given floating-point value in a {@code Number} of the specified class.
      * The given type shall be one of {@link Byte}, {@link Short}, {@link Integer}, {@link Long},
-     * {@link Float}, {@link Double}, {@link BigInteger} and {@link BigDecimal} classes.
+     * {@link Float}, {@link Double}, {@link Fraction}, {@link BigInteger} and {@link BigDecimal} classes.
      * Furthermore, the given value shall be convertible to the given class without precision lost,
      * otherwise an {@link IllegalArgumentException} will be thrown.
      *
@@ -573,13 +577,11 @@ public final class Numbers extends Static {
      * @param  value  the value to wrap.
      * @param  type   the desired wrapper class.
      * @return the value wrapped in an object of the given class.
-     * @throws IllegalArgumentException if the given type is not one of the primitive wrappers for numeric types,
+     * @throws IllegalArgumentException if the given type is not supported by this {@code Numbers} class,
      *         or if the given value can not be wrapped in an instance of the given class without precision lost.
      */
     @SuppressWarnings("unchecked")
-    public static <N extends Number> N wrap(final double value, final Class<N> type)
-            throws IllegalArgumentException
-    {
+    public static <N extends Number> N wrap(final double value, final Class<N> type) throws IllegalArgumentException {
         final N number;
         switch (getEnumConstant(type)) {
             case BYTE:        number = (N) Byte      .valueOf((byte)  value); break;
@@ -588,6 +590,7 @@ public final class Numbers extends Static {
             case LONG:        number = (N) Long      .valueOf((long)  value); break;
             case FLOAT:       number = (N) Float     .valueOf((float) value); break;
             case DOUBLE:      return   (N) Numerics  .valueOf(value); // No need to verify.
+            case FRACTION:    return   (N) Fraction  .valueOf(value); // No need to verify.
             case BIG_INTEGER: number = (N) BigInteger.valueOf((long) value); break;
             case BIG_DECIMAL: return   (N) BigDecimal.valueOf(value); // No need to verify.
             default: throw unknownType(type);
@@ -601,7 +604,7 @@ public final class Numbers extends Static {
     /**
      * Wraps the given integer value in a {@code Number} of the specified class.
      * The given type shall be one of {@link Byte}, {@link Short}, {@link Integer}, {@link Long},
-     * {@link Float}, {@link Double}, {@link BigInteger} and {@link BigDecimal} classes.
+     * {@link Float}, {@link Double}, {@link Fraction}, {@link BigInteger} and {@link BigDecimal} classes.
      * Furthermore, the given value shall be convertible to the given class without precision lost,
      * otherwise an {@link IllegalArgumentException} will be thrown.
      *
@@ -609,15 +612,13 @@ public final class Numbers extends Static {
      * @param  value  the value to wrap.
      * @param  type   the desired wrapper class.
      * @return the value wrapped in an object of the given class.
-     * @throws IllegalArgumentException if the given type is not one of the primitive wrappers for numeric types,
+     * @throws IllegalArgumentException if the given type is not supported by this {@code Numbers} class,
      *         or if the given value can not be wrapped in an instance of the given class without precision lost.
      *
      * @since 0.8
      */
     @SuppressWarnings("unchecked")
-    public static <N extends Number> N wrap(final long value, final Class<N> type)
-            throws IllegalArgumentException
-    {
+    public static <N extends Number> N wrap(final long value, final Class<N> type) throws IllegalArgumentException {
         final N number;
         switch (getEnumConstant(type)) {
             case BYTE:        number = (N) Byte      .valueOf((byte)   value); break;
@@ -626,6 +627,7 @@ public final class Numbers extends Static {
             case LONG:        return   (N) Long      .valueOf(value);  // No need to verify.
             case FLOAT:       number = (N) Float     .valueOf((float)  value); break;
             case DOUBLE:      number = (N) Numerics  .valueOf((double) value); break;
+            case FRACTION:    number = (N) new Fraction      ((int) value, 1); break;
             case BIG_INTEGER: return   (N) BigInteger.valueOf(value);  // No need to verify.
             case BIG_DECIMAL: return   (N) BigDecimal.valueOf(value);  // No need to verify.
             default: throw unknownType(type);
@@ -638,7 +640,7 @@ public final class Numbers extends Static {
 
     /**
      * Converts the specified string into a value object.
-     * The value object can be an instance of {@link BigDecimal}, {@link BigInteger},
+     * The value object can be an instance of {@link BigDecimal}, {@link BigInteger}, {@link Fraction},
      * {@link Double}, {@link Float}, {@link Long}, {@link Integer}, {@link Short}, {@link Byte},
      * {@link Boolean}, {@link Character} or {@link String} according the specified type.
      * This method makes the following choice:
@@ -686,6 +688,7 @@ public final class Numbers extends Static {
             case LONG:        return (T) Long   .valueOf(value);
             case FLOAT:       return (T) Float  .valueOf(value);
             case DOUBLE:      return (T) Double .valueOf(value);
+            case FRACTION:    return (T) new Fraction  (value);
             case BIG_INTEGER: return (T) new BigInteger(value);
             case BIG_DECIMAL: return (T) new BigDecimal(value);
             default: throw unknownType(type);
@@ -752,7 +755,7 @@ public final class Numbers extends Static {
 
     /**
      * Returns a numeric constant for the given type.
-     * The constants are {@link #BIG_DECIMAL}, {@link #BIG_INTEGER},
+     * The constants are {@link #BIG_DECIMAL}, {@link #BIG_INTEGER}, {@link #FRACTION},
      * {@link #DOUBLE}, {@link #FLOAT}, {@link #LONG}, {@link #INTEGER},
      * {@link #SHORT}, {@link #BYTE}, {@link #CHARACTER}, {@link #BOOLEAN}, or {@link #OTHER}
      * constants for the given type. This is a commodity for usage in {@code switch} statements.

@@ -16,8 +16,10 @@
  */
 package org.apache.sis.math;
 
+import java.util.Random;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 
@@ -143,6 +145,19 @@ public final strictfp class MathFunctionsTest extends TestCase {
         for (int i = MIN_EXPONENT - SIGNIFICAND_SIZE; i <= MAX_EXPONENT; i++) {
             assertEquals(StrictMath.floor(StrictMath.log10(StrictMath.scalb(1.0, i))),
                          StrictMath.floor(LOG10_2 * i /* i = getExponent(value) */), STRICT);
+        }
+    }
+
+    /**
+     * Tests the {@link MathFunctions#pow(long, int)} method.
+     */
+    @Test
+    public void testPowInteger() {
+        final Random r = TestUtilities.createRandomNumberGenerator();
+        for (int i=0; i<100; i++) {
+            final long base = r.nextInt(21) - 10;
+            final int exponent = r.nextInt(15);
+            assertEquals(StrictMath.pow(base, exponent), pow(base, exponent), STRICT);
         }
     }
 
