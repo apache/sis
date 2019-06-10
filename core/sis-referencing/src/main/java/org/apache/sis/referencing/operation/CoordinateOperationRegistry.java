@@ -274,7 +274,7 @@ class CoordinateOperationRegistry {
                 final Identifier identifier = IdentifiedObjects.getIdentifier(candidate, registry.getAuthority());
                 if (identifier != null) {
                     final String code = identifier.getCode();
-                    if (Utilities.deepEquals(candidate, crs, ComparisonMode.APPROXIMATIVE)) {
+                    if (Utilities.deepEquals(candidate, crs, ComparisonMode.APPROXIMATE)) {
                         codes.add(0, code);     // If axis order match, give precedence to that CRS.
                     } else {
                         codes.add(code);

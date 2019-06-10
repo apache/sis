@@ -720,7 +720,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                 if (!Utilities.deepEquals(unit, that.getAxisUnit(), mode)) {
                     return false;
                 }
-                final UnitConverter c = mode.isApproximative() ? unit.getConverterTo(Units.METRE) : null;
+                final UnitConverter c = mode.isApproximate() ? unit.getConverterTo(Units.METRE) : null;
                 boolean isMinor = false;
                 double v1 = this.getSemiMajorAxis();
                 double v2 = that.getSemiMajorAxis();

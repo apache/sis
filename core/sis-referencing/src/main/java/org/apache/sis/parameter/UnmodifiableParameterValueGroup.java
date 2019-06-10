@@ -198,7 +198,7 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
      * <ul>
      *   <li>{@link ComparisonMode#STRICT} and {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}
      *       take in account the parameter order.</li>
-     *   <li>{@link ComparisonMode#IGNORE_METADATA} and {@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}
+     *   <li>{@link ComparisonMode#IGNORE_METADATA} and {@link ComparisonMode#APPROXIMATE APPROXIMATE}
      *       ignore the order of parameter values (but not necessarily the order of parameter descriptors).</li>
      * </ul>
      *

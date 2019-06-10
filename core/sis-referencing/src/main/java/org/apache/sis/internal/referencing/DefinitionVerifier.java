@@ -189,7 +189,7 @@ public final class DefinitionVerifier {
         int similarity = 0;
         final AbstractCRS ca = AbstractCRS.castOrCopy(authoritative);
         AbstractCRS variant = ca;
-        while (!variant.equals(crs, ComparisonMode.APPROXIMATIVE)) {
+        while (!variant.equals(crs, ComparisonMode.APPROXIMATE)) {
             if (similarity < VARIANTS.length) {
                 variant = ca.forConvention(VARIANTS[similarity++]);
             } else if (identifier == null) {

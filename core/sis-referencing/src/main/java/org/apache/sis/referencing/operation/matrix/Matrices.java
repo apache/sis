@@ -1028,7 +1028,7 @@ public final class Matrices extends Static {
      *       but are not required to be the same implementation class (any {@link Matrix} is okay).</li>
      *   <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}: same as {@code BY_CONTRACT},
      *       since matrices have no metadata.</li>
-     *   <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:
+     *   <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE}:
      *       the two matrices must have the same size, but the element values can differ up to some threshold.
      *       The threshold value is determined empirically and may change in any future SIS versions.
      *       For more control, use {@link #equals(Matrix, Matrix, double, boolean)} instead.</li>
@@ -1048,7 +1048,7 @@ public final class Matrices extends Static {
             case IGNORE_METADATA: return equals(m1, m2, 0, false);
             case DEBUG:           // Fall through
             case ALLOW_VARIANT:   // Fall through
-            case APPROXIMATIVE:   return equals(m1, m2, Numerics.COMPARISON_THRESHOLD, true);
+            case APPROXIMATE:   return equals(m1, m2, Numerics.COMPARISON_THRESHOLD, true);
             default: throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.UnknownEnumValue_2, ComparisonMode.class, mode));
         }

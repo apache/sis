@@ -431,7 +431,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         assertFalse("STRICT",          g1.equals(g2, ComparisonMode.STRICT));
         assertFalse("BY_CONTRACT",     g1.equals(g2, ComparisonMode.BY_CONTRACT));
         assertTrue ("IGNORE_METADATA", g1.equals(g2, ComparisonMode.IGNORE_METADATA));
-        assertTrue ("APPROXIMATIVE",   g1.equals(g2, ComparisonMode.APPROXIMATIVE));
+        assertTrue ("APPROXIMATE",     g1.equals(g2, ComparisonMode.APPROXIMATE));
     }
 
     /**

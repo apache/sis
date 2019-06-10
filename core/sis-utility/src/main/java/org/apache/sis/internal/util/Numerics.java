@@ -92,7 +92,7 @@ public final class Numerics extends Static {
 
     /**
      * Relative difference tolerated when comparing floating point numbers using
-     * {@link org.apache.sis.util.ComparisonMode#APPROXIMATIVE}.
+     * {@link org.apache.sis.util.ComparisonMode#APPROXIMATE}.
      *
      * <p>Historically, this was the relative tolerance threshold for considering two
      * matrices as equal. This value has been determined empirically in order to allow
@@ -303,7 +303,7 @@ public final class Numerics extends Static {
 
     /**
      * Returns {@code true} if the given values are approximately equal given the comparison mode.
-     * In mode {@code APPROXIMATIVE} or {@code DEBUG}, this method will compute a relative comparison
+     * In mode {@code APPROXIMATE} or {@code DEBUG}, this method will compute a relative comparison
      * threshold from the {@link #COMPARISON_THRESHOLD} constant.
      *
      * <p>This method does not thrown {@link AssertionError} in {@link ComparisonMode#DEBUG}.
@@ -315,7 +315,7 @@ public final class Numerics extends Static {
      * @return {@code true} if both values are considered equal for the given comparison mode.
      */
     public static boolean epsilonEqual(final double v1, final double v2, final ComparisonMode mode) {
-        if (mode.isApproximative()) {
+        if (mode.isApproximate()) {
             final double mg = max(abs(v1), abs(v2));
             if (mg != Double.POSITIVE_INFINITY) {
                 return epsilonEqual(v1, v2, COMPARISON_THRESHOLD * mg);

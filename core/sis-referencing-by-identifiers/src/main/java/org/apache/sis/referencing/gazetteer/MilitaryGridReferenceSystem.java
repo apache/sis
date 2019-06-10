@@ -2035,7 +2035,7 @@ parse:                  switch (part) {
                                 isValid = Math.abs(zoneError) <= 2;         // Tolerance in zone numbers for high latitudes.
                             } else {
                                 final double rλ = Math.IEEEremainder(λ - ZONER.origin, ZONER.width);    // Distance to closest zone change, in degrees of longitude.
-                                final double cv = (minX - ZONER.easting) / (λ - λ0);                    // Approximative conversion factor from degrees to metres.
+                                final double cv = (minX - ZONER.easting) / (λ - λ0);                    // Approximate conversion factor from degrees to metres.
                                 isValid = (Math.abs(rλ) * cv <= sx);                                    // Be tolerant if distance in metres is less than resolution.
                                 if (isValid) {
                                     isValid = (zoneError == (rλ < 0 ? -1 : +1));                        // Verify also that the error is on the side of the zone change.

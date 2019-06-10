@@ -811,10 +811,10 @@ public abstract class AbstractMathTransform extends FormattableObject
             return false;
         }
         if (tr1 instanceof LenientComparable) {
-            return ((LenientComparable) tr1).equals(tr2, ComparisonMode.APPROXIMATIVE);
+            return ((LenientComparable) tr1).equals(tr2, ComparisonMode.APPROXIMATE);
         }
         if (tr2 instanceof LenientComparable) {
-            return ((LenientComparable) tr2).equals(tr1, ComparisonMode.APPROXIMATIVE);
+            return ((LenientComparable) tr2).equals(tr1, ComparisonMode.APPROXIMATE);
         }
         return tr1.equals(tr2);
     }
@@ -916,7 +916,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Compares the specified object with this math transform for equality.
      * Two math transforms are considered equal if, given identical source positions, their
      * {@linkplain #transform(DirectPosition,DirectPosition) transformed} positions would be
-     * equal or {@linkplain ComparisonMode#APPROXIMATIVE approximately} equal.
+     * equal or {@link ComparisonMode#APPROXIMATE approximately} equal.
      * This method may conservatively returns {@code false} if unsure.
      *
      * <p>The default implementation returns {@code true} if the following conditions are met:</p>
@@ -945,7 +945,7 @@ public abstract class AbstractMathTransform extends FormattableObject
              * If the classes are the same, then the hash codes should be computed in the same way. Since those
              * codes are cached, this is an efficient way to quickly check if the two objects are different.
              */
-            if (!mode.isApproximative()) {
+            if (!mode.isApproximate()) {
                 final int tc = hashCode;
                 if (tc != 0) {
                     final int oc = that.hashCode;

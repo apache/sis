@@ -132,7 +132,7 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
                 final int j = i % stats.length;
                 switch (j) {
                     case 0: Δ *= cos(toRadians(expected[i+1]));     // Fall through
-                    case 1: Δ *= 60 * NAUTICAL_MILE; break;         // Approximative conversion to metres
+                    case 1: Δ *= 60 * NAUTICAL_MILE; break;         // Approximate conversion to metres
                 }
                 Δ *= 100;   // Conversion to centimetres.
                 stats[j].accept(abs(Δ));

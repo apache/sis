@@ -100,16 +100,16 @@ public final strictfp class NumericsTest extends TestCase {
      */
     @Test
     public void testEpsilonEqual() {
-        assertTrue (epsilonEqual(POSITIVE_INFINITY, POSITIVE_INFINITY,    ComparisonMode.APPROXIMATIVE));
-        assertTrue (epsilonEqual(NEGATIVE_INFINITY, NEGATIVE_INFINITY,    ComparisonMode.APPROXIMATIVE));
-        assertFalse(epsilonEqual(POSITIVE_INFINITY, NEGATIVE_INFINITY,    ComparisonMode.APPROXIMATIVE));
-        assertFalse(epsilonEqual(POSITIVE_INFINITY, NaN,                  ComparisonMode.APPROXIMATIVE));
-        assertTrue (epsilonEqual(NaN,               NaN,                  ComparisonMode.APPROXIMATIVE));
-        assertFalse(epsilonEqual(   0,        COMPARISON_THRESHOLD /   2, ComparisonMode.APPROXIMATIVE));
-        assertTrue (epsilonEqual(   1,    1 + COMPARISON_THRESHOLD /   2, ComparisonMode.APPROXIMATIVE));
-        assertFalse(epsilonEqual(   1,    1 + COMPARISON_THRESHOLD *   2, ComparisonMode.APPROXIMATIVE));
-        assertTrue (epsilonEqual(-100, -100 + COMPARISON_THRESHOLD *  50, ComparisonMode.APPROXIMATIVE));
-        assertFalse(epsilonEqual( 100,  100 + COMPARISON_THRESHOLD * 150, ComparisonMode.APPROXIMATIVE));
+        assertTrue (epsilonEqual(POSITIVE_INFINITY, POSITIVE_INFINITY,    ComparisonMode.APPROXIMATE));
+        assertTrue (epsilonEqual(NEGATIVE_INFINITY, NEGATIVE_INFINITY,    ComparisonMode.APPROXIMATE));
+        assertFalse(epsilonEqual(POSITIVE_INFINITY, NEGATIVE_INFINITY,    ComparisonMode.APPROXIMATE));
+        assertFalse(epsilonEqual(POSITIVE_INFINITY, NaN,                  ComparisonMode.APPROXIMATE));
+        assertTrue (epsilonEqual(NaN,               NaN,                  ComparisonMode.APPROXIMATE));
+        assertFalse(epsilonEqual(   0,        COMPARISON_THRESHOLD /   2, ComparisonMode.APPROXIMATE));
+        assertTrue (epsilonEqual(   1,    1 + COMPARISON_THRESHOLD /   2, ComparisonMode.APPROXIMATE));
+        assertFalse(epsilonEqual(   1,    1 + COMPARISON_THRESHOLD *   2, ComparisonMode.APPROXIMATE));
+        assertTrue (epsilonEqual(-100, -100 + COMPARISON_THRESHOLD *  50, ComparisonMode.APPROXIMATE));
+        assertFalse(epsilonEqual( 100,  100 + COMPARISON_THRESHOLD * 150, ComparisonMode.APPROXIMATE));
     }
 
     /**

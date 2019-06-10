@@ -98,7 +98,7 @@ public final class Utilities extends Static {
      * This is a convenience method for the following method call:
      *
      * {@preformat java
-     *     return deepEquals(object1, object2, ComparisonMode.APPROXIMATIVE);
+     *     return deepEquals(object1, object2, ComparisonMode.APPROXIMATE);
      * }
      *
      * @param  object1  the first object to compare (may be null).
@@ -106,10 +106,10 @@ public final class Utilities extends Static {
      * @return {@code true} if both objects are approximately equal.
      *
      * @see #deepEquals(Object, Object, ComparisonMode)
-     * @see ComparisonMode#APPROXIMATIVE
+     * @see ComparisonMode#APPROXIMATE
      */
     public static boolean equalsApproximatively(final Object object1, final Object object2) {
-        return deepEquals(object1, object2, ComparisonMode.APPROXIMATIVE);
+        return deepEquals(object1, object2, ComparisonMode.APPROXIMATE);
     }
 
     /**

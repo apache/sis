@@ -53,7 +53,7 @@ final class IdentifierCommand extends FormattedOutputCommand {
      * update {@code IdentifierState.properties} accordingly.
      */
     private enum State {
-        VALID("   "), APPROXIMATIVE("~  "), AXIS_ORDER("!  "), MISMATCH("!! "), UNKNOWN("?  ");
+        VALID("   "), APPROXIMATE("~  "), AXIS_ORDER("!  "), MISMATCH("!! "), UNKNOWN("?  ");
 
         /** The string representation. */ final String text;
         private State(final String p) {this.text = p;};
@@ -185,8 +185,8 @@ final class IdentifierCommand extends FormattedOutputCommand {
                     state = State.AXIS_ORDER;
                     break;
                 }
-                case APPROXIMATIVE: {
-                    state = State.APPROXIMATIVE;
+                case APPROXIMATE: {
+                    state = State.APPROXIMATE;
                     rs = def;
                     break;
                 }
