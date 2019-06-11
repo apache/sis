@@ -227,7 +227,7 @@ public class ReferencingServices extends OptionalDependency {
 
     /**
      * Sets a vertical extent with the value inferred from the given envelope.
-     * Only the vertical ordinates are extracted; all other ordinates are ignored.
+     * Only the vertical coordinates are extracted; all other coordinates are ignored.
      *
      * @param  envelope  the source envelope.
      * @param  target    the target vertical extent.
@@ -240,7 +240,7 @@ public class ReferencingServices extends OptionalDependency {
 
     /**
      * Sets a temporal extent with the value inferred from the given envelope.
-     * Only the temporal ordinates are extracted; all other ordinates are ignored.
+     * Only the temporal coordinates are extracted; all other coordinates are ignored.
      *
      * @param  envelope  the source envelope.
      * @param  target    the target temporal extent.

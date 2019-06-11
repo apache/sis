@@ -498,7 +498,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * In addition to the metadata documented in the
      * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#equals(Object, ComparisonMode) parent class},
      * this method considers coordinate system axes of the {@linkplain #getBaseCRS() base CRS} as metadata.
-     * This means that if the given {@code ComparisonMode} is {@code IGNORE_METADATA} or {@code APPROXIMATIVE},
+     * This means that if the given {@code ComparisonMode} is {@code IGNORE_METADATA} or {@code APPROXIMATE},
      * then axis order of the base CRS are ignored
      * (but <strong>not</strong> axis order of <strong>this</strong> derived CRS).
      *

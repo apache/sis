@@ -238,7 +238,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     @Override
     public final void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
         final int srcDim, dstDim;
-        int srcInc = srcDim = numCol - 1; // The last ordinate will be assumed equal to 1.
+        int srcInc = srcDim = numCol - 1;               // The last coordinate will be assumed equal to 1.
         int dstInc = dstDim = numRow - 1;
         if (srcPts == dstPts) {
             switch (IterationStrategy.suggest(srcOff, srcDim, dstOff, dstDim, numPts)) {
@@ -269,7 +269,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
                     if (e != 0) {
                         /*
                          * The purpose of the test for non-zero value is not performance (it is actually more likely
-                         * to slow down the calculation), but to get a valid sum even if some source ordinates are NaN.
+                         * to slow down the calculation), but to get a valid sum even if some source coordinates are NaN.
                          * This occurs when the ProjectiveTransform is used for excluding some dimensions, for example
                          * getting 2D points from 3D points. In such case, the fact that the excluded dimensions had
                          * NaN values should not force the retained dimensions to get NaN values.

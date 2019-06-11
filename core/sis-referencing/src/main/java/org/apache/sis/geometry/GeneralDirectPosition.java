@@ -39,7 +39,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 /**
  * A mutable {@code DirectPosition} (the coordinates of a position) of arbitrary dimension.
  * This particular implementation of {@code DirectPosition} is said "General" because it
- * uses an {@linkplain #ordinates array of ordinates} of an arbitrary length. If the direct
+ * uses an {@link #coordinates array of coordinates} of an arbitrary length. If the direct
  * position is known to be always two-dimensional, then {@link DirectPosition2D} provides
  * a more efficient implementation.
  *
@@ -65,19 +65,27 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5524426558018300122L;
+    private static final long serialVersionUID = -1775358214919832302L;
 
     /**
-     * Used for setting the {@link #ordinates} field during a {@link #clone()} operation only.
+     * Used for setting the {@link #coordinates} field during a {@link #clone()} operation only.
      * Will be fetch when first needed.
      */
-    private static volatile Field ordinatesField;
+    private static volatile Field coordinatesField;
 
     /**
-     * The ordinates of the direct position. The length of this array is the
+     * The coordinates of the direct position. The length of this array is the
      * {@linkplain #getDimension() dimension} of this direct position.
      */
-    public final double[] ordinates;
+    public final double[] coordinates;
+
+    /**
+     * @deprecated Renamed {@link #coordinates}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-461">SIS-461</a>
+     */
+    @Deprecated
+    public transient double[] ordinates;
 
     /**
      * The coordinate reference system for this position, or {@code null}.
@@ -102,29 +110,31 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * @throws NegativeArraySizeException if {@code dimension} is negative.
      */
     public GeneralDirectPosition(final int dimension) throws NegativeArraySizeException {
-        ordinates = new double[dimension];
+        coordinates = new double[dimension];
+        ordinates = coordinates;
     }
 
     /**
-     * Constructs a position with the specified ordinates.
-     * This constructor assigns the given array directly (without clone) to the {@link #ordinates} field.
+     * Constructs a position with the specified coordinates.
+     * This constructor assigns the given array directly (without clone) to the {@link #coordinates} field.
      * Consequently, callers shall not recycle the same array for creating many instances.
      *
      * <div class="note"><b>Implementation note:</b>
      * the array is not cloned because this is usually not needed, especially in the context of variable
-     * argument lengths since the array is often created implicitly. Furthermore the {@link #ordinates}
+     * argument lengths since the array is often created implicitly. Furthermore the {@link #coordinates}
      * field is public, so cloning the array would not protect the state of this object anyway.</div>
      *
      * <p><b>Caution:</b> if only one number is specified, make sure that the number type is {@code double},
      * {@code float} or {@code long} otherwise the {@link #GeneralDirectPosition(int)} constructor would be
      * invoked with a very different meaning. For example for creating a one-dimensional coordinate initialized
-     * to the ordinate value 100, use <code>new GeneralDirectPosition(100<u>.0</u>)</code>, <strong>not</strong>
+     * to the coordinate value 100, use <code>new GeneralDirectPosition(100<u>.0</u>)</code>, <strong>not</strong>
      * {@code new GeneralDirectPosition(100)}, because the later would actually create a position with 100 dimensions.</p>
      *
-     * @param ordinates  the ordinate values. This array is <strong>not</strong> cloned.
+     * @param coordinates  the coordinate values. This array is <strong>not</strong> cloned.
      */
-    public GeneralDirectPosition(final double... ordinates) {
-        this.ordinates = ordinates;
+    public GeneralDirectPosition(final double... coordinates) {
+        this.coordinates = coordinates;
+        ordinates = coordinates;
     }
 
     /**
@@ -134,9 +144,10 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * @param point  the position to copy.
      */
     public GeneralDirectPosition(final DirectPosition point) {
-        ordinates = point.getCoordinate();                              // Should already be cloned.
+        coordinates = point.getCoordinate();                            // Should already be cloned.
         crs = point.getCoordinateReferenceSystem();
-        ensureDimensionMatches("crs", ordinates.length, crs);
+        ensureDimensionMatches("crs", coordinates.length, crs);
+        ordinates = coordinates;
     }
 
     /**
@@ -157,21 +168,22 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * @see CoordinateFormat
      */
     public GeneralDirectPosition(final CharSequence wkt) throws IllegalArgumentException {
-        if ((ordinates = parse(wkt)) == null) {
+        if ((coordinates = parse(wkt)) == null) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.UnparsableStringForClass_2, "POINT", wkt));
         }
+        ordinates = coordinates;
     }
 
     /**
-     * The length of ordinate sequence (the number of entries).
-     * This is always equals to the length of the {@link #ordinates} array.
+     * The length of coordinate sequence (the number of entries).
+     * This is always equals to the length of the {@link #coordinates} array.
      *
      * @return the dimensionality of this position.
      */
     @Override
     public final int getDimension() {
-        return ordinates.length;
+        return coordinates.length;
     }
 
     /**
@@ -203,57 +215,57 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
      *
      * <div class="note"><b>API note:</b>
-     * This method is final for ensuring consistency with the {@link #ordinates}, array field, which is public.</div>
+     * This method is final for ensuring consistency with the {@link #coordinates}, array field, which is public.</div>
      *
-     * @return a copy of the {@linkplain #ordinates ordinates} array.
+     * @return a copy of the {@link #coordinates coordinates} array.
      */
     @Override
     public final double[] getCoordinate() {
-        return ordinates.clone();
+        return coordinates.clone();
     }
 
     /**
-     * Sets the ordinate values along all dimensions.
+     * Sets the coordinate values along all dimensions.
      *
-     * @param  ordinates  the new ordinates values, or a {@code null} array for
-     *                    setting all ordinate values to {@link Double#NaN NaN}.
+     * @param  coordinates  the new coordinates values, or a {@code null} array for
+     *                      setting all coordinate values to {@link Double#NaN NaN}.
      * @throws MismatchedDimensionException if the length of the specified array is not
      *         equals to the {@linkplain #getDimension() dimension} of this position.
      */
-    public void setCoordinate(final double... ordinates) throws MismatchedDimensionException {
-        if (ordinates == null) {
-            Arrays.fill(this.ordinates, Double.NaN);
+    public void setCoordinate(final double... coordinates) throws MismatchedDimensionException {
+        if (coordinates == null) {
+            Arrays.fill(this.coordinates, Double.NaN);
         } else {
-            ensureDimensionMatches("ordinates", this.ordinates.length, ordinates);
-            System.arraycopy(ordinates, 0, this.ordinates, 0, ordinates.length);
+            ensureDimensionMatches("coordinates", this.coordinates.length, coordinates);
+            System.arraycopy(coordinates, 0, this.coordinates, 0, coordinates.length);
         }
     }
 
     /**
-     * Returns the ordinate at the specified dimension.
+     * Returns the coordinate at the specified dimension.
      *
      * <div class="note"><b>API note:</b>
-     * This method is final for ensuring consistency with the {@link #ordinates}, array field, which is public.</div>
+     * This method is final for ensuring consistency with the {@link #coordinates}, array field, which is public.</div>
      *
      * @param  dimension  the dimension in the range 0 to {@linkplain #getDimension() dimension}-1.
-     * @return the ordinate at the specified dimension.
+     * @return the coordinate at the specified dimension.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      */
     @Override
     public final double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
-        return ordinates[dimension];
+        return coordinates[dimension];
     }
 
     /**
-     * Sets the ordinate value along the specified dimension.
+     * Sets the coordinate value along the specified dimension.
      *
-     * @param  dimension  the dimension for the ordinate of interest.
-     * @param  value      the ordinate value of interest.
+     * @param  dimension  the dimension for the coordinate of interest.
+     * @param  value      the coordinate value of interest.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      */
     @Override
     public void setOrdinate(final int dimension, final double value) throws IndexOutOfBoundsException {
-        ordinates[dimension] = value;
+        coordinates[dimension] = value;
     }
 
     /**
@@ -262,18 +274,18 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * be set to the CRS of the specified position.
      *
      * @param  position  the new position for this point,
-     *                   or {@code null} for setting all ordinate values to {@link Double#NaN NaN}.
+     *                   or {@code null} for setting all coordinate values to {@link Double#NaN NaN}.
      * @throws MismatchedDimensionException if the given position does not have the expected dimension.
      */
     @Override
     public void setLocation(final DirectPosition position) throws MismatchedDimensionException {
         if (position == null) {
-            Arrays.fill(ordinates, Double.NaN);
+            Arrays.fill(coordinates, Double.NaN);
         } else {
-            ensureDimensionMatches("position", ordinates.length, position);
+            ensureDimensionMatches("position", coordinates.length, position);
             setCoordinateReferenceSystem(position.getCoordinateReferenceSystem());
-            for (int i=0; i<ordinates.length; i++) {
-                ordinates[i] = position.getOrdinate(i);
+            for (int i=0; i<coordinates.length; i++) {
+                coordinates[i] = position.getOrdinate(i);
             }
         }
     }
@@ -283,15 +295,15 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      */
     @Override
     public String toString() {
-        return toString(this, ArraysExt.isSinglePrecision(ordinates));
+        return toString(this, ArraysExt.isSinglePrecision(coordinates));
     }
 
     /**
-     * Returns the {@code "ordinates"} field of the given class and gives write permission to it.
+     * Returns the {@code "coordinates"} field of the given class and gives write permission to it.
      * This method should be invoked only from {@link #clone()} method.
      */
-    static Field getOrdinatesField(final Class<?> type) throws NoSuchFieldException {
-        final Field field = type.getDeclaredField("ordinates");
+    static Field getCoordinatesField(final Class<?> type) throws NoSuchFieldException {
+        final Field field = type.getDeclaredField("coordinates");
         AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
             field.setAccessible(true);
             return null;
@@ -307,19 +319,27 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     @Override
     public GeneralDirectPosition clone() {
         try {
-            Field field = ordinatesField;
+            Field field = coordinatesField;
             if (field == null) {
-                ordinatesField = field = getOrdinatesField(GeneralDirectPosition.class);
+                coordinatesField = field = getCoordinatesField(GeneralDirectPosition.class);
             }
             GeneralDirectPosition e = (GeneralDirectPosition) super.clone();
-            field.set(e, ordinates.clone());
+            field.set(e, coordinates.clone());
+            e.ordinates = e.coordinates;
             return e;
         } catch (ReflectiveOperationException | CloneNotSupportedException exception) {
-            // Should not happen, since we are cloneable.
-            // Should not happen, since the "ordinates" field exists.
-            // etc...
+            /*
+             * Should not happen, since we are cloneable.
+             * Should not happen, since the "coordinates" field exists.
+             * etc…
+             */
             throw new AssertionError(exception);
         }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        ordinates = coordinates;
     }
 
     /**
@@ -327,8 +347,23 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      */
     @Override
     public int hashCode() {
-        final int code = Arrays.hashCode(ordinates) + Objects.hashCode(getCoordinateReferenceSystem());
+        final int code = Arrays.hashCode(coordinates) + Objects.hashCode(getCoordinateReferenceSystem());
         assert code == super.hashCode();
         return code;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object == this) {
+            return true;
+        }
+        if (object instanceof GeneralDirectPosition) {
+            final GeneralDirectPosition that = (GeneralDirectPosition) object;
+            return Arrays.equals(coordinates, that.coordinates) && Objects.equals(crs, that.crs);
+        }
+        return super.equals(object);                // Comparison of other implementation classes.
     }
 }

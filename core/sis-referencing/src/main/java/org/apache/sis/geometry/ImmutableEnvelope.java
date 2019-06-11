@@ -56,8 +56,8 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * Constructs an envelope defined by two corners given as direct positions.
      * The envelope CRS will be the CRS of the given positions.
      *
-     * @param  lowerCorner  the limits in the direction of decreasing ordinate values for each dimension.
-     * @param  upperCorner  the limits in the direction of increasing ordinate values for each dimension.
+     * @param  lowerCorner  the limits in the direction of decreasing coordinate values for each dimension.
+     * @param  upperCorner  the limits in the direction of increasing coordinate values for each dimension.
      * @throws MismatchedDimensionException if the two positions do not have the same dimension.
      * @throws MismatchedReferenceSystemException if the CRS of the two position are not equal.
      */
@@ -68,10 +68,10 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
     }
 
     /**
-     * Constructs an envelope defined by two corners given as sequences of ordinate values.
+     * Constructs an envelope defined by two corners given as sequences of coordinate values.
      *
-     * @param  lowerCorner  the limits in the direction of decreasing ordinate values for each dimension.
-     * @param  upperCorner  the limits in the direction of increasing ordinate values for each dimension.
+     * @param  lowerCorner  the limits in the direction of decreasing coordinate values for each dimension.
+     * @param  upperCorner  the limits in the direction of increasing coordinate values for each dimension.
      * @param  crs          the CRS to assign to this envelope, or {@code null}.
      * @throws MismatchedDimensionException if the two sequences do not have the same length, or
      *         if the dimension of the given CRS is not equals to the dimension of the given corners.
@@ -111,7 +111,7 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
     }
 
     /**
-     * Creates an immutable envelope with the ordinate values of the given envelope but
+     * Creates an immutable envelope with the coordinate values of the given envelope but
      * a different CRS. This method does <strong>not</strong> reproject the given envelope.
      * It just assign the given CRS to this envelope without any check, except for the CRS
      * dimension.
@@ -120,7 +120,7 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * copy has a null CRS.</p>
      *
      * @param  crs       the CRS to assign to this envelope, or {@code null}.
-     * @param  envelope  the envelope from which to copy ordinate values.
+     * @param  envelope  the envelope from which to copy coordinate values.
      * @throws MismatchedDimensionException if the dimension of the given CRS is not equals
      *         to the dimension of the given envelope.
      */

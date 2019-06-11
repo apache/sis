@@ -39,7 +39,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  */
 public final class Formulas extends Static {
     /**
-     * Default tolerance threshold for comparing ordinate values in a projected CRS,
+     * Default tolerance threshold for comparing coordinate values in a projected CRS,
      * assuming that the unit of measurement is metre. This constant determines also
      * (indirectly) the minimum accuracy of iterative methods in map projections.
      *
@@ -49,7 +49,7 @@ public final class Formulas extends Static {
     public static final double LINEAR_TOLERANCE = 0.01;
 
     /**
-     * Default tolerance threshold for comparing ordinate values in a geographic CRS,
+     * Default tolerance threshold for comparing coordinate values in a geographic CRS,
      * assuming that the unit of measurement is decimal degrees and using the standard
      * nautical mile length.
      *
@@ -61,7 +61,7 @@ public final class Formulas extends Static {
     public static final double ANGULAR_TOLERANCE = LINEAR_TOLERANCE / (NAUTICAL_MILE * 60);
 
     /**
-     * Default tolerance threshold for comparing ordinate values in temporal CRS,
+     * Default tolerance threshold for comparing coordinate values in temporal CRS,
      * assuming that the unit of measurement is second. Current value is arbitrary
      * and may change in any future Apache SIS version.
      */
@@ -95,26 +95,6 @@ public final class Formulas extends Static {
      * Do not allow instantiation of this class.
      */
     private Formulas() {
-    }
-
-    /**
-     * Returns 3ⁿ for very small (less than 10) positive values of <var>n</var>.
-     * Note that this method overflow for any value equals or greater than 20.
-     *
-     * @param  n  the exponent.
-     * @return 3ⁿ
-     *
-     * @see org.apache.sis.math.DecimalFunctions#pow10(int)
-     *
-     * @since 0.5
-     */
-    public static int pow3(int n) {
-        assert n >= 0 && n <= 19 : n;
-        int p = 1;
-        while (--n >= 0) {
-            p *= 3;
-        }
-        return p;
     }
 
     /**

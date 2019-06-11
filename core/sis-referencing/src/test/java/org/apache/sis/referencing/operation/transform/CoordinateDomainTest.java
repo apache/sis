@@ -60,9 +60,9 @@ public strictfp class CoordinateDomainTest extends TestCase {
     one can use the following code:
 
     public static void main(String[] args) {
-        double[] ordinates = CoordinateDomain.GEOGRAPHIC.generateRandomInput(new Random(9157324015136982593L), 3, 5));
-        for (int i=0; i<ordinates.length;) {
-            System.out.format(java.util.Locale.US, "            %6.1f, %6.1f, %8.1f,%n", ordinates[i++], ordinates[i++], ordinates[i++]);
+        double[] coordinates = CoordinateDomain.GEOGRAPHIC.generateRandomInput(new Random(9157324015136982593L), 3, 5));
+        for (int i=0; i<coordinates.length;) {
+            System.out.format(java.util.Locale.US, "            %6.1f, %6.1f, %8.1f,%n", coordinates[i++], coordinates[i++], coordinates[i++]);
         }
     }
 */

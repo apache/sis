@@ -37,10 +37,10 @@ final class GridCoordinatesView {
     /**
      * A reference to the coordinate array of the enclosing grid envelope.
      */
-    private final long[] ordinates;
+    private final long[] coordinates;
 
     /**
-     * Index of the first value in the {@link #ordinates} array.
+     * Index of the first value in the {@link #coordinates} array.
      * This is 0 for low values, or {@link #getDimension()} for high values.
      */
     private final int offset;
@@ -48,8 +48,8 @@ final class GridCoordinatesView {
     /**
      * Creates a new view over the low or high coordinates.
      */
-    GridCoordinatesView(final long[] ordinates, final int offset) {
-        this.ordinates = ordinates;
+    GridCoordinatesView(final long[] coordinates, final int offset) {
+        this.coordinates = coordinates;
         this.offset = offset;
     }
 
@@ -57,14 +57,14 @@ final class GridCoordinatesView {
      * Returns the number of dimension.
      */
     public final int getDimension() {
-        return ordinates.length >>> 1;
+        return coordinates.length >>> 1;
     }
 
     /**
      * Returns all coordinate values.
      */
     public final long[] getCoordinateValues() {
-        return Arrays.copyOfRange(ordinates, offset, offset + getDimension());
+        return Arrays.copyOfRange(coordinates, offset, offset + getDimension());
     }
 
     /**
@@ -72,7 +72,7 @@ final class GridCoordinatesView {
      */
     public final long getCoordinateValue(final int index) {
         ArgumentChecks.ensureValidIndex(getDimension(), index);
-        return ordinates[offset + index];
+        return coordinates[offset + index];
     }
 
     /**
@@ -98,7 +98,7 @@ final class GridCoordinatesView {
         long code = -3;                             // Arbitrary seed for differentiating from Arrays.hashCode(long[]).
         final int end = offset + getDimension();
         for (int i=offset; i<end; i++) {
-            code = 31 * code + ordinates[i];
+            code = 31 * code + coordinates[i];
         }
         return Long.hashCode(code);
     }
@@ -124,7 +124,7 @@ final class GridCoordinatesView {
             if (dimension == that.getDimension()) {
                 // TODO: use Arrays.equals(...) with JDK9 instead.
                 for (int i=0; i<dimension; i++) {
-                    if (ordinates[offset + i] != that.ordinates[that.offset + i]) {
+                    if (coordinates[offset + i] != that.coordinates[that.offset + i]) {
                         return false;
                     }
                 }

@@ -39,7 +39,7 @@ import org.apache.sis.measure.Units;
 public final strictfp class HardCodedAxes {
     /**
      * Axis for geodetic longitudes in a {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#EAST East}
+     * Increasing coordinate values go {@linkplain AxisDirection#EAST East}
      * and units are {@linkplain Units#DEGREE degrees}.
      * The ISO 19111 name is <cite>"geodetic longitude"</cite> and the abbreviation is "λ" (lambda).
      *
@@ -55,7 +55,7 @@ public final strictfp class HardCodedAxes {
 
     /**
      * Axis for geodetic latitudes in a {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#NORTH North}
+     * Increasing coordinate values go {@linkplain AxisDirection#NORTH North}
      * and units are {@linkplain Units#DEGREE degrees}.
      * The ISO 19111 name is <cite>"geodetic latitude"</cite> and the abbreviation is "φ" (phi).
      *
@@ -78,7 +78,7 @@ public final strictfp class HardCodedAxes {
     /**
      * Axis for longitudes in grad units.
      * The axis name is {@code "Longitude"} (the {@code "Geodetic"} prefix is omitted for testing purpose).
-     * Increasing ordinates values go {@linkplain AxisDirection#EAST East} and units are {@link Units#GRAD}.
+     * Increasing coordinate values go {@linkplain AxisDirection#EAST East} and units are {@link Units#GRAD}.
      * The abbreviation is "λ" (lambda). The unit symbol is "gon".
      *
      * @see #GEODETIC_LONGITUDE
@@ -90,7 +90,7 @@ public final strictfp class HardCodedAxes {
     /**
      * Axis for latitudes in grad units.
      * The axis name is {@code "Latitude"} (the {@code "Geodetic"} prefix is omitted for testing purpose).
-     * Increasing ordinates values go {@linkplain AxisDirection#NORTH North} and units are {@link Units#GRAD}.
+     * Increasing coordinate values go {@linkplain AxisDirection#NORTH North} and units are {@link Units#GRAD}.
      * The abbreviation is "φ" (phi). The unit symbol is "gon".
      *
      * @see #GEODETIC_LATITUDE
@@ -102,7 +102,7 @@ public final strictfp class HardCodedAxes {
     /**
      * Axis for height values above the ellipsoid in a
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
+     * Increasing coordinate values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
      * The ISO 19111 name is <cite>"ellipsoidal height"</cite> and the abbreviation is lower case <cite>"h"</cite>.
      *
      * <p>This axis is usually part of a {@link #GEODETIC_LONGITUDE}, {@link #GEODETIC_LATITUDE},
@@ -120,7 +120,7 @@ public final strictfp class HardCodedAxes {
     /**
      * Axis for height values above the ellipsoid in a
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#CENTIMETRE centimetres}.
+     * Increasing coordinate values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#CENTIMETRE centimetres}.
      *
      * @since 0.7
      */
@@ -129,7 +129,7 @@ public final strictfp class HardCodedAxes {
 
     /**
      * Axis for height values measured from gravity.
-     * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
+     * Increasing coordinate values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
      * The ISO 19111 name is <cite>"gravity-related height"</cite> and the abbreviation is upper case <cite>"H"</cite>.
      *
      * @see #ALTITUDE
@@ -148,7 +148,7 @@ public final strictfp class HardCodedAxes {
 
     /**
      * Axis for altitude values.
-     * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
+     * Increasing coordinate values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
      * The abbreviation is lower case <cite>"h"</cite>.
      *
      * <p>This axis is usually part of a {@link #GEODETIC_LONGITUDE}, {@link #GEODETIC_LATITUDE},
@@ -164,7 +164,7 @@ public final strictfp class HardCodedAxes {
 
     /**
      * Axis for depth.
-     * Increasing ordinates values go {@linkplain AxisDirection#DOWN down} and units are {@linkplain Units#METRE metres}.
+     * Increasing coordinate values go {@linkplain AxisDirection#DOWN down} and units are {@linkplain Units#METRE metres}.
      * The ISO 19111 name is <cite>"depth"</cite>.
      *
      * @see #ALTITUDE
@@ -178,7 +178,7 @@ public final strictfp class HardCodedAxes {
     /**
      * Axis for radius in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
      * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
+     * Increasing coordinate values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
      * The ISO 19111 name is <cite>"geocentric radius"</cite> and the abbreviation is lower-case <cite>"r"</cite>.
      *
      * <div class="note"><b>Note:</b>
@@ -202,7 +202,7 @@ public final strictfp class HardCodedAxes {
     /**
      * Axis for longitudes in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
      * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#EAST East}
+     * Increasing coordinate values go {@linkplain AxisDirection#EAST East}
      * and units are {@linkplain Units#DEGREE degrees}.
      * The ISO 19111 name is <cite>"spherical longitude"</cite> (also called <cite>"azimuthal angle"</cite>)
      * and the abbreviation is "θ" (theta).
@@ -226,7 +226,7 @@ public final strictfp class HardCodedAxes {
     /**
      * Axis for latitudes in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
      * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#NORTH North}
+     * Increasing coordinate values go {@linkplain AxisDirection#NORTH North}
      * and units are {@linkplain Units#DEGREE degrees}.
      * The ISO 19111 name is <cite>"spherical latitude"</cite> (also called <cite>"polar (zenith) angle"</cite>)
      * and the abbreviation is "Ω".
@@ -248,7 +248,7 @@ public final strictfp class HardCodedAxes {
 
     /**
      * Axis for <var>x</var> values in a {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#EAST East} and units are {@linkplain Units#METRE metres}.
+     * Increasing coordinate values go {@linkplain AxisDirection#EAST East} and units are {@linkplain Units#METRE metres}.
      * The abbreviation is lower case <cite>"x"</cite>.
      *
      * <p>This axis is usually part of a {@link #X}, {@link #Y}, {@link #Z} set.</p>
@@ -264,7 +264,7 @@ public final strictfp class HardCodedAxes {
 
     /**
      * Axis for <var>y</var> values in a {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#NORTH North} and units are {@linkplain Units#METRE metres}.
+     * Increasing coordinate values go {@linkplain AxisDirection#NORTH North} and units are {@linkplain Units#METRE metres}.
      * The abbreviation is lower case <cite>"y"</cite>.
      *
      * <p>This axis is usually part of a {@link #X}, {@link #Y}, {@link #Z} set.</p>
@@ -280,7 +280,7 @@ public final strictfp class HardCodedAxes {
 
     /**
      * Axis for <var>z</var> values in a {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
+     * Increasing coordinate values go {@linkplain AxisDirection#UP up} and units are {@linkplain Units#METRE metres}.
      * The abbreviation is lower case <cite>"z"</cite>.
      *
      * <p>This axis is usually part of a {@link #X}, {@link #Y}, {@link #Z} set.</p>
@@ -291,7 +291,7 @@ public final strictfp class HardCodedAxes {
     /**
      * Axis for <var>x</var> values in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
      * using {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
-     * Increasing ordinates values goes typically toward prime meridian, but the actual axis direction
+     * Increasing coordinate values goes typically toward prime meridian, but the actual axis direction
      * is {@link AxisDirection#GEOCENTRIC_X GEOCENTRIC_X}. The units are {@linkplain Units#METRE metres}.
      * The ISO 19111 name is <cite>"Geocentric X"</cite> and the abbreviation is upper case <cite>"X"</cite>.
      *
@@ -306,7 +306,7 @@ public final strictfp class HardCodedAxes {
     /**
      * Axis for <var>y</var> values in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
      * using {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
-     * Increasing ordinates values goes typically toward East, but the actual axis direction is
+     * Increasing coordinate values goes typically toward East, but the actual axis direction is
      * {@link AxisDirection#GEOCENTRIC_Y GEOCENTRIC_Y}. The units are {@linkplain Units#METRE metres}.
      * The ISO 19111 name is <cite>"Geocentric Y"</cite> and the abbreviation is upper case <cite>"Y"</cite>.
      *
@@ -321,7 +321,7 @@ public final strictfp class HardCodedAxes {
     /**
      * Axis for <var>z</var> values in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
      * using {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS}.
-     * Increasing ordinates values goes typically toward North, but the actual axis direction is
+     * Increasing coordinate values goes typically toward North, but the actual axis direction is
      * {@link AxisDirection#GEOCENTRIC_Z GEOCENTRIC_Z}. The units are {@linkplain Units#METRE metres}.
      * The ISO 19111 name is <cite>"Geocentric Z"</cite> and the abbreviation is upper case <cite>"Z"</cite>.
      *
@@ -335,7 +335,7 @@ public final strictfp class HardCodedAxes {
 
     /**
      * Axis for Easting values in a {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#EAST East} and units are {@linkplain Units#METRE metres}.
+     * Increasing coordinate values go {@linkplain AxisDirection#EAST East} and units are {@linkplain Units#METRE metres}.
      * The ISO 19111 name is <cite>"easting"</cite> and the abbreviation is upper case <cite>"E"</cite>.
      *
      * <p>This axis is usually part of a {@link #EASTING}, {@link #NORTHING} set.</p>
@@ -349,7 +349,7 @@ public final strictfp class HardCodedAxes {
 
     /**
      * Axis for Westing values in a {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#WEST West} and units are {@linkplain Units#METRE metres}.
+     * Increasing coordinate values go {@linkplain AxisDirection#WEST West} and units are {@linkplain Units#METRE metres}.
      * The ISO 19111 name is <cite>"westing"</cite> and the abbreviation is upper case <cite>"W"</cite>.
      *
      * @see #X
@@ -361,7 +361,7 @@ public final strictfp class HardCodedAxes {
 
     /**
      * Axis for Northing values in a {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#NORTH North} and units are {@linkplain Units#METRE metres}.
+     * Increasing coordinate values go {@linkplain AxisDirection#NORTH North} and units are {@linkplain Units#METRE metres}.
      * The ISO 19111 name is <cite>"northing"</cite> and the abbreviation is upper case <cite>"N"</cite>.
      *
      * <p>This axis is usually part of a {@link #EASTING}, {@link #NORTHING} set.</p>
@@ -375,7 +375,7 @@ public final strictfp class HardCodedAxes {
 
     /**
      * Axis for Southing values in a {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
-     * Increasing ordinates values go {@linkplain AxisDirection#SOUTH South} and units are {@linkplain Units#METRE metres}.
+     * Increasing coordinate values go {@linkplain AxisDirection#SOUTH South} and units are {@linkplain Units#METRE metres}.
      * The ISO 19111 name is <cite>"southing"</cite> and the abbreviation is upper case <cite>"S"</cite>.
      *
      * @see #Y

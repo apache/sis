@@ -18,6 +18,7 @@ package org.apache.sis.math;
 
 import java.util.Iterator;
 import java.io.Serializable;
+import java.util.function.DoubleBinaryOperator;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.internal.util.DoubleDouble;
@@ -46,7 +47,7 @@ import static java.lang.Math.ulp;
  *
  * @author  Martin Desruisseaux (MPO, IRD)
  * @author  Howard Freeland (MPO, for algorithmic inspiration)
- * @version 0.8
+ * @version 1.0
  *
  * @see Line
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
@@ -54,7 +55,7 @@ import static java.lang.Math.ulp;
  * @since 0.5
  * @module
  */
-public class Plane implements Cloneable, Serializable {
+public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -202,6 +203,22 @@ public class Plane implements Cloneable, Serializable {
     }
 
     /**
+     * Evaluates this equation for the given values. The default implementation delegates to
+     * {@link #z(double,double) z(x,y)}, but subclasses may override with different formulas.
+     * This method is provided for interoperability with libraries making use of {@link java.util.function}.
+     *
+     * @param  x  the first operand where to evaluate the function.
+     * @param  y  the second operand where to evaluate the function.
+     * @return the function value for the given operands.
+     *
+     * @since 1.0
+     */
+    @Override
+    public double applyAsDouble(double x, double y) {
+        return z(x, y);
+    }
+
+    /**
      * Sets the equation of this plane to the given coefficients.
      *
      * @param sx  the slope along the <var>x</var> values.
@@ -231,7 +248,7 @@ public class Plane implements Cloneable, Serializable {
     }
 
     /**
-     * Computes the plane's coefficients from the given ordinate values.
+     * Computes the plane's coefficients from the given coordinate values.
      * This method uses a linear regression in the least-square sense, with the assumption that
      * the (<var>x</var>,<var>y</var>) values are precise and all uncertainty is in <var>z</var>.
      * {@link Double#NaN} values are ignored. The result is undetermined if all points are colinear.
@@ -253,7 +270,7 @@ public class Plane implements Cloneable, Serializable {
     }
 
     /**
-     * Computes the plane's coefficients from the given ordinate values.
+     * Computes the plane's coefficients from the given coordinate values.
      * This method uses a linear regression in the least-square sense, with the assumption that
      * the (<var>x</var>,<var>y</var>) values are precise and all uncertainty is in <var>z</var>.
      * {@link Double#NaN} values are ignored. The result is undetermined if all points are colinear.
@@ -338,7 +355,7 @@ public class Plane implements Cloneable, Serializable {
      * Computes the plane's coefficients from the given sequence of points.
      * This method uses a linear regression in the least-square sense, with the assumption that
      * the (<var>x</var>,<var>y</var>) values are precise and all uncertainty is in <var>z</var>.
-     * Points shall be three dimensional with ordinate values in the (<var>x</var>,<var>y</var>,<var>z</var>) order.
+     * Points shall be three dimensional with coordinate values in the (<var>x</var>,<var>y</var>,<var>z</var>) order.
      * {@link Double#NaN} values are ignored. The result is undetermined if all points are colinear.
      *
      * @param  points  the three-dimensional points.

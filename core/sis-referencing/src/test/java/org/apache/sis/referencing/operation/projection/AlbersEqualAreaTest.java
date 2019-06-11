@@ -71,7 +71,7 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
                 0,          // False easting
                 0);         // False northing
 
-        final double delta = toRadians(100.0 / 60) / 1852;                  // Approximatively 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;                  // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         tolerance = Formulas.LINEAR_TOLERANCE;
         final AlbersEqualArea kernel = (AlbersEqualArea) getKernel();
@@ -93,8 +93,8 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
         /*
          * Verify consistency with random points.
          */
-        verifyInDomain(new double[] {-20, 20},          // Minimal input ordinate values
-                       new double[] {+20, 50},          // Maximal input ordinate values
+        verifyInDomain(new double[] {-20, 20},          // Minimal input coordinate values
+                       new double[] {+20, 50},          // Maximal input coordinate values
                        new int[]    {  5,  5},          // Number of points to test
                        TestUtilities.createRandomNumberGenerator());
     }
@@ -119,7 +119,7 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
                 0,          // False easting
                 0);         // False northing
 
-        final double delta = toRadians(100.0 / 60) / 1852;                  // Approximatively 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;                  // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         tolerance = Formulas.LINEAR_TOLERANCE;
         final AlbersEqualArea kernel = (AlbersEqualArea) getKernel();
@@ -145,8 +145,8 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
         /*
          * Verify consistency with random points.
          */
-        verifyInDomain(new double[] {-20, 20},          // Minimal input ordinate values
-                       new double[] {+20, 50},          // Maximal input ordinate values
+        verifyInDomain(new double[] {-20, 20},          // Minimal input coordinate values
+                       new double[] {+20, 50},          // Maximal input coordinate values
                        new int[]    {  5,  5},          // Number of points to test
                        TestUtilities.createRandomNumberGenerator());
     }
@@ -241,10 +241,10 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
                 200);       // False northing
 
         tolerance = Formulas.LINEAR_TOLERANCE;
-        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
-        verifyInDomain(new double[] {-40, 10},                  // Minimal input ordinate values
-                       new double[] {+40, 60},                  // Maximal input ordinate values
+        verifyInDomain(new double[] {-40, 10},                  // Minimal input coordinate values
+                       new double[] {+40, 60},                  // Maximal input coordinate values
                        new int[]    {  5,  5},                  // Number of points to test
                        TestUtilities.createRandomNumberGenerator());
     }

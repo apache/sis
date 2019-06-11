@@ -318,7 +318,7 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
         tolerance = 1;
 
         assertFalse("Mercator to Google should not be an identity transform.", transform.isIdentity());
-        final DirectPosition2D sourcePt = new DirectPosition2D(334000, 4840000);        // Approximatively 40°N 3°W
+        final DirectPosition2D sourcePt = new DirectPosition2D(334000, 4840000);        // Approximately 40°N 3°W
         final DirectPosition2D targetPt = new DirectPosition2D();
         assertSame(targetPt, transform.transform(sourcePt, targetPt));
         assertEquals("Easting should be unchanged", sourcePt.getX(),  targetPt.getX(), STRICT);

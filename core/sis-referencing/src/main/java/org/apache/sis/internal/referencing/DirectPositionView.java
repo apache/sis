@@ -35,21 +35,21 @@ import org.apache.sis.geometry.UnmodifiableGeometryException;
  */
 public abstract class DirectPositionView extends AbstractDirectPosition {
     /**
-     * The index of the first value in the ordinates array.
+     * The index of the first value in the coordinates array.
      * This field is non-final in order to allow the caller to move the view over an array of coordinates.
      */
     public int offset;
 
     /**
-     * The number of valid ordinate values.
+     * The number of valid coordinate values.
      */
     final int dimension;
 
     /**
      * Creates a new direct position wrapping the given array.
      *
-     * @param  offset     the first value index in the ordinates array.
-     * @param  dimension  the number of valid ordinate values.
+     * @param  offset     the first value index in the coordinates array.
+     * @param  dimension  the number of valid coordinate values.
      */
     DirectPositionView(final int offset, final int dimension) {
         this.offset    = offset;
@@ -92,54 +92,54 @@ public abstract class DirectPositionView extends AbstractDirectPosition {
      */
     public static final class Double extends DirectPositionView {
         /**
-         * The ordinate values. This is a direct reference to the array given to the constructor.
+         * The coordinate values. This is a direct reference to the array given to the constructor.
          * The length of this array may be greater then the number of dimensions.
          */
-        private final double[] ordinates;
+        private final double[] coordinates;
 
         /**
          * Creates a new direct position wrapping the given array.
          *
-         * @param  ordinates  the ordinate values.
+         * @param  coordinates  the coordinate values.
          */
-        public Double(final double[] ordinates) {
-            super(0, ordinates.length);
-            this.ordinates = ordinates;
+        public Double(final double[] coordinates) {
+            super(0, coordinates.length);
+            this.coordinates = coordinates;
         }
 
         /**
          * Creates a new direct position wrapping the given array.
          *
-         * @param  ordinates  the ordinate values.
-         * @param  offset     the first value index in the ordinates array.
-         * @param  dimension  the number of valid ordinate values.
+         * @param  coordinates  the coordinate values.
+         * @param  offset     the first value index in the coordinates array.
+         * @param  dimension  the number of valid coordinate values.
          */
-        public Double(final double[] ordinates, final int offset, final int dimension) {
+        public Double(final double[] coordinates, final int offset, final int dimension) {
             super(offset, dimension);
-            this.ordinates = ordinates;
+            this.coordinates = coordinates;
         }
 
         /**
-         * Returns the ordinate at the given index.
+         * Returns the coordinate at the given index.
          * <strong>This implementation does not check index validity</strong>, unless assertions are enabled.
          *
-         * @param  dim  the dimension of the ordinate to get fetch.
+         * @param  dim  the dimension of the coordinate to get fetch.
          * @return the coordinate value at the given dimension.
          */
         @Override
         public double getOrdinate(final int dim) {
             assert dim >= 0 && dim < dimension : dim;
-            return ordinates[offset + dim];
+            return coordinates[offset + dim];
         }
 
         /**
-         * Returns all ordinate values.
+         * Returns all coordinate values.
          *
          * @return all coordinate values.
          */
         @Override
         public double[] getCoordinate() {
-            return Arrays.copyOfRange(ordinates, offset, offset + dimension);
+            return Arrays.copyOfRange(coordinates, offset, offset + dimension);
         }
     }
 
@@ -148,34 +148,34 @@ public abstract class DirectPositionView extends AbstractDirectPosition {
      */
     public static final class Float extends DirectPositionView {
         /**
-         * The ordinate values. This is a direct reference to the array given to the constructor.
+         * The coordinate values. This is a direct reference to the array given to the constructor.
          * The length of this array may be greater then the number of dimensions.
          */
-        private final float[] ordinates;
+        private final float[] coordinates;
 
         /**
          * Creates a new direct position wrapping the given array.
          *
-         * @param  ordinates  the ordinate values.
-         * @param  offset     the first value index in the ordinates array.
-         * @param  dimension  the number of valid ordinate values.
+         * @param  coordinates  the coordinate values.
+         * @param  offset     the first value index in the coordinates array.
+         * @param  dimension  the number of valid coordinate values.
          */
-        public Float(final float[] ordinates, final int offset, final int dimension) {
+        public Float(final float[] coordinates, final int offset, final int dimension) {
             super(offset, dimension);
-            this.ordinates = ordinates;
+            this.coordinates = coordinates;
         }
 
         /**
-         * Returns the ordinate at the given index.
+         * Returns the coordinate at the given index.
          * <strong>This implementation does not check index validity</strong>, unless assertions are enabled.
          *
-         * @param  dim  the dimension of the ordinate to get fetch.
+         * @param  dim  the dimension of the coordinate to get fetch.
          * @return the coordinate value at the given dimension.
          */
         @Override
         public double getOrdinate(final int dim) {
             assert dim >= 0 && dim < dimension : dim;
-            return ordinates[offset + dim];
+            return coordinates[offset + dim];
         }
     }
 }

@@ -48,7 +48,7 @@ public final strictfp class AbridgedMolodenskyTransformTest extends MathTransfor
      * Creates a new test case.
      */
     public AbridgedMolodenskyTransformTest() {
-        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximately 100 metres
         derivativeDeltas   = new double[] {delta, delta};       // (Δλ, Δφ)
         λDimension         = new int[] {0};                     // Dimension for which to ignore ±360° differences.
         tolerance          = Formulas.ANGULAR_TOLERANCE;        // Tolerance for longitude and latitude in degrees

@@ -656,10 +656,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *           is considered ignorable metadata while the explicit arguments given to the constructor (if any) are
      *           considered non-ignorable. Note that there is some exceptions to this rule of thumb — see
      *           <cite>When object name matter</cite> below.</td></tr>
-     *   <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</td>
+     *   <tr><td>{@link ComparisonMode#APPROXIMATE APPROXIMATE}:</td>
      *       <td>Same as {@code IGNORE_METADATA}, with some tolerance threshold on numerical values.</td></tr>
      *   <tr><td>{@link ComparisonMode#ALLOW_VARIANT ALLOW_VARIANT}:</td>
-     *       <td>Same as {@code APPROXIMATIVE}, but ignores coordinate system axes.</td></tr>
+     *       <td>Same as {@code APPROXIMATE}, but ignores coordinate system axes.</td></tr>
      *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}:</td>
      *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
      * </table>
@@ -733,7 +733,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                        deepEquals(getRemarks(),     that.getRemarks(),     mode);
             }
             case IGNORE_METADATA:
-            case APPROXIMATIVE:
+            case APPROXIMATE:
             case ALLOW_VARIANT:
             case DEBUG: {
                 return implementsSameInterface(object);

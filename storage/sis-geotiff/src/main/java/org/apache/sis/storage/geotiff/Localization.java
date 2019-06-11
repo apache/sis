@@ -92,13 +92,13 @@ final class Localization {
         try {
             final LocalizationGridBuilder grid = new LocalizationGridBuilder(x, y);
             final LinearTransform sourceToGrid = grid.getSourceToGrid();
-            final double[] ordinates = new double[2];
+            final double[] coordinates = new double[2];
             for (int i=0; i<size; i += RECORD_LENGTH) {
-                ordinates[0] = modelTiePoints.doubleValue(i);
-                ordinates[1] = modelTiePoints.doubleValue(i+1);
-                sourceToGrid.transform(ordinates, 0, ordinates, 0, 1);
-                grid.setControlPoint(Math.toIntExact(Math.round(ordinates[0])),
-                                     Math.toIntExact(Math.round(ordinates[1])),
+                coordinates[0] = modelTiePoints.doubleValue(i);
+                coordinates[1] = modelTiePoints.doubleValue(i+1);
+                sourceToGrid.transform(coordinates, 0, coordinates, 0, 1);
+                grid.setControlPoint(Math.toIntExact(Math.round(coordinates[0])),
+                                     Math.toIntExact(Math.round(coordinates[1])),
                                      modelTiePoints.doubleValue(i + (RECORD_LENGTH/2)),
                                      modelTiePoints.doubleValue(i + (RECORD_LENGTH/2 + 1)));
             }

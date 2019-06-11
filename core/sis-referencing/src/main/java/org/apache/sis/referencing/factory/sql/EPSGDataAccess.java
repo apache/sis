@@ -2531,7 +2531,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                  * Search for units.   We typically have many different units but all of the same dimension
                  * (for example metres, kilometres, feet, etc.). In such case, the units Set will have only
                  * one element and that element will be the most frequently used unit.  But some parameters
-                 * accept units of different dimensions.   For example the "Ordinate 1 of evaluation point"
+                 * accept units of different dimensions. For example the "Coordinate 1 of evaluation point"
                  * (EPSG:8617) parameter value may be in metres or in degrees.   In such case the units Set
                  * will have two elements.
                  */

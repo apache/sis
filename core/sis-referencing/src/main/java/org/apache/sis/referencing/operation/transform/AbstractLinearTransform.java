@@ -274,8 +274,8 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
         if (object == null) {
             return false;
         }
-        final boolean isApproximative = mode.isApproximative();
-        if (!isApproximative && getClass() == object.getClass()) {
+        final boolean isApproximate = mode.isApproximate();
+        if (!isApproximate && getClass() == object.getClass()) {
             if (!equalsSameClass(object)) {
                 return false;
             }
@@ -341,7 +341,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
         } catch (NoninvertibleTransformException e) {
             // Leave 'mo' to null.
         }
-        return Matrices.equals(mt, mo, isApproximative ? Numerics.COMPARISON_THRESHOLD : 0, isApproximative);
+        return Matrices.equals(mt, mo, isApproximate ? Numerics.COMPARISON_THRESHOLD : 0, isApproximate);
     }
 
     /**

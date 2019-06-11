@@ -77,7 +77,7 @@ public final strictfp class CoordinateFrameRotationTest extends MathTransformTes
     @Test
     @DependsOnMethod("testGeocentricDomain")
     public void testGeographicDomain() throws FactoryException, TransformException {
-        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximately 100 metres
         derivativeDeltas = new double[] {delta, delta, 100};    // (Δλ, Δφ, Δh)
         tolerance  = Formulas.ANGULAR_TOLERANCE;
         zTolerance = Formulas.LINEAR_TOLERANCE;

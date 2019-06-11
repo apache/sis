@@ -966,7 +966,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *       the source or target CRS, if those parameters are not explicitly given and if they are relevant
      *       for the coordinate operation method.</li>
      *   <li>{@linkplain #createConcatenatedTransform Concatenating} the parameterized transform
-     *       with any other transforms required for performing units changes and ordinates swapping.</li>
+     *       with any other transforms required for performing units changes and coordinates swapping.</li>
      * </ol>
      *
      * The complete group of parameters, including {@code "semi_major"}, {@code "semi_minor"} or other calculated values,
@@ -1078,7 +1078,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Given a transform between normalized spaces,
      * creates a transform taking in account axis directions, units of measurement and longitude rotation.
      * This method {@linkplain #createConcatenatedTransform concatenates} the given parameterized transform
-     * with any other transform required for performing units changes and ordinates swapping.
+     * with any other transform required for performing units changes and coordinates swapping.
      *
      * <p>The given {@code parameterized} transform shall expect
      * {@linkplain org.apache.sis.referencing.cs.AxesConvention#NORMALIZED normalized} input coordinates and
@@ -1263,7 +1263,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Creates an affine transform from a matrix. If the transform input dimension is {@code M},
      * and output dimension is {@code N}, then the matrix will have size {@code [N+1][M+1]}. The
      * +1 in the matrix dimensions allows the matrix to do a shift, as well as a rotation. The
-     * {@code [M][j]} element of the matrix will be the j'th ordinate of the moved origin. The
+     * {@code [M][j]} element of the matrix will be the j'th coordinate of the moved origin. The
      * {@code [i][N]} element of the matrix will be 0 for <var>i</var> less than {@code M}, and 1
      * for <var>i</var> equals {@code M}.
      *
@@ -1316,8 +1316,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
-     * Creates a transform which passes through a subset of ordinates to another transform.
-     * This allows transforms to operate on a subset of ordinates.
+     * Creates a transform which passes through a subset of coordinates to another transform.
+     * This allows transforms to operate on a subset of coordinates.
      *
      * <div class="note"><b>Example:</b>
      * Giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,

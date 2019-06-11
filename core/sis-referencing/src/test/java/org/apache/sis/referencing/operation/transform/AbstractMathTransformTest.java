@@ -223,7 +223,7 @@ public final strictfp class AbstractMathTransformTest extends TestCase {
                     }
                 }
                 /*
-                 * Inspects each transformed coordinates. Either all ordinates are NaN, or either
+                 * Inspects each transformed coordinates. Either all coordinates are NaN, or either
                  * none of them are. Verifies with RandomFailureTransform if the NaN state is the
                  * expected one.
                  */

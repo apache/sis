@@ -262,7 +262,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     }
 
     /**
-     * A coordinate position consisting of all the lower ordinate values.
+     * A coordinate position consisting of all the lower coordinate values.
      * The default implementation returns a view over the {@link #getLower(int)} method,
      * so changes in this envelope will be immediately reflected in the returned direct position.
      * If the particular case of the {@code GeneralEnvelope} subclass, the returned position
@@ -277,7 +277,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * lower corner longitude greater than the upper corner longitude. Such extended interpretation applies
      * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
-     * @return a view over the lower corner, typically (but not necessarily) containing minimal ordinate values.
+     * @return a view over the lower corner, typically (but not necessarily) containing minimal coordinate values.
      */
     @Override
     public DirectPosition getLowerCorner() {
@@ -287,7 +287,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     }
 
     /**
-     * A coordinate position consisting of all the upper ordinate values.
+     * A coordinate position consisting of all the upper coordinate values.
      * The default implementation returns a view over the {@link #getUpper(int)} method,
      * so changes in this envelope will be immediately reflected in the returned direct position.
      * If the particular case of the {@code GeneralEnvelope} subclass, the returned position
@@ -302,7 +302,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * upper corner longitude less than the lower corner longitude. Such extended interpretation applies
      * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
-     * @return a view over the upper corner, typically (but not necessarily) containing maximal ordinate values.
+     * @return a view over the upper corner, typically (but not necessarily) containing maximal coordinate values.
      */
     @Override
     public DirectPosition getUpperCorner() {
@@ -312,7 +312,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     }
 
     /**
-     * A coordinate position consisting of all the median ordinate values.
+     * A coordinate position consisting of all the median coordinate values.
      * The default implementation returns a view over the {@link #getMedian(int)} method,
      * so changes in this envelope will be immediately reflected in the returned direct position.
      *
@@ -325,38 +325,38 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     }
 
     /**
-     * Returns the limit in the direction of decreasing ordinate values in the specified dimension.
+     * Returns the limit in the direction of decreasing coordinate values in the specified dimension.
      * This is usually the algebraic {@linkplain #getMinimum(int) minimum}, except if this envelope
      * spans the anti-meridian.
      *
-     * @param  dimension  the dimension for which to obtain the ordinate value.
-     * @return the starting ordinate value at the given dimension.
+     * @param  dimension  the dimension for which to obtain the coordinate value.
+     * @return the starting coordinate value at the given dimension.
      * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      */
     public abstract double getLower(int dimension) throws IndexOutOfBoundsException;
 
     /**
-     * Returns the limit in the direction of increasing ordinate values in the specified dimension.
+     * Returns the limit in the direction of increasing coordinate values in the specified dimension.
      * This is usually the algebraic {@linkplain #getMaximum(int) maximum}, except if this envelope
      * spans the anti-meridian.
      *
-     * @param  dimension  the dimension for which to obtain the ordinate value.
-     * @return the starting ordinate value at the given dimension.
+     * @param  dimension  the dimension for which to obtain the coordinate value.
+     * @return the starting coordinate value at the given dimension.
      * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      */
     public abstract double getUpper(int dimension) throws IndexOutOfBoundsException;
 
     /**
-     * Returns the minimal ordinate value for the specified dimension. In the typical case
+     * Returns the minimal coordinate value for the specified dimension. In the typical case
      * of non-empty envelopes <em>not</em> spanning the anti-meridian, this method returns the
      * {@link #getLower(int)} value verbatim. In the case of envelope spanning the anti-meridian,
      * this method returns the {@linkplain CoordinateSystemAxis#getMinimumValue() axis minimum value}.
      * If the range in the given dimension is invalid, then this method returns {@code NaN}.
      *
-     * @param  dimension  the dimension for which to obtain the ordinate value.
-     * @return the minimal ordinate value at the given dimension.
+     * @param  dimension  the dimension for which to obtain the coordinate value.
+     * @return the minimal coordinate value at the given dimension.
      * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      */
@@ -371,14 +371,14 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     }
 
     /**
-     * Returns the maximal ordinate value for the specified dimension. In the typical case
+     * Returns the maximal coordinate value for the specified dimension. In the typical case
      * of non-empty envelopes <em>not</em> spanning the anti-meridian, this method returns the
      * {@link #getUpper(int)} value verbatim. In the case of envelope spanning the anti-meridian,
      * this method returns the {@linkplain CoordinateSystemAxis#getMaximumValue() axis maximum value}.
      * If the range in the given dimension is invalid, then this method returns {@code NaN}.
      *
-     * @param  dimension  the dimension for which to obtain the ordinate value.
-     * @return the maximal ordinate value at the given dimension.
+     * @param  dimension  the dimension for which to obtain the coordinate value.
+     * @return the maximal coordinate value at the given dimension.
      * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      */
@@ -393,7 +393,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     }
 
     /**
-     * Returns the median ordinate along the specified dimension.
+     * Returns the median coordinate along the specified dimension.
      * In most cases, the result is equals (minus rounding error) to:
      *
      * {@preformat java
@@ -410,8 +410,8 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * space. If the axis range meaning is not {@code WRAPAROUND}, then this method returns
      * {@link Double#NaN NaN}.
      *
-     * @param  dimension  the dimension for which to obtain the ordinate value.
-     * @return the median ordinate at the given dimension, or {@link Double#NaN}.
+     * @param  dimension  the dimension for which to obtain the coordinate value.
+     * @return the median coordinate at the given dimension, or {@link Double#NaN}.
      * @throws IndexOutOfBoundsException if the given index is negative or is equals or greater
      *         than the {@linkplain #getDimension() envelope dimension}.
      */
@@ -586,7 +586,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
             envelopes[0] = this;
         } else {
             /*
-             * Need to create at least 2 envelopes. Instantiate now all envelopes with ordinate values
+             * Need to create at least 2 envelopes. Instantiate now all envelopes with coordinate values
              * initialized to a copy of this envelope. We will write directly in their internal arrays later.
              */
             double[] c = new double[dimension * 2];
@@ -594,26 +594,26 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
                 c[i            ] = getLower(i);
                 c[i + dimension] = getUpper(i);
             }
-            final double[][] ordinates = new double[envelopes.length][];
+            final double[][] coordinates = new double[envelopes.length][];
             for (int i=0; i<envelopes.length; i++) {
                 final GeneralEnvelope envelope = new GeneralEnvelope(i == 0 ? c : c.clone());
                 envelope.crs = crs;
                 envelopes[i] = envelope;
-                ordinates[i] = envelope.ordinates;
+                coordinates[i] = envelope.coordinates;
             }
             /*
-             * Assign the minimum and maximum ordinate values in the dimension where a wraparound has been found.
+             * Assign the minimum and maximum coordinate values in the dimension where a wraparound has been found.
              * The 'for' loop below iterates only over the 'i' values for which the 'isWrapAround' bit is set to 1.
              */
-            int mask = 1;               // For identifying whether we need to set the lower or the upper ordinate.
+            int mask = 1;               // For identifying whether we need to set the lower or the upper coordinate.
             @SuppressWarnings("null")
             final CoordinateSystem cs = crs.getCoordinateSystem();            // Should not be null at this point.
             for (int i; (i = Long.numberOfTrailingZeros(isWrapAround)) != Long.SIZE; isWrapAround &= ~(1L << i)) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
                 final double min = axis.getMinimumValue();
                 final double max = axis.getMaximumValue();
-                for (int j=0; j<ordinates.length; j++) {
-                    c = ordinates[j];
+                for (int j=0; j<coordinates.length; j++) {
+                    c = coordinates[j];
                     if ((j & mask) == 0) {
                         c[i + dimension] = max;
                     } else {
@@ -660,7 +660,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     }
 
     /**
-     * Returns {@code false} if at least one ordinate value is not {@linkplain Double#NaN NaN}.
+     * Returns {@code false} if at least one coordinate value is not {@linkplain Double#NaN NaN}.
      * This {@code isAllNaN()} check is different than the {@link #isEmpty()} check since it
      * returns {@code false} for a partially initialized envelope, while {@code isEmpty()}
      * returns {@code false} only after all dimensions have been initialized.
@@ -694,7 +694,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     /**
      * Tests if a specified coordinate is inside the boundary of this envelope.
      * Both lower and upper values of this envelope are considered inclusive.
-     * If it least one ordinate value in the given point is {@link Double#NaN NaN},
+     * If it least one coordinate value in the given point is {@link Double#NaN NaN},
      * then this method returns {@code false}.
      *
      * <div class="section">Pre-conditions</div>
@@ -733,7 +733,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
                      * "Spanning the anti-meridian" case: if we reach this point, then the
                      * [upper...lower] range  (note the 'lower' and 'upper' interchanging)
                      * is actually a space outside the envelope and we have checked that
-                     * the ordinate value is outside that space.
+                     * the coordinate value is outside that space.
                      */
                     continue;
                 }
@@ -978,7 +978,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     }
 
     /**
-     * Returns {@code true} if at least one ordinate in the given envelope
+     * Returns {@code true} if at least one coordinate in the given envelope
      * is {@link Double#NaN}. This is used for assertions only.
      */
     static boolean hasNaN(final Envelope envelope) {
@@ -986,7 +986,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     }
 
     /**
-     * Returns {@code true} if at least one ordinate in the given position
+     * Returns {@code true} if at least one coordinate in the given position
      * is {@link Double#NaN}. This is used for assertions only.
      */
     static boolean hasNaN(final DirectPosition position) {
@@ -1023,7 +1023,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * To be considered equal, the two envelopes must have the same {@linkplain #getDimension() dimension}
      * and their CRS must be {@linkplain org.apache.sis.util.Utilities#equalsIgnoreMetadata equals,
      * ignoring metadata}. If at least one envelope has a null CRS, then the CRS are ignored and the
-     * ordinate values are compared as if the CRS were equal.
+     * coordinate values are compared as if the CRS were equal.
      *
      * @param  other          the envelope to compare with.
      * @param  eps            the tolerance value to use for numerical comparisons.
@@ -1173,11 +1173,11 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
             do {                                                        // Executed exactly twice.
                 for (int i=0; i<dimension; i++) {
                     buffer.append(i == 0 && !isUpper ? '(' : ' ');
-                    final double ordinate = (isUpper ? upperCorner : lowerCorner).getOrdinate(i);
+                    final double coordinate = (isUpper ? upperCorner : lowerCorner).getOrdinate(i);
                     if (isSinglePrecision) {
-                        buffer.append((float) ordinate);
+                        buffer.append((float) coordinate);
                     } else {
-                        buffer.append(ordinate);
+                        buffer.append(coordinate);
                     }
                     trimFractionalPart(buffer);
                 }
@@ -1259,7 +1259,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
             return getLower(dimension);
         }
 
-        /** Sets the ordinate value along the specified dimension. */
+        /** Sets the coordinate value along the specified dimension. */
         @Override public void setOrdinate(final int dimension, final double value) {
             setRange(dimension, value, getUpper(dimension));
         }
@@ -1275,7 +1275,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
             return getUpper(dimension);
         }
 
-        /** Sets the ordinate value along the specified dimension. */
+        /** Sets the coordinate value along the specified dimension. */
         @Override public void setOrdinate(final int dimension, final double value) {
             setRange(dimension, getLower(dimension), value);
         }
@@ -1307,8 +1307,8 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * preserving the immutable aspect of {@link ImmutableEnvelope} subclass among others.</p>
      *
      * @param  dimension  the dimension to set.
-     * @param  lower      the limit in the direction of decreasing ordinate values.
-     * @param  upper      the limit in the direction of increasing ordinate values.
+     * @param  lower      the limit in the direction of decreasing coordinate values.
+     * @param  upper      the limit in the direction of increasing coordinate values.
      * @throws UnmodifiableGeometryException if this envelope is not modifiable.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws IllegalArgumentException if {@code lower > upper}, this envelope has a CRS

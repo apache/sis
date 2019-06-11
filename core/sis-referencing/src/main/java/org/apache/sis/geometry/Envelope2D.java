@@ -56,7 +56,7 @@ import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
  * <p>This class inherits {@linkplain #x x} and {@linkplain #y y} fields.
  * But despite their names, they don't need to be oriented toward {@linkplain AxisDirection#EAST East} and
  * {@linkplain AxisDirection#NORTH North} respectively. The (<var>x</var>,<var>y</var>) axis can have any
- * direction and should be understood as <cite>ordinate 0</cite> and <cite>ordinate 1</cite> values instead.
+ * direction and should be understood as <cite>coordinate 0</cite> and <cite>coordinate 1</cite> values instead.
  * This is not specific to this implementation; in Java2D too, the visual axis orientation depend
  * on the {@linkplain java.awt.Graphics2D#getTransform() affine transform in the graphics context}.</p>
  *
@@ -315,8 +315,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * The limits in the direction of decreasing ordinate values for the two dimensions.
-     * This is typically a coordinate position consisting of the minimal ordinates for
+     * The limits in the direction of decreasing coordinate values for the two dimensions.
+     * This is typically a coordinate position consisting of the minimal coordinates for
      * the two dimensions for all points within the {@code Envelope}.
      *
      * <p>The object returned by this method is a copy. Change in the returned position
@@ -330,7 +330,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * lower corner longitude greater than the upper corner longitude. Such extended interpretation applies
      * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
-     * @return a copy of the lower corner, typically (but not necessarily) containing minimal ordinate values.
+     * @return a copy of the lower corner, typically (but not necessarily) containing minimal coordinate values.
      */
     @Override
     public DirectPosition2D getLowerCorner() {
@@ -338,8 +338,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * The limits in the direction of increasing ordinate values for the two dimensions.
-     * This is typically a coordinate position consisting of the maximal ordinates for
+     * The limits in the direction of increasing coordinate values for the two dimensions.
+     * This is typically a coordinate position consisting of the maximal coordinates for
      * the two dimensions for all points within the {@code Envelope}.
      *
      * <p>The object returned by this method is a copy. Change in the returned position
@@ -353,7 +353,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * upper corner longitude less than the lower corner longitude. Such extended interpretation applies
      * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
-     * @return a copy of the upper corner, typically (but not necessarily) containing maximal ordinate values.
+     * @return a copy of the upper corner, typically (but not necessarily) containing maximal coordinate values.
      */
     @Override
     public DirectPosition2D getUpperCorner() {
@@ -368,12 +368,12 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * Returns the minimal ordinate along the specified dimension. This method handles
+     * Returns the minimal coordinate along the specified dimension. This method handles
      * anti-meridian spanning as documented in the {@link AbstractEnvelope#getMinimum(int)}
      * method.
      *
      * @param  dimension  the dimension to query.
-     * @return the minimal ordinate value along the given dimension.
+     * @return the minimal coordinate value along the given dimension.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
     @Override
@@ -392,12 +392,12 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * Returns the maximal ordinate along the specified dimension. This method handles
+     * Returns the maximal coordinate along the specified dimension. This method handles
      * anti-meridian spanning as documented in the {@link AbstractEnvelope#getMaximum(int)}
      * method.
      *
      * @param  dimension  the dimension to query.
-     * @return the maximal ordinate value along the given dimension.
+     * @return the maximal coordinate value along the given dimension.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
     @Override
@@ -416,12 +416,12 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * Returns the median ordinate along the specified dimension. This method handles
+     * Returns the median coordinate along the specified dimension. This method handles
      * anti-meridian spanning as documented in the {@link AbstractEnvelope#getMedian(int)}
      * method.
      *
      * @param  dimension  the dimension to query.
-     * @return the mid ordinate value along the given dimension.
+     * @return the mid coordinate value along the given dimension.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
     @Override
@@ -464,12 +464,12 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     // Do not override getX() and getY() - their default implementations is okay.
 
     /**
-     * Returns the {@linkplain #getMinimum(int) minimal} ordinate value for dimension 0.
+     * Returns the {@linkplain #getMinimum(int) minimal} coordinate value for dimension 0.
      * The default implementation invokes <code>{@linkplain #getMinimum(int) getMinimum}(0)</code>.
      * The result is the standard {@link Rectangle2D} value (namely {@linkplain #x x})
      * only if the envelope is not spanning the anti-meridian.
      *
-     * @return the minimal ordinate value for dimension 0.
+     * @return the minimal coordinate value for dimension 0.
      */
     @Override
     public double getMinX() {
@@ -477,12 +477,12 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * Returns the {@linkplain #getMinimum(int) minimal} ordinate value for dimension 1.
+     * Returns the {@linkplain #getMinimum(int) minimal} coordinate value for dimension 1.
      * The default implementation invokes <code>{@linkplain #getMinimum(int) getMinimum}(1)</code>.
      * The result is the standard {@link Rectangle2D} value (namely {@linkplain #y y})
      * only if the envelope is not spanning the anti-meridian.
      *
-     * @return the minimal ordinate value for dimension 1.
+     * @return the minimal coordinate value for dimension 1.
      */
     @Override
     public double getMinY() {
@@ -490,12 +490,12 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * Returns the {@linkplain #getMaximum(int) maximal} ordinate value for dimension 0.
+     * Returns the {@linkplain #getMaximum(int) maximal} coordinate value for dimension 0.
      * The default implementation invokes <code>{@linkplain #getMaximum(int) getMinimum}(0)</code>.
      * The result is the standard {@link Rectangle2D} value (namely {@linkplain #x x} + {@linkplain #width width})
      * only if the envelope is not spanning the anti-meridian.
      *
-     * @return the maximal ordinate value for dimension 0.
+     * @return the maximal coordinate value for dimension 0.
      */
     @Override
     public double getMaxX() {
@@ -503,12 +503,12 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * Returns the {@linkplain #getMaximum(int) maximal} ordinate value for dimension 1.
+     * Returns the {@linkplain #getMaximum(int) maximal} coordinate value for dimension 1.
      * The default implementation invokes <code>{@linkplain #getMaximum(int) getMinimum}(1)</code>.
      * The result is the standard {@link Rectangle2D} value (namely {@linkplain #y y} + {@linkplain #height height})
      * only if the envelope is not spanning the anti-meridian.
      *
-     * @return the maximal ordinate value for dimension 1.
+     * @return the maximal coordinate value for dimension 1.
      */
     @Override
     public double getMaxY() {
@@ -516,12 +516,12 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * Returns the {@linkplain #getMedian(int) median} ordinate value for dimension 0.
+     * Returns the {@linkplain #getMedian(int) median} coordinate value for dimension 0.
      * The default implementation invokes <code>{@linkplain #getMedian(int) getMedian}(0)</code>.
      * The result is the standard {@link Rectangle2D} value (namely {@linkplain #x x} + {@linkplain #width width}/2)
      * only if the envelope is not spanning the anti-meridian.
      *
-     * @return the median ordinate value for dimension 0.
+     * @return the median coordinate value for dimension 0.
      */
     @Override
     public double getCenterX() {
@@ -529,12 +529,12 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * Returns the {@linkplain #getMedian(int) median} ordinate value for dimension 1.
+     * Returns the {@linkplain #getMedian(int) median} coordinate value for dimension 1.
      * The default implementation invokes <code>{@linkplain #getMedian(int) getMedian}(1)</code>.
      * The result is the standard {@link Rectangle2D} value (namely {@linkplain #y y} + {@linkplain #height height}/2)
      * only if the envelope is not spanning the anti-meridian.
      *
-     * @return the median ordinate value for dimension 1.
+     * @return the median coordinate value for dimension 1.
      */
     @Override
     public double getCenterY() {
@@ -686,15 +686,15 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
 
     /**
      * Tests if a specified coordinate is inside the boundary of this envelope. If it least one
-     * of the given ordinate value is {@link java.lang.Double#NaN NaN}, then this method returns
+     * of the given coordinate value is {@link java.lang.Double#NaN NaN}, then this method returns
      * {@code false}.
      *
      * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * This method supports anti-meridian spanning in the same way than
      * {@link AbstractEnvelope#contains(DirectPosition)}.
      *
-     * @param  px  the first ordinate value of the point to text.
-     * @param  py  the second ordinate value of the point to text.
+     * @param  px  the first coordinate value of the point to text.
+     * @param  py  the second coordinate value of the point to text.
      * @return {@code true} if the specified coordinate is inside the boundary of this envelope;
      *         {@code false} otherwise.
      */
@@ -743,8 +743,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * This method supports anti-meridian spanning in the same way than
      * {@link AbstractEnvelope#contains(Envelope)}.
      *
-     * @param  rx  the <var>x</var> ordinate of the lower corner of the rectangle to test for inclusion.
-     * @param  ry  the <var>y</var> ordinate of the lower corner of the rectangle to test for inclusion.
+     * @param  rx  the <var>x</var> coordinate of the lower corner of the rectangle to test for inclusion.
+     * @param  ry  the <var>y</var> coordinate of the lower corner of the rectangle to test for inclusion.
      * @param  rw  the width of the rectangle to test for inclusion. May be negative if the rectangle spans the anti-meridian.
      * @param  rh  the height of the rectangle to test for inclusion. May be negative.
      * @return {@code true} if this envelope completely encloses the specified one.
@@ -815,8 +815,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * This method supports anti-meridian spanning in the same way than
      * {@link AbstractEnvelope#intersects(Envelope)}.
      *
-     * @param  rx  the <var>x</var> ordinate of the lower corner of the rectangle to test for intersection.
-     * @param  ry  the <var>y</var> ordinate of the lower corner of the rectangle to test for intersection.
+     * @param  rx  the <var>x</var> coordinate of the lower corner of the rectangle to test for intersection.
+     * @param  ry  the <var>y</var> coordinate of the lower corner of the rectangle to test for intersection.
      * @param  rw  the width of the rectangle to test for inclusion. May be negative if the rectangle spans the anti-meridian.
      * @param  rh  the height of the rectangle to test for inclusion. May be negative.
      * @return {@code true} if this envelope intersects the specified rectangle.
@@ -896,10 +896,10 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
              */
             if (isSameSign(span0, span1)) {                 // Always 'false' if any value is NaN.
                 if ((min1 > max0 || max1 < min0) && !isNegativeUnsafe(span0)) {
-                    continue;                               // No intersection: leave ordinate values to NaN
+                    continue;                               // No intersection: leave coordinate values to NaN
                 }
             } else if (isNaN(span0) || isNaN(span1)) {
-                continue;                                   // Leave ordinate values to NaN
+                continue;                                   // Leave coordinate values to NaN
             } else {
                 int intersect = 0;                          // A bitmask of intersections (two bits).
                 if (isNegativeUnsafe(span0)) {
@@ -918,7 +918,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
                         min = min1;
                         max = max1;
                     } else {
-                        continue;                           // Leave ordinate values to NaN
+                        continue;                           // Leave coordinate values to NaN
                     }
                 }
             }
@@ -980,13 +980,13 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
             double max = Math.max(max0, max1);
             /*
              * See GeneralEnvelope.add(Envelope) for an explanation of the algorithm applied below.
-             * Note that the "continue" statement has reverse meaning: ordinates are left to NaN.
+             * Note that the "continue" statement has reverse meaning: coordinates are left to NaN.
              */
             final boolean sp0 = isNegative(span0);
             final boolean sp1 = isNegative(span1);
             if (sp0 == sp1) {
                 if (sp0 && !isNegativeUnsafe(max - min)) {
-                    continue;                                   // Leave ordinates to NaN.
+                    continue;                                   // Leave coordinates to NaN.
                 }
             } else if (sp0) {
                 if (max1 <= max0 || min1 >= min0) {
@@ -996,7 +996,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
                     final double left  = min1 - max0;
                     final double right = min0 - max1;
                     if (!(left > 0 || right > 0)) {
-                        continue;                               // Leave ordinates to NaN.
+                        continue;                               // Leave coordinates to NaN.
                     }
                     if (left > right) {min = min1; max = max0;}
                     if (right > left) {min = min0; max = max1;}
@@ -1009,7 +1009,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
                     final double left  = min0 - max1;
                     final double right = min1 - max0;
                     if (!(left > 0 || right > 0)) {
-                        continue;                               // Leave ordinates to NaN.
+                        continue;                               // Leave coordinates to NaN.
                     }
                     if (left > right) {min = min0; max = max1;}
                     if (right > left) {min = min1; max = max0;}
@@ -1043,15 +1043,15 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * contains both the original rectangle and the specified point.
      * <p>
      * After adding a point, a call to {@link #contains(double, double)} with the added point
-     * as an argument will return {@code true}, except if one of the point ordinates was
-     * {@link java.lang.Double#NaN} in which case the corresponding ordinate has been ignored.
+     * as an argument will return {@code true}, except if one of the point coordinates was
+     * {@link java.lang.Double#NaN} in which case the corresponding coordinate has been ignored.
      *
      * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * This method supports anti-meridian spanning in the same way than
      * {@link GeneralEnvelope#add(DirectPosition)}.
      *
-     * @param  px  the first ordinate of the point to add.
-     * @param  py  the second ordinate of the point to add.
+     * @param  px  the first coordinate of the point to add.
+     * @param  py  the second coordinate of the point to add.
      */
     @Override
     public void add(final double px, final double py) {

@@ -69,7 +69,7 @@
  * <center><img src="doc-files/AntiMeridian.png" alt="Envelope spannning the anti-meridian"></center>
  *
  * In SIS, every envelopes defined in this package support the extended bounding box interpretation:
- * for any dimension, ordinate values such that <var>upper</var> &lt; <var>lower</var> are handled
+ * for any dimension, coordinate values such that <var>upper</var> &lt; <var>lower</var> are handled
  * in a special way. This handling is slightly different for two groups of methods:
  *
  * <ul>

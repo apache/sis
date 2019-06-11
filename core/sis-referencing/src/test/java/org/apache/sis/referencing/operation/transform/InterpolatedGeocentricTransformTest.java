@@ -128,7 +128,7 @@ public strictfp class InterpolatedGeocentricTransformTest extends MathTransformT
     public void testForwardDerivative() throws FactoryException, TransformException {
         createGeodeticTransformation();
         transform = transform.inverse();
-        final double delta = (100.0 / 60) / 1852;      // Approximatively 100 metres.
+        final double delta = (100.0 / 60) / 1852;           // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         tolerance = 1E-5;   // Empirical value.
         verifyDerivative(FranceGeocentricInterpolationTest.samplePoint(1));
@@ -145,7 +145,7 @@ public strictfp class InterpolatedGeocentricTransformTest extends MathTransformT
     @DependsOnMethod("testInverseTransform")
     public void testInverseDerivative() throws FactoryException, TransformException {
         createGeodeticTransformation();
-        final double delta = (100.0 / 60) / 1852;      // Approximatively 100 metres.
+        final double delta = (100.0 / 60) / 1852;           // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         tolerance = 1E-5;   // Empirical value.
         verifyDerivative(FranceGeocentricInterpolationTest.samplePoint(3));

@@ -179,7 +179,7 @@ public final class MathTransforms extends Static {
      * <p>If the transform input dimension is {@code M}, and output dimension is {@code N},
      * then the given matrix shall have size {@code [N+1][M+1]}.
      * The +1 in the matrix dimensions allows the matrix to do a shift, as well as a rotation.
-     * The {@code [M][j]} element of the matrix will be the <var>j</var>'th ordinate of the moved origin.</p>
+     * The {@code [M][j]} element of the matrix will be the <var>j</var>'th coordinate of the moved origin.</p>
      *
      * @param  matrix  the matrix used to define the linear transform.
      * @return the linear (usually affine) transform.
@@ -359,7 +359,7 @@ public final class MathTransforms extends Static {
     }
 
     /**
-     * Puts together a list of independent math transforms, each of them operating on a subset of ordinate values.
+     * Puts together a list of independent math transforms, each of them operating on a subset of coordinate values.
      * This method is often used for defining 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
      * transform as an aggregation of 3 simpler transforms operating on (<var>x</var>,<var>y</var>), (<var>z</var>)
      * and (<var>t</var>) values respectively.

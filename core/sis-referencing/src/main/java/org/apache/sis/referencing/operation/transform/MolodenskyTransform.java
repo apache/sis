@@ -53,7 +53,7 @@ import static java.lang.Math.*;
  *       height (typically non-zero even if the input height was zero) is lost.</li>
  * </ul>
  *
- * The transform expect ordinate values if the following order:
+ * The transform expect coordinate values if the following order:
  * <ol>
  *   <li>longitudes (λ) relative to the prime meridian (usually Greenwich),</li>
  *   <li>latitudes (φ),</li>
@@ -110,7 +110,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
 
     /**
      * Creates a Molodensky transform from the specified parameters.
-     * This {@code MolodenskyTransform} class expects ordinate values in the following order and units:
+     * This {@code MolodenskyTransform} class expects coordinate values in the following order and units:
      * <ol>
      *   <li>longitudes in <strong>radians</strong> relative to the prime meridian (usually Greenwich),</li>
      *   <li>latitudes in <strong>radians</strong>,</li>

@@ -889,7 +889,7 @@ public class StorageConnector implements Serializable {
      * @throws DataStoreException if the storage can not be reseted.
      */
     private void reset() throws DataStoreException {
-        if (views != null && !reset(views.get(null))) {
+        if (views != null && !views.isEmpty() && !reset(views.get(null))) {
             throw new ForwardOnlyStorageException(Resources.format(
                         Resources.Keys.StreamIsReadOnce_1, getStorageName()));
         }

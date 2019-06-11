@@ -88,7 +88,7 @@ public interface LinearTransform extends MathTransform {
     /**
      * Returns the coefficients of this linear transform as a matrix.
      * Converting a coordinate with this {@code MathTransform} is equivalent to multiplying the
-     * returned matrix by a vector containing the ordinate values with an additional 1 in the last row.
+     * returned matrix by a vector containing the coordinate values with an additional 1 in the last row.
      * See {@link LinearTransform} class Javadoc for more details.
      *
      * @return the coefficients of this linear transform as a matrix.

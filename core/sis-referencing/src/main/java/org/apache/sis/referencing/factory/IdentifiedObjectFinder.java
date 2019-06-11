@@ -120,7 +120,7 @@ public class IdentifiedObjectFinder {
      * The criterion for determining if a candidate found by {@code IdentifiedObjectFinder}
      * should be considered equals to the requested object.
      */
-    static final ComparisonMode COMPARISON_MODE = ComparisonMode.APPROXIMATIVE;
+    static final ComparisonMode COMPARISON_MODE = ComparisonMode.APPROXIMATE;
 
     /**
      * The factory to use for creating objects. This is the factory specified at construction time.
@@ -289,7 +289,7 @@ public class IdentifiedObjectFinder {
      * </ul>
      *
      * The created objects which are equal to the specified object in the
-     * the sense of {@link ComparisonMode#APPROXIMATIVE} are returned.
+     * the sense of {@link ComparisonMode#APPROXIMATE} are returned.
      *
      * @param  object  the object looked up.
      * @return the identified objects, or an empty set if not found.
@@ -536,7 +536,7 @@ public class IdentifiedObjectFinder {
     /**
      * Returns a set of authority codes that <strong>may</strong> identify the same object than the specified one.
      * The returned set must contains <em>at least</em> the code of every objects that are
-     * {@linkplain ComparisonMode#APPROXIMATIVE approximately equal} to the specified one.
+     * {@link ComparisonMode#APPROXIMATE approximately equal} to the specified one.
      * However the set may conservatively contains the code for more objects if an exact search is too expensive.
      *
      * <p>This method is invoked by the default {@link #find(IdentifiedObject)} method implementation.

@@ -141,7 +141,7 @@ public final strictfp class MollweideTest extends MapProjectionTestCase {
     public void testInverseDerivative() throws FactoryException, TransformException {
         createProjection(false);
         transform = transform.inverse();
-        derivativeDeltas = new double[] {100, 100};             // Approximatively 100 metres.
+        derivativeDeltas = new double[] {100, 100};             // Approximately 100 metres.
         tolerance = Formulas.ANGULAR_TOLERANCE;
         verifyDerivative(  912759.823,  5873471.956);
         verifyDerivative(-7622861.357, -7774469.608);
@@ -158,7 +158,7 @@ public final strictfp class MollweideTest extends MapProjectionTestCase {
     @DependsOnMethod("testInverseDerivative")
     public void testDerivative() throws FactoryException, TransformException {
         createProjection(false);
-        final double delta = (100.0 / 60) / 1852;               // Approximatively 100 metres.
+        final double delta = (100.0 / 60) / 1852;               // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         tolerance = 1E-6;                                       // More severe than Formulas.LINEAR_TOLERANCE.
         verifyDerivative(15,  30);

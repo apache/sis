@@ -97,23 +97,22 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
     }
 
     /**
-     * Returns a sequence of numbers that hold the coordinate of this position in its
-     * reference system.
+     * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
      *
      * @return the coordinates.
      */
     @Override
     public double[] getCoordinate() {
-        final double[] ordinates = new double[getDimension()];
-        for (int i=0; i<ordinates.length; i++) {
-            ordinates[i] = getOrdinate(i);
+        final double[] coordinates = new double[getDimension()];
+        for (int i=0; i<coordinates.length; i++) {
+            coordinates[i] = getOrdinate(i);
         }
-        return ordinates;
+        return coordinates;
     }
 
     /**
      * Sets this direct position to the given position. If the given position is
-     * {@code null}, then all ordinate values are set to {@link Double#NaN NaN}.
+     * {@code null}, then all coordinate values are set to {@link Double#NaN NaN}.
      *
      * <p>If this position and the given position have a non-null CRS, then the default implementation
      * requires the CRS to be {@linkplain Utilities#equalsIgnoreMetadata equals (ignoring metadata)},
@@ -149,19 +148,19 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
 
     /**
      * Ensures that the position is contained in the coordinate system domain.
-     * For each dimension, this method compares the ordinate values against the
+     * For each dimension, this method compares the coordinate values against the
      * limits of the coordinate system axis for that dimension.
-     * If some ordinates are out of range, then there is a choice depending on the
+     * If some coordinates are out of range, then there is a choice depending on the
      * {@linkplain CoordinateSystemAxis#getRangeMeaning() axis range meaning}:
      *
      * <ul>
-     *   <li>If {@link RangeMeaning#EXACT} (typically <em>latitudes</em> ordinates), then values
+     *   <li>If {@link RangeMeaning#EXACT} (typically <em>latitudes</em> coordinates), then values
      *       greater than the {@linkplain CoordinateSystemAxis#getMaximumValue() axis maximal value}
      *       are replaced by the axis maximum, and values smaller than the
      *       {@linkplain CoordinateSystemAxis#getMinimumValue() axis minimal value}
      *       are replaced by the axis minimum.</li>
      *
-     *   <li>If {@link RangeMeaning#WRAPAROUND} (typically <em>longitudes</em> ordinates), then
+     *   <li>If {@link RangeMeaning#WRAPAROUND} (typically <em>longitudes</em> coordinates), then
      *       a multiple of the axis range (e.g. 360° for longitudes) is added or subtracted.</li>
      * </ul>
      *
@@ -177,24 +176,24 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
             final int dimension = getDimension();
             final CoordinateSystem cs = crs.getCoordinateSystem();
             for (int i=0; i<dimension; i++) {
-                double ordinate = getOrdinate(i);
+                double coordinate = getOrdinate(i);
                 final CoordinateSystemAxis axis = cs.getAxis(i);
                 final double  minimum = axis.getMinimumValue();
                 final double  maximum = axis.getMaximumValue();
                 final RangeMeaning rm = axis.getRangeMeaning();
                 if (RangeMeaning.EXACT.equals(rm)) {
-                         if (ordinate < minimum) ordinate = minimum;
-                    else if (ordinate > maximum) ordinate = maximum;
+                         if (coordinate < minimum) coordinate = minimum;
+                    else if (coordinate > maximum) coordinate = maximum;
                     else continue;
                 } else if (RangeMeaning.WRAPAROUND.equals(rm)) {
                     final double csSpan = maximum - minimum;
-                    final double shift  = Math.floor((ordinate - minimum) / csSpan) * csSpan;
+                    final double shift  = Math.floor((coordinate - minimum) / csSpan) * csSpan;
                     if (shift == 0) {
                         continue;
                     }
-                    ordinate -= shift;
+                    coordinate -= shift;
                 }
-                setOrdinate(i, ordinate);
+                setOrdinate(i, coordinate);
                 changed = true;
             }
         }
@@ -204,7 +203,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
     /**
      * Formats this position in the <cite>Well Known Text</cite> (WKT) format.
      * The format is like below, where {@code x₀}, {@code x₁}, {@code x₂}, <i>etc.</i>
-     * are the ordinate values at index 0, 1, 2, <i>etc.</i>:
+     * are the coordinate values at index 0, 1, 2, <i>etc.</i>:
      *
      * {@preformat wkt
      *   POINT[x₀ x₁ x₂ …]
@@ -231,7 +230,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
     /**
      * Formats this position in the <cite>Well Known Text</cite> (WKT) format.
      * The returned string is like below, where {@code x₀}, {@code x₁}, {@code x₂}, <i>etc.</i>
-     * are the ordinate values at index 0, 1, 2, <i>etc.</i>:
+     * are the coordinate values at index 0, 1, 2, <i>etc.</i>:
      *
      * {@preformat wkt
      *   POINT(x₀ x₁ x₂ …)
@@ -254,7 +253,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * (WKT) format.
      *
      * @param  position           the position to format.
-     * @param  isSinglePrecision  {@code true} if every ordinate values can be casted to {@code float}.
+     * @param  isSinglePrecision  {@code true} if every coordinate values can be casted to {@code float}.
      * @return the point as a {@code POINT} in WKT format.
      *
      * @see ArraysExt#isSinglePrecision(double[])
@@ -268,11 +267,11 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
             char separator = '(';
             for (int i=0; i<dimension; i++) {
                 buffer.append(separator);
-                final double ordinate = position.getOrdinate(i);
+                final double coordinate = position.getOrdinate(i);
                 if (isSinglePrecision) {
-                    buffer.append((float) ordinate);
+                    buffer.append((float) coordinate);
                 } else {
-                    buffer.append(ordinate);
+                    buffer.append(coordinate);
                 }
                 trimFractionalPart(buffer);
                 separator = ' ';
@@ -286,7 +285,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * Parses the given WKT.
      *
      * @param  wkt  the WKT to parse.
-     * @return the ordinates, or {@code null} if none.
+     * @return the coordinates, or {@code null} if none.
      * @throws NumberFormatException if a number can not be parsed.
      * @throws IllegalArgumentException if the parenthesis are not balanced.
      */
@@ -341,10 +340,10 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
         }
         /*
          * Index i is either at the beginning of a number or at the closing parenthesis.
-         * Now process every space-separated ordinates until we reach the closing parenthesis
+         * Now process every space-separated coordinates until we reach the closing parenthesis
          * or the end of string.
          */
-        double[] ordinates = new double[2];
+        double[] coordinates = new double[2];
         int dimension = 0;
 parse:  while (i < length) {
             final int start = i;
@@ -361,10 +360,10 @@ parse:  while (i < length) {
              * IllegalArgumentException subclass, so we are compliant with the contract.
              */
             final double value = Double.parseDouble(wkt.subSequence(start, i).toString());
-            if (dimension == ordinates.length) {
-                ordinates = Arrays.copyOf(ordinates, dimension*2);
+            if (dimension == coordinates.length) {
+                coordinates = Arrays.copyOf(coordinates, dimension*2);
             }
-            ordinates[dimension++] = value;
+            coordinates[dimension++] = value;
             /*
              * Skip whitespaces. If we reach the end of string without finding
              * the closing parenthesis, check if we were suppose to have any.
@@ -377,11 +376,11 @@ parse:  while (i < length) {
                 c = Character.codePointAt(wkt, i);
             }
         }
-        return ArraysExt.resize(ordinates, dimension);
+        return ArraysExt.resize(coordinates, dimension);
     }
 
     /**
-     * Returns a hash value for this coordinate. This method returns a value compliant
+     * Returns a hash value for this coordinate tuple. This method returns a value compliant
      * with the contract documented in the {@link DirectPosition#hashCode()} javadoc.
      * Consequently, it should be possible to mix different {@code DirectPosition}
      * implementations in the same hash map.
@@ -400,7 +399,7 @@ parse:  while (i < length) {
 
     /**
      * Returns {@code true} if the specified object is also a {@code DirectPosition}
-     * with equal coordinate and equal CRS.
+     * with equal coordinates and equal CRS.
      *
      * This method performs the comparison as documented in the {@link DirectPosition#equals(Object)}
      * javadoc. In particular, the given object is not required to be of the same implementation class.

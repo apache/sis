@@ -123,17 +123,17 @@ final class ESRI extends Geometries<Geometry> {
     }
 
     /**
-     * Creates a polyline from the given ordinate values.
-     * Each {@link Double#NaN} ordinate value starts a new path.
+     * Creates a polyline from the given coordinate values.
+     * Each {@link Double#NaN} coordinate value starts a new path.
      */
     @Override
-    public Geometry createPolyline(final int dimension, final Vector... ordinates) {
+    public Geometry createPolyline(final int dimension, final Vector... coordinates) {
         if (dimension != 2) {
             throw unsupported(dimension);
         }
         boolean lineTo = false;
         final Polyline path = new Polyline();
-        for (final Vector v : ordinates) {
+        for (final Vector v : coordinates) {
             if (v != null) {
                 final int size = v.size();
                 for (int i=0; i<size;) {

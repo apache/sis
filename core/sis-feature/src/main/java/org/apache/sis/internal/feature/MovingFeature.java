@@ -238,12 +238,12 @@ public final class MovingFeature {
                         p = p.previous;
                     }
                     warningListener.accept(Resources.forLocale(null).getLogRecord(Level.WARNING,
-                            Resources.Keys.UnexpectedNumberOfOrdinates_4, featureName, new Date(p.startTime), dimension, length));
+                            Resources.Keys.UnexpectedNumberOfCoordinates_4, featureName, new Date(p.startTime), dimension, length));
                 }
                 continue;
             }
             /*
-             * At this point we have a non-empty valid sequence of ordinate values. If the first point of current
+             * At this point we have a non-empty valid sequence of coordinate values. If the first point of current
              * vector is equals to the last point of previous vector, assume that they form a continuous polyline.
              */
             if (previous != null) {

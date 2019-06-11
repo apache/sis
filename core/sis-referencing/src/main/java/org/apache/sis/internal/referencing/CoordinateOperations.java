@@ -192,7 +192,7 @@ public final class CoordinateOperations extends SystemListener {
     }
 
     /**
-     * Returns the packed indices of target dimensions where ordinate values may need to be wrapped around.
+     * Returns the packed indices of target dimensions where coordinate values may need to be wrapped around.
      * This method matches target coordinate system axes having {@link RangeMeaning#WRAPAROUND} with source
      * axes, then verifies if the range of values changed (taking unit conversions in account). A target
      * dimension {@code i} may need to "wrap around" the coordinate values if the {@code 1 << i} bit is set.

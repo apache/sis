@@ -194,10 +194,10 @@ JNIEXPORT jdoubleArray JNICALL Java_org_apache_sis_storage_gdal_PJ_getEllipsoidD
 void convertAngularOrdinates(projPJ pj, double* data, jint numPts, int dimension, double factor) {
     int dimToSkip;
     if (pj_is_latlong(pj)) {
-        // Convert only the 2 first ordinates and skip all the other dimensions.
+        // Convert only the 2 first coordinates and skip all the other dimensions.
         dimToSkip = dimension - 2;
     } else if (pj_is_geocent(pj)) {
-        // Convert only the 3 first ordinates and skip all the other dimensions.
+        // Convert only the 3 first coordinates and skip all the other dimensions.
         dimToSkip = dimension - 3;
     } else {
         // Not a geographic or geocentric CRS: nothing to convert.

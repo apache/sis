@@ -58,7 +58,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  *
  * <p>A {@code GeneralEnvelope} can be created in various ways:</p>
  * <ul>
- *   <li>{@linkplain #GeneralEnvelope(int) From a given number of dimension}, with all ordinates initialized to 0.</li>
+ *   <li>{@linkplain #GeneralEnvelope(int) From a given number of dimension}, with all coordinates initialized to 0.</li>
  *   <li>{@linkplain #GeneralEnvelope(double[], double[]) From two coordinate points}.</li>
  *   <li>{@linkplain #GeneralEnvelope(Envelope) From a an other envelope} (copy constructor).</li>
  *   <li>{@linkplain #GeneralEnvelope(GeographicBoundingBox) From a geographic bounding box}.</li>
@@ -104,7 +104,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  *       system axis range meaning} is {@code WRAPAROUND}.</li>
  * </ul>
  *
- * Note that this class does <em>not</em> require the ordinate values to be between the axis minimum and
+ * Note that this class does <em>not</em> require the coordinate values to be between the axis minimum and
  * maximum values. This flexibility exists because out-of-range values happen in practice, while they do
  * not hurt the working of {@code add(…)}, {@code intersect(…)}, {@code contains(…)} and similar methods.
  * This in contrast with the {@code lower > upper} case, which cause the above-cited methods to behave in
@@ -127,20 +127,20 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     private static final long serialVersionUID = 3796799507279068254L;
 
     /**
-     * Used for setting the {@link #ordinates} field during a {@link #clone()} operation only.
+     * Used for setting the {@link #coordinates} field during a {@link #clone()} operation only.
      * Will be fetch when first needed.
      */
-    private static volatile Field ordinatesField;
+    private static volatile Field coordinatesField;
 
     /**
-     * Creates a new envelope using the given array of ordinate values. This constructor stores
+     * Creates a new envelope using the given array of coordinate values. This constructor stores
      * the given reference directly; it does <strong>not</strong> clone the given array. This is
      * the desired behavior for proper working of {@link SubEnvelope}.
      *
-     * @param ordinates  the array of ordinate values to store directly (not cloned).
+     * @param coordinates  the array of coordinate values to store directly (not cloned).
      */
-    GeneralEnvelope(final double[] ordinates) {
-        super(ordinates);
+    GeneralEnvelope(final double[] coordinates) {
+        super(coordinates);
     }
 
     /**
@@ -148,8 +148,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * If at least one corner is associated to a CRS, then the new envelope will also
      * be associated to that CRS.
      *
-     * @param  lowerCorner  the limits in the direction of decreasing ordinate values for each dimension.
-     * @param  upperCorner  the limits in the direction of increasing ordinate values for each dimension.
+     * @param  lowerCorner  the limits in the direction of decreasing coordinate values for each dimension.
+     * @param  upperCorner  the limits in the direction of increasing coordinate values for each dimension.
      * @throws MismatchedDimensionException if the two positions do not have the same dimension.
      * @throws MismatchedReferenceSystemException if the CRS of the two position are not equal.
      */
@@ -160,11 +160,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     }
 
     /**
-     * Constructs an envelope defined by two corners given as sequences of ordinate values.
+     * Constructs an envelope defined by two corners given as sequences of coordinate values.
      * The Coordinate Reference System is initially {@code null}.
      *
-     * @param  lowerCorner  the limits in the direction of decreasing ordinate values for each dimension.
-     * @param  upperCorner  the limits in the direction of increasing ordinate values for each dimension.
+     * @param  lowerCorner  the limits in the direction of decreasing coordinate values for each dimension.
+     * @param  upperCorner  the limits in the direction of increasing coordinate values for each dimension.
      * @throws MismatchedDimensionException if the two sequences do not have the same length.
      */
     public GeneralEnvelope(final double[] lowerCorner, final double[] upperCorner) throws MismatchedDimensionException {
@@ -172,7 +172,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     }
 
     /**
-     * Constructs an empty envelope of the specified dimension. All ordinates
+     * Constructs an empty envelope of the specified dimension. All coordinates
      * are initialized to 0 and the coordinate reference system is undefined.
      *
      * @param  dimension  the envelope dimension.
@@ -183,7 +183,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
 
     /**
      * Constructs an empty envelope with the specified coordinate reference system.
-     * All ordinate values are initialized to 0.
+     * All coordinate values are initialized to 0.
      *
      * @param  crs  the coordinate reference system.
      */
@@ -230,8 +230,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * <ul>
      *   <li>Character sequences complying to the rules of Java identifiers are skipped.</li>
      *   <li>Coordinates are separated by a coma ({@code ,}) character.</li>
-     *   <li>The ordinates in a coordinate are separated by a space.</li>
-     *   <li>Ordinate numbers are assumed formatted in US locale.</li>
+     *   <li>The coordinates in a coordinate tuple are separated by a space.</li>
+     *   <li>Coordinate numbers are assumed formatted in US locale.</li>
      *   <li>The coordinate having the highest dimension determines the dimension of this envelope.</li>
      * </ul>
      *
@@ -288,7 +288,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * @param  crs  the new coordinate reference system, or {@code null}.
      * @throws MismatchedDimensionException if the specified CRS doesn't have the expected number of dimensions.
-     * @throws IllegalStateException if a range of ordinate values in this envelope is compatible with the given CRS.
+     * @throws IllegalStateException if a range of coordinate values in this envelope is compatible with the given CRS.
      *         See <cite>Envelope validation</cite> in class javadoc for more details.
      */
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs)
@@ -297,16 +297,16 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         if (crs != null) {
             ensureDimensionMatches("crs", getDimension(), crs);
             /*
-             * The check performed here shall be identical to ArrayEnvelope.verifyRanges(crs, ordinates)
-             * except that it may verify only a subset of the ordinate array and throws a different kind
+             * The check performed here shall be identical to ArrayEnvelope.verifyRanges(crs, coordinates)
+             * except that it may verify only a subset of the coordinate array and throws a different kind
              * of exception in case of failure.
              */
             final int beginIndex = beginIndex();
             final int endIndex = endIndex();
-            final int d = ordinates.length >>> 1;
+            final int d = coordinates.length >>> 1;
             for (int i=beginIndex; i<endIndex; i++) {
-                final double lower = ordinates[i];
-                final double upper = ordinates[i + d];
+                final double lower = coordinates[i];
+                final double upper = coordinates[i + d];
                 if (lower > upper) {
                     final int j = i - beginIndex;
                     if (!isWrapAround(crs, j)) {
@@ -322,8 +322,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * Sets the envelope range along the specified dimension.
      *
      * @param  dimension  the dimension to set.
-     * @param  lower      the limit in the direction of decreasing ordinate values.
-     * @param  upper      the limit in the direction of increasing ordinate values.
+     * @param  lower      the limit in the direction of decreasing coordinate values.
+     * @param  upper      the limit in the direction of increasing coordinate values.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws IllegalArgumentException if {@code lower > upper} and the axis range meaning at the given dimension
      *         is not "wraparound". See <cite>Envelope validation</cite> in class javadoc for more details.
@@ -332,17 +332,17 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     public void setRange(final int dimension, final double lower, final double upper)
             throws IndexOutOfBoundsException
     {
-        final int d = ordinates.length >>> 1;
+        final int d = coordinates.length >>> 1;
         ensureValidIndex(d, dimension);
         /*
-         * The check performed here shall be identical to ArrayEnvelope.verifyRanges(crs, ordinates),
+         * The check performed here shall be identical to ArrayEnvelope.verifyRanges(crs, coordinates),
          * except that there is no loop.
          */
         if (lower > upper && crs != null && !isWrapAround(crs, dimension)) {
             throw new IllegalArgumentException(illegalRange(crs, dimension, lower, upper));
         }
-        ordinates[dimension + d] = upper;
-        ordinates[dimension]     = lower;
+        coordinates[dimension + d] = upper;
+        coordinates[dimension]     = lower;
     }
 
     /**
@@ -356,20 +356,20 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *  <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>, <var>z</var><sub>max</sub>)
      * </div>
      *
-     * @param corners  ordinates of the new lower corner followed by the new upper corner.
+     * @param corners  coordinates of the new lower corner followed by the new upper corner.
      */
     public void setEnvelope(final double... corners) {
-        verifyArrayLength(ordinates.length >>> 1, corners);
+        verifyArrayLength(coordinates.length >>> 1, corners);
         verifyRanges(crs, corners);
-        System.arraycopy(corners, 0, ordinates, 0, ordinates.length);
+        System.arraycopy(corners, 0, coordinates, 0, coordinates.length);
     }
 
     /**
-     * Verifies that the given array of ordinate values has the expected length
+     * Verifies that the given array of coordinate values has the expected length
      * for the given number of dimensions.
      *
      * @param  dimension  the dimension of the envelope.
-     * @param  corners    the user-provided array of ordinate values.
+     * @param  corners    the user-provided array of coordinate values.
      */
     static void verifyArrayLength(final int dimension, final double[] corners) {
         if ((corners.length & 1) != 0) {
@@ -379,7 +379,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         final int d = corners.length >>> 1;
         if (d != dimension) {
             throw new MismatchedDimensionException(Errors.format(
-                    Errors.Keys.MismatchedDimension_3, "ordinates", dimension, d));
+                    Errors.Keys.MismatchedDimension_3, "coordinates", dimension, d));
         }
     }
 
@@ -400,16 +400,16 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;
         ensureDimensionMatches("envelope", dimension, envelope);
-        final int d = ordinates.length >>> 1;
+        final int d = coordinates.length >>> 1;
         if (envelope instanceof ArrayEnvelope) {
             /*
              * Optimization for a common case. This code path is used by Envelopes.compound(…).
              * The main intent is to avoid the creation of temporary DirectPosition objects.
              */
-            final double[] source = ((ArrayEnvelope) envelope).ordinates;
+            final double[] source = ((ArrayEnvelope) envelope).coordinates;
             final int srcOffset = ((ArrayEnvelope) envelope).beginIndex();
-            System.arraycopy(source, srcOffset, ordinates, beginIndex, dimension);
-            System.arraycopy(source, srcOffset + (source.length >>> 1), ordinates, beginIndex + d, dimension);
+            System.arraycopy(source, srcOffset, coordinates, beginIndex, dimension);
+            System.arraycopy(source, srcOffset + (source.length >>> 1), coordinates, beginIndex + d, dimension);
         } else {
             @SuppressWarnings("null")
             final DirectPosition lower = envelope.getLowerCorner();
@@ -417,8 +417,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             for (int i=0; i<dimension; i++) {
                 final int iLower = beginIndex + i;
                 final int iUpper = iLower + d;
-                ordinates[iLower] = lower.getOrdinate(i);
-                ordinates[iUpper] = upper.getOrdinate(i);
+                coordinates[iLower] = lower.getOrdinate(i);
+                coordinates[iUpper] = upper.getOrdinate(i);
             }
         }
         final CoordinateReferenceSystem envelopeCRS = envelope.getCoordinateReferenceSystem();
@@ -438,20 +438,20 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     public void setToInfinite() {
         final int beginIndex = beginIndex();
         final int endIndex = endIndex();
-        final int d = ordinates.length >>> 1;
-        Arrays.fill(ordinates, beginIndex,   endIndex,   Double.NEGATIVE_INFINITY);
-        Arrays.fill(ordinates, beginIndex+d, endIndex+d, Double.POSITIVE_INFINITY);
+        final int d = coordinates.length >>> 1;
+        Arrays.fill(coordinates, beginIndex,   endIndex,   Double.NEGATIVE_INFINITY);
+        Arrays.fill(coordinates, beginIndex+d, endIndex+d, Double.POSITIVE_INFINITY);
     }
 
     /**
-     * Sets all ordinate values to {@linkplain Double#NaN NaN}.
+     * Sets all coordinate values to {@linkplain Double#NaN NaN}.
      * The {@linkplain #getCoordinateReferenceSystem() coordinate reference system}
      * (if any) stay unchanged.
      *
      * @see #isAllNaN()
      */
     public void setToNaN() {                   // Must be overridden in SubEnvelope
-        Arrays.fill(ordinates, Double.NaN);
+        Arrays.fill(coordinates, Double.NaN);
         assert isAllNaN() : this;
     }
 
@@ -473,11 +473,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         ensureNonNull("vector", vector);
         final int beginIndex = beginIndex();
         ensureDimensionMatches("vector", endIndex() - beginIndex, vector);
-        final int upperIndex = beginIndex + (ordinates.length >>> 1);
+        final int upperIndex = beginIndex + (coordinates.length >>> 1);
         for (int i=0; i<vector.length; i++) {
             final double t = vector[i];
-            ordinates[beginIndex + i] += t;
-            ordinates[upperIndex + i] += t;
+            coordinates[beginIndex + i] += t;
+            coordinates[upperIndex + i] += t;
         }
     }
 
@@ -486,15 +486,15 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * This method does not check for anti-meridian spanning. It is invoked only
      * by the {@link Envelopes} transform methods, which build "normal" envelopes.
      *
-     * @param  array   the array which contains the ordinate values.
-     * @param  offset  index of the first valid ordinate value in the given array.
+     * @param  array   the array which contains the coordinate values.
+     * @param  offset  index of the first valid coordinate value in the given array.
      */
     final void addSimple(final double[] array, final int offset) {
-        final int d = ordinates.length >>> 1;
+        final int d = coordinates.length >>> 1;
         for (int i=0; i<d; i++) {
             final double value = array[offset + i];
-            if (value < ordinates[i  ]) ordinates[i  ] = value;
-            if (value > ordinates[i+d]) ordinates[i+d] = value;
+            if (value < coordinates[i  ]) coordinates[i  ] = value;
+            if (value > coordinates[i+d]) coordinates[i+d] = value;
         }
     }
 
@@ -504,7 +504,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * <p>After adding a point, a call to {@link #contains(DirectPosition) contains(DirectPosition)}
      * with the added point as an argument will return {@code true}, except if one of the point
-     * ordinates was {@link Double#NaN} in which case the corresponding ordinate has been ignored.</p>
+     * coordinates was {@link Double#NaN} in which case the corresponding coordinate has been ignored.</p>
      *
      * <div class="section">Pre-conditions</div>
      * This method assumes that the specified point uses the same CRS than this envelope.
@@ -532,16 +532,16 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         final int dimension = endIndex() - beginIndex;
         ensureDimensionMatches("position", dimension, position);
         assert equalsIgnoreMetadata(crs, position.getCoordinateReferenceSystem(), true) : position;
-        final int d = ordinates.length >>> 1;
+        final int d = coordinates.length >>> 1;
         for (int i=0; i<dimension; i++) {
             final int iLower = beginIndex + i;
             final int iUpper = iLower + d;
             final double value = position.getOrdinate(i);
-            final double min = ordinates[iLower];
-            final double max = ordinates[iUpper];
+            final double min = coordinates[iLower];
+            final double max = coordinates[iUpper];
             if (!isNegative(max - min)) {                       // Standard case, or NaN.
-                if (value < min) ordinates[iLower] = value;
-                if (value > max) ordinates[iUpper] = value;
+                if (value < min) coordinates[iLower] = value;
+                if (value > max) coordinates[iUpper] = value;
             } else {
                 /*
                  * Spanning the anti-meridian. The [max…min] range (not that min/max are
@@ -564,8 +564,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *    ─────┘     └─────
      * }
      *
-     * @param  i      the dimension of the ordinate
-     * @param  value  the ordinate value to add to this envelope.
+     * @param  i      the dimension of the coordinate
+     * @param  value  the coordinate value to add to this envelope.
      * @param  left   the border on the left side,  which is the <em>max</em> value (yes, this is confusing!)
      * @param  right  the border on the right side, which is the <em>min</em> value (yes, this is confusing!)
      */
@@ -575,9 +575,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             right -= value;
             if (right > 0) {
                 if (right > left) {
-                    i += (ordinates.length >>> 1);
+                    i += (coordinates.length >>> 1);
                 }
-                ordinates[i] = value;
+                coordinates[i] = value;
             }
         }
     }
@@ -593,7 +593,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * This method supports envelopes spanning the anti-meridian. If one or both envelopes span
      * the anti-meridian, then the result of the {@code add} operation may be an envelope expanding
-     * to infinities. In such case, the ordinate range will be either [−∞…∞] or [0…−0] depending on
+     * to infinities. In such case, the coordinate range will be either [−∞…∞] or [0…−0] depending on
      * whatever the original range span the anti-meridian or not.
      *
      * @param  envelope  the {@code Envelope} to add to this envelope.
@@ -611,12 +611,12 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         assert equalsIgnoreMetadata(crs, envelope.getCoordinateReferenceSystem(), true) : envelope;
         final DirectPosition lower = envelope.getLowerCorner();
         final DirectPosition upper = envelope.getUpperCorner();
-        final int d = ordinates.length >>> 1;
+        final int d = coordinates.length >>> 1;
         for (int i=0; i<dimension; i++) {
             final int iLower = beginIndex + i;
             final int iUpper = iLower + d;
-            final double min0 = ordinates[iLower];
-            final double max0 = ordinates[iUpper];
+            final double min0 = coordinates[iLower];
+            final double max0 = coordinates[iUpper];
             final double min1 = lower.getOrdinate(i);
             final double max1 = upper.getOrdinate(i);
             final boolean sp0 = isNegative(max0 - min0);
@@ -636,9 +636,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                  *    ──┘ │  │ └──          ────┼──┼─┘└─
                  *    ────┘  └────          ────┘  └────
                  */
-                if (min1 < min0) ordinates[iLower] = min1;
-                if (max1 > max0) ordinates[iUpper] = max1;
-                if (!sp0 || isNegativeUnsafe(ordinates[iUpper] - ordinates[iLower])) {
+                if (min1 < min0) coordinates[iLower] = min1;
+                if (max1 > max0) coordinates[iUpper] = max1;
+                if (!sp0 || isNegativeUnsafe(coordinates[iUpper] - coordinates[iLower])) {
                     continue;               // We are done, go to the next dimension.
                 }
                 // If we were spanning the anti-meridian before the union but
@@ -671,8 +671,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                 if (left > 0 || right > 0) {
                     // The < and > checks below are not completly redundant.
                     // The difference is when a value is NaN.
-                    if (left > right) ordinates[iLower] = min1;
-                    if (right > left) ordinates[iUpper] = max1;     // This is the case illustrated above.
+                    if (left > right) coordinates[iLower] = min1;
+                    if (right > left) coordinates[iUpper] = max1;     // This is the case illustrated above.
                     continue;                                       // We are done, go to the next dimension.
                 }
                 // If we reach this point, the given envelope fills completly the "exclusion area"
@@ -684,15 +684,15 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                  * given envelope spans to infinities.
                  */
                 if (max0 <= max1 || min0 >= min1) {
-                    ordinates[iLower] = min1;
-                    ordinates[iUpper] = max1;
+                    coordinates[iLower] = min1;
+                    coordinates[iUpper] = max1;
                     continue;
                 }
                 final double left  = min0 - max1;
                 final double right = min1 - max0;
                 if (left > 0 || right > 0) {
-                    if (left > right) ordinates[iUpper] = max1;
-                    if (right > left) ordinates[iLower] = min1;
+                    if (left > right) coordinates[iUpper] = max1;
+                    if (right > left) coordinates[iLower] = min1;
                     continue;
                 }
             }
@@ -702,11 +702,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
              * the "normal" / "anti-meridian spanning" state.
              */
             if (sp0) {
-                ordinates[iLower] = +0.0;
-                ordinates[iUpper] = -0.0;
+                coordinates[iLower] = +0.0;
+                coordinates[iUpper] = -0.0;
             } else {
-                ordinates[iLower] = Double.NEGATIVE_INFINITY;
-                ordinates[iUpper] = Double.POSITIVE_INFINITY;
+                coordinates[iLower] = Double.NEGATIVE_INFINITY;
+                coordinates[iUpper] = Double.POSITIVE_INFINITY;
             }
         }
         assert contains(envelope) || isEmpty() || hasNaN(envelope) : this;
@@ -737,12 +737,12 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         assert equalsIgnoreMetadata(crs, envelope.getCoordinateReferenceSystem(), true) : envelope;
         final DirectPosition lower = envelope.getLowerCorner();
         final DirectPosition upper = envelope.getUpperCorner();
-        final int d = ordinates.length >>> 1;
+        final int d = coordinates.length >>> 1;
         for (int i=beginIndex; i<dimension; i++) {
             final int iLower = beginIndex + i;
             final int iUpper = iLower + d;
-            final double min0  = ordinates[iLower];
-            final double max0  = ordinates[iUpper];
+            final double min0  = coordinates[iLower];
+            final double max0  = coordinates[iUpper];
             final double min1  = lower.getOrdinate(i);
             final double max1  = upper.getOrdinate(i);
             final double span0 = max0 - min0;
@@ -759,19 +759,19 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                     /*
                      * The check for !isNegative(span0) is because if both envelopes span the
                      * anti-merdian, then there is always an intersection on both side no matter
-                     * what envelope ordinates are because both envelopes extend toward infinities:
+                     * what envelope coordinates are because both envelopes extend toward infinities:
                      *     ────┐  ┌────            ────┐  ┌────
                      *     ──┐ │  │ ┌──     or     ────┼──┼─┐┌─
                      *     ──┘ │  │ └──            ────┼──┼─┘└─
                      *     ────┘  └────            ────┘  └────
                      * Since we excluded the above case, entering in this block means that the
-                     * envelopes are "normal" and do not intersect, so we set ordinates to NaN.
+                     * envelopes are "normal" and do not intersect, so we set coordinates to NaN.
                      *   ┌────┐
                      *   │    │     ┌────┐
                      *   │    │     └────┘
                      *   └────┘
                      */
-                    ordinates[iLower] = ordinates[iUpper] = Double.NaN;
+                    coordinates[iLower] = coordinates[iUpper] = Double.NaN;
                     continue;
                 }
             } else {
@@ -786,18 +786,18 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                          *       └─┼────┘ │                     └────┘  │  │
                          *    ─────┘      └─────              ──────────┘  └─────
                          */
-                        if (min1 <= max0) {intersect  = 1; ordinates[iLower] = min1;}
-                        if (max1 >= min0) {intersect |= 2; ordinates[iUpper] = max1;}
+                        if (min1 <= max0) {intersect  = 1; coordinates[iLower] = min1;}
+                        if (max1 >= min0) {intersect |= 2; coordinates[iUpper] = max1;}
                     } else {
                         // Same than above, but with indices 0 and 1 interchanged.
-                        // No need to set ordinate values since they would be the same.
+                        // No need to set coordinate values since they would be the same.
                         if (min0 <= max1) {intersect  = 1;}
                         if (max0 >= min1) {intersect |= 2;}
                     }
                 }
                 /*
                  * Cases 0 and 3 are illustrated below. In case 1 and 2, we will set
-                 * only the ordinate value which has not been set by the above code.
+                 * only the coordinate value which has not been set by the above code.
                  *
                  *                [intersect=0]          [intersect=3]
                  *              ─────┐     ┌─────      ─────┐     ┌─────
@@ -812,8 +812,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                  */
                 switch (intersect) {
                     default: throw new AssertionError(intersect);
-                    case 1: if (max1 < max0) ordinates[iUpper] = max1; break;
-                    case 2: if (min1 > min0) ordinates[iLower] = min1; break;
+                    case 1: if (max1 < max0) coordinates[iUpper] = max1; break;
+                    case 2: if (min1 > min0) coordinates[iLower] = min1; break;
                     case 3: // Fall through
                     case 0: {
                         /*
@@ -832,15 +832,15 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                             min = Double.NaN;
                             max = Double.NaN;
                         }
-                        ordinates[iLower] = min;
-                        ordinates[iUpper] = max;
+                        coordinates[iLower] = min;
+                        coordinates[iUpper] = max;
                         break;
                     }
                 }
                 continue;
             }
-            if (min1 > min0) ordinates[iLower] = min1;
-            if (max1 < max0) ordinates[iUpper] = max1;
+            if (min1 > min0) coordinates[iLower] = min1;
+            if (max1 < max0) coordinates[iUpper] = max1;
         }
         // Tests only if the interection result is non-empty.
         assert isEmpty() || AbstractEnvelope.castOrCopy(envelope).contains(this) : this;
@@ -848,19 +848,19 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
 
     /**
      * Ensures that the envelope is contained in the coordinate system domain.
-     * For each dimension, this method compares the ordinate values against the
+     * For each dimension, this method compares the coordinate values against the
      * limits of the coordinate system axis for that dimension.
-     * If some ordinates are out of range, then there is a choice depending on the
+     * If some coordinates are out of range, then there is a choice depending on the
      * {@linkplain CoordinateSystemAxis#getRangeMeaning() axis range meaning}:
      *
      * <ul class="verbose">
-     *   <li>If {@link RangeMeaning#EXACT} (typically <em>latitudes</em> ordinates), then values
+     *   <li>If {@link RangeMeaning#EXACT} (typically <em>latitudes</em> coordinates), then values
      *       greater than the {@linkplain CoordinateSystemAxis#getMaximumValue() axis maximal value}
      *       are replaced by the axis maximum, and values smaller than the
      *       {@linkplain CoordinateSystemAxis#getMinimumValue() axis minimal value}
      *       are replaced by the axis minimum.</li>
      *
-     *   <li>If {@link RangeMeaning#WRAPAROUND} (typically <em>longitudes</em> ordinates), then
+     *   <li>If {@link RangeMeaning#WRAPAROUND} (typically <em>longitudes</em> coordinates), then
      *       a multiple of the axis range (e.g. 360° for longitudes) is added or subtracted.
      *       Example:
      *       <ul>
@@ -873,7 +873,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * If the envelope is spanning the anti-meridian, then some {@linkplain #getLower(int) lower}
-     * ordinate values may become greater than their {@linkplain #getUpper(int) upper} counterpart
+     * coordinate values may become greater than their {@linkplain #getUpper(int) upper} counterpart
      * as a result of this method call. If such effect is undesirable, then this method may be
      * combined with {@link #simplify()} as below:
      *
@@ -894,7 +894,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * or {@linkplain #intersect(Envelope) intersection} of envelopes, in order to ensure that
      * both envelopes are defined in the same domain. This method may also be invoked before
      * to project an envelope, since some projections produce {@link Double#NaN} numbers when
-     * given an ordinate value out of bounds.
+     * given an coordinate value out of bounds.
      *
      * @return {@code true} if this envelope has been modified as a result of this method call,
      *         or {@code false} if no change has been done.
@@ -912,17 +912,17 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     /**
      * Normalizes only the dimensions returned by the given iterator, or all dimensions if the iterator is null.
      * This is used for normalizing the result of a coordinate operation where a wrap around axis does not
-     * necessarily means that the ordinates need to be normalized along that axis.
+     * necessarily means that the coordinates need to be normalized along that axis.
      *
      * @param  cs          the coordinate system of this envelope CRS (as an argument because sometime already known).
-     * @param  beginIndex  index of the first ordinate value in {@link #ordinates} array. Non-zero for sub-envelopes.
+     * @param  beginIndex  index of the first coordinate value in {@link #coordinates} array. Non-zero for sub-envelopes.
      * @param  count       number of coordinates, i.e. this envelope dimensions.
      * @param  dimensions  the dimensions to check for normalization, or {@code null} for all dimensions.
      * @return {@code true} if this envelope has been modified as a result of this method call.
      */
     final boolean normalize(final CoordinateSystem cs, final int beginIndex, final int count, final Iterator<Integer> dimensions) {
         boolean changed = false;
-        final int d = ordinates.length >>> 1;
+        final int d = coordinates.length >>> 1;
         for (int j=0; j<count; j++) {
             final int i = (dimensions != null) ? dimensions.next() : j;
             final int iLower = beginIndex + i;
@@ -932,13 +932,13 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             final double  maximum = axis.getMaximumValue();
             final RangeMeaning rm = axis.getRangeMeaning();
             if (RangeMeaning.EXACT.equals(rm)) {
-                if (ordinates[iLower] < minimum) {ordinates[iLower] = minimum; changed = true;}
-                if (ordinates[iUpper] > maximum) {ordinates[iUpper] = maximum; changed = true;}
+                if (coordinates[iLower] < minimum) {coordinates[iLower] = minimum; changed = true;}
+                if (coordinates[iUpper] > maximum) {coordinates[iUpper] = maximum; changed = true;}
             } else if (RangeMeaning.WRAPAROUND.equals(rm)) {
                 final double csSpan = maximum - minimum;
                 if (csSpan > 0 && csSpan < Double.POSITIVE_INFINITY) {
-                    double o1 = ordinates[iLower];
-                    double o2 = ordinates[iUpper];
+                    double o1 = coordinates[iLower];
+                    double o2 = coordinates[iUpper];
                     if (Math.abs(o2-o1) >= csSpan) {
                         /*
                          * If the range exceed the CS span, then we have to replace it by the
@@ -951,19 +951,19 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                          */
                         if (o1 != minimum || o2 != maximum) {
                             if ((o1 % csSpan) == 0 && (o2 % csSpan) == 0) {
-                                ordinates[iLower] = +0.0;
-                                ordinates[iUpper] = -0.0;
+                                coordinates[iLower] = +0.0;
+                                coordinates[iUpper] = -0.0;
                             } else {
-                                ordinates[iLower] = minimum;
-                                ordinates[iUpper] = maximum;
+                                coordinates[iLower] = minimum;
+                                coordinates[iUpper] = maximum;
                             }
                             changed = true;
                         }
                     } else {
                         o1 = Math.floor((o1 - minimum) / csSpan) * csSpan;
                         o2 = Math.floor((o2 - minimum) / csSpan) * csSpan;
-                        if (o1 != 0) {ordinates[iLower] -= o1; changed = true;}
-                        if (o2 != 0) {ordinates[iUpper] -= o2; changed = true;}
+                        if (o1 != 0) {coordinates[iLower] -= o1; changed = true;}
+                        if (o2 != 0) {coordinates[iUpper] -= o2; changed = true;}
                     }
                 }
             }
@@ -973,13 +973,13 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
 
     /**
      * Ensures that <var>lower</var> ≦ <var>upper</var> for every dimensions.
-     * If a {@linkplain #getUpper(int) upper ordinate value} is less than a
-     * {@linkplain #getLower(int) lower ordinate value}, then there is a choice:
+     * If a {@linkplain #getUpper(int) upper coordinate value} is less than a
+     * {@linkplain #getLower(int) lower coordinate value}, then there is a choice:
      *
      * <ul>
      *   <li>If the axis has {@link RangeMeaning#WRAPAROUND}, then:<ul>
-     *       <li>the lower ordinate value is set to the {@linkplain CoordinateSystemAxis#getMinimumValue() axis minimum value}, and</li>
-     *       <li>the upper ordinate value is set to the {@linkplain CoordinateSystemAxis#getMaximumValue() axis maximum value}.</li>
+     *       <li>the lower coordinate value is set to the {@linkplain CoordinateSystemAxis#getMinimumValue() axis minimum value}, and</li>
+     *       <li>the upper coordinate value is set to the {@linkplain CoordinateSystemAxis#getMaximumValue() axis maximum value}.</li>
      *     </ul></li>
      *   <li>Otherwise an {@link IllegalStateException} is thrown.</li>
      * </ul>
@@ -989,29 +989,29 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * @return {@code true} if this envelope has been modified as a result of this method call,
      *         or {@code false} if no change has been done.
-     * @throws IllegalStateException if a upper ordinate value is less than a lower ordinate
+     * @throws IllegalStateException if a upper coordinate value is less than a lower coordinate
      *         value on an axis which does not have the {@code WRAPAROUND} range meaning.
      *
      * @see #toSimpleEnvelopes()
      */
     public boolean simplify() throws IllegalStateException {
         boolean changed = false;
-        final int d = ordinates.length >>> 1;
+        final int d = coordinates.length >>> 1;
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;
         for (int i=0; i<dimension; i++) {
             final int iLower = beginIndex + i;
             final int iUpper = iLower + d;
-            final double lower = ordinates[iLower];
-            final double upper = ordinates[iUpper];
+            final double lower = coordinates[iLower];
+            final double upper = coordinates[iUpper];
             if (isNegative(upper - lower)) {                            // Use 'isNegative' for catching [+0 … -0] range.
                 final CoordinateSystemAxis axis = getAxis(crs, i);
                 if (isWrapAround(axis)) {
-                    ordinates[iLower] = axis.getMinimumValue();
-                    ordinates[iUpper] = axis.getMaximumValue();
+                    coordinates[iLower] = axis.getMinimumValue();
+                    coordinates[iUpper] = axis.getMaximumValue();
                     changed = true;
                 } else {
-                    throw new IllegalStateException(Errors.format(Errors.Keys.IllegalOrdinateRange_3,
+                    throw new IllegalStateException(Errors.format(Errors.Keys.IllegalCoordinateRange_3,
                             lower, upper, (axis != null) ? axis.getName() : i));
                 }
             }
@@ -1041,8 +1041,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * This method does not compute a sub-CRS because it may not be needed, or the sub-CRS may be already
      * known by the caller.
      *
-     * @param  beginIndex  the index of the first valid ordinate value of the corners.
-     * @param  endIndex    the index after the last valid ordinate value of the corners.
+     * @param  beginIndex  the index of the first valid coordinate value of the corners.
+     * @param  endIndex    the index after the last valid coordinate value of the corners.
      * @return the sub-envelope of dimension {@code endIndex - beginIndex}.
      * @throws IndexOutOfBoundsException if an index is out of bounds.
      *
@@ -1050,8 +1050,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      */
     // Must be overridden in SubEnvelope
     public GeneralEnvelope subEnvelope(final int beginIndex, final int endIndex) throws IndexOutOfBoundsException {
-        ensureValidIndexRange(ordinates.length >>> 1, beginIndex, endIndex);
-        return new SubEnvelope(ordinates, beginIndex, endIndex);
+        ensureValidIndexRange(coordinates.length >>> 1, beginIndex, endIndex);
+        return new SubEnvelope(coordinates, beginIndex, endIndex);
         /*
          * Do not check if we could return "this" as an optimization, in order to keep
          * the method contract simpler (i.e. the returned envelope CRS is always null).
@@ -1066,12 +1066,12 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     @Override
     public GeneralEnvelope clone() {
         try {
-            Field field = ordinatesField;
+            Field field = coordinatesField;
             if (field == null) {
-                ordinatesField = field = GeneralDirectPosition.getOrdinatesField(ArrayEnvelope.class);
+                coordinatesField = field = GeneralDirectPosition.getCoordinatesField(ArrayEnvelope.class);
             }
             GeneralEnvelope e = (GeneralEnvelope) super.clone();
-            field.set(e, ordinates.clone());
+            field.set(e, coordinates.clone());
             return e;
         } catch (CloneNotSupportedException | ReflectiveOperationException exception) {
             /*

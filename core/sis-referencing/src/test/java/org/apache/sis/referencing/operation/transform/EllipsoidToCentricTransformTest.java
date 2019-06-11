@@ -90,7 +90,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
         isInverseTransformSupported = false;    // Geocentric to geographic is not the purpose of this test.
         validate();
 
-        final double delta = toRadians(100.0 / 60) / 1852;          // Approximatively 100 metres
+        final double delta = toRadians(100.0 / 60) / 1852;          // Approximately 100 metres
         derivativeDeltas = new double[] {delta, delta, 100};        // (Δλ, Δφ, Δh)
         tolerance = GeocentricTranslationTest.precision(2);         // Half the precision of target sample point
         verifyTransform(GeocentricTranslationTest.samplePoint(1),   // 53°48'33.820"N, 02°07'46.380"E, 73.00 metres
@@ -132,7 +132,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
         "testGeocentricToGeographic"
     })
     public void testRandomPoints() throws FactoryException, TransformException {
-        final double delta = toRadians(100.0 / 60) / 1852;          // Approximatively 100 metres
+        final double delta = toRadians(100.0 / 60) / 1852;          // Approximately 100 metres
         derivativeDeltas  = new double[] {delta, delta, 100};       // (Δλ, Δφ, Δh)
         tolerance         = Formulas.LINEAR_TOLERANCE;
 //      toleranceModifier = ToleranceModifier.PROJECTION;
@@ -177,7 +177,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
          * Derivative of the direct transform.
          */
         tolerance = 1E-2;
-        derivativeDeltas = new double[] {toRadians(1.0 / 60) / 1852};           // Approximatively one metre.
+        derivativeDeltas = new double[] {toRadians(1.0 / 60) / 1852};           // Approximately one metre.
         verifyDerivative(point.getCoordinate());
         /*
          * Derivative of the inverse transform.
@@ -185,7 +185,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
         point = transform.transform(point, null);
         transform = transform.inverse();
         tolerance = 1E-8;
-        derivativeDeltas = new double[] {1};                                    // Approximatively one metre.
+        derivativeDeltas = new double[] {1};                                    // Approximately one metre.
         verifyDerivative(point.getCoordinate());
     }
 

@@ -38,7 +38,7 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
 @DependsOn(GeneralEnvelopeTest.class)
 public final strictfp class SubEnvelopeTest extends GeneralEnvelopeTest {
     /**
-     * Creates a new sub-envelope envelope for the given ordinate values.
+     * Creates a new sub-envelope envelope for the given coordinate values.
      */
     @Override
     GeneralEnvelope create(final double xmin, final double ymin, final double xmax, final double ymax) {
@@ -62,13 +62,13 @@ public final strictfp class SubEnvelopeTest extends GeneralEnvelopeTest {
     @Override
     void verifyInvariants(final GeneralEnvelope envelope) {
         super.verifyInvariants(envelope);
-        final double[] ordinates = envelope.ordinates;
-        assertEquals(1, ordinates[0], STRICT);
-        assertEquals(4, ordinates[1], STRICT);
-        assertEquals(5, ordinates[4], STRICT);
-        assertEquals(2, ordinates[5], STRICT);
-        assertEquals(7, ordinates[6], STRICT);
-        assertEquals(9, ordinates[9], STRICT);
+        final double[] coordinates = envelope.coordinates;
+        assertEquals(1, coordinates[0], STRICT);
+        assertEquals(4, coordinates[1], STRICT);
+        assertEquals(5, coordinates[4], STRICT);
+        assertEquals(2, coordinates[5], STRICT);
+        assertEquals(7, coordinates[6], STRICT);
+        assertEquals(9, coordinates[9], STRICT);
     }
 
     /**
@@ -85,7 +85,7 @@ public final strictfp class SubEnvelopeTest extends GeneralEnvelopeTest {
     public void testSetToNaN() {
         final GeneralEnvelope e = create(-40, -20, +60, +30);
         e.setToNaN();
-        assertArrayEquals(new double[] {1, 4, NaN, NaN, 5, 2, 7, NaN, NaN, 9}, e.ordinates, STRICT);
+        assertArrayEquals(new double[] {1, 4, NaN, NaN, 5, 2, 7, NaN, NaN, 9}, e.coordinates, STRICT);
         validate(e);
     }
 
@@ -98,11 +98,11 @@ public final strictfp class SubEnvelopeTest extends GeneralEnvelopeTest {
         final GeneralEnvelope e1 = create(-40, -20, +60, +30);
         final GeneralEnvelope e2 = create(-40, -20, +60, +30);
         assertEquals(e1, e2);
-        e2.ordinates[0] = -1;
-        e2.ordinates[1] = -4;
-        e2.ordinates[9] = -9;
+        e2.coordinates[0] = -1;
+        e2.coordinates[1] = -4;
+        e2.coordinates[9] = -9;
         assertEquals(e1, e2);
-        e2.ordinates[2] = -41;
+        e2.coordinates[2] = -41;
         assertFalse(e1.equals(e2));
     }
 
@@ -114,8 +114,8 @@ public final strictfp class SubEnvelopeTest extends GeneralEnvelopeTest {
     public void testClone() {
         final GeneralEnvelope e1 = create(-40, -20, +60, +30);
         final GeneralEnvelope e2 = e1.clone();
-        assertArrayEquals(new double[] {1, 4, -40, -20, 5, 2, 7, +60, +30, 9}, e1.ordinates, STRICT);
-        assertArrayEquals(new double[] {      -40, -20,          +60, +30   }, e2.ordinates, STRICT);
+        assertArrayEquals(new double[] {1, 4, -40, -20, 5, 2, 7, +60, +30, 9}, e1.coordinates, STRICT);
+        assertArrayEquals(new double[] {      -40, -20,          +60, +30   }, e2.coordinates, STRICT);
         validate(e2);
     }
 }

@@ -274,7 +274,7 @@ class CoordinateOperationRegistry {
                 final Identifier identifier = IdentifiedObjects.getIdentifier(candidate, registry.getAuthority());
                 if (identifier != null) {
                     final String code = identifier.getCode();
-                    if (Utilities.deepEquals(candidate, crs, ComparisonMode.APPROXIMATIVE)) {
+                    if (Utilities.deepEquals(candidate, crs, ComparisonMode.APPROXIMATE)) {
                         codes.add(0, code);     // If axis order match, give precedence to that CRS.
                     } else {
                         codes.add(code);
@@ -765,8 +765,8 @@ class CoordinateOperationRegistry {
          * while the user-provided CRS can be anything (e.g. parsed from a quite approximated WKT).
          */
         CoordinateReferenceSystem crs;
-        if (Utilities.equalsApproximatively(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
-        if (Utilities.equalsApproximatively(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
+        if (Utilities.equalsApproximately(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
+        if (Utilities.equalsApproximately(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
         final Map<String,Object> properties = new HashMap<>(derivedFrom(operation));
         /*
          * Determine whether the operation to create is a Conversion or a Transformation
@@ -831,8 +831,8 @@ class CoordinateOperationRegistry {
         final ParameterValueGroup parameters = operation.getParameterValues();
         if (parameters != null) {
             CoordinateReferenceSystem crs;
-            if (Utilities.equalsApproximatively(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
-            if (Utilities.equalsApproximatively(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
+            if (Utilities.equalsApproximately(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
+            if (Utilities.equalsApproximately(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
             final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
             if (mtFactory instanceof DefaultMathTransformFactory) {
                 MathTransform mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(

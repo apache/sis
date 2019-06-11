@@ -432,11 +432,11 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Returns the unit of measure used for this coordinate system axis. If this {@code CoordinateSystemAxis}
-     * was given by <code>{@link AbstractCS#getAxis(int) CoordinateSystem.getAxis}(i)</code>, then all ordinate
+     * Returns the unit of measure used for this coordinate system axis. If this {@code CoordinateSystemAxis} was
+     * given by <code>{@link AbstractCS#getAxis(int) CoordinateSystem.getAxis}(i)</code>, then all coordinate
      * values at dimension <var>i</var> in a coordinate tuple shall be recorded using this unit of measure.
      *
-     * @return the unit of measure used for ordinate values along this coordinate system axis.
+     * @return the unit of measure used for coordinate values along this coordinate system axis.
      */
     @Override
     @XmlAttribute(name= "uom", required = true)
@@ -627,7 +627,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         /*
          * At this point the comparison is in "ignore metadata" mode. We compare the axis range
          * only if the range meaning is "wraparound" for both axes, because only in such case a
-         * coordinate operation may shift some ordinate values (typically ±360° on longitudes).
+         * coordinate operation may shift some coordinate values (typically ±360° on longitudes).
          */
         final CoordinateSystemAxis that = (CoordinateSystemAxis) object;
         if (!equalsIgnoreMetadata(that, mode, RangeMeaning.WRAPAROUND.equals(this.getRangeMeaning()) &&

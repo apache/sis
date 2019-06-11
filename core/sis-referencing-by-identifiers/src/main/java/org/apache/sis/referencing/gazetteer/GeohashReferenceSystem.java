@@ -282,7 +282,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
             /*
              * The current implementation assumes a two-dimensional coordinates. The 'isEven' boolean takes
              * the 'true' value for longitude, and 'false' for latitude. We could extend this algorithm to
-             * the multi-dimensional case by replacing 'isEven' by a counter over the ordinate dimension.
+             * the multi-dimensional case by replacing 'isEven' by a counter over the coordinate dimension.
              */
             boolean isEven = true;
             double xmin = Longitude.MIN_VALUE, ymin = Latitude.MIN_VALUE;
@@ -382,7 +382,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
             /*
              * The current implementation assumes a two-dimensional coordinates. The 'isEven' boolean takes
              * the 'true' value for longitude, and 'false' for latitude. We could extend this algorithm to
-             * the multi-dimensional case by replacing 'isEven' by a counter over the ordinate dimension.
+             * the multi-dimensional case by replacing 'isEven' by a counter over the coordinate dimension.
              */
             boolean isEven = true;
             minX = Longitude.MIN_VALUE;

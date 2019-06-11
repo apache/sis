@@ -99,15 +99,15 @@ public abstract class AbstractMathTransform extends FormattableObject
 
     /**
      * Maximum amount of {@link TransformException} to catch while transforming a block of
-     * {@value #MAXIMUM_BUFFER_SIZE} ordinate values in an array. The default implementation of
+     * {@value #MAXIMUM_BUFFER_SIZE} coordinate values in an array. The default implementation of
      * {@code transform} methods set un-transformable coordinates to {@linkplain Double#NaN NaN}
      * before to let the exception propagate. However if more then {@value} exceptions occur in
-     * a block of {@value #MAXIMUM_BUFFER_SIZE} <em>ordinates</em> (not coordinates), then we
-     * will give up. We put a limit in order to avoid slowing down the application too much if
-     * a whole array is not transformable.
+     * a block of {@value #MAXIMUM_BUFFER_SIZE} <em>coordinates</em> (not coordinate tuples),
+     * then we will give up. We put a limit in order to avoid slowing down the application
+     * too much if a whole array is not transformable.
      *
      * <p>Note that in case of failure, the first {@code TransformException} is still propagated;
-     * we do not "eat" it. We just set the ordinates to {@code NaN} before to let the propagation
+     * we do not "eat" it. We just set the coordinates to {@code NaN} before to let the propagation
      * happen. If no exception handling should be performed at all, then {@code MAXIMUM_FAILURES}
      * can be set to 0.</p>
      *
@@ -287,19 +287,19 @@ public abstract class AbstractMathTransform extends FormattableObject
         } else {
             /*
              * Destination not set. We are going to create the destination here. Since we know that the
-             * destination will be the SIS implementation, write directly into the 'ordinates' array.
+             * destination will be the SIS implementation, write directly into the `coordinates` array.
              */
             final GeneralDirectPosition destination = new GeneralDirectPosition(dimTarget);
             final double[] source;
             if (dimSource <= dimTarget) {
-                source = destination.ordinates;
+                source = destination.coordinates;
                 for (int i=0; i<dimSource; i++) {
                     source[i] = ptSrc.getOrdinate(i);
                 }
             } else {
                 source = ptSrc.getCoordinate();
             }
-            transform(source, 0, destination.ordinates, 0, false);
+            transform(source, 0, destination.coordinates, 0, false);
             ptDst = destination;
         }
         return ptDst;
@@ -313,8 +313,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * {@preformat java
      *     Matrix derivative = null;
      *     if (derivate) {
-     *         double[] ordinates = Arrays.copyOfRange(srcPts, srcOff, srcOff + getSourceDimensions());
-     *         derivative = this.derivative(new GeneralDirectPosition(ordinates));
+     *         double[] coordinates = Arrays.copyOfRange(srcPts, srcOff, srcOff + getSourceDimensions());
+     *         derivative = this.derivative(new GeneralDirectPosition(coordinates));
      *     }
      *     this.transform(srcPts, srcOff, dstPts, dstOff, 1);                   // May overwrite srcPts.
      *     return derivative;
@@ -335,7 +335,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * <div class="section">Note for implementors</div>
      * The source and destination may overlap. Consequently, implementors must read all source
-     * ordinate values before to start writing the transformed ordinates in the destination array.
+     * coordinate values before to start writing the transformed coordinates in the destination array.
      *
      * @param  srcPts    the array containing the source coordinate (can not be {@code null}).
      * @param  srcOff    the offset to the point to be transformed in the source array.
@@ -359,7 +359,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Transforms a list of coordinate points. This method is provided for efficiently transforming many points.
      * The supplied array of coordinate values will contain packed coordinate values.
      *
-     * <div class="note"><b>Example:</b> if the source dimension is 3, then the ordinates will be packed in this order:
+     * <div class="note"><b>Example:</b> if the source dimension is 3, then the coordinates will be packed in this order:
      * (<var>x₀</var>,<var>y₀</var>,<var>z₀</var>,
      *  <var>x₁</var>,<var>y₁</var>,<var>z₁</var> …).
      * </div>
@@ -422,11 +422,11 @@ public abstract class AbstractMathTransform extends FormattableObject
         }
         /*
          * Now apply the coordinate transformation, invoking the user-overrideable method
-         * for each individual point. In case of failure, we will set the ordinates to NaN
+         * for each individual point. In case of failure, we will set the coordinates to NaN
          * and continue with other points, up to some maximal amount of failures.
          */
         TransformException failure = null;
-        int failureCount = 0;                           // Count ordinates, not coordinates.
+        int failureCount = 0;                           // Count coordinates, not coordinate tuples.
         int blockStart   = 0;
         do {
             try {
@@ -442,7 +442,7 @@ public abstract class AbstractMathTransform extends FormattableObject
                     throw failure;
                 }
                 /*
-                 * Otherwise set the ordinate values to NaN and count the number of exceptions,
+                 * Otherwise set the coordinate values to NaN and count the number of exceptions,
                  * so we know when to give up if there is too much of them. The first exception
                  * will be propagated at the end of this method.
                  */
@@ -811,10 +811,10 @@ public abstract class AbstractMathTransform extends FormattableObject
             return false;
         }
         if (tr1 instanceof LenientComparable) {
-            return ((LenientComparable) tr1).equals(tr2, ComparisonMode.APPROXIMATIVE);
+            return ((LenientComparable) tr1).equals(tr2, ComparisonMode.APPROXIMATE);
         }
         if (tr2 instanceof LenientComparable) {
-            return ((LenientComparable) tr2).equals(tr1, ComparisonMode.APPROXIMATIVE);
+            return ((LenientComparable) tr2).equals(tr1, ComparisonMode.APPROXIMATE);
         }
         return tr1.equals(tr2);
     }
@@ -916,7 +916,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Compares the specified object with this math transform for equality.
      * Two math transforms are considered equal if, given identical source positions, their
      * {@linkplain #transform(DirectPosition,DirectPosition) transformed} positions would be
-     * equal or {@linkplain ComparisonMode#APPROXIMATIVE approximately} equal.
+     * equal or {@link ComparisonMode#APPROXIMATE approximately} equal.
      * This method may conservatively returns {@code false} if unsure.
      *
      * <p>The default implementation returns {@code true} if the following conditions are met:</p>
@@ -945,7 +945,7 @@ public abstract class AbstractMathTransform extends FormattableObject
              * If the classes are the same, then the hash codes should be computed in the same way. Since those
              * codes are cached, this is an efficient way to quickly check if the two objects are different.
              */
-            if (!mode.isApproximative()) {
+            if (!mode.isApproximate()) {
                 final int tc = hashCode;
                 if (tc != 0) {
                     final int oc = that.hashCode;

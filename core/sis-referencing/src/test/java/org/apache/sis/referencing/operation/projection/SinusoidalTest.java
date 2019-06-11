@@ -104,7 +104,7 @@ public final strictfp class SinusoidalTest extends MapProjectionTestCase {
     @DependsOnMethod("testInverseDerivative")
     public void testDerivativeOnSphere() throws FactoryException, TransformException {
         createProjection(false);
-        final double delta = (1.0 / 60) / 1852;                 // Approximatively 1 metre.
+        final double delta = (1.0 / 60) / 1852;                 // Approximately 1 metre.
         derivativeDeltas = new double[] {delta, delta};
         tolerance = Formulas.LINEAR_TOLERANCE / 10000;
         verifyDerivative(105,  30);
@@ -122,7 +122,7 @@ public final strictfp class SinusoidalTest extends MapProjectionTestCase {
     @DependsOnMethod("testInverseDerivative")
     public void testDerivativeOnEllipsoid() throws FactoryException, TransformException {
         createProjection(true);
-        final double delta = (1.0 / 60) / 1852;                 // Approximatively 1 metre.
+        final double delta = (1.0 / 60) / 1852;                 // Approximately 1 metre.
         derivativeDeltas = new double[] {delta, delta};
         tolerance = Formulas.LINEAR_TOLERANCE / 10000;
         verifyDerivative(105,  30);

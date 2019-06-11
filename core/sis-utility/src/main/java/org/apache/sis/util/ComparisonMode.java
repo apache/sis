@@ -29,7 +29,7 @@ package org.apache.sis.util;
  *   <li>{@link #STRICT}          – All attributes of the compared objects shall be strictly equal.</li>
  *   <li>{@link #BY_CONTRACT}     – Only the attributes published in the interface contract need to be compared.</li>
  *   <li>{@link #IGNORE_METADATA} – Only the attributes relevant to the object functionality are compared.</li>
- *   <li>{@link #APPROXIMATIVE}   – Only the attributes relevant to the object functionality are compared,
+ *   <li>{@link #APPROXIMATE}     – Only the attributes relevant to the object functionality are compared,
  *                                  with some tolerance threshold on numerical values.</li>
  *   <li>{@link #ALLOW_VARIANT}   – For objects not really equal but related (e.g. CRS using different axis order).</li>
  *   <li>{@link #DEBUG}           – Special mode for figuring out why two objects expected to be equal are not.</li>
@@ -41,7 +41,7 @@ package org.apache.sis.util;
  * {@link #IGNORE_METADATA} level but not necessarily at the {@link #STRICT} level.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see LenientComparable#equals(Object, ComparisonMode)
  * @see Utilities#deepEquals(Object, Object, ComparisonMode)
@@ -132,12 +132,14 @@ public enum ComparisonMode {
      * A small difference is tolerated between the target coordinates calculated by the two math transforms.
      * How small is “small” is implementation dependent — the threshold can not be specified in the current
      * implementation, because of the non-linear nature of map projections.
+     *
+     * @since 1.0
      */
-    APPROXIMATIVE,
+    APPROXIMATE,
 
     /**
      * Most but not all attributes relevant to the object functionality are compared.
-     * This comparison mode is equivalent to {@link #APPROXIMATIVE}, except that it
+     * This comparison mode is equivalent to {@link #APPROXIMATE}, except that it
      * ignores some attributes that may differ between objects not equal but related.
      *
      * <p>The main purpose of this method is to verify if two Coordinate Reference Systems (CRS)
@@ -147,7 +149,7 @@ public enum ComparisonMode {
      * consider two geographic coordinate reference systems with the same attributes except axis order,
      * where one CRS uses (<var>latitude</var>, <var>longitude</var>) axes
      * and the other CRS uses (<var>longitude</var>, <var>latitude</var>) axes.
-     * All comparison modes (even {@code APPROXIMATIVE}) will consider those two CRS as different,
+     * All comparison modes (even {@code APPROXIMATE}) will consider those two CRS as different,
      * except this {@code ALLOW_VARIANT} mode which will consider one CRS to be a variant of the other.
      * </div>
      *
@@ -156,7 +158,7 @@ public enum ComparisonMode {
     ALLOW_VARIANT,
 
     /**
-     * Same as {@link #APPROXIMATIVE}, except that an {@link AssertionError} is thrown if the two
+     * Same as {@link #APPROXIMATE}, except that an {@link AssertionError} is thrown if the two
      * objects are not equal and assertions are enabled. The exception message and stack trace help
      * to locate which attributes are not equal. This mode is typically used in assertions like below:
      *
@@ -172,8 +174,16 @@ public enum ComparisonMode {
     DEBUG;
 
     /**
+     * @deprecated Renamed {@link #APPROXIMATE}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-440">SIS-440</a>
+     */
+    @Deprecated
+    public static final ComparisonMode APPROXIMATIVE = APPROXIMATE;
+
+    /**
      * Returns {@code true} if this comparison ignores metadata.
-     * This method currently returns {@code true} for {@code IGNORE_METADATA}, {@code APPROXIMATIVE}
+     * This method currently returns {@code true} for {@code IGNORE_METADATA}, {@code APPROXIMATE}
      * or {@code DEBUG} only, but this list may be extended in future SIS versions.
      *
      * @return whether this comparison ignore metadata.
@@ -186,15 +196,25 @@ public enum ComparisonMode {
 
     /**
      * Returns {@code true} if this comparison uses a tolerance threshold.
-     * This method currently returns {@code true} for {@code APPROXIMATIVE} or {@code DEBUG} only,
+     * This method currently returns {@code true} for {@code APPROXIMATE} or {@code DEBUG} only,
      * but this list may be extended in future SIS versions.
      *
      * @return whether this comparison uses a tolerance threshold.
      *
-     * @since 0.6
+     * @since 1.0
      */
+    public boolean isApproximate() {
+        return ordinal() >= APPROXIMATE.ordinal();
+    }
+
+    /**
+     * @deprecated Renamed {@link #isApproximate()}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-440">SIS-440</a>
+     */
+    @Deprecated
     public boolean isApproximative() {
-        return ordinal() >= APPROXIMATIVE.ordinal();
+        return isApproximate();
     }
 
     /**
@@ -227,7 +247,7 @@ public enum ComparisonMode {
             }
             if (cp.equals(o2, BY_CONTRACT))     return BY_CONTRACT;
             if (cp.equals(o2, IGNORE_METADATA)) return IGNORE_METADATA;
-            if (cp.equals(o2, APPROXIMATIVE))   return APPROXIMATIVE;
+            if (cp.equals(o2, APPROXIMATE))     return APPROXIMATE;
             if (cp.equals(o2, ALLOW_VARIANT))   return ALLOW_VARIANT;
         }
         return null;

@@ -334,7 +334,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         createNormalizedProjection(true);
         tolerance = 1E-9;
 
-        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyDerivative(toRadians( 0), toRadians( 0));
         verifyDerivative(toRadians(-3), toRadians(30));

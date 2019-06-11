@@ -63,11 +63,11 @@ final class CurveExtremum {
      * Finds the extremum of the unique cubic curve which fit the two given points and derivatives.
      * See class javadoc for more information.
      *
-     * @param  x1   the <var>x</var> ordinate of the first point.
-     * @param  y1   the <var>y</var> ordinate of the first point.
+     * @param  x1   the <var>x</var> coordinate of the first point.
+     * @param  y1   the <var>y</var> coordinate of the first point.
      * @param  dy1  the ∂<var>x</var>/∂<var>y</var> value at the first point.
-     * @param  x2   the <var>x</var> ordinate of the second point.
-     * @param  y2   the <var>y</var> ordinate of the second point.
+     * @param  x2   the <var>x</var> coordinate of the second point.
+     * @param  y2   the <var>y</var> coordinate of the second point.
      * @param  dy2  the ∂<var>x</var>/∂<var>y</var> value at the second point.
      */
     void resolve(double x1, double y1, final double dy1,

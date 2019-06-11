@@ -24,11 +24,14 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.SortedMap;
+import javax.measure.Unit;
+import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Dimension;
 import org.apache.sis.internal.netcdf.Resources;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
@@ -64,10 +67,10 @@ final class GridInfo extends Grid {
     static {
         addAxisTypes('λ', "longitude", "lon", "long");
         addAxisTypes('φ', "latitude",  "lat");
-        addAxisTypes('H', "pressure", "height", "altitude", "elevation", "elev", "geoz");
-        addAxisTypes('D', "depth");
-        addAxisTypes('E', "geox");
-        addAxisTypes('N', "geoy");
+        addAxisTypes('H', "pressure", "height", "altitude", "barometric_altitude", "elevation", "elev", "geoz");
+        addAxisTypes('D', "depth", "depth_below_geoid");
+        addAxisTypes('E', "geox", "projection_x_coordinate");
+        addAxisTypes('N', "geoy", "projection_y_coordinate");
         addAxisTypes('t', "t", "time", "runtime");
         addAxisTypes('x', "x");
         addAxisTypes('y', "y");
@@ -251,18 +254,59 @@ next:       for (final String name : axisNames) {
         for (final SortedMap.Entry<VariableInfo,Integer> entry : variables.entrySet()) {
             final int targetDim = entry.getValue();
             final VariableInfo axis = entry.getKey();
+            /*
+             * In Apache SIS implementation, the abbreviation determines the axis type. If a "_coordinateaxistype" attribute
+             * exists, il will have precedence over all other heuristic rules in this method because it is the most specific
+             * information about axis type. Otherwise the "standard_name" attribute is our first fallback since valid values
+             * are standardized to "longitude" and "latitude" among others.
+             */
             char abbreviation = getAxisType(axis.getAxisType());
             if (abbreviation == 0) {
-                abbreviation = getAxisType(axis.getName());
+                abbreviation = getAxisType(axis.getAttributeAsString(CF.STANDARD_NAME));
+                /*
+                 * If the abbreviation is still unknown, look at the "long_name", "description" or "title" attribute. Those
+                 * attributes are not standardized, so they are less reliable than "standard_name". But they are still more
+                 * reliable that the variable name since the long name may be "Longitude" or "Latitude" while the variable
+                 * name is only "x" or "y".
+                 */
                 if (abbreviation == 0) {
-                    if (Units.isTemporal(axis.getUnit())) {
-                        abbreviation = 't';
+                    abbreviation = getAxisType(axis.getDescription());
+                    if (abbreviation == 0) {
+                        /*
+                         * Actually the "degree_east" and "degree_north" units of measurement are the most reliable way to
+                         * identify geographic system, but we nevertheless check them almost last because the direction is
+                         * already verified by Axis constructor. By checking the variable attributes first, we give a chance
+                         * to Axis constructor to report a warning if there is an inconsistency.
+                         */
+                        if (Units.isAngular(axis.getUnit())) {
+                            final AxisDirection direction = AxisDirections.absolute(Axis.direction(axis.getUnitsString()));
+                            if (AxisDirection.EAST.equals(direction)) {
+                                abbreviation = 'λ';
+                            } else if (AxisDirection.NORTH.equals(direction)) {
+                                abbreviation = 'φ';
+                            }
+                        }
+                        /*
+                         * We test the variable name last because that name is more at risk of being an uninformative "x" or "y" name.
+                         * If even the variable name is not sufficient, we use some easy to recognize units.
+                         */
+                        if (abbreviation == 0) {
+                            abbreviation = getAxisType(axis.getName());
+                            if (abbreviation == 0) {
+                                final Unit<?> unit = axis.getUnit();
+                                if (Units.isTemporal(unit)) {
+                                    abbreviation = 't';
+                                } else if (Units.isPressure(unit)) {
+                                    abbreviation = 'z';
+                                }
+                            }
+                        }
                     }
                 }
             }
             /*
              * Get the grid dimensions (part of the "domain" in UCAR terminology) used for computing
-             * the ordinate values along the current axis. There is exactly 1 such grid dimension in
+             * the coordinate values along the current axis. There is exactly 1 such grid dimension in
              * straightforward netCDF files. However some more complex files may have 2 dimensions.
              */
             int i = 0;

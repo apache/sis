@@ -368,6 +368,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalClass_2 = 50;
 
         /**
+         * The [{0} … {1}] range of coordinate values is not valid for the “{2}” axis.
+         */
+        public static final short IllegalCoordinateRange_3 = 57;
+
+        /**
          * Coordinate system can not be “{0}”.
          */
         public static final short IllegalCoordinateSystem_1 = 51;
@@ -401,11 +406,6 @@ public final class Errors extends IndexedResourceBundle {
          * Option ‘{0}’ can not take the “{1}” value.
          */
         public static final short IllegalOptionValue_2 = 56;
-
-        /**
-         * The [{0} … {1}] range of ordinate values is not valid for the “{2}” axis.
-         */
-        public static final short IllegalOrdinateRange_3 = 57;
 
         /**
          * Property “{0}” does not accept instances of ‘{1}’.
