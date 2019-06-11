@@ -460,7 +460,7 @@ public final class NilReason implements Serializable {
     /**
      * Returns {@code true} if the given object may be one of the sentinel values
      * created by {@link #createNilPrimitive(Class)}. This method only checks the value.
-     * If this method returns {@code true}, then the caller still need to check the actual instance using the
+     * If this method returns {@code true}, then the caller still needs to check the actual instance using the
      * {@link PrimitiveTypeProperties} class. The purpose of this method is to filter the values that can not
      * be sentinel values, in order to avoid the synchronization done by {@code PrimitiveTypeProperties}.
      */

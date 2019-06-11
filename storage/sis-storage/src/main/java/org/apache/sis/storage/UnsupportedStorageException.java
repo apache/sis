@@ -17,8 +17,12 @@
 package org.apache.sis.storage;
 
 import java.util.Locale;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.io.IOUtilities;
 
@@ -29,7 +33,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
  * can not handle the given input or output object.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
@@ -100,7 +104,22 @@ public class UnsupportedStorageException extends IllegalOpenParameterException {
      */
     public UnsupportedStorageException(final Locale locale, final String format, final Object storage, final OpenOption... options) {
         super(locale, IOUtilities.isWrite(options) ? Resources.Keys.IllegalOutputTypeForWriter_2
-                                                   : Resources.Keys.IllegalInputTypeForReader_2,
-                      format, Classes.getClass(storage));
+                                                   : Resources.Keys.IllegalInputTypeForReader_2, format, type(storage));
+    }
+
+    /**
+     * Returns the type of the given storage, with a special case for files or paths to directories.
+     * This is a work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="10")
+    private static Object type(final Object storage) {
+        if ((storage instanceof File && ((File) storage).isDirectory()) ||
+            (storage instanceof Path && Files.isDirectory((Path) storage)))
+        {
+            return "Directory";
+        } else {
+            return Classes.getClass(storage);
+        }
     }
 }
