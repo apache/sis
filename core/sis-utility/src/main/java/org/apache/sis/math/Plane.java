@@ -18,6 +18,7 @@ package org.apache.sis.math;
 
 import java.util.Iterator;
 import java.io.Serializable;
+import java.util.function.DoubleBinaryOperator;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.internal.util.DoubleDouble;
@@ -46,7 +47,7 @@ import static java.lang.Math.ulp;
  *
  * @author  Martin Desruisseaux (MPO, IRD)
  * @author  Howard Freeland (MPO, for algorithmic inspiration)
- * @version 0.8
+ * @version 1.0
  *
  * @see Line
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
@@ -54,7 +55,7 @@ import static java.lang.Math.ulp;
  * @since 0.5
  * @module
  */
-public class Plane implements Cloneable, Serializable {
+public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -199,6 +200,22 @@ public class Plane implements Cloneable, Serializable {
      */
     public final double z(final double x, final double y) {
         return z0 + sx*x + sy*y;
+    }
+
+    /**
+     * Evaluates this equation for the given values. The default implementation delegates to
+     * {@link #z(double,double) z(x,y)}, but subclasses may override with different formulas.
+     * This method is provided for interoperability with libraries making use of {@link java.util.function}.
+     *
+     * @param  x  the first operand where to evaluate the function.
+     * @param  y  the second operand where to evaluate the function.
+     * @return the function value for the given operands.
+     *
+     * @since 1.0
+     */
+    @Override
+    public double applyAsDouble(double x, double y) {
+        return z(x, y);
     }
 
     /**

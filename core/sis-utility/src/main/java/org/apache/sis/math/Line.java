@@ -17,6 +17,7 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
+import java.util.function.DoubleUnaryOperator;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.internal.util.DoubleDouble;
@@ -43,7 +44,7 @@ import static java.lang.Double.*;
  * and (<var>x₂</var>,<var>y₂</var>) points, {@code Line} objects extend toward infinity.</div>
  *
  * @author  Martin Desruisseaux (MPO, IRD)
- * @version 0.8
+ * @version 1.0
  *
  * @see Plane
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
@@ -51,7 +52,7 @@ import static java.lang.Double.*;
  * @since 0.5
  * @module
  */
-public class Line implements Cloneable, Serializable {
+public class Line implements DoubleUnaryOperator, Cloneable, Serializable {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -155,13 +156,28 @@ public class Line implements Cloneable, Serializable {
      * Computes <var>y</var> = <var>f</var>(<var>x</var>).
      * If the line is vertical, then this method returns an infinite value.
      *
-     * @param  x  the <var>x</var> value where to evaluate the inverse function.
+     * @param  x  the <var>x</var> value where to evaluate the function.
      * @return the <var>y</var> value for the given <var>x</var> value.
      *
      * @see #x(double)
      */
     public final double y(final double x) {
         return y0 + x*slope;
+    }
+
+    /**
+     * Evaluates this equation for the given value. The default implementation delegates
+     * to {@link #y(double) y(x)}, but subclasses may override with different formulas.
+     * This method is provided for interoperability with libraries making use of {@link java.util.function}.
+     *
+     * @param  x  the value where to evaluate the function.
+     * @return the function value for the given operand.
+     *
+     * @since 1.0
+     */
+    @Override
+    public double applyAsDouble(double x) {
+        return y(x);
     }
 
     /**
