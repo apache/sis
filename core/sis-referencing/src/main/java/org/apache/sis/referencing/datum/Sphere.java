@@ -110,6 +110,7 @@ final class Sphere extends DefaultEllipsoid {
      * @return the orthodromic distance (in the units of this ellipsoid's axis).
      */
     @Override
+    @Deprecated
     public double orthodromicDistance(double λ1, double φ1, double λ2, double φ2) {
         φ1 = toRadians(φ1);
         φ2 = toRadians(φ2);

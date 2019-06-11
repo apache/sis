@@ -25,6 +25,7 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.distance.LatLonPointRadius;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.GeodeticCalculator;
+import org.apache.sis.referencing.operation.GeodesicException;
 
 /**
  * Implementation of Quad Tree Index. Insertion algorithm implemented based on
@@ -342,9 +343,9 @@ public class QuadTree {
         if (node == null) {
             return matches;
         } else if (node.getNodeType() != NodeType.GRAY) {
-            if (node.getNodeType() == NodeType.WHITE)
+            if (node.getNodeType() == NodeType.WHITE) {
                 return matches;
-            else {
+            } else {
                 QuadTreeData[] data = node.getData();
                 for (int i = 0; i < node.getCount(); i++) {
                     DirectPosition2D latLon = data[i].getLatLon();
@@ -352,7 +353,11 @@ public class QuadTree {
                     synchronized (calculator) {
                         calculator.setStartGeographicPoint(latLon.y, latLon.x);
                         calculator.setEndGeographicPoint(point.y, point.x);
-                        distance = calculator.getGeodesicDistance();
+                        try {
+                            distance = calculator.getGeodesicDistance();
+                        } catch (GeodesicException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                     if (distance <= radiusKM) {
                         matches.add(data[i]);
@@ -360,7 +365,6 @@ public class QuadTree {
                 }
                 return matches;
             }
-
         } else {
             Rectangle2D swRectangle = new Rectangle2D.Double(nodeRegion.getX(), nodeRegion.getY(),
                     nodeRegion.getWidth() / 2, nodeRegion.getHeight() / 2);

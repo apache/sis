@@ -114,10 +114,10 @@ public class Mollweide extends NormalizedProjection {
          */
         if (abs(sinφ) != 1) {
             final double πsinφ = PI * sinφ;
-            int nbIte = MAXIMUM_ITERATIONS;
+            int nbIter = MAXIMUM_ITERATIONS;
             double Δθ;
             do {
-                if (--nbIte < 0) {
+                if (--nbIter < 0) {
                     throw new ProjectionException(Resources.format(Resources.Keys.NoConvergence));
                 }
                 Δθ = (θp + sin(θp) - πsinφ) / (1 + cos(θp));

@@ -88,8 +88,11 @@ public final class Formulas extends Static {
      * Maximum number of iterations for iterative computations. Defined in this {@code Formulas} class as a default value,
      * but some classes may use a derived value (for example twice this amount). This constant is mostly useful for identifying
      * places where iterations occur.
+     *
+     * <p>In <cite>Algorithms for geodesics</cite>, Karney (2013) reports that in a tiny fraction of cases up to 16 iterations
+     * is required for the Newton method published in his article. We set {@code MAXIMUM_ITERATIONS} to that maximal value.</p>
      */
-    public static final int MAXIMUM_ITERATIONS = 15;
+    public static final int MAXIMUM_ITERATIONS = 16;
 
     /**
      * Do not allow instantiation of this class.

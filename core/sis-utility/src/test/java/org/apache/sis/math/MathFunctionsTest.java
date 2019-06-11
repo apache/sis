@@ -438,4 +438,47 @@ public final strictfp class MathFunctionsTest extends TestCase {
         assertArrayEquals(new int[] {1, 2}, commonDivisors(-4, 2));
         assertArrayEquals(new int[] {}, commonDivisors(0));
     }
+
+    /**
+     * Tests {@link MathFunctions#polynomialRoots(double...)} with values given in NIST example.
+     * Source: <a href="https://dlmf.nist.gov/1.11">NIST Digital Library of Mathematical Functions</a>.
+     */
+    @Test
+    public void testQuarticRoots() {
+        /*
+         * Given polynomial:  f(z) = z⁴ - 4z³ + 5z + 2
+         * Reduced:           g(w) = w⁴ - 6w² - 3w + 4
+         * Resolvent cubic:   z³ + 12z² + 20z + 9 = 0
+         */
+        assertArrayEquals(new double[] {
+             3.5615528128088303,            // ½(3 + √17)
+             1.618033988749895,             // ½(1 + √5)
+            -0.6180339887498949,            // ½(1 - √5)
+            -0.5615528128088303             // ½(3 - √17)
+        }, polynomialRoots(2, 5, 0, -4, 1), 1E-14);
+    }
+
+    /**
+     * Tests {@link MathFunctions#polynomialRoots(double...)} with random values.
+     */
+    @Test
+    public void testPolynomialRoots() {
+        final Random r = TestUtilities.createRandomNumberGenerator(62308330810132L);
+        final double[] coefficients = new double[5];
+        for (int n=2; n < coefficients.length; n++) {           // Number of coefficients to fill.
+            for (int t=n*10; --t >= 0;) {                       // Number of tests to execute.
+                for (int i=0; i<n; i++) {
+                    coefficients[i] = (r.nextInt(8) != 0) ? r.nextDouble() * 20 - 10 : 0;
+                }
+                for (final double x : polynomialRoots(coefficients)) {
+                    double p = 1;
+                    double y = coefficients[0];
+                    for (int i=1; i<coefficients.length; i++) {
+                        y += coefficients[i] * (p *= x);
+                    }
+                    assertEquals(0, y, 1E-12);
+                }
+            }
+        }
+    }
 }
