@@ -381,7 +381,7 @@ parse:  while (i < length) {
     }
 
     /**
-     * Returns a hash value for this coordinate. This method returns a value compliant
+     * Returns a hash value for this coordinate tuple. This method returns a value compliant
      * with the contract documented in the {@link DirectPosition#hashCode()} javadoc.
      * Consequently, it should be possible to mix different {@code DirectPosition}
      * implementations in the same hash map.
@@ -400,7 +400,7 @@ parse:  while (i < length) {
 
     /**
      * Returns {@code true} if the specified object is also a {@code DirectPosition}
-     * with equal coordinate and equal CRS.
+     * with equal coordinates and equal CRS.
      *
      * This method performs the comparison as documented in the {@link DirectPosition#equals(Object)}
      * javadoc. In particular, the given object is not required to be of the same implementation class.

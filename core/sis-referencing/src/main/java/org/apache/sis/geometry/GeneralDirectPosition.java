@@ -351,4 +351,19 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
         assert code == super.hashCode();
         return code;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object == this) {
+            return true;
+        }
+        if (object instanceof GeneralDirectPosition) {
+            final GeneralDirectPosition that = (GeneralDirectPosition) object;
+            return Arrays.equals(coordinates, that.coordinates) && Objects.equals(crs, that.crs);
+        }
+        return super.equals(object);                // Comparison of other implementation classes.
+    }
 }
