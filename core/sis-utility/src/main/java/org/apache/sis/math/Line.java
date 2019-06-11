@@ -231,10 +231,10 @@ public class Line implements DoubleUnaryOperator, Cloneable, Serializable {
      * Sets a line through the specified points.
      * The line will continue toward infinity after the points.
      *
-     * @param  x1  ordinate <var>x</var> of the first point.
-     * @param  y1  ordinate <var>y</var> of the first point.
-     * @param  x2  ordinate <var>x</var> of the second point.
-     * @param  y2  ordinate <var>y</var> of the second point.
+     * @param  x1  coordinate <var>x</var> of the first point.
+     * @param  y1  coordinate <var>y</var> of the first point.
+     * @param  x2  coordinate <var>x</var> of the second point.
+     * @param  y2  coordinate <var>y</var> of the second point.
      */
     public void setFromPoints(final double x1, final double y1, final double x2, final double y2) {
         this.slope = (y2 - y1) / (x2 - x1);
@@ -295,9 +295,9 @@ public class Line implements DoubleUnaryOperator, Cloneable, Serializable {
     /**
      * Given a sequence of points, fits them to a straight line
      * <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var> in a least-squares senses.
-     * Points shall be two dimensional with ordinate values in the (<var>x</var>,<var>y</var>) order.
+     * Points shall be two dimensional with coordinate values in the (<var>x</var>,<var>y</var>) order.
      * This method assumes that the <var>x</var> values are precise and all uncertainty is in <var>y</var>.
-     * {@link Double#NaN} ordinate values are ignored.
+     * {@link Double#NaN} coordinate values are ignored.
      *
      * @param  points  the two-dimensional points.
      * @return estimation of the correlation coefficient. The closer this coefficient is to +1 or -1, the better the fit.

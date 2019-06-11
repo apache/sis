@@ -55,7 +55,7 @@ public final strictfp class HardCodedConversions {
 
     /**
      * A two-dimensional Mercator projection using the WGS84 datum.
-     * This CRS uses (<var>easting</var>, <var>northing</var>) ordinates in metres.
+     * This CRS uses (<var>easting</var>, <var>northing</var>) coordinates in metres.
      * The base CRS uses (<var>longitude</var>, <var>latitude</var>) axes
      * and the prime meridian is Greenwich.
      *
@@ -71,7 +71,7 @@ public final strictfp class HardCodedConversions {
 
     /**
      * A three-dimensional Mercator projection using the WGS84 datum.
-     * This CRS uses (<var>easting</var>, <var>northing</var>, <var>height</var>) ordinates in metres.
+     * This CRS uses (<var>easting</var>, <var>northing</var>, <var>height</var>) coordinates in metres.
      * The base CRS uses (<var>longitude</var>, <var>latitude</var>, <var>height</var>) axes
      * and the prime meridian is Greenwich.
      *
@@ -84,7 +84,7 @@ public final strictfp class HardCodedConversions {
 
     /**
      * A two- or three-dimensional Mercator projection using the given base CRS.
-     * This CRS uses (<var>easting</var>, <var>northing</var>) ordinates in metres.
+     * This CRS uses (<var>easting</var>, <var>northing</var>) coordinates in metres.
      *
      * @param  baseCRS  the two- or three-dimensional base CRS.
      * @return two- or three-dimensional Mercator projection.

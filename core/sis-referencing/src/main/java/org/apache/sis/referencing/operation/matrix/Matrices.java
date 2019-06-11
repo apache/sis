@@ -254,8 +254,8 @@ public final class Matrices extends Static {
         /*
          * Maps source axes to destination axes. If no axis is moved (for example if the user
          * want to transform (NORTH,EAST) to (SOUTH,EAST)), then source and destination index
-         * will be equal.   If some axes are moved (for example if the user want to transform
-         * (NORTH,EAST) to (EAST,NORTH)), then ordinates at index {@code srcIndex} will have
+         * will be equal. If some axes are moved (for example if the user want to transform
+         * (NORTH,EAST) to (EAST,NORTH)), then coordinates at index {@code srcIndex} will have
          * to be moved at index {@code dstIndex}.
          */
         for (int dstIndex = 0; dstIndex < dstAxes.length; dstIndex++) {
@@ -397,7 +397,7 @@ public final class Matrices extends Static {
      *
      * <ul>
      *   <li>If some {@code srcAxes} directions can not be mapped to {@code dstAxes} directions, then the transform
-     *       will silently drops the ordinates associated to those extra source axis directions.</li>
+     *       will silently drops the coordinates associated to those extra source axis directions.</li>
      *   <li>If some {@code dstAxes} directions can not be mapped to {@code srcAxes} directions,
      *       then an exception will be thrown.</li>
      * </ul>
@@ -480,14 +480,14 @@ public final class Matrices extends Static {
      * }
      *
      * will return the following square matrix. The transform of a corner is given as an example.
-     * Note that the input ordinate values are swapped because of the (<i>North</i>, <i>West</i>) axis directions,
+     * Note that the input coordinate values are swapped because of the (<i>North</i>, <i>West</i>) axis directions,
      * and the lower-left corner of the destination envelope is the lower-<em>right</em> corner of the source envelope
      * because of the opposite axis direction.
      *
      * {@preformat math
      *   ┌     ┐   ┌               ┐   ┌     ┐
      *   │ -10 │   │ 0   -3.0  350 │   │ -40 │
-     *   │ -25 │ = │ 2.5  0     75 │ × │ 120 │       // 120 is the westernmost source ordinate: (x=20) + (width=100)
+     *   │ -25 │ = │ 2.5  0     75 │ × │ 120 │       // 120 is the westernmost source coordinate: (x=20) + (width=100)
      *   │   1 │   │ 0    0      1 │   │   1 │
      *   └     ┘   └               ┘   └     ┘
      * }
@@ -519,7 +519,7 @@ public final class Matrices extends Static {
     }
 
     /**
-     * Creates a matrix for a transform that keep only a subset of source ordinate values.
+     * Creates a matrix for a transform that keep only a subset of source coordinate values.
      * The matrix size will be ({@code selectedDimensions.length} + 1) × ({@code sourceDimensions} + 1).
      * The matrix will contain only zero elements, except for the following cells which will contain 1:
      *
@@ -529,9 +529,9 @@ public final class Matrices extends Static {
      * </ul>
      *
      * <div class="note"><b>Example:</b>
-     * given (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) ordinate values, if one wants to keep
-     * (<var>y</var>,<var>x</var>,<var>t</var>) ordinates (note the <var>x</var> ↔ <var>y</var> swapping)
-     * and discard the <var>z</var> values, then the indices of source ordinates to select are 1 for <var>y</var>,
+     * given (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) coordinate values, if one wants to keep
+     * (<var>y</var>,<var>x</var>,<var>t</var>) coordinates (note the <var>x</var> ↔ <var>y</var> swapping)
+     * and discard the <var>z</var> values, then the indices of source coordinates to select are 1 for <var>y</var>,
      * 0 for <var>x</var> and 3 for <var>t</var>. One can use the following method call:
      *
      * {@preformat java
@@ -556,7 +556,7 @@ public final class Matrices extends Static {
      * Other dimensions will work as expected.
      *
      * @param  sourceDimensions    the number of dimensions in source coordinates.
-     * @param  selectedDimensions  the 0-based indices of source ordinate values to keep.
+     * @param  selectedDimensions  the 0-based indices of source coordinate values to keep.
      *         The length of this array will be the number of dimensions in target coordinates.
      * @return an affine transform matrix keeping only the given source dimensions, and discarding all others.
      * @throws IllegalArgumentException if a value of {@code selectedDimensions} is lower than 0
@@ -577,7 +577,7 @@ public final class Matrices extends Static {
     }
 
     /**
-     * Creates a matrix which converts a subset of ordinates using the transform given by another matrix.
+     * Creates a matrix which converts a subset of coordinates using the transform given by another matrix.
      * For example giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,
      * a pass through operation can convert the height values from feet to metres without affecting
      * the (<var>latitude</var>, <var>longitude</var>) values.
@@ -617,7 +617,7 @@ public final class Matrices extends Static {
      * }
      *
      * Then a call to {@code Matrices.createPassThrough(2, subMatrix, 1)} will return the following matrix,
-     * which can be used for converting the height (<var>z</var>) without affecting the other ordinate values
+     * which can be used for converting the height (<var>z</var>) without affecting the other coordinate values
      * (<var>x</var>,<var>y</var>,<var>t</var>):
      *
      * {@preformat math

@@ -68,23 +68,23 @@ public strictfp class CoordinateDomain {
                 throw new IllegalArgumentException();
             }
             final double axis = GeodeticDatumMock.SPHERE.getEllipsoid().getSemiMajorAxis();
-            final double[] ordinates = GEOGRAPHIC.generateRandomInput(random, dimension, numPts);
-            for (int i=0; i<ordinates.length;) {
-                final double phi    = toRadians(ordinates[i  ]);
-                final double theta  = toRadians(ordinates[i+1]);
-                final double radius = axis  +   ordinates[i+2];
+            final double[] coordinates = GEOGRAPHIC.generateRandomInput(random, dimension, numPts);
+            for (int i=0; i<coordinates.length;) {
+                final double phi    = toRadians(coordinates[i  ]);
+                final double theta  = toRadians(coordinates[i+1]);
+                final double radius = axis  +   coordinates[i+2];
                 final double radXY  = radius * cos(theta);
-                ordinates[i++] = radXY  * cos(phi);
-                ordinates[i++] = radXY  * sin(phi);
-                ordinates[i++] = radius * sin(theta);
+                coordinates[i++] = radXY  * cos(phi);
+                coordinates[i++] = radXY  * sin(phi);
+                coordinates[i++] = radius * sin(theta);
             }
-            return ordinates;
+            return coordinates;
         }
     };
 
     /**
      * Geographic input coordinates with angles in decimal degrees.
-     * Ordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
+     * Coordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
      */
     public static final CoordinateDomain GEOGRAPHIC = new CoordinateDomain(
             Longitude.MIN_VALUE, Longitude.MAX_VALUE,
@@ -93,7 +93,7 @@ public strictfp class CoordinateDomain {
 
     /**
      * Geographic input coordinates avoiding poles and anti-meridian.
-     * Ordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
+     * Coordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
      */
     public static final CoordinateDomain GEOGRAPHIC_SAFE = new CoordinateDomain(
             Longitude.MIN_VALUE + 1, Longitude.MAX_VALUE -  1,
@@ -102,7 +102,7 @@ public strictfp class CoordinateDomain {
 
     /**
      * Geographic input coordinates close to the poles.
-     * Ordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
+     * Coordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
      */
     public static final CoordinateDomain GEOGRAPHIC_POLES = new CoordinateDomain(
             Longitude.MIN_VALUE, Longitude.MAX_VALUE,
@@ -111,23 +111,23 @@ public strictfp class CoordinateDomain {
     {
         @Override
         public double[] generateRandomInput(final Random random, final int dimension, final int numPts) {
-            final double[] ordinates = super.generateRandomInput(random, dimension, numPts);
-            for (int i=1; i < ordinates.length; i += dimension) {
-                final double φ = ordinates[i];
+            final double[] coordinates = super.generateRandomInput(random, dimension, numPts);
+            for (int i=1; i < coordinates.length; i += dimension) {
+                final double φ = coordinates[i];
                 double a = abs(φ);
                 if (a < ARTICLE_CIRCLE) {
                     a -= floor(a / (Latitude.MAX_VALUE - ARTICLE_CIRCLE)) * (Latitude.MAX_VALUE - ARTICLE_CIRCLE);
                     a = (Latitude.MAX_VALUE - a);
-                    ordinates[i] = copySign(a, φ);
+                    coordinates[i] = copySign(a, φ);
                 }
             }
-            return ordinates;
+            return coordinates;
         }
     };
 
     /**
      * Geographic input coordinates close to the north pole.
-     * Ordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
+     * Coordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
      */
     public static final CoordinateDomain GEOGRAPHIC_NORTH_POLE = new CoordinateDomain(
             Longitude.MIN_VALUE, Longitude.MAX_VALUE,
@@ -136,7 +136,7 @@ public strictfp class CoordinateDomain {
 
     /**
      * Geographic input coordinates close to the south pole.
-     * Ordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
+     * Coordinates are in (<var>longitude</var>, <var>latitude</var>, <var>height</var>) order.
      */
     public static final CoordinateDomain GEOGRAPHIC_SOUTH_POLE = new CoordinateDomain(
             Longitude.MIN_VALUE, Longitude.MAX_VALUE,
@@ -145,7 +145,7 @@ public strictfp class CoordinateDomain {
 
     /**
      * Geographic input coordinates with angles in radians.
-     * Ordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
+     * Coordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
      */
     public static final CoordinateDomain GEOGRAPHIC_RADIANS = new CoordinateDomain(
             -PI,     PI,
@@ -154,7 +154,7 @@ public strictfp class CoordinateDomain {
 
     /**
      * Geographic input coordinates with angles in radians and only half of the longitude range.
-     * Ordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
+     * Coordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
      */
     public static final CoordinateDomain GEOGRAPHIC_RADIANS_HALF_λ = new CoordinateDomain(
             -PI/2,   PI/2,
@@ -163,7 +163,7 @@ public strictfp class CoordinateDomain {
 
     /**
      * Geographic input coordinates with angles in radians in the North hemisphere only.
-     * Ordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
+     * Coordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
      */
     public static final CoordinateDomain GEOGRAPHIC_RADIANS_NORTH = new CoordinateDomain(
             -PI,     PI,
@@ -172,7 +172,7 @@ public strictfp class CoordinateDomain {
 
     /**
      * Geographic input coordinates with angles in radians in the South hemisphere only.
-     * Ordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
+     * Coordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
      */
     public static final CoordinateDomain GEOGRAPHIC_RADIANS_SOUTH = new CoordinateDomain(
             -PI,     PI,
@@ -181,7 +181,7 @@ public strictfp class CoordinateDomain {
 
     /**
      * Geographic input coordinates with angles in radians in the East hemisphere only.
-     * Ordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
+     * Coordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
      */
     public static final CoordinateDomain GEOGRAPHIC_RADIANS_EAST = new CoordinateDomain(
              0,      PI,
@@ -190,7 +190,7 @@ public strictfp class CoordinateDomain {
 
     /**
      * Geographic input coordinates with angles in radians in the West hemisphere only.
-     * Ordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
+     * Coordinates are in (<var>lambda</var>, <var>phi</var>, <var>height</var>) order.
      */
     public static final CoordinateDomain GEOGRAPHIC_RADIANS_WEST = new CoordinateDomain(
             -PI,     0,
@@ -199,7 +199,7 @@ public strictfp class CoordinateDomain {
 
     /**
      * Projected input coordinates in a range suitable for UTM projections.
-     * Ordinates are in (<var>easting</var>, <var>northing</var>, <var>height</var>) order.
+     * Coordinates are in (<var>easting</var>, <var>northing</var>, <var>height</var>) order.
      */
     public static final CoordinateDomain PROJECTED = new CoordinateDomain(
              -350000,    350000,    // Easting
@@ -248,10 +248,10 @@ public strictfp class CoordinateDomain {
      * @param  random     the random number generator to use.
      * @param  dimension  the number of dimension of the points to generate.
      * @param  numPts     the number of points to generate.
-     * @return an array of length {@code numPts*dimension} filled with random input ordinate values.
+     * @return an array of length {@code numPts*dimension} filled with random input coordinate values.
      */
     public double[] generateRandomInput(final Random random, final int dimension, final int numPts) {
-        final double[] ordinates = new double[numPts * dimension];
+        final double[] coordinates = new double[numPts * dimension];
         for (int j=0; j<dimension; j++) {
             final double min, max;
             switch (j) {
@@ -259,17 +259,17 @@ public strictfp class CoordinateDomain {
                 case 1:  min = ymin; max = ymax; break;
                 case 2:  min = zmin; max = zmax; break;
                 default: {
-                    for (int i=j; i<ordinates.length; i += dimension) {
-                        ordinates[i] = random.nextGaussian();
+                    for (int i=j; i<coordinates.length; i += dimension) {
+                        coordinates[i] = random.nextGaussian();
                     }
                     continue;
                 }
             }
             final double range = max - min;
-            for (int i=j; i<ordinates.length; i += dimension) {
-                ordinates[i] = min + range * random.nextDouble();
+            for (int i=j; i<coordinates.length; i += dimension) {
+                coordinates[i] = min + range * random.nextDouble();
             }
         }
-        return ordinates;
+        return coordinates;
     }
 }

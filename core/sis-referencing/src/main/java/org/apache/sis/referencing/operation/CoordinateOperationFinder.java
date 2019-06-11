@@ -899,8 +899,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final CoordinateReferenceSystem[] stepComponents = new CoordinateReferenceSystem[infos.length];
         /*
          * Operations found are stored in 'infos', but are not yet wrapped in PassThroughOperations.
-         * We need to know first if some ordinate values need reordering for matching the target CRS
-         * order. We also need to know if any source ordinates should be dropped.
+         * We need to know first if some coordinate values need reordering for matching the target CRS
+         * order. We also need to know if any source coordinates should be dropped.
          */
         for (int i=0; i<infos.length; i++) {
             if ((infos[i] = SubOperationInfo.create(this, sourceIsUsed, sourceComponents, targetComponents.get(i))) == null) {
@@ -975,7 +975,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             final int startAtDimension = endAtDimension;
             endAtDimension += delta;
             /*
-             * Constructs the pass through transform only if there is at least one ordinate to pass.
+             * Constructs the pass through transform only if there is at least one coordinate to pass.
              * Actually the code below would work inconditionally, but we perform this check anyway
              * for avoiding the creation of intermediate objects.
              */

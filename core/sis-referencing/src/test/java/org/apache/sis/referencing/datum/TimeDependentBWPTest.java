@@ -114,7 +114,7 @@ public final strictfp class TimeDependentBWPTest extends TestCase {
         compareWithExplicitCalculation(actual);
         /*
          * Now compare with the expected value given in the EPSG example. The 0.013 tolerance threshold
-         * is for the X ordinate and has been determined empirically in testEpsgCalculation().
+         * is for the X coordinate and has been determined empirically in testEpsgCalculation().
          */
         assertMatrixEquals("toGDA94",    target, actual, 0.013);
         assertMatrixEquals("toITRF2008", source, toITRF2008.multiply(target), 0.013);

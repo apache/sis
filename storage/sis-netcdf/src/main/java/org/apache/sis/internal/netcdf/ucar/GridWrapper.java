@@ -256,7 +256,7 @@ next:       for (final String name : axisNames) {
             }
             /*
              * Get the grid dimensions (part of the "domain" in UCAR terminology) used for computing
-             * the ordinate values along the current axis. There is exactly 1 such grid dimension in
+             * the coordinate values along the current axis. There is exactly 1 such grid dimension in
              * straightforward netCDF files. However some more complex files may have 2 dimensions.
              */
             int i = 0;

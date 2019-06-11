@@ -363,9 +363,9 @@ public final strictfp class TestUtilities extends Static {
     }
 
     /**
-     * Returns a copy of the given array with the last ordinate values dropped for each coordinates.
+     * Returns a copy of the given array with the last coordinate values dropped for each coordinates.
      *
-     * @param  coordinates  the source coordinates from which to drop the last ordinate values.
+     * @param  coordinates  the source coordinates from which to drop the last coordinate values.
      * @param  sourceDim    number of dimensions of each point in the {@code coordinates} array.
      * @param  targetDim    number of dimensions to retain.
      * @return copy of the given {@code coordinates} array with only the {@code targetDim} first dimension for each point.

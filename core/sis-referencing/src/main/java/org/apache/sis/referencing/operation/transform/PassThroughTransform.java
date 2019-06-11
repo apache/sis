@@ -513,7 +513,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         ensureDimensionMatches("point", transDim + nSkipped, point);
         final GeneralDirectPosition subPoint = new GeneralDirectPosition(transDim);
         for (int i=0; i<transDim; i++) {
-            subPoint.ordinates[i] = point.getOrdinate(i + firstAffectedCoordinate);
+            subPoint.coordinates[i] = point.getOrdinate(i + firstAffectedCoordinate);
         }
         return expand(MatrixSIS.castOrCopy(subTransform.derivative(subPoint)),
                 firstAffectedCoordinate, numTrailingCoordinates, 0);

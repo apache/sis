@@ -115,7 +115,7 @@ final class Store extends URIDataStore implements FeatureSet {
     static final char SEPARATOR = ',';
 
     /**
-     * The separator between ordinate values in a coordinate.
+     * The separator between coordinate values in a coordinate tuple.
      */
     static final char ORDINATE_SEPARATOR = ' ';
 

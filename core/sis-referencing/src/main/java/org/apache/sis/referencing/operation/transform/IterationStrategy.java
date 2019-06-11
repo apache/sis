@@ -96,7 +96,7 @@ public enum IterationStrategy {
 
     /**
      * Copy the points to transform in a temporary array before to apply the transform.
-     * The temporary array will be used for fetching the source ordinates.
+     * The temporary array will be used for fetching the source coordinates.
      *
      * <p>This algorithm can be used as a fallback for any unknown enumeration.</p>
      */
@@ -132,7 +132,7 @@ public enum IterationStrategy {
      *
      * <ul>
      *   <li>Source and target array are the same.</li>
-     *   <li>For each coordinate to be transformed, all ordinate values are read before the
+     *   <li>For each coordinate to be transformed, all coordinate values are read before the
      *       transformation process starts. For example if a transform goes from geographic
      *       to projected CRS, the (<var>longitude</var>, <var>latitude</var>, <var>height</var>)
      *       tuple must be completely read before to start writing the

@@ -127,7 +127,7 @@ final class NonSquareMatrix extends GeneralMatrix {
      * If this matrix has more columns than rows, then this method can invert that matrix if and only if
      * some columns contain only 0 elements. In such case, the dimensions corresponding to those columns are
      * considered independent of all other dimensions. This happen typically with the dimension of <var>z</var>
-     * and <var>t</var> ordinate values.</p>
+     * and <var>t</var> coordinate values.</p>
      *
      * <p><b>Example:</b> in a conversion from (x₁,y₁,z,t) to (x₂,y₂), if the (x,y) dimensions are independent
      * of z and t dimensions, then we do not need those (z,t) dimensions for calculating the inverse of (x₁,y₁)
@@ -159,7 +159,7 @@ final class NonSquareMatrix extends GeneralMatrix {
      * <p>Conversely, if the matrix has more rows than columns (in a system of linear equations, the system would
      * be <cite>overdetermined</cite>), then we omit the rows containing only zero or NaN values. After the matrix
      * inversion, we insert columns having only zero values for the dimensions associated to those rows.
-     * Semantically, the inverse matrix is a (x₁,y₁,z,t) → (x₂,y₂) transform that just discards the ordinate values
+     * Semantically, the inverse matrix is a (x₁,y₁,z,t) → (x₂,y₂) transform that just discards the coordinate values
      * at the dimensions corresponding to those rows.</p>
      */
     @Override
@@ -172,8 +172,8 @@ final class NonSquareMatrix extends GeneralMatrix {
     }
 
     /**
-     * Inverses a matrix for a transform where target points have fewer ordinates than source points.
-     * If a column contains only zero values, then this means that the ordinate at the corresponding
+     * Inverses a matrix for a transform where target points have fewer coordinates than source points.
+     * If a column contains only zero values, then this means that the coordinate at the corresponding
      * column is simply deleted. We can omit that column. We check the last columns before the first
      * columns on the assumption that last dimensions are more likely to be independent dimensions
      * like time.
@@ -212,13 +212,13 @@ next:   do {
         }
         squareMatrix = (GeneralMatrix) Solver.inverse(squareMatrix, false);
         /*
-         * Create a new matrix with new rows added for the omitted ordinates.
+         * Create a new matrix with new rows added for the omitted coordinates.
          * From this point, the meaning of 'numCol' and 'numRow' are interchanged.
          */
         final NonSquareMatrix inverse = new NonSquareMatrix(numCol, numRow, false, 2);
         for (oi=0, j=0, i=0; i<numCol; i++) {
             if (oi != omitted.length && i == omitted[oi]) {
-                inverse.setElement(i, numRow-1, Double.NaN);  // Translation term to NaN, remaining to 0.
+                inverse.setElement(i, numRow-1, Double.NaN);        // Translation term to NaN, remaining to 0.
                 oi++;
             } else {
                 copyRow(squareMatrix, j++, inverse, i);
@@ -228,8 +228,8 @@ next:   do {
     }
 
     /**
-     * Inverses a matrix for a transform where target points has more ordinates than source points.
-     * In other words, the target matrices will be a transform that discard some ordinate values.
+     * Inverses a matrix for a transform where target points has more coordinates than source points.
+     * In other words, the target matrices will be a transform that discard some coordinate values.
      * We will discard the ones for which the row contains only 0 or NaN elements.
      *
      * <p>In the special case where the last row is of the form [0 0 … 0 1] as in affine transforms,

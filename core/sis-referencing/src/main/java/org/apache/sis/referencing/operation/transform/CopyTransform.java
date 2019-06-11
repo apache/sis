@@ -25,12 +25,12 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 
 
 /**
- * A transform which copy the ordinates in the source array to different locations in the target array.
+ * A transform which copy the coordinates in the source array to different locations in the target array.
  * This is a special case of {@link ProjectiveTransform} where the matrix coefficients are zero everywhere,
  * except one value by row which is set to 1 and is not the translation term. Those transforms are used for
  * swapping axis order, or selecting the dimension to retain when converting from a large dimension to a smaller one.
  * This transform has the particularity to involve no floating point operation - just copy of values with no change -
- * and consequently works well with NaN ordinate values.
+ * and consequently works well with NaN coordinate values.
  *
  * <p>We do not provide a subclass for the 2D case because our policy is to use
  * an {@link java.awt.geom.AffineTransform} for every 2D affine conversions.</p>
@@ -53,7 +53,7 @@ final class CopyTransform extends AbstractLinearTransform {
     private final int srcDim;
 
     /**
-     * The indices of ordinates to copy in the source array.
+     * The indices of coordinates to copy in the source array.
      * The length of this array is the target dimension.
      */
     private final int[] indices;
@@ -63,7 +63,7 @@ final class CopyTransform extends AbstractLinearTransform {
      *
      * @param srcDim   the dimension of source coordinates.
      *                 Must be greater than the highest value in {@code indices}.
-     * @param indices  the indices of ordinates to copy in the source array.
+     * @param indices  the indices of coordinates to copy in the source array.
      *                 The length of this array is the target dimension.
      */
     CopyTransform(final int srcDim, final int[] indices) {
@@ -103,7 +103,7 @@ final class CopyTransform extends AbstractLinearTransform {
                 }
             }
             if (!found) {
-                // Target ordinate unconditionally set to 0 (not a copy).
+                // Target coordinate unconditionally set to 0 (not a copy).
                 return null;
             }
         }

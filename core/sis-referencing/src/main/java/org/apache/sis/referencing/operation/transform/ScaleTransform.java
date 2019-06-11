@@ -27,7 +27,7 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * An affine transform that multiply the ordinate values by constant values, and optionally drop the last ordinates.
+ * An affine transform that multiply the coordinate values by constant values, and optionally drop the last coordinates.
  * This is an optimization of {@link ProjectiveTransform} for a common case.
  *
  * <div class="note"><b>Note:</b> we do not provide two-dimensional specialization because
@@ -48,7 +48,7 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     private static final long serialVersionUID = 8527439133082104085L;
 
     /**
-     * Multiplication factors, to be applied in the same order than ordinate values.
+     * Multiplication factors, to be applied in the same order than coordinate values.
      * The length of this array is the number of target dimensions.
      */
     private final double[] factors;
@@ -60,7 +60,7 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     private final double[] errors;
 
     /**
-     * Number of ordinate values to drop after the values that we multiplied.
+     * Number of coordinate values to drop after the values that we multiplied.
      * Values to drop happen for example in Geographic 3D to 2D conversions.
      */
     private final int numDroppedDimensions;

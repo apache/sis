@@ -157,7 +157,7 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
     }
 
     /**
-     * Returns the centroid ordinate value for the specified dimension.
+     * Returns the centroid coordinate value for the specified dimension.
      */
     @Override
     public final double getOrdinate(final int dimension) {
@@ -165,7 +165,7 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
     }
 
     /**
-     * Returns the minimal ordinate value for the specified dimension.
+     * Returns the minimal coordinate value for the specified dimension.
      */
     @Override
     public final double getMinimum(final int dimension) {
@@ -177,7 +177,7 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
     }
 
     /**
-     * Returns the maximal ordinate value for the specified dimension.
+     * Returns the maximal coordinate value for the specified dimension.
      */
     @Override
     public final double getMaximum(final int dimension) {
@@ -189,7 +189,7 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
     }
 
     /**
-     * Returns the median ordinate value for the specified dimension.
+     * Returns the median coordinate value for the specified dimension.
      */
     @Override
     public final double getMedian(final int dimension) {

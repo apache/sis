@@ -248,7 +248,7 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
     }
 
     /**
-     * Computes the plane's coefficients from the given ordinate values.
+     * Computes the plane's coefficients from the given coordinate values.
      * This method uses a linear regression in the least-square sense, with the assumption that
      * the (<var>x</var>,<var>y</var>) values are precise and all uncertainty is in <var>z</var>.
      * {@link Double#NaN} values are ignored. The result is undetermined if all points are colinear.
@@ -270,7 +270,7 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
     }
 
     /**
-     * Computes the plane's coefficients from the given ordinate values.
+     * Computes the plane's coefficients from the given coordinate values.
      * This method uses a linear regression in the least-square sense, with the assumption that
      * the (<var>x</var>,<var>y</var>) values are precise and all uncertainty is in <var>z</var>.
      * {@link Double#NaN} values are ignored. The result is undetermined if all points are colinear.
@@ -355,7 +355,7 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
      * Computes the plane's coefficients from the given sequence of points.
      * This method uses a linear regression in the least-square sense, with the assumption that
      * the (<var>x</var>,<var>y</var>) values are precise and all uncertainty is in <var>z</var>.
-     * Points shall be three dimensional with ordinate values in the (<var>x</var>,<var>y</var>,<var>z</var>) order.
+     * Points shall be three dimensional with coordinate values in the (<var>x</var>,<var>y</var>,<var>z</var>) order.
      * {@link Double#NaN} values are ignored. The result is undetermined if all points are colinear.
      *
      * @param  points  the three-dimensional points.

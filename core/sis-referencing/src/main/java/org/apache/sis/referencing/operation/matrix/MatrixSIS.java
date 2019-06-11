@@ -419,7 +419,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * <p>This method is useful when the matrix is a
      * {@linkplain org.opengis.referencing.operation.MathTransform#derivative transform derivative}.
      * In such matrix, each column is a vector representing the displacement in target space when an
-     * ordinate in the source space is increased by one. Invoking this method turns those vectors
+     * coordinate in the source space is increased by one. Invoking this method turns those vectors
      * into unitary vectors, which is useful for forming the basis of a new coordinate system.</p>
      *
      * @throws UnsupportedOperationException if this matrix is unmodifiable.
@@ -450,7 +450,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     /**
      * Assuming that this matrix represents an affine transform, concatenates a scale and a translation on the
      * given dimension. Converting a point with the resulting matrix is equivalent to first convert the point
-     * with {@code ordinates[srcDim] = ordinates[srcDim] * scale + offset}, then apply the original matrix.
+     * with {@code coordinates[srcDim] = coordinates[srcDim] * scale + offset}, then apply the original matrix.
      *
      * <div class="section">Equivalence between this method and Java2D {@code AffineTransform} methods</div>
      * If this matrix was an instance of Java2D {@link AffineTransform}, then invoking this method would
@@ -471,9 +471,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *   </tr>
      * </table>
      *
-     * @param  srcDim  the dimension of the ordinate to rescale in the source coordinates.
-     * @param  scale   the amount by which to multiply the source ordinate value before to apply the transform, or {@code null} if none.
-     * @param  offset  the amount by which to translate the source ordinate value before to apply the transform, or {@code null} if none.
+     * @param  srcDim  the dimension of the coordinate to rescale in the source coordinates.
+     * @param  scale   the amount by which to multiply the source coordinate value before to apply the transform, or {@code null} if none.
+     * @param  offset  the amount by which to translate the source coordinate value before to apply the transform, or {@code null} if none.
      * @throws UnsupportedOperationException if this matrix is unmodifiable.
      *
      * @see AffineTransform#concatenate(AffineTransform)
@@ -504,11 +504,11 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     /**
      * Assuming that this matrix represents an affine transform, pre-concatenates a scale and a translation on the
      * given dimension. Converting a point with the resulting matrix is equivalent to first convert the point with
-     * the original matrix, then convert the result with {@code ordinates[tgtDim] = ordinates[tgtDim] * scale + offset}.
+     * the original matrix, then convert the result with {@code coordinates[tgtDim] = coordinates[tgtDim] * scale + offset}.
      *
-     * @param  tgtDim  the dimension of the ordinate to rescale in the target coordinates.
-     * @param  scale   the amount by which to multiply the target ordinate value after this transform, or {@code null} if none.
-     * @param  offset  the amount by which to translate the target ordinate value after this transform, or {@code null} if none.
+     * @param  tgtDim  the dimension of the coordinate to rescale in the target coordinates.
+     * @param  scale   the amount by which to multiply the target coordinate value after this transform, or {@code null} if none.
+     * @param  offset  the amount by which to translate the target coordinate value after this transform, or {@code null} if none.
      * @throws UnsupportedOperationException if this matrix is unmodifiable.
      *
      * @see AffineTransform#preConcatenate(AffineTransform)

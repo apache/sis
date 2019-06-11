@@ -44,11 +44,11 @@ import static org.apache.sis.internal.referencing.Formulas.isPoleToPole;
 
 
 /**
- * Base class of envelopes backed by an array. The ordinate values are stored in the {@link #ordinates} array.
- * The ordinate values of the lower corner are stored in the array portion from index {@link #beginIndex()}
- * inclusive to index {@link #endIndex()} exclusive. The ordinate values of the upper corner are stored in
+ * Base class of envelopes backed by an array. The coordinate values are stored in the {@link #coordinates} array.
+ * The coordinate values of the lower corner are stored in the array portion from index {@link #beginIndex()}
+ * inclusive to index {@link #endIndex()} exclusive. The coordinate values of the upper corner are stored in
  * the array portion from index {@code beginIndex() + d} inclusive to index {@code endIndex() + d} exclusive
- * where {@code d = ordinates.length >>> 1}.
+ * where {@code d = coordinates.length >>> 1}.
  *
  * <p>Unless otherwise indicated by a "{@code // Must be overridden in SubEnvelope}" comment, every methods
  * in {@code ArrayEnvelope} and subclasses must take in account the {@code beginIndex} and {@code endIndex}
@@ -64,14 +64,14 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1657970968782634545L;
+    private static final long serialVersionUID = 3685400961133848112L;
 
     /**
-     * Ordinate values of lower and upper corners. Except for {@link SubEnvelope}, the length of
-     * this array is twice the number of dimensions. The first half contains the lower corner,
+     * Coordinate values of lower and upper corners. Except for {@link SubEnvelope}, the length
+     * of this array is twice the number of dimensions. The first half contains the lower corner,
      * while the second half contains the upper corner.
      */
-    final double[] ordinates;
+    final double[] coordinates;
 
     /**
      * The coordinate reference system, or {@code null}.
@@ -79,14 +79,14 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     CoordinateReferenceSystem crs;
 
     /**
-     * Creates a new envelope using the given array of ordinate values. This constructor stores
+     * Creates a new envelope using the given array of coordinate values. This constructor stores
      * the given reference directly; it does <strong>not</strong> clone the given array. This is
      * the desired behavior for proper working of {@link SubEnvelope}.
      *
-     * @param  ordinates  the array of ordinate values to store directly (not cloned).
+     * @param  coordinates  the array of coordinate values to store directly (not cloned).
      */
-    ArrayEnvelope(final double[] ordinates) {
-        this.ordinates = ordinates;
+    ArrayEnvelope(final double[] coordinates) {
+        this.coordinates = coordinates;
     }
 
     /*
@@ -99,8 +99,8 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * If at least one corner is associated to a CRS, then the new envelope will also
      * be associated to that CRS.
      *
-     * @param  lowerCorner  the limits in the direction of decreasing ordinate values for each dimension.
-     * @param  upperCorner  the limits in the direction of increasing ordinate values for each dimension.
+     * @param  lowerCorner  the limits in the direction of decreasing coordinate values for each dimension.
+     * @param  upperCorner  the limits in the direction of increasing coordinate values for each dimension.
      * @throws MismatchedDimensionException if the two positions do not have the same dimension.
      * @throws MismatchedReferenceSystemException if the CRS of the two position are not equal.
      */
@@ -111,49 +111,49 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
         final int dimension = lowerCorner.getDimension();
         ensureDimensionMatches("crs", dimension, crs);
         ensureSameDimension(dimension, upperCorner.getDimension());
-        ordinates = new double[dimension * 2];
+        coordinates = new double[dimension * 2];
         for (int i=0; i<dimension; i++) {
-            ordinates[i            ] = lowerCorner.getOrdinate(i);
-            ordinates[i + dimension] = upperCorner.getOrdinate(i);
+            coordinates[i            ] = lowerCorner.getOrdinate(i);
+            coordinates[i + dimension] = upperCorner.getOrdinate(i);
         }
-        verifyRanges(crs, ordinates);
+        verifyRanges(crs, coordinates);
     }
 
     /**
-     * Constructs an envelope defined by two corners given as sequences of ordinate values.
+     * Constructs an envelope defined by two corners given as sequences of coordinate values.
      * The Coordinate Reference System is initially {@code null}.
      *
-     * @param  lowerCorner  the limits in the direction of decreasing ordinate values for each dimension.
-     * @param  upperCorner  the limits in the direction of increasing ordinate values for each dimension.
+     * @param  lowerCorner  the limits in the direction of decreasing coordinate values for each dimension.
+     * @param  upperCorner  the limits in the direction of increasing coordinate values for each dimension.
      * @throws MismatchedDimensionException if the two sequences do not have the same length.
      */
     public ArrayEnvelope(final double[] lowerCorner, final double[] upperCorner) throws MismatchedDimensionException {
         ensureNonNull("lowerCorner", lowerCorner);
         ensureNonNull("upperCorner", upperCorner);
         ensureSameDimension(lowerCorner.length, upperCorner.length);
-        ordinates = Arrays.copyOf(lowerCorner, lowerCorner.length + upperCorner.length);
-        System.arraycopy(upperCorner, 0, ordinates, lowerCorner.length, upperCorner.length);
+        coordinates = Arrays.copyOf(lowerCorner, lowerCorner.length + upperCorner.length);
+        System.arraycopy(upperCorner, 0, coordinates, lowerCorner.length, upperCorner.length);
     }
 
     /**
-     * Constructs an empty envelope of the specified dimension. All ordinates
+     * Constructs an empty envelope of the specified dimension. All coordinates
      * are initialized to 0 and the coordinate reference system is undefined.
      *
      * @param  dimension  the envelope dimension.
      */
     public ArrayEnvelope(final int dimension) {
-        ordinates = new double[dimension * 2];
+        coordinates = new double[dimension * 2];
     }
 
     /**
      * Constructs an empty envelope with the specified coordinate reference system.
-     * All ordinate values are initialized to 0.
+     * All coordinate values are initialized to 0.
      *
      * @param  crs  the coordinate reference system.
      */
     public ArrayEnvelope(final CoordinateReferenceSystem crs) {
         ensureNonNull("crs", crs);
-        ordinates = new double[crs.getCoordinateSystem().getDimension() * 2];
+        coordinates = new double[crs.getCoordinateSystem().getDimension() * 2];
         this.crs = crs;
     }
 
@@ -166,14 +166,14 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
         ensureNonNull("envelope", envelope);
         crs = envelope.getCoordinateReferenceSystem();
         final int dimension = envelope.getDimension();
-        ordinates = new double[dimension * 2];
+        coordinates = new double[dimension * 2];
         final DirectPosition lowerCorner = envelope.getLowerCorner();
         final DirectPosition upperCorner = envelope.getUpperCorner();
         for (int i=0; i<dimension; i++) {
-            ordinates[i]           = lowerCorner.getOrdinate(i);
-            ordinates[i+dimension] = upperCorner.getOrdinate(i);
+            coordinates[i]           = lowerCorner.getOrdinate(i);
+            coordinates[i+dimension] = upperCorner.getOrdinate(i);
         }
-        verifyRanges(crs, ordinates);
+        verifyRanges(crs, coordinates);
     }
 
     /**
@@ -186,20 +186,20 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      */
     public ArrayEnvelope(final GeographicBoundingBox box) {
         ensureNonNull("box", box);
-        ordinates = new double[] {
+        coordinates = new double[] {
             box.getWestBoundLongitude(),
             box.getSouthBoundLatitude(),
             box.getEastBoundLongitude(),
             box.getNorthBoundLatitude()
         };
         if (Boolean.FALSE.equals(box.getInclusion())) {
-            ArraysExt.swap(ordinates, 0, ordinates.length >>> 1);
-            if (!isPoleToPole(ordinates[1], ordinates[3])) {
-                ArraysExt.swap(ordinates, 1, (ordinates.length >>> 1) + 1);
+            ArraysExt.swap(coordinates, 0, coordinates.length >>> 1);
+            if (!isPoleToPole(coordinates[1], coordinates[3])) {
+                ArraysExt.swap(coordinates, 1, (coordinates.length >>> 1) + 1);
             }
         }
         crs = CommonCRS.defaultGeographic();
-        verifyRanges(crs, ordinates);
+        verifyRanges(crs, coordinates);
     }
 
     /**
@@ -297,8 +297,8 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
         }
         if (levelParenth != 0) fail(wkt, ')');
         if (levelBracket != 0) fail(wkt, ']');
-        ordinates = ArraysExt.resize(minimum, maxDimension << 1);
-        System.arraycopy(maximum, 0, ordinates, maxDimension, maxDimension);
+        coordinates = ArraysExt.resize(minimum, maxDimension << 1);
+        System.arraycopy(maximum, 0, coordinates, maxDimension, maxDimension);
     }
 
     /**
@@ -320,7 +320,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * Verifies the validity of the range of ordinates values in the given array.
+     * Verifies the validity of the range of coordinates values in the given array.
      * If the given CRS is null, then this method conservatively does nothing.
      * Otherwise this method performs the following verifications:
      *
@@ -328,7 +328,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      *   <li>{@code lower > upper} is allowed only for axes having {@link RangeMeaning#WRAPAROUND}.</li>
      * </ul>
      *
-     * This method does <strong>not</strong> verify if the ordinate values are between the axis minimum and
+     * This method does <strong>not</strong> verify if the coordinate values are between the axis minimum and
      * maximum values. This is because out-of-range values exist in practice but do not impact the working
      * of {@code add(…)}, {@code intersect(…)}, {@code contains(…)} and similar methods. This in contrast
      * with the checks listed above, where failure to met those conditions will cause the methods to
@@ -342,15 +342,15 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      *   <li>{@link SubEnvelope#setRange(int, double, double)}</li>
      * </ul>
      *
-     * @param  crs        the coordinate reference system, or {@code null}.
-     * @param  ordinates  the array of ordinate values to verify.
+     * @param  crs          the coordinate reference system, or {@code null}.
+     * @param  coordinates  the array of coordinate values to verify.
      */
-    static void verifyRanges(final CoordinateReferenceSystem crs, final double[] ordinates) {
+    static void verifyRanges(final CoordinateReferenceSystem crs, final double[] coordinates) {
         if (crs != null) {
-            final int dimension = ordinates.length >>> 1;
+            final int dimension = coordinates.length >>> 1;
             for (int i=0; i<dimension; i++) {
-                final double lower = ordinates[i];
-                final double upper = ordinates[i + dimension];
+                final double lower = coordinates[i];
+                final double upper = coordinates[i + dimension];
                 if (lower > upper && !isWrapAround(crs, i)) {
                     throw new IllegalArgumentException(illegalRange(crs, i, lower, upper));
                 }
@@ -359,7 +359,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * Creates an error message for an illegal ordinates range at the given dimension.
+     * Creates an error message for an illegal coordinates range at the given dimension.
      * This is used for formatting the exception message.
      */
     static String illegalRange(final CoordinateReferenceSystem crs,
@@ -369,11 +369,11 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
         if (name == null) {
             name = dimension;       // Paranoiac fallback (name should never be null).
         }
-        return Errors.format(Errors.Keys.IllegalOrdinateRange_3, lower, upper, name);
+        return Errors.format(Errors.Keys.IllegalCoordinateRange_3, lower, upper, name);
     }
 
     /**
-     * Returns the index of the first valid ordinate value of the lower corner in the {@link #ordinates} array.
+     * Returns the index of the first valid coordinate value of the lower corner in the {@link #coordinates} array.
      * This is always 0, unless this envelope is a {@link SubEnvelope}.
      *
      * <p>See {@link #endIndex()} for the list of methods that need to be also overridden
@@ -384,8 +384,8 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * Returns the index after the last valid ordinate value of the lower corner in the {@link #ordinates} array.
-     * This is always {@code ordinates.length >>> 1}, unless this envelope is a {@link SubEnvelope}.
+     * Returns the index after the last valid coordinate value of the lower corner in the {@link #coordinates} array.
+     * This is always {@code coordinates.length >>> 1}, unless this envelope is a {@link SubEnvelope}.
      *
      * <p>Unless otherwise indicated by a "{@code // Must be overridden in SubEnvelope}" comment, every methods
      * in {@code ArrayEnvelope} and subclasses must take in account the {@code beginIndex} and {@code endIndex}
@@ -402,7 +402,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      * </ul>
      */
     int endIndex() {
-        return ordinates.length >>> 1;
+        return coordinates.length >>> 1;
     }
 
     /**
@@ -414,7 +414,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override                                       // Must also be overridden in SubEnvelope
     public int getDimension() {
-        return ordinates.length >>> 1;
+        return coordinates.length >>> 1;
     }
 
     /**
@@ -435,8 +435,8 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override                                       // Must also be overridden in SubEnvelope
     public double getLower(final int dimension) throws IndexOutOfBoundsException {
-        ensureValidIndex(ordinates.length >>> 1, dimension);
-        return ordinates[dimension];
+        ensureValidIndex(coordinates.length >>> 1, dimension);
+        return coordinates[dimension];
     }
 
     /**
@@ -444,9 +444,9 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override                                       // Must also be overridden in SubEnvelope
     public double getUpper(final int dimension) throws IndexOutOfBoundsException {
-        final int d = ordinates.length >>> 1;
+        final int d = coordinates.length >>> 1;
         ensureValidIndex(d, dimension);
-        return ordinates[dimension + d];
+        return coordinates[dimension + d];
     }
 
     /**
@@ -456,8 +456,8 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     public double getMinimum(final int dimension) throws IndexOutOfBoundsException {
         ensureValidIndex(endIndex(), dimension);
         final int i = dimension + beginIndex();
-        double lower = ordinates[i];
-        if (isNegative(ordinates[i + (ordinates.length >>> 1)] - lower)) {      // Special handling for -0.0
+        double lower = coordinates[i];
+        if (isNegative(coordinates[i + (coordinates.length >>> 1)] - lower)) {    // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(crs, dimension);
             lower = isWrapAround(axis) ? axis.getMinimumValue() : Double.NaN;
         }
@@ -471,8 +471,8 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     public double getMaximum(final int dimension) throws IndexOutOfBoundsException {
         ensureValidIndex(endIndex(), dimension);
         final int i = dimension + beginIndex();
-        double upper = ordinates[i + (ordinates.length >>> 1)];
-        if (isNegative(upper - ordinates[i])) {                                 // Special handling for -0.0
+        double upper = coordinates[i + (coordinates.length >>> 1)];
+        if (isNegative(upper - coordinates[i])) {                               // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(crs, dimension);
             upper = isWrapAround(axis) ? axis.getMaximumValue() : Double.NaN;
         }
@@ -486,8 +486,8 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     public double getMedian(final int dimension) throws IndexOutOfBoundsException {
         ensureValidIndex(endIndex(), dimension);
         final int i = dimension + beginIndex();
-        final double minimum = ordinates[i];
-        final double maximum = ordinates[i + (ordinates.length >>> 1)];
+        final double minimum = coordinates[i];
+        final double maximum = coordinates[i + (coordinates.length >>> 1)];
         double median = 0.5 * (minimum + maximum);
         if (isNegative(maximum - minimum)) {                                    // Special handling for -0.0
             median = fixMedian(getAxis(crs, dimension), median);
@@ -502,7 +502,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     public double getSpan(final int dimension) throws IndexOutOfBoundsException {
         ensureValidIndex(endIndex(), dimension);
         final int i = dimension + beginIndex();
-        double span = ordinates[i + (ordinates.length >>> 1)] - ordinates[i];
+        double span = coordinates[i + (coordinates.length >>> 1)] - coordinates[i];
         if (isNegative(span)) {                                                 // Special handling for -0.0
             span = fixSpan(getAxis(crs, dimension), span);
         }
@@ -519,9 +519,9 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
         if (beginIndex == endIndex) {
             return true;
         }
-        final int d = ordinates.length >>> 1;
+        final int d = coordinates.length >>> 1;
         for (int i=beginIndex; i<endIndex; i++) {
-            final double span = ordinates[i+d] - ordinates[i];
+            final double span = coordinates[i+d] - coordinates[i];
             if (!(span > 0)) {                                                  // Use '!' in order to catch NaN
                 if (!(isNegative(span) && isWrapAround(crs, i - beginIndex))) {
                     return true;
@@ -537,8 +537,8 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override                                       // Must also be overridden in SubEnvelope
     public boolean isAllNaN() {
-        for (int i=0; i<ordinates.length; i++) {
-            if (!Double.isNaN(ordinates[i])) {
+        for (int i=0; i<coordinates.length; i++) {
+            if (!Double.isNaN(coordinates[i])) {
                 return false;
             }
         }
@@ -551,7 +551,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override                                       // Must also be overridden in SubEnvelope
     public int hashCode() {
-        int code = Arrays.hashCode(ordinates);
+        int code = Arrays.hashCode(coordinates);
         if (crs != null) {
             code += crs.hashCode();
         }
@@ -561,7 +561,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
 
     /**
      * Computes the hash code value using the public API instead than direct access to the
-     * {@link #ordinates} array. This method is invoked from {@link SubEnvelope}.
+     * {@link #coordinates} array. This method is invoked from {@link SubEnvelope}.
      */
     final int hashCodeByAPI() {
         return super.hashCode();
@@ -574,7 +574,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
             final ArrayEnvelope that = (ArrayEnvelope) object;
-            return Arrays.equals(this.ordinates, that.ordinates) &&
+            return Arrays.equals(this.coordinates, that.coordinates) &&
                   Objects.equals(this.crs, that.crs);
         }
         return false;
@@ -582,7 +582,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
 
     /**
      * Compares the given object for equality using the public API instead than direct access
-     * to the {@link #ordinates} array. This method is invoked from {@link SubEnvelope}.
+     * to the {@link #coordinates} array. This method is invoked from {@link SubEnvelope}.
      */
     final boolean equalsByAPI(final Object object) {
         return super.equals(object);
@@ -593,6 +593,6 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override
     public String toString() {
-        return toString(this, ArraysExt.isSinglePrecision(ordinates));
+        return toString(this, ArraysExt.isSinglePrecision(coordinates));
     }
 }

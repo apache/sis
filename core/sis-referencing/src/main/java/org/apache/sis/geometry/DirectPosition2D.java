@@ -37,7 +37,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * <p>This class inherits {@linkplain #x x} and {@linkplain #y y} fields.
  * But despite their names, they don't need to be oriented toward {@linkplain AxisDirection#EAST East} and
  * {@linkplain AxisDirection#NORTH North} respectively. The (<var>x</var>,<var>y</var>) axis can have any
- * direction and should be understood as <cite>ordinate 0</cite> and <cite>ordinate 1</cite> values instead.
+ * direction and should be understood as <cite>coordinate 0</cite> and <cite>coordinate 1</cite> values instead.
  * This is not specific to this implementation; in Java2D too, the visual axis orientation depend
  * on the {@linkplain java.awt.Graphics2D#getTransform() affine transform in the graphics context}.</p>
  *
@@ -97,21 +97,21 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     }
 
     /**
-     * Constructs a 2D position from the specified ordinates. Despite their names,
+     * Constructs a 2D position from the specified coordinates. Despite their names,
      * the (<var>x</var>,<var>y</var>) coordinates don't need to be oriented toward
      * ({@linkplain AxisDirection#EAST East}, {@linkplain AxisDirection#NORTH North}).
      * Those parameter names simply match the {@linkplain #x x} and {@linkplain #y y} fields.
      * See the <a href="#skip-navbar_top">class javadoc</a> for details.
      *
-     * @param x  the first ordinate value (not necessarily horizontal).
-     * @param y  the second ordinate value (not necessarily vertical).
+     * @param x  the first coordinate value (not necessarily horizontal).
+     * @param y  the second coordinate value (not necessarily vertical).
      */
     public DirectPosition2D(final double x, final double y) {
         super(x, y);
     }
 
     /**
-     * Constructs a 2D position from the specified ordinates in the specified CRS.
+     * Constructs a 2D position from the specified coordinates in the specified CRS.
      * Despite their names, the (<var>x</var>,<var>y</var>) coordinates don't need to be oriented
      * toward ({@linkplain AxisDirection#EAST East}, {@linkplain AxisDirection#NORTH North}).
      * Those parameter names simply match the {@linkplain #x x} and {@linkplain #y y} fields.
@@ -119,8 +119,8 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * See the <a href="#skip-navbar_top">class javadoc</a> for details.
      *
      * @param crs  the coordinate reference system, or {@code null}.
-     * @param x    the first ordinate value (not necessarily horizontal).
-     * @param y    the second ordinate value (not necessarily vertical).
+     * @param x    the first coordinate value (not necessarily horizontal).
+     * @param y    the second coordinate value (not necessarily vertical).
      */
     public DirectPosition2D(final CoordinateReferenceSystem crs, final double x, final double y) {
         super(x, y);
@@ -161,14 +161,14 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @see CoordinateFormat
      */
     public DirectPosition2D(final CharSequence wkt) throws IllegalArgumentException {
-        final double[] ordinates = AbstractDirectPosition.parse(wkt);
-        if (ordinates == null) {
+        final double[] coordinates = AbstractDirectPosition.parse(wkt);
+        if (coordinates == null) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.UnparsableStringForClass_2, "POINT", wkt));
         }
-        ensureDimensionMatches("wkt", 2, ordinates);
-        x = ordinates[0];
-        y = ordinates[1];
+        ensureDimensionMatches("wkt", 2, coordinates);
+        x = coordinates[0];
+        y = coordinates[1];
     }
 
     /**
@@ -227,7 +227,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     }
 
     /**
-     * Returns the ordinate at the specified dimension.
+     * Returns the coordinate at the specified dimension.
      *
      * <div class="note"><b>API note:</b>
      * This method is final for ensuring consistency with the {@code x} and {@code y} fields, which are public.</div>
@@ -246,10 +246,10 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     }
 
     /**
-     * Sets the ordinate value along the specified dimension.
+     * Sets the coordinate value along the specified dimension.
      *
-     * @param  dimension  the dimension for the ordinate of interest.
-     * @param  value      the ordinate value of interest.
+     * @param  dimension  the dimension for the coordinate of interest.
+     * @param  value      the coordinate value of interest.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      */
     @Override

@@ -102,11 +102,11 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws TransformException
     {
-        final double ordinate = srcPts[srcOff];
+        final double coordinate = srcPts[srcOff];
         if (dstPts != null) {
-            dstPts[dstOff] = transform(ordinate);
+            dstPts[dstOff] = transform(coordinate);
         }
-        return derivate ? new Matrix1(derivative(ordinate)) : null;
+        return derivate ? new Matrix1(derivative(coordinate)) : null;
     }
 
     /**
@@ -131,14 +131,14 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
      */
     @Override
     public Matrix derivative(final DirectPosition point) throws TransformException {
-        final double ordinate;
+        final double coordinate;
         if (point == null) {
-            ordinate = Double.NaN;
+            coordinate = Double.NaN;
         } else {
             ensureDimensionMatches("point", 1, point);
-            ordinate = point.getOrdinate(0);
+            coordinate = point.getOrdinate(0);
         }
-        return new Matrix1(derivative(ordinate));
+        return new Matrix1(derivative(coordinate));
     }
 
     /**
@@ -193,11 +193,11 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate) throws TransformException
         {
-            final double ordinate = srcPts[srcOff];
+            final double coordinate = srcPts[srcOff];
             if (dstPts != null) {
-                dstPts[dstOff] = transform(ordinate);
+                dstPts[dstOff] = transform(coordinate);
             }
-            return derivate ? new Matrix1(derivative(ordinate)) : null;
+            return derivate ? new Matrix1(derivative(coordinate)) : null;
         }
 
         /**
@@ -211,14 +211,14 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
          */
         @Override
         public Matrix derivative(final DirectPosition point) throws TransformException {
-            final double ordinate;
+            final double coordinate;
             if (point == null) {
-                ordinate = Double.NaN;
+                coordinate = Double.NaN;
             } else {
                 ensureDimensionMatches("point", 1, point);
-                ordinate = point.getOrdinate(0);
+                coordinate = point.getOrdinate(0);
             }
-            return new Matrix1(derivative(ordinate));
+            return new Matrix1(derivative(coordinate));
         }
     }
 }

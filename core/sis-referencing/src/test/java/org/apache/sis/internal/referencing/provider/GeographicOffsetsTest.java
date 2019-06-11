@@ -128,7 +128,7 @@ public final strictfp class GeographicOffsetsTest extends TransformTestCase {
         /*
          * Now create the MathTransform. But at the difference of the above testVerticalOffset() method,
          * we supply information about axis directions. The operation parameter shall have the same sign
-         * than in the EPSG database (which is positive), and the source and target ordinates shall have
+         * than in the EPSG database (which is positive), and the source and target coordinates shall have
          * the same sign than in the EPSG example (positive too). However we do not test unit conversion
          * in this method (EPSG sample point uses feet units), only axis direction.
          */

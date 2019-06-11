@@ -59,10 +59,10 @@ import org.apache.sis.internal.util.Strings;
  */
 @SuppressWarnings("CloneableClassWithoutClone")
 public class IntervalRectangle extends Rectangle2D {
-    /** Minimal <var>x</var> ordinate value. */ public double xmin;
-    /** Minimal <var>y</var> ordinate value. */ public double ymin;
-    /** Maximal <var>x</var> ordinate value. */ public double xmax;
-    /** Maximal <var>y</var> ordinate value. */ public double ymax;
+    /** Minimal <var>x</var> coordinate value. */ public double xmin;
+    /** Minimal <var>y</var> coordinate value. */ public double ymin;
+    /** Maximal <var>x</var> coordinate value. */ public double xmax;
+    /** Maximal <var>y</var> coordinate value. */ public double ymax;
 
     /**
      * Constructs a default rectangle initialized to {@code (0,0,0,0)}.
@@ -97,14 +97,14 @@ public class IntervalRectangle extends Rectangle2D {
 
     /**
      * Constructs a rectangle initialized to the two first dimensions of the given corners.
-     * This constructor unconditionally assigns {@code lower} ordinates to {@link #xmin}, {@link #ymin} and
-     * {@code upper} ordinates to {@link #xmax}, {@link #ymax} regardless of their values; this constructor
-     * does not verify if {@code lower} ordinates are smaller than {@code upper} ordinates.
+     * This constructor unconditionally assigns {@code lower} coordinates to {@link #xmin}, {@link #ymin} and
+     * {@code upper} coordinates to {@link #xmax}, {@link #ymax} regardless of their values; this constructor
+     * does not verify if {@code lower} coordinates are smaller than {@code upper} coordinates.
      * This is sometime useful for creating a rectangle spanning the anti-meridian,
      * even if {@code IntervalRectangle} class does not support such rectangles by itself.
      *
-     * @param lower  the limits in the direction of decreasing ordinate values for each dimension.
-     * @param upper  the limits in the direction of increasing ordinate values for each dimension.
+     * @param lower  the limits in the direction of decreasing coordinate values for each dimension.
+     * @param upper  the limits in the direction of increasing coordinate values for each dimension.
      *
      * @see Envelope#getLowerCorner()
      * @see Envelope#getUpperCorner()
@@ -120,10 +120,10 @@ public class IntervalRectangle extends Rectangle2D {
      * Creates a rectangle using maximal <var>x</var> and <var>y</var> values rather than width and height.
      * This constructor avoid the problem of NaN values when extremum are infinite numbers.
      *
-     * @param xmin  minimal <var>x</var> ordinate value.
-     * @param ymin  minimal <var>y</var> ordinate value.
-     * @param xmax  maximal <var>x</var> ordinate value.
-     * @param ymax  maximal <var>y</var> ordinate value.
+     * @param xmin  minimal <var>x</var> coordinate value.
+     * @param ymin  minimal <var>y</var> coordinate value.
+     * @param xmax  maximal <var>x</var> coordinate value.
+     * @param ymax  maximal <var>y</var> coordinate value.
      */
     public IntervalRectangle(final double xmin, final double ymin, final double xmax, final double ymax) {
         this.xmin = xmin;
@@ -144,9 +144,9 @@ public class IntervalRectangle extends Rectangle2D {
     }
 
     /**
-     * Returns the minimal <var>x</var> ordinate value.
+     * Returns the minimal <var>x</var> coordinate value.
      *
-     * @return the minimal <var>x</var> ordinate value.
+     * @return the minimal <var>x</var> coordinate value.
      */
     @Override
     public final double getX() {
@@ -154,9 +154,9 @@ public class IntervalRectangle extends Rectangle2D {
     }
 
     /**
-     * Returns the minimal <var>y</var> ordinate value.
+     * Returns the minimal <var>y</var> coordinate value.
      *
-     * @return the minimal <var>y</var> ordinate value.
+     * @return the minimal <var>y</var> coordinate value.
      */
     @Override
     public final double getY() {
@@ -186,9 +186,9 @@ public class IntervalRectangle extends Rectangle2D {
     }
 
     /**
-     * Returns the minimal <var>x</var> ordinate value.
+     * Returns the minimal <var>x</var> coordinate value.
      *
-     * @return the minimal <var>x</var> ordinate value.
+     * @return the minimal <var>x</var> coordinate value.
      */
     @Override
     public final double getMinX() {
@@ -196,9 +196,9 @@ public class IntervalRectangle extends Rectangle2D {
     }
 
     /**
-     * Returns the minimal <var>y</var> ordinate value.
+     * Returns the minimal <var>y</var> coordinate value.
      *
-     * @return the minimal <var>y</var> ordinate value.
+     * @return the minimal <var>y</var> coordinate value.
      */
     @Override
     public final double getMinY() {
@@ -206,9 +206,9 @@ public class IntervalRectangle extends Rectangle2D {
     }
 
     /**
-     * Returns the maximal <var>x</var> ordinate value.
+     * Returns the maximal <var>x</var> coordinate value.
      *
-     * @return the maximal <var>x</var> ordinate value.
+     * @return the maximal <var>x</var> coordinate value.
      */
     @Override
     public final double getMaxX() {
@@ -216,9 +216,9 @@ public class IntervalRectangle extends Rectangle2D {
     }
 
     /**
-     * Returns the maximal <var>y</var> ordinate value.
+     * Returns the maximal <var>y</var> coordinate value.
      *
-     * @return the maximal <var>y</var> ordinate value.
+     * @return the maximal <var>y</var> coordinate value.
      */
     @Override
     public final double getMaxY() {
@@ -226,9 +226,9 @@ public class IntervalRectangle extends Rectangle2D {
     }
 
     /**
-     * Returns the <var>x</var> ordinate of the center of the rectangle.
+     * Returns the <var>x</var> coordinate of the center of the rectangle.
      *
-     * @return the median <var>x</var> ordinate value.
+     * @return the median <var>x</var> coordinate value.
      */
     @Override
     public final double getCenterX() {
@@ -236,9 +236,9 @@ public class IntervalRectangle extends Rectangle2D {
     }
 
     /**
-     * Returns the <var>y</var> ordinate of the center of the rectangle.
+     * Returns the <var>y</var> coordinate of the center of the rectangle.
      *
-     * @return the median <var>y</var> ordinate value.
+     * @return the median <var>y</var> coordinate value.
      */
     @Override
     public final double getCenterY() {
@@ -248,8 +248,8 @@ public class IntervalRectangle extends Rectangle2D {
     /**
      * Sets the location and size of this rectangle to the specified values.
      *
-     * @param  x       the <var>x</var> minimal ordinate value.
-     * @param  y       the <var>y</var> minimal ordinate value.
+     * @param  x       the <var>x</var> minimal coordinate value.
+     * @param  y       the <var>y</var> minimal coordinate value.
      * @param  width   the rectangle width.
      * @param  height  the rectangle height.
      */
@@ -292,8 +292,8 @@ public class IntervalRectangle extends Rectangle2D {
      * The edges are considered exclusive; this method returns {@code false} if the two rectangles just touch to each
      * other.
      *
-     * @param  x       the <var>x</var> minimal ordinate value.
-     * @param  y       the <var>y</var> minimal ordinate value.
+     * @param  x       the <var>x</var> minimal coordinate value.
+     * @param  y       the <var>y</var> minimal coordinate value.
      * @param  width   the rectangle width.
      * @param  height  the rectangle height.
      * @return {@code true} if this rectangle intersects the interior of the specified set of rectangular coordinates.
@@ -331,8 +331,8 @@ public class IntervalRectangle extends Rectangle2D {
     /**
      * Tests if the interior of this rectangle entirely contains the specified set of rectangular coordinates.
      *
-     * @param  x       the <var>x</var> minimal ordinate value.
-     * @param  y       the <var>y</var> minimal ordinate value.
+     * @param  x       the <var>x</var> minimal coordinate value.
+     * @param  y       the <var>y</var> minimal coordinate value.
      * @param  width   the rectangle width.
      * @param  height  the rectangle height.
      * @return {@code true} if this rectangle entirely contains specified set of rectangular coordinates.
@@ -476,8 +476,8 @@ public class IntervalRectangle extends Rectangle2D {
      * added point falls on the left or bottom edge of the enlarged rectangle, {@code contains}
      * returns {@code false} for that point.</p>
      *
-     * @param  x  x ordinate value of the point to add.
-     * @param  y  y ordinate value of the point to add.
+     * @param  x  x coordinate value of the point to add.
+     * @param  y  y coordinate value of the point to add.
      */
     @Override
     public final void add(final double x, final double y) {
@@ -503,7 +503,7 @@ public class IntervalRectangle extends Rectangle2D {
     }
 
     /**
-     * Returns the {@code String} representation of this {@code Rectangle2D}. The ordinate order is
+     * Returns the {@code String} representation of this {@code Rectangle2D}. The coordinate order is
      * (<var>x</var><sub>min</sub>, <var>y</var><sub>min</sub>, <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>),
      * which is consistent with the {@link #IntervalRectangle(double, double, double, double)} constructor
      * and with the {@code BBOX} <cite>Well Known Text</cite> (WKT) syntax.

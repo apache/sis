@@ -233,9 +233,9 @@ public enum AxesConvention implements AxisFilter {
     },
 
     /**
-     * Axes are ordered for a <cite>right-handed</cite> coordinate system. Axis directions, ranges or ordinate values
-     * and units of measurement are unchanged. In the two-dimensional case, the handedness is defined from the point
-     * of view of an observer above the plane of the system.
+     * Axes are ordered for a <cite>right-handed</cite> coordinate system. Axis directions, ranges or coordinate values
+     * and units of measurement are unchanged. In the two-dimensional case, the handedness is defined from the point of
+     * view of an observer above the plane of the system.
      *
      * <p>Note that a right-handed coordinate system does not guarantee that longitude or <var>x</var> axis
      * will be first in every cases. The most notable exception is the case of (West, North) orientations.

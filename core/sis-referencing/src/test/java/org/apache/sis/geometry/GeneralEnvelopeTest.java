@@ -58,7 +58,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     boolean skipValidation;
 
     /**
-     * Creates a new geographic envelope for the given ordinate values.
+     * Creates a new geographic envelope for the given coordinate values.
      * This method is overridden by {@link SubEnvelopeTest}.
      */
     GeneralEnvelope create(final double xmin, final double ymin, final double xmax, final double ymax) {
@@ -81,17 +81,17 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
 
     /**
      * Asserts that the given two-dimensional envelope is equals to the given rectangle.
-     * The {@code xLower} and {@code xUpper} arguments are the <var>x</var> ordinate values
+     * The {@code xLower} and {@code xUpper} arguments are the <var>x</var> coordinate values
      * for the lower and upper corners respectively. The actual {@code xmin} and {@code ymin}
      * values will be inferred from those corners.
      *
      * <p>This method assumes that only the <var>x</var> axis may be a wraparound axis.</p>
      *
      * @param  test    the actual envelope to verify.
-     * @param  xLower  the expected first   <var>x</var> ordinate value. May  be greater than {@code xUpper}.
-     * @param  xUpper  the expected last    <var>x</var> ordinate value. May  be less    than {@code xLower}.
-     * @param  ymin    the expected minimal <var>y</var> ordinate value. Must be less    than {@code ymax}.
-     * @param  ymax    the expected maximal <var>y</var> ordinate value. Must be greater than {@code ymax}.
+     * @param  xLower  the expected first   <var>x</var> coordinate value. May  be greater than {@code xUpper}.
+     * @param  xUpper  the expected last    <var>x</var> coordinate value. May  be less    than {@code xLower}.
+     * @param  ymin    the expected minimal <var>y</var> coordinate value. Must be less    than {@code ymax}.
+     * @param  ymax    the expected maximal <var>y</var> coordinate value. Must be greater than {@code ymax}.
      */
     private static void assertEnvelopeEquals(final Envelope test,
             final double xLower, final double ymin, final double xUpper, final double ymax)
@@ -736,7 +736,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         assertNotSame("Expected a new instance.",           e1, e2);
         assertEquals ("The two instances should be equal.", e1, e2);
         e1.setRange(0, -40, +61);
-        assertFalse("Ordinates array should have been cloned.", e1.equals(e2));
+        assertFalse("Coordinates array should have been cloned.", e1.equals(e2));
         e2.setRange(0, -40, +61);
         assertEquals(e1, e2);
     }

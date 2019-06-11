@@ -263,6 +263,6 @@ public final class PositionTransformer extends GeneralDirectPosition {
      * @throws TransformException if a coordinate transformation was required and failed.
      */
     public Matrix inverseTransform(final double[] target) throws TransformException {
-        return MathTransforms.derivativeAndTransform(inverse(), ordinates, 0, target, 0);
+        return MathTransforms.derivativeAndTransform(inverse(), coordinates, 0, target, 0);
     }
 }

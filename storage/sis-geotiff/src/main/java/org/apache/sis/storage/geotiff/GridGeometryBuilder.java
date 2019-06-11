@@ -106,9 +106,9 @@ final class GridGeometryBuilder {
     public String asciiParameters;
 
     /**
-     * Raster model tie points. This vector contains ordinate values structured as (I,J,K, X,Y,Z) records.
-     * The (I,J,K) ordinate values specify the point at location (I,J) in raster space with pixel-value K,
-     * and (X,Y,Z) ordinate values specify the point in the Coordinate Reference System. In most cases the
+     * Raster model tie points. This vector contains coordinate values structured as (I,J,K, X,Y,Z) records.
+     * The (I,J,K) coordinate values specify the point at location (I,J) in raster space with pixel-value K,
+     * and (X,Y,Z) coordinate values specify the point in the Coordinate Reference System. In most cases the
      * coordinate system is only two-dimensional, in which case both K and Z should be set to zero.
      */
     public Vector modelTiePoints;

@@ -160,8 +160,8 @@ final class Transformer {
         for (int j=0; j<points.length; j++) {
             final double[] coords = points[j];
             if (coords != null) {                                               // Paranoiac check.
-                for (int i=sourcePt.ordinates.length; --i>=0;) {
-                    sourcePt.ordinates[i] = (i < coords.length) ? coords[i] : 0;
+                for (int i=sourcePt.coordinates.length; --i>=0;) {
+                    sourcePt.coordinates[i] = (i < coords.length) ? coords[i] : 0;
                 }
                 try {
                     result[j] = mt.transform(sourcePt, targetPt).getCoordinate();

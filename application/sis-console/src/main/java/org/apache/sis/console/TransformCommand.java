@@ -110,17 +110,17 @@ final class TransformCommand extends FormattedOutputCommand {
     private NumberFormat coordinateFormat;
 
     /**
-     * Width of ordinate values, in number of characters in ordinate {@link String} representations.
+     * Width of coordinate values, in number of characters in coordinate {@link String} representations.
      */
-    private int ordinateWidth;
+    private int coordinateWidth;
 
     /**
-     * Suggested number of fraction digits for each ordinate values.
+     * Suggested number of fraction digits for each coordinate values.
      */
     private int[] numFractionDigits;
 
     /**
-     * We will switch to scientific notation if the ordinate value to format is greater than this value.
+     * We will switch to scientific notation if the coordinate value to format is greater than this value.
      */
     private double[] thresholdForScientificNotation;
 
@@ -245,7 +245,7 @@ final class TransformCommand extends FormattedOutputCommand {
          * compute the number of digits to format and perform the actual coordinate operations.
          */
         if (!points.isEmpty()) {
-            ordinateWidth    = 15;                                      // Must be set before computeNumFractionDigits(…).
+            coordinateWidth  = 15;                                      // Must be set before computeNumFractionDigits(…).
             coordinateFormat = NumberFormat.getInstance(Locale.US);
             coordinateFormat.setGroupingUsed(false);
             computeNumFractionDigits(operation.getTargetCRS().getCoordinateSystem());
@@ -476,7 +476,7 @@ final class TransformCommand extends FormattedOutputCommand {
             if (!unit.isEmpty()) {
                 name = name + " (" + unit + ')';
             }
-            printQuotedText(name, ordinateWidth, X364.FOREGROUND_CYAN);
+            printQuotedText(name, coordinateWidth, X364.FOREGROUND_CYAN);
         }
     }
 
@@ -507,7 +507,7 @@ final class TransformCommand extends FormattedOutputCommand {
             if (precision > 0) {
                 numFractionDigits[i] = Math.max(DecimalFunctions.fractionDigitsForDelta(precision, false) + 1, 0);
             }
-            thresholdForScientificNotation[i] = MathFunctions.pow10(ordinateWidth - 1 - numFractionDigits[i]);
+            thresholdForScientificNotation[i] = MathFunctions.pow10(coordinateWidth - 1 - numFractionDigits[i]);
         }
     }
 
@@ -599,7 +599,7 @@ final class TransformCommand extends FormattedOutputCommand {
             }
             /*
              * At this point we got the coordinates and they have the expected number of dimensions.
-             * Now perform the coordinate operation and print each ordinate values.  We will switch
+             * Now perform the coordinate operation and print each coordinate values. We will switch
              * to scientific notation if the coordinate is much larger than expected.
              */
             mt.transform(coordinates, 0, result, 0, 1);
@@ -616,7 +616,7 @@ final class TransformCommand extends FormattedOutputCommand {
                     coordinateFormat.setMaximumFractionDigits(numFractionDigits[i]);
                     s = coordinateFormat.format(value);
                 }
-                out.print(CharSequences.spaces(ordinateWidth - s.length()));
+                out.print(CharSequences.spaces(coordinateWidth - s.length()));
                 out.print(s);
             }
             /*

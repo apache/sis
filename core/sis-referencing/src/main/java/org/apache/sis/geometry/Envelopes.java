@@ -411,11 +411,10 @@ public final class Envelopes extends Static {
                       sourceDim, envelope.getDimension()));
         }
         /*
-         * Allocates all needed objects. The value '3' below is because the following 'while'
-         * loop uses a 'pointIndex' to be interpreted as a number in base 3 (see the comment
-         * inside the loop).  The coordinate to transform must be initialized to the minimal
-         * ordinate values. This coordinate will be updated in the 'switch' statement inside
-         * the 'while' loop.
+         * Allocates all needed objects. The power of 3 below is because the following `while` loop
+         * uses a `pointIndex` to be interpreted as a number in base 3 (see the comment inside the loop).
+         * The coordinate tuple to transform must be initialized to the minimal coordinate values.
+         * This coordinate will be updated in the `switch` statement inside the `while` loop.
          */
         if (sourceDim >= 20) {          // Maximal value supported by Formulas.pow3(int) is 19.
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1));
@@ -424,15 +423,15 @@ public final class Envelopes extends Static {
         boolean         isDerivativeSupported = true;
         GeneralEnvelope transformed           = null;
         final Matrix[]  derivatives           = new Matrix[Formulas.pow3(sourceDim)];
-        final double[]  ordinates             = new double[derivatives.length * targetDim];
+        final double[]  coordinates           = new double[derivatives.length * targetDim];
         final double[]  sourcePt              = new double[sourceDim];
         for (int i=sourceDim; --i>=0;) {
             sourcePt[i] = envelope.getMinimum(i);
         }
-        // A window over a single coordinate in the 'ordinates' array.
-        final DirectPositionView ordinatesView = new DirectPositionView.Double(ordinates, 0, targetDim);
+        // A window over a single coordinate in the `coordinates` array.
+        final DirectPositionView ordinatesView = new DirectPositionView.Double(coordinates, 0, targetDim);
         /*
-         * Iterates over every minimal, maximal and median ordinate values (3 points) along each
+         * Iterates over every minimal, maximal and median coordinate values (3 points) along each
          * dimension. The total number of iterations is 3 ^ (number of source dimensions).
          */
         transformPoint: while (true) {
@@ -449,13 +448,13 @@ public final class Envelopes extends Static {
             final int offset = pointIndex * targetDim;
             try {
                 derivatives[pointIndex] = derivativeAndTransform(transform,
-                        sourcePt, ordinates, offset, isDerivativeSupported);
+                        sourcePt, coordinates, offset, isDerivativeSupported);
             } catch (TransformException e) {
                 if (!isDerivativeSupported) {
                     throw e;                    // Derivative were already disabled, so something went wrong.
                 }
                 isDerivativeSupported = false;
-                transform.transform(sourcePt, 0, ordinates, offset, 1);
+                transform.transform(sourcePt, 0, coordinates, offset, 1);
                 recoverableException(Envelopes.class, e);       // Log only if the above call was successful.
             }
             /*
@@ -465,7 +464,7 @@ public final class Envelopes extends Static {
             if (transformed == null) {
                 transformed = new GeneralEnvelope(targetDim);
                 for (int i=0; i<targetDim; i++) {
-                    final double value = ordinates[offset + i];
+                    final double value = coordinates[offset + i];
                     transformed.setRange(i, value, value);
                 }
             } else {
@@ -476,7 +475,7 @@ public final class Envelopes extends Static {
              * Get the next point coordinate. The 'coordinateIndex' variable is an index in base 3
              * having a number of digits equals to the number of source dimensions.  For example a
              * 4-D space have indexes ranging from "0000" to "2222" (numbers in base 3). The digits
-             * are then mapped to minimal (0), maximal (1) or central (2) ordinates. The outer loop
+             * are then mapped to minimal (0), maximal (1) or central (2) coordinates. The outer loop
              * stops when the counter roll back to "0000". Note that 'targetPt' must keep the value
              * of the last projected point, which must be the envelope center identified by "2222"
              * in the 4-D case.
@@ -523,8 +522,8 @@ public final class Envelopes extends Static {
                             final int offset1 = targetDim * pointIndex;
                             final int offset2 = targetDim * medianIndex;
                             for (int j=0; j<targetDim; j++) {
-                                extremum.resolve(x1, ordinates[offset1 + j], D1.getElement(j,i),
-                                                 x2, ordinates[offset2 + j], D2.getElement(j,i));
+                                extremum.resolve(x1, coordinates[offset1 + j], D1.getElement(j,i),
+                                                 x2, coordinates[offset2 + j], D2.getElement(j,i));
                                 boolean isP2 = false;
                                 do { // Executed exactly twice, one for each extremum point.
                                     final double x = isP2 ? extremum.ex2 : extremum.ex1;
@@ -541,16 +540,16 @@ public final class Envelopes extends Static {
                                              * on the envelope border which is located vis-à-vis the extremum.
                                              */
                                             for (int ib3 = pointIndex, dim = sourceDim; --dim >= 0; ib3 /= 3) {
-                                                final double ordinate;
+                                                final double coordinate;
                                                 if (dim == i) {
-                                                    ordinate = x;                         // Position of the extremum.
+                                                    coordinate = x;                       // Position of the extremum.
                                                 } else switch (ib3 % 3) {
-                                                    case 0:  ordinate = envelope.getMinimum(dim); break;
-                                                    case 1:  ordinate = envelope.getMaximum(dim); break;
-                                                    case 2:  ordinate = envelope.getMedian (dim); break;
-                                                    default: throw new AssertionError(ib3);     // Should never happen
+                                                    case 0:  coordinate = envelope.getMinimum(dim); break;
+                                                    case 1:  coordinate = envelope.getMaximum(dim); break;
+                                                    case 2:  coordinate = envelope.getMedian (dim); break;
+                                                    default: throw new AssertionError(ib3);     // Should never happen.
                                                 }
-                                                sourcePt[dim] = ordinate;
+                                                sourcePt[dim] = coordinate;
                                             }
                                             temporary = transform.transform(sourceView, temporary);
                                             transformed.add(temporary);
@@ -566,7 +565,7 @@ public final class Envelopes extends Static {
         }
         if (targetPt != null) {
             // Copy the coordinate of the center point.
-            System.arraycopy(ordinates, ordinates.length - targetDim, targetPt, 0, targetDim);
+            System.arraycopy(coordinates, coordinates.length - targetDim, targetPt, 0, targetDim);
         }
         return transformed;
     }
@@ -712,8 +711,8 @@ public final class Envelopes extends Static {
          *
          * 3) If step #2 added the point, iterate over all other axes. If an other bounded axis
          *    is found and that axis is of kind "WRAPAROUND", test for inclusion the same point
-         *    than the point tested at step #1, except for the ordinate of the axis found in this
-         *    step. That ordinate is set to the minimal and maximal values of that axis.
+         *    than the point tested at step #1, except for the coordinate of the axis found in
+         *    this step. That coordinate is set to the minimal and maximal values of that axis.
          *
          *    Example: If the above steps found that the point (90°S, 30°W) need to be included,
          *             then this step #3 will also test the points (90°S, 180°W) and (90°S, 180°E).
@@ -847,7 +846,7 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
                      */
                     for (int c=0; c<4; c++) {
                         /*
-                         * Set the ordinate value along the axis having the singularity point
+                         * Set the coordinate value along the axis having the singularity point
                          * (cases c=0 and c=2).  If the envelope did not included that point,
                          * then skip completely this case and the next one, i.e. skip c={0,1}
                          * or skip c={2,3}.
@@ -882,7 +881,7 @@ poles:  for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
             }
         }
         /*
-         * At this point we finished envelope transformation. Verify if some ordinates need to be "wrapped around"
+         * At this point we finished envelope transformation. Verify if some coordinates need to be "wrapped around"
          * as a result of the coordinate operation.  This is usually the longitude axis where the source CRS uses
          * the [-180 … +180]° range and the target CRS uses the [0 … 360]° range, or the converse. We do not wrap
          * around if the source and target axes use the same range (e.g. the longitude stay [-180 … +180]°) in order

@@ -326,7 +326,7 @@ public final class ServicesForMetadata extends ReferencingServices {
 
     /**
      * Sets a vertical extent with the value inferred from the given envelope.
-     * Only the vertical ordinates are extracted; all other ordinates are ignored.
+     * Only the vertical coordinates are extracted; all other coordinates are ignored.
      *
      * @param  envelope  the source envelope.
      * @param  target    the target vertical extent where to store envelope information.
@@ -344,7 +344,7 @@ public final class ServicesForMetadata extends ReferencingServices {
 
     /**
      * Sets a temporal extent with the value inferred from the given envelope.
-     * Only the vertical ordinates are extracted; all other ordinates are ignored.
+     * Only the vertical coordinates are extracted; all other coordinates are ignored.
      *
      * @param  envelope  the source envelope.
      * @param  target    the target temporal extent where to store envelope information.

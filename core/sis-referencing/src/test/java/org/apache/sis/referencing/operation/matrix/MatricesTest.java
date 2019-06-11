@@ -273,7 +273,7 @@ public final strictfp class MatricesTest extends TestCase {
             0,    0,   0,   1
         }), matrix);
         /*
-         * Test adding a dimension with ordinate values set to zero.
+         * Test adding a dimension with coordinate values set to zero.
          */
         expanded.subEnvelope(0, 2).setEnvelope(dstEnvelope);
         matrix = Matrices.createTransform(srcEnvelope, expanded);

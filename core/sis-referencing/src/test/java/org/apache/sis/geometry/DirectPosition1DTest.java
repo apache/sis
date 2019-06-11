@@ -83,8 +83,8 @@ public final strictfp class DirectPosition1DTest extends TestCase {
     public void testClone() {
         final DirectPosition1D p1 = new DirectPosition1D(20);
         final DirectPosition1D p2 = p1.clone();
-        assertEquals("Expected the same CRS and ordinates.", p1, p2);
-        assertEquals("Expected the same ordinates.", 20.0, p2.ordinate, 0.0);
+        assertEquals("Expected the same CRS and coordinates.", p1, p2);
+        assertEquals("Expected the same coordinates.", 20.0, p2.coordinate, 0.0);
         validate(p2);
     }
 

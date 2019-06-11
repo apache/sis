@@ -430,7 +430,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
-     * Prepends a normalization step converting input ordinates in the two first dimensions from degrees to radians.
+     * Prepends a normalization step converting input coordinates in the two first dimensions from degrees to radians.
      * The normalization can optionally subtract the given λ₀ value (in degrees) from the longitude.
      *
      * <p>Invoking this method is equivalent to {@linkplain java.awt.geom.AffineTransform#concatenate concatenating}
@@ -463,7 +463,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
-     * Appends a denormalization step after the non-linear kernel, which will convert input ordinates
+     * Appends a denormalization step after the non-linear kernel, which will convert input coordinates
      * in the two first dimensions from radians to degrees. After this conversion, the denormalization
      * can optionally add the given λ₀ value (in degrees) to the longitude.
      *

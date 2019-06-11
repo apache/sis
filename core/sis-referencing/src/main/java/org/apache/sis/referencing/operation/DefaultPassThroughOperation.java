@@ -336,23 +336,23 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
     /**
      * Invoked by JAXB at unmarshalling time for setting the modified coordinates.
      */
-    private void setIndices(final int[] ordinates) {
+    private void setIndices(final int[] coordinates) {
         String missing = "sourceCRS";
         final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
         if (sourceCRS != null) {
             missing = "modifiedCoordinate";
-            if (ordinates != null && ordinates.length != 0) {
+            if (coordinates != null && coordinates.length != 0) {
                 missing = "coordOperation";
                 if (operation != null) {
-                    for (int i=1; i<ordinates.length; i++) {
-                        final int previous = ordinates[i-1];
-                        if (previous < 1 || ordinates[i] != previous + 1) {
+                    for (int i=1; i<coordinates.length; i++) {
+                        final int previous = coordinates[i-1];
+                        if (previous < 1 || coordinates[i] != previous + 1) {
                             throw new IllegalArgumentException(Errors.format(
-                                    Errors.Keys.CanNotAssign_2, missing, Arrays.toString(ordinates)));
+                                    Errors.Keys.CanNotAssign_2, missing, Arrays.toString(coordinates)));
                         }
                     }
-                    transform = MathTransforms.passThrough(ordinates[0] - 1, operation.getMathTransform(),
-                            ReferencingUtilities.getDimension(sourceCRS) - ordinates[ordinates.length - 1]);
+                    transform = MathTransforms.passThrough(coordinates[0] - 1, operation.getMathTransform(),
+                            ReferencingUtilities.getDimension(sourceCRS) - coordinates[coordinates.length - 1]);
                     return;
                 }
             }

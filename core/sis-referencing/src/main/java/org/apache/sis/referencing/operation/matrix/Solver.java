@@ -153,7 +153,7 @@ final class Solver implements Matrix {                          // Not Cloneable
      * Implementation of {@code solve} and {@code inverse} methods, with filtering of NaN values.
      * This method searches for NaN values before to attempt solving or inverting the matrix.
      * If some NaN values are found but the matrix is written in such a way that each NaN value
-     * is used for exactly one ordinate value (i.e. a matrix row is used for a one-dimensional
+     * is used for exactly one coordinate value (i.e. a matrix row is used for a one-dimensional
      * conversion which is independent of all other dimensions), then we will edit the matrix in
      * such a way that this NaN value does not prevent the inverse matrix to be computed.
      *

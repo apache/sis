@@ -95,8 +95,8 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
         /*
          * Verify consistency with random points.
          */
-        verifyInDomain(new double[] {-20, 20},          // Minimal input ordinate values
-                       new double[] {+20, 50},          // Maximal input ordinate values
+        verifyInDomain(new double[] {-20, 20},          // Minimal input coordinate values
+                       new double[] {+20, 50},          // Maximal input coordinate values
                        new int[]    {  5,  5},          // Number of points to test
                        TestUtilities.createRandomNumberGenerator());
     }
@@ -148,8 +148,8 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
         /*
          * Verify consistency with random points.
          */
-        verifyInDomain(new double[] {-20, 20},          // Minimal input ordinate values
-                       new double[] {+20, 50},          // Maximal input ordinate values
+        verifyInDomain(new double[] {-20, 20},          // Minimal input coordinate values
+                       new double[] {+20, 50},          // Maximal input coordinate values
                        new int[]    {  5,  5},          // Number of points to test
                        TestUtilities.createRandomNumberGenerator());
     }
@@ -249,8 +249,8 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
         toleranceModifier = ToleranceModifier.PROJECTION;
         final double delta = toRadians(100.0 / 60) / 1852;      // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
-        verifyInDomain(new double[] {-40, 10},                  // Minimal input ordinate values
-                       new double[] {+40, 60},                  // Maximal input ordinate values
+        verifyInDomain(new double[] {-40, 10},                  // Minimal input coordinate values
+                       new double[] {+40, 60},                  // Maximal input coordinate values
                        new int[]    {  5,  5},                  // Number of points to test
                        TestUtilities.createRandomNumberGenerator());
     }
