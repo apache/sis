@@ -44,7 +44,6 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DirectPositionView;
-import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -52,6 +51,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
+import org.apache.sis.math.MathFunctions;
 
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 
@@ -422,7 +422,7 @@ public final class Envelopes extends Static {
         int             pointIndex            = 0;
         boolean         isDerivativeSupported = true;
         GeneralEnvelope transformed           = null;
-        final Matrix[]  derivatives           = new Matrix[Formulas.pow3(sourceDim)];
+        final Matrix[]  derivatives           = new Matrix[Math.toIntExact(MathFunctions.pow(3, sourceDim))];
         final double[]  coordinates           = new double[derivatives.length * targetDim];
         final double[]  sourcePt              = new double[sourceDim];
         for (int i=sourceDim; --i>=0;) {
