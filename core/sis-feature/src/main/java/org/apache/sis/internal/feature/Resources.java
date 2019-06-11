@@ -300,9 +300,9 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnexpectedNumberOfComponents_4 = 17;
 
         /**
-         * The “{0}” feature at {1} has a {3} ordinate values, while we expected a multiple of {2}.
+         * The “{0}” feature at {1} has a {3} coordinate values, while we expected a multiple of {2}.
          */
-        public static final short UnexpectedNumberOfOrdinates_4 = 22;
+        public static final short UnexpectedNumberOfCoordinates_4 = 22;
 
         /**
          * Raster data type ‘{0}’ is unknown or unsupported.

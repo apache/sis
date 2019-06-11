@@ -1799,13 +1799,13 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/identificationInfo/extent/geographicElement}</li>
      * </ul>
      *
-     * @param  ordinates  the geographic coordinates, or {@code null} for no-operation.
-     * @param  index      index of the first value to use in the given array.
+     * @param  coordinates  the geographic coordinates, or {@code null} for no-operation.
+     * @param  index        index of the first value to use in the given array.
      */
-    public final void addExtent(final double[] ordinates, int index) {
-        if (ordinates != null) {
+    public final void addExtent(final double[] coordinates, int index) {
+        if (coordinates != null) {
             final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(
-                        ordinates[index], ordinates[++index], ordinates[++index], ordinates[++index]);
+                        coordinates[index], coordinates[++index], coordinates[++index], coordinates[++index]);
             if (!bbox.isEmpty()) {
                 addIfNotPresent(extent().getGeographicElements(), bbox);
             }

@@ -428,7 +428,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
             throws IllegalArgumentException
     {
         if (southBoundLatitude > northBoundLatitude) {                          // Accept NaN.
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalOrdinateRange_3,
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCoordinateRange_3,
                     new Latitude(southBoundLatitude), new Latitude(northBoundLatitude),
                     Vocabulary.format(Vocabulary.Keys.Latitude)));
         }
@@ -552,7 +552,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     /*
      * IMPLEMENTATION NOTE: For the handling of anti-meridian spanning in union and intersection operations,
      * this class applies a different strategy than GeneralEnvelope. Instead than trying to work directly with
-     * the ordinate values without adding or removing offset (which may cause rounding errors), we apply a ±360°
+     * the coordinate values without adding or removing offset (which may cause rounding errors), we apply a ±360°
      * shift on longitude values. This simpler strategy is okay here because the range is fixed in the code (not
      * an arbitrarily high range), and GeographicBoundingBox are approximations by definition anyway.
      */

@@ -110,7 +110,7 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
 
     /**
      * Creates a transform from the specified parameters.
-     * This {@code InterpolatedMolodenskyTransform} class expects ordinate values in the following order and units:
+     * This {@code InterpolatedMolodenskyTransform} class expects coordinate values in the following order and units:
      * <ol>
      *   <li>longitudes in <strong>radians</strong> relative to the prime meridian (usually Greenwich),</li>
      *   <li>latitudes in <strong>radians</strong>,</li>

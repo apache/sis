@@ -91,9 +91,9 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
     public void testClone() {
         final GeneralDirectPosition p1 = new GeneralDirectPosition(10, 20, 30);
         final GeneralDirectPosition p2 = p1.clone();
-        assertEquals ("Expected the same CRS and ordinates.", p1, p2);
-        assertTrue   ("Expected the same ordinates.", Arrays.equals(p1.ordinates, p2.ordinates));
-        assertNotSame("the ordinates array should have been cloned.", p1.ordinates, p2.ordinates);
+        assertEquals ("Expected the same CRS and coordinates.", p1, p2);
+        assertTrue   ("Expected the same coordinates.", Arrays.equals(p1.coordinates, p2.coordinates));
+        assertNotSame("The coordinates array should have been cloned.", p1.coordinates, p2.coordinates);
         validate(p2);
     }
 

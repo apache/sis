@@ -23,7 +23,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * A sequence of {@code DirectPosition}s which is a view over arrays of ordinate values.
+ * A sequence of {@code DirectPosition}s which is a view over arrays of coordinate values.
  * Each dimension is stored in a separated array. For example this class can view three
  * arrays (x[], y[], and z[]) as a sequence of three-dimensional {@code DirectPosition}.
  *
@@ -40,12 +40,12 @@ import org.apache.sis.util.resources.Errors;
  */
 final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPosition>, Iterator<DirectPosition> {
     /**
-     * The arrays of ordinate values, for example (x[], y[], z[]).
+     * The arrays of coordinate values, for example (x[], y[], z[]).
      */
-    private final Vector[] ordinates;
+    private final Vector[] coordinates;
 
     /**
-     * Length of all ordinate values minus one.
+     * Length of all coordinate values minus one.
      */
     private final int last;
 
@@ -55,13 +55,13 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
     private int index;
 
     /**
-     * Wraps the given array of ordinate values.
+     * Wraps the given array of coordinate values.
      */
-    CompoundDirectPositions(final Vector... ordinates) {
-        this.ordinates = ordinates;
-        final int length = ordinates[0].size();
-        for (int i=1; i<ordinates.length; i++) {
-            if (ordinates[i].size() != length) {
+    CompoundDirectPositions(final Vector... coordinates) {
+        this.coordinates = coordinates;
+        final int length = coordinates[0].size();
+        for (int i=1; i<coordinates.length; i++) {
+            if (coordinates[i].size() != length) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
             }
         }
@@ -127,15 +127,15 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
      */
     @Override
     public int getDimension() {
-        return ordinates.length;
+        return coordinates.length;
     }
 
     /**
-     * Return the ordinate value at the given dimension.
+     * Return the coordinate value at the given dimension.
      */
     @Override
     public double getOrdinate(final int dimension) {
-        return ordinates[dimension].doubleValue(index);
+        return coordinates[dimension].doubleValue(index);
     }
 
     /**

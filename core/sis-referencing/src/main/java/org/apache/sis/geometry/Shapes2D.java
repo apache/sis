@@ -203,8 +203,8 @@ public final class Shapes2D extends Static {
         double ymax = Double.NEGATIVE_INFINITY;
         /*
          * Notation (as if we were applying a map projection, but this is not necessarily the case):
-         *   - (λ,φ) are ordinate values before projection.
-         *   - (x,y) are ordinate values after projection.
+         *   - (λ,φ) are coordinate values before projection.
+         *   - (x,y) are coordinate values after projection.
          *   - D[00|01|10|11] are the ∂x/∂λ, ∂x/∂φ, ∂y/∂λ and ∂y/∂φ derivatives respectively.
          *   - Variables with indice 0 are for the very first point in iteration order.
          *   - Variables with indice 1 are for the values of the previous iteration.
@@ -280,8 +280,8 @@ public final class Shapes2D extends Static {
              * to use the information provided by derivatives at those points, if available.
              * For the following block, notation is:
              *
-             *   - s  are ordinate values in the source space (λ or φ)
-             *   - t  are ordinate values in the target space (x or y)
+             *   - s  are coordinate values in the source space (λ or φ)
+             *   - t  are coordinate values in the target space (x or y)
              *
              * They are not necessarily in the same dimension. For example would could have
              * s=λ while t=y. This is typically the case when inspecting the top or bottom
@@ -292,7 +292,7 @@ public final class Shapes2D extends Static {
              */
             if (D1 != null && D2 != null) {
                 final int srcDim;
-                final double s1, s2;                // Ordinate values in source space (before projection)
+                final double s1, s2;                // Coordinate values in source space (before projection)
                 switch (i) {
                     case 1: case 2: case 5: case 6: {assert φ2==φ1; srcDim=0; s1=λ1; s2=λ2; break;}     // Horizontal segment
                     case 3: case 4: case 7: case 8: {assert λ2==λ1; srcDim=1; s1=φ1; s2=φ2; break;}     // Vertical segment
@@ -309,7 +309,7 @@ public final class Shapes2D extends Static {
                      * At this point we found the extremum of the projected line segment
                      * using a cubic curve t = A + Bs + Cs² + Ds³ approximation.  Before
                      * to add those extremum into the projected bounding box, we need to
-                     * ensure that the source ordinate is inside the the original
+                     * ensure that the source coordinate is inside the the original
                      * (unprojected) bounding box.
                      */
                     boolean isP2 = false;
@@ -574,8 +574,8 @@ public final class Shapes2D extends Static {
             }
         }
         /*
-         * At this point we finished envelope transformation. Verify if some ordinates need to be "wrapped around"
-         * as a result of the coordinate operation.   This is usually the longitude axis where the source CRS uses
+         * At this point we finished envelope transformation. Verify if some coordinates need to be "wrapped around"
+         * as a result of the coordinate operation. This is usually the longitude axis where the source CRS uses
          * the [-180 … +180]° range and the target CRS uses the [0 … 360]° range, or the converse. In such case we
          * set the rectangle to the full range (we do not use the mechanism documented in Envelope2D) because most
          * Rectangle2D implementations do not support spanning the anti-meridian. This results in larger rectangle

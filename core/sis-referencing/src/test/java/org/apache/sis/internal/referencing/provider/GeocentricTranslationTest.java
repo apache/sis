@@ -259,7 +259,7 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
     public void testGeographicDomain() throws FactoryException, TransformException {
         create(new GeocentricTranslation3D());
         assertFalse(transform instanceof LinearTransform);
-        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximately 100 metres
         derivativeDeltas = new double[] {delta, delta, 100};    // (Δλ, Δφ, Δh)
         zTolerance = Formulas.LINEAR_TOLERANCE / 2;             // Half the precision of h value given by EPSG
         zDimension = new int[] {2};                             // Dimension of h where to apply zTolerance
@@ -286,7 +286,7 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
                 -FranceGeocentricInterpolation.TY,
                 -FranceGeocentricInterpolation.TZ);
 
-        final double delta = toRadians(100.0 / 60) / 1852;                  // Approximatively 100 metres
+        final double delta = toRadians(100.0 / 60) / 1852;                  // Approximately 100 metres
         derivativeDeltas = new double[] {delta, delta, 100};                // (Δλ, Δφ, Δh)
         tolerance  = FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE;
         zTolerance = 0.005;                       // Half the precision of the target[2] value set below.

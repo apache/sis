@@ -691,7 +691,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
 
     /**
      * Tests the conversion from a two-dimensional geographic CRS to a three-dimensional geographic CRS.
-     * Ordinate values of the vertical dimension should be set to zero.
+     * Coordinate values of the vertical dimension should be set to zero.
      *
      * @throws FactoryException if the operation can not be created.
      * @throws TransformException if an error occurred while converting the test points.

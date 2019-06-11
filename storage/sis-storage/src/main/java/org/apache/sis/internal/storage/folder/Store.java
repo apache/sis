@@ -32,7 +32,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryIteratorException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.OpenOption;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
@@ -54,7 +53,6 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.StoreResource;
-import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
@@ -312,7 +310,6 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
                         connector.setOption(OptionKey.LOCALE,   locale);
                         connector.setOption(OptionKey.TIMEZONE, timezone);
                         connector.setOption(OptionKey.ENCODING, encoding);
-                        connector.setOption(OptionKey.OPEN_OPTIONS, new OpenOption[] {ChannelFactory.REQUIRE_REGULAR_FILE});
                         try {
                             if (componentProvider == null) {
                                 next = DataStores.open(connector);          // May throw UnsupportedStorageException.

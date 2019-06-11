@@ -35,7 +35,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * A one-dimensional position within some coordinate reference system.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.0
  *
  * @see DirectPosition2D
  * @see GeneralDirectPosition
@@ -48,7 +48,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -9196647508968517838L;
+    private static final long serialVersionUID = -8318842301025970006L;
 
     /**
      * The coordinate reference system for this position;
@@ -56,9 +56,9 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     private CoordinateReferenceSystem crs;
 
     /**
-     * The ordinate value.
+     * The coordinate value.
      */
-    public double ordinate;
+    public double coordinate;
 
     /**
      * Constructs a position initialized to (0) with a {@code null}
@@ -78,12 +78,12 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     }
 
     /**
-     * Constructs a 1D position from the specified ordinate.
+     * Constructs a 1D position from the specified coordinate.
      *
-     * @param ordinate  the ordinate value.
+     * @param coordinate  the coordinate value.
      */
-    public DirectPosition1D(final double ordinate) {
-        this.ordinate = ordinate;
+    public DirectPosition1D(final double coordinate) {
+        this.coordinate = coordinate;
     }
 
     /**
@@ -103,13 +103,13 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * @see CoordinateFormat
      */
     public DirectPosition1D(final CharSequence wkt) throws IllegalArgumentException {
-        final double[] ordinates = parse(wkt);
-        if (ordinates == null) {
+        final double[] coordinates = parse(wkt);
+        if (coordinates == null) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.UnparsableStringForClass_2, "POINT", wkt));
         }
-        ensureDimensionMatches("wkt", 1, ordinates);
-        ordinate = ordinates[0];
+        ensureDimensionMatches("wkt", 1, coordinates);
+        coordinate = coordinates[0];
     }
 
     /**
@@ -149,45 +149,45 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
      *
      * <div class="note"><b>API note:</b>
-     * This method is final for ensuring consistency with the {@link #ordinate} field, which is public.</div>
+     * This method is final for ensuring consistency with the {@link #coordinate} field, which is public.</div>
      *
      * @return the coordinates.
      */
     @Override
     public final double[] getCoordinate() {
-        return new double[] {ordinate};
+        return new double[] {coordinate};
     }
 
     /**
-     * Returns the ordinate at the specified dimension.
+     * Returns the coordinate at the specified dimension.
      *
      * <div class="note"><b>API note:</b>
-     * This method is final for ensuring consistency with the {@link #ordinate} field, which is public.</div>
+     * This method is final for ensuring consistency with the {@link #coordinate} field, which is public.</div>
      *
      * @param  dimension  the dimension, which must be 0.
-     * @return the {@linkplain #ordinate}.
+     * @return the {@link #coordinate}.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      */
     @Override
     public final double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
         if (dimension == 0) {
-            return ordinate;
+            return coordinate;
         } else {
             throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, dimension));
         }
     }
 
     /**
-     * Sets the ordinate value along the specified dimension.
+     * Sets the coordinate value along the specified dimension.
      *
      * @param  dimension  the dimension, which must be 0.
-     * @param  value      the ordinate value.
+     * @param  value      the coordinate value.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      */
     @Override
     public void setOrdinate(int dimension, double value) throws IndexOutOfBoundsException {
         if (dimension == 0) {
-            ordinate = value;
+            coordinate = value;
         } else {
             throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, dimension));
         }
@@ -205,7 +205,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     public void setLocation(final DirectPosition position) throws MismatchedDimensionException {
         ensureDimensionMatches("position", 1, position);
         setCoordinateReferenceSystem(position.getCoordinateReferenceSystem());
-        ordinate = position.getOrdinate(0);
+        coordinate = position.getOrdinate(0);
     }
 
     /**
@@ -213,7 +213,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * The output is like below:
      *
      * {@preformat wkt
-     *   POINT(ordinate)
+     *   POINT(coordinate)
      * }
      *
      * The string returned by this method can be {@linkplain #DirectPosition1D(CharSequence) parsed}
@@ -221,7 +221,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      */
     @Override
     public String toString() {
-        return toString(this, ordinate == (float) ordinate);
+        return toString(this, coordinate == (float) coordinate);
     }
 
     /**
@@ -244,7 +244,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      */
     @Override
     public int hashCode() {
-        final int code = 31 + Double.hashCode(ordinate) + Objects.hashCode(crs);
+        final int code = 31 + Double.hashCode(coordinate) + Objects.hashCode(crs);
         assert code == super.hashCode();
         return code;
     }

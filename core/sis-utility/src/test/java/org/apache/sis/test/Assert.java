@@ -69,23 +69,23 @@ public strictfp class Assert extends org.opengis.test.Assert {
         assertFalse("deepEquals(STRICT)",          Utilities.deepEquals(o1, o2, ComparisonMode.STRICT));
         assertFalse("deepEquals(BY_CONTRACT)",     Utilities.deepEquals(o1, o2, ComparisonMode.BY_CONTRACT));
         assertFalse("deepEquals(IGNORE_METADATA)", Utilities.deepEquals(o1, o2, ComparisonMode.IGNORE_METADATA));
-        assertFalse("deepEquals(APPROXIMATIVE)",   Utilities.deepEquals(o1, o2, ComparisonMode.APPROXIMATIVE));
+        assertFalse("deepEquals(APPROXIMATE)",     Utilities.deepEquals(o1, o2, ComparisonMode.APPROXIMATE));
     }
 
     /**
      * Asserts that the two given objects are approximately equal, while slightly different.
      * More specifically, this method asserts that the given objects are equal according the
-     * {@link ComparisonMode#APPROXIMATIVE} criterion, but not equal according the
+     * {@link ComparisonMode#APPROXIMATE} criterion, but not equal according the
      * {@link ComparisonMode#IGNORE_METADATA} criterion.
      *
      * @param  expected  the expected object.
      * @param  actual    the actual object.
      */
     public static void assertAlmostEquals(final Object expected, final Object actual) {
-        assertFalse("Shall not be strictly equals",          Utilities.deepEquals(expected, actual, ComparisonMode.STRICT));
-        assertFalse("Shall be slightly different",           Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA));
-        assertTrue ("Shall be approximately equals",         Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
-        assertTrue ("DEBUG inconsistent with APPROXIMATIVE", Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATIVE));
+        assertFalse("Shall not be strictly equals",        Utilities.deepEquals(expected, actual, ComparisonMode.STRICT));
+        assertFalse("Shall be slightly different",         Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA));
+        assertTrue ("Shall be approximately equals",       Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
+        assertTrue ("DEBUG inconsistent with APPROXIMATE", Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATE));
     }
 
     /**
@@ -96,9 +96,9 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * @param  actual    the actual object.
      */
     public static void assertEqualsIgnoreMetadata(final Object expected, final Object actual) {
-        assertTrue("Shall be approximately equals",         Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
-        assertTrue("DEBUG inconsistent with APPROXIMATIVE", Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATIVE));
-        assertTrue("Shall be equal, ignoring metadata",     Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA));
+        assertTrue("Shall be approximately equals",       Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
+        assertTrue("DEBUG inconsistent with APPROXIMATE", Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATE));
+        assertTrue("Shall be equal, ignoring metadata",   Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA));
     }
 
     /**

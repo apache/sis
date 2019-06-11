@@ -142,7 +142,7 @@ final class LandsatReader extends MetadataBuilder {
     static final Pattern CREDIT = Pattern.compile("\\bcourtesy\\h+of\\h+(the)?\\b\\s*", Pattern.CASE_INSENSITIVE);
 
     /**
-     * Number of spatial dimensions. This is the number of ordinate values to be stored
+     * Number of spatial dimensions. This is the number of coordinate values to be stored
      * in the {@link #gridSizes} and {@link #corners} arrays for each tuple.
      */
     static final int DIM = 2;
@@ -192,7 +192,7 @@ final class LandsatReader extends MetadataBuilder {
 
     /**
      * Index of projected and geographic coordinates in the {@link #corners} array.
-     * Each kind of coordinates are stored as 4 corners of {@value #DIM} ordinate values.
+     * Each kind of coordinates are stored as 4 corners of {@value #DIM} coordinate values.
      */
     private static final int PROJECTED  = 0*DIM,
                              GEOGRAPHIC = 4*DIM;
@@ -390,7 +390,7 @@ final class LandsatReader extends MetadataBuilder {
     /**
      * Parses the given value and stores it at the given index in the {@link #corners} array.
      * The given index must be one of the {@link #PROJECTED} or {@link #GEOGRAPHIC} constants
-     * plus the ordinate index.
+     * plus the coordinate index.
      */
     private void parseCorner(final int index, final String value) throws NumberFormatException {
         corners[index] = Double.parseDouble(value);

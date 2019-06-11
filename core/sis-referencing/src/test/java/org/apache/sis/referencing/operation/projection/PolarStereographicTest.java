@@ -68,7 +68,7 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
     @Test
     public void testSphericalCaseSouth() throws FactoryException, TransformException {
         createNormalizedProjection(new PolarStereographicSouth());
-        final double delta = toRadians(100.0 / 60) / 1852;          // Approximatively 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;          // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_RADIANS_SOUTH, 56763886);
     }
@@ -84,7 +84,7 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
     @DependsOnMethod("testSphericalCaseSouth")
     public void testSphericalCaseNorth() throws FactoryException, TransformException {
         createNormalizedProjection(new PolarStereographicNorth());
-        final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;                // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_RADIANS_NORTH, 56763886);
     }

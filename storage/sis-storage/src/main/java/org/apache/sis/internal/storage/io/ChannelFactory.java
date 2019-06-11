@@ -80,17 +80,6 @@ public abstract class ChannelFactory {
             StandardOpenOption.APPEND, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.DELETE_ON_CLOSE);
 
     /**
-     * A customized option for instructing {@link #prepare(Object, String, boolean, OpenOption...)}
-     * to not try to open directories or non-existent files. By default, {@link Path} to non-regular
-     * files will cause an {@link IOException} to be thrown. But if this option is provided, then we
-     * will rather behave as if {@link Path} was an unknown type. This will cause store providers to
-     * not try to open that file, which gives the caller a chance to fallback on its own process.
-     */
-    public static final OpenOption REQUIRE_REGULAR_FILE = new OpenOption() {
-        @Override public String toString() {return "REQUIRE_REGULAR_FILE";}
-    };
-
-    /**
      * For subclass constructors.
      */
     ChannelFactory() {
@@ -98,7 +87,7 @@ public abstract class ChannelFactory {
 
     /**
      * Returns a byte channel factory from the given input or output,
-     * or {@code null} if the given input/output is of unknown type.
+     * or {@code null} if the given input/output is unsupported.
      * More specifically:
      *
      * <ul>
@@ -109,11 +98,12 @@ public abstract class ChannelFactory {
      *       and the {@code allowWriteOnly} argument is {@code true},
      *       then the factory will return that output directly or indirectly as a wrapper.</li>
      *   <li>If the given storage if a {@link Path}, {@link File}, {@link URL}, {@link URI}
-     *       or {@link CharSequence}, then the factory will open new channels on demand.</li>
+     *       or {@link CharSequence} and the file is not a directory, then the factory will
+     *       open new channels on demand.</li>
      * </ul>
      *
      * The given options are used for opening the channel on a <em>best effort basis</em>.
-     * In particular, even if the caller provided the {@code WRITE} option, he still needs
+     * In particular, even if the caller provided the {@code WRITE} option, (s)he still needs
      * to verify if the returned channel implements {@link java.nio.channels.WritableByteChannel}.
      * This is because the channel may be opened by {@link URL#openStream()}, in which case the
      * options are ignored.
@@ -123,7 +113,7 @@ public abstract class ChannelFactory {
      * {@code APPEND}, {@code TRUNCATE_EXISTING}, {@code DELETE_ON_CLOSE}. We reject those options
      * because this method is primarily designed for readable channels, with optional data edition.
      * Since the write option is not guaranteed to be honored, we have to reject the options that
-     * would alter significatively the channel behavior depending on whether we have been able to
+     * would alter significantly the channel behavior depending on whether we have been able to
      * honor the options or not.</p>
      *
      * @param  storage         the stream or the file to open, or {@code null}.
@@ -249,9 +239,18 @@ public abstract class ChannelFactory {
                 }
             };
         }
+        /*
+         * Handle path to directory as an unsupported input. Attempts to read bytes from that channel would cause an
+         * IOException to be thrown. On Java 10, that IOException does not occur at channel openning time but rather
+         * at reading time. See https://bugs.openjdk.java.net/browse/JDK-8080629 for more information.
+         *
+         * If the file does not exist, we let NoSuchFileException to be thrown by the code below because non-existant
+         * file is probably an error. This is not the same situation than a directory, which can not be opened by this
+         * class but may be opened by some specialized DataStore implementations.
+         */
         if (storage instanceof Path) {
             final Path path = (Path) storage;
-            if (!optionSet.remove(REQUIRE_REGULAR_FILE) || Files.isRegularFile(path)) {
+            if (!Files.isDirectory(path)) {
                 return new ChannelFactory() {
                     @Override public ReadableByteChannel readable(String filename, WarningListeners<DataStore> listeners) throws IOException {
                         return Files.newByteChannel(path, optionSet);

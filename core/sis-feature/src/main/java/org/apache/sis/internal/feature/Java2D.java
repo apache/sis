@@ -111,13 +111,13 @@ final class Java2D extends Geometries<Shape> {
     }
 
     /**
-     * Creates a path from the given ordinate values.
-     * Each {@link Double#NaN} ordinate value starts a new path.
+     * Creates a path from the given coordinate values.
+     * Each {@link Double#NaN} coordinate value starts a new path.
      * The geometry may be backed by {@code float} or {@code double} primitive type,
      * depending on the type used by the given vectors.
      */
     @Override
-    public Shape createPolyline(final int dimension, final Vector... ordinates) {
+    public Shape createPolyline(final int dimension, final Vector... coordinates) {
         if (dimension != 2) {
             throw unsupported(dimension);
         }
@@ -127,7 +127,7 @@ final class Java2D extends Geometries<Shape> {
          */
         int length = 0;
         boolean isFloat = true;
-        for (final Vector v : ordinates) {
+        for (final Vector v : coordinates) {
             if (v != null) {
                 length = Math.addExact(length, v.size());
                 if (isFloat) {
@@ -139,8 +139,8 @@ final class Java2D extends Geometries<Shape> {
          * Note: Point2D is not an instance of Shape, so we can not make a special case for it.
          */
         length /= 2;
-        if (length == 2 && ordinates.length == 1) {
-            final Vector v = ordinates[0];
+        if (length == 2 && coordinates.length == 1) {
+            final Vector v = coordinates[0];
             final double x1, y1, x2, y2;
             if (!Double.isNaN(x1 = v.doubleValue(0)) &&
                 !Double.isNaN(y1 = v.doubleValue(1)) &&
@@ -155,7 +155,7 @@ final class Java2D extends Geometries<Shape> {
         final Path2D path = isFloat ? new Path2D.Float (Path2D.WIND_NON_ZERO, length)
                                     : new Path2D.Double(Path2D.WIND_NON_ZERO, length);
         boolean lineTo = false;
-        for (final Vector v : ordinates) {
+        for (final Vector v : coordinates) {
             final int size = v.size();
             for (int i=0; i<size;) {
                 final double x = v.doubleValue(i++);

@@ -50,7 +50,7 @@ import static org.junit.Assert.*;
 public final strictfp class CoordinateFormatTest extends TestCase {
     /**
      * Tests formatting a coordinate in unknown CRS.
-     * The ordinate values are expected to be formatted as ordinary numbers.
+     * The coordinate values are expected to be formatted as ordinary numbers.
      */
     @Test
     public void testFormatUnknownCRS() {
@@ -73,7 +73,7 @@ public final strictfp class CoordinateFormatTest extends TestCase {
 
     /**
      * Tests parsing a coordinate in unknown CRS.
-     * The ordinate values are formatted as ordinary numbers.
+     * The coordinate values are formatted as ordinary numbers.
      *
      * @throws ParseException if the parsing failed.
      */

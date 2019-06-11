@@ -36,7 +36,7 @@ package org.apache.sis.util;
  *       <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} – Only the attributes defined
  *           in the GeoAPI interfaces are compared. The above-cited identifiers and {@code xlinks}
  *           attributes are ignored.</li>
- *       <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE} – The same attributes than the above
+ *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes than the above
  *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)
  *           difference is tolerated in floating point numbers.</li>
  *     </ol>
@@ -57,7 +57,7 @@ package org.apache.sis.util;
  *           are ignored because they have no incidence on the coordinate values to be computed by
  *           {@linkplain org.opengis.referencing.operation.ConcatenatedOperation coordinate operations}.
  *           All other attributes that are relevant to coordinate calculations, must be equal.</li>
- *       <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE} – The same attributes than the above
+ *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes than the above
  *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)
  *           difference is tolerated in floating point numbers.</li>
  *     </ol>
@@ -75,7 +75,7 @@ package org.apache.sis.util;
  *           For example a <cite>"Mercator (2SP)"</cite> projection on a sphere with a <cite>standard parallel</cite>
  *           value of 60° produces the same results than a <cite>"Mercator (1SP)"</cite> projection on the same sphere
  *           with a <cite>scale factor</cite> value of 0.5.</li>
- *       <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE} – The same attributes than the above
+ *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes than the above
  *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)
  *           difference is tolerated in floating point numbers.</li>
  *     </ol>
@@ -90,7 +90,7 @@ package org.apache.sis.util;
  *           same implementation class (any {@link org.opengis.referencing.operation.Matrix} is okay).</li>
  *       <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} – Synonymous to the
  *           {@code BY_CONTRACT} mode, because matrixes don't have metadata.</li>
- *       <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE} – The same attributes than the above
+ *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes than the above
  *           {@code BY_CONTRACT} mode are compared, but a slight (implementation dependant)
  *           difference is tolerated in floating point numbers.</li>
  *     </ol>
@@ -115,7 +115,7 @@ public interface LenientComparable {
      *       <td>Only the attributes published in the interface contract need to be compared.</td></tr>
      *   <tr><td>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}:</td>
      *       <td>Only the attributes relevant to the object functionality are compared.</td></tr>
-     *   <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</td>
+     *   <tr><td>{@link ComparisonMode#APPROXIMATE APPROXIMATE}:</td>
      *       <td>Only the attributes relevant to the object functionality are compared,
      *           with some tolerance threshold on numerical values.</td></tr>
      *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}:</td>
@@ -134,7 +134,7 @@ public interface LenientComparable {
      *       instance.</li>
      *   <li>{@code x.equals(y,m)} and {@code y.equals(z,m)} does <strong>not</strong> implies
      *       {@code x.equals(z,m)}. In particular, the use of a comparison threshold for the
-     *       {@code APPROXIMATIVE} mode is incompatible with the transitivity contract.</li>
+     *       {@code APPROXIMATE} mode is incompatible with the transitivity contract.</li>
      * </ul>
      *
      * @param  other  the object to compare to {@code this}.

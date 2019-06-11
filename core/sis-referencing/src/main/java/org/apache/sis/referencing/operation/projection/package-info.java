@@ -89,7 +89,7 @@
  * use grads instead of decimal degrees, and often the base geographic coordinate reference system is
  * (<var>latitude</var>, <var>longitude</var>) instead of (<var>longitude</var>, <var>latitude</var>).
  * This means that the cartographic projected transform is often used as a single step in a series of transforms,
- * where the other steps change units and swap ordinates.
+ * where the other steps change units and swap coordinates.
  * </blockquote>
  *
  * The Apache SIS implementation extends this rule to axis directions as well, i.e. (<var>x</var>, <var>y</var>) coordinates

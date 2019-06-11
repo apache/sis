@@ -284,7 +284,7 @@ public final strictfp class NilReasonTest extends TestCase {
         assertFalse(c.equals(e2, ComparisonMode.STRICT));
         assertFalse(c.equals(e2, ComparisonMode.BY_CONTRACT));
         assertTrue (c.equals(e2, ComparisonMode.IGNORE_METADATA));
-        assertTrue (c.equals(e2, ComparisonMode.APPROXIMATIVE));
+        assertTrue (c.equals(e2, ComparisonMode.APPROXIMATE));
         assertTrue (c.equals(e2, ComparisonMode.DEBUG));
 
         // Following object should alway be different because it does not implement the same interface.
@@ -292,7 +292,7 @@ public final strictfp class NilReasonTest extends TestCase {
         assertFalse(c.equals(r1, ComparisonMode.STRICT));
         assertFalse(c.equals(r1, ComparisonMode.BY_CONTRACT));
         assertFalse(c.equals(r1, ComparisonMode.IGNORE_METADATA));
-        assertFalse(c.equals(r1, ComparisonMode.APPROXIMATIVE));
+        assertFalse(c.equals(r1, ComparisonMode.APPROXIMATE));
         assertFalse(c.equals(r1, ComparisonMode.DEBUG));
     }
 }

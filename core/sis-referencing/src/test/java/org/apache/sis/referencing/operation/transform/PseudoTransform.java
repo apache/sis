@@ -52,7 +52,7 @@ strictfp class PseudoTransform extends AbstractMathTransform {
     protected final int sourceDimension, targetDimension;
 
     /**
-     * Temporary buffer for copying the ordinate of a single source points.
+     * Temporary buffer for copying the coordinates of a single source point.
      * Used in order to be compliant with {@link IterationStrategy} contract.
      */
     private final double[] buffer;

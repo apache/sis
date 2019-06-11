@@ -107,13 +107,13 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
         switch (type) {
             case SUBENVELOPE: {
                 // Asserts that other dimensions in the original envelope has not been modified.
-                final double[] ordinates = ((SubEnvelope) envelope).ordinates;
-                assertEquals(2, ordinates[0], STRICT);
-                assertEquals(3, ordinates[5], STRICT);
-                assertEquals(4, ordinates[3], STRICT);
-                assertEquals(6, ordinates[8], STRICT);
-                assertEquals(8, ordinates[4], STRICT);
-                assertEquals(9, ordinates[9], STRICT);
+                final double[] coordinates = ((SubEnvelope) envelope).coordinates;
+                assertEquals(2, coordinates[0], STRICT);
+                assertEquals(3, coordinates[5], STRICT);
+                assertEquals(4, coordinates[3], STRICT);
+                assertEquals(6, coordinates[8], STRICT);
+                assertEquals(8, coordinates[4], STRICT);
+                assertEquals(9, coordinates[9], STRICT);
                 break;
             }
         }

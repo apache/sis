@@ -44,14 +44,14 @@ final class SubEnvelope extends GeneralEnvelope {
     private static final long serialVersionUID = 7241242611077979466L;
 
     /**
-     * The index of the first valid ordinate value of the lower corner in the {@link #ordinates} array.
+     * The index of the first valid coordinate value of the lower corner in the {@link #coordinates} array.
      *
      * @see ArrayEnvelope#beginIndex()
      */
     private final int beginIndex;
 
     /**
-     * The index after the last valid ordinate value of the lower corner  in the {@link #ordinates} array.
+     * The index after the last valid coordinate value of the lower corner  in the {@link #coordinates} array.
      *
      * @see ArrayEnvelope#endIndex()
      */
@@ -62,18 +62,18 @@ final class SubEnvelope extends GeneralEnvelope {
      * reference directly; it does <strong>not</strong> clone the given array. This is the desired
      * behavior for allowing the {@code SubEnvelope} view to be "live".
      *
-     * @param ordinates   the array of ordinate values to store directly (not cloned).
-     * @param beginIndex  the index of the first valid ordinate value of the lower corner in the ordinates array.
-     * @param endIndex    the index after the last valid ordinate value of the lower corner in the ordinates array.
+     * @param coordinates   the array of coordinate values to store directly (not cloned).
+     * @param beginIndex    the index of the first valid coordinate value of the lower corner in the coordinates array.
+     * @param endIndex      the index after the last valid coordinate value of the lower corner in the coordinates array.
      */
-    SubEnvelope(final double[] ordinates, final int beginIndex, final int endIndex) {
-        super(ordinates);
+    SubEnvelope(final double[] coordinates, final int beginIndex, final int endIndex) {
+        super(coordinates);
         this.beginIndex = beginIndex;
         this.endIndex = endIndex;
     }
 
     /**
-     * Returns the index of the first valid ordinate value of the lower corner in the ordinates array.
+     * Returns the index of the first valid coordinate value of the lower corner in the coordinates array.
      * This information is used by super-class methods.
      */
     @Override
@@ -82,7 +82,7 @@ final class SubEnvelope extends GeneralEnvelope {
     }
 
     /**
-     * Returns the index after the last valid ordinate value of the lower corner in the ordinates array.
+     * Returns the index after the last valid coordinate value of the lower corner in the coordinates array.
      * This information is used by super-class methods.
      */
     @Override
@@ -105,7 +105,7 @@ final class SubEnvelope extends GeneralEnvelope {
     @Override
     public double getLower(final int dimension) throws IndexOutOfBoundsException {
         ensureValidIndex(endIndex, dimension);
-        return ordinates[dimension + beginIndex];
+        return coordinates[dimension + beginIndex];
     }
 
     /**
@@ -115,7 +115,7 @@ final class SubEnvelope extends GeneralEnvelope {
     @Override
     public double getUpper(final int dimension) throws IndexOutOfBoundsException {
         ensureValidIndex(endIndex, dimension);
-        return ordinates[dimension + beginIndex + (ordinates.length >>> 1)];
+        return coordinates[dimension + beginIndex + (coordinates.length >>> 1)];
     }
 
     /**
@@ -128,14 +128,14 @@ final class SubEnvelope extends GeneralEnvelope {
         ensureValidIndex(endIndex, dimension);
         /*
          * The check performed here shall be identical to the super-class method, which is itself
-         * identical to ArrayEnvelope.verifyRanges(crs, ordinates) except that there is no loop.
+         * identical to ArrayEnvelope.verifyRanges(crs, coordinates) except that there is no loop.
          */
         if (lower > upper && crs != null && !isWrapAround(crs, dimension)) {
             throw new IllegalArgumentException(illegalRange(crs, dimension, lower, upper));
         }
         dimension += beginIndex;
-        ordinates[dimension + (ordinates.length >>> 1)] = upper;
-        ordinates[dimension] = lower;
+        coordinates[dimension + (coordinates.length >>> 1)] = upper;
+        coordinates[dimension] = lower;
     }
 
     /**
@@ -146,9 +146,9 @@ final class SubEnvelope extends GeneralEnvelope {
         final int dimension = getDimension();
         verifyArrayLength(dimension, corners);
         verifyRanges(crs, corners);
-        final int d = ordinates.length >>> 1;
-        System.arraycopy(corners, 0,         ordinates, beginIndex,     dimension);
-        System.arraycopy(corners, dimension, ordinates, beginIndex + d, dimension);
+        final int d = coordinates.length >>> 1;
+        System.arraycopy(corners, 0,         coordinates, beginIndex,     dimension);
+        System.arraycopy(corners, dimension, coordinates, beginIndex + d, dimension);
     }
 
     /**
@@ -156,9 +156,9 @@ final class SubEnvelope extends GeneralEnvelope {
      */
     @Override
     public boolean isAllNaN() {
-        final int d = ordinates.length >>> 1;
+        final int d = coordinates.length >>> 1;
         for (int i=beginIndex; i<endIndex; i++) {
-            if (!Double.isNaN(ordinates[i]) || !Double.isNaN(ordinates[i+d])) {
+            if (!Double.isNaN(coordinates[i]) || !Double.isNaN(coordinates[i+d])) {
                 return false;
             }
         }
@@ -171,9 +171,9 @@ final class SubEnvelope extends GeneralEnvelope {
      */
     @Override
     public void setToNaN() {
-        final int d = ordinates.length >>> 1;
-        Arrays.fill(ordinates, beginIndex,   endIndex,   Double.NaN);
-        Arrays.fill(ordinates, beginIndex+d, endIndex+d, Double.NaN);
+        final int d = coordinates.length >>> 1;
+        Arrays.fill(coordinates, beginIndex,   endIndex,   Double.NaN);
+        Arrays.fill(coordinates, beginIndex+d, endIndex+d, Double.NaN);
         assert isAllNaN() : this;
     }
 
@@ -200,20 +200,20 @@ final class SubEnvelope extends GeneralEnvelope {
     @Override
     public GeneralEnvelope subEnvelope(final int b, final int e) throws IndexOutOfBoundsException {
         ensureValidIndexRange(endIndex - beginIndex, b, e);
-        return new SubEnvelope(ordinates, b + beginIndex, e + beginIndex);
+        return new SubEnvelope(coordinates, b + beginIndex, e + beginIndex);
     }
 
     /**
-     * If the user wants a clone, copy only the relevant part of the ordinates array.
+     * If the user wants a clone, copy only the relevant part of the coordinates array.
      */
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone")
     public GeneralEnvelope clone() {
-        final int d = ordinates.length >>> 1;
+        final int d = coordinates.length >>> 1;
         final int dimension = endIndex - beginIndex;
         final GeneralEnvelope copy = new GeneralEnvelope(endIndex - beginIndex);
-        System.arraycopy(ordinates, beginIndex,     copy.ordinates, 0,         dimension);
-        System.arraycopy(ordinates, beginIndex + d, copy.ordinates, dimension, dimension);
+        System.arraycopy(coordinates, beginIndex,     copy.coordinates, 0,         dimension);
+        System.arraycopy(coordinates, beginIndex + d, copy.coordinates, dimension, dimension);
         copy.crs = crs;
         return copy;
     }

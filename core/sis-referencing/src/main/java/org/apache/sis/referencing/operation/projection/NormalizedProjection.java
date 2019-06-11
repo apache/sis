@@ -657,7 +657,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * transform derivative if requested.
      *
      * <div class="section">Normalization</div>
-     * The input ordinates are (<var>λ</var>,<var>φ</var>) (the variable names for <var>longitude</var> and
+     * The input coordinates are (<var>λ</var>,<var>φ</var>) (the variable names for <var>longitude</var> and
      * <var>latitude</var> respectively) angles in radians, eventually pre-multiplied by projection-specific factors.
      * Input coordinate shall have the <cite>central meridian</cite> removed from the longitude by the caller
      * before this method is invoked. After this method is invoked, the caller will need to multiply the output
@@ -687,7 +687,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *                   angles in <strong>radians</strong>.
      * @param  srcOff    the offset of the single coordinate to be converted in the source array.
      * @param  dstPts    the array into which the converted coordinate is returned (may be the same than {@code srcPts}).
-     *                   Ordinates will be expressed in a dimensionless unit, as a linear distance on a unit sphere or ellipse.
+     *                   Coordinates will be expressed in a dimensionless unit, as a linear distance on a unit sphere or ellipse.
      * @param  dstOff    the offset of the location of the converted coordinate that is stored in the destination array.
      * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
      * @return the matrix of the projection derivative at the given source position,
@@ -700,7 +700,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Inverse converts the single coordinate in {@code srcPts} at the given offset and stores the result in
-     * {@code ptDst} at the given offset. The output ordinates are (<var>longitude</var>, <var>latitude</var>)
+     * {@code ptDst} at the given offset. The output coordinates are (<var>longitude</var>, <var>latitude</var>)
      * angles in radians, usually (but not necessarily) in the range [-π … π] and [-π/2 … π/2] respectively.
      *
      * <div class="section">Normalization</div>
@@ -717,7 +717,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @param  srcPts  the array containing the source point coordinate, as linear distance on a unit sphere or ellipse.
      * @param  srcOff  the offset of the point to be converted in the source array.
      * @param  dstPts  the array into which the converted point coordinate is returned (may be the same than {@code srcPts}).
-     *                 Ordinates will be (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
+     *                 Coordinates will be (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
      * @param  dstOff  the offset of the location of the converted point that is stored in the destination array.
      * @throws ProjectionException if the point can not be converted.
      */

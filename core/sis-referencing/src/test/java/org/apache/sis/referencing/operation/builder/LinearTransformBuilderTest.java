@@ -269,9 +269,9 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         final Map<DirectPosition1D,DirectPosition1D> pos = new HashMap<>(numPts);
         for (int i=0; i<numPts; i++) {
             final DirectPosition1D src = new DirectPosition1D(rd.nextDouble() * 100 - 50);
-            final DirectPosition1D tgt = new DirectPosition1D(src.ordinate * scale + offset);
+            final DirectPosition1D tgt = new DirectPosition1D(src.coordinate * scale + offset);
             if (addErrors) {
-                tgt.ordinate += rd.nextDouble() * 10 - 5;
+                tgt.coordinate += rd.nextDouble() * 10 - 5;
             }
             assertNull(pos.put(src, tgt));
         }

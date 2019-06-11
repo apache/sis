@@ -321,12 +321,12 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *     target dimension}, minus the dimension of the {@code interpolationCRS} (if any).</li>
      * </ul>
      *
-     * If the {@code interpolationCRS} is non-null, then the given {@code transform} shall expect input ordinates
+     * If the {@code interpolationCRS} is non-null, then the given {@code transform} shall expect input coordinates
      * in the following order:
      *
      * <ol>
-     *   <li>Ordinates of the interpolation CRS. Example: (<var>x</var>,<var>y</var>) in a vertical transform.</li>
-     *   <li>Ordinates of the source CRS. Example: (<var>z</var>) in a vertical transform.</li>
+     *   <li>Coordinates of the interpolation CRS. Example: (<var>x</var>,<var>y</var>) in a vertical transform.</li>
+     *   <li>Coordinates of the source CRS. Example: (<var>z</var>) in a vertical transform.</li>
      * </ol>
      *
      * The math transform shall let the interpolation coordinates {@linkplain DefaultPassThroughOperation pass through
@@ -664,7 +664,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * <div class="section">Use with interpolation CRS</div>
      * If the {@linkplain #getInterpolationCRS() interpolation CRS} is non-null, then the math transform
      * input coordinates shall by (<var>interpolation</var>, <var>source</var>) tuples: for each value
-     * to transform, the interpolation point ordinates shall be first, followed by the source coordinates.
+     * to transform, the interpolation point coordinates shall be first, followed by the source coordinates.
      *
      * <div class="note"><b>Example:</b>
      * in a transformation between two {@linkplain org.apache.sis.referencing.crs.DefaultVerticalCRS vertical CRS},

@@ -146,7 +146,7 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
 
     /**
      * Tests the transformation of an envelope from a 4D CRS to a 2D CRS
-     * where the ordinates in one dimension are NaN.
+     * where the coordinates in one dimension are NaN.
      *
      * @throws TransformException if an error occurred while transforming the envelope.
      *
@@ -170,7 +170,7 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
         assertTrue ("isEmpty",  env.isEmpty());         // Opportunist test (not really the topic of this method).
         /*
          * If the referencing framework has selected the CopyTransform implementation
-         * as expected, then the envelope ordinates should not be NaN.
+         * as expected, then the envelope coordinates should not be NaN.
          */
         final Envelope env2D = Envelopes.transform(env, targetCRS);
         assertEquals(-170, env2D.getMinimum(0), 0);

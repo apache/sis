@@ -609,7 +609,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         if (abs(φ1) <= COMPARISON_THRESHOLD && abs(φ2) <= COMPARISON_THRESHOLD) {
             return abs(λ1-λ2) * getSemiMajorAxis(); // Points are on the equator.
         }
-        // At least one input ordinate is NaN.
+        // At least one input coordinate is NaN.
         if (isNaN(λ1) || isNaN(φ1) || isNaN(λ2) || isNaN(φ2)) {
             return NaN;
         }
@@ -720,7 +720,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                 if (!Utilities.deepEquals(unit, that.getAxisUnit(), mode)) {
                     return false;
                 }
-                final UnitConverter c = mode.isApproximative() ? unit.getConverterTo(Units.METRE) : null;
+                final UnitConverter c = mode.isApproximate() ? unit.getConverterTo(Units.METRE) : null;
                 boolean isMinor = false;
                 double v1 = this.getSemiMajorAxis();
                 double v2 = that.getSemiMajorAxis();

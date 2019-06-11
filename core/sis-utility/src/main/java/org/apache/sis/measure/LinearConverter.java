@@ -417,7 +417,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      */
     @Override
     public boolean equals(final Object other, final ComparisonMode mode) {
-        if (mode.isApproximative()) {
+        if (mode.isApproximate()) {
             return (other instanceof LinearConverter) && equivalent((LinearConverter) other);
         } else {
             return equals(other);

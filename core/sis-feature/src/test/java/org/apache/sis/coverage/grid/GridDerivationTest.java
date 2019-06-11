@@ -334,7 +334,7 @@ public final strictfp class GridDerivationTest extends TestCase {
 
         final GeneralDirectPosition geo3dUpperCorner = new GeneralDirectPosition(geo3d.getUpperCorner());
         IntStream.range(0, geo3dUpperCorner.getDimension())
-                .forEach(idx -> geo3dUpperCorner.ordinates[idx] -= 1e-7);
+                .forEach(idx -> geo3dUpperCorner.coordinates[idx] -= 1e-7);
 
         slice = base.derive()
                 .slice(geo3dUpperCorner)

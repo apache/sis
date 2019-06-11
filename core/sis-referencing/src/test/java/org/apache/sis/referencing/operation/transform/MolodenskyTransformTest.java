@@ -76,7 +76,7 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
      * Creates a new test case.
      */
     public MolodenskyTransformTest() {
-        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximately 100 metres
         derivativeDeltas   = new double[] {delta, delta, 100};  // (Δλ, Δφ, Δh)
         λDimension         = new int[] {0};                     // Dimension for which to ignore ±360° differences.
         zDimension         = new int[] {2};                     // Dimension of h where to apply zTolerance
@@ -132,7 +132,7 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
                 final int j = i % stats.length;
                 switch (j) {
                     case 0: Δ *= cos(toRadians(expected[i+1]));     // Fall through
-                    case 1: Δ *= 60 * NAUTICAL_MILE; break;         // Approximative conversion to metres
+                    case 1: Δ *= 60 * NAUTICAL_MILE; break;         // Approximate conversion to metres
                 }
                 Δ *= 100;   // Conversion to centimetres.
                 stats[j].accept(abs(Δ));

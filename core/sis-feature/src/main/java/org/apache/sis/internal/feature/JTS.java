@@ -141,7 +141,7 @@ final class JTS extends Geometries<Geometry> {
     /**
      * Creates a two-dimensional point from the given coordinate.
      *
-     * @return the point for the given ordinate values.
+     * @return the point for the given coordinate values.
      */
     @Override
     public Object createPoint(final double x, final double y) {
@@ -149,20 +149,20 @@ final class JTS extends Geometries<Geometry> {
     }
 
     /**
-     * Creates a polyline from the given ordinate values.
-     * Each {@link Double#NaN} ordinate value starts a new path.
+     * Creates a polyline from the given coordinate values.
+     * Each {@link Double#NaN} coordinate value starts a new path.
      *
      * @return the geometric object for the given points.
      */
     @Override
-    public Geometry createPolyline(final int dimension, final Vector... ordinates) {
+    public Geometry createPolyline(final int dimension, final Vector... coords) {
         final boolean is3D = (dimension == 3);
         if (!is3D && dimension != 2) {
             throw unsupported(dimension);
         }
         final List<Coordinate> coordinates = new ArrayList<>(32);
         final List<LineString> lines = new ArrayList<>();
-        for (final Vector v : ordinates) {
+        for (final Vector v : coords) {
             if (v != null) {
                 final int size = v.size();
                 for (int i=0; i<size;) {

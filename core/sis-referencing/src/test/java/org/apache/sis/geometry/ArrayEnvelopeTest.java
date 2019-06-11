@@ -42,7 +42,7 @@ public final strictfp class ArrayEnvelopeTest extends TestCase {
     public void testIsEmpty() {
         ArrayEnvelope envelope = new ArrayEnvelope(new double[] {0, -356.683168});
         assertTrue(envelope.isEmpty());
-        envelope.ordinates[0] = -360;
+        envelope.coordinates[0] = -360;
         assertFalse(envelope.isEmpty());
     }
 
@@ -52,14 +52,14 @@ public final strictfp class ArrayEnvelopeTest extends TestCase {
     @Test
     public void testGetExtremums() {
         ArrayEnvelope envelope = new ArrayEnvelope(2);
-        envelope.ordinates[2] = -1728;
+        envelope.coordinates[2] = -1728;
         assertTrue(Double.isNaN(envelope.getMinimum(0)));
         assertTrue(Double.isNaN(envelope.getMaximum(0)));
         assertEquals(0, envelope.getMinimum(1), STRICT);
         assertEquals(0, envelope.getMaximum(1), STRICT);
 
         // Make the range valid and test again.
-        envelope.ordinates[0] = -1800;
+        envelope.coordinates[0] = -1800;
         assertEquals(-1800, envelope.getMinimum(0), STRICT);
         assertEquals(-1728, envelope.getMaximum(0), STRICT);
     }
@@ -91,7 +91,7 @@ public final strictfp class ArrayEnvelopeTest extends TestCase {
         assertArrayEquals(new double[] {
             -5610.14928, -3642.5148, 1957.4432, -170.0175, -77.9698, Double.NEGATIVE_INFINITY,
             -5610.14920, -3642.5140, 1957.4440, -170.0170, -77.9690, Double.NEGATIVE_INFINITY
-        }, envelope.ordinates, STRICT);
+        }, envelope.coordinates, STRICT);
     }
 
     /**
@@ -99,7 +99,7 @@ public final strictfp class ArrayEnvelopeTest extends TestCase {
      */
     @Test(expected = IllegalArgumentException.class)
     public void testCreatesFromInvalidWKT() {
-        assertNotNull(new ArrayEnvelope("BBOX[\"invalid\"]").ordinates);
+        assertNotNull(new ArrayEnvelope("BBOX[\"invalid\"]").coordinates);
     }
 
     /**
@@ -125,7 +125,7 @@ public final strictfp class ArrayEnvelopeTest extends TestCase {
         assertTrue (env1.equals(env1));
         assertTrue (env2.equals(env2));
 
-        env2.ordinates[0] = 1;
+        env2.coordinates[0] = 1;
         assertTrue(env1.equals(env2));
         assertTrue(env2.equals(env1));
     }

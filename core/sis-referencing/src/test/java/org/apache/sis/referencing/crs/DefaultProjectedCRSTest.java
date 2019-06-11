@@ -505,7 +505,7 @@ public final strictfp class DefaultProjectedCRSTest extends TestCase {
         assertFalse("STRICT",          ((LenientComparable) standard).equals(normalized, ComparisonMode.STRICT));
         assertFalse("BY_CONTRACT",     ((LenientComparable) standard).equals(normalized, ComparisonMode.BY_CONTRACT));
         assertTrue ("IGNORE_METADATA", ((LenientComparable) standard).equals(normalized, ComparisonMode.IGNORE_METADATA));
-        assertTrue ("APPROXIMATIVE",   ((LenientComparable) standard).equals(normalized, ComparisonMode.APPROXIMATIVE));
+        assertTrue ("APPROXIMATE",     ((LenientComparable) standard).equals(normalized, ComparisonMode.APPROXIMATE));
         assertTrue ("ALLOW_VARIANT",   ((LenientComparable) standard).equals(normalized, ComparisonMode.ALLOW_VARIANT));
     }
 }

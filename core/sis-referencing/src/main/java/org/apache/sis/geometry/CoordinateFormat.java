@@ -62,13 +62,13 @@ import org.apache.sis.io.CompoundFormat;
 
 /**
  * Formats spatiotemporal coordinates using number, angle and date formats inferred from the coordinate system.
- * The format for each ordinate is inferred from the
+ * The format for each coordinate is inferred from the
  * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getUnit() coordinate system units}
  * using the following rules:
  *
  * <ul>
- *   <li>Ordinate values in angular units are formatted as angles using {@link AngleFormat}.</li>
- *   <li>Ordinate values in temporal units are formatted as dates using {@link DateFormat}.</li>
+ *   <li>Coordinate values in angular units are formatted as angles using {@link AngleFormat}.</li>
+ *   <li>Coordinate values in temporal units are formatted as dates using {@link DateFormat}.</li>
  *   <li>Other values are formatted as numbers using {@link NumberFormat} followed by the unit symbol
  *       formatted by {@link org.apache.sis.measure.UnitFormat}.</li>
  * </ul>
@@ -163,13 +163,13 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     private transient UnitConverter[] toFormatUnit;
 
     /**
-     * Units symbols. Used only for ordinate to be formatted as ordinary numbers.
-     * Non-null only if at least one ordinate is to be formatted that way.
+     * Units symbols. Used only for coordinate to be formatted as ordinary numbers.
+     * Non-null only if at least one coordinate is to be formatted that way.
      */
     private transient String[] unitSymbols;
 
     /**
-     * Flags the ordinate values that need to be inverted before to be formatted.
+     * Flags the coordinate values that need to be inverted before to be formatted.
      * This is needed for example if the axis is oriented toward past instead than future,
      * or toward west instead than east.
      *
@@ -178,7 +178,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     private transient long negate;
 
     /**
-     * The time epochs. Non-null only if the at least on ordinate is to be formatted as a date.
+     * The time epochs. Non-null only if the at least on coordinate is to be formatted as a date.
      */
     private transient long[] epochs;
 
@@ -365,7 +365,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     }
 
     /**
-     * Remembers that ordinate values at the given dimension will need to have their sign reverted.
+     * Remembers that coordinate values at the given dimension will need to have their sign reverted.
      */
     private void negate(final int dimension) {
         if (dimension >= Long.SIZE) {
@@ -575,7 +575,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      *   <tr><td>{@link Date}</td>   <td>{@link DateFormat}</td>   <td>{@link SimpleDateFormat}</td></tr>
      * </table>
      *
-     * @param  valueType  the base type of ordinate values to parse and format:
+     * @param  valueType  the base type of coordinate values to parse and format:
      *                    {@code Number.class}, {@code Angle.class} or {@code Date.class}.
      * @return the pattern for fields of the given type, or {@code null} if not applicable.
      *
@@ -600,17 +600,17 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      *
      * <ul>
      *   <li>If {@code valueType} is {@code Number.class}, then the pattern syntax shall be as described in the
-     *     {@link DecimalFormat} class. This pattern may be used for any ordinate to be formatted as plain number,
+     *     {@link DecimalFormat} class. This pattern may be used for any coordinate to be formatted as plain number,
      *     for example in {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian coordinate system}.</li>
      *   <li>If {@code valueType} is {@code Angle.class}, then the pattern syntax shall be as described in the
-     *     {@link AngleFormat} class. This pattern may be used for any ordinate to be formatted as latitude or longitude,
+     *     {@link AngleFormat} class. This pattern may be used for any coordinate to be formatted as latitude or longitude,
      *     for example in {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal coordinate system}.</li>
      *   <li>If {@code valueType} is {@code Date.class}, then the pattern syntax shall be as described in the
-     *     {@link SimpleDateFormat} class. This pattern may be used for any ordinate to be formatted as date and time,
+     *     {@link SimpleDateFormat} class. This pattern may be used for any coordinate to be formatted as date and time,
      *     for example in {@linkplain org.apache.sis.referencing.cs.DefaultTimeCS time coordinate system}.</li>
      * </ul>
      *
-     * @param  valueType  the base type of ordinate values to parse and format:
+     * @param  valueType  the base type of coordinate values to parse and format:
      *                    {@code Number.class}, {@code Angle.class} or {@code Date.class}.
      * @param  pattern    the pattern as specified in {@link DecimalFormat}, {@link AngleFormat}
      *                    or {@link SimpleDateFormat} javadoc.
@@ -703,11 +703,11 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             dummy = new FieldPosition(0);
         }
         /*
-         * The format to use for each ordinate has been computed by 'initialize'.  The format array length
+         * The format to use for each coordinate has been computed by 'initialize'.  The format array length
          * should match the number of dimensions in the given position if the DirectPosition is consistent
          * with its CRS, but we will nevertheless verify has a paranoiac check.  If there is no CRS, or if
          * the DirectPosition dimension is (illegally) greater than the CRS dimension, then we will format
-         * the ordinate as a number.
+         * the coordinate as a number.
          */
         final int dimension = position.getDimension();
         for (int i=0; i < dimension; i++) {
@@ -759,7 +759,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * Parses a coordinate from the given character sequence.
      * This method presumes that the coordinate reference system is the {@linkplain #getDefaultCRS() default CRS}.
      * The parsing begins at the {@linkplain ParsePosition#getIndex() index} given by the {@code pos} argument.
-     * If parsing succeeds, then the {@code pos} index is updated to the index after the last ordinate value and
+     * If parsing succeeds, then the {@code pos} index is updated to the index after the last coordinate value and
      * the parsed coordinate is returned. Otherwise (if parsing fails), the {@code pos} index is left unchanged,
      * the {@code pos} {@linkplain ParsePosition#getErrorIndex() error index} is set to the index of the first
      * unparsable character and an exception is thrown with a similar {@linkplain ParseException#getErrorOffset()
@@ -794,28 +794,28 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             asString = text.subSequence(start, Math.min(start + READ_AHEAD_LIMIT, length)).toString();
         }
         /*
-         * The Format instances to be used for each ordinate values is determined by the default CRS.
+         * The Format instances to be used for each coordinate values is determined by the default CRS.
          * If no such CRS has been specified, then we will parse everything as plain numbers.
          */
         if (lastCRS != defaultCRS) {
             initialize(defaultCRS);
         }
-        final double[] ordinates;
+        final double[] coordinates;
         Format format;
         final Format[] formats = this.formats;
         if (formats != null) {
             format    = null;
-            ordinates = new double[formats.length];
+            coordinates = new double[formats.length];
         } else {
             format    = getFormat(Number.class);
-            ordinates = new double[DEFAULT_DIMENSION];
+            coordinates = new double[DEFAULT_DIMENSION];
         }
         /*
-         * For each ordinate value except the first one, we need to skip the separator.
+         * For each coordinate value except the first one, we need to skip the separator.
          * If we do not find the separator, we may consider that we reached the coordinate
          * end ahead of time. We currently allow that only for coordinate without CRS.
          */
-        for (int i=0; i < ordinates.length; i++) {
+        for (int i=0; i < coordinates.length; i++) {
             if (i != 0) {
                 final int end = subPos.getIndex();
                 int index = offset + end;
@@ -829,7 +829,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                     }
                     if (formats == null) {
                         pos.setIndex(index);
-                        return new GeneralDirectPosition(Arrays.copyOf(ordinates, i));
+                        return new GeneralDirectPosition(Arrays.copyOf(coordinates, i));
                     }
                     pos.setIndex(start);
                     pos.setErrorIndex(index);
@@ -839,7 +839,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 subPos.setIndex(index + parseSeparator.length() - offset);
             }
             /*
-             * At this point 'subPos' is set to the beginning of the next ordinate to parse in 'asString'.
+             * At this point 'subPos' is set to the beginning of the next coordinate to parse in 'asString'.
              * Parse the value as a number, angle or date, as determined from the coordinate system axis.
              */
             if (formats != null) {
@@ -849,7 +849,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             final Object object = format.parseObject(asString, subPos);
             if (object == null) {
                 /*
-                 * If we failed to parse, build an error message with the type that was expected for that ordinate.
+                 * If we failed to parse, build an error message with the type that was expected for that coordinate.
                  * If the given CharSequence was not a String, we may need to update the error index since we tried
                  * to parse only a substring.
                  */
@@ -879,7 +879,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             /*
              * The conversions and sign reversal applied below shall be in exact reverse order than
              * in the 'format(…)' method. However we have one additional step compared to format(…):
-             * the unit written after the ordinate value may not be the same than the unit declared
+             * the unit written after the coordinate value may not be the same than the unit declared
              * in the CRS axis, so we have to parse the unit and convert the value before to apply
              * the reverse of 'format(…)' steps.
              */
@@ -926,9 +926,9 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             if (isNegative(i)) {
                 value = -value;
             }
-            ordinates[i] = value;
+            coordinates[i] = value;
         }
-        final GeneralDirectPosition position = new GeneralDirectPosition(ordinates);
+        final GeneralDirectPosition position = new GeneralDirectPosition(coordinates);
         position.setCoordinateReferenceSystem(defaultCRS);
         return position;
     }

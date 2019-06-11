@@ -71,7 +71,7 @@ public final strictfp class ObliqueMercatorTest extends MapProjectionTestCase {
         transform = create(5, 10, 20);
         validate();
 
-        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyDerivative(toRadians( 0), toRadians( 0));
         verifyDerivative(toRadians(15), toRadians(30));
@@ -90,7 +90,7 @@ public final strictfp class ObliqueMercatorTest extends MapProjectionTestCase {
         transform = create(10, 20, 90);
         validate();
 
-        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyInverse(toRadians(15), toRadians(25));
     }

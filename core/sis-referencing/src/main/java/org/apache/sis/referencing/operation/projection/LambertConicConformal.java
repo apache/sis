@@ -475,12 +475,12 @@ public class LambertConicConformal extends ConformalProjection {
      * if no special checks are applied:</p>
      *
      * {@preformat text
-     *     ┌───────┬─────────────────────────────┬───────────────────────────┐
-     *     │       │ Spherical                   │ Ellipsoidal               │
-     *     ├───────┼─────────────────────────────┼───────────────────────────┤
-     *     │ North │ Approximative (y = small)   │ Exact answer  (y = 0.0)   │
-     *     │ South │ Exact answer  (y = +∞)      │ Approximative (y = big)   │
-     *     └───────┴─────────────────────────────┴───────────────────────────┘
+     *     ┌───────┬──────────────────────────┬────────────────────────┐
+     *     │       │ Spherical                │ Ellipsoidal            │
+     *     ├───────┼──────────────────────────┼────────────────────────┤
+     *     │ North │ Approximate  (y = small) │ Exact answer (y = 0.0) │
+     *     │ South │ Exact answer (y = +∞)    │ Approximate  (y = big) │
+     *     └───────┴──────────────────────────┴────────────────────────┘
      * }
      * </div>
      *

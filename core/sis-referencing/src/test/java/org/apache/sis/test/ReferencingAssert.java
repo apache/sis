@@ -268,7 +268,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
     }
 
     /**
-     * Asserts that two envelopes have the same minimum and maximum ordinates.
+     * Asserts that two envelopes have the same minimum and maximum coordinates.
      * This method ignores the envelope type (i.e. the implementation class) and the CRS.
      *
      * @param expected    the expected envelope.
@@ -412,14 +412,14 @@ public strictfp class ReferencingAssert extends MetadataAssert {
         for (int index=0; index<numCases; index++) {
             int n = index;
             for (int i=0; i<dimension; i++) {
-                final double ordinate;
+                final double coordinate;
                 switch (n % 3) {
-                    case 0: ordinate = e2.getMinimum(i); break;
-                    case 1: ordinate = e2.getMedian (i); break;
-                    case 2: ordinate = e2.getMaximum(i); break;
+                    case 0: coordinate = e2.getMinimum(i); break;
+                    case 1: coordinate = e2.getMedian (i); break;
+                    case 2: coordinate = e2.getMaximum(i); break;
                     default: throw new AssertionError(i);
                 }
-                pos.setOrdinate(i, ordinate);
+                pos.setOrdinate(i, coordinate);
                 n /= 3;
             }
             assertEquals(0, n); // Opportunist check of this assert method.

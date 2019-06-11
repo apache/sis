@@ -259,27 +259,27 @@ public abstract class Geometries<G> {
      * Creates a two-dimensional point from the given coordinate. If the CRS is geographic, then the
      * (x,y) values should be (longitude, latitude) for compliance with usage in ESRI and JTS libraries.
      *
-     * @param  x  the first ordinate value.
-     * @param  y  the second ordinate value.
-     * @return the point for the given ordinate values.
+     * @param  x  the first coordinate value.
+     * @param  y  the second coordinate value.
+     * @return the point for the given coordinate values.
      *
      * @see #getCoordinate(Object)
      */
     public abstract Object createPoint(double x, double y);
 
     /**
-     * Creates a path or polyline from the given ordinate values.
-     * The array of ordinate vectors will be handled as if all vectors were concatenated in a single vector,
+     * Creates a path or polyline from the given coordinate values.
+     * The array of coordinate values will be handled as if all vectors were concatenated in a single vector,
      * ignoring {@code null} array elements.
-     * Each {@link Double#NaN} ordinate value in the concatenated vector starts a new path.
+     * Each {@link Double#NaN} coordinate value in the concatenated vector starts a new path.
      * The implementation returned by this method is an instance of {@link #rootClass}.
      *
-     * @param  dimension  the number of dimensions (2 or 3).
-     * @param  ordinates  sequence of (x,y) or (x,y,z) tuples.
+     * @param  dimension    the number of dimensions (2 or 3).
+     * @param  coordinates  sequence of (x,y) or (x,y,z) tuples.
      * @return the geometric object for the given points.
      * @throws UnsupportedOperationException if the geometry library can not create the requested path.
      */
-    public abstract G createPolyline(int dimension, Vector... ordinates);
+    public abstract G createPolyline(int dimension, Vector... coordinates);
 
     /**
      * Merges a sequence of polyline instances if the first instance is an implementation of this library.

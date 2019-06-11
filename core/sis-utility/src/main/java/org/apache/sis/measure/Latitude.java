@@ -115,8 +115,8 @@ public final class Latitude extends Angle {
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS};
      * it may also be <cite>geocentric latitudes</cite>.
      *
-     * <p>If the axis direction is South, then the sign of the ordinate value is inverted.
-     * If the ordinate value uses another angular units than {@linkplain Units#DEGREE degrees},
+     * <p>If the axis direction is South, then the sign of the coordinate value is inverted.
+     * If the coordinate value uses another angular units than {@linkplain Units#DEGREE degrees},
      * then a unit conversion is applied.</p>
      *
      * @param  position  the coordinate from which to extract the latitude value in degrees.

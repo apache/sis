@@ -642,7 +642,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * The Coordinate Reference System (CRS) associated to the returned position depends on the given reference.
          *
          * @param  reference  MGRS string to decode.
-         * @return a new position with the longitude at ordinate 0 and latitude at ordinate 1.
+         * @return a new position with the longitude at coordinate 0 and latitude at coordinate 1.
          * @throws TransformException if an error occurred while parsing the given string.
          */
         public Location decode(final CharSequence reference) throws TransformException {
@@ -1482,7 +1482,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             final int zone       = isUTM ? ZONER.zone(φ, λ) : POLE;
             final int signedZone = MathFunctions.isNegative(φ) ? -zone : zone;
             if (signedZone == 0) {
-                // Zero value at this point is the result of NaN of infinite ordinate value.
+                // Zero value at this point is the result of NaN of infinite coordinate value.
                 throw new GazetteerException(Errors.format(Errors.Keys.NotANumber_1, "longitude"));
             }
             /*
@@ -2035,7 +2035,7 @@ parse:                  switch (part) {
                                 isValid = Math.abs(zoneError) <= 2;         // Tolerance in zone numbers for high latitudes.
                             } else {
                                 final double rλ = Math.IEEEremainder(λ - ZONER.origin, ZONER.width);    // Distance to closest zone change, in degrees of longitude.
-                                final double cv = (minX - ZONER.easting) / (λ - λ0);                    // Approximative conversion factor from degrees to metres.
+                                final double cv = (minX - ZONER.easting) / (λ - λ0);                    // Approximate conversion factor from degrees to metres.
                                 isValid = (Math.abs(rλ) * cv <= sx);                                    // Be tolerant if distance in metres is less than resolution.
                                 if (isValid) {
                                     isValid = (zoneError == (rλ < 0 ? -1 : +1));                        // Verify also that the error is on the side of the zone change.

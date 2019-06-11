@@ -189,7 +189,7 @@ public final class DefinitionVerifier {
         int similarity = 0;
         final AbstractCRS ca = AbstractCRS.castOrCopy(authoritative);
         AbstractCRS variant = ca;
-        while (!variant.equals(crs, ComparisonMode.APPROXIMATIVE)) {
+        while (!variant.equals(crs, ComparisonMode.APPROXIMATE)) {
             if (similarity < VARIANTS.length) {
                 variant = ca.forConvention(VARIANTS[similarity++]);
             } else if (identifier == null) {
@@ -250,23 +250,23 @@ public final class DefinitionVerifier {
         while (authoritative.hasNext() && given.hasNext()) {
             final SingleCRS crsA = authoritative.next();
             final SingleCRS crsG = given.next();
-            if (!Utilities.equalsApproximatively(crsA, crsG)) {
+            if (!Utilities.equalsApproximately(crsA, crsG)) {
                 if (crsA instanceof GeneralDerivedCRS && crsG instanceof GeneralDerivedCRS) {
                     final Conversion cnvA = ((GeneralDerivedCRS) crsA).getConversionFromBase();
                     final Conversion cnvG = ((GeneralDerivedCRS) crsG).getConversionFromBase();
-                    if (!Utilities.equalsApproximatively(cnvA, cnvG)) {
-                        return Utilities.equalsApproximatively(cnvA.getMethod(), cnvG.getMethod()) ? CONVERSION : METHOD;
+                    if (!Utilities.equalsApproximately(cnvA, cnvG)) {
+                        return Utilities.equalsApproximately(cnvA.getMethod(), cnvG.getMethod()) ? CONVERSION : METHOD;
                     }
                 }
-                if (!Utilities.equalsApproximatively(crsA.getCoordinateSystem(), crsG.getCoordinateSystem())) {
+                if (!Utilities.equalsApproximately(crsA.getCoordinateSystem(), crsG.getCoordinateSystem())) {
                     return CS;
                 }
                 final Datum datumA = crsA.getDatum();
                 final Datum datumG = crsG.getDatum();
-                if (!Utilities.equalsApproximatively(datumA, datumG)) {
+                if (!Utilities.equalsApproximately(datumA, datumG)) {
                     if ((datumA instanceof GeodeticDatum) && (datumG instanceof GeodeticDatum) &&
-                        !Utilities.equalsApproximatively(((GeodeticDatum) datumA).getPrimeMeridian(),
-                                                         ((GeodeticDatum) datumG).getPrimeMeridian()))
+                        !Utilities.equalsApproximately(((GeodeticDatum) datumA).getPrimeMeridian(),
+                                                       ((GeodeticDatum) datumG).getPrimeMeridian()))
                     {
                         return PRIME_MERIDIAN;
                     }

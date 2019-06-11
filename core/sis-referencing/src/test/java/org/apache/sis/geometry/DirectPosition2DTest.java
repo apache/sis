@@ -83,9 +83,9 @@ public final strictfp class DirectPosition2DTest extends TestCase {
     public void testClone() {
         final DirectPosition2D p1 = new DirectPosition2D(10, 30);
         final DirectPosition2D p2 = p1.clone();
-        assertEquals("Expected the same CRS and ordinates.", p1, p2);
-        assertEquals("Expected the same ordinates.", 10.0, p2.x, 0.0);
-        assertEquals("Expected the same ordinates.", 30.0, p2.y, 0.0);
+        assertEquals("Expected the same CRS and coordinates.", p1, p2);
+        assertEquals("Expected the same coordinates.", 10.0, p2.x, 0.0);
+        assertEquals("Expected the same coordinates.", 30.0, p2.y, 0.0);
         validate(p2);
     }
 

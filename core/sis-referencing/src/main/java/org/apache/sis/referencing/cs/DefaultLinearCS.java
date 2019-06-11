@@ -29,7 +29,7 @@ import org.apache.sis.measure.Units;
 
 /**
  * A 1-dimensional coordinate system for points that lie on a single axis (not necessarily a straight line).
- * Ordinate values are distances from the axis origin to the point along the axis.
+ * Coordinate values are distances from the axis origin to the point along the axis.
  * A typical example is an axis for representing the points along a road.
  *
  * <table class="sis">

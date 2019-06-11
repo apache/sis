@@ -26,7 +26,7 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * An affine transform that translate the ordinate values by constant values.
+ * An affine transform that translate the coordinate values by constant values.
  *
  * <div class="note"><b>Note:</b> we do not provide two-dimensional specialization because
  * {@link org.apache.sis.internal.referencing.j2d.AffineTransform2D} should be used in such case.</div>
@@ -46,7 +46,7 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
     private static final long serialVersionUID = 7382503993222285134L;
 
     /**
-     * Translation terms, to be applied in the same order than ordinate values.
+     * Translation terms, to be applied in the same order than coordinate values.
      * The length of this array is the number of target dimensions.
      */
     private final double[] offsets;
