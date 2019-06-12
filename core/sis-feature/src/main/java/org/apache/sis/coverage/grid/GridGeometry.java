@@ -367,7 +367,7 @@ public class GridGeometry implements Serializable {
     {
         final GeneralEnvelope env;
         if (extent != null && cornerToCRS != null) {
-            env = extent.toCRS(cornerToCRS, specified);
+            env = extent.toCRS(cornerToCRS, specified, limits);
             env.setCoordinateReferenceSystem(crs);
             if (limits != null) {
                 env.intersect(limits);
@@ -435,7 +435,7 @@ public class GridGeometry implements Serializable {
             try {
                 env = Envelopes.transform(cornerToCRS.inverse(), envelope);
                 extent = new GridExtent(env, rounding, null, null, null);
-                env = extent.toCRS(cornerToCRS, gridToCRS);         // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
+                env = extent.toCRS(cornerToCRS, gridToCRS, envelope);     // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
             } catch (TransformException e) {
                 throw new IllegalGridGeometryException(e, "gridToCRS");
             }

@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
@@ -292,6 +293,9 @@ public class GridExtent implements GridEnvelope, Serializable {
     /**
      * Creates a new grid extent by rounding the given envelope to (usually) nearest integers.
      * The envelope coordinates shall be cell indices with lower values inclusive and upper values exclusive.
+     * {@link Double#NaN} envelope coordinates will be set to the corresponding {@code enclosing} coordinates
+     * (an exception will be thrown if {@code enclosing} is null in that situation).
+     *
      * Envelopes crossing the anti-meridian shall be {@linkplain GeneralEnvelope#simplify() simplified}.
      * The envelope CRS is ignored, except for identifying dimension names for information purpose.
      * The way floating point values are rounded to integers may be adjusted in any future version.
@@ -307,7 +311,7 @@ public class GridExtent implements GridEnvelope, Serializable {
      *                             This argument is ignored if {@code enclosing} is null.
      * @throws DisjointExtentException if the given envelope does not intersect the enclosing grid extent.
      *
-     * @see #toCRS(MathTransform, MathTransform)
+     * @see #toCRS(MathTransform, MathTransform, Envelope)
      * @see #slice(DirectPosition, int[])
      */
     GridExtent(final AbstractEnvelope envelope, final GridRoundingMode rounding, final int[] margin,
@@ -392,12 +396,12 @@ public class GridExtent implements GridEnvelope, Serializable {
                 }
             }
             if (lower > upper) {
-                upper += (lower - upper) >>> 1;         // (upper - lower) as unsigned integer: overflow-safe.
+                upper += (lower - upper) >>> 1;         // (lower - upper)/2 as unsigned integer: overflow-safe.
                 lower = upper;
             }
             /*
              * At this point the grid range has been computed (lower to upper).
-             * Update the coordinates accordingly.
+             * Compute intersection, then update the coordinates accordingly.
              */
             final int m = getDimension();
             if (enclosing != null) {
@@ -414,14 +418,6 @@ public class GridExtent implements GridEnvelope, Serializable {
                 coordinates[i]   = lower;
                 coordinates[i+m] = upper;
             }
-            /*
-             * We do not throw an exception if 'enclosing' is non-null and envelope bounds are NaN
-             * because this case occurs when the gridToCRS transform has a NaN scale factor.  Such
-             * scale factor may occur with ranges like [0 … 0]. With a non-null 'enclosing' extent,
-             * we can still have grid coordinates: they are inherited from 'enclosing'. We require
-             * the two bounds to be NaN, otherwise the reason for those NaN envelope bounds is not
-             * a NaN scale factor.
-             */
         }
         /*
          * At this point we finished to compute coordinate values.
@@ -748,11 +744,14 @@ public class GridExtent implements GridEnvelope, Serializable {
      * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
      * @param  gridToCRS    the transform specified by the user. May be the same as {@code cornerToCRS}.
      *                      If different, then this is assumed to map cell centers instead than cell corners.
+     * @param  fallback     bounds to use if some values still NaN, or {@code null} if none.
      * @return this grid extent in real world coordinates.
      *
      * @see #GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])
      */
-    final GeneralEnvelope toCRS(final MathTransform cornerToCRS, final MathTransform gridToCRS) throws TransformException {
+    final GeneralEnvelope toCRS(final MathTransform cornerToCRS, final MathTransform gridToCRS, final Envelope fallback)
+            throws TransformException
+    {
         final int dimension = getDimension();
         GeneralEnvelope envelope = new GeneralEnvelope(dimension);
         for (int i=0; i<dimension; i++) {
@@ -789,6 +788,7 @@ public class GridExtent implements GridEnvelope, Serializable {
                             double lower = envelope.getLower(tgtDim);
                             double upper = envelope.getUpper(tgtDim);
                             final double value = component.getElement(j, component.getNumCol() - 1);
+                            boolean modified = false;
                             /*
                              * Replace only the envelope NaN values by the translation term (non-NaN values are left unchanged).
                              * If the gridToCRS map cell corners, then we update only the lower bound since the transform maps
@@ -803,15 +803,35 @@ public class GridExtent implements GridEnvelope, Serializable {
                                         span = 0;
                                     }
                                 }
-                                if (Double.isNaN(lower)) lower = value - span;
-                                if (Double.isNaN(upper)) upper = value + span;
+                                if (Double.isNaN(lower)) {lower = value - span; modified = true;}
+                                if (Double.isNaN(upper)) {upper = value + span; modified = true;}
                             } else if (Double.isNaN(lower)) {
                                 lower = value;
                             }
-                            envelope.setRange(tgtDim, lower, upper);
+                            if (modified) {
+                                envelope.setRange(tgtDim, lower, upper);
+                            }
                         }
                     }
                     separator.clear();
+                }
+            }
+            /*
+             * If above block has been unable to fix all NaN values, fix the remaining NaNs by copying the corresponding
+             * coordinates from the fallback envelope. It should happen only for dimensions with a thickness of 1, i.e.
+             * when `low == high` but not necessarily `low == 0` and `high == 0` (contrarily to above block). We use this
+             * fallback is last resort because the envelope may be less reliable than values computed from `gridToCRS`.
+             */
+            if (fallback != null) {
+                for (int tgtDim = envelope.getDimension(); --tgtDim >= 0;) {
+                    boolean modified = false;
+                    double lower = envelope.getLower(tgtDim);
+                    double upper = envelope.getUpper(tgtDim);
+                    if (Double.isNaN(lower)) {lower = fallback.getMinimum(tgtDim); modified = true;}
+                    if (Double.isNaN(upper)) {upper = fallback.getMaximum(tgtDim); modified = true;}
+                    if (modified && !(lower > upper)) {                // Use '!' for accepting NaN.
+                        envelope.setRange(tgtDim, lower, upper);
+                    }
                 }
             }
         } catch (FactoryException e) {
