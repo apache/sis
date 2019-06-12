@@ -36,8 +36,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
+import org.opengis.util.CodeList;
 import org.opengis.annotation.UML;
 import org.opengis.geoapi.SchemaException;
+import org.opengis.geoapi.SchemaInformation;
 import org.apache.sis.util.Classes;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.xml.LegacyNamespaces;
@@ -384,21 +386,25 @@ final strictfp class PackageVerifier {
          * because JAXB has default adapters for String, Double, Boolean, Date, etc. which do not match the way
          * OGC/ISO marshal those elements.
          */
-        if (!property.isAnnotationPresent(XmlJavaTypeAdapter.class) && (valueType != null)
-                && !valueType.getName().startsWith(Modules.CLASSNAME_PREFIX))
-        {
-            Class<?> c = valueType;
-            while (adapterIsUsed.replace(c, Boolean.TRUE) == null) {
-                final Class<?> parent = c.getSuperclass();
-                if (parent != null) {
-                    c = parent;
-                } else {
-                    final Class<?>[] p = c.getInterfaces();
-                    if (p.length == 0) {
-                        throw new SchemaException(errorInClassMember(javaName)
-                                .append("Missing @XmlJavaTypeAdapter for ").append(valueType).toString());
+        if (!property.isAnnotationPresent(XmlJavaTypeAdapter.class) && valueType != null) {
+            /*
+             * Internal classes in Apache SIS "jaxb" subpackages can be marshalled directly.
+             * Apache SIS classes defined in other packages may be code lists, which still need adapters.
+             */
+            if (!valueType.getName().startsWith(Modules.CLASSNAME_PREFIX) || CodeList.class.isAssignableFrom(valueType)) {
+                Class<?> c = valueType;
+                while (adapterIsUsed.replace(c, Boolean.TRUE) == null) {
+                    final Class<?> parent = c.getSuperclass();
+                    if (parent != null) {
+                        c = parent;
+                    } else {
+                        final Class<?>[] p = c.getInterfaces();
+                        if (p.length == 0) {
+                            throw new SchemaException(errorInClassMember(javaName)
+                                    .append("Missing @XmlJavaTypeAdapter for ").append(valueType).toString());
+                        }
+                        c = p[0];       // Take only the first interface, which should be the "main" parent.
                     }
-                    c = p[0];   // Take only the first interface, which should be the "main" parent.
                 }
             }
         }
@@ -469,10 +475,13 @@ final strictfp class PackageVerifier {
              */
             final Map<String, SchemaCompliance.Element> valueInfo = schemas.getTypeDefinition(info.typeName);
             if (valueInfo != null) {
-                final String valueNS = valueInfo.get(null).namespace;
-                if (namespaceIsUsed.put(valueNS, Boolean.TRUE) == null) {
-                    throw new SchemaException(errorInClassMember(javaName)
-                            .append("Missing @XmlNs for property value namespace: ").append(valueNS).toString());
+                final SchemaInformation.Element typeAndNS = valueInfo.get(null);
+                if (typeAndNS != null) {
+                    final String valueNS = typeAndNS.namespace;
+                    if (namespaceIsUsed.put(valueNS, Boolean.TRUE) == null) {
+                        throw new SchemaException(errorInClassMember(javaName)
+                                .append("Missing @XmlNs for property value namespace: ").append(valueNS).toString());
+                    }
                 }
             }
         }

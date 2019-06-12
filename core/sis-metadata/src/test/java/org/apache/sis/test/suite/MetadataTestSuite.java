@@ -144,7 +144,8 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.sql.IdentifierGeneratorTest.class,
     org.apache.sis.metadata.sql.MetadataSourceTest.class,
     org.apache.sis.metadata.sql.MetadataWriterTest.class,
-    org.apache.sis.metadata.iso.citation.CitationsTest.class
+    org.apache.sis.metadata.iso.citation.CitationsTest.class,
+    org.apache.sis.metadata.xml.SchemaComplianceTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
     /**
