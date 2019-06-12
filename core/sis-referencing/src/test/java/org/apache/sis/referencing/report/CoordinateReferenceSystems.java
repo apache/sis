@@ -480,7 +480,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         properties.setProperty("PRODUCT.URL",     "http://sis.apache.org");
         properties.setProperty("JAVADOC.GEOAPI",  "http://www.geoapi.org/snapshot/javadoc");
         properties.setProperty("FACTORY.NAME",    "EPSG");
-        properties.setProperty("FACTORY.VERSION", "9.3");
+        properties.setProperty("FACTORY.VERSION", "9.6.3");
         properties.setProperty("FACTORY.VERSION.SUFFIX", ", together with other sources");
         properties.setProperty("PRODUCT.VERSION.SUFFIX", " (provided that <a href=\"http://sis.apache.org/epsg.html\">a connection to an EPSG database exists</a>)");
         properties.setProperty("DESCRIPTION", "<p><b>Notation:</b></p>\n" +
@@ -540,9 +540,11 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         }
         if (crs instanceof GeneralDerivedCRS) {
             final OperationMethod method = ((GeneralDerivedCRS) crs).getConversionFromBase().getMethod();
-            return "<a href=\"CoordinateOperationMethods.html#"
-                   + IdentifiedObjects.getIdentifier(method, Citations.EPSG).getCode()
-                   + "\">" + method.getName().getCode().replace('_', ' ') + "</a>";
+            final Identifier identifier = IdentifiedObjects.getIdentifier(method, Citations.EPSG);
+            if (identifier != null) {
+                return "<a href=\"CoordinateOperationMethods.html#" + identifier.getCode()
+                       + "\">" + method.getName().getCode().replace('_', ' ') + "</a>";
+            }
         }
         if (crs instanceof GeocentricCRS) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
