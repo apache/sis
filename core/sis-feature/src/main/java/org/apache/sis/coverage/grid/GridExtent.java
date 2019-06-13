@@ -788,7 +788,6 @@ public class GridExtent implements GridEnvelope, Serializable {
                             double lower = envelope.getLower(tgtDim);
                             double upper = envelope.getUpper(tgtDim);
                             final double value = component.getElement(j, component.getNumCol() - 1);
-                            boolean modified = false;
                             /*
                              * Replace only the envelope NaN values by the translation term (non-NaN values are left unchanged).
                              * If the gridToCRS map cell corners, then we update only the lower bound since the transform maps
@@ -803,14 +802,12 @@ public class GridExtent implements GridEnvelope, Serializable {
                                         span = 0;
                                     }
                                 }
-                                if (Double.isNaN(lower)) {lower = value - span; modified = true;}
-                                if (Double.isNaN(upper)) {upper = value + span; modified = true;}
+                                if (Double.isNaN(lower)) lower = value - span;
+                                if (Double.isNaN(upper)) upper = value + span;
                             } else if (Double.isNaN(lower)) {
                                 lower = value;
                             }
-                            if (modified) {
-                                envelope.setRange(tgtDim, lower, upper);
-                            }
+                            envelope.setRange(tgtDim, lower, upper);
                         }
                     }
                     separator.clear();
