@@ -18,6 +18,8 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.util.FactoryException;
@@ -1007,7 +1009,11 @@ public class GridDerivation {
         if (baseExtent != null) {
             TreeTable.Node section = root.newChild();
             section.setValue(column, "Intersection");
-            getIntersection().appendTo(buffer, Vocabulary.getResources(locale));
+            try {
+                getIntersection().appendTo(buffer, Vocabulary.getResources(locale));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
             for (final CharSequence line : CharSequences.splitOnEOL(buffer)) {
                 String text = line.toString().trim();
                 if (!text.isEmpty()) {

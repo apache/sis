@@ -43,7 +43,7 @@ import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.internal.referencing.j2d.Bezier;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -960,7 +960,7 @@ public class GeodeticCalculator {
                 final double distance   = getGeodesicDistance();
                 final double precision  = Units.METRE.getConverterTo(unit).convert(Formulas.LINEAR_TOLERANCE);
                 final NumberFormat nf = NumberFormat.getNumberInstance(locale);
-                nf.setMaximumFractionDigits(max(Numerics.suggestFractionDigits(precision), 0));
+                nf.setMaximumFractionDigits(Math.max(0, DecimalFunctions.fractionDigitsForDelta(precision, false)));
                 resources.appendLabel(Vocabulary.Keys.GeodesicDistance, buffer);
                 buffer.append(' ').append(nf.format(distance))
                       .append(' ').append(unit).append(lineSeparator);

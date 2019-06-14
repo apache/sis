@@ -17,6 +17,7 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Locale;
+import java.io.IOException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.coverage.PointOutsideCoverageException;
@@ -229,9 +230,11 @@ public final strictfp class GridExtentTest extends TestCase {
     /**
      * Tests {@link GridExtent#toString()}.
      * Note that the string representation may change in any future SIS version.
+     *
+     * @throws IOException should never happen since we are writing to a {@link StringBuilder}.
      */
     @Test
-    public void testToString() {
+    public void testToString() throws IOException {
         final StringBuilder buffer = new StringBuilder(100);
         create3D().appendTo(buffer, Vocabulary.getResources(Locale.ENGLISH));
         assertMultilinesEquals(

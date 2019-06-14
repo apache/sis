@@ -402,6 +402,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short GeodeticDataset = 45;
 
         /**
+         * Geographic extent
+         */
+        public static final short GeographicExtent = 172;
+
+        /**
          * Geographic identifier
          */
         public static final short GeographicIdentifier = 135;
@@ -520,6 +525,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Longitude
          */
         public static final short Longitude = 65;
+
+        /**
+         * Lower bound
+         */
+        public static final short LowerBound = 173;
 
         /**
          * Mandatory
@@ -782,6 +792,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Temporal = 97;
 
         /**
+         * Temporal extent
+         */
+        public static final short TemporalExtent = 175;
+
+        /**
          * Temporary files
          */
         public static final short TemporaryFiles = 98;
@@ -850,6 +865,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Untitled
          */
         public static final short Untitled = 109;
+
+        /**
+         * Upper bound
+         */
+        public static final short UpperBound = 174;
 
         /**
          * User home directory

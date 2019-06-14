@@ -228,19 +228,18 @@ public abstract class GridCoverage {
     /**
      * Returns a string representation of this grid coverage for debugging purpose.
      * The returned string is implementation dependent and may change in any future version.
-     * Current implementation is equivalent to the following, where {@code EXTENT}, <i>etc.</i> are
-     * constants defined in {@link GridGeometry} class:
+     * Current implementation is equivalent to the following, where {@code <default flags>}
+     * is the same set of flags than {@link GridGeometry#toString()}.
      *
      * {@preformat java
-     *   return toTree(Locale.getDefault(), EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION).toString();
+     *   return toTree(Locale.getDefault(), <default flags>).toString();
      * }
      *
      * @return a string representation of this grid coverage for debugging purpose.
      */
     @Override
     public String toString() {
-        return toTree(Locale.getDefault(), GridGeometry.EXTENT | GridGeometry.ENVELOPE
-                | GridGeometry.CRS | GridGeometry.GRID_TO_CRS | GridGeometry.RESOLUTION).toString();
+        return toTree(Locale.getDefault(), GridGeometry.defaultFlags()).toString();
     }
 
     /**

@@ -26,7 +26,6 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.Vector;
 import org.opengis.referencing.operation.Matrix;    // For javadoc
@@ -501,17 +500,28 @@ public final class Numerics extends Static {
     }
 
     /**
-     * Suggests an amount of fraction digits for data having the given precision.
+     * Suggests an amount of fraction digits for the given values, ignoring NaN and infinities.
+     * This method uses heuristic rules that may change in any future SIS version.
+     * Current implementation returns a value which avoid printing "garbage" digits
+     * with highest numbers, at the cost of loosing significant digits on smallest numbers.
+     * An arbitrary limit is set to 16 digits, which is the number of digits for {@code Math.ulp(1.0)}}.
      *
-     * @param  precision  desired precision.
-     * @return suggested amount of fraction digits for the given precision.
+     * @param  values  the values for which to get suggested amount of fraction digits.
+     * @return suggested amount of fraction digits for the given precision. Always positive.
      *
      * @since 1.0
      */
-    public static int suggestFractionDigits(final double precision) {
-        int p = toExp10(MathFunctions.getExponent(precision));
-        if (MathFunctions.pow10(p+1) <= abs(precision)) p++;
-        return Math.max(0, -p);
+    public static int suggestFractionDigits(final double... values) {
+        double ulp = 0;
+        if (values != null) {
+            for (final double v : values) {
+                final double e = Math.ulp(v);
+                if (e > ulp && e != Double.POSITIVE_INFINITY) {
+                    ulp = e;
+                }
+            }
+        }
+        return Math.max(0, Math.min(16, DecimalFunctions.fractionDigitsForDelta(ulp, false)));
     }
 
     /**

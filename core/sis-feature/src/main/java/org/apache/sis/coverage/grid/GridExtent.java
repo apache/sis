@@ -1153,7 +1153,11 @@ public class GridExtent implements GridEnvelope, Serializable {
     @Override
     public String toString() {
         final StringBuilder out = new StringBuilder(256);
-        appendTo(out, Vocabulary.getResources((Locale) null));
+        try {
+            appendTo(out, Vocabulary.getResources((Locale) null));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
         return out.toString();
     }
 
@@ -1164,7 +1168,7 @@ public class GridExtent implements GridEnvelope, Serializable {
      * @param out         where to write the string representation.
      * @param vocabulary  resources for some words.
      */
-    final void appendTo(final StringBuilder out, final Vocabulary vocabulary) {
+    final void appendTo(final Appendable out, final Vocabulary vocabulary) throws IOException {
         final TableAppender table = new TableAppender(out, "");
         final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
@@ -1183,18 +1187,6 @@ public class GridExtent implements GridEnvelope, Serializable {
             table.append('(').append(vocabulary.getString(Vocabulary.Keys.CellCount_1,
                     Long.toUnsignedString(upper - lower + 1))).append(')').nextLine();
         }
-        flush(table);
-    }
-
-    /**
-     * Writes the content of given table without throwing {@link IOException}.
-     * Shall be invoked only when the destination is known to be {@link StringBuilder}.
-     */
-    static void flush(final TableAppender table) {
-        try {
-            table.flush();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        table.flush();
     }
 }
