@@ -600,6 +600,26 @@ public class GridExtent implements GridEnvelope, Serializable {
     }
 
     /**
+     * Returns the number of grid coordinates as a double precision floating point value.
+     * Invoking this method is equivalent to invoking {@link #getSize(int)} and converting
+     * the result from {@code long} to the {@code double} primitive type,
+     * except that this method does not overflow.
+     *
+     * @param  index     the dimension for which to obtain the size.
+     * @param  minusOne  {@code true} for returning <var>size</var>−1 instead of <var>size</var>.
+     * @return the number of integer grid coordinates along the given dimension.
+     */
+    public double getSize(final int index, final boolean minusOne) {
+        final int dimension = getDimension();
+        ArgumentChecks.ensureValidIndex(dimension, index);
+        long size = coordinates[dimension + index] - coordinates[index];        // Unsigned long.
+        if (!minusOne && ++size == 0) {
+            return 0x1P64;                          // Unsigned integer overflow. Result is 2^64.
+        }
+        return Numerics.toUnsignedDouble(size);
+    }
+
+    /**
      * Returns the grid coordinates of a representative point.
      * This point may be used for estimating a {@linkplain GridGeometry#getResolution(boolean) grid resolution}.
      * The default implementation returns the median (or center) coordinates of this grid extent,
@@ -1068,7 +1088,7 @@ public class GridExtent implements GridEnvelope, Serializable {
      */
     final GridExtent sliceByRatio(final DirectPosition slicePoint, final double sliceRatio, final int[] dimensionsToKeep) {
         for (int i=slicePoint.getDimension(); --i >= 0;) {
-            slicePoint.setOrdinate(i, sliceRatio * (getSize(i) - 1) + getLow(i));
+            slicePoint.setOrdinate(i, sliceRatio * getSize(i, true) + getLow(i));       // TODO: use Math.fma
         }
         for (int i=0; i<dimensionsToKeep.length; i++) {
             slicePoint.setOrdinate(dimensionsToKeep[i], Double.NaN);

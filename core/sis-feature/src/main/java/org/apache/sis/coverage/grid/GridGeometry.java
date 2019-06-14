@@ -49,14 +49,14 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.internal.referencing.TemporalAccessor;
 import org.apache.sis.internal.metadata.ReferencingServices;
-import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.Numerics;
@@ -539,27 +539,70 @@ public class GridGeometry implements Serializable {
     }
 
     /**
-     * Creates a grid geometry with only an extent and a coordinate reference system.
+     * Creates a grid geometry with an extent and an envelope.
      * This constructor can be used when the <cite>grid to CRS</cite> transform is unknown.
+     * If only the coordinate reference system is known, then the envelope coordinates can be
+     * {@link GeneralEnvelope#isAllNaN() NaN}.
      *
-     * @param  extent     the valid extent of grid coordinates, or {@code null} if unknown.
-     * @param  crs        the coordinate reference system of the "real world" coordinates, or {@code null} if unknown.
-     * @throws NullPointerException if {@code extent} and {@code crs} arguments are both null.
+     * <p>This constructor is generally not recommended since creating a <cite>grid to CRS</cite> from an envelope
+     * requires assumption on axis order and axis directions. This constructor assumes that all grid axes are in the
+     * same order than CRS axes and no axis is flipped. This straightforward approach often results in the <var>y</var>
+     * axis to be oriented toward up, not down as expected in rendered images. Those assumptions are often not suitable.
+     * For better control, use one of the constructors expecting a {@link MathTransform} argument instead.
+     * This constructor is provided mostly as a convenience for testing purposes, or when only the extent is known.</p>
+     *
+     * @param  extent    the valid extent of grid coordinates, or {@code null} if unknown.
+     * @param  envelope  the envelope together with CRS of the "real world" coordinates, or {@code null} if unknown.
+     * @throws NullPointerException if {@code extent} and {@code envelope} arguments are both null.
      */
-    public GridGeometry(final GridExtent extent, final CoordinateReferenceSystem crs) {
+    public GridGeometry(final GridExtent extent, final Envelope envelope) {
         this.extent = extent;
+        nonLinears  = 0;
+        /*
+         * If the envelope contains no useful information, then the grid extent is mandatory.
+         * We do that for requerying the GridGeometry to contain at least one information.
+         */
+        boolean nilEnvelope = true;
+        final ImmutableEnvelope env = ImmutableEnvelope.castOrCopy(envelope);
+        if (env == null || ((nilEnvelope = env.isAllNaN()) && env.getCoordinateReferenceSystem() == null)) {
+            ArgumentChecks.ensureNonNull("extent", extent);
+            this.envelope = null;
+        } else {
+            this.envelope = env;
+            if (extent != null && !nilEnvelope) {
+                /*
+                 * If we have both the extent and an envelope with at least one non-NaN coordinates,
+                 * create the `gridToCRS` transform.
+                 */
+                final int srcDim = extent.getDimension();
+                final int tgtDim = env.getDimension();
+                final MatrixSIS affine = Matrices.createZero(tgtDim + 1, srcDim + 1);
+                resolution = new double[tgtDim];
+                for (int j=0; j<tgtDim; j++) {
+                    final double scale;
+                    if (j < srcDim) {
+                        scale = extent.getSize(j, false) / env.getSpan(j);
+                        double offset = env.getMinimum(j);
+                        final long low = extent.getLow(j);
+                        if (low != 0) offset -= low * scale;        // Use `if` for getting a value if scale is NaN.
+                        affine.setElement(j, srcDim, offset);
+                    } else {
+                        scale = Double.NaN;
+                    }
+                    affine.setElement(j, j, resolution[j] = scale);
+                }
+                affine.setElement(tgtDim, srcDim, 1);
+                cornerToCRS = MathTransforms.linear(affine);
+                for (int j=0; j<tgtDim; j++) {
+                    affine.setElement(j, srcDim, affine.getElement(j, srcDim) + 0.5 * resolution[j]);
+                }
+                gridToCRS = MathTransforms.linear(affine);
+                return;
+            }
+        }
         gridToCRS   = null;
         cornerToCRS = null;
         resolution  = null;
-        nonLinears  = 0;
-        if (crs == null) {
-            ArgumentChecks.ensureNonNull("extent", extent);
-            envelope = null;
-        } else {
-            final double[] coords = new double[crs.getCoordinateSystem().getDimension()];
-            Arrays.fill(coords, Double.NaN);
-            envelope = new ImmutableEnvelope(coords, coords, crs);
-        }
     }
 
     /**
@@ -845,31 +888,11 @@ public class GridGeometry implements Serializable {
      * Returns the {@link #timeRange} value without cloning.
      * This method computes the time range when first needed.
      */
-    @SuppressWarnings("fallthrough")
     private Instant[] timeRange() {
         Instant[] times = timeRange;
         if (times == null) {
-            Instant startTime = null;
-            Instant endTime = null;
-            final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(envelope);
-            final DefaultTemporalCRS timeCRS = DefaultTemporalCRS.castOrCopy(org.apache.sis.referencing.CRS.getTemporalComponent(crs));
-            if (timeCRS != null) {
-                final int dim = AxisDirections.indexOfColinear(crs.getCoordinateSystem(), timeCRS.getCoordinateSystem());
-                if (dim >= 0) {
-                    startTime = timeCRS.toInstant(envelope.getLower(dim));
-                    endTime   = timeCRS.toInstant(envelope.getUpper(dim));
-                    if (startTime == null) {
-                        startTime = endTime;
-                        endTime = null;
-                    }
-                }
-            }
-            times = new Instant[(endTime != null) ? 2 : (startTime != null) ? 1 : 0];
-            switch (times.length) {
-                default: times[1] = endTime;        // Fall through.
-                case 1:  times[0] = startTime;      // Fall through.
-                case 0:  break;
-            }
+            final TemporalAccessor t = TemporalAccessor.of(getCoordinateReferenceSystem(envelope), 0);
+            times = (t != null) ? t.getTimeRange(envelope) : new Instant[0];
             timeRange = times;
         }
         return times;

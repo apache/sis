@@ -23,6 +23,7 @@ package org.apache.sis.geometry;
  */
 import java.util.Arrays;
 import java.util.Iterator;
+import java.time.Instant;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import org.opengis.referencing.cs.RangeMeaning;
@@ -34,6 +35,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.internal.referencing.TemporalAccessor;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -113,7 +115,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see Envelope2D
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
@@ -454,6 +456,28 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     public void setToNaN() {                   // Must be overridden in SubEnvelope
         Arrays.fill(coordinates, Double.NaN);
         assert isAllNaN() : this;
+    }
+
+    /**
+     * If this envelope has a temporal component, set this temporal dimension to the given range.
+     * Otherwise this method does nothing. This convenience method converts the given instants to
+     * floating point values using {@link org.apache.sis.referencing.crs.DefaultTemporalCRS},
+     * then delegates to {@link #setRange(int, double, double)}.
+     *
+     * @param  startTime  the lower temporal value, or {@code null} if unspecified.
+     * @param  endTime    the upper temporal value, or {@code null} if unspecified.
+     * @return whether the temporal component has been set.
+     *
+     * @since 1.0
+     */
+    public boolean setTimeRange(final Instant startTime, final Instant endTime) {
+        final TemporalAccessor t = TemporalAccessor.of(crs, 0);
+        if (t != null) {
+            setRange(t.dimension, t.timeCRS.toValue(startTime), t.timeCRS.toValue(endTime));
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
