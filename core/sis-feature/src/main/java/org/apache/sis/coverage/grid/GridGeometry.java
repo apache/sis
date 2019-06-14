@@ -1360,15 +1360,64 @@ public class GridGeometry implements Serializable {
              * Example: Grid extent
              * ├─ Dimension 0: [370 … 389]  (20 cells)
              * └─ Dimension 1: [ 41 … 340] (300 cells)
+             *
+             * We need to use the implementation provided by GridExtent in order
+             * to format correctly the unsigned long numbers for very large sizes.
              */
             if (section(EXTENT, Vocabulary.Keys.GridExtent, true, false)) {
                 extent.appendTo(buffer, vocabulary);
                 writeNodes();
             }
             /*
+             * Example: Geographic extent
+             *  ├─Upper bound:  90°00′00″N  180°00′00″E  2019-05-02T00:00:00Z
+             *  └─Lower bound:  80°00′00″S  180°00′00″W  2019-05-01T21:00:00Z
+             *
+             * The angle and date/time patterns are fixed for now, with a precision equivalent to about 30 metres.
+             * The angles are rounded toward up and down for making sure that the box encloses fully the coverage.
+             */
+            if (section(GEOGRAPHIC_EXTENT, Vocabulary.Keys.GeographicExtent, false, false) ||
+                section(TEMPORAL_EXTENT,   Vocabulary.Keys.TemporalExtent, false, false))
+            {
+                final TableAppender table = new TableAppender(buffer, "  ");
+                final AngleFormat nf = new AngleFormat("DD°MM′SS″", locale);
+                final GeographicBoundingBox bbox = geographicBBox();
+                final Instant[] times = timeRange();
+                vocabulary.appendLabel(Vocabulary.Keys.UpperBound, table);
+                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+                if (bbox != null) {
+                    nf.setRoundingMode(RoundingMode.CEILING);
+                    table.nextColumn(); table.append(nf.format(new  Latitude(bbox.getNorthBoundLatitude())));
+                    table.nextColumn(); table.append(nf.format(new Longitude(bbox.getEastBoundLongitude())));
+                }
+                if (times.length >= 2) {
+                    table.nextColumn();
+                    table.append(times[1].toString());
+                }
+                table.nextLine();
+                table.setCellAlignment(TableAppender.ALIGN_LEFT);
+                vocabulary.appendLabel(Vocabulary.Keys.LowerBound, table);
+                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+                if (bbox != null) {
+                    nf.setRoundingMode(RoundingMode.FLOOR);
+                    table.nextColumn(); table.append(nf.format(new  Latitude(bbox.getSouthBoundLatitude())));
+                    table.nextColumn(); table.append(nf.format(new Longitude(bbox.getWestBoundLongitude())));
+                }
+                if (times.length >= 1) {
+                    table.nextColumn();
+                    table.append(times[0].toString());
+                }
+                table.flush();
+                writeNodes();
+            }
+            /*
              * Example: Envelope
              * ├─ Geodetic latitude:  -69.75 … 80.25  ∆φ = 0.5°
              * └─ Geodetic longitude:   4.75 … 14.75  ∆λ = 0.5°
+             *
+             * The minimum number of fraction digits is the number required for differentiating two consecutive cells.
+             * The maximum number of fraction digits avoids to print more digits than the precision of `double` type.
+             * Those numbers vary for each line depending on the envelope values and the resolution at that line.
              */
             if (section(ENVELOPE, Vocabulary.Keys.Envelope, true, false)) {
                 final boolean appendResolution = (bitmask & RESOLUTION) != 0 && resolution != null;
@@ -1405,11 +1454,11 @@ public class GridGeometry implements Serializable {
                 writeNodes();
             } else if (section(RESOLUTION, Vocabulary.Keys.Resolution, true, false)) {
                 /*
-                 * Formatted only as a fallback if the envelope was not formatted.
-                 * Otherwise, this information is already part of above envelope.
-                 *
                  * Example: Resolution
                  * └─ 0.5° × 0.5°
+                 *
+                 * Formatted only as a fallback if the envelope was not formatted.
+                 * Otherwise, this information is already part of above envelope.
                  */
                 String separator = "";
                 final NumberFormat nf = NumberFormat.getNumberInstance(locale);
@@ -1418,45 +1467,6 @@ public class GridGeometry implements Serializable {
                     separator = " × ";
                 }
                 writeNode();
-            }
-            /*
-             * Example: Geographic extent
-             *  ├─Upper bound:  90°00′00″N  180°00′00″E  2019-05-02T00:00:00Z
-             *  └─Lower bound:  80°00′00″S  180°00′00″W  2019-05-01T21:00:00Z
-             */
-            if (section(GEOGRAPHIC_EXTENT, Vocabulary.Keys.GeographicExtent, false, false) ||
-                section(TEMPORAL_EXTENT,   Vocabulary.Keys.TemporalExtent, false, false))
-            {
-                final TableAppender table = new TableAppender(buffer, "  ");
-                final AngleFormat nf = new AngleFormat("DD°MM′SS″", locale);
-                final GeographicBoundingBox bbox = geographicBBox();
-                final Instant[] times = timeRange();
-                vocabulary.appendLabel(Vocabulary.Keys.UpperBound, table);
-                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
-                if (bbox != null) {
-                    nf.setRoundingMode(RoundingMode.CEILING);
-                    table.nextColumn(); table.append(nf.format(new  Latitude(bbox.getNorthBoundLatitude())));
-                    table.nextColumn(); table.append(nf.format(new Longitude(bbox.getEastBoundLongitude())));
-                }
-                if (times.length >= 2) {
-                    table.nextColumn();
-                    table.append(times[1].toString());
-                }
-                table.nextLine();
-                table.setCellAlignment(TableAppender.ALIGN_LEFT);
-                vocabulary.appendLabel(Vocabulary.Keys.LowerBound, table);
-                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
-                if (bbox != null) {
-                    nf.setRoundingMode(RoundingMode.FLOOR);
-                    table.nextColumn(); table.append(nf.format(new  Latitude(bbox.getSouthBoundLatitude())));
-                    table.nextColumn(); table.append(nf.format(new Longitude(bbox.getWestBoundLongitude())));
-                }
-                if (times.length >= 1) {
-                    table.nextColumn();
-                    table.append(times[0].toString());
-                }
-                table.flush();
-                writeNodes();
             }
             /*
              * Example: Coordinate reference system
