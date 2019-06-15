@@ -30,7 +30,6 @@ import java.text.AttributedCharacterIterator;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.LocalizedParseException;
 
@@ -853,7 +852,7 @@ public class AngleFormat extends Format implements Localized {
                 }
             }
         }
-        final int p = Math.max(0, DecimalFunctions.fractionDigitsForDelta(resolution, false));
+        final int p = Math.max(0, fractionDigitsForDelta(resolution, false));
         fractionFieldWidth = (byte) p;
         minimumFractionDigits = (byte) Math.min(significandFractionDigits, p);
     }

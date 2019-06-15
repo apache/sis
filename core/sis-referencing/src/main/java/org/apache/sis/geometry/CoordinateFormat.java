@@ -553,7 +553,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             final Format format = owner.getFormat(isAngular ? Angle.class : Number.class);
             if (format instanceof NumberFormat) {
                 if (resolution == 0) resolution = 1E-6;                     // Arbitrary value.
-                final int p = Math.max(0, DecimalFunctions.fractionDigitsForDelta(resolution, false));
+                final int p = Math.max(0, DecimalFunctions.fractionDigitsForDelta(resolution, true));
                 final int m = Math.max(0, DecimalFunctions.fractionDigitsForDelta(Math.ulp(magnitude), false));
                 ((NumberFormat) format).setMinimumFractionDigits(Math.min(p, m));
                 ((NumberFormat) format).setMaximumFractionDigits(p);

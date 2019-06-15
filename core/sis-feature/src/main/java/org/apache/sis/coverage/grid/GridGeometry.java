@@ -39,7 +39,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
@@ -1445,7 +1444,7 @@ public class GridGeometry implements Serializable {
                     final double lower = envelope.getLower(i);
                     final double upper = envelope.getUpper(i);
                     final double delta = (resolution != null) ? resolution[i] : Double.NaN;
-                    nf.setMinimumFractionDigits(Math.max(0, DecimalFunctions.fractionDigitsForDelta(delta, false)));
+                    nf.setMinimumFractionDigits(Numerics.fractionDigitsForDelta(delta));
                     nf.setMaximumFractionDigits(Numerics.suggestFractionDigits(lower, upper));
                     final CoordinateSystemAxis axis = (cs != null) ? cs.getAxis(i) : null;
                     final String name = (axis != null) ? axis.getName().getCode() : vocabulary.getString(Vocabulary.Keys.Dimension_1, i);

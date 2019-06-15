@@ -147,7 +147,7 @@ public abstract class AbstractGridResource extends AbstractResource implements G
 
         /**
          * The user-specified range indices in high bits, together with indices order in the low bits.
-         * This array is sorted.
+         * This packing is used for making easier to sort this array in user-specified order.
          */
         private final long[] packed;
 

@@ -330,10 +330,10 @@ public class GridExtent implements GridEnvelope, Serializable {
             final boolean isMaxValid = (max <= Long.MAX_VALUE);
             if (min > max || (enclosing == null && !(isMinValid & isMaxValid))) {
                 /*
-                 * We do not throw an exception if 'enclosing' is non-null and envelope bounds are NaN
+                 * We do not throw an exception if `enclosing` is non-null and envelope bounds are NaN
                  * because this case occurs when the gridToCRS transform has a NaN scale factor.  Such
-                 * scale factor may occur with ranges like [0 … 0]. With a non-null 'enclosing' extent,
-                 * we can still have grid coordinates: they are inherited from 'enclosing'. We require
+                 * scale factor may occur with ranges like [0 … 0]. With a non-null `enclosing` extent,
+                 * we can still have grid coordinates: they are inherited from `enclosing`. We require
                  * the two bounds to be NaN, otherwise the reason for those NaN envelope bounds is not
                  * a NaN scale factor.
                  */
@@ -359,7 +359,7 @@ public class GridExtent implements GridEnvelope, Serializable {
                     if (lower != upper) upper--;                                // For making the coordinate inclusive.
                     /*
                      * The [lower … upper] range may be slightly larger than desired in some rounding error situations.
-                     * For example if 'min' was 1.49999 and 'max' was 2.50001,  the rounding will create a [1…3] range
+                     * For example if `min` was 1.49999 and 'max' was 2.50001,  the rounding will create a [1…3] range
                      * while there is actually only 2 pixels. We detect those rounding problems by comparing the spans
                      * before and after rounding.  We attempt an adjustment only if the span mismatch is ±1, otherwise
                      * the difference is assumed to be caused by overflow. On the three values that can be affected by
@@ -404,8 +404,10 @@ public class GridExtent implements GridEnvelope, Serializable {
                 lower = upper;
             }
             /*
-             * At this point the grid range has been computed (lower to upper).
-             * Compute intersection, then update the coordinates accordingly.
+             * At this point the grid range has been computed (lower to upper). Compute intersection,
+             * then update the coordinates accordingly. Note that if envelope coordinates were NaN,
+             * they will have been replaced by `Long.MIN/MAX_VALUE`, which will usually cause the
+             * assignation to be skipt below (so we keep the values inherited from `enclosing`).
              */
             final int m = getDimension();
             if (enclosing != null) {
@@ -1067,7 +1069,7 @@ public class GridExtent implements GridEnvelope, Serializable {
             if (s > 1) {
                 final int j = i + m;
                 long low  = coordinates[i];
-                long size = coordinates[j] - low + 1;                                             // Result is an unsigned number.
+                long size = coordinates[j] - low + 1;                      // Result is an unsigned number.
                 if (size == 0) {
                     throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
                 }

@@ -500,6 +500,33 @@ public final class Numerics extends Static {
     }
 
     /**
+     * Suggests an amount of fraction digits for formatting in base 10 numbers of the given accuracy.
+     * This method uses heuristic rules that may change in any future SIS version:
+     *
+     * <ul>
+     *   <li>This method returns zero for {@link Double#NaN} of infinities.</li>
+     *   <li>This method arbitrarily returns zero for 0. This is different than
+     *       {@link DecimalFunctions#fractionDigitsForDelta(double, boolean)},
+     *       which returns 324 (maximal numbers of fraction digits an IEEE 754 may have).</li>
+     *   <li>An arbitrary limit is set to 16 digits, which is the number of digits for {@code Math.ulp(1.0)}}.</li>
+     * </ul>
+     *
+     * This method can be used for string representations that are not controlled by the user. If instead the
+     * precision is specified by users, then {@link DecimalFunctions#fractionDigitsForDelta(double, boolean)}
+     * should be used instead in order to honor the user request exactly as specified.
+     *
+     * @param  ulp  the accuracy.
+     * @return suggested amount of fraction digits for the given precision. Always positive.
+     *
+     * @see DecimalFunctions#fractionDigitsForDelta(double, boolean)
+     *
+     * @since 1.0
+     */
+    public static int fractionDigitsForDelta(final double ulp) {
+        return (ulp != 0) ? Math.max(0, Math.min(16, DecimalFunctions.fractionDigitsForDelta(ulp, false))) : 0;
+    }
+
+    /**
      * Suggests an amount of fraction digits for the given values, ignoring NaN and infinities.
      * This method uses heuristic rules that may change in any future SIS version.
      * Current implementation returns a value which avoid printing "garbage" digits
@@ -507,7 +534,7 @@ public final class Numerics extends Static {
      * An arbitrary limit is set to 16 digits, which is the number of digits for {@code Math.ulp(1.0)}}.
      *
      * @param  values  the values for which to get suggested amount of fraction digits.
-     * @return suggested amount of fraction digits for the given precision. Always positive.
+     * @return suggested amount of fraction digits for the given values. Always positive.
      *
      * @since 1.0
      */
@@ -521,7 +548,7 @@ public final class Numerics extends Static {
                 }
             }
         }
-        return Math.max(0, Math.min(16, DecimalFunctions.fractionDigitsForDelta(ulp, false)));
+        return fractionDigitsForDelta(ulp);
     }
 
     /**
@@ -554,7 +581,7 @@ public final class Numerics extends Static {
             delta /= min(stats.count() * 1E+2, 1E+6);                       // Mean delta for uniform distribution + 2 decimal digits.
             delta  = max(delta, max(ulp(minimum), ulp(maximum)));           // Not finer than 'double' accuracy.
         }
-        return DecimalFunctions.fractionDigitsForDelta(delta, false);
+        return fractionDigitsForDelta(delta);
     }
 
     /**
