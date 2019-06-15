@@ -551,7 +551,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
         }
         /*
          * At this point the arguments and the state of this resource have been validated.
-         * There is three ways to read the data, determined by 'bandDimension' value:
+         * There is three ways to read the data, determined by `bandDimension` value:
          *
          *   • (bandDimension < 0): one variable per band (usual case).
          *   • (bandDimension = 0): one variable containing all bands, with bands in the first dimension.

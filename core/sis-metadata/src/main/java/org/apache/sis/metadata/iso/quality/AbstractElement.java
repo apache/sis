@@ -537,7 +537,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @return date or range of dates on which a data quality measure was applied.
      */
     @Override
-    @XmlElement(name = "dateTime", namespace = Namespaces.DQC)
+    @XmlElement(name = "dateTime", namespace = Namespaces.GMD)
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<Date> getDates() {
         if (Semaphores.query(Semaphores.NULL_COLLECTION)) {

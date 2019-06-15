@@ -596,6 +596,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                  *
                  * TODO: operation name should not be "Affine" if 'before' or 'after' transforms are not identity.
                  *       Reminder: the parameter group name here determines the OperationMethod later in this method.
+                 *
+                 *       See https://issues.apache.org/jira/browse/SIS-462
                  */
                 if (datumShift != null) {
                     parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE), datumShift);

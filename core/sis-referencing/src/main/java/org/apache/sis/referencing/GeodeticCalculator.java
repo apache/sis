@@ -960,7 +960,7 @@ public class GeodeticCalculator {
                 final double distance   = getGeodesicDistance();
                 final double precision  = Units.METRE.getConverterTo(unit).convert(Formulas.LINEAR_TOLERANCE);
                 final NumberFormat nf = NumberFormat.getNumberInstance(locale);
-                nf.setMaximumFractionDigits(max(Numerics.suggestFractionDigits(precision), 0));
+                nf.setMaximumFractionDigits(Numerics.fractionDigitsForDelta(precision));
                 resources.appendLabel(Vocabulary.Keys.GeodesicDistance, buffer);
                 buffer.append(' ').append(nf.format(distance))
                       .append(' ').append(unit).append(lineSeparator);

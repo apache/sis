@@ -234,7 +234,14 @@ public final class Axis extends NamedElement {
                 s = unit.indexOf(' ');
             }
             if (s > 0) {
-                return Types.forCodeName(AxisDirection.class, unit.substring(s+1), false);
+                final String direction = unit.substring(s+1);
+                if (direction.length() == 1) {
+                    switch (Character.toUpperCase(direction.charAt(0))) {
+                        case 'E': return AxisDirection.EAST;
+                        case 'N': return AxisDirection.NORTH;
+                    }
+                }
+                return Types.forCodeName(AxisDirection.class, direction, false);
             }
         }
         return null;

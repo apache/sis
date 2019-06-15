@@ -18,6 +18,7 @@ package org.apache.sis.coverage.grid;
 
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
@@ -238,6 +239,7 @@ public final strictfp class GridGeometryTest extends TestCase {
 
     /**
      * Tests the construction from a geospatial envelope.
+     * The "grid to CRS" transform is explicitly given.
      */
     @Test
     public void testFromGeospatialEnvelope() {
@@ -260,6 +262,25 @@ public final strictfp class GridGeometryTest extends TestCase {
                 0,   0.5, -89.75,
                 0.5, 0,  -179.75,
                 0,   0,     1), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER)), STRICT);
+    }
+
+    /**
+     * Tests the construction from a geospatial envelope and an extent.
+     * The "grid to CRS" transform is inferred.
+     *
+     * @see GridExtentTest#testCornerToCRS()
+     */
+    @Test
+    public void testFromExtentAndEnvelope() {
+        final GeneralEnvelope aoi = new GeneralEnvelope(HardCodedCRS.WGS84);
+        aoi.setRange(0,  40, 55);
+        aoi.setRange(1, -10, 70);
+        final GridGeometry grid = new GridGeometry(new GridExtent(null, new long[] {-20, -25}, new long[] {10, 15}, false), aoi);
+        final Matrix matrix = MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER));
+        assertMatrixEquals("cornerToCRS", new Matrix3(
+                0.5,  0,   50,
+                0,    2,   40,
+                0,    0,    1), matrix, STRICT);
     }
 
     /**

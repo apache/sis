@@ -390,6 +390,16 @@ public final class DoubleDouble extends Number {
     }
 
     /**
+     * Sets this {@code DoubleDouble} to the given 64-bits signed integer.
+     *
+     * @param  n  the value to set.
+     */
+    public void set(final long n) {
+        value = n;
+        error = n - (long) value;
+    }
+
+    /**
      * Sets this {@code DoubleDouble} to the same value than the given instance.
      *
      * @param  other  the instance to copy.

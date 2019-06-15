@@ -18,6 +18,8 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.util.FactoryException;
@@ -312,12 +314,12 @@ public class GridDerivation {
         this.scales = scales;                           // No clone needed since the array has been copied above.
         /*
          * If the user did not specified explicitly the resulting grid extent, compute it now.
-         * This operation should never fail since we use known implementation of MathTransform,
+         * This operation should never fail since we use a known implementation of MathTransform,
          * unless some of the given scale factors were too close to zero.
          */
         if (extent == null && baseExtent != null) try {
             final MathTransform mt = toBase.inverse();
-            final GeneralEnvelope indices = baseExtent.toCRS(mt, mt);
+            final GeneralEnvelope indices = baseExtent.toCRS(mt, mt, null);
             extent = new GridExtent(indices, rounding, margin, null, null);
         } catch (TransformException e) {
             throw new IllegalArgumentException(e);
@@ -404,7 +406,7 @@ public class GridDerivation {
                 crsChange  = Envelopes.findOperation(gridOfInterest.envelope, base.envelope);       // Any envelope may be null.
                 mapCorners = path(gridOfInterest, crsChange, base, PixelInCell.CELL_CORNER);
                 mapCenters = path(gridOfInterest, crsChange, base, PixelInCell.CELL_CENTER);
-                clipExtent(domain.toCRS(mapCorners, mapCenters));
+                clipExtent(domain.toCRS(mapCorners, mapCenters, null));
             } catch (FactoryException | TransformException e) {
                 throw new IllegalGridGeometryException(e, "gridOfInterest");
             }
@@ -426,6 +428,7 @@ public class GridDerivation {
 
     /**
      * Returns the concatenation of all transformation steps from the given source to the given target.
+     * The transform maps grid coordinates (not envelopes).
      *
      * @param  source     the source grid geometry.
      * @param  crsChange  the change of coordinate reference system, or {@code null} if none.
@@ -1003,7 +1006,11 @@ public class GridDerivation {
         if (baseExtent != null) {
             TreeTable.Node section = root.newChild();
             section.setValue(column, "Intersection");
-            getIntersection().appendTo(buffer, Vocabulary.getResources(locale));
+            try {
+                getIntersection().appendTo(buffer, Vocabulary.getResources(locale));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
             for (final CharSequence line : CharSequences.splitOnEOL(buffer)) {
                 String text = line.toString().trim();
                 if (!text.isEmpty()) {

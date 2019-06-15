@@ -33,6 +33,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.netcdf.DataTypeTest.class,
     org.apache.sis.internal.netcdf.DecoderTest.class,
     org.apache.sis.internal.netcdf.VariableTest.class,
+    org.apache.sis.internal.netcdf.AxisTest.class,
     org.apache.sis.internal.netcdf.GridTest.class,
     org.apache.sis.internal.netcdf.SatelliteGroundTrackTest.class,
     org.apache.sis.internal.netcdf.impl.ChannelDecoderTest.class,
