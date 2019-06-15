@@ -251,12 +251,14 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      */
     @Override
     final void set(final int row, final int column, final DoubleDouble dd) {
-        int i = row * numCol + column;
-        elements[i] = dd.value;
-        i += numRow * numCol;
-        if (i < elements.length) {
-            elements[i] = dd.error;
+        final int iv = row * numCol + column;
+        final int ie = iv  + numRow * numCol;
+        if (ie < elements.length) {
+            elements[iv] = dd.value;
+            elements[ie] = dd.error;
             assert dd.equals(getNumber(row, column));
+        } else {
+            elements[iv] = dd.doubleValue();
         }
     }
 

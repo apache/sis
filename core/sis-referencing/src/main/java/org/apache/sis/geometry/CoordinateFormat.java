@@ -46,6 +46,7 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -552,8 +553,8 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             final Format format = owner.getFormat(isAngular ? Angle.class : Number.class);
             if (format instanceof NumberFormat) {
                 if (resolution == 0) resolution = 1E-6;                     // Arbitrary value.
-                final int p = Numerics.suggestFractionDigits(resolution);
-                final int m = Numerics.suggestFractionDigits(Math.ulp(magnitude));
+                final int p = Math.max(0, DecimalFunctions.fractionDigitsForDelta(resolution, true));
+                final int m = Math.max(0, DecimalFunctions.fractionDigitsForDelta(Math.ulp(magnitude), false));
                 ((NumberFormat) format).setMinimumFractionDigits(Math.min(p, m));
                 ((NumberFormat) format).setMaximumFractionDigits(p);
             } else if (format instanceof AngleFormat) {

@@ -59,6 +59,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
 
     /**
      * Creates a new geographic envelope for the given coordinate values.
+     * The {@literal [xmin … xmax]} may span the anti-meridian.
      * This method is overridden by {@link SubEnvelopeTest}.
      */
     GeneralEnvelope create(final double xmin, final double ymin, final double xmax, final double ymax) {
@@ -310,7 +311,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         //  └──────────┘
         e1.setEnvelope(20, -20,  80, 12);
         e2.setEnvelope(40, -10, 100, 30);
-        final double ymin=-20, ymax=30; // Will not change anymore
+        final double ymin=-20, ymax=30;     // Will not change anymore.
         assertUnionEquals(e1, e2, 20, ymin, 100, ymax, false, false);
         //  ────┐  ┌────
         //  ──┐ │  │ ┌──
@@ -353,6 +354,66 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         // Post-test verification, mostly for SubEnvelope.
         verifyInvariants(e1);
         verifyInvariants(e2);
+    }
+
+    /**
+     * Tests {@link GeneralEnvelope#intersect(Envelope)} with NaN values.
+     */
+    @Test
+    public void testIntersectionWithNaN() {
+        GeneralEnvelope e1 = create(20, -20, 80, 10);
+        GeneralEnvelope e2 = create(10, -30, 62, NaN);
+        e1.intersect(e2); assertEnvelopeEquals(e1, 20, -20, 62, 10);    // ymin: unchanged
+        e2.intersect(e1); assertEnvelopeEquals(e2, 20, -20, 62, NaN);   // ymin: -30 → -20
+
+        // Same test but NaN on the lower value.
+        e1 = create(20, -20, 80, 10);
+        e2 = create(10, NaN, 62,  8);
+        e1.intersect(e2); assertEnvelopeEquals(e1, 20, -20, 62, 8);     // ymax: 10 → 8
+        e2.intersect(e1); assertEnvelopeEquals(e2, 20, NaN, 62, 8);     // ymax: unchanged
+
+        // Similar test, but span anti-meridian.
+        e1 = create(80, -20,  20, 10);
+        e2 = create(30, -30, NaN, 15);
+        e1.intersect(e2); assertEnvelopeEquals(e1, 80, -20, 20,  10);   // [x0 … x1] range unchanged.
+        e2.intersect(e1); assertEnvelopeEquals(e2, 30, -20, NaN, 10);   // Idem.
+
+        // Same test, but NaN on the lower value.
+        e1 = create( 80, -20, 20, 10);
+        e2 = create(NaN, -30, 62, 15);
+        e1.intersect(e2); assertEnvelopeEquals(e1,  80, -20, 20, 10);   // [x0 … x1] range unchanged.
+        e2.intersect(e1); assertEnvelopeEquals(e2, NaN, -20, 62, 10);   // Idem.
+    }
+
+    /**
+     * Tests {@link GeneralEnvelope#add(Envelope)} with NaN values.
+     */
+    @Test
+    public void testUnionWithNaN() {
+        GeneralEnvelope e1 = create(20, -20, 80,  10);
+        GeneralEnvelope e2 = create(10, -30, 62, NaN);
+
+        // Expect ymin to be updated even if ymax is NaN.
+        e1.add(e2); assertEnvelopeEquals(e1, 10, -30, 80, 10);          // ymin: -20 → -30
+        e2.add(e1); assertEnvelopeEquals(e2, 10, -30, 80, NaN);         // ymin: unchanged
+
+        // Same test but NaN on the lower value.
+        e1 = create(20, -20, 80, 10);
+        e2 = create(10, NaN, 62, 25);
+        e1.add(e2); assertEnvelopeEquals(e1, 10, -20, 80, 25);          // ymax: 10 → 25
+        e2.add(e1); assertEnvelopeEquals(e2, 10, NaN, 80, 25);          // ymax: unchanged
+
+        // Similar test, but span anti-meridian.
+        e1 = create(80, -20,  20, 10);
+        e2 = create(30, -30, NaN, 15);
+        e1.add(e2); assertEnvelopeEquals(e1, 80, -30, 20,  15);         // [x0 … x1] range unchanged.
+        e2.add(e1); assertEnvelopeEquals(e2, 30, -30, NaN, 15);         // Idem.
+
+        // Same test, but NaN on the lower value.
+        e1 = create( 80, -20, 20, 10);
+        e2 = create(NaN, -30, 62, 15);
+        e1.add(e2); assertEnvelopeEquals(e1,  80, -30, 20, 15);         // [x0 … x1] range unchanged.
+        e2.add(e1); assertEnvelopeEquals(e2, NaN, -30, 62, 15);         // Idem.
     }
 
     /**

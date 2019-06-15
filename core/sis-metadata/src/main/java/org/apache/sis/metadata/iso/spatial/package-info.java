@@ -93,7 +93,7 @@
            xmlns = {
                 @XmlNs(prefix = "msr", namespaceURI = Namespaces.MSR),      // Metadata for Spatial Representation
                 @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
-                @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC)       // Data Quality Common Classes
+           //   @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC)       // Data Quality Common Classes
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({

@@ -113,12 +113,14 @@ public final strictfp class CodeListMarshallingTest extends TestCase {
     }
 
     /**
-     * Tests marshalling using the ISO URL.
+     * Tests marshalling using legacy ISO URLs.
      *
      * @throws JAXBException if an error occurred while marshalling the XML.
+     *
+     * @see <a href="https://standards.iso.org/iso/19115/-3/">ISO schemas</a>
      */
     @Test
-    public void testISO_URL() throws JAXBException {
+    public void testLegacyISO_URL() throws JAXBException {
         final String expected = getResponsiblePartyXML("http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/");
         final Responsibility rp = unmarshal(Responsibility.class, expected);
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, rp.getRole());

@@ -925,19 +925,16 @@ public class Formatter implements Localized {
      * </ul>
      *
      * Note that according ISO 19162, heights are positive toward up and relative to an unspecified mean sea level.
-     * It is caller's responsibility to ensure that the given range complies with that specification as much as
-     * possible.
+     * It is caller's responsibility to ensure that the given range complies with that specification as much as possible.
      */
     private void appendVerticalExtent(final MeasurementRange<Double> range) {
         if (range != null) {
             final double min = range.getMinDouble();
             final double max = range.getMaxDouble();
-            int minimumFractionDigits = Math.max(0, DecimalFunctions.fractionDigitsForDelta(max - min, false));
-            int maximumFractionDigits = minimumFractionDigits + 2;          // Arbitrarily allow 2 more digits.
-            if (maximumFractionDigits > VERTICAL_ACCURACY) {
-                maximumFractionDigits = VERTICAL_ACCURACY;
-                minimumFractionDigits = 0;
-            }
+            int minimumFractionDigits = Numerics.fractionDigitsForDelta(max - min);
+            int maximumFractionDigits = Math.min(Math.min(
+                    Numerics.suggestFractionDigits(min, max),
+                    minimumFractionDigits + 2), VERTICAL_ACCURACY);             // Arbitrarily limit to 2 more digits.
             openElement(true, WKTKeywords.VerticalExtent);
             setColor(ElementKind.EXTENT);
             numberFormat.setMinimumFractionDigits(minimumFractionDigits);

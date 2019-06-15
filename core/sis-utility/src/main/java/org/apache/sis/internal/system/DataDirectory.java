@@ -57,6 +57,15 @@ public enum DataDirectory {
     DOMAINS_OF_VALIDITY,
 
     /**
+     * The {@code "Schemas"} directory.
+     * This directory contains XML schemas published by ISO. If this directory is present,
+     * it should contains a {@code "iso/19115/-3"} sub-directory among others.
+     *
+     * @see <a href="https://standards.iso.org/iso/19115/-3/">ISO schemas for metadata</a>
+     */
+    SCHEMAS,
+
+    /**
      * The {@code "Tests" directory}.
      * This directory is used for optional test files that are too large for inclusion in source code repository.
      * This is used at build time of Apache SIS project, but not used during normal execution.

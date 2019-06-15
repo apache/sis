@@ -23,6 +23,7 @@ package org.apache.sis.geometry;
  */
 import java.util.Arrays;
 import java.util.Iterator;
+import java.time.Instant;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import org.opengis.referencing.cs.RangeMeaning;
@@ -34,6 +35,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.internal.referencing.TemporalAccessor;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -113,7 +115,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see Envelope2D
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
@@ -457,6 +459,28 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     }
 
     /**
+     * If this envelope has a temporal component, set this temporal dimension to the given range.
+     * Otherwise this method does nothing. This convenience method converts the given instants to
+     * floating point values using {@link org.apache.sis.referencing.crs.DefaultTemporalCRS},
+     * then delegates to {@link #setRange(int, double, double)}.
+     *
+     * @param  startTime  the lower temporal value, or {@code null} if unspecified.
+     * @param  endTime    the upper temporal value, or {@code null} if unspecified.
+     * @return whether the temporal component has been set.
+     *
+     * @since 1.0
+     */
+    public boolean setTimeRange(final Instant startTime, final Instant endTime) {
+        final TemporalAccessor t = TemporalAccessor.of(crs, 0);
+        if (t != null) {
+            setRange(t.dimension, t.timeCRS.toValue(startTime), t.timeCRS.toValue(endTime));
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Translates the envelope by the given vector. For every dimension <var>i</var>, the
      * {@linkplain #getLower(int) lower} and {@linkplain #getUpper(int) upper} values are
      * increased by {@code vector[i]}.
@@ -584,8 +608,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     }
 
     /**
-     * Adds an envelope object to this envelope. The resulting envelope is the union of the
-     * two {@code Envelope} objects.
+     * Adds an envelope object to this envelope.
+     * The resulting envelope is the union of the two {@code Envelope} objects.
      *
      * <div class="section">Pre-conditions</div>
      * This method assumes that the specified envelope uses the same CRS than this envelope.
@@ -596,6 +620,33 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * the anti-meridian, then the result of the {@code add} operation may be an envelope expanding
      * to infinities. In such case, the coordinate range will be either [−∞…∞] or [0…−0] depending on
      * whatever the original range span the anti-meridian or not.
+     *
+     * <div class="section">Handling of NaN values</div>
+     * {@link Double#NaN} values may be present in any dimension, in the lower coordinate, upper coordinate or both.
+     * The behavior of this method in such case depends where the {@code NaN} values appear and whether an envelope
+     * spans the anti-meridian:
+     *
+     * <ul class="verbose">
+     *   <li>If this envelope or the given envelope spans anti-meridian in the dimension containing {@code NaN} coordinates,
+     *     then this method does not changes the coordinates in that dimension. The rational for such conservative approach
+     *     is because union computation depends on whether the other envelope spans anti-meridian too, which is unknown
+     *     because at least one envelope bounds is {@code NaN}. Since anti-meridian spanning has been detected in an envelope,
+     *     there is suspicion about whether the other envelope could span anti-meridian too.</li>
+     *   <li>Otherwise since the envelope containing real values does not span anti-meridian in that dimension,
+     *     this method assumes that the envelope containing {@code NaN} values does not span anti-meridian neither.
+     *     This assumption is not guaranteed to be true, but cover common cases.
+     *     With this assumption in mind:
+     *   <ul class="verbose">
+     *     <li>All {@code NaN} coordinates in the <em>given</em> envelope are ignored, <i>i.e.</i>
+     *       this method does not replace finite coordinates in this envelope by {@code NaN} values from the given envelope.
+     *       Note that if only the lower or upper bound is {@code NaN}, the other bound will still
+     *       be used for computing union with the assumption described in above paragraph.</li>
+     *     <li>All {@code NaN} coordinates in <em>this</em> envelope are left unchanged, <i>i.e.</i> the union will
+     *       still contain all the {@code NaN} values that this envelope had before {@code add(Envelope)} invocation.
+     *       Note that if only the lower or upper bound is {@code NaN}, the other bound will still
+     *       be used for computing union with the assumption described in above paragraph.</li>
+     *   </ul></li>
+     * </ul>
      *
      * @param  envelope  the {@code Envelope} to add to this envelope.
      * @throws MismatchedDimensionException if the given envelope does not have the expected number of dimensions.
@@ -674,15 +725,15 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                     // The difference is when a value is NaN.
                     if (left > right) coordinates[iLower] = min1;
                     if (right > left) coordinates[iUpper] = max1;     // This is the case illustrated above.
-                    continue;                                       // We are done, go to the next dimension.
+                    continue;                                         // We are done, go to the next dimension.
                 }
                 // If we reach this point, the given envelope fills completly the "exclusion area"
                 // of this envelope. As a consequence this envelope is now spanning to infinities.
                 // We will set that fact close to the end of this loop.
             } else {
                 /*
-                 * Opposite of above case: this envelope is "normal" or has NaN values, and the
-                 * given envelope spans to infinities.
+                 * Opposite of above case: this envelope is "normal" or has NaN values,
+                 * and the given envelope spans to infinities.
                  */
                 if (max0 <= max1 || min0 >= min1) {
                     coordinates[iLower] = min1;
@@ -723,6 +774,36 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
      * This method supports envelopes spanning the anti-meridian.
      *
+     * <div class="section">Handling of NaN values</div>
+     * {@link Double#NaN} values may be present in any dimension, in the lower coordinate, upper coordinate or both.
+     * The behavior of this method in such case depends where the {@code NaN} values appear and whether an envelope
+     * spans the anti-meridian:
+     *
+     * <ul class="verbose">
+     *   <li>If this envelope or the given envelope spans anti-meridian in the dimension containing {@code NaN} coordinates,
+     *     then this method does not changes the coordinates in that dimension. The rational for such conservative approach
+     *     is because intersection computation depends on whether the other envelope spans anti-meridian too, which is unknown
+     *     because at least one envelope bounds is {@code NaN}. Since anti-meridian spanning has been detected in an envelope,
+     *     there is suspicion about whether the other envelope could span anti-meridian too.</li>
+     *   <li>Otherwise since the envelope containing real values does not span anti-meridian in that dimension,
+     *     this method assumes that the envelope containing {@code NaN} values does not span anti-meridian neither.
+     *     This assumption is not guaranteed to be true, but cover common cases.
+     *     With this assumption in mind:
+     *   <ul class="verbose">
+     *     <li>All {@code NaN} coordinates in the <em>given</em> envelope are ignored, <i>i.e.</i>
+     *       this method does not replace finite coordinates in this envelope by {@code NaN} values from the given envelope.
+     *       Note that if only the lower or upper bound is {@code NaN}, the other bound will still
+     *       be used for computing intersection with the assumption described in above paragraph.</li>
+     *     <li>All {@code NaN} coordinates in <em>this</em> envelope are left unchanged, <i>i.e.</i> the intersection will
+     *       still contain all the {@code NaN} values that this envelope had before {@code intersect(Envelope)} invocation.
+     *       Note that if only the lower or upper bound is {@code NaN}, the other bound will still
+     *       be used for computing intersection with the assumption described in above paragraph.</li>
+     *   </ul></li>
+     * </ul>
+     *
+     * {@link Double#NaN} coordinates may appear as a result of intersection, even if such values were not present
+     * in any source envelopes, if the two envelopes do not intersect in some dimensions.
+     *
      * @param  envelope  the {@code Envelope} to intersect to this envelope.
      * @throws MismatchedDimensionException if the given envelope does not have the expected number of dimensions.
      * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
@@ -739,7 +820,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         final DirectPosition lower = envelope.getLowerCorner();
         final DirectPosition upper = envelope.getUpperCorner();
         final int d = coordinates.length >>> 1;
-        for (int i=beginIndex; i<dimension; i++) {
+        for (int i=0; i<dimension; i++) {
             final int iLower = beginIndex + i;
             final int iUpper = iLower + d;
             final double min0  = coordinates[iLower];
@@ -775,26 +856,24 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                     coordinates[iLower] = coordinates[iUpper] = Double.NaN;
                     continue;
                 }
-            } else {
+            } else if (!Double.isNaN(span0) && !Double.isNaN(span1)) {
                 int intersect = 0;                          // A bitmask of intersections (two bits).
-                if (!Double.isNaN(span0) && !Double.isNaN(span1)) {
-                    if (isNegativeUnsafe(span0)) {
-                        /*
-                         * The first line below checks for the case illustrated below. The second
-                         * line does the same check, but with the small rectangle on the right side.
-                         *    ─────┐      ┌─────              ──────────┐  ┌─────
-                         *       ┌─┼────┐ │           or        ┌────┐  │  │
-                         *       └─┼────┘ │                     └────┘  │  │
-                         *    ─────┘      └─────              ──────────┘  └─────
-                         */
-                        if (min1 <= max0) {intersect  = 1; coordinates[iLower] = min1;}
-                        if (max1 >= min0) {intersect |= 2; coordinates[iUpper] = max1;}
-                    } else {
-                        // Same than above, but with indices 0 and 1 interchanged.
-                        // No need to set coordinate values since they would be the same.
-                        if (min0 <= max1) {intersect  = 1;}
-                        if (max0 >= min1) {intersect |= 2;}
-                    }
+                if (isNegativeUnsafe(span0)) {
+                    /*
+                     * The first line below checks for the case illustrated below. The second
+                     * line does the same check, but with the small rectangle on the right side.
+                     *    ─────┐      ┌─────              ──────────┐  ┌─────
+                     *       ┌─┼────┐ │           or        ┌────┐  │  │
+                     *       └─┼────┘ │                     └────┘  │  │
+                     *    ─────┘      └─────              ──────────┘  └─────
+                     */
+                    if (min1 <= max0) {intersect  = 1; coordinates[iLower] = min1;}
+                    if (max1 >= min0) {intersect |= 2; coordinates[iUpper] = max1;}
+                } else {
+                    // Same than above, but with indices 0 and 1 interchanged.
+                    // No need to set coordinate values since they would be the same.
+                    if (min0 <= max1) {intersect  = 1;}
+                    if (max0 >= min1) {intersect |= 2;}
                 }
                 /*
                  * Cases 0 and 3 are illustrated below. In case 1 and 2, we will set
@@ -813,8 +892,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                  */
                 switch (intersect) {
                     default: throw new AssertionError(intersect);
-                    case 1: if (max1 < max0) coordinates[iUpper] = max1; break;
-                    case 2: if (min1 > min0) coordinates[iLower] = min1; break;
+                    case 1: if (max1 < max0) coordinates[iUpper] = max1; continue;
+                    case 2: if (min1 > min0) coordinates[iLower] = min1; continue;
                     case 3: // Fall through
                     case 0: {
                         /*
@@ -835,16 +914,24 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                         }
                         coordinates[iLower] = min;
                         coordinates[iUpper] = max;
-                        break;
+                        continue;
                     }
                 }
-                continue;
+            } else {
+                /*
+                 * We reach this point only if at least one value is NaN. It may be in this envelope or in the given envelope.
+                 * If one of the two envelopes spans the anti-meridian in current dimension, do nothing for the reasons given
+                 * in method javadoc. Otherwise process the non-NaN coordinates like ordinary envelopes, ignoring NaN.
+                 */
+                if (isNegative(span0) || isNegative(span1)) {
+                    continue;
+                }
             }
             if (min1 > min0) coordinates[iLower] = min1;
             if (max1 < max0) coordinates[iUpper] = max1;
         }
         // Tests only if the interection result is non-empty.
-        assert isEmpty() || AbstractEnvelope.castOrCopy(envelope).contains(this) : this;
+        assert isEmpty() || hasNaN(envelope) || AbstractEnvelope.castOrCopy(envelope).contains(this) : this;
     }
 
     /**

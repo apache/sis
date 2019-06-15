@@ -146,6 +146,24 @@ public strictfp class VariableTest extends TestCase {
     @Test
     public void testParseUnit() throws Exception {
         final Variable variable = selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getVariables()[0];
+        /*
+         * From CF-Conventions:
+         * The recommended unit of latitude is degrees_north. Also acceptable are degree_north, degree_N, degrees_N, degreeN, and degreesN.
+         * The recommended unit of longitude is degrees_east. Also acceptable are degree_east, degree_E, degrees_E, degreeE, and degreesE.
+         */
+        assertSame(Units.DEGREE, variable.parseUnit("degrees_north"));
+        assertSame(Units.DEGREE, variable.parseUnit("degrees_east"));
+        assertSame(Units.DEGREE, variable.parseUnit("degree_north"));
+        assertSame(Units.DEGREE, variable.parseUnit("degree_east"));
+        assertSame(Units.DEGREE, variable.parseUnit("degrees_N"));
+        assertSame(Units.DEGREE, variable.parseUnit("degrees_E"));
+        assertSame(Units.DEGREE, variable.parseUnit("degree_N"));
+        assertSame(Units.DEGREE, variable.parseUnit("degree_E"));
+        assertSame(Units.DEGREE, variable.parseUnit("degreesN"));
+        assertSame(Units.DEGREE, variable.parseUnit("degreesE"));
+        assertSame(Units.DEGREE, variable.parseUnit("degreeN"));
+        assertSame(Units.DEGREE, variable.parseUnit("degreeE"));
+
         assertSame(Units.SECOND, variable.parseUnit("s"));
         assertSame(Units.SECOND, variable.parseUnit("second"));
         assertSame(Units.SECOND, variable.parseUnit("seconds"));

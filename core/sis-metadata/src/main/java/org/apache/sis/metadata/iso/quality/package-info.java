@@ -122,7 +122,7 @@
            xmlns = {
                 @XmlNs(prefix = "mdq", namespaceURI = Namespaces.MDQ),      // Metadata for Data Quality
                 @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution
-                @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC),      // Data Quality Common Classes
+           //   @XmlNs(prefix = "dqc", namespaceURI = Namespaces.DQC),      // Data Quality Common Classes
                 @XmlNs(prefix = "mcc", namespaceURI = Namespaces.MCC),      // Metadata Common Classes
                 @XmlNs(prefix = "gmd", namespaceURI = LegacyNamespaces.GMD),
                 @XmlNs(prefix = "gmi", namespaceURI = LegacyNamespaces.GMI)

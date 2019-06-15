@@ -19,12 +19,17 @@ package org.apache.sis.coverage.grid;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Locale;
+import java.util.Optional;
+import java.time.Instant;
+import java.text.NumberFormat;
+import java.math.RoundingMode;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.awt.image.RenderedImage;            // For javadoc only.
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.PixelInCell;
@@ -35,17 +40,26 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.measure.AngleFormat;
+import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.internal.referencing.TemporalAccessor;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
@@ -58,6 +72,8 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.io.TableAppender;
+import org.apache.sis.xml.NilObject;
+import org.apache.sis.xml.NilReason;
 
 
 /**
@@ -141,6 +157,26 @@ public class GridGeometry implements Serializable {
     public static final int RESOLUTION = 16;
 
     /**
+     * A bitmask to specify the validity of the geographic bounding box.
+     * This information can sometime be derived from the envelope and the CRS.
+     * It is an optional element even with a complete grid geometry since the
+     * coordinate reference system is not required to have an horizontal component.
+     *
+     * @see #getGeographicExtent()
+     */
+    public static final int GEOGRAPHIC_EXTENT = 32;
+
+    /**
+     * A bitmask to specify the validity of the temporal period.
+     * This information can sometime be derived from the envelope and the CRS.
+     * It is an optional element even with a complete grid geometry since the
+     * coordinate reference system is not required to have a temporal component.
+     *
+     * @see #getTemporalExtent()
+     */
+    public static final int TEMPORAL_EXTENT = 64;
+
+    /**
      * The valid domain of a grid coverage, or {@code null} if unknown. The lowest valid grid coordinate is zero
      * for {@link java.awt.image.BufferedImage}, but may be non-zero for arbitrary {@link RenderedImage}.
      * A grid with 512 cells can have a minimum coordinate of 0 and maximum of 511.
@@ -200,6 +236,25 @@ public class GridGeometry implements Serializable {
      * @see #isConversionLinear(int...)
      */
     private final long nonLinears;
+
+    /**
+     * The geographic bounding box as an unmodifiable metadata instance, or {@code null} if not yet computed.
+     * If no geographic extent can be computed for the {@linkplain #envelope}, then this is set to {@link NilObject}.
+     *
+     * @see #GEOGRAPHIC_EXTENT
+     * @see #getGeographicExtent()
+     */
+    private transient volatile GeographicBoundingBox geographicBBox;
+
+    /**
+     * The start time and end time, or {@code null} if not yet computed. If there is no time range, then the array is empty.
+     * If there is only a start time or an end time, then the array length is 1. Otherwise the array length is 2.
+     *
+     * @see #TEMPORAL_EXTENT
+     * @see #getTemporalExtent()
+     */
+    @SuppressWarnings("VolatileArrayField")                 // Safe because array will not be modified after construction.
+    private transient volatile Instant[] timeRange;
 
     /**
      * An "empty" grid geometry with no value defined. All getter methods invoked on this instance will cause
@@ -284,7 +339,7 @@ public class GridGeometry implements Serializable {
             nonLinears  = findNonLinearTargets(gridToCRS);
         }
         ImmutableEnvelope envelope = other.envelope;            // We will share the same instance if possible.
-        ImmutableEnvelope computed = computeEnvelope(gridToCRS, (envelope != null) ? envelope.getCoordinateReferenceSystem() : null, envelope);
+        ImmutableEnvelope computed = computeEnvelope(gridToCRS, getCoordinateReferenceSystem(envelope), envelope);
         if (computed == null || !computed.equals(envelope)) {
             envelope = computed;
         }
@@ -367,7 +422,7 @@ public class GridGeometry implements Serializable {
     {
         final GeneralEnvelope env;
         if (extent != null && cornerToCRS != null) {
-            env = extent.toCRS(cornerToCRS, specified);
+            env = extent.toCRS(cornerToCRS, specified, limits);
             env.setCoordinateReferenceSystem(crs);
             if (limits != null) {
                 env.intersect(limits);
@@ -435,7 +490,7 @@ public class GridGeometry implements Serializable {
             try {
                 env = Envelopes.transform(cornerToCRS.inverse(), envelope);
                 extent = new GridExtent(env, rounding, null, null, null);
-                env = extent.toCRS(cornerToCRS, gridToCRS);         // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
+                env = extent.toCRS(cornerToCRS, gridToCRS, envelope);     // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
             } catch (TransformException e) {
                 throw new IllegalGridGeometryException(e, "gridToCRS");
             }
@@ -484,27 +539,63 @@ public class GridGeometry implements Serializable {
     }
 
     /**
-     * Creates a grid geometry with only an extent and a coordinate reference system.
+     * Creates a grid geometry with an extent and an envelope.
      * This constructor can be used when the <cite>grid to CRS</cite> transform is unknown.
+     * If only the coordinate reference system is known, then the envelope coordinates can be
+     * {@link GeneralEnvelope#isAllNaN() NaN}.
      *
-     * @param  extent     the valid extent of grid coordinates, or {@code null} if unknown.
-     * @param  crs        the coordinate reference system of the "real world" coordinates, or {@code null} if unknown.
-     * @throws NullPointerException if {@code extent} and {@code crs} arguments are both null.
+     * <p>This constructor is generally not recommended since creating a <cite>grid to CRS</cite> from an envelope
+     * requires assumption on axis order and axis directions. This constructor assumes that all grid axes are in the
+     * same order than CRS axes and no axis is flipped. This straightforward approach often results in the <var>y</var>
+     * axis to be oriented toward up, not down as expected in rendered images. Those assumptions are often not suitable.
+     * For better control, use one of the constructors expecting a {@link MathTransform} argument instead.
+     * This constructor is provided mostly as a convenience for testing purposes, or when only the extent is known.</p>
+     *
+     * @param  extent    the valid extent of grid coordinates, or {@code null} if unknown.
+     * @param  envelope  the envelope together with CRS of the "real world" coordinates, or {@code null} if unknown.
+     * @throws NullPointerException if {@code extent} and {@code envelope} arguments are both null.
      */
-    public GridGeometry(final GridExtent extent, final CoordinateReferenceSystem crs) {
+    public GridGeometry(final GridExtent extent, final Envelope envelope) {
         this.extent = extent;
+        nonLinears  = 0;
+        /*
+         * If the envelope contains no useful information, then the grid extent is mandatory.
+         * We do that for forcing grid geometries to contain at least one information.
+         */
+        boolean nilEnvelope = true;
+        final ImmutableEnvelope env = ImmutableEnvelope.castOrCopy(envelope);
+        if (env == null || ((nilEnvelope = env.isAllNaN()) && env.getCoordinateReferenceSystem() == null)) {
+            ArgumentChecks.ensureNonNull("extent", extent);
+            this.envelope = null;
+        } else {
+            this.envelope = env;
+            if (extent != null && !nilEnvelope) {
+                /*
+                 * If we have both the extent and an envelope with at least one non-NaN coordinates,
+                 * create the `cornerToCRS` transform. The `gridToCRS` calculation uses the knowledge
+                 * that all scale factors are on diagonal with no sign reversal, which allows simpler
+                 * calculation than full matrix multiplication. Use double-double arithmetic everywhere.
+                 */
+                final MatrixSIS affine = extent.cornerToCRS(env);
+                cornerToCRS = MathTransforms.linear(affine);
+                final int srcDim = cornerToCRS.getSourceDimensions();       // Translation column in matrix.
+                final int tgtDim = cornerToCRS.getTargetDimensions();       // Number of matrix rows before last row.
+                resolution = new double[tgtDim];
+                for (int j=0; j<tgtDim; j++) {
+                    final DoubleDouble scale  = (DoubleDouble) affine.getNumber(j, j);
+                    final DoubleDouble offset = (DoubleDouble) affine.getNumber(j, srcDim);
+                    resolution[j] = scale.doubleValue();
+                    scale.multiply(0.5);
+                    offset.add(scale);
+                    affine.setNumber(j, srcDim, offset);
+                }
+                gridToCRS = MathTransforms.linear(affine);
+                return;
+            }
+        }
         gridToCRS   = null;
         cornerToCRS = null;
         resolution  = null;
-        nonLinears  = 0;
-        if (crs == null) {
-            ArgumentChecks.ensureNonNull("extent", extent);
-            envelope = null;
-        } else {
-            final double[] coords = new double[crs.getCoordinateSystem().getDimension()];
-            Arrays.fill(coords, Double.NaN);
-            envelope = new ImmutableEnvelope(coords, coords, crs);
-        }
     }
 
     /**
@@ -618,41 +709,6 @@ public class GridGeometry implements Serializable {
     }
 
     /**
-     * Returns the "real world" coordinate reference system.
-     *
-     * @return the coordinate reference system (never {@code null}).
-     * @throws IncompleteGridGeometryException if this grid geometry has no CRS —
-     *         i.e. <code>{@linkplain #isDefined isDefined}({@linkplain #CRS})</code> returned {@code false}.
-     */
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        if (envelope != null) {
-            final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
-            if (crs != null) return crs;
-        }
-        throw incomplete(CRS, Resources.Keys.UnspecifiedCRS);
-    }
-
-    /**
-     * Returns the bounding box of "real world" coordinates for this grid geometry.
-     * This envelope is computed from the {@linkplain #getExtent() grid extent}, which is
-     * {@linkplain #getGridToCRS(PixelInCell) transformed} to the "real world" coordinate system.
-     * The initial envelope encompasses all cell surfaces, from the left border of leftmost cell
-     * to the right border of the rightmost cell and similarly along other axes.
-     * If this grid geometry is a {@linkplain GridDerivation#subgrid(Envelope, double...) subgrid}, then the envelope is also
-     * {@linkplain GeneralEnvelope#intersect(Envelope) clipped} to the envelope of the original (non subsampled) grid geometry.
-     *
-     * @return the bounding box in "real world" coordinates (never {@code null}).
-     * @throws IncompleteGridGeometryException if this grid geometry has no envelope —
-     *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #ENVELOPE})</code> returned {@code false}.
-     */
-    public Envelope getEnvelope() {
-        if (envelope != null && !envelope.isAllNaN()) {
-            return envelope;
-        }
-        throw incomplete(ENVELOPE, (extent == null) ? Resources.Keys.UnspecifiedGridExtent : Resources.Keys.UnspecifiedTransform);
-    }
-
-    /**
      * Returns the valid coordinate range of a grid coverage. The lowest valid grid coordinate is zero
      * for {@link java.awt.image.BufferedImage}, but may be non-zero for arbitrary {@link RenderedImage}.
      * A grid with 512 cells can have a minimum coordinate of 0 and maximum of 511.
@@ -724,6 +780,116 @@ public class GridGeometry implements Serializable {
      * Experience shows that 0.5 pixel offset in image localization is a recurrent problem. We really want to
      * force developers to think about whether they want a gridToCRS transform locating pixel corner or center.
      */
+
+    /**
+     * Returns the coordinate reference system of the given envelope if defined, or {@code null} if none.
+     * Contrarily to {@link #getCoordinateReferenceSystem()}, this method does not throw exception.
+     */
+    private static CoordinateReferenceSystem getCoordinateReferenceSystem(final Envelope envelope) {
+        return (envelope != null) ? envelope.getCoordinateReferenceSystem() : null;
+    }
+
+    /**
+     * Returns the "real world" coordinate reference system.
+     *
+     * @return the coordinate reference system (never {@code null}).
+     * @throws IncompleteGridGeometryException if this grid geometry has no CRS —
+     *         i.e. <code>{@linkplain #isDefined isDefined}({@linkplain #CRS})</code> returned {@code false}.
+     */
+    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(envelope);
+        if (crs != null) return crs;
+        throw incomplete(CRS, Resources.Keys.UnspecifiedCRS);
+    }
+
+    /**
+     * Returns the bounding box of "real world" coordinates for this grid geometry.
+     * This envelope is computed from the {@linkplain #getExtent() grid extent}, which is
+     * {@linkplain #getGridToCRS(PixelInCell) transformed} to the "real world" coordinate system.
+     * The initial envelope encompasses all cell surfaces, from the left border of leftmost cell
+     * to the right border of the rightmost cell and similarly along other axes.
+     * If this grid geometry is a {@linkplain GridDerivation#subgrid(Envelope, double...) subgrid}, then the envelope is also
+     * {@linkplain GeneralEnvelope#intersect(Envelope) clipped} to the envelope of the original (non subsampled) grid geometry.
+     *
+     * @return the bounding box in "real world" coordinates (never {@code null}).
+     * @throws IncompleteGridGeometryException if this grid geometry has no envelope —
+     *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #ENVELOPE})</code> returned {@code false}.
+     */
+    public Envelope getEnvelope() {
+        if (envelope != null && !envelope.isAllNaN()) {
+            return envelope;
+        }
+        throw incomplete(ENVELOPE, (extent == null) ? Resources.Keys.UnspecifiedGridExtent : Resources.Keys.UnspecifiedTransform);
+    }
+
+    /**
+     * Returns the approximate latitude and longitude coordinates of the grid.
+     * The prime meridian is Greenwich, but the geodetic reference frame is not necessarily WGS 84.
+     * This is computed from the {@linkplain #getEnvelope() envelope} if the coordinate reference system
+     * contains an horizontal component such as a geographic or projected CRS.
+     *
+     * <div class="note"><b>API note:</b>
+     * this method does not throw {@link IncompleteGridGeometryException} because the geographic extent may be absent
+     * even with a complete grid geometry. This is because grid geometries are not required to have an spatial component
+     * on Earth surface; a raster could be a vertical profile for example.</div>
+     *
+     * @return the geographic bounding box in "real world" coordinates.
+     */
+    public Optional<GeographicBoundingBox> getGeographicExtent() {
+        return Optional.ofNullable(geographicBBox());
+    }
+
+    /**
+     * Returns the {@link #geographicBBox} value or {@code null} if none.
+     * This method computes the box when first needed.
+     */
+    private GeographicBoundingBox geographicBBox() {
+        GeographicBoundingBox bbox = geographicBBox;
+        if (bbox == null) {
+            if (getCoordinateReferenceSystem(envelope) != null && !envelope.isAllNaN()) {
+                try {
+                    final DefaultGeographicBoundingBox db = ReferencingServices.getInstance().setBounds(envelope, null, null);
+                    db.transition(DefaultGeographicBoundingBox.State.EDITABLE);
+                    bbox = db;
+                } catch (TransformException e) {
+                    bbox = NilReason.INAPPLICABLE.createNilObject(GeographicBoundingBox.class);
+                }
+                geographicBBox = bbox;
+            }
+        }
+        return (bbox instanceof NilObject) ? null : bbox;
+    }
+
+    /**
+     * Returns the start time and end time of coordinates of the grid.
+     * If the grid has no temporal dimension, then this method returns an empty array.
+     * If only the start time or end time is defined, then returns an array of length 1.
+     * Otherwise this method returns an array of length 2 with the start time in the first element
+     * and the end time in the last element.
+     *
+     * @return time range as an array of length 0 (if none), 1 or 2.
+     */
+    public Instant[] getTemporalExtent() {
+        Instant[] times = timeRange();
+        if (times.length != 0) {
+            times = times.clone();
+        }
+        return times;
+    }
+
+    /**
+     * Returns the {@link #timeRange} value without cloning.
+     * This method computes the time range when first needed.
+     */
+    private Instant[] timeRange() {
+        Instant[] times = timeRange;
+        if (times == null) {
+            final TemporalAccessor t = TemporalAccessor.of(getCoordinateReferenceSystem(envelope), 0);
+            times = (t != null) ? t.getTimeRange(envelope) : new Instant[0];
+            timeRange = times;
+        }
+        return times;
+    }
 
     /**
      * Returns an <em>estimation</em> of the grid resolution, in units of the coordinate reference system axes.
@@ -983,15 +1149,16 @@ public class GridGeometry implements Serializable {
      * @see #getGridToCRS(PixelInCell)
      */
     public boolean isDefined(final int bitmask) {
-        if ((bitmask & ~(CRS | ENVELOPE | EXTENT | GRID_TO_CRS | RESOLUTION)) != 0) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalArgumentValue_2, "bitmask", bitmask));
+        if ((bitmask & ~(CRS | ENVELOPE | EXTENT | GRID_TO_CRS | RESOLUTION | GEOGRAPHIC_EXTENT | TEMPORAL_EXTENT)) != 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "bitmask", bitmask));
         }
-        return ((bitmask & CRS)         == 0 || (envelope   != null && envelope.getCoordinateReferenceSystem() != null))
-            && ((bitmask & ENVELOPE)    == 0 || (envelope   != null && !envelope.isAllNaN()))
-            && ((bitmask & EXTENT)      == 0 || (extent     != null))
-            && ((bitmask & GRID_TO_CRS) == 0 || (gridToCRS  != null))
-            && ((bitmask & RESOLUTION)  == 0 || (resolution != null));
+        return ((bitmask & CRS)               == 0 || (null != getCoordinateReferenceSystem(envelope)))
+            && ((bitmask & ENVELOPE)          == 0 || (null != envelope && !envelope.isAllNaN()))
+            && ((bitmask & EXTENT)            == 0 || (null != extent))
+            && ((bitmask & GRID_TO_CRS)       == 0 || (null != gridToCRS))
+            && ((bitmask & RESOLUTION)        == 0 || (null != resolution))
+            && ((bitmask & GEOGRAPHIC_EXTENT) == 0 || (null != geographicBBox()))
+            && ((bitmask & TEMPORAL_EXTENT)   == 0 || (timeRange().length != 0));
     }
 
     /**
@@ -1085,17 +1252,24 @@ public class GridGeometry implements Serializable {
     }
 
     /**
+     * Returns the default set of flags to use for {@link #toString()} implementations.
+     * Current implementation returns all flags, but future implementation may omit some
+     * flags if experience suggests that they are too verbose in practice.
+     */
+    static int defaultFlags() {
+        return EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION | GEOGRAPHIC_EXTENT | TEMPORAL_EXTENT;
+    }
+
+    /**
      * Returns a string representation of this grid geometry.
      * The returned string is implementation dependent and may change in any future version.
-     * Current implementation is equivalent to the following:
-     *
-     * {@preformat java
-     *   return toTree(Locale.getDefault(), EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION).toString();
-     * }
+     * Current implementation is equivalent to a call to {@link #toTree(Locale, int)} with
+     * at least {@link #EXTENT}, {@link #ENVELOPE} and {@link #CRS} flags.
+     * Whether more flags are present or not is unspecified.
      */
     @Override
     public String toString() {
-        return toTree(Locale.getDefault(), EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION).toString();
+        return toTree(Locale.getDefault(), defaultFlags()).toString();
     }
 
     /**
@@ -1104,12 +1278,13 @@ public class GridGeometry implements Serializable {
      * in any future SIS version.
      *
      * @param  locale   the locale to use for textual labels.
-     * @param  bitmask  combination of {@link #EXTENT}, {@link #ENVELOPE},
-     *         {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
+     * @param  bitmask  combination of {@link #EXTENT}, {@link #ENVELOPE}, {@link #CRS}, {@link #GRID_TO_CRS},
+     *                  {@link #RESOLUTION}, {@link #GEOGRAPHIC_EXTENT} and {@link #TEMPORAL_EXTENT}.
      * @return a tree representation of the specified elements.
      */
     @Debug
     public TreeTable toTree(final Locale locale, final int bitmask) {
+        ArgumentChecks.ensureNonNull("locale", locale);
         final TreeTable tree = new DefaultTreeTable(TableColumn.VALUE_AS_TEXT);
         final TreeTable.Node root = tree.getRoot();
         root.setValue(TableColumn.VALUE_AS_TEXT, Classes.getShortClassName(this));
@@ -1121,11 +1296,15 @@ public class GridGeometry implements Serializable {
      * Formats a string representation of this grid geometry in the specified tree.
      */
     final void formatTo(final Locale locale, final Vocabulary vocabulary, final int bitmask, final TreeTable.Node root) {
-        if ((bitmask & ~(EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION)) != 0) {
+        if ((bitmask & ~(EXTENT | ENVELOPE | CRS | GRID_TO_CRS | RESOLUTION | GEOGRAPHIC_EXTENT | TEMPORAL_EXTENT)) != 0) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "bitmask", bitmask));
         }
-        new Formatter(locale, vocabulary, bitmask, root).format();
+        try {
+            new Formatter(locale, vocabulary, bitmask, root).format();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**
@@ -1133,8 +1312,8 @@ public class GridGeometry implements Serializable {
      */
     private final class Formatter {
         /**
-         * Combination of {@link #EXTENT}, {@link #ENVELOPE},
-         * {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
+         * Combination of {@link #EXTENT}, {@link #ENVELOPE}, {@link #CRS}, {@link #GRID_TO_CRS},
+         * {@link #RESOLUTION}, {@link #GEOGRAPHIC_EXTENT} and {@link #TEMPORAL_EXTENT}.
          */
         private final int bitmask;
 
@@ -1150,7 +1329,7 @@ public class GridGeometry implements Serializable {
 
         /**
          * The section under the {@linkplain #root} where to write elements.
-         * This is updated when {@link #section(int, short, boolean)} is invoked.
+         * This is updated when {@link #section(int, short, boolean, boolean)} is invoked.
          */
         private TreeTable.Node section;
 
@@ -1160,7 +1339,7 @@ public class GridGeometry implements Serializable {
         private final Vocabulary vocabulary;
 
         /**
-         * The locale for the texts. Not used for numbers.
+         * The locale for the texts, numbers (except grid extent) and dates.
          */
         private final Locale locale;
 
@@ -1184,7 +1363,7 @@ public class GridGeometry implements Serializable {
             this.buffer        = new StringBuilder(256);
             this.locale        = locale;
             this.vocabulary    = vocabulary;
-            this.crs           = (envelope != null) ? envelope.getCoordinateReferenceSystem() : null;
+            this.crs           = getCoordinateReferenceSystem(envelope);
             this.cs            = (crs != null) ? crs.getCoordinateSystem() : null;
         }
 
@@ -1192,57 +1371,115 @@ public class GridGeometry implements Serializable {
          * Formats a string representation of the enclosing {@link GridGeometry} instance
          * in the buffer specified at construction time.
          */
-        final void format() {
+        final void format() throws IOException {
             /*
              * Example: Grid extent
              * ├─ Dimension 0: [370 … 389]  (20 cells)
              * └─ Dimension 1: [ 41 … 340] (300 cells)
+             *
+             * We need to use the implementation provided by GridExtent in order
+             * to format correctly the unsigned long numbers for very large sizes.
              */
-            if (section(EXTENT, Vocabulary.Keys.GridExtent, false)) {
+            if (section(EXTENT, Vocabulary.Keys.GridExtent, true, false)) {
                 extent.appendTo(buffer, vocabulary);
                 writeNodes();
             }
             /*
-             * Example: Envelope
-             * ├─ Geodetic latitude:  -69.75 … 80.25  Δφ = 0.5°
-             * └─ Geodetic longitude:   4.75 … 14.75  Δλ = 0.5°
+             * Example: Geographic extent
+             *  ├─Upper bound:  90°00′00″N  180°00′00″E  2019-05-02T00:00:00Z
+             *  └─Lower bound:  80°00′00″S  180°00′00″W  2019-05-01T21:00:00Z
+             *
+             * The angle and date/time patterns are fixed for now, with a precision equivalent to about 30 metres.
+             * The angles are rounded toward up and down for making sure that the box encloses fully the coverage.
              */
-            if (section(ENVELOPE, Vocabulary.Keys.Envelope, false)) {
+            if (section(GEOGRAPHIC_EXTENT, Vocabulary.Keys.GeographicExtent, false, false) ||
+                section(TEMPORAL_EXTENT,   Vocabulary.Keys.TemporalExtent, false, false))
+            {
+                final TableAppender table = new TableAppender(buffer, "  ");
+                final AngleFormat nf = new AngleFormat("DD°MM′SS″", locale);
+                final GeographicBoundingBox bbox = geographicBBox();
+                final Instant[] times = timeRange();
+                vocabulary.appendLabel(Vocabulary.Keys.UpperBound, table);
+                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+                if (bbox != null) {
+                    nf.setRoundingMode(RoundingMode.CEILING);
+                    table.nextColumn(); table.append(nf.format(new  Latitude(bbox.getNorthBoundLatitude())));
+                    table.nextColumn(); table.append(nf.format(new Longitude(bbox.getEastBoundLongitude())));
+                }
+                if (times.length >= 2) {
+                    table.nextColumn();
+                    table.append(times[1].toString());
+                }
+                table.nextLine();
+                table.setCellAlignment(TableAppender.ALIGN_LEFT);
+                vocabulary.appendLabel(Vocabulary.Keys.LowerBound, table);
+                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+                if (bbox != null) {
+                    nf.setRoundingMode(RoundingMode.FLOOR);
+                    table.nextColumn(); table.append(nf.format(new  Latitude(bbox.getSouthBoundLatitude())));
+                    table.nextColumn(); table.append(nf.format(new Longitude(bbox.getWestBoundLongitude())));
+                }
+                if (times.length >= 1) {
+                    table.nextColumn();
+                    table.append(times[0].toString());
+                }
+                table.flush();
+                writeNodes();
+            }
+            /*
+             * Example: Envelope
+             * ├─ Geodetic latitude:  -69.75 … 80.25  ∆φ = 0.5°
+             * └─ Geodetic longitude:   4.75 … 14.75  ∆λ = 0.5°
+             *
+             * The minimum number of fraction digits is the number required for differentiating two consecutive cells.
+             * The maximum number of fraction digits avoids to print more digits than the precision of `double` type.
+             * Those numbers vary for each line depending on the envelope values and the resolution at that line.
+             */
+            if (section(ENVELOPE, Vocabulary.Keys.Envelope, true, false)) {
                 final boolean appendResolution = (bitmask & RESOLUTION) != 0 && resolution != null;
                 final TableAppender table = new TableAppender(buffer, "");
                 final int dimension = envelope.getDimension();
+                final NumberFormat nf = NumberFormat.getNumberInstance(locale);
                 for (int i=0; i<dimension; i++) {
+                    final double lower = envelope.getLower(i);
+                    final double upper = envelope.getUpper(i);
+                    final double delta = (resolution != null) ? resolution[i] : Double.NaN;
+                    nf.setMinimumFractionDigits(Numerics.fractionDigitsForDelta(delta));
+                    nf.setMaximumFractionDigits(Numerics.suggestFractionDigits(lower, upper));
                     final CoordinateSystemAxis axis = (cs != null) ? cs.getAxis(i) : null;
-                    final String name = (axis != null) ? axis.getName().getCode() :
-                            vocabulary.getString(Vocabulary.Keys.Dimension_1, i);
+                    final String name = (axis != null) ? axis.getName().getCode() : vocabulary.getString(Vocabulary.Keys.Dimension_1, i);
                     table.append(name).append(": ").nextColumn();
                     table.setCellAlignment(TableAppender.ALIGN_RIGHT);
-                    table.append(Double.toString(envelope.getLower(i))).nextColumn();
+                    table.append(nf.format(lower)).nextColumn();
                     table.setCellAlignment(TableAppender.ALIGN_LEFT);
-                    table.append(" … ").append(Double.toString(envelope.getUpper(i)));
-                    if (appendResolution && !Double.isNaN(resolution[i])) {
+                    table.append(" … ").append(nf.format(upper));
+                    if (appendResolution) {
                         final boolean isLinear = (i < Long.SIZE) && (nonLinears & (1L << i)) == 0;
                         table.nextColumn();
-                        table.append("  Δ");
+                        table.append("  ∆");
                         if (axis != null) {
                             table.append(axis.getAbbreviation());
                         }
                         table.nextColumn();
                         table.append(' ').append(isLinear ? '=' : '≈').append(' ');
-                        appendResolution(table, i);
+                        appendResolution(table, nf, delta, i);
                     }
                     table.nextLine();
                 }
-                GridExtent.flush(table);
+                table.flush();
                 writeNodes();
-            } else if (section(RESOLUTION, Vocabulary.Keys.Resolution, false)) {
+            } else if (section(RESOLUTION, Vocabulary.Keys.Resolution, true, false)) {
                 /*
                  * Example: Resolution
                  * └─ 0.5° × 0.5°
+                 *
+                 * Formatted only as a fallback if the envelope was not formatted.
+                 * Otherwise, this information is already part of above envelope.
                  */
                 String separator = "";
-                for (int i=0; i<resolution.length; i++) {
-                    appendResolution(buffer.append(separator), i);
+                final NumberFormat nf = NumberFormat.getNumberInstance(locale);
+                for (int i=0; i < resolution.length; i++) {
+                    appendResolution(buffer.append(separator), nf, resolution[i], i);
                     separator = " × ";
                 }
                 writeNode();
@@ -1251,7 +1488,7 @@ public class GridGeometry implements Serializable {
              * Example: Coordinate reference system
              * └─ EPSG:4326 — WGS 84 (φ,λ)
              */
-            if (section(CRS, Vocabulary.Keys.CoordinateRefSys, false)) {
+            if (section(CRS, Vocabulary.Keys.CoordinateRefSys, true, false)) {
                 final Identifier id = IdentifiedObjects.getIdentifier(crs, null);
                 if (id != null) {
                     buffer.append(IdentifiedObjects.toString(id)).append(" — ");
@@ -1264,7 +1501,7 @@ public class GridGeometry implements Serializable {
              * └─ 2D → 2D non linear in 2
              */
             final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
-            if (section(GRID_TO_CRS, Vocabulary.Keys.Conversion, matrix != null)) {
+            if (section(GRID_TO_CRS, Vocabulary.Keys.Conversion, true, matrix != null)) {
                 if (matrix != null) {
                     writeNode(Matrices.toString(matrix));
                 } else {
@@ -1290,10 +1527,11 @@ public class GridGeometry implements Serializable {
          *
          * @param  property    one of {@link #EXTENT}, {@link #ENVELOPE}, {@link #CRS}, {@link #GRID_TO_CRS} and {@link #RESOLUTION}.
          * @param  title       the {@link Vocabulary} key for the title to show for this section, if formatted.
+         * @param  mandatory   whether to write "undefined" if the property is undefined.
          * @param  cellCenter  whether to add a "origin in cell center" text in the title. This is relevant only for conversion.
          * @return {@code true} if the caller shall format the value.
          */
-        private boolean section(final int property, final short title, final boolean cellCenter) {
+        private boolean section(final int property, final short title, final boolean mandatory, final boolean cellCenter) {
             if ((bitmask & property) != 0) {
                 CharSequence text = vocabulary.getString(title);
                 if (cellCenter) {
@@ -1307,7 +1545,9 @@ public class GridGeometry implements Serializable {
                 if (isDefined(property)) {
                     return true;
                 }
-                writeNode(vocabulary.getString(Vocabulary.Keys.Unspecified));
+                if (mandatory) {
+                    writeNode(vocabulary.getString(Vocabulary.Keys.Unspecified));
+                }
             }
             return false;
         }
@@ -1342,19 +1582,25 @@ public class GridGeometry implements Serializable {
 
         /**
          * Appends a single value on the resolution line, together with its unit of measurement.
+         *
+         * @param  out  where to write the resolution.
+         * @param  nf   number format to use for writing the number.
+         * @param  res  the resolution to write, or {@link Double#NaN}.
+         * @param  dim  index of the coordinate system axis of the resolution.
          */
-        private void appendResolution(final Appendable out, final int dimension) {
-            try {
-                out.append(Float.toString((float) resolution[dimension]));
-                if (cs != null) {
-                    final String unit = String.valueOf(cs.getAxis(dimension).getUnit());
-                    if (unit.isEmpty() || Character.isLetterOrDigit(unit.codePointAt(0))) {
-                        out.append(' ');
-                    }
-                    out.append(unit);
+        private void appendResolution(final Appendable out, final NumberFormat nf, final double res, final int dim) throws IOException {
+            if (Double.isNaN(res)) {
+                out.append('?');
+            } else {
+                nf.setMaximumFractionDigits(Numerics.suggestFractionDigits(res) / 2);
+                out.append(nf.format(res));
+            }
+            if (cs != null) {
+                final String unit = String.valueOf(cs.getAxis(dim).getUnit());
+                if (unit.isEmpty() || Character.isLetterOrDigit(unit.codePointAt(0))) {
+                    out.append(' ');
                 }
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+                out.append(unit);
             }
         }
     }

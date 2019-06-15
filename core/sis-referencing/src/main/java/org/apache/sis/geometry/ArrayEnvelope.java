@@ -164,6 +164,11 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      */
     public ArrayEnvelope(final Envelope envelope) {
         ensureNonNull("envelope", envelope);
+        /*
+         * Do not optimize with `if (envelope instanceof ArrayEnvelope)` because subclasses may change the semantic.
+         * In particular the SubEnvelope subclass uses only a subrange of this array. If we still want to optimize,
+         * we would have to test for specific classes. It is probably not worth at this stage.
+         */
         crs = envelope.getCoordinateReferenceSystem();
         final int dimension = envelope.getDimension();
         coordinates = new double[dimension * 2];

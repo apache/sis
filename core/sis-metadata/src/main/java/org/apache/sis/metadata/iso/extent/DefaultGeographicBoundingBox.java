@@ -510,9 +510,9 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     }
 
     /**
-     * Sets the bounding box to the specified envelope. If the envelope contains* a CRS,
-     * then the bounding box may be projected to a geographic CRS. Otherwise, the envelope
-     * is assumed already in appropriate CRS.
+     * Sets the bounding box to the specified envelope. If the envelope contains a CRS,
+     * then the bounding box may be projected to a geographic CRS.
+     * Otherwise, the envelope is assumed already in appropriate CRS.
      *
      * <p>When coordinate transformation is required, the target geographic CRS is not necessarily
      * {@linkplain org.apache.sis.referencing.CommonCRS#WGS84 WGS84}. This method preserves the same
