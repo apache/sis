@@ -38,14 +38,18 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.io.TableAppender;
@@ -1138,6 +1142,46 @@ public class GridExtent implements GridEnvelope, Serializable {
             }
         }
         return Arrays.equals(coordinates, slice.coordinates) ? this : slice;
+    }
+
+    /**
+     * Creates an affine transform from the coordinates of this grid to the coordinates of the given envelope.
+     * This method assumes that all axes are in the same order (no axis swapping) and there is no flipping of
+     * axis direction. The transform maps cell corners.
+     *
+     * <p>This method is not yet public because we have not decided what could be an API for controlling axis
+     * swapping and flipping, if desired.</p>
+     *
+     * @param  env  the target envelope. Despite this method name, the envelope CRS is ignored.
+     * @return an affine transform from this grid extent to the given envelope, expressed as a matrix.
+     */
+    final MatrixSIS cornerToCRS(final Envelope env) {
+        final int          srcDim = getDimension();
+        final int          tgtDim = env.getDimension();
+        final MatrixSIS    affine = Matrices.create(tgtDim + 1, srcDim + 1, ExtendedPrecisionMatrix.ZERO);
+        final DoubleDouble scale  = new DoubleDouble();
+        final DoubleDouble offset = new DoubleDouble();
+        for (int j=0; j<tgtDim; j++) {
+            if (j < srcDim) {
+                offset.set(coordinates[j]);
+                scale.set(coordinates[j + srcDim]);
+                scale.subtract(offset);
+                scale.add(1);
+                scale.inverseDivideGuessError(env.getSpan(j));
+                if (!offset.isZero()) {                     // Use `if` for keeping the value if scale is NaN.
+                    offset.multiply(scale);
+                    offset.negate();
+                }
+                offset.addGuessError(env.getMinimum(j));
+                affine.setNumber(j, srcDim, offset);
+            } else {
+                scale.value = Double.NaN;
+                scale.error = Double.NaN;
+            }
+            affine.setNumber(j, j, scale);
+        }
+        affine.setElement(tgtDim, srcDim, 1);
+        return affine;
     }
 
     /**

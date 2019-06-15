@@ -59,6 +59,7 @@ import org.apache.sis.internal.referencing.TemporalAccessor;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
@@ -560,7 +561,7 @@ public class GridGeometry implements Serializable {
         nonLinears  = 0;
         /*
          * If the envelope contains no useful information, then the grid extent is mandatory.
-         * We do that for requerying the GridGeometry to contain at least one information.
+         * We do that for forcing grid geometries to contain at least one information.
          */
         boolean nilEnvelope = true;
         final ImmutableEnvelope env = ImmutableEnvelope.castOrCopy(envelope);
@@ -572,29 +573,22 @@ public class GridGeometry implements Serializable {
             if (extent != null && !nilEnvelope) {
                 /*
                  * If we have both the extent and an envelope with at least one non-NaN coordinates,
-                 * create the `gridToCRS` transform.
+                 * create the `cornerToCRS` transform. The `gridToCRS` calculation uses the knowledge
+                 * that all scale factors are on diagonal with no sign reversal, which allows simpler
+                 * calculation than full matrix multiplication. Use double-double arithmetic everywhere.
                  */
-                final int srcDim = extent.getDimension();
-                final int tgtDim = env.getDimension();
-                final MatrixSIS affine = Matrices.createZero(tgtDim + 1, srcDim + 1);
+                final MatrixSIS affine = extent.cornerToCRS(env);
+                cornerToCRS = MathTransforms.linear(affine);
+                final int srcDim = cornerToCRS.getSourceDimensions();       // Translation column in matrix.
+                final int tgtDim = cornerToCRS.getTargetDimensions();       // Number of matrix rows before last row.
                 resolution = new double[tgtDim];
                 for (int j=0; j<tgtDim; j++) {
-                    final double scale;
-                    if (j < srcDim) {
-                        scale = extent.getSize(j, false) / env.getSpan(j);
-                        double offset = env.getMinimum(j);
-                        final long low = extent.getLow(j);
-                        if (low != 0) offset -= low * scale;        // Use `if` for getting a value if scale is NaN.
-                        affine.setElement(j, srcDim, offset);
-                    } else {
-                        scale = Double.NaN;
-                    }
-                    affine.setElement(j, j, resolution[j] = scale);
-                }
-                affine.setElement(tgtDim, srcDim, 1);
-                cornerToCRS = MathTransforms.linear(affine);
-                for (int j=0; j<tgtDim; j++) {
-                    affine.setElement(j, srcDim, affine.getElement(j, srcDim) + 0.5 * resolution[j]);
+                    final DoubleDouble scale  = (DoubleDouble) affine.getNumber(j, j);
+                    final DoubleDouble offset = (DoubleDouble) affine.getNumber(j, srcDim);
+                    resolution[j] = scale.doubleValue();
+                    scale.multiply(0.5);
+                    offset.add(scale);
+                    affine.setNumber(j, srcDim, offset);
                 }
                 gridToCRS = MathTransforms.linear(affine);
                 return;

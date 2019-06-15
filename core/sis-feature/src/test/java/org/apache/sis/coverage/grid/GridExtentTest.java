@@ -18,6 +18,7 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Locale;
 import java.io.IOException;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.coverage.PointOutsideCoverageException;
@@ -25,6 +26,7 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.test.TestCase;
@@ -225,6 +227,21 @@ public final strictfp class GridExtentTest extends TestCase {
         } catch (SubspaceNotSpecifiedException e) {
             assertNotNull(e.getMessage());
         }
+    }
+
+    /**
+     * Tests {@link GridExtent#cornerToCRS(Envelope)}.
+     */
+    @Test
+    public void testCornerToCRS() {
+        final GeneralEnvelope aoi = new GeneralEnvelope(HardCodedCRS.WGS84);
+        aoi.setRange(0,  40, 55);
+        aoi.setRange(1, -10, 70);
+        final GridExtent extent = new GridExtent(null, new long[] {-20, -25}, new long[] {10, 15}, false);
+        assertMatrixEquals("cornerToCRS", new Matrix3(
+                0.5,  0,   50,
+                0,    2,   40,
+                0,    0,    1), extent.cornerToCRS(aoi), STRICT);
     }
 
     /**
