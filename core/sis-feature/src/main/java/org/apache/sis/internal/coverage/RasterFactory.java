@@ -16,28 +16,28 @@
  */
 package org.apache.sis.internal.coverage;
 
-import java.nio.Buffer;
-import java.nio.ReadOnlyBufferException;
 import java.awt.Point;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferShort;
-import java.awt.image.DataBufferUShort;
-import java.awt.image.DataBufferInt;
-import java.awt.image.DataBufferFloat;
-import java.awt.image.DataBufferDouble;
-import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferDouble;
+import java.awt.image.DataBufferFloat;
+import java.awt.image.DataBufferInt;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.RasterFormatException;
+import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.nio.Buffer;
+import java.nio.ReadOnlyBufferException;
+import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.feature.Resources;
 
 
 /**
@@ -118,7 +118,7 @@ public final class RasterFactory extends Static {
                          * However this would require the creation of a PackedColorModel subclass. For SIS purposes,
                          * it is easier to create a banded sample model.
                          */
-                        return WritableRaster.createBandedRaster(buffer, width, width, scanlineStride, new int[1], bandOffsets, location);
+                        return WritableRaster.createBandedRaster(buffer, width, height, scanlineStride, new int[1], bandOffsets, location);
                     }
                     // else fallthrough.
                 }
