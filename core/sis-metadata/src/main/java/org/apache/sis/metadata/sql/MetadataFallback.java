@@ -20,7 +20,7 @@ import org.opengis.util.ControlledVocabulary;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
@@ -205,7 +205,7 @@ final class MetadataFallback extends MetadataSource {
         final DefaultCitation c = new DefaultCitation(title);
         if (alternateTitle        != null) c.setAlternateTitles(singleton(Types.toInternationalString(alternateTitle)));
         if (edition               != null) c.setEdition(Types.toInternationalString(edition));
-        if (code                  != null) c.setIdentifiers(singleton(new ImmutableIdentifier(null, codeSpace, code, version, null)));
+        if (code                  != null) c.setIdentifiers(singleton(new DefaultIdentifier(codeSpace, code, version)));
         if (presentationForm      != null) c.setPresentationForms(singleton(presentationForm));
         if (citedResponsibleParty != null) {
             c.setCitedResponsibleParties(singleton(new DefaultResponsibility(Role.PRINCIPAL_INVESTIGATOR, null,

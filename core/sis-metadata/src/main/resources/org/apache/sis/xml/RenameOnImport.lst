@@ -724,3 +724,5 @@ http://www.opengis.net/gml/3.2
   beginPosition
   end
   endPosition
+http://www.isotc211.org/2005/gmd
+ RS_Identifier : MD_Identifier

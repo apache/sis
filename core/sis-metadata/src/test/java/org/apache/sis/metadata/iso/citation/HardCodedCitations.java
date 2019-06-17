@@ -22,7 +22,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.Static;
@@ -36,7 +35,7 @@ import org.apache.sis.util.Static;
  * above-cited public constants.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -48,7 +47,7 @@ public final strictfp class HardCodedCitations extends Static {
     static {
         final DefaultCitation c = new DefaultCitation("Spatial referencing by coordinates");
         c.getAlternateTitles().add(new SimpleInternationalString("ISO 19111"));
-        c.getIdentifiers().add(new ImmutableIdentifier(null, "ISO", "19111"));
+        c.getIdentifiers().add(new DefaultIdentifier("ISO", "19111", null));
         c.getPresentationForms().add(PresentationForm.DOCUMENT_DIGITAL);
         c.transition(DefaultCitation.State.FINAL);
         ISO_19111 = c;
