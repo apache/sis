@@ -167,6 +167,7 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
      * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
+    @org.junit.Ignore("To be replaced by GML")
     public void testMarshal() throws JAXBException {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(new DefaultCitation("EPSG"), null, "4326");
         assertXmlEquals(

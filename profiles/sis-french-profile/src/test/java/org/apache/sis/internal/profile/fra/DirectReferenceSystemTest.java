@@ -89,11 +89,6 @@ public final strictfp class DirectReferenceSystemTest extends TestCase {
     public void unmarshallingTest() throws JAXBException {
         final DefaultMetadata expected = createMetadata(true);
         final DefaultMetadata result = unmarshalFile(DefaultMetadata.class, XML_FILE);
-        /*
-         * Compare in debug mode before to perform the real comparison,
-         * for making easier to analyze the stack trace in case of failure.
-         */
         assertTrue(expected.equals(result, ComparisonMode.DEBUG));
-        assertEquals(expected, result);
     }
 }

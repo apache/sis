@@ -44,6 +44,7 @@
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(GO_Boolean.class),
+    @XmlJavaTypeAdapter(MD_Identifier.class),
     @XmlJavaTypeAdapter(SV_ParameterDirection.class),
 
     // Java types, primitive types and basic OGC types handling
@@ -61,6 +62,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
 import org.apache.sis.internal.jaxb.code.SV_ParameterDirection;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.xml.Namespaces;
