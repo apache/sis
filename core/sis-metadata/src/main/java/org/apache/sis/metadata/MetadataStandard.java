@@ -501,7 +501,7 @@ public class MetadataStandard implements Serializable {
                  * Found more than one interface; we don't know which one to pick.
                  * Returns 'null' for now; the caller will thrown an exception.
                  */
-            } else if (IMPLEMENTATION_CAN_ALTER_API && isPendingAPI(key.type)) {
+            } else if (IMPLEMENTATION_CAN_ALTER_API) {
                 /*
                  * Found no interface. According to our method contract we should return null.
                  * However we make an exception if the implementation class has a UML annotation.
@@ -511,7 +511,9 @@ public class MetadataStandard implements Serializable {
                  * have to go through a voting process inside the Open Geospatial Consortium (OGC).
                  * So we use those implementation classes as a temporary substitute for the interfaces.
                  */
-                return key.type;
+                if (isPendingAPI(key.type)) {
+                    return key.type;
+                }
             }
         }
         return null;
@@ -536,6 +538,20 @@ public class MetadataStandard implements Serializable {
                     interfaces.add(candidate);
                 }
                 getInterfaces(candidate, propertyType, interfaces);
+            } else if (IMPLEMENTATION_CAN_ALTER_API) {
+                /*
+                 * If a GeoAPI interface is not assignable to the property type, maybe it is because the property type
+                 * did not existed at the time current GeoAPI version was published. In such case, the implementation
+                 * class may be a placeholder (pending API) for the not-yet-published GeoAPI interfaces. In that case
+                 * we skip the `isAssignableFrom` check, but without recursive addition of parent interfaces since we
+                 * would not know when to stop.
+                 */
+                if (isPendingAPI(propertyType)) {
+                    if (isSupported(candidate.getName())) {
+                        interfaces.add(candidate);
+                    }
+                    // No recursive call here.
+                }
             }
         }
     }

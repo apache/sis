@@ -16,20 +16,16 @@
  */
 package org.apache.sis.internal.jaxb.metadata.replace;
 
-import java.util.Objects;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.internal.jaxb.metadata.MD_Identifier;
-import org.apache.sis.internal.jaxb.metadata.RS_Identifier;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 import org.apache.sis.internal.jaxb.FilterByVersion;
-import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -106,9 +102,12 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      */
     @Override
     @XmlElement(name = "referenceSystemIdentifier")
-    @XmlJavaTypeAdapter(MD_Identifier.class)
-    public ReferenceIdentifier getName() {
-        return isLegacyMetadata ? null : super.getName();
+    public final ReferenceIdentifier getName() {
+        ReferenceIdentifier name = super.getName();
+        if (isLegacyMetadata) {
+            name = RS_Identifier.wrap(name);
+        }
+        return name;
     }
 
     /**
@@ -117,24 +116,6 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      * @param  name  the new primary name.
      */
     public final void setName(final ReferenceIdentifier name) {
-        this.name = name;
-    }
-
-    /**
-     * Gets the name for this reference system metadata (used in ISO 19115:2003 model).
-     * This method can be invoked during marshalling of legacy XML documents.
-     */
-    @XmlElement(name = "referenceSystemIdentifier", namespace = LegacyNamespaces.GMD)
-    @XmlJavaTypeAdapter(RS_Identifier.class)
-    private ReferenceIdentifier getLegacyName() {
-        return isLegacyMetadata ? super.getName() : null;
-    }
-
-    /**
-     * Sets the name for this reference system metadata (used in ISO 19115:2003 model).
-     */
-    @SuppressWarnings("unused")
-    private void setLegacyName(final ReferenceIdentifier name) {
         this.name = name;
     }
 
@@ -151,7 +132,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
             final ReferenceSystem that = (ReferenceSystem) object;
             if (mode.isIgnoringMetadata()) {
                 // Compare the name because it was ignored by super.equals(…) in "ignore metadata" mode.
-                return Objects.equals(getName(), that.getName());
+                return Utilities.deepEquals(getName(), that.getName(), mode);
             }
             return that.getDomainOfValidity() == null && that.getScope() == null;
         }

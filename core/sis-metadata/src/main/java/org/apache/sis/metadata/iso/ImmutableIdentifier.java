@@ -20,9 +20,7 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.Objects;
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.referencing.ReferenceIdentifier;
@@ -37,7 +35,6 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
-import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
@@ -101,27 +98,11 @@ import static org.apache.sis.util.collection.Containers.property;
  * </code></blockquote>
  *
  * </li><li><b>XML in metadata objects</b><br>
- * The XML representation of {@link ImmutableIdentifier} in a metadata is similar to the {@link DefaultIdentifier}
- * one except for the {@code "RS_"} prefix:
- *
- * {@preformat xml
- *   <gmd:RS_Identifier>
- *     <gmd:authority>
- *       <gmd:CI_Citation>
- *         <gmd:title>
- *           <gco:CharacterString>EPSG</gco:CharacterString>
- *         </gmd:title>
- *       </gmd:CI_Citation>
- *     </gmd:authority>
- *     <gmd:code>
- *       <gco:CharacterString>4326</gco:CharacterString>
- *     </gmd:code>
- *   </gmd:RS_Identifier>
- * }
+ * The XML representation of identifier in a metadata is defined by {@link DefaultIdentifier}.
  * </li></ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.0
  *
  * @see DefaultIdentifier
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
@@ -130,13 +111,6 @@ import static org.apache.sis.util.collection.Containers.property;
  * @module
  */
 @TitleProperty(name = "code")
-@XmlType(name = "RS_Identifier_Type", namespace = Namespaces.GMD, propOrder = {
-    "authority",
-    "code",
-    "codeSpace",
-    "version"
-})
-@XmlRootElement(name = "RS_Identifier", namespace = Namespaces.GMD)
 public class ImmutableIdentifier extends FormattableObject implements ReferenceIdentifier, Serializable {
     /**
      * For cross-version compatibility.
@@ -154,7 +128,6 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *
      * @see #getAuthority()
      */
-    @XmlElement(required = true)
     private final Citation authority;
 
     /**
@@ -162,7 +135,6 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *
      * @see #getCode()
      */
-    @XmlElement(required = true)
     private final String code;
 
     /**
@@ -171,7 +143,6 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *
      * @see #getCodeSpace()
      */
-    @XmlElement(required = true)
     private final String codeSpace;
 
     /**
@@ -181,7 +152,6 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *
      * @see #getVersion()
      */
-    @XmlElement
     private final String version;
 
     /**

@@ -17,12 +17,12 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlElementRefs;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.internal.jaxb.metadata.replace.RS_Identifier;
 
 
 /**
@@ -80,14 +80,18 @@ public class MD_Identifier extends PropertyType<MD_Identifier, Identifier> {
      *
      * @return the metadata to be marshalled.
      */
-    @XmlElementRefs({
-        @XmlElementRef(type = DefaultIdentifier.class),
-        @XmlElementRef(type = ImmutableIdentifier.class)
-    })
-    @SuppressWarnings("deprecation")
-    public final Identifier getElement() {
-        if (metadata instanceof ReferenceIdentifier) {
-            return ImmutableIdentifier.castOrCopy((ReferenceIdentifier) metadata);
+    @XmlElementRef
+    public final DefaultIdentifier getElement() {
+        if (FilterByVersion.LEGACY_METADATA.accept() && metadata instanceof ReferenceIdentifier) {
+            /*
+             * In legacy specification, "code space" and "version" were not defined in <gmd:MD_Identifier> but were
+             * defined in <gmd:RS_Identifier> subclass. In newer specification there is no longer such special case.
+             * Note that "description" did not existed anywhere in legacy specification.
+             */
+            final ReferenceIdentifier id = (ReferenceIdentifier) metadata;
+            if (id.getCodeSpace() != null || id.getVersion() != null) {
+                return RS_Identifier.wrap(id);
+            }
         }
         return DefaultIdentifier.castOrCopy(metadata);
     }
@@ -97,7 +101,7 @@ public class MD_Identifier extends PropertyType<MD_Identifier, Identifier> {
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public final void setElement(final Identifier metadata) {
+    public final void setElement(final DefaultIdentifier metadata) {
         this.metadata = metadata;
     }
 

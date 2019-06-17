@@ -22,6 +22,7 @@ import org.opengis.metadata.acquisition.Instrument;
 import org.opengis.metadata.identification.DataIdentification;
 import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.metadata.SensorType;
 import org.apache.sis.util.iso.Types;
@@ -56,19 +57,24 @@ public final strictfp class CharSequenceSubstitutionTest extends TestCase {
     @DependsOnMethod("testAnchorForString")
     public void testLegacy() throws JAXBException {
         final String expected =
-                "<gmd:RS_Identifier xmlns:gmd=\""   + LegacyNamespaces.GMD + '"' +
-                                  " xmlns:gmx=\""   + LegacyNamespaces.GMX + '"' +
-                                  " xmlns:gco=\""   + LegacyNamespaces.GCO + '"' +
-                                  " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
-                "  <gmd:code>\n" +
-                "    <gmx:Anchor xlink:href=\"SDN:L101:2:4326\">EPSG:4326</gmx:Anchor>\n" +
-                "  </gmd:code>\n" +
-                "  <gmd:codeSpace>\n" +
-                "    <gco:CharacterString>L101</gco:CharacterString>\n" +
-                "  </gmd:codeSpace>\n" +
-                "</gmd:RS_Identifier>";
+                "<gmd:MD_ReferenceSystem xmlns:gmd=\""   + LegacyNamespaces.GMD + '"' +
+                                       " xmlns:gmx=\""   + LegacyNamespaces.GMX + '"' +
+                                       " xmlns:gco=\""   + LegacyNamespaces.GCO + '"' +
+                                       " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
+                "  <gmd:referenceSystemIdentifier>" +
+                "    <gmd:RS_Identifier>" +
+                "      <gmd:code>\n" +
+                "        <gmx:Anchor xlink:href=\"SDN:L101:2:4326\">EPSG:4326</gmx:Anchor>\n" +
+                "      </gmd:code>\n" +
+                "      <gmd:codeSpace>\n" +
+                "        <gco:CharacterString>L101</gco:CharacterString>\n" +
+                "      </gmd:codeSpace>\n" +
+                "    </gmd:RS_Identifier>" +
+                "  </gmd:referenceSystemIdentifier>" +
+                "</gmd:MD_ReferenceSystem>";
 
-        final ReferenceIdentifier id = unmarshal(ReferenceIdentifier.class, expected);
+        final ReferenceSystemMetadata md = unmarshal(ReferenceSystemMetadata.class, expected);
+        final ReferenceIdentifier id = md.getName();
         assertEquals("codespace", "L101", id.getCodeSpace());
         assertEquals("code", "EPSG:4326", id.getCode());
     }
@@ -184,8 +190,8 @@ public final strictfp class CharSequenceSubstitutionTest extends TestCase {
     @DependsOnMethod("testCodeList")
     public void testSensorCode() throws JAXBException {
         final String expected =
-                "<gmi:MI_Instrument xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                  " xmlns:gmi=\"" + Namespaces.GMI + "\">\n" +
+                "<gmi:MI_Instrument xmlns:gmd=\"" + LegacyNamespaces.GMD + '"' +
+                                  " xmlns:gmi=\"" + LegacyNamespaces.GMI + "\">\n" +
                 "  <gmi:type>\n" +
                 "    <gmi:MI_SensorTypeCode\n" +
                 "        codeList=\"http://navigator.eumetsat.int/metadata_schema/eum/resources/Codelist/eum_gmxCodelists.xml#CI_SensorTypeCode\"\n" +
