@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.Buffer;
 import java.awt.image.DataBuffer;
+
+import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
@@ -561,7 +563,9 @@ public final class RasterResource extends AbstractGridResource implements Resour
         final SampleDimension[] bands = new SampleDimension[rangeIndices.getNumBands()];
         int[] bandOffsets = null;                                                   // By default, all bands start at index 0.
         try {
-            GridDerivation targetGeometry = gridGeometry.derive().subgrid(domain);
+            GridDerivation targetGeometry = gridGeometry.derive()
+                    .rounding(GridRoundingMode.ENCLOSING)
+                    .subgrid(domain);
             GridExtent     areaOfInterest = targetGeometry.getIntersection();       // Pixel indices of data to read.
             int[]          subsamplings   = targetGeometry.getSubsamplings();       // Slice to read or subsampling to apply.
             int            numBuffers     = bands.length;                           // By default, one variable per band.
