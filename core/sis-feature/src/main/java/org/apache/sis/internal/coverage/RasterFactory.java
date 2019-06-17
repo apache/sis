@@ -141,7 +141,7 @@ public final class RasterFactory extends Static {
                     case DataBuffer.TYPE_USHORT:
                     case DataBuffer.TYPE_INT: {
                         // This constructor supports only above-cited types.
-                        return WritableRaster.createBandedRaster(buffer, width, width, scanlineStride, bankIndices, bandOffsets, location);
+                        return WritableRaster.createBandedRaster(buffer, width, height, scanlineStride, bankIndices, bandOffsets, location);
                     }
                     default: {
                         model = new BandedSampleModel(dataType, width, height, scanlineStride, bankIndices, bandOffsets);
