@@ -60,7 +60,7 @@ public abstract class AbstractResource implements Resource, Localized {
     /**
      * The set of registered warning listeners for the data store, or {@code null} if none.
      */
-    private final WarningListeners<DataStore> listeners;
+    final WarningListeners<DataStore> listeners;
 
     /**
      * Creates a new resource.

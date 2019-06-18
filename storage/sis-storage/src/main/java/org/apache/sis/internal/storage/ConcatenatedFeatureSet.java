@@ -1,101 +1,208 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.sis.internal.storage;
 
-import org.apache.sis.geometry.AbstractEnvelope;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.storage.DataStoreException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Collection;
+import java.util.stream.Stream;
+import org.apache.sis.feature.Features;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
-import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.storage.Query;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.Metadata;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.GenericName;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 /**
- * Expose a sequence of {@link FeatureSet feature sets} as a single one. A few notes :
+ * Exposes a sequence of {@link FeatureSet}s as a single one. A few notes:
  * <ol>
- *     <li>The feature set concatenation must be built with a non-empty array or collection of feature set. It is copied
- *     as is in a unmodifiable list, meaning that doublons won't be removed, and iteration order is driven by input
- *     sequence. </li>
- *     <li>All input feature sets must share a common type, or at least a common super-type. If you want to sequence
+ *   <li>The feature set concatenation must be built with a non-empty array or collection of feature set.
+ *     It is copied verbatim in an unmodifiable list, meaning that duplicated instances won't be removed,
+ *     and iteration order is driven by input sequence.</li>
+ *   <li>All input feature sets must share a common type, or at least a common super-type. If you want to sequence
  *     sets which does not share any common parent, please pre-process them to modify their public type.</li>
- *     <li>For now, event system is disabled, meaning that trying to attach a listener to the feature set concatenation
- *     will throw an {@link UnsupportedOperationException}. It's meant to evolve.</li>
+ *   <li>The {@linkplain #getIdentifier() identifier} is the name of above-cited common type.
+ *     It may result in the same identifier than one of the given sources,
+ *     but this is okay if this {@code FeatureSet} has a different {@code DataStore} parent than the sources.</li>
  * </ol>
+ *
+ * @author  Alexis Manin (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.0
+ * @since   1.0
+ * @module
  */
-public class ConcatenatedFeatureSet implements FeatureSet {
-
+public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
+    /**
+     * The sequence of feature sets whose feature instances will be returned.
+     */
     private final List<FeatureSet> sources;
+
+    /**
+     * The most specific feature type common to all feature sets in the {@linkplain #sources} list.
+     */
     private final FeatureType commonType;
 
     /**
-     * Temporarily cache union of underlying feature set envelopes. However, only a weak reference is used, because
-     * we cannot prevent subsets to be updated externally. Keeping a temporary reference allows for an eventual update
-     * of the concatenated envelope. The same logic is applied for {@link #getMetadata() metadata accessor}.
-     */
-    private WeakReference<Envelope> cachedEnvelope;
-
-    /**
-     * Cache metadata only temporarily, because it depends on {@link #getEnvelope() envelope accessor}. For more
-     * information about why the cache is only temporary, please read {@link #cachedEnvelope} documentation.
-     */
-    private WeakReference<Metadata> cachedMetadata;
-
-    /**
-     * See {@link #ConcatenatedFeatureSet(FeatureSet...)}.
-     */
-    public ConcatenatedFeatureSet(final Collection<FeatureSet> sources) throws DataStoreException {
-        this(sources == null? null : sources.toArray(new FeatureSet[sources.size()]));
-    }
-
-    /**
-     * Create a new feature set being a view of the sequence of given sets.
+     * Creates a new feature set as a concatenation of the sequence of features given by the {@code sources}.
+     * This constructor does not verify that the given {@code sources} array contains at least two elements;
+     * this verification must be done by the caller. This constructor retains the given {@code sources} array
+     * by direct reference; clone, if desired, shall be done by the caller.
      *
-     * @param sources The sequence of feature set to expose in a single set. Must neither be null, empty nor contains
-     *                a single element only.
-     * @throws DataStoreException If given feature sets does not share any common type.
+     * @param  listeners  the set of registered warning listeners for the data store, or {@code null} if none.
+     * @param  sources    the sequence of feature sets to expose in a single set.
+     *                    Must neither be null, empty nor contain a single element only.
+     * @throws DataStoreException if given feature sets does not share any common type.
      */
-    public ConcatenatedFeatureSet(final FeatureSet... sources) throws DataStoreException {
-        ensureNonNull("Sources feature sets", sources);
-        if (sources.length < 1) {
-            throw new IllegalArgumentException("Given feature set sequence is empty.");
-        } else if (sources.length == 1) {
-            throw new IllegalArgumentException("You are trying to concatenate a single feature set.");
+    protected ConcatenatedFeatureSet(final WarningListeners<DataStore> listeners, final FeatureSet[] sources) throws DataStoreException {
+        super(listeners);
+        for (int i=0; i<sources.length; i++) {
+            ArgumentChecks.ensureNonNullElement("sources", i, sources[i]);
         }
-
-        final FeatureSet[] copy = Arrays.copyOf(sources, sources.length);
-        this.sources = Collections.unmodifiableList(Arrays.asList(copy));
-        commonType = checkType(this.sources);
-        // TODO: we should add listeners on source feature sets. By doing it, we could be notified of changes, allowing
-        // a better update strategy for envelope, metadata and type.
+        this.sources = UnmodifiableArrayList.wrap(sources);
+        final FeatureType[] types = new FeatureType[sources.length];
+        for (int i=0; i<types.length; i++) {
+            types[i] = sources[i].getType();
+        }
+        commonType = Features.findCommonParent(Arrays.asList(types));
+        if (commonType == null) {
+            // TODO: localize.
+            throw new DataStoreContentException("Cannot find a common super type across all feature sets to concatenate");
+        }
+        /*
+         * TODO: we should add listeners on source feature sets. By doing it, we could be notified of changes,
+         *       allowing a better update strategy for envelope, metadata and type.
+         */
     }
 
+    /**
+     * Creates a new feature set as a concatenation of the sequence of features given by the {@code sources}.
+     * The given array shall be non-empty. If the array contains only 1 element, that element is returned.
+     *
+     * @param  sources  the sequence of feature sets to expose in a single set.
+     * @return the concatenation of given feature set.
+     * @throws DataStoreException if given feature sets does not share any common type.
+     */
+    public static FeatureSet create(final FeatureSet... sources) throws DataStoreException {
+        ArgumentChecks.ensureNonEmpty("sources", sources);
+        if (sources.length == 1) {
+            final FeatureSet fs = sources[0];
+            ArgumentChecks.ensureNonNullElement("sources", 0, fs);
+            return fs;
+        } else {
+            return new ConcatenatedFeatureSet(null, sources.clone());
+        }
+    }
+
+    /**
+     * Creates a new feature set as a concatenation of the sequence of features given by the {@code sources}.
+     * The given collection shall be non-empty. If the collection contains only 1 element, that element is returned.
+     *
+     * @param  sources  the sequence of feature sets to expose in a single set.
+     * @return the concatenation of given feature set.
+     * @throws DataStoreException if given feature sets does not share any common type.
+     */
+    public static FeatureSet create(final Collection<? extends FeatureSet> sources) throws DataStoreException {
+        ArgumentChecks.ensureNonNull("sources", sources);
+        final int size = sources.size();
+        switch (size) {
+            case 0: throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "sources"));
+            case 1: {
+                final FeatureSet fs = CollectionsExt.first(sources);
+                ArgumentChecks.ensureNonNullElement("sources", 0, fs);
+                return fs;
+            }
+            default: {
+                return new ConcatenatedFeatureSet(null, sources.toArray(new FeatureSet[size]));
+            }
+        }
+    }
+
+    /**
+     * Returns all feature set used by this aggregation. This method is invoked for implementation of
+     * {@link #getEnvelope()} and {@link #createMetadata(MetadataBuilder)}.
+     */
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Safe because the list is unmodifiable.
+    final List<FeatureSet> dependencies() {
+        return sources;
+    }
+
+    /**
+     * Returns the most specific feature type common to all feature sets given to the constructor.
+     *
+     * @return the common type of all features returned by this set.
+     */
     @Override
     public FeatureType getType() {
         return commonType;
     }
 
+    /**
+     * Returns an estimation of the number of features in this set, or {@code null} if unknown.
+     * This is the sum of the estimations provided by all source sets, or {@code null} if at least
+     * one source could not provide an estimation.
+     *
+     * @return estimation of the number of features, or {@code null}.
+     */
     @Override
-    public Stream<Feature> features(boolean parallel) {
-        final Stream<FeatureSet> sets = parallel? sources.parallelStream() : sources.stream();
+    protected Integer getFeatureCount() {
+        int sum = 0;
+        for (final FeatureSet fs : sources) {
+            if (fs instanceof AbstractFeatureSet) {
+                final Integer count = ((AbstractFeatureSet) fs).getFeatureCount();
+                if (count != null && count >= 0) {
+                    sum += count;
+                    if (sum < 0) {                          // Integer overflow.
+                        sum = Integer.MAX_VALUE;
+                        break;
+                    }
+                    continue;
+                }
+            }
+            return null;                 // A source can not provide estimation.
+        }
+        return sum;
+    }
+
+    /**
+     * Returns a stream of all features contained in this concatenated dataset. If the {@code parallel} argument
+     * is {@code false}, then datasets are traversed in the order they were specified at construction time.
+     * If the {@code parallel} argument is {@code true}, then datasets are traversed in no determinist order.
+     * If an error occurred while reading the feature instances from a source, then the error is wrapped in a
+     * {@link BackingStoreException}.
+     *
+     * @param  parallel  {@code true} for a parallel stream, or {@code false} for a sequential stream.
+     * @return all features contained in this dataset.
+     */
+    @Override
+    public Stream<Feature> features(final boolean parallel) {
+        final Stream<FeatureSet> sets = parallel ? sources.parallelStream() : sources.stream();
         return sets.flatMap(set -> {
             try {
                 return set.features(parallel);
@@ -105,167 +212,22 @@ public class ConcatenatedFeatureSet implements FeatureSet {
         });
     }
 
-    @Override
-    public synchronized Envelope getEnvelope() throws DataStoreException {
-        Envelope result = cachedEnvelope == null? null : cachedEnvelope.get();
-        if (result == null) {
-            result = computeEnvelope();
-            if (result != null)
-                cachedEnvelope = new WeakReference<>(result);
-        }
-
-        return result;
-    }
-
-    private Envelope computeEnvelope() throws DataStoreException {
-        Envelope tmpEnv = sources.get(0).getEnvelope();
-        if (tmpEnv == null)
-            return null;
-
-        final GeneralEnvelope envelope = new GeneralEnvelope(tmpEnv);
-        for (int i = 1 ; i < sources.size() ; i++) {
-            tmpEnv = sources.get(i).getEnvelope();
-            if (tmpEnv == null) {
-                return null;
-            }
-            envelope.add(tmpEnv);
-        }
-
-        return envelope;
-    }
-
-    @Override
-    public GenericName getIdentifier() {
-        return null;
-    }
-
-    @Override
-    public synchronized Metadata getMetadata() throws DataStoreException {
-        Metadata result = cachedMetadata == null ? null : cachedMetadata.get();
-        if (result == null) {
-            final MetadataBuilder builder = new MetadataBuilder();
-            builder.addFeatureType(getType(), null);
-            final Envelope env = getEnvelope();
-            if (env != null) {
-                try {
-                    builder.addExtent(AbstractEnvelope.castOrCopy(env));
-                } catch (TransformException e) {
-                    // TODO: log error, or use a warning listener. It's fine if the extent cannot be computed
-                }
-            }
-
-            result = builder.build(true);
-            cachedMetadata = new WeakReference<>(result);
-        }
-
-        return result;
-    }
-
-    @Override
-    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
-        throw new UnsupportedOperationException();
-    }
-
     /**
-     * Find a feature type common to all given feature sets. It means we will search for a super type used by all input
-     * feature sets.
+     * Requests a subset of features and/or feature properties from this resource.
      *
-     * @implNote A graph approach would surely be the best way to resolve this problem. However, due to the lack of
-     * standard tools in the jdk, we'd rather build a map with every distinct encountered type/super type. For each, we
-     * associate the number of occurrences found, as the maximum number of inheritors for this type. When done, we
-     * simply give back a type with an encounter count equal to the number of input feature sets, and the least possible
-     *  number of inheritors.
-     *
-     * @param sources The set of feature sets to find a common type for. Must not be null.
-     * @return A feature type which can be found in every encountered feature set, as super type or direct one.
-     * @throws DataStoreException If an error occurs while reading data types from source feature sets.
-     * @throws IllegalArgumentException If we cannot find a common type, or input collection is empty.
-     * @throws NullArgumentException If input collection is null.
+     * @param  query  definition of feature and feature properties filtering applied at reading time.
+     * @return resulting subset of features (never {@code null}).
+     * @throws DataStoreException if an error occurred while processing the query.
      */
-    private static FeatureType checkType(final Collection<FeatureSet> sources) throws DataStoreException, IllegalArgumentException, NullArgumentException {
-        ensureNonNull("Source sets", sources);
-
-        final java.util.Iterator<FeatureSet> it = sources.iterator();
-        if (!it.hasNext())
-            throw new IllegalArgumentException("Cannot find a common data type from an empty collection.");
-
-        FeatureType nextType = it.next().getType();
-
-        final Map<FeatureType, Indirection> typeMatchCount = new HashMap<>();
-        // Coupling Stacks allow us to properly browse and document indirection levels in encountered data types.
-        Deque<FeatureType> typeStack = new ArrayDeque<>();
-        Deque<FeatureType> nextLevel = new ArrayDeque<>();
-
-        nextLevel.push(nextType);
-        int indirection = -1;
-        do {
-            indirection++;
-            // Micro opti : re-use the same two deques to avoid instantiating/resizing lots of arrays.
-            final Deque tmp = typeStack;
-            typeStack = nextLevel;
-            nextLevel = tmp;
-
-            do {
-                final FeatureType type = typeStack.pop();
-                typeMatchCount.put(type, new Indirection(indirection, 1));
-                nextLevel.addAll(type.getSuperTypes());
-            } while (!typeStack.isEmpty());
-        } while (!nextLevel.isEmpty());
-
-        while (it.hasNext()) {
-            boolean hasBeenUpdated = false;
-            nextLevel.push(it.next().getType());
-            indirection = -1;
-            do {
-                indirection++;
-                // Micro opti : re-use the same two deques to avoid instantiating/resizing lots of arrays.
-                final java.util.Deque tmp = typeStack;
-                typeStack = nextLevel;
-                nextLevel = tmp;
-
-                do {
-                    final int tmpIndi = indirection;
-                    final FeatureType type = typeStack.pop();
-                    final Indirection indi = typeMatchCount
-                            .computeIfPresent(type, (key, oldVal) -> oldVal.merge(new Indirection(tmpIndi, 1)));
-                    if (indi != null) hasBeenUpdated = true;
-                    nextLevel.addAll(type.getSuperTypes());
-                } while (!typeStack.isEmpty());
-            } while (!nextLevel.isEmpty());
-
-            // short-circuit here, if no feature type has the same count as already encounterd types.
-            if (!hasBeenUpdated)
-                throw new IllegalArgumentException("No common feature nor super type found across input feature sets");
+    @Override
+    public FeatureSet subset(final Query query) throws DataStoreException {
+        final FeatureSet[] subsets = new FeatureSet[sources.size()];
+        boolean modified = false;
+        for (int i=0; i<subsets.length; i++) {
+            FeatureSet source = sources.get(i);
+            subsets[i] = source.subset(query);
+            modified |= subsets[i] != source;
         }
-
-        final int requiredMatch = sources.size();
-        return typeMatchCount.entrySet().stream()
-                .filter(stat -> stat.getValue().matchCount == requiredMatch)
-                .min(Comparator.comparingInt(stat -> stat.getValue().indirection))
-                .map(Map.Entry::getKey)
-                .orElseThrow(() -> new IllegalArgumentException("Cannot find a common super type across all feature sets to concatenate"));
-    }
-
-    private static class Indirection {
-        int indirection;
-        int matchCount;
-
-        private Indirection(int indirection, final int matchCount) {
-            this.indirection = indirection;
-            this.matchCount = matchCount;
-        }
-
-        private Indirection merge(final Indirection other) {
-            if (other.indirection > indirection)
-                indirection = other.indirection;
-            matchCount += other.matchCount;
-
-            return this;
-        }
+        return modified ? new ConcatenatedFeatureSet(listeners, subsets) : this;
     }
 }

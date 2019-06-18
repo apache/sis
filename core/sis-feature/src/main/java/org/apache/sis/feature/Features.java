@@ -33,6 +33,7 @@ import org.apache.sis.internal.feature.Resources;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.InvalidPropertyValueException;
@@ -45,7 +46,7 @@ import org.opengis.feature.PropertyType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.5
  * @module
  */
@@ -116,6 +117,23 @@ public final class Features extends Static {
             }
         }
         return (Attribute<V>) attribute;
+    }
+
+    /**
+     * Finds a feature type common to all given types, or returns {@code null} if none is found.
+     * The return value is either one of the given types, or a parent common to all types.
+     * A feature <var>F</var> is considered a common parent if <code>F.{@link DefaultFeatureType#isAssignableFrom
+     * isAssignableFrom}(type)</code> returns {@code true} for all elements <var>type</var> in the given array.
+     *
+     * @param  types  types for which to find a common type, or {@code null}.
+     * @return a feature type which is assignable from all given types, or {@code null} if none.
+     *
+     * @see FeatureType#isAssignableFrom(FeatureType)
+     *
+     * @since 1.0
+     */
+    public static FeatureType findCommonParent(final Iterable<? extends FeatureType> types) {
+        return (types != null) ? CommonParentFinder.select(types) : null;
     }
 
     /**
