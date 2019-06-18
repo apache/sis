@@ -25,7 +25,6 @@ import java.nio.file.Path;
 import java.nio.Buffer;
 import java.awt.image.DataBuffer;
 
-import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
@@ -39,6 +38,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridDerivation;
+import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
