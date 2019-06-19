@@ -18,6 +18,7 @@ package org.apache.sis.storage;
 
 import java.util.stream.Stream;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.storage.query.SimpleQuery;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -93,7 +94,9 @@ public interface FeatureSet extends DataSet {
      * However the returned subset may not have the same capabilities as this {@link FeatureSet}.
      * In particular, write operations may become unsupported after complex queries.</p>
      *
-     * <p>The default implementation throws {@link UnsupportedQueryException}.</p>
+     * <p>The default implementation tries to execute the query by filtering the {@linkplain #features(boolean) stream of features},
+     * which may be inefficient — subclasses are encouraged to override. An {@link UnsupportedQueryException} is thrown if the given
+     * query is unrecognized.</p>
      *
      * @param  query  definition of feature and feature properties filtering applied at reading time.
      * @return resulting subset of features (never {@code null}).
@@ -103,7 +106,11 @@ public interface FeatureSet extends DataSet {
      */
     default FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
         ArgumentChecks.ensureNonNull("query", query);
-        throw new UnsupportedQueryException();
+        if (query instanceof SimpleQuery) {
+            return ((SimpleQuery) query).execute(this);
+        } else {
+            throw new UnsupportedQueryException();
+        }
     }
 
     /**

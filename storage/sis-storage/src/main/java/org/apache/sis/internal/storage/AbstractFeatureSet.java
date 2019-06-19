@@ -20,9 +20,6 @@ import java.util.OptionalLong;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.Query;
-import org.apache.sis.storage.UnsupportedQueryException;
-import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.util.logging.WarningListeners;
 import org.opengis.util.GenericName;
 
@@ -109,25 +106,5 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
     protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
         super.createMetadata(metadata);
         metadata.addFeatureType(getType(), getFeatureCount().orElse(-1));
-    }
-
-    /**
-     * Requests a subset of features and/or feature properties from this resource.
-     * The default implementation try to execute the queries by filtering the
-     * {@linkplain #features(boolean) stream of features}, which may be inefficient.
-     * Subclasses are encouraged to override.
-     *
-     * @param  query  definition of feature and feature properties filtering applied at reading time.
-     * @return resulting subset of features (never {@code null}).
-     * @throws UnsupportedQueryException if this {@code FeatureSet} can not execute the given query.
-     * @throws DataStoreException if another error occurred while processing the query.
-     */
-    @Override
-    public FeatureSet subset(final Query query) throws DataStoreException {
-        if (query instanceof SimpleQuery) {
-            return ((SimpleQuery) query).execute(this);
-        } else {
-            return FeatureSet.super.subset(query);
-        }
     }
 }
