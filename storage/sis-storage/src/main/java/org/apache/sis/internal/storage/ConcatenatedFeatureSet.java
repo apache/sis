@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Collection;
+import java.util.OptionalLong;
 import java.util.stream.Stream;
 import org.apache.sis.feature.Features;
 import org.apache.sis.storage.FeatureSet;
@@ -164,30 +165,33 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
     }
 
     /**
-     * Returns an estimation of the number of features in this set, or {@code null} if unknown.
-     * This is the sum of the estimations provided by all source sets, or {@code null} if at least
-     * one source could not provide an estimation.
+     * Returns an estimation of the number of features in this set, or an empty value if unknown.
+     * This is the sum of the estimations provided by all source sets, or empty if at least one
+     * source could not provide an estimation.
      *
-     * @return estimation of the number of features, or {@code null}.
+     * @return estimation of the number of features.
      */
     @Override
-    protected Integer getFeatureCount() {
-        int sum = 0;
+    protected OptionalLong getFeatureCount() {
+        long sum = 0;
         for (final FeatureSet fs : sources) {
             if (fs instanceof AbstractFeatureSet) {
-                final Integer count = ((AbstractFeatureSet) fs).getFeatureCount();
-                if (count != null && count >= 0) {
-                    sum += count;
-                    if (sum < 0) {                          // Integer overflow.
-                        sum = Integer.MAX_VALUE;
-                        break;
+                final OptionalLong count = ((AbstractFeatureSet) fs).getFeatureCount();
+                if (count.isPresent()) {
+                    final long c = count.getAsLong();
+                    if (c >= 0) {                               // Paranoiac check.
+                        sum += c;
+                        if (sum < 0) {                          // Integer overflow.
+                            sum = Long.MAX_VALUE;
+                            break;
+                        }
+                        continue;
                     }
-                    continue;
                 }
             }
             return null;                 // A source can not provide estimation.
         }
-        return sum;
+        return OptionalLong.of(sum);
     }
 
     /**

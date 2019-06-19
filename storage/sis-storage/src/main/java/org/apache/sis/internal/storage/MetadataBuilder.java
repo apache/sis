@@ -126,6 +126,7 @@ import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Names;
@@ -186,10 +187,11 @@ public class MetadataBuilder {
      *
      * <table class="sis">
      *   <tr><th>Key</th>                          <th>Value</th>               <th>Method</th></tr>
-     *   <tr><td>{@link Integer}</td>              <td>{@link Integer}</td>     <td>{@link #shared(Integer)}</td></tr>
-     *   <tr><td>{@link Double}</td>               <td>{@link Double}</td>      <td>{@link #shared(Double)}</td></tr>
+     *   <tr><td>{@link Integer}</td>              <td>{@link Integer}</td>     <td>{@link #shared(int)}</td></tr>
+     *   <tr><td>{@link Double}</td>               <td>{@link Double}</td>      <td>{@link #shared(double)}</td></tr>
      *   <tr><td>{@link Identifier}</td>           <td>{@link Identifier}</td>  <td>{@link #sharedIdentifier(CharSequence, String)}</td></tr>
      *   <tr><td>{@link InternationalString}</td>  <td>{@link Citation}</td>    <td>{@link #sharedCitation(InternationalString)}</td></tr>
+     *   <tr><td>Other</td>                        <td>Same as key</td>         <td>{@link #shared(Class, Object)}</td></tr>
      * </table>
      */
     private final Map<Object,Object> sharedValues = new HashMap<>();
@@ -1867,18 +1869,18 @@ parse:      for (int i = 0; i < length;) {
      * Note that the {@link FeatureCatalogBuilder} subclasses can also be used for that chaining.
      *
      * @param  type         the feature type to add, or {@code null} for no-operation.
-     * @param  occurrences  number of instances of the given feature type, or {@code null} if unknown.
+     * @param  occurrences  number of instances of the given feature type, or a negative value if unknown.
      * @return the name of the added feature, or {@code null} if none.
      *
      * @see FeatureCatalogBuilder#define(FeatureType)
      */
-    public final GenericName addFeatureType(final FeatureType type, final Integer occurrences) {
+    public final GenericName addFeatureType(final FeatureType type, final long occurrences) {
         if (type != null) {
             final GenericName name = type.getName();
             if (name != null) {
                 final DefaultFeatureTypeInfo info = new DefaultFeatureTypeInfo(name);
-                if (occurrences != null) {
-                    info.setFeatureInstanceCount(shared(occurrences));
+                if (occurrences >= 0) {
+                    info.setFeatureInstanceCount(shared((int) Math.min(occurrences, Integer.MAX_VALUE)));
                 }
                 addIfNotPresent(featureDescription().getFeatureTypeInfo(), info);
                 return name;
@@ -2773,9 +2775,13 @@ parse:      for (int i = 0; i < length;) {
                 source.setSourceSpatialResolution(CollectionsExt.first(id.getSpatialResolutions()));
                 scope.setExtents(id.getExtents());
                 if (features != null && features.length != 0) {
+                    /*
+                     * Note: the same ScopeDescription may be shared by many Source instances
+                     * in the common case where many sources contain features of the same type.
+                     */
                     final DefaultScopeDescription sd = new DefaultScopeDescription();
                     sd.setLevelDescription(level, new LinkedHashSet<>(Arrays.asList(features)));
-                    scope.getLevelDescription().add(sd);
+                    scope.getLevelDescription().add(shared(DefaultScopeDescription.class, sd));
                 }
                 source.setScope(scope.isEmpty() ? null : scope);
                 if (!source.isEmpty()) {
@@ -3040,16 +3046,29 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Returns a shared instance of the given object if it already exists.
+     * If the given object is new, then it is added to the cache and returned.
+     *
+     * <p>It is caller's responsibility to ensure that the type given in argument
+     * does not conflict with one of the type documented in {@link #sharedValues}.</p>
+     */
+    private <T> T shared(final Class<T> type, final T value) {
+        final T existing = type.cast(sharedValues.putIfAbsent(value, value));
+        return (existing != null) ? existing : value;
+    }
+
+    /**
      * Returns a shared instance of the given value.
      * This is a helper method for callers who want to set themselves some additional
      * metadata values on the instance returned by {@link #build(boolean)}.
      *
      * @param   value  a double value.
-     * @return  the same value, but as an existing instance if possible.
+     * @return  the given value, but as an existing instance if possible.
      */
-    public final Double shared(final Double value) {
-        final Object existing = sharedValues.putIfAbsent(value, value);
-        return (existing != null) ? (Double) existing : value;
+    protected final Double shared(final double value) {
+        final Double n = Numerics.valueOf(value);
+        final Object existing = sharedValues.putIfAbsent(n, n);
+        return (existing != null) ? (Double) existing : n;
     }
 
     /**
@@ -3060,8 +3079,9 @@ parse:      for (int i = 0; i < length;) {
      * @param   value  an integer value.
      * @return  the same value, but as an existing instance if possible.
      */
-    public final Integer shared(final Integer value) {
-        final Object existing = sharedValues.putIfAbsent(value, value);
-        return (existing != null) ? (Integer) existing : value;
+    protected final Integer shared(final int value) {
+        final Integer n = value;
+        final Object existing = sharedValues.putIfAbsent(n, n);
+        return (existing != null) ? (Integer) existing : n;
     }
 }

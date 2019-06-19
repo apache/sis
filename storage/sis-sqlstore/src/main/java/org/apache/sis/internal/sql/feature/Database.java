@@ -183,8 +183,7 @@ public final class Database {
      */
     public final void listTables(final DatabaseMetaData metadata, final MetadataBuilder builder) throws SQLException {
         for (final Table table : tables) {
-            final long n = table.countRows(metadata, false);
-            builder.addFeatureType(table.featureType, (n > 0 && n <= Integer.MAX_VALUE) ? (int) n : null);
+            builder.addFeatureType(table.featureType, table.countRows(metadata, false));
         }
     }
 

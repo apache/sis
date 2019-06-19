@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.OptionalLong;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
@@ -89,13 +90,13 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
     }
 
     /**
-     * Returns an estimation of the number of features in this set, or {@code null} if unknown.
-     * The default implementation returns {@code null}.
+     * Returns an estimation of the number of features in this set, or empty if unknown.
+     * The default implementation returns an empty value.
      *
-     * @return estimation of the number of features, or {@code null}.
+     * @return estimation of the number of features.
      */
-    protected Integer getFeatureCount() {
-        return null;
+    protected OptionalLong getFeatureCount() {
+        return OptionalLong.empty();
     }
 
     /**
@@ -109,7 +110,7 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
     @Override
     protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
         super.createMetadata(metadata);
-        metadata.addFeatureType(getType(), getFeatureCount());
+        metadata.addFeatureType(getType(), getFeatureCount().orElse(-1));
     }
 
     /**
