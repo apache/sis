@@ -19,14 +19,15 @@ package org.apache.sis.internal.storage;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.util.logging.WarningListeners;
 
 // Branch-dependent imports
@@ -48,12 +49,38 @@ import org.opengis.feature.FeatureType;
  */
 abstract class AggregatedFeatureSet extends AbstractFeatureSet {
     /**
+     * The envelope, computed when first needed and cached for reuse.
+     *
+     * @see #getEnvelope()
+     */
+    private ImmutableEnvelope envelope;
+
+    /**
+     * Whether {@link #envelope} has been computed. The result may still be null.
+     */
+    private boolean isEnvelopeComputed;
+
+    /**
      * Creates a new aggregated feature set.
      *
      * @param  listeners  the set of registered warning listeners for the data store, or {@code null} if none.
      */
     protected AggregatedFeatureSet(final WarningListeners<DataStore> listeners) {
         super(listeners);
+        /*
+         * TODO: we should add listeners on source feature sets. By doing this,
+         *       we could be notified of changes and invoke clearCache().
+         */
+    }
+
+    /**
+     * Creates a new feature set with the same warning listeners than the given resource,
+     * or with {@code null} listeners if they are unknown.
+     *
+     * @param resource  the resources from which to get the listeners, or {@code null} if none.
+     */
+    protected AggregatedFeatureSet(final FeatureSet resource) {
+        super(resource);
     }
 
     /**
@@ -65,25 +92,43 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
     abstract Collection<FeatureSet> dependencies();
 
     /**
+     * Returns {@code null} since this resource is a computation result.
+     */
+    @Override
+    public GenericName getIdentifier() {
+        return null;
+    }
+
+    /**
      * Adds the envelopes of the aggregated feature sets in the given list. If some of the feature sets
      * are themselves aggregated feature sets, then this method traverses them recursively. We compute
      * the union of all envelopes at once after we got all envelopes.
+     *
+     * <p>If any source returns {@code null}, then this method stops the collect immediately and returns {@code false}.
+     * The rational is that if at least one source has unknown location, providing a location based on other sources
+     * may be misleading since they may be very far from the missing resource location.</p>
+     *
+     * @return {@code false} if the collect has been interrupted because a source returned a {@code null} envelope.
      */
-    private void getEnvelopes(final List<Envelope> addTo) throws DataStoreException {
+    private boolean getEnvelopes(final List<Envelope> addTo) throws DataStoreException {
         for (final FeatureSet fs : dependencies()) {
             if (fs instanceof AggregatedFeatureSet) {
-                ((AggregatedFeatureSet) fs).getEnvelopes(addTo);
+                if (!((AggregatedFeatureSet) fs).getEnvelopes(addTo)) {
+                    return false;
+                }
             } else {
-                // No need to filter null envelopes since Envelopes.union(…) will ignore them.
-                addTo.add(fs.getEnvelope());
+                final Envelope e = fs.getEnvelope();
+                if (e == null) return false;
+                addTo.add(e);
             }
         }
+        return true;
     }
 
     /**
      * Returns the union of the envelope in all aggregated feature set, or {@code null} if none.
      * This method tries to find a CRS common to all feature sets. If no common CRS can be found,
-     * an exception is thrown.
+     * then this method returns {@code null}.
      *
      * <div class="note"><b>Implementation note:</b>
      * the envelope is recomputed every time this method is invoked. The result is not cached because
@@ -94,18 +139,17 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
      * @throws DataStoreException if an error occurred while computing the envelope.
      */
     @Override
-    public Envelope getEnvelope() throws DataStoreException {
-        final List<Envelope> envelopes = new ArrayList<>();
-        getEnvelopes(envelopes);
-        try {
-            return Envelopes.union(envelopes.toArray(new Envelope[envelopes.size()]));
-        } catch (TransformException e) {
-            /*
-             * Since Envelopes.union(…) tried to find a common CRS,
-             * failure to transform an envelope may be important.
-             */
-            throw new DataStoreReferencingException(e);
+    public synchronized Envelope getEnvelope() throws DataStoreException {
+        if (!isEnvelopeComputed) {
+            final List<Envelope> envelopes = new ArrayList<>();
+            if (getEnvelopes(envelopes)) try {
+                envelope = ImmutableEnvelope.castOrCopy(Envelopes.union(envelopes.toArray(new Envelope[envelopes.size()])));
+            } catch (TransformException e) {
+                warning(e);
+            }
+            isEnvelopeComputed = true;
         }
+        return envelope;
     }
 
     /**
@@ -124,5 +168,16 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
             metadata.addSource(fs.getMetadata(), ScopeCode.FEATURE_TYPE,
                     (type == null) ? null : new CharSequence[] {type.getName().toInternationalString()});
         }
+    }
+
+    /**
+     * Clears any cache in this resource, forcing the data to be recomputed when needed again.
+     * This method should be invoked if the data in underlying data store changed.
+     */
+    @Override
+    protected synchronized void clearCache() {
+        isEnvelopeComputed = false;
+        envelope = null;
+        super.clearCache();
     }
 }

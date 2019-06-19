@@ -822,7 +822,7 @@ public final class CollectionsExt extends Static {
      * @todo Remove after migration to JDK11.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T[] toArray(final Collection<T> collection, final Class<T> valueClass) {
+    public static <T> T[] toArray(final Collection<? extends T> collection, final Class<T> valueClass) {
         assert Numbers.primitiveToWrapper(valueClass) == valueClass : valueClass;
         if (collection != null) {
             return collection.toArray((T[]) Array.newInstance(valueClass, collection.size()));

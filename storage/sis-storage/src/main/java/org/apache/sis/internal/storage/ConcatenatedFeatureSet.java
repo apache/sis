@@ -47,9 +47,7 @@ import org.opengis.feature.FeatureType;
  *     and iteration order is driven by input sequence.</li>
  *   <li>All input feature sets must share a common type, or at least a common super-type. If you want to sequence
  *     sets which does not share any common parent, please pre-process them to modify their public type.</li>
- *   <li>The {@linkplain #getIdentifier() identifier} is the name of above-cited common type.
- *     It may result in the same identifier than one of the given sources,
- *     but this is okay if this {@code FeatureSet} has a different {@code DataStore} parent than the sources.</li>
+ *   <li>There is no {@linkplain #getIdentifier() identifier} since this feature set is a computation result.</li>
  * </ol>
  *
  * @author  Alexis Manin (Geomatys)
@@ -68,6 +66,16 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
      * The most specific feature type common to all feature sets in the {@linkplain #sources} list.
      */
     private final FeatureType commonType;
+
+    /**
+     * Creates a new concatenated feature set with the same listeners and types than the given feature set,
+     * but different sources.
+     */
+    private ConcatenatedFeatureSet(final ConcatenatedFeatureSet original, final FeatureSet[] sources) {
+        super(original);
+        this.sources = UnmodifiableArrayList.wrap(sources);
+        commonType = original.commonType;
+    }
 
     /**
      * Creates a new feature set as a concatenation of the sequence of features given by the {@code sources}.
@@ -95,10 +103,6 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
             // TODO: localize.
             throw new DataStoreContentException("Cannot find a common super type across all feature sets to concatenate");
         }
-        /*
-         * TODO: we should add listeners on source feature sets. By doing it, we could be notified of changes,
-         *       allowing a better update strategy for envelope, metadata and type.
-         */
     }
 
     /**
@@ -116,7 +120,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
             ArgumentChecks.ensureNonNullElement("sources", 0, fs);
             return fs;
         } else {
-            return new ConcatenatedFeatureSet(null, sources.clone());
+            return new ConcatenatedFeatureSet((WarningListeners<DataStore>) null, sources.clone());
         }
     }
 
@@ -139,7 +143,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
                 return fs;
             }
             default: {
-                return new ConcatenatedFeatureSet(null, sources.toArray(new FeatureSet[size]));
+                return new ConcatenatedFeatureSet((WarningListeners<DataStore>) null, sources.toArray(new FeatureSet[size]));
             }
         }
     }
@@ -232,6 +236,6 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
             subsets[i] = source.subset(query);
             modified |= subsets[i] != source;
         }
-        return modified ? new ConcatenatedFeatureSet(listeners, subsets) : this;
+        return modified ? new ConcatenatedFeatureSet(this, subsets) : this;
     }
 }

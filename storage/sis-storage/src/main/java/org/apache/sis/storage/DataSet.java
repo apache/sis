@@ -70,7 +70,7 @@ public interface DataSet extends Resource {
      * <p>The returned envelope is not necessarily the smallest bounding box encompassing all data.
      * If the smallest envelope is too costly to compute, this method may conservatively return a larger envelope.</p>
      *
-     * @return the spatiotemporal resource extent. Should not be {@code null} (but may happen if too costly to compute).
+     * @return the spatiotemporal resource extent. Should not be {@code null}, but may happen if too costly to compute.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
     Envelope getEnvelope() throws DataStoreException;

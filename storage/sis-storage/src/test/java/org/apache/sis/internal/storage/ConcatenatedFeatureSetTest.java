@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage;
 import java.util.Arrays;
 import java.util.Collections;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
@@ -27,7 +28,8 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -51,23 +53,23 @@ public final strictfp class ConcatenatedFeatureSetTest extends TestCase {
     @Test
     public void testSameType() throws DataStoreException {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder();
-        builder.addAttribute(String.class).setName("label");
-        builder.addAttribute(Integer.class).setName("amount");
-        builder.setName("first");
+        builder.setName("City");
+        builder.addAttribute(String.class).setName("name");
+        builder.addAttribute(Integer.class).setName("population");
 
         final FeatureType ft = builder.build();
-        final FeatureSet fs1 = new MemoryFeatureSet(null, ft, Arrays.asList(ft.newInstance(), ft.newInstance()));
-        final FeatureSet fs2 = new MemoryFeatureSet(null, ft, Arrays.asList(ft.newInstance()));
-        final FeatureSet cfs = ConcatenatedFeatureSet.create(fs1, fs2);
+        final FeatureSet cfs = ConcatenatedFeatureSet.create(
+                new MemoryFeatureSet(null, ft, Arrays.asList(ft.newInstance(), ft.newInstance())),
+                new MemoryFeatureSet(null, ft, Arrays.asList(ft.newInstance())));
 
-        final FeatureType cType = cfs.getType();
-        assertSame("getType()", ft, cType);
+        assertSame("getType()", ft, cfs.getType());
+        assertEquals("features.count()", 3, cfs.features(false).count());
 
         final Metadata md = cfs.getMetadata();
-        assertNotNull("Concatenation metadata", md);
-
-        final long count = cfs.features(false).count();
-        assertEquals("Number of features", 3, count);
+        assertNotNull("getMetadata()", md);
+        assertContentInfoEquals("City", 3, (FeatureCatalogueDescription) getSingleton(md.getContentInfo()));
+        assertFeatureSourceEquals("City", new String[] {"City"},
+                getSingleton(getSingleton(md.getResourceLineages()).getSources()));
     }
 
     /**

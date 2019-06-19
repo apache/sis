@@ -64,7 +64,7 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
 
     /**
      * Creates a new feature set with the same warning listeners than the given resource,
-     * or {@code null} if the listeners are unknown.
+     * or with {@code null} listeners if they are unknown.
      *
      * @param resource  the resources from which to get the listeners, or {@code null} if none.
      */
@@ -74,6 +74,7 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
 
     /**
      * Returns the feature type name as the identifier for this resource.
+     * Subclasses should override if they can provide a more specific identifier.
      *
      * @return the resource identifier inferred from metadata, or {@code null} if none or ambiguous.
      * @throws DataStoreException if an error occurred while fetching the identifier.
@@ -83,10 +84,7 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
     @Override
     public GenericName getIdentifier() throws DataStoreException {
         final FeatureType type = getType();
-        if (type != null) {
-            return type.getName();
-        }
-        return null;
+        return (type != null) ? type.getName() : null;
     }
 
     /**

@@ -60,7 +60,7 @@ public abstract class AbstractResource implements Resource, Localized {
     /**
      * The set of registered warning listeners for the data store, or {@code null} if none.
      */
-    final WarningListeners<DataStore> listeners;
+    private final WarningListeners<DataStore> listeners;
 
     /**
      * Creates a new resource.
@@ -73,7 +73,7 @@ public abstract class AbstractResource implements Resource, Localized {
 
     /**
      * Creates a new resource with the same warning listeners than the given resource,
-     * or {@code null} if the listeners are unknown.
+     * or with {@code null} listeners if they are unknown.
      *
      * @param resource  the resources from which to get the listeners, or {@code null} if none.
      */
@@ -149,8 +149,25 @@ public abstract class AbstractResource implements Resource, Localized {
         try {
             metadata.addExtent(getEnvelope());
         } catch (TransformException | UnsupportedOperationException e) {
-            listeners.warning(null, e);
+            warning(e);
         }
+    }
+
+    /**
+     * Invoked when a non-fatal exception occurred.
+     *
+     * @param  e  the non-fatal exception to report.
+     */
+    protected final void warning(final Exception e) {
+        listeners.warning(null, e);
+    }
+
+    /**
+     * Clears any cache in this resource, forcing the data to be recomputed when needed again.
+     * This method should be invoked if the data in underlying data store changed.
+     */
+    protected synchronized void clearCache() {
+        metadata = null;
     }
 
     /**
