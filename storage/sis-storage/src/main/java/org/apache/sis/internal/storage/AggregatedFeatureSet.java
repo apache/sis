@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -104,11 +105,11 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
      * are themselves aggregated feature sets, then this method traverses them recursively. We compute
      * the union of all envelopes at once after we got all envelopes.
      *
-     * <p>If any source returns {@code null}, then this method stops the collect immediately and returns {@code false}.
+     * <p>If any source has an absent value, then this method stops the collect immediately and returns {@code false}.
      * The rational is that if at least one source has unknown location, providing a location based on other sources
      * may be misleading since they may be very far from the missing resource location.</p>
      *
-     * @return {@code false} if the collect has been interrupted because a source returned a {@code null} envelope.
+     * @return {@code false} if the collect has been interrupted because an envelope is absent.
      */
     private boolean getEnvelopes(final List<Envelope> addTo) throws DataStoreException {
         for (final FeatureSet fs : dependencies()) {
@@ -117,29 +118,28 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
                     return false;
                 }
             } else {
-                final Envelope e = fs.getEnvelope();
-                if (e == null) return false;
-                addTo.add(e);
+                final Optional<Envelope> e = fs.getEnvelope();
+                if (!e.isPresent()) return false;                   // TODO: use isEmpty() with JDK11.
+                addTo.add(e.get());
             }
         }
         return true;
     }
 
     /**
-     * Returns the union of the envelope in all aggregated feature set, or {@code null} if none.
-     * This method tries to find a CRS common to all feature sets. If no common CRS can be found,
-     * then this method returns {@code null}.
+     * Returns the union of the envelopes in all aggregated feature sets.
+     * This method tries to find a CRS common to all feature sets.
+     * If no common CRS can be found, then the envelope is absent.
      *
      * <div class="note"><b>Implementation note:</b>
-     * the envelope is recomputed every time this method is invoked. The result is not cached because
-     * the envelope of {@code FeatureSet} sources may change between invocations of this method.
-     * The cost should not be excessive if the sources cache themselves their envelopes.</div>
+     * this method is final because overriding it would invalidate the unwrapping of other {@code AggregatedFeatureSet} instances.
+     * If we wish to allow overrides in a future version, we would need to revisit {@link #getEnvelopes(List)} first.</div>
      *
-     * @return union of envelopes of both sides, or {@code null}.
+     * @return union of envelopes from all dependencies.
      * @throws DataStoreException if an error occurred while computing the envelope.
      */
     @Override
-    public synchronized Envelope getEnvelope() throws DataStoreException {
+    public final synchronized Optional<Envelope> getEnvelope() throws DataStoreException {
         if (!isEnvelopeComputed) {
             final List<Envelope> envelopes = new ArrayList<>();
             if (getEnvelopes(envelopes)) try {
@@ -149,7 +149,7 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
             }
             isEnvelopeComputed = true;
         }
-        return envelope;
+        return Optional.ofNullable(envelope);
     }
 
     /**

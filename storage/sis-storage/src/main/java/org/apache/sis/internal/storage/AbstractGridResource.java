@@ -17,6 +17,7 @@
 package org.apache.sis.internal.storage;
 
 import java.util.Arrays;
+import java.util.Optional;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -61,19 +62,20 @@ public abstract class AbstractGridResource extends AbstractResource implements G
     }
 
     /**
-     * Returns the grid geometry envelope, or {@code null} if unknown.
+     * Returns the grid geometry envelope if known.
      * This implementation fetches the envelope from the grid geometry instead than from metadata.
+     * The envelope is absent if the grid geometry does not provide this information.
      *
-     * @return the grid geometry envelope, or {@code null}.
+     * @return the grid geometry envelope.
      * @throws DataStoreException if an error occurred while computing the grid geometry.
      */
     @Override
-    public Envelope getEnvelope() throws DataStoreException {
+    public Optional<Envelope> getEnvelope() throws DataStoreException {
         final GridGeometry gg = getGridGeometry();
         if (gg != null && gg.isDefined(GridGeometry.ENVELOPE)) {
-            return gg.getEnvelope();
+            return Optional.of(gg.getEnvelope());
         }
-        return null;
+        return Optional.empty();
     }
 
     /**

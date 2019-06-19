@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Optional;
 import org.opengis.geometry.Envelope;
 
 
@@ -42,7 +43,7 @@ import org.opengis.geometry.Envelope;
  * That parent metadata is often the same instance than {@link DataStore#getMetadata()}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -70,8 +71,8 @@ public interface DataSet extends Resource {
      * <p>The returned envelope is not necessarily the smallest bounding box encompassing all data.
      * If the smallest envelope is too costly to compute, this method may conservatively return a larger envelope.</p>
      *
-     * @return the spatiotemporal resource extent. Should not be {@code null}, but may happen if too costly to compute.
+     * @return the spatiotemporal resource extent. May be absent if none or too costly to compute.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
-    Envelope getEnvelope() throws DataStoreException;
+    Optional<Envelope> getEnvelope() throws DataStoreException;
 }
