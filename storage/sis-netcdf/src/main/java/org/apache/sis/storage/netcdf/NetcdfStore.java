@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.net.URI;
 import java.util.List;
 import java.util.Collection;
+import java.util.Optional;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
@@ -158,15 +159,15 @@ public class NetcdfStore extends DataStore implements Aggregate {
     /**
      * Returns an identifier constructed from global attributes or the filename of the netCDF file.
      *
-     * @return the identifier fetched from global attributes or the filename, or {@code null} if none.
+     * @return the identifier fetched from global attributes or the filename. May be absent.
      * @throws DataStoreException if an error occurred while fetching the identifier.
      *
      * @since 1.0
      */
     @Override
-    public GenericName getIdentifier() throws DataStoreException {
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
         final NameSpace namespace = decoder.namespace;
-        return (namespace != null) ? namespace.name() : null;
+        return (namespace != null) ? Optional.of(namespace.name()) : Optional.empty();
     }
 
     /**

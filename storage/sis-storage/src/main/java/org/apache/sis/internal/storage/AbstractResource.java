@@ -18,7 +18,6 @@ package org.apache.sis.internal.storage;
 
 import java.util.Locale;
 import java.util.Optional;
-import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
@@ -143,10 +142,7 @@ public abstract class AbstractResource implements Resource, Localized {
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
     protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
-        final GenericName name = getIdentifier();
-        if (name != null) {
-            metadata.addTitle(name.toInternationalString());
-        }
+        getIdentifier().ifPresent((name) -> metadata.addTitle(name.toInternationalString()));
         getEnvelope().ifPresent((envelope) -> {
             try {
                 metadata.addExtent(envelope);

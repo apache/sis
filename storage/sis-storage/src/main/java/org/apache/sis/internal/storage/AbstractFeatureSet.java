@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.Optional;
 import java.util.OptionalLong;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -73,15 +74,15 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
      * Returns the feature type name as the identifier for this resource.
      * Subclasses should override if they can provide a more specific identifier.
      *
-     * @return the resource identifier inferred from metadata, or {@code null} if none or ambiguous.
+     * @return the resource identifier inferred from feature type.
      * @throws DataStoreException if an error occurred while fetching the identifier.
      *
      * @see DataStore#getIdentifier()
      */
     @Override
-    public GenericName getIdentifier() throws DataStoreException {
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
         final FeatureType type = getType();
-        return (type != null) ? type.getName() : null;
+        return (type != null) ? Optional.of(type.getName()) : Optional.empty();
     }
 
     /**

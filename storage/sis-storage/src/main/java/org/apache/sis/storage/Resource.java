@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Optional;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.event.ChangeEvent;
@@ -63,11 +64,11 @@ public interface Resource {
      *   <li>It should be consistent with the <code>{@linkplain #getMetadata()}/​identificationInfo/​citation/​identifier</code> value.</li>
      * </ul>
      *
-     * If any of above conditions is not met, then this identifier should be {@code null}.
+     * If any of above conditions is not met, then this identifier should be absent.
      * This case may happen when a resource is an intermediate result of an ongoing process
      * or is a temporary resource generated on-the-fly, for example a sensor event.
      *
-     * @return a persistent identifier unique within the data store, or {@code null} if this resource has no such identifier.
+     * @return a persistent identifier unique within the data store, or absent if this resource has no such identifier.
      * @throws DataStoreException if an error occurred while fetching the identifier.
      *
      * @see DataStore#getIdentifier()
@@ -75,7 +76,7 @@ public interface Resource {
      *
      * @since 1.0
      */
-    GenericName getIdentifier() throws DataStoreException;
+    Optional<GenericName> getIdentifier() throws DataStoreException;
 
     /**
      * Returns information about this resource.

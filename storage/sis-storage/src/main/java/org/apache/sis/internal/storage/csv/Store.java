@@ -627,8 +627,8 @@ final class Store extends URIDataStore implements FeatureSet {
      * @return identifier for this CSV data store.
      */
     @Override
-    public GenericName getIdentifier() throws DataStoreException {
-        return featureType.getName();
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
+        return Optional.of(featureType.getName());
     }
 
     /**

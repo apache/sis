@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.Buffer;
@@ -338,8 +339,8 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * Returns the variable name as an identifier of this resource.
      */
     @Override
-    public GenericName getIdentifier() {
-        return identifier;
+    public Optional<GenericName> getIdentifier() {
+        return Optional.of(identifier);
     }
 
     /**

@@ -93,11 +93,11 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
     abstract Collection<FeatureSet> dependencies();
 
     /**
-     * Returns {@code null} since this resource is a computation result.
+     * Returns an empty value since this resource is a computation result.
      */
     @Override
-    public GenericName getIdentifier() {
-        return null;
+    public Optional<GenericName> getIdentifier() {
+        return Optional.empty();
     }
 
     /**

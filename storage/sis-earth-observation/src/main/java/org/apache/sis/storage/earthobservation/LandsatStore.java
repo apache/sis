@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Optional;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
@@ -137,11 +138,11 @@ public class LandsatStore extends DataStore {
      * @since 1.0
      */
     @Override
-    public synchronized GenericName getIdentifier() throws DataStoreException {
+    public synchronized Optional<GenericName> getIdentifier() throws DataStoreException {
         if (identifier == null) {
-            identifier = super.getIdentifier();
+            identifier = super.getIdentifier().orElse(null);
         }
-        return identifier;
+        return Optional.ofNullable(identifier);
     }
 
     /**

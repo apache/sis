@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.sql.DatabaseMetaData;
@@ -519,8 +520,8 @@ final class Table extends AbstractFeatureSet {
      * Returns the table identifier composed of catalog, schema and table name.
      */
     @Override
-    public final GenericName getIdentifier() {
-        return featureType.getName().toFullyQualifiedName();
+    public final Optional<GenericName> getIdentifier() {
+        return Optional.of(featureType.getName().toFullyQualifiedName());
     }
 
     /**

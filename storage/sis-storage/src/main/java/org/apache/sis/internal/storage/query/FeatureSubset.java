@@ -17,6 +17,7 @@
 package org.apache.sis.internal.storage.query;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.opengis.util.GenericName;
 import org.apache.sis.internal.feature.FeatureUtilities;
@@ -71,11 +72,11 @@ final class FeatureSubset extends AbstractFeatureSet {
     }
 
     /**
-     * Returns {@code null} since this resource is a computation result.
+     * Returns an empty value since this resource is a computation result.
      */
     @Override
-    public GenericName getIdentifier() {
-        return null;
+    public Optional<GenericName> getIdentifier() {
+        return Optional.empty();
     }
 
     /**
