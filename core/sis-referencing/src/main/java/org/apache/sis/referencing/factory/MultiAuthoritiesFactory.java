@@ -46,6 +46,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.AbstractIterator;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -62,7 +63,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.collection.BackingStoreException;
 
 
@@ -365,8 +365,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                     /** Returns the next element, with namespace inserted before the code if needed. */
                     @Override public String next() {
                         String code = super.next();
-                        if (prefix != null && code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR) < 0) {
-                            code = prefix + DefaultNameSpace.DEFAULT_SEPARATOR + code;
+                        if (prefix != null && code.indexOf(Constants.DEFAULT_SEPARATOR) < 0) {
+                            code = prefix + Constants.DEFAULT_SEPARATOR + code;
                         }
                         return code;
                     }
@@ -814,7 +814,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
              * an exception will be thrown. Note that the CharSequences.skipLeading/TrailingWhitespaces(…)
              * methods are robust to negative index, so the code will work even if code.indexOf(…) returned -1.
              */
-            int afterAuthority = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
+            int afterAuthority = code.indexOf(Constants.DEFAULT_SEPARATOR);
             int end = CharSequences.skipTrailingWhitespaces(code, 0, afterAuthority);
             int start = CharSequences.skipLeadingWhitespaces(code, 0, end);
             if (start >= end) {
@@ -827,7 +827,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
              * equals to an empty string or to the "0" string, it will be considered as no version. Usage of 0 as
              * a pseudo-version is a practice commonly found in other software products.
              */
-            int afterVersion = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, ++afterAuthority);
+            int afterVersion = code.indexOf(Constants.DEFAULT_SEPARATOR, ++afterAuthority);
             start = CharSequences.skipLeadingWhitespaces(code, afterAuthority, afterVersion);
             end = CharSequences.skipTrailingWhitespaces(code, start, afterVersion);
             version = (start < end && !code.regionMatches(start, DefinitionURI.NO_VERSION, 0,
@@ -850,7 +850,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          */
         if (parameters != null || code.indexOf(CommonAuthorityFactory.SEPARATOR) >= 0) {
             final StringBuilder buffer = new StringBuilder(authority.length() + code.length() + 1)
-                    .append(authority).append(DefaultNameSpace.DEFAULT_SEPARATOR).append(code);
+                    .append(authority).append(Constants.DEFAULT_SEPARATOR).append(code);
             if (parameters != null) {
                 for (final String p : parameters) {
                     buffer.append(CommonAuthorityFactory.SEPARATOR).append(p);

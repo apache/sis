@@ -34,6 +34,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -426,7 +427,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
                  * and parameters. We extend this rule to datum as well.
                  */
                 final Datum that = (Datum) object;
-                final Boolean match = org.apache.sis.internal.util.Citations.hasCommonIdentifier(getIdentifiers(), that.getIdentifiers());
+                final Boolean match = Identifiers.hasCommonIdentifier(getIdentifiers(), that.getIdentifiers());
                 if (match != null) {
                     return match;
                 }

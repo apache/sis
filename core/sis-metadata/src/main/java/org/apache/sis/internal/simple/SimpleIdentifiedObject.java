@@ -27,8 +27,8 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.internal.util.Citations;
-import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.internal.metadata.Identifiers;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 
@@ -245,10 +245,10 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
         }
         final StringBuilder buffer = new StringBuilder("IdentifiedObject[\"");
         if (codespace != null) {
-            buffer.append(codespace).append(DefaultNameSpace.DEFAULT_SEPARATOR);
+            buffer.append(codespace).append(Constants.DEFAULT_SEPARATOR);
         }
         buffer.append(code).append('"');
-        final String identifier = Citations.getIdentifier(authority, true);
+        final String identifier = Identifiers.getIdentifier(authority, true);
         if (identifier != null) {
             buffer.append(", Id[\"").append(identifier).append("\"]");   // "Id" should be consistent with WKTKeywords.Id.
         }

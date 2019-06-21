@@ -39,7 +39,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.WritableFeatureSet;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
@@ -99,13 +99,13 @@ public final class StoreUtilities extends Static {
      * @return a data identifier, or {@code null} if none.
      *
      * @see DataStore#getIdentifier()
-     * @see Citations#removeIgnorableCharacters(String)
+     * @see org.apache.sis.metadata.iso.citation.Citations#removeIgnorableCharacters(String)
      */
     private static String getAnyIdentifier(final Metadata metadata, final boolean unicode) {
         String fallback = null;
         if (metadata != null) {
             for (final Identification md : metadata.getIdentificationInfo()) {
-                String id = Citations.getIdentifier(md.getCitation(), unicode);
+                String id = Identifiers.getIdentifier(md.getCitation(), unicode);
                 if (id != null) {
                     if (md instanceof DataIdentification) {
                         return id;

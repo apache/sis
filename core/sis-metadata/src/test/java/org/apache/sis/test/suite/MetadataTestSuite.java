@@ -30,6 +30,7 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.internal.metadata.IdentifiersTest.class,
     org.apache.sis.internal.metadata.AxisNamesTest.class,
     org.apache.sis.internal.metadata.NameMeaningTest.class,
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,

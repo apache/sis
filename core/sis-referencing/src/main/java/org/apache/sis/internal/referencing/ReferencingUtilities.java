@@ -133,8 +133,6 @@ public final class ReferencingUtilities extends Static {
      *
      * @param  crs  the CRS from which to get the number of dimensions, or {@code null}.
      * @return the number of dimensions, or 0 if the given CRS or its coordinate system is null.
-     *
-     * @since 0.6
      */
     public static int getDimension(final CoordinateReferenceSystem crs) {
         if (crs != null) {
@@ -205,8 +203,6 @@ public final class ReferencingUtilities extends Static {
      * @return {@code true} if the given datum is non null and of ellipsoidal type.
      *
      * @see org.apache.sis.internal.metadata.VerticalDatumTypes#ELLIPSOIDAL
-     *
-     * @since 0.8
      */
     public static boolean isEllipsoidalHeight(final VerticalDatum datum) {
         if (datum != null) {
@@ -266,8 +262,6 @@ public final class ReferencingUtilities extends Static {
      *
      * @param  crs  the coordinate reference system for which to get the ellipsoid.
      * @return the ellipsoid in the given CRS, or {@code null} if none.
-     *
-     * @since 0.6
      */
     public static Ellipsoid getEllipsoidOfGeographicCRS(CoordinateReferenceSystem crs) {
         while (!(crs instanceof GeodeticCRS)) {
@@ -379,8 +373,6 @@ public final class ReferencingUtilities extends Static {
      * @return a view of the identified object properties.
      *
      * @see IdentifiedObjects#getProperties(IdentifiedObject, String...)
-     *
-     * @since 0.7
      */
     public static Map<String,?> getPropertiesForModifiedCRS(final IdentifiedObject object) {
         final Map<String,?> properties = IdentifiedObjects.getProperties(object, IdentifiedObject.IDENTIFIERS_KEY);
@@ -426,8 +418,6 @@ public final class ReferencingUtilities extends Static {
      * @return the XML property name for the given class or interface, or {@code null} if none.
      *
      * @see WKTUtilities#toType(Class, Class)
-     *
-     * @since 0.6
      */
     public static StringBuilder toPropertyName(final Class<?> base, final Class<?> type) {
         final UML uml = type.getAnnotation(UML.class);
@@ -462,8 +452,6 @@ public final class ReferencingUtilities extends Static {
      * @param  targetCRS  the CRS from which to get the target coordinate system and ellipsoid.
      * @param  context    a pre-allocated context, or {@code null} for creating a new one.
      * @return the given context if it was non-null, or a new context otherwise.
-     *
-     * @since 0.7
      */
     public static Context createTransformContext(final CoordinateReferenceSystem sourceCRS,
             final CoordinateReferenceSystem targetCRS, Context context)
@@ -498,8 +486,6 @@ public final class ReferencingUtilities extends Static {
      * @return mapping from parameter identifiers to parameter names defined by the given authority.
      * @throws NumberFormatException if a parameter identifier of the given authority is not numeric.
      * @throws IllegalArgumentException if the same identifier is used for two or more parameters.
-     *
-     * @since 0.8
      */
     public static Map<Integer,String> identifierToName(final ParameterDescriptorGroup parameters, final Citation authority) {
         final Map<Integer,String> mapping = new HashMap<>();

@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
+import org.apache.sis.internal.util.Constants;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -71,7 +72,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * The default separator, which is {@code ':'}. The separator is inserted between
      * the namespace and any {@linkplain GenericName generic name} in that namespace.
      */
-    public static final char DEFAULT_SEPARATOR = org.apache.sis.internal.util.Citations.DEFAULT_SEPARATOR;
+    public static final char DEFAULT_SEPARATOR = Constants.DEFAULT_SEPARATOR;
 
     /**
      * {@link #DEFAULT_SEPARATOR} as a {@link String}.

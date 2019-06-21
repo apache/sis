@@ -37,10 +37,10 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -48,8 +48,7 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 
-import static org.apache.sis.internal.util.Citations.iterator;
-import static org.apache.sis.internal.util.Citations.identifierMatches;
+import static org.apache.sis.internal.util.CollectionsExt.iterator;
 
 
 /**
@@ -200,7 +199,7 @@ public final class IdentifiedObjects extends Static {
                     }
                 }
                 final Iterator<GenericName> it = iterator(object.getAlias());
-                if (it != null) while (it.hasNext()) {
+                while (it.hasNext()) {
                     final GenericName alias = it.next();
                     if (alias != null) {
                         final String name = (alias instanceof Identifier) ?
@@ -215,7 +214,7 @@ public final class IdentifiedObjects extends Static {
                 }
             } else {
                 if (identifier != null) {
-                    if (identifierMatches(authority, identifier.getAuthority())) {
+                    if (Citations.identifierMatches(authority, identifier.getAuthority())) {
                         final String name = identifier.getCode();
                         if (name != null) {
                             if (addTo == null) {
@@ -226,12 +225,12 @@ public final class IdentifiedObjects extends Static {
                     }
                 }
                 final Iterator<GenericName> it = iterator(object.getAlias());
-                if (it != null) while (it.hasNext()) {
+                while (it.hasNext()) {
                     final GenericName alias = it.next();
                     if (alias != null) {
                         if (alias instanceof Identifier) {
                             identifier = (Identifier) alias;
-                            if (identifierMatches(authority, identifier.getAuthority())) {
+                            if (Citations.identifierMatches(authority, identifier.getAuthority())) {
                                 final String name = identifier.getCode();
                                 if (name != null) {
                                     if (addTo == null) {
@@ -245,7 +244,7 @@ public final class IdentifiedObjects extends Static {
                             if (ns != null) {
                                 final GenericName scope = ns.name();
                                 if (scope != null) {
-                                    if (identifierMatches(authority, null, scope.toString())) {
+                                    if (Citations.identifierMatches(authority, scope.toString())) {
                                         final String name = alias.toString();
                                         if (name != null) {
                                             if (addTo == null) {
@@ -281,10 +280,10 @@ public final class IdentifiedObjects extends Static {
     public static Identifier getIdentifier(final IdentifiedObject object, final Citation authority) {
         if (object != null) {
             final Iterator<? extends Identifier> it = iterator(object.getIdentifiers());
-            if (it != null) while (it.hasNext()) {
+            while (it.hasNext()) {
                 final Identifier identifier = it.next();
                 if (identifier != null) {                           // Paranoiac check.
-                    if (authority == null || identifierMatches(authority, identifier.getAuthority())) {
+                    if (authority == null || Citations.identifierMatches(authority, identifier.getAuthority())) {
                         return identifier;
                     }
                 }
@@ -317,7 +316,7 @@ public final class IdentifiedObjects extends Static {
     public static String getIdentifierOrName(final IdentifiedObject object) {
         if (object != null) {
             final Iterator<? extends Identifier> it = iterator(object.getIdentifiers());
-            if (it != null) while (it.hasNext()) {
+            while (it.hasNext()) {
                 final String code = toString(it.next());
                 if (code != null) {                                 // Paranoiac check.
                     return code;
@@ -361,7 +360,7 @@ public final class IdentifiedObjects extends Static {
                 }
             }
             final Iterator<GenericName> it = iterator(object.getAlias());
-            if (it != null) while (it.hasNext()) {
+            while (it.hasNext()) {
                 GenericName alias = it.next();
                 if (alias != null && (alias = alias.tip()) != null) {
                     final String code = alias.toString();
@@ -371,7 +370,7 @@ public final class IdentifiedObjects extends Static {
                 }
             }
             final Iterator<? extends Identifier> id = iterator(object.getIdentifiers());
-            if (id != null) while (id.hasNext()) {
+            while (id.hasNext()) {
                 identifier = id.next();
                 if (identifier != null) {                           // Paranoiac check.
                     final String code = identifier.getCode();
@@ -733,7 +732,7 @@ public final class IdentifiedObjects extends Static {
         }
         String cs = identifier.getCodeSpace();
         if (cs == null || cs.isEmpty()) {
-            cs = org.apache.sis.internal.util.Citations.getIdentifier(identifier.getAuthority(), true);
+            cs = Identifiers.getIdentifier(identifier.getAuthority(), true);
         }
         return NameMeaning.toURN(type, cs, identifier.getVersion(), identifier.getCode());
     }
@@ -777,7 +776,7 @@ public final class IdentifiedObjects extends Static {
             cs = Citations.toCodeSpace(identifier.getAuthority());
         }
         if (cs != null) {
-            return cs + DefaultNameSpace.DEFAULT_SEPARATOR + code;
+            return cs + Constants.DEFAULT_SEPARATOR + code;
         }
         return code;
     }

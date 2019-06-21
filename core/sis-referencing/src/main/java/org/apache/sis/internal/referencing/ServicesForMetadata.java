@@ -82,7 +82,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.iso.DefaultNameSpace;
 
 
 /**
@@ -469,7 +468,7 @@ public final class ServicesForMetadata extends ReferencingServices {
     public String getPreferredIdentifier(final IdentifiedObject object) throws FactoryException {
         final Integer code = IdentifiedObjects.lookupEPSG(object);
         if (code != null) {
-            return Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code;
+            return Constants.EPSG + Constants.DEFAULT_SEPARATOR + code;
         }
         /*
          * If above code did not found an EPSG code, discard EPSG codes that

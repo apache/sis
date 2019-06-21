@@ -36,7 +36,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
-import org.apache.sis.internal.util.Citations;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
@@ -169,7 +169,7 @@ public final class DefinitionVerifier {
             if (factory instanceof GeodeticAuthorityFactory) {
                 finder = ((GeodeticAuthorityFactory) factory).newIdentifiedObjectFinder();
             } else {
-                finder = IdentifiedObjects.newFinder(Citations.getIdentifier(authority, false));
+                finder = IdentifiedObjects.newFinder(Citations.getIdentifier(authority));
             }
             finder.setIgnoringAxes(true);
             final IdentifiedObject ref = finder.findSingleton(crs);

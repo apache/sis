@@ -123,6 +123,28 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns the collection iterator, or {@code null} if the given collection is null or empty.
+     *
+     * @param  <E>         the type of elements in the collection.
+     * @param  collection  the collection from which to get the iterator, or {@code null}.
+     * @return the iterator over the given collection elements, or {@code null}.
+     */
+    public static <E> Iterator<E> nonEmptyIterator(final Collection<E> collection) {
+        return (collection != null && !collection.isEmpty()) ? collection.iterator() : null;
+    }
+
+    /**
+     * Returns the collection iterator. This is a null-safe method used as a safety against broken implementations.
+     *
+     * @param  <E>         the type of elements in the collection.
+     * @param  collection  the collection from which to get the iterator, or {@code null}.
+     * @return the iterator over the given collection elements, never {@code null}.
+     */
+    public static <E> Iterator<E> iterator(final Collection<E> collection) {
+        return (collection != null) ? collection.iterator() : Collections.emptyIterator();
+    }
+
+    /**
      * Returns the first element of the given iterable, or {@code null} if none.
      * This method does not emit warning if more than one element is found.
      * Consequently, this method should be used only when multi-occurrence is not ambiguous.

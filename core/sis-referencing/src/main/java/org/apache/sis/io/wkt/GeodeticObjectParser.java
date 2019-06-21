@@ -80,11 +80,11 @@ import org.apache.sis.internal.metadata.TransformationAccuracy;
 import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.Types;
 
 import static java.util.Collections.singletonMap;
@@ -1309,7 +1309,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         FactoryException suppressed = null;
         if (id != null) try {
             // CodeSpace is a mandatory attribute in ID[…] elements, so we do not test for null values.
-            return opFactory.getOperationMethod(id.getCodeSpace() + DefaultNameSpace.DEFAULT_SEPARATOR + id.getCode());
+            return opFactory.getOperationMethod(id.getCodeSpace() + Constants.DEFAULT_SEPARATOR + id.getCode());
         } catch (FactoryException e) {
             suppressed = e;
         }

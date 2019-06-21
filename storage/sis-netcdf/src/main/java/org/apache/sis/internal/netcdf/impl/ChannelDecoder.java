@@ -51,12 +51,12 @@ import org.apache.sis.internal.netcdf.NamedElement;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.internal.netcdf.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
@@ -374,7 +374,7 @@ public final class ChannelDecoder extends Decoder {
      * Returns the name of a tag to show in error message. The returned name include the filename.
      */
     private String tagPath(final String name) {
-        return getFilename() + DefaultNameSpace.DEFAULT_SEPARATOR + name;
+        return getFilename() + Constants.DEFAULT_SEPARATOR + name;
     }
 
     /**

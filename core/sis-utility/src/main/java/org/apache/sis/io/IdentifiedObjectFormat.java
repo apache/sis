@@ -23,8 +23,9 @@ import java.text.ParsePosition;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.MetadataServices;
 
 
 /**
@@ -70,10 +71,10 @@ final class IdentifiedObjectFormat extends Format {
         final String code = identifier.getCode();
         String cs = identifier.getCodeSpace();
         if (cs == null || cs.isEmpty()) {
-            cs = Citations.getIdentifier(identifier.getAuthority(), true);
+            cs = MetadataServices.getInstance().getUnicodeIdentifier(identifier.getAuthority());
         }
         if (cs != null) {
-            toAppendTo.append(cs).append(Citations.DEFAULT_SEPARATOR);
+            toAppendTo.append(cs).append(Constants.DEFAULT_SEPARATOR);
         }
         return toAppendTo.append(code);
     }

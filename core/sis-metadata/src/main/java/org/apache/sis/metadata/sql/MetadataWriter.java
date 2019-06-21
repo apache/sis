@@ -41,7 +41,6 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.metadata.MetadataStandard;
@@ -52,6 +51,7 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.metadata.sql.Reflection;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.xml.IdentifiedObject;
 
 // Branch-dependent imports
@@ -708,7 +708,7 @@ public class MetadataWriter extends MetadataSource {
             if (identifier != null) {
                 final String cs = nonEmpty(id.getCodeSpace());
                 if (cs != null) {
-                    identifier = cs + DefaultNameSpace.DEFAULT_SEPARATOR + identifier;
+                    identifier = cs + Constants.DEFAULT_SEPARATOR + identifier;
                 }
                 break;
             }

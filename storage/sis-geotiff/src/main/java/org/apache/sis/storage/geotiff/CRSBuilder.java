@@ -74,7 +74,6 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.io.TableAppender;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
@@ -469,8 +468,8 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 }
                 if (code != expected) {
                     warning(Resources.Keys.NotTheEpsgValue_5, IdentifiedObjects.getIdentifierOrName(parent),
-                            Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + expected, GeoKeys.name(key),
-                            Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code, "");
+                            Constants.EPSG + Constants.DEFAULT_SEPARATOR + expected, GeoKeys.name(key),
+                            Constants.EPSG + Constants.DEFAULT_SEPARATOR + code, "");
                 }
             }
         }

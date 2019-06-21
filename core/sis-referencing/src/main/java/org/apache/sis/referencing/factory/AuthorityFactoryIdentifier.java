@@ -27,10 +27,10 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.referencing.Resources;
 
@@ -292,9 +292,9 @@ final class AuthorityFactoryIdentifier {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder();
-        buffer.append(Classes.getShortName(TYPES[type])).append(DefaultNameSpace.DEFAULT_SEPARATOR).append(authority);
+        buffer.append(Classes.getShortName(TYPES[type])).append(Constants.DEFAULT_SEPARATOR).append(authority);
         if (version != null) {
-            buffer.append(DefaultNameSpace.DEFAULT_SEPARATOR).append(version);
+            buffer.append(Constants.DEFAULT_SEPARATOR).append(version);
         }
         return buffer.toString();
     }

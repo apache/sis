@@ -102,7 +102,6 @@ import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
@@ -1067,7 +1066,7 @@ codes:  for (int i=0; i<codes.length; i++) {
         }
         if (!quiet) {
             LogRecord record = Resources.forLocale(locale).getLogRecord(Level.WARNING, Resources.Keys.DeprecatedCode_3,
-                    Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code, replacedBy, reason);
+                    Constants.EPSG + Constants.DEFAULT_SEPARATOR + code, replacedBy, reason);
             record.setLoggerName(Loggers.CRS_FACTORY);
             Logging.log(EPSGDataAccess.class, method, record);
         }
@@ -1936,7 +1935,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                         // Both 'inverseFlattening' and 'semiMinorAxis' are defined.
                         // Log a warning and create the ellipsoid using the inverse flattening.
                         final LogRecord record = resources().getLogRecord(Level.WARNING,
-                                Resources.Keys.AmbiguousEllipsoid_1, Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code);
+                                Resources.Keys.AmbiguousEllipsoid_1, Constants.EPSG + Constants.DEFAULT_SEPARATOR + code);
                         record.setLoggerName(Loggers.CRS_FACTORY);
                         Logging.log(EPSGDataAccess.class, "createEllipsoid", record);
                     }

@@ -25,6 +25,7 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 import static org.apache.sis.metadata.iso.citation.Citations.toCodeSpace;
@@ -125,7 +126,7 @@ public final class Code {
              *
              * A symmetrical special handling for EPSG is done in the 'forIdentifiedObject(…)' method of this class.
              */
-            if (org.apache.sis.internal.util.Citations.isEPSG(cs, parsed.authority)) {
+            if (Identifiers.isEPSG(cs, parsed.authority)) {
                 authority = Citations.EPSG;
             } else {
                 authority = Citations.fromName(cs);     // May be null.
