@@ -54,7 +54,7 @@ import org.junit.runner.RunWith;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**

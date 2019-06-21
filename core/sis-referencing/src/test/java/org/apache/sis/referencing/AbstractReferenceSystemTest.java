@@ -35,7 +35,7 @@ import org.junit.Test;
 
 import static org.opengis.referencing.ReferenceSystem.*;
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.test.MetadataAssert.assertWktEquals;
+import static org.apache.sis.test.ReferencingAssert.assertWktEquals;
 
 
 /**

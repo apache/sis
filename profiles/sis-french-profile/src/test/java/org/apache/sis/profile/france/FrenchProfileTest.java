@@ -26,7 +26,7 @@ import org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints;
 import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.internal.profile.fra.IndirectReferenceSystem;
 import org.apache.sis.internal.profile.fra.DirectReferenceSystem;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.internal.jaxb.metadata.replace.RS_Identifier;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -77,7 +77,7 @@ public final strictfp class FrenchProfileTest extends TestCase {
     public void testReferenceSystemToAFNOR() {
         ReferenceSystem std, fra;
 
-        std = new ReferenceSystemMetadata(new ImmutableIdentifier(null, "EPSG", "4326"));
+        std = new ReferenceSystemMetadata(new RS_Identifier("EPSG", "4326", null));
         fra = FrenchProfile.toAFNOR(std, false);
         assertInstanceOf("Expected AFNOR instance.", DirectReferenceSystem.class, fra);
         assertSame("Already an AFNOR instance.", fra, FrenchProfile.toAFNOR(fra));
