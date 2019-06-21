@@ -17,7 +17,6 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Map;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.text.Format;
@@ -361,19 +360,6 @@ public class ReferencingServices extends OptionalDependency {
         } else {
             throw moduleNotFound();
         }
-    }
-
-    /**
-     * Returns the properties of the given object.
-     *
-     * @param  object  the object from which to get the properties.
-     * @param  keepId  {@code true} for preserving the identifiers, {@code false} for discarding them.
-     * @return the properties of the given object.
-     *
-     * @since 0.6
-     */
-    public Map<String,?> getProperties(final IdentifiedObject object, final boolean keepId) {
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, object.getName());
     }
 
     /**

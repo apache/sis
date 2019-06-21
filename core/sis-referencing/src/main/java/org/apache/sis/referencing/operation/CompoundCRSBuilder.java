@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
-import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
+import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 
 

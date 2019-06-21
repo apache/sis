@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.metadata;
+package org.apache.sis.internal.referencing;
 
 import java.util.Map;
 import java.util.Collections;
@@ -42,8 +42,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link EllipsoidalHeightCombiner}. This class is defined in {@code sis-metadata} module
- * but tested here because the tests use CRS instances defined in {@code sis-referencing}.
+ * Tests {@link EllipsoidalHeightCombiner}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

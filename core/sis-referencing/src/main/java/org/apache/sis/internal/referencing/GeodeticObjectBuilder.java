@@ -46,7 +46,6 @@ import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;

@@ -41,12 +41,12 @@ import org.apache.sis.util.Utilities;
 
 /**
  * Helper class for separating the ellipsoidal height from the horizontal part of a CRS.
- * This is the converse of {@link org.apache.sis.internal.metadata.EllipsoidalHeightCombiner}.
+ * This is the converse of {@link org.apache.sis.internal.referencing.EllipsoidalHeightCombiner}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
- * @see org.apache.sis.internal.metadata.EllipsoidalHeightCombiner
+ * @see org.apache.sis.internal.referencing.EllipsoidalHeightCombiner
  *
  * @since 1.0
  * @module

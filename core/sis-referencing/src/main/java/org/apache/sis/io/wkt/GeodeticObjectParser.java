@@ -58,6 +58,7 @@ import org.opengis.referencing.operation.*;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
@@ -77,7 +78,7 @@ import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
-import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
+import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
@@ -1947,7 +1948,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 if (VerticalDatumType.OTHER_SURFACE.equals(datum.getVerticalDatumType())) {
                     final VerticalDatumType type = VerticalDatumTypes.guess(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));
                     if (!VerticalDatumType.OTHER_SURFACE.equals(type)) {
-                        datum = datumFactory.createVerticalDatum(referencing.getProperties(datum, true), type);
+                        datum = datumFactory.createVerticalDatum(IdentifiedObjects.getProperties(datum), type);
                     }
                 }
                 verticalCRS = crsFactory.createVerticalCRS(properties, datum, (VerticalCS) cs);

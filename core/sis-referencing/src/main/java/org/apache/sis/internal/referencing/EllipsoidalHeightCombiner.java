@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.metadata;
+package org.apache.sis.internal.referencing;
 
 import java.util.Map;
 import java.util.HashMap;
+import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -33,7 +34,8 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
-import org.opengis.util.FactoryException;
+import org.apache.sis.internal.metadata.VerticalDatumTypes;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -158,9 +160,9 @@ public class EllipsoidalHeightCombiner {
                     axes[axisPosition++   ] = cs.getAxis(0);
                     axes[axisPosition++   ] = cs.getAxis(1);
                     axes[axisPosition %= 3] = vertical.getCoordinateSystem().getAxis(0);
-                    final ReferencingServices referencing = ReferencingServices.getInstance();
-                    final Map<String,?> csProps = referencing.getProperties(cs, false);
-                    final Map<String,?> crsProps = (components.length == 2) ? properties : referencing.getProperties(crs, false);
+                    final Map<String,?> csProps  = IdentifiedObjects.getProperties(cs, CoordinateSystem.IDENTIFIERS_KEY);
+                    final Map<String,?> crsProps = (components.length == 2) ? properties
+                                                   : IdentifiedObjects.getProperties(crs, CoordinateReferenceSystem.IDENTIFIERS_KEY);
                     if (crs instanceof GeodeticCRS) {
                         initialize(CS | CRS);
                         cs = csFactory.createEllipsoidalCS(csProps, axes[0], axes[1], axes[2]);
@@ -170,7 +172,8 @@ public class EllipsoidalHeightCombiner {
                         final ProjectedCRS proj = (ProjectedCRS) crs;
                         GeographicCRS base = proj.getBaseCRS();
                         if (base.getCoordinateSystem().getDimension() == 2) {
-                            base = (GeographicCRS) createCompoundCRS(referencing.getProperties(base, false), base, vertical);
+                            base = (GeographicCRS) createCompoundCRS(
+                                    IdentifiedObjects.getProperties(base, GeographicCRS.IDENTIFIERS_KEY), base, vertical);
                         }
                         /*
                          * In Apache SIS implementation, the Conversion contains the source and target CRS together with
@@ -178,7 +181,7 @@ public class EllipsoidalHeightCombiner {
                          * for letting SIS create or associate new ones, which will be three-dimensional now.
                          */
                         Conversion fromBase = proj.getConversionFromBase();
-                        fromBase = opFactory.createDefiningConversion(referencing.getProperties(fromBase, true),
+                        fromBase = opFactory.createDefiningConversion(IdentifiedObjects.getProperties(fromBase),
                                     fromBase.getMethod(), fromBase.getParameterValues());
                         cs = csFactory.createCartesianCS(csProps, axes[0], axes[1], axes[2]);
                         crs = crsFactory.createProjectedCRS(crsProps, base, fromBase, (CartesianCS) cs);
