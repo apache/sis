@@ -32,7 +32,7 @@ import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.xml.Namespaces;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**

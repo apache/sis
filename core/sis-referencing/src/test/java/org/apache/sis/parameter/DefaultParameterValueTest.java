@@ -32,7 +32,7 @@ import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.opengis.test.Validators.*;
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**

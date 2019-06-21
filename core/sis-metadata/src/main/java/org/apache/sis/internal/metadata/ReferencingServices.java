@@ -54,7 +54,6 @@ import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.OptionalDependency;
 import org.apache.sis.internal.system.Modules;
-import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.Deprecable;
 
 
@@ -329,37 +328,6 @@ public class ReferencingServices extends OptionalDependency {
      * @since 0.5
      */
     public ParameterDescriptor<?> toImplementation(ParameterDescriptor<?> parameter) {
-        throw moduleNotFound();
-    }
-
-    /**
-     * Converts the given object in a {@code FormattableObject} instance.
-     *
-     * @param  object  the object to wrap.
-     * @return the given object converted to a {@code FormattableObject} instance.
-     * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
-     *
-     * @see org.apache.sis.referencing.AbstractIdentifiedObject#castOrCopy(IdentifiedObject)
-     *
-     * @since 0.4
-     */
-    public FormattableObject toFormattableObject(IdentifiedObject object) {
-        throw moduleNotFound();
-    }
-
-    /**
-     * Converts the given object in a {@code FormattableObject} instance. Callers should verify that the given
-     * object is not already an instance of {@code FormattableObject} before to invoke this method. This method
-     * returns {@code null} if it can not convert the object.
-     *
-     * @param  object  the object to wrap.
-     * @param  internal {@code true} if the formatting convention is {@code Convention.INTERNAL}.
-     * @return the given object converted to a {@code FormattableObject} instance, or {@code null}.
-     * @throws UnsupportedOperationException if the {@code "sis-referencing"} module has not been found on the classpath.
-     *
-     * @since 0.6
-     */
-    public FormattableObject toFormattableObject(MathTransform object, boolean internal) {
         throw moduleNotFound();
     }
 

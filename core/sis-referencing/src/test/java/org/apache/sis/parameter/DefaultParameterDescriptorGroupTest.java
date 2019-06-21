@@ -32,7 +32,7 @@ import org.junit.Test;
 
 import static org.opengis.test.Validators.*;
 import static java.util.Collections.singletonMap;
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 import static org.opengis.referencing.IdentifiedObject.*;
 
 
