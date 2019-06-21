@@ -363,22 +363,6 @@ public class ReferencingServices extends OptionalDependency {
     }
 
     /**
-     * Returns {@code true} if the {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName()
-     * primary name} or an aliases of the given object matches the given name. The comparison ignores case,
-     * some Latin diacritical signs and any characters that are not letters or digits.
-     *
-     * @param  object  the object for which to check the name or alias.
-     * @param  name    the name to compare with the object name or aliases.
-     * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
-     *
-     * @since 0.6
-     */
-    public boolean isHeuristicMatchForName(final IdentifiedObject object, final String name) {
-        return NameToIdentifier.isHeuristicMatchForName(object.getName(), object.getAlias(), name,
-                NameToIdentifier.Simplifier.DEFAULT);
-    }
-
-    /**
      * Returns the operation method for the specified name or identifier. The given argument shall be either a
      * method name (e.g. <cite>"Transverse Mercator"</cite>) or one of its identifiers (e.g. {@code "EPSG:9807"}).
      *
@@ -394,7 +378,7 @@ public class ReferencingServices extends OptionalDependency {
     public final OperationMethod getOperationMethod(final Iterable<? extends OperationMethod> methods, final String identifier) {
         OperationMethod fallback = null;
         for (final OperationMethod method : methods) {
-            if (isHeuristicMatchForName(method, identifier) ||
+            if (NameToIdentifier.isHeuristicMatchForName(method, identifier) ||
                     NameToIdentifier.isHeuristicMatchForIdentifier(method.getIdentifiers(), identifier))
             {
                 /*

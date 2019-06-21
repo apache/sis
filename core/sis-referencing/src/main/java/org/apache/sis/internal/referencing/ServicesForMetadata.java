@@ -58,7 +58,6 @@ import org.apache.sis.geometry.CoordinateFormat;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
@@ -69,7 +68,6 @@ import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
-import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
@@ -548,21 +546,6 @@ public final class ServicesForMetadata extends ReferencingServices {
         p.putIfAbsent(CS_FACTORY,  csFactory);
         properties = p;
         return new DefaultCoordinateOperationFactory(properties, mtFactory);
-    }
-
-    /**
-     * Returns {@code true} if the {@linkplain AbstractIdentifiedObject#getName() primary name} or an aliases
-     * of the given object matches the given name.
-     *
-     * @param  object  the object for which to check the name or alias.
-     * @param  name    the name to compare with the object name or aliases.
-     * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
-     *
-     * @since 0.6
-     */
-    @Override
-    public boolean isHeuristicMatchForName(final IdentifiedObject object, final String name) {
-        return IdentifiedObjects.isHeuristicMatchForName(object, name);
     }
 
     /**

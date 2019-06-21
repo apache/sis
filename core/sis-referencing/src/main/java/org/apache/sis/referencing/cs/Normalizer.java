@@ -31,7 +31,7 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CylindricalCS;
 import org.opengis.referencing.cs.PolarCS;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.CharSequences;

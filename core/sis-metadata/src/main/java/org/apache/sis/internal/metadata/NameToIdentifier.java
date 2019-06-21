@@ -22,6 +22,7 @@ import java.util.Collection;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -285,6 +286,19 @@ public final class NameToIdentifier implements Identifier {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns {@code true} if the {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName()
+     * primary name} or an aliases of the given object matches the given name. The comparison ignores case,
+     * some Latin diacritical signs and any characters that are not letters or digits.
+     *
+     * @param  object  the object for which to check the name or alias.
+     * @param  name    the name to compare with the object name or aliases.
+     * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
+     */
+    public static boolean isHeuristicMatchForName(final IdentifiedObject object, final String name) {
+        return isHeuristicMatchForName(object.getName(), object.getAlias(), name, Simplifier.DEFAULT);
     }
 
     /**

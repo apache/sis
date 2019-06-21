@@ -49,7 +49,6 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
-import org.apache.sis.internal.metadata.AxisDirections;
 
 import static java.util.Collections.singletonMap;
 
@@ -106,7 +105,7 @@ public final class ReferencingUtilities extends Static {
      * @param  cs  the coordinate system for which to get the unit, or {@code null}.
      * @return the unit for all axis in the given coordinate system, or {@code null}.
      *
-     * @see org.apache.sis.internal.metadata.AxisDirections#getAngularUnit(CoordinateSystem, Unit)
+     * @see org.apache.sis.internal.referencing.AxisDirections#getAngularUnit(CoordinateSystem, Unit)
      */
     public static Unit<?> getUnit(final CoordinateSystem cs) {
         Unit<?> unit = null;

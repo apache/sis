@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.metadata;
+package org.apache.sis.internal.referencing;
 
 import java.lang.reflect.Field;
 import javax.measure.Unit;
@@ -31,9 +31,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static java.lang.StrictMath.abs;
 import static org.opengis.referencing.cs.AxisDirection.*;
-import static org.apache.sis.internal.metadata.AxisDirections.AWAY_FROM;
-import static org.apache.sis.internal.metadata.AxisDirections.CLOCKWISE;
-import static org.apache.sis.internal.metadata.AxisDirections.COUNTER_CLOCKWISE;
+import static org.apache.sis.internal.referencing.AxisDirections.AWAY_FROM;
+import static org.apache.sis.internal.referencing.AxisDirections.CLOCKWISE;
+import static org.apache.sis.internal.referencing.AxisDirections.COUNTER_CLOCKWISE;
 
 
 /**
