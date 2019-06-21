@@ -201,7 +201,7 @@ public final class ReferencingUtilities extends Static {
      * @param  datum  the datum to test, or {@code null} if none.
      * @return {@code true} if the given datum is non null and of ellipsoidal type.
      *
-     * @see org.apache.sis.internal.metadata.VerticalDatumTypes#ELLIPSOIDAL
+     * @see org.apache.sis.internal.referencing.VerticalDatumTypes#ELLIPSOIDAL
      */
     public static boolean isEllipsoidalHeight(final VerticalDatum datum) {
         if (datum != null) {
