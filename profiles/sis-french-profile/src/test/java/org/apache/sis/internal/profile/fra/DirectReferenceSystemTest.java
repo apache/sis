@@ -20,7 +20,7 @@ import java.util.Collection;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Responsibility;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
@@ -63,7 +63,7 @@ public final strictfp class DirectReferenceSystemTest extends TestCase {
             r = singleton(new DefaultResponsibleParty(TestUtilities.getSingleton(r)));
         }
         citation.setCitedResponsibleParties(r);
-        final DirectReferenceSystem refSys = new DirectReferenceSystem(new ImmutableIdentifier(citation, null, "4326"));
+        final DirectReferenceSystem refSys = new DirectReferenceSystem(new DefaultIdentifier(citation, "4326"));
         metadata.setReferenceSystemInfo(singleton(refSys));
         return metadata;
     }
