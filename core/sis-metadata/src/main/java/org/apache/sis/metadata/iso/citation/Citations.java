@@ -636,6 +636,15 @@ public final class Citations extends Static {
                 return true;                            // Optimisation for a common case.
             }
             /*
+             * If both argument are one of the constants defined in the Citations class,
+             * then we do not need to compare identifier; call to `equals` is sufficient.
+             * This special case avoids the potentially costly call to `getIdentifiers()`
+             * since that call may cause a connection to the spatial metadata database.
+             */
+            if (c1 instanceof CitationConstant && c2 instanceof CitationConstant) {
+                return c1.equals(c2);
+            }
+            /*
              * If there is no identifier in both citations, fallback on title comparisons.
              * If there is identifiers in only one citation, make sure that this citation
              * is the second one (c2) in order to allow at least one call to
