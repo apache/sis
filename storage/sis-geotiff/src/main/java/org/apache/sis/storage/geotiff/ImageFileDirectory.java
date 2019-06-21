@@ -21,6 +21,7 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.nio.charset.Charset;
@@ -396,8 +397,8 @@ final class ImageFileDirectory extends AbstractGridResource {
      * @see #getMetadata()
      */
     @Override
-    public GenericName getIdentifier() {
-        return identifier;
+    public Optional<GenericName> getIdentifier() {
+        return Optional.of(identifier);
     }
 
     /**

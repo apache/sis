@@ -17,6 +17,9 @@
 package org.apache.sis.internal.storage;
 
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.charset.Charset;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -44,11 +47,11 @@ import org.apache.sis.internal.storage.io.IOUtilities;
  * @since   0.8
  * @module
  */
-public abstract class URIDataStore extends DataStore implements StoreResource {
+public abstract class URIDataStore extends DataStore implements StoreResource, ResourceOnFileSystem {
     /**
      * The {@link DataStoreProvider#LOCATION} parameter value, or {@code null} if none.
      */
-    protected final URI location;
+    private final URI location;
 
     /**
      * Creates a new data store.
@@ -71,6 +74,30 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
     public final DataStore getOriginator() {
         return this;
     }
+
+    /**
+     * Returns the {@linkplain #location} as a {@code Path} component or an empty array if none.
+     * The default implementation converts the URI to a {@link Path}. Note that if the original
+     * {@link StorageConnector} argument given by user at construction time already contained a
+     * {@link Path}, then the {@code Path} → {@code URI} → {@code Path} roundtrip is equivalent
+     * to returning the {@link Path#toAbsolutePath()} value of user argument.
+     *
+     * @return the URI as a path, or an empty array if the URI is null.
+     * @throws DataStoreException if the URI can not be converted to a {@link Path}.
+     */
+    @Override
+    public Path[] getComponentFiles() throws DataStoreException {
+        final Path path;
+        if (location == null) {
+            return new Path[0];
+        } else try {
+            path = Paths.get(location);
+        } catch (IllegalArgumentException | FileSystemNotFoundException e) {
+            throw new DataStoreException(e);
+        }
+        return new Path[] {path};
+    }
+
 
     /**
      * Returns the parameters used to open this data store.

@@ -17,6 +17,7 @@
 package org.apache.sis.internal.storage;
 
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.stream.Stream;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
@@ -133,9 +134,9 @@ public final class StoreUtilities extends Static {
             title = ((DataStore) resource).getDisplayName();
         }
         if (title == null) {
-            final GenericName identifier = resource.getIdentifier();
-            if (identifier != null) {
-                title = identifier.toString();
+            final Optional<GenericName> identifier = resource.getIdentifier();
+            if (identifier.isPresent()) {
+                title = identifier.get().toString();
             } else {
                 title = getAnyIdentifier(resource.getMetadata(), false);
                 if (title == null) {

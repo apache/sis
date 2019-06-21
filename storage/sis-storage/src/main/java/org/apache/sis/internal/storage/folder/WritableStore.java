@@ -95,7 +95,7 @@ final class WritableStore extends Store implements WritableAggregate {
          *
          * TODO: find a more specific metadata property for this informtion.
          */
-        final GenericName identifier = resource.getIdentifier();
+        final GenericName identifier = resource.getIdentifier().orElse(null);
         if (identifier == null) {
             throw new DataStoreException(message(Resources.Keys.MissingResourceIdentifier_1, StoreUtilities.getLabel(resource)));
         }

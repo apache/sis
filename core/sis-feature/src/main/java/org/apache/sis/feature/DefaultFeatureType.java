@@ -652,6 +652,12 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * However as a safety, this method also checks that all properties in this feature type is assignable
      * from a property of the same name in the given type.
      *
+     * <div class="section">Constraints:</div>
+     * <ul>
+     *   <li>If <var>A</var> is assignable from <var>B</var> and <var>B</var> is assignable from <var>C</var>,
+     *       then <var>A</var> is assignable from <var>C</var>.</li>
+     * </ul>
+     *
      * <div class="note"><b>Analogy:</b>
      * if we compare {@code FeatureType} to {@link Class} in the Java language, then this method is equivalent
      * to {@link Class#isAssignableFrom(Class)}.</div>

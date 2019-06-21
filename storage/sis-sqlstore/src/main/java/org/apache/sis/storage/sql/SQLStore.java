@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.sql;
 
+import java.util.Optional;
 import java.util.Collection;
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -146,11 +147,11 @@ public class SQLStore extends DataStore implements Aggregate {
     /**
      * SQL data store root resource has no identifier.
      *
-     * @return {@code null}.
+     * @return empty.
      */
     @Override
-    public GenericName getIdentifier() throws DataStoreException {
-        return null;
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
+        return Optional.empty();
     }
 
     /**

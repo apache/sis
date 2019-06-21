@@ -17,7 +17,7 @@
 package org.apache.sis.internal.storage;
 
 import java.util.Locale;
-import org.opengis.util.GenericName;
+import java.util.Optional;
 import org.opengis.metadata.Metadata;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
@@ -73,7 +73,7 @@ public abstract class AbstractResource implements Resource, Localized {
 
     /**
      * Creates a new resource with the same warning listeners than the given resource,
-     * or {@code null} if the listeners are unknown.
+     * or with {@code null} listeners if they are unknown.
      *
      * @param resource  the resources from which to get the listeners, or {@code null} if none.
      */
@@ -105,15 +105,15 @@ public abstract class AbstractResource implements Resource, Localized {
     }
 
     /**
-     * Returns the spatiotemporal envelope of this resource. This information is part of API only in some kind of resources
+     * Returns the spatiotemporal envelope of this resource. This information is part of API only in some kinds of resource
      * like {@link org.apache.sis.storage.FeatureSet}. But the method is provided in this base class for convenience and for
-     * allowing {@link #getMetadata()} to use this information if available. The default implementation returns {@code null}.
+     * allowing {@link #getMetadata()} to use this information if available. The default implementation gives an absent value.
      *
-     * @return the spatiotemporal resource extent, or {@code null} if none.
+     * @return the spatiotemporal resource extent.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
-    public Envelope getEnvelope() throws DataStoreException {
-        return null;
+    public Optional<Envelope> getEnvelope() throws DataStoreException {
+        return Optional.empty();
     }
 
     /**
@@ -142,15 +142,31 @@ public abstract class AbstractResource implements Resource, Localized {
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
     protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
-        final GenericName name = getIdentifier();
-        if (name != null) {
-            metadata.addTitle(name.toInternationalString());
-        }
-        try {
-            metadata.addExtent(getEnvelope());
-        } catch (TransformException | UnsupportedOperationException e) {
-            listeners.warning(null, e);
-        }
+        getIdentifier().ifPresent((name) -> metadata.addTitle(name.toInternationalString()));
+        getEnvelope().ifPresent((envelope) -> {
+            try {
+                metadata.addExtent(envelope);
+            } catch (TransformException | UnsupportedOperationException e) {
+                warning(e);
+            }
+        });
+    }
+
+    /**
+     * Invoked when a non-fatal exception occurred.
+     *
+     * @param  e  the non-fatal exception to report.
+     */
+    protected final void warning(final Exception e) {
+        listeners.warning(null, e);
+    }
+
+    /**
+     * Clears any cache in this resource, forcing the data to be recomputed when needed again.
+     * This method should be invoked if the data in underlying data store changed.
+     */
+    protected synchronized void clearCache() {
+        metadata = null;
     }
 
     /**

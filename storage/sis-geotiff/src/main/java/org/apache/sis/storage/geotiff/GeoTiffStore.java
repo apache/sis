@@ -18,6 +18,7 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.Locale;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.LogRecord;
 import java.net.URI;
 import java.io.IOException;
@@ -161,14 +162,14 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * An identifier is available only if the storage input specified at construction time was something convertible to
      * {@link java.net.URI}, for example an {@link java.net.URL}, {@link java.io.File} or {@link java.nio.file.Path}.
      *
-     * @return the identifier derived from the filename, or {@code null} if none.
+     * @return the identifier derived from the filename.
      * @throws DataStoreException if an error occurred while fetching the identifier.
      *
      * @since 1.0
      */
     @Override
-    public GenericName getIdentifier() throws DataStoreException {
-        return (identifier != null) ? identifier.name() : null;
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
+        return (identifier != null) ? Optional.of(identifier.name()) : Optional.empty();
     }
 
     /**
@@ -210,10 +211,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
              * file did not specified any ImageDescription tag, then we will had the filename as a title instead than an
              * identifier because the title is mandatory in ISO 19115 metadata.
              */
-            final GenericName id = getIdentifier();
-            if (id != null) {
-                builder.addTitleOrIdentifier(id.toString(), MetadataBuilder.Scope.ALL);
-            }
+            getIdentifier().ifPresent((id) -> builder.addTitleOrIdentifier(id.toString(), MetadataBuilder.Scope.ALL));
             builder.setISOStandards(true);
             metadata = builder.build(true);
         }

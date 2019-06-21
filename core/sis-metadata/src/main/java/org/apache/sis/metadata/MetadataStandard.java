@@ -318,7 +318,7 @@ public class MetadataStandard implements Serializable {
      *   <li>The value of {@link #getImplementation(Class)} after check for non-null value.</li>
      * </ul>
      *
-     * @param  key        the implementation class together type declared by the property.
+     * @param  key        the implementation class together with the type declared by the property.
      * @param  mandatory  whether this method shall throw an exception or return {@code null}
      *         if no accessor is found for the given implementation class.
      * @return the accessor for the given implementation, or {@code null} if the given class does not

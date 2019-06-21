@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.logging.Level;
@@ -304,7 +305,7 @@ final class Store extends URIDataStore implements FeatureSet {
             throw new DataStoreContentException(getLocale(), StoreProvider.NAME, super.getDisplayName(), source).initCause(e);
         }
         this.encoding    = connector.getOption(OptionKey.ENCODING);
-        this.envelope    = new ImmutableEnvelope(envelope);
+        this.envelope    = ImmutableEnvelope.castOrCopy(envelope);
         this.featureType = featureType;
         this.foliation   = foliation;
         this.dissociate |= (timeEncoding == null);
@@ -624,8 +625,8 @@ final class Store extends URIDataStore implements FeatureSet {
      * @return identifier for this CSV data store.
      */
     @Override
-    public GenericName getIdentifier() throws DataStoreException {
-        return featureType.getName();
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
+        return Optional.of(featureType.getName());
     }
 
     /**
@@ -658,7 +659,7 @@ final class Store extends URIDataStore implements FeatureSet {
                  */
                 listeners.warning(null, e);
             }
-            builder.addFeatureType(featureType, null);
+            builder.addFeatureType(featureType, -1);
             addTitleOrIdentifier(builder);
             builder.setISOStandards(false);
             metadata = builder.build(true);
@@ -670,8 +671,8 @@ final class Store extends URIDataStore implements FeatureSet {
      * Returns the spatiotemporal extent of CSV data in coordinate reference system of the CSV file.
      */
     @Override
-    public Envelope getEnvelope() throws DataStoreException {
-        return envelope;
+    public Optional<Envelope> getEnvelope() throws DataStoreException {
+        return Optional.ofNullable(envelope);
     }
 
     /**

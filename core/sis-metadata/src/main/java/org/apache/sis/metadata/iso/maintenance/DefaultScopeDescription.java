@@ -222,7 +222,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      */
     @SuppressWarnings("unchecked")
     private static <E> Set<E> cast(final Object value, final Class<E> type) {
-        assert ((CheckedContainer<?>) value).getElementType() == type;
+        assert !(value instanceof CheckedContainer<?>) ||
+                ((CheckedContainer<?>) value).getElementType() == type;
         return (Set<E>) value;
     }
 
@@ -280,6 +281,37 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
             Context.warningOccured(Context.current(), DefaultScopeDescription.class, SETTERS[code-1],
                     Messages.class, Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
         }
+    }
+
+    /**
+     * Returns an indication of which property is set, or {@code null} if unknown.
+     * This method returns one of the following values depending which property has been set:
+     *
+     * <table class="sis">
+     *   <caption>hierarchical level of the data</caption>
+     *   <tr><th>Scope code</th> <th>Getter method</th></tr>
+     *   <tr><td>{@link ScopeCode#DATASET        DATASET}</td>        <td>{@link #getDataset()}</td></tr>
+     *   <tr><td>{@link ScopeCode#FEATURE_TYPE   FEATURE_TYPE}</td>   <td>{@link #getFeatures()}</td></tr>
+     *   <tr><td>{@link ScopeCode#ATTRIBUTE_TYPE ATTRIBUTE_TYPE}</td> <td>{@link #getAttributes()}</td></tr>
+     *   <tr><td>{@link ScopeCode#FEATURE        FEATURE}</td>        <td>{@link #getFeatureInstances()}</td></tr>
+     *   <tr><td>{@link ScopeCode#ATTRIBUTE      ATTRIBUTE}</td>      <td>{@link #getAttributeInstances()}</td></tr>
+     * </table>
+     *
+     * @return an identification of the property which is set, or {@code null} if unknown.
+     *
+     * @see #setLevelDescription(ScopeCode, Set)
+     *
+     * @since 1.0
+     */
+    public ScopeCode getLevel() {
+        switch (property) {
+            case DATASET:             return ScopeCode.DATASET;
+            case FEATURES:            return ScopeCode.FEATURE_TYPE;
+            case ATTRIBUTES:          return ScopeCode.ATTRIBUTE_TYPE;
+            case FEATURE_INSTANCES:   return ScopeCode.FEATURE;
+            case ATTRIBUTE_INSTANCES: return ScopeCode.ATTRIBUTE;
+        }
+        return null;
     }
 
     /**
@@ -521,6 +553,52 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
             warningOnOverwrite(OTHER);
             property = OTHER;
             value = newValue;
+        }
+    }
+
+    /**
+     * Dispatches the given values to a setter method determined by the given hierarchical level.
+     * The mapping between scope codes and {@code ScopeDescription} properties is documented in the {@link #getLevel()} method.
+     * If the given scope code is not one of the listed codes, then the "other" property is used.
+     *
+     * @param  level      an identification of the property which is set, or {@code null} if unknown.
+     * @param  newValues  the values to set, or {@code null} if none.
+     *
+     * @see #getLevel()
+     *
+     * @since 1.0
+     */
+    public void setLevelDescription(final ScopeCode level, final Set<? extends CharSequence> newValues) {
+        if (ScopeCode.DATASET.equals(level)) {
+            String description = null;
+            if (newValues != null) {
+                for (CharSequence value : newValues) {
+                    if (value != null) {
+                        description = value.toString();
+                        break;
+                    }
+                }
+            }
+            setDataset(description);
+        } else if (ScopeCode.FEATURE_TYPE.equals(level)) {
+            setFeatures(LegacyFeatureType.wrapAll(newValues));
+        } else if (ScopeCode.ATTRIBUTE_TYPE.equals(level)) {
+            setAttributes(LegacyFeatureType.wrapAll(newValues));
+        } else if (ScopeCode.FEATURE.equals(level)) {
+            setFeatureInstances(LegacyFeatureType.wrapAll(newValues));
+        } else if (ScopeCode.ATTRIBUTE.equals(level)) {
+            setAttributeInstances(LegacyFeatureType.wrapAll(newValues));
+        } else {
+            String description = null;
+            if (newValues != null) {
+                for (CharSequence value : newValues) {
+                    if (value != null) {
+                        description = value.toString();
+                        break;
+                    }
+                }
+            }
+            setOther(description);
         }
     }
 }

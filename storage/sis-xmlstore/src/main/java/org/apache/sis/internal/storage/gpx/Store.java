@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage.gpx;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.io.UncheckedIOException;
@@ -176,8 +177,8 @@ public final class Store extends StaxDataStore implements FeatureSet {
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
      */
     @Override
-    public Envelope getEnvelope() throws DataStoreException {
-        return StoreUtilities.getEnvelope(getMetadata());
+    public Optional<Envelope> getEnvelope() throws DataStoreException {
+        return Optional.ofNullable(StoreUtilities.getEnvelope(getMetadata()));
     }
 
     /**

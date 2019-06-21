@@ -16,12 +16,11 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.Optional;
+import java.util.OptionalLong;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.Query;
-import org.apache.sis.storage.UnsupportedQueryException;
-import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.util.logging.WarningListeners;
 import org.opengis.util.GenericName;
 
@@ -63,7 +62,7 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
 
     /**
      * Creates a new feature set with the same warning listeners than the given resource,
-     * or {@code null} if the listeners are unknown.
+     * or with {@code null} listeners if they are unknown.
      *
      * @param resource  the resources from which to get the listeners, or {@code null} if none.
      */
@@ -73,29 +72,27 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
 
     /**
      * Returns the feature type name as the identifier for this resource.
+     * Subclasses should override if they can provide a more specific identifier.
      *
-     * @return the resource identifier inferred from metadata, or {@code null} if none or ambiguous.
+     * @return the resource identifier inferred from feature type.
      * @throws DataStoreException if an error occurred while fetching the identifier.
      *
      * @see DataStore#getIdentifier()
      */
     @Override
-    public GenericName getIdentifier() throws DataStoreException {
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
         final DefaultFeatureType type = getType();
-        if (type != null) {
-            return type.getName();
-        }
-        return null;
+        return (type != null) ? Optional.of(type.getName()) : Optional.empty();
     }
 
     /**
-     * Returns an estimation of the number of features in this set, or {@code null} if unknown.
-     * The default implementation returns {@code null}.
+     * Returns an estimation of the number of features in this set, or empty if unknown.
+     * The default implementation returns an empty value.
      *
-     * @return estimation of the number of features, or {@code null}.
+     * @return estimation of the number of features.
      */
-    protected Integer getFeatureCount() {
-        return null;
+    protected OptionalLong getFeatureCount() {
+        return OptionalLong.empty();
     }
 
     /**
@@ -109,26 +106,6 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
     @Override
     protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
         super.createMetadata(metadata);
-        metadata.addFeatureType(getType(), getFeatureCount());
-    }
-
-    /**
-     * Requests a subset of features and/or feature properties from this resource.
-     * The default implementation try to execute the queries by filtering the
-     * {@linkplain #features(boolean) stream of features}, which may be inefficient.
-     * Subclasses are encouraged to override.
-     *
-     * @param  query  definition of feature and feature properties filtering applied at reading time.
-     * @return resulting subset of features (never {@code null}).
-     * @throws UnsupportedQueryException if this {@code FeatureSet} can not execute the given query.
-     * @throws DataStoreException if another error occurred while processing the query.
-     */
-    @Override
-    public FeatureSet subset(final Query query) throws DataStoreException {
-        if (query instanceof SimpleQuery) {
-            return ((SimpleQuery) query).execute(this);
-        } else {
-            return FeatureSet.super.subset(query);
-        }
+        metadata.addFeatureType(getType(), getFeatureCount().orElse(-1));
     }
 }

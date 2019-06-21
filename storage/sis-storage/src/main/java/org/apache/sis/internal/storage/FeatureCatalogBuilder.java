@@ -28,7 +28,7 @@ import org.apache.sis.feature.DefaultFeatureType;
 
 /**
  * Helper methods for the feature metadata created by {@code DataStore} implementations.
- * This is a convenience class for chaining {@code addFeatureType(FeatureType, Integer)}
+ * This is a convenience class for chaining {@code addFeatureType(FeatureType, long)}
  * method calls with {@link FeatureNaming#add(DataStore, GenericName, Object)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -74,10 +74,10 @@ public final class FeatureCatalogBuilder extends MetadataBuilder {
      * @param  type  the feature type to add, or {@code null}.
      * @throws IllegalNameException if a feature of the same name has already been added.
      *
-     * @see #addFeatureType(DefaultFeatureType, Integer)
+     * @see #addFeatureType(DefaultFeatureType, long)
      */
     public final void define(final DefaultFeatureType type) throws IllegalNameException {
-        final GenericName name = addFeatureType(type, null);
+        final GenericName name = addFeatureType(type, -1);
         if (name != null) {
             features.add(store, name, type);
         }
