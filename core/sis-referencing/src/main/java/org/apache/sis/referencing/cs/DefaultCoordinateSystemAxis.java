@@ -38,7 +38,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.metadata.AxisNames;
-import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.referencing.AbstractIdentifiedObject;

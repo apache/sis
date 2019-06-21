@@ -31,7 +31,6 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.metadata.AxisNamesTest.class,
-    org.apache.sis.internal.metadata.WKTKeywordsTest.class,
     org.apache.sis.internal.metadata.NameMeaningTest.class,
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
     org.apache.sis.internal.metadata.VerticalDatumTypesTest.class,

@@ -54,6 +54,8 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.geometry.coordinate.Position;
+import org.opengis.geometry.Envelope;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.DecimalFunctions;
@@ -74,10 +76,12 @@ import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.simple.SimpleExtent;
-import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.Resources;
+import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.geometry.AbstractDirectPosition;
+import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
@@ -1560,6 +1564,10 @@ public class Formatter implements Localized {
             appendVerticalExtent(Extents.getVerticalRange(new SimpleExtent(null, (VerticalExtent) value, null)));
         } else if (value instanceof TemporalExtent) {
             appendTemporalExtent(Extents.getTimeRange(new SimpleExtent(null, null, (TemporalExtent) value)));
+        } else if (value instanceof Position) {
+            append(AbstractDirectPosition.castOrCopy(((Position) value).getDirectPosition()));
+        } else if (value instanceof Envelope) {
+            append(AbstractEnvelope.castOrCopy((Envelope) value));          // Non-standard
         } else {
             return false;
         }
