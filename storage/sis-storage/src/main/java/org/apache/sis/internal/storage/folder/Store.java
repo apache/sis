@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.concurrent.ConcurrentHashMap;
 import java.nio.charset.Charset;
@@ -231,8 +232,8 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
      * Returns the name of this folder.
      */
     @Override
-    public GenericName getIdentifier() {
-        return identifier(null);
+    public Optional<GenericName> getIdentifier() {
+        return Optional.of(identifier(null));
     }
 
     /**

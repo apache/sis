@@ -16,6 +16,8 @@
  */
 package org.apache.sis.metadata.iso.maintenance;
 
+import java.util.Set;
+import java.util.LinkedHashSet;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.AttributeType;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
@@ -68,10 +70,29 @@ public final class LegacyFeatureType implements FeatureType, AttributeType, Char
     }
 
     /**
+     * Returns a list with all content of the given collection wrapped as {@link LegacyFeatureType}.
+     */
+    static Set<LegacyFeatureType> wrapAll(final Iterable<? extends CharSequence> values) {
+        if (values == null) {
+            return null;
+        }
+        final Set<LegacyFeatureType> wrapped = new LinkedHashSet<>();
+        for (final CharSequence value : values) {
+            wrapped.add((value == null || value instanceof LegacyFeatureType)
+                        ? (LegacyFeatureType) value : new LegacyFeatureType(value));
+        }
+        return wrapped;
+    }
+
+    /**
      * Delegates to the value given at construction time.
      */
     @Override public int          length()                        {return value.length();}
     @Override public char         charAt(int index)               {return value.charAt(index);}
     @Override public CharSequence subSequence(int start, int end) {return value.subSequence(start, end);}
     @Override public String       toString()                      {return value.toString();}
+    @Override public int          hashCode()                      {return value.hashCode() ^ 439703003;}
+    @Override public boolean      equals(final Object obj) {
+        return (obj instanceof LegacyFeatureType) && value.equals(((LegacyFeatureType) obj).value);
+    }
 }

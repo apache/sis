@@ -18,16 +18,13 @@ package org.apache.sis.internal.storage;
 
 import java.util.Map;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.opengis.util.GenericName;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAssociationRole;
@@ -36,7 +33,6 @@ import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Containers;
@@ -79,7 +75,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
  * @since   1.0
  * @module
  */
-public class JoinFeatureSet extends AbstractFeatureSet {
+public class JoinFeatureSet extends AggregatedFeatureSet {
     /**
      * Specifies whether values on both sides are required (inner join), or only one side (outer join).
      */
@@ -268,6 +264,19 @@ public class JoinFeatureSet extends AbstractFeatureSet {
     }
 
     /**
+     * Returns the two feature sets used by this {@code JoinFeatureSet}.
+     * The "main" dependency is at index 0 and the other dependency at index 1.
+     *
+     * @return the dependencies in a list of size 2 with the "main" dependency first.
+     */
+    @Override
+    final List<FeatureSet> dependencies() {
+        final FeatureSet[] sets = new FeatureSet[] {left, right};
+        if (swapSides) ArraysExt.swap(sets, 0, 1);
+        return Arrays.asList(sets);
+    }
+
+    /**
      * Specifies whether values on both sides are required (inner join), or only one side (outer join).
      *
      * @return whether values on both sides are required (inner join), or only one side (outer join).
@@ -286,41 +295,6 @@ public class JoinFeatureSet extends AbstractFeatureSet {
     @Override
     public FeatureType getType() {
         return type;
-    }
-
-    /**
-     * Returns the union of the envelope on both sides, or {@code null} if none.
-     * The coordinate reference system is the CRS of the "main" side.
-     *
-     * @return union of envelopes of both sides, or {@code null}.
-     * @throws DataStoreException if an error occurred while computing the envelope.
-     */
-    @Override
-    public Envelope getEnvelope() throws DataStoreException {
-        final List<Envelope> envelopes = new ArrayList<>();
-        getEnvelopes(envelopes);
-        try {
-            return Envelopes.union(envelopes.toArray(new Envelope[envelopes.size()]));
-        } catch (TransformException e) {
-            throw new DataStoreReferencingException(e);
-        }
-    }
-
-    /**
-     * Adds the envelopes of the two joined feature set in the given list. If some of the feature sets
-     * are themselves joined feature sets, then this method traverses them recursively. We compute the
-     * union of all envelopes at once after we got all envelopes.
-     */
-    private void getEnvelopes(final List<Envelope> addTo) throws DataStoreException {
-        boolean side = swapSides;
-        do {
-            final FeatureSet f = side ? right : left;
-            if (f instanceof JoinFeatureSet) {
-                ((JoinFeatureSet) f).getEnvelopes(addTo);
-            } else {
-                addTo.add(f.getEnvelope());
-            }
-        } while ((side = !side) != swapSides);
     }
 
     /**

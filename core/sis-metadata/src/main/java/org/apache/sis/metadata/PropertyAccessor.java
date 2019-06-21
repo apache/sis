@@ -726,27 +726,38 @@ class PropertyAccessor {
     private static Object get(final Method method, final Object metadata) throws BackingStoreException {
         assert (method.getReturnType() != Void.TYPE) : method;
         try {
-            return method.invoke(metadata, (Object[]) null);
+            try {
+                return method.invoke(metadata, (Object[]) null);
+            } catch (IllegalArgumentException e) {
+                /*
+                 * May happen if the getter method is defined only in the implementation class — not in the interface —
+                 * but the given metadata object is an instance of another implementation class than the expected one.
+                 * Example: CI_Citation.graphics didn't existed in ISO 19115:2003 and has been added in ISO 19115:2014.
+                 * Consequently there is no Citation.getGraphics() method in GeoAPI 3.0 interfaces (only in GeoAPI 3.1),
+                 * but there is a DefaultCitation.getGraphics() method in Apache SIS implementation since some versions
+                 * are ahead of GeoAPI. But if the given `metadata` instance is a different implementation of Citation
+                 * interface, then attempt to invoke DefaultCitation.getGraphics() fail with IllegalArgumentException.
+                 * In such case, we check if that implementation has a public method with exactly same signature.
+                 * If yes, we try to invoke that method before to give up.
+                 */
+                if (method.getDeclaringClass().isInstance(metadata)) {
+                    throw e;                                // Exception thrown for another reason. This is probably a bug.
+                }
+                if (MetadataStandard.IMPLEMENTATION_CAN_ALTER_API) try {
+                    final Method specific = metadata.getClass().getMethod(method.getName(), method.getParameterTypes());
+                    if (method.getReturnType().equals(specific.getReturnType())) {
+                        return specific.invoke(metadata, (Object[]) null);
+                    }
+                } catch (NoSuchMethodException ex) {
+                    // Ignore.
+                }
+                return null;
+            }
         } catch (IllegalAccessException e) {
             /*
              * Should never happen since 'getters' should contains only public methods.
              */
             throw new AssertionError(method.toString(), e);
-        } catch (IllegalArgumentException e) {
-            /*
-             * May happen if the getter method is defined only in the implementation class, not in the interface,
-             * but the given metadata object is an instance of another implementation class than the expected one.
-             *
-             * Example: CI_Citation.graphics didn't existed in ISO 19115:2003 and has been added in ISO 19115:2014.
-             * Consequently there is no Citation.getGraphics() method in GeoAPI 3.0 interfaces (only in GeoAPI 3.1),
-             * but there is a DefaultCitation.getGraphics() method in Apache SIS implementation since SIS is a little
-             * bit ahead of GeoAPI. But if the 'metadata' argument is another implementation of the Citation interface,
-             * attempt to invoke DefaultCitation.getGraphics() will fail with IllegalArgumentException.
-             */
-            if (!method.getDeclaringClass().isInstance(metadata)) {
-                return null;
-            }
-            throw e;                                // Exception thrown for another reason. This is probably a bug.
         } catch (InvocationTargetException e) {
             /*
              * Exception in user code (not a wrong usage of reflection).

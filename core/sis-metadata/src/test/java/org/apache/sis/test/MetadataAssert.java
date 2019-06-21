@@ -22,6 +22,11 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.lineage.Source;
+import org.opengis.metadata.maintenance.Scope;
+import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.metadata.content.FeatureTypeInfo;
+import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.wkt.Symbols;
 import org.apache.sis.io.wkt.WKTFormat;
@@ -29,6 +34,9 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.test.xml.DocumentComparator;
 import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.internal.util.CollectionsExt;
+
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-specific imports
 import org.opengis.metadata.citation.Responsibility;
@@ -92,10 +100,48 @@ public strictfp class MetadataAssert extends Assert {
      */
     public static void assertPartyNameEquals(final String message, final String expected, final Citation citation) {
         assertNotNull(message, citation);
-        final Responsibility r = TestUtilities.getSingleton(citation.getCitedResponsibleParties());
-        final InternationalString name = TestUtilities.getSingleton(r.getParties()).getName();
+        final Responsibility r = getSingleton(citation.getCitedResponsibleParties());
+        final InternationalString name = getSingleton(r.getParties()).getName();
         assertNotNull(message, name);
         assertEquals(message, expected, name.toString(Locale.US));
+    }
+
+    /**
+     * Verifies that the given {@code ContentInfo} describes the given feature.
+     * This method expects that the given catalog contains exactly one feature info.
+     *
+     * @param  name     expected feature type name (possibly null).
+     * @param  count    expected feature instance count (possibly null).
+     * @param  catalog  the content info to validate.
+     *
+     * @since 1.0
+     */
+    public static void assertContentInfoEquals(final String name, final Integer count, final FeatureCatalogueDescription catalog) {
+        final FeatureTypeInfo info = getSingleton(catalog.getFeatureTypeInfo());
+        assertEquals("metadata.contentInfo.featureType", name, String.valueOf(info.getFeatureTypeName()));
+        assertEquals("metadata.contentInfo.featureInstanceCount", count, info.getFeatureInstanceCount());
+    }
+
+    /**
+     * Verifies that the source contains the given feature type. This method expects that the given source contains
+     * exactly one scope description and that the hierarchical level is {@link ScopeCode#FEATURE_TYPE}.
+     *
+     * @param  name      expected source identifier.
+     * @param  features  expected names of feature type.
+     * @param  source    the source to validate.
+     *
+     * @since 1.0
+     */
+    public static void assertFeatureSourceEquals(final String name, final String[] features, final Source source) {
+        assertEquals("metadata.lineage.source.sourceCitation.title", name, String.valueOf(source.getSourceCitation().getTitle()));
+        final Scope scope = source.getScope();
+        assertNotNull("metadata.lineage.source.scope", scope);
+        assertEquals("metadata.lineage.source.scope.level", ScopeCode.FEATURE_TYPE, scope.getLevel());
+        final CharSequence[] actual = CollectionsExt.toArray(getSingleton(scope.getLevelDescription()).getFeatures(), CharSequence.class);
+        for (int i=0; i<actual.length; i++) {
+            actual[i] = actual[i].toString();
+        }
+        assertArrayEquals("metadata.lineage.source.scope.levelDescription.feature", features, actual);
     }
 
     /**

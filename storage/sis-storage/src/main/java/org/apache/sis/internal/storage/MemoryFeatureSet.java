@@ -17,6 +17,7 @@
 package org.apache.sis.internal.storage;
 
 import java.util.Collection;
+import java.util.OptionalLong;
 import java.util.stream.Stream;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.util.ArgumentChecks;
@@ -84,8 +85,8 @@ public class MemoryFeatureSet extends AbstractFeatureSet {
      * @return the number of features.
      */
     @Override
-    protected Integer getFeatureCount() {
-        return features.size();
+    protected OptionalLong getFeatureCount() {
+        return OptionalLong.of(features.size());
     }
 
     /**

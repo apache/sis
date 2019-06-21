@@ -20,10 +20,12 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.Buffer;
 import java.awt.image.DataBuffer;
+
 import org.opengis.util.GenericName;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
@@ -37,6 +39,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridDerivation;
+import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -336,8 +339,8 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * Returns the variable name as an identifier of this resource.
      */
     @Override
-    public GenericName getIdentifier() {
-        return identifier;
+    public Optional<GenericName> getIdentifier() {
+        return Optional.of(identifier);
     }
 
     /**
@@ -561,7 +564,9 @@ public final class RasterResource extends AbstractGridResource implements Resour
         final SampleDimension[] bands = new SampleDimension[rangeIndices.getNumBands()];
         int[] bandOffsets = null;                                                   // By default, all bands start at index 0.
         try {
-            GridDerivation targetGeometry = gridGeometry.derive().subgrid(domain);
+            GridDerivation targetGeometry = gridGeometry.derive()
+                    .rounding(GridRoundingMode.ENCLOSING)
+                    .subgrid(domain);
             GridExtent     areaOfInterest = targetGeometry.getIntersection();       // Pixel indices of data to read.
             int[]          subsamplings   = targetGeometry.getSubsamplings();       // Slice to read or subsampling to apply.
             int            numBuffers     = bands.length;                           // By default, one variable per band.

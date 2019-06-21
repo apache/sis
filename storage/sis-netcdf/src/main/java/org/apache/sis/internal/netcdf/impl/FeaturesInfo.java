@@ -27,6 +27,7 @@ import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.function.Consumer;
+import java.util.OptionalLong;
 import java.io.IOException;
 import org.apache.sis.math.Vector;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -299,8 +300,8 @@ search: for (final VariableInfo counts : decoder.variables) {
      * @return the number of features.
      */
     @Override
-    protected Integer getFeatureCount() {
-        return counts.size();
+    protected OptionalLong getFeatureCount() {
+        return OptionalLong.of(counts.size());
     }
 
     /**

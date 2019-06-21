@@ -231,8 +231,7 @@ public final class Numerics extends Static {
      */
     @SuppressWarnings("unchecked")
     public static <T> T cached(final T value) {
-        final Object candidate = CACHE.get(value);
-        return (candidate != null) ? (T) candidate : value;
+        return (T) CACHE.getOrDefault(value, value);
     }
 
     /**
@@ -243,8 +242,7 @@ public final class Numerics extends Static {
      */
     public static Double valueOf(final double value) {
         final Double boxed = value;
-        final Object candidate = CACHE.get(boxed);
-        return (candidate != null) ? (Double) candidate : boxed;
+        return (Double) CACHE.getOrDefault(boxed, boxed);
     }
 
     /**

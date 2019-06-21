@@ -21,8 +21,10 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Iterator;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,12 +37,14 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.OnLineFunction;
+import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.spatial.GCP;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
@@ -65,8 +69,9 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.geometry.AbstractEnvelope;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.simple.SimpleDuration;
+import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadataScope;
@@ -121,13 +126,13 @@ import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
 
-import static java.util.Collections.singleton;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Branch-dependent imports
@@ -184,10 +189,11 @@ public class MetadataBuilder {
      *
      * <table class="sis">
      *   <tr><th>Key</th>                          <th>Value</th>               <th>Method</th></tr>
-     *   <tr><td>{@link Integer}</td>              <td>{@link Integer}</td>     <td>{@link #shared(Integer)}</td></tr>
-     *   <tr><td>{@link Double}</td>               <td>{@link Double}</td>      <td>{@link #shared(Double)}</td></tr>
+     *   <tr><td>{@link Integer}</td>              <td>{@link Integer}</td>     <td>{@link #shared(int)}</td></tr>
+     *   <tr><td>{@link Double}</td>               <td>{@link Double}</td>      <td>{@link #shared(double)}</td></tr>
      *   <tr><td>{@link Identifier}</td>           <td>{@link Identifier}</td>  <td>{@link #sharedIdentifier(CharSequence, String)}</td></tr>
      *   <tr><td>{@link InternationalString}</td>  <td>{@link Citation}</td>    <td>{@link #sharedCitation(InternationalString)}</td></tr>
+     *   <tr><td>Other</td>                        <td>Same as key</td>         <td>{@link #shared(Class, Object)}</td></tr>
      * </table>
      */
     private final Map<Object,Object> sharedValues = new HashMap<>();
@@ -1870,18 +1876,18 @@ parse:      for (int i = 0; i < length;) {
      * Note that the {@link FeatureCatalogBuilder} subclasses can also be used for that chaining.
      *
      * @param  type         the feature type to add, or {@code null} for no-operation.
-     * @param  occurrences  number of instances of the given feature type, or {@code null} if unknown.
+     * @param  occurrences  number of instances of the given feature type, or a negative value if unknown.
      * @return the name of the added feature, or {@code null} if none.
      *
      * @see FeatureCatalogBuilder#define(FeatureType)
      */
-    public final GenericName addFeatureType(final FeatureType type, final Integer occurrences) {
+    public final GenericName addFeatureType(final FeatureType type, final long occurrences) {
         if (type != null) {
             final GenericName name = type.getName();
             if (name != null) {
                 final DefaultFeatureTypeInfo info = new DefaultFeatureTypeInfo(name);
-                if (occurrences != null) {
-                    info.setFeatureInstanceCount(shared(occurrences));
+                if (occurrences >= 0) {
+                    info.setFeatureInstanceCount(shared((int) Math.min(occurrences, Integer.MAX_VALUE)));
                 }
                 addIfNotPresent(featureDescription().getFeatureTypeInfo(), info);
                 return name;
@@ -2640,7 +2646,7 @@ parse:      for (int i = 0; i < length;) {
             event.setContext(Context.ACQUISITION);
             event.setTime(time);
             final DefaultOperation op = new DefaultOperation();
-            op.setSignificantEvents(singleton(event));
+            op.setSignificantEvents(Collections.singleton(event));
             op.setType(OperationType.REAL);
             op.setStatus(Progress.COMPLETED);
             addIfNotPresent(acquisition().getOperations(), op);
@@ -2741,6 +2747,55 @@ parse:      for (int i = 0; i < length;) {
                 }
             }
             addIfNotPresent(lineage().getSources(), source);
+        }
+    }
+
+    /**
+     * Adds information about a source of data used for producing the resource.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/resourceLineage/source/scope/level}</li>
+     *   <li>{@code metadata/resourceLineage/source/scope/extent}</li>
+     *   <li>{@code metadata/resourceLineage/source/scope/levelDescription/*}</li>
+     *   <li>{@code metadata/resourceLineage/source/citation}</li>
+     *   <li>{@code metadata/resourceLineage/source/sourceReferenceSystem}</li>
+     *   <li>{@code metadata/resourceLineage/source/sourceSpatialResolution}</li>
+     * </ul>
+     *
+     * <div class="note"><b>Example:</b>
+     * if a {@code FeatureSet} is the aggregation of two other {@code FeatureSet} resources,
+     * then this method can be invoked twice with the metadata of each source {@code FeatureSet}.
+     * If the aggregated data are features, then {@code level} should be {@link ScopeCode#FEATURE}.</div>
+     *
+     * @param  metadata  the metadata of the source, or {@code null} if none.
+     * @param  level     hierarchical level of the source (e.g. feature). Should not be null.
+     * @param  features  names of dataset, features or attributes used in the source.
+     */
+    public final void addSource(final Metadata metadata, final ScopeCode level, final CharSequence... features) {
+        if (metadata != null) {
+            final DefaultSource source = new DefaultSource();
+            final DefaultScope scope = new DefaultScope(level);
+            source.setSourceReferenceSystem(CollectionsExt.first(metadata.getReferenceSystemInfo()));
+            for (final Identification id : metadata.getIdentificationInfo()) {
+                source.setSourceCitation(id.getCitation());
+                source.setSourceSpatialResolution(CollectionsExt.first(id.getSpatialResolutions()));
+                scope.setExtents(id.getExtents());
+                if (features != null && features.length != 0) {
+                    /*
+                     * Note: the same ScopeDescription may be shared by many Source instances
+                     * in the common case where many sources contain features of the same type.
+                     */
+                    final DefaultScopeDescription sd = new DefaultScopeDescription();
+                    sd.setLevelDescription(level, new LinkedHashSet<>(Arrays.asList(features)));
+                    scope.getLevelDescription().add(shared(DefaultScopeDescription.class, sd));
+                }
+                source.setScope(scope.isEmpty() ? null : scope);
+                if (!source.isEmpty()) {
+                    addIfNotPresent(lineage().getSources(), source);
+                    break;
+                }
+            }
         }
     }
 
@@ -2998,16 +3053,29 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Returns a shared instance of the given object if it already exists.
+     * If the given object is new, then it is added to the cache and returned.
+     *
+     * <p>It is caller's responsibility to ensure that the type given in argument
+     * does not conflict with one of the type documented in {@link #sharedValues}.</p>
+     */
+    private <T> T shared(final Class<T> type, final T value) {
+        final T existing = type.cast(sharedValues.putIfAbsent(value, value));
+        return (existing != null) ? existing : value;
+    }
+
+    /**
      * Returns a shared instance of the given value.
      * This is a helper method for callers who want to set themselves some additional
      * metadata values on the instance returned by {@link #build(boolean)}.
      *
      * @param   value  a double value.
-     * @return  the same value, but as an existing instance if possible.
+     * @return  the given value, but as an existing instance if possible.
      */
-    public final Double shared(final Double value) {
-        final Object existing = sharedValues.putIfAbsent(value, value);
-        return (existing != null) ? (Double) existing : value;
+    protected final Double shared(final double value) {
+        final Double n = Numerics.valueOf(value);
+        final Object existing = sharedValues.putIfAbsent(n, n);
+        return (existing != null) ? (Double) existing : n;
     }
 
     /**
@@ -3018,8 +3086,9 @@ parse:      for (int i = 0; i < length;) {
      * @param   value  an integer value.
      * @return  the same value, but as an existing instance if possible.
      */
-    public final Integer shared(final Integer value) {
-        final Object existing = sharedValues.putIfAbsent(value, value);
-        return (existing != null) ? (Integer) existing : value;
+    protected final Integer shared(final int value) {
+        final Integer n = value;
+        final Object existing = sharedValues.putIfAbsent(n, n);
+        return (existing != null) ? (Integer) existing : n;
     }
 }

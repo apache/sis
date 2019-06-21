@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
@@ -285,18 +286,18 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
      * {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers() identifier}</p>
      *
-     * <p><b>Condition:</b> default implementation returns a non-null identifier only if exactly one
+     * <p><b>Condition:</b> in default implementation, the identifier is presents only if exactly one
      * {@code citation} is found at above path. If two or more {@code citation} instances are found,
-     * the identification is considered ambiguous and {@code null} is returned.</p>
+     * the identification is considered ambiguous and an empty value is returned.</p>
      *
      * <p><b>Selection:</b> the first identifier implementing the {@code GenericName} interface is returned.
      * If there is no such identifier, then a {@link org.apache.sis.referencing.NamedIdentifier} is created
-     * from the first identifier. If there is no identifier at all, then {@code null} is returned.</p>
+     * from the first identifier. If there is no identifier at all, then an empty value is returned.</p>
      * </blockquote>
      *
      * Subclasses are encouraged to override this method with more efficient implementations.
      *
-     * @return an identifier for the root resource of this data store, or {@code null} if none.
+     * @return an identifier for the root resource of this data store.
      * @throws DataStoreException if an error occurred while fetching the identifier.
      *
      * @see #getMetadata()
@@ -305,14 +306,16 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @since 1.0
      */
     @Override
-    public GenericName getIdentifier() throws DataStoreException {
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
         final Metadata metadata = getMetadata();
         if (metadata != null) {
             Citation citation = null;
             for (final Identification id : metadata.getIdentificationInfo()) {
                 final Citation c = id.getCitation();
                 if (c != null) {
-                    if (citation != null && citation != c) return null;                 // Ambiguity.
+                    if (citation != null && citation != c) {
+                        return Optional.empty();                    // Ambiguity.
+                    }
                     citation = c;
                 }
             }
@@ -320,17 +323,17 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
                 Identifier first = null;
                 for (final Identifier c : citation.getIdentifiers()) {
                     if (c instanceof GenericName) {
-                        return (GenericName) c;
+                        return Optional.of((GenericName) c);
                     } else if (first == null) {
                         first = c;
                     }
                 }
                 if (first != null) {
-                    return new NamedIdentifier(first);
+                    return Optional.of(new NamedIdentifier(first));
                 }
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -390,7 +393,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
             final Map<Resource,Boolean> visited) throws DataStoreException
     {
         if (candidate != null && visited.put(candidate, Boolean.TRUE) == null) {
-            GenericName name = candidate.getIdentifier();
+            GenericName name = candidate.getIdentifier().orElse(null);
             if (name != null) {
                 do if (identifier.equals(name.toString())) {
                     return candidate;
