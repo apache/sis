@@ -57,6 +57,14 @@ import org.opengis.referencing.operation.*;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.crs.DefaultDerivedCRS;
+import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.internal.referencing.CoordinateOperations;
+import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -293,7 +301,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             if (verticalElements != null) {
                 Exception ex = null;
                 try {
-                    verticalElements = verticalElements.resolve(referencing.getMSLH());     // Optional operation.
+                    verticalElements = verticalElements.resolve(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs());     // Optional operation.
                 } catch (UnsupportedOperationException e) {
                     ex = e;
                 }
@@ -811,7 +819,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                         throw parent.missingComponent(WKTKeywords.LengthUnit);
                     }
                     if (is3D) {  // If dimension can not be 2, then CRS can not be Projected.
-                        return referencing.getGeocentricCS(defaultUnit.asType(Length.class));
+                        return Legacy.standard(defaultUnit.asType(Length.class));
                     }
                     nx = AxisNames.EASTING;  x = "E";
                     ny = AxisNames.NORTHING; y = "N";
@@ -934,7 +942,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             csProperties.put(CoordinateSystem.NAME_KEY, name);
         }
         if (type == null) {
-            return referencing.createAbstractCS(csProperties, axes);
+            /*
+             * Creates a coordinate system of unknown type. This block is executed during parsing of WKT version 1,
+             * since that legacy format did not specified any information about the coordinate system in use.
+             * This block should not be executed during parsing of WKT version 2.
+             */
+            return new AbstractCS(csProperties, axes);
         }
         /*
          * Finally, delegate to the factory method corresponding to the CS type and the number of axes.
@@ -994,7 +1007,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
             default: {
                 warning(parent, WKTKeywords.CS, Errors.formatInternational(Errors.Keys.UnknownType_1, type), null);
-                return referencing.createAbstractCS(csProperties, axes);
+                return new AbstractCS(csProperties, axes);
             }
         }
         throw new UnparsableObjectException(errorLocale, (axes.length > dimension)
@@ -1056,7 +1069,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             if (m != null) {
                 angle = m.getConverterTo(Units.DEGREE).convert(angle);
             }
-            direction = referencing.directionAlongMeridian(direction, angle);
+            direction = CoordinateSystems.directionAlongMeridian(direction, angle);
         }
         /*
          * According ISO 19162, the abbreviation should be inserted between parenthesis in the name.
@@ -1214,7 +1227,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
         }
         element.close(ignoredElements);
-        return referencing.createToWGS84(values);
+        final BursaWolfParameters info = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
+        info.setValues(values);
+        return info;
     }
 
     /**
@@ -1410,7 +1425,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Object             toWGS84    = parseToWGS84(OPTIONAL, element);
         final Map<String,Object> properties = parseAnchorAndClose(element, name);
         if (meridian == null) {
-            meridian = referencing.getGreenwich();
+            meridian = CommonCRS.WGS84.primeMeridian();
         }
         if (toWGS84 != null) {
             properties.put(ReferencingServices.BURSA_WOLF_KEY, toWGS84);
@@ -1848,7 +1863,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
             if (cs instanceof CartesianCS) {                                    // The second most frequent case.
                 return crsFactory.createGeocentricCRS(properties, datum,
-                        referencing.upgradeGeocentricCS((CartesianCS) cs));
+                        Legacy.forGeocentricCRS((CartesianCS) cs, false));
             }
             if (cs instanceof SphericalCS) {                                    // Not very common case.
                 return crsFactory.createGeocentricCRS(properties, datum, (SphericalCS) cs);
@@ -2235,14 +2250,16 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                         number, AxisDirection.OTHER, Units.UNITY);
             }
             final Map<String,Object> properties = parseMetadataAndClose(element, name, baseCRS);
-            final CoordinateSystem derivedCS = referencing.createAbstractCS(
+            final CoordinateSystem derivedCS = new AbstractCS(
                     singletonMap(CoordinateSystem.NAME_KEY, AxisDirections.appendTo(new StringBuilder("CS"), axes)), axes);
             /*
-             * We do not know which name to give to the conversion method.
-             * For now, use the CRS name.
+             * Creates a derived CRS from the information found in a WKT 1 {@code FITTED_CS} element.
+             * This coordinate system can not be easily constructed from the information provided by
+             * the WKT 1 format, which block us from using the standard Coordinate System factory.
+             * Note that we do not know which name to give to the conversion method; for now we use the CRS name.
              */
             properties.put("conversion.name", name);
-            return referencing.createDerivedCRS(properties, (SingleCRS) baseCRS, method, toBase.inverse(), derivedCS);
+            return DefaultDerivedCRS.create(properties, (SingleCRS) baseCRS, null, method, toBase.inverse(), derivedCS);
         } catch (FactoryException | NoninvertibleTransformException exception) {
             throw element.parseFailed(exception);
         }
@@ -2278,7 +2295,13 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             accuracy.close(ignoredElements);
         }
         try {
-            return referencing.createSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, opFactory);
+            final DefaultCoordinateOperationFactory df;
+            if (opFactory instanceof DefaultCoordinateOperationFactory) {
+                df = (DefaultCoordinateOperationFactory) opFactory;
+            } else {
+                df = CoordinateOperations.factory();
+            }
+            return df.createSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, null);
         } catch (FactoryException e) {
             throw element.parseFailed(e);
         }

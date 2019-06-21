@@ -75,8 +75,9 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.simple.SimpleExtent;
 import org.apache.sis.internal.metadata.WKTKeywords;
-import org.apache.sis.internal.referencing.ServicesForMetadata;
 import org.apache.sis.internal.metadata.Resources;
+import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
@@ -984,8 +985,7 @@ public class Formatter implements Localized {
             if (transform instanceof FormattableObject) {
                 append((FormattableObject) transform);
             } else {
-                final FormattableObject object = ServicesForMetadata
-                        .toFormattableObject(transform, convention == Convention.INTERNAL);
+                final FormattableObject object = WKTUtilities.toFormattable(transform, convention == Convention.INTERNAL);
                 if (object != null) {
                     append(object);
                 } else {
@@ -1549,7 +1549,7 @@ public class Formatter implements Localized {
         if (value instanceof FormattableObject) {
             append((FormattableObject) value);
         } else if (value instanceof IdentifiedObject) {
-            append(ServicesForMetadata.toFormattableObject((IdentifiedObject) value));
+            append(AbstractIdentifiedObject.castOrCopy((IdentifiedObject) value));
         } else if (value instanceof MathTransform) {
             append((MathTransform) value);
         } else if (value instanceof Unit<?>) {

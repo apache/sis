@@ -24,33 +24,21 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.text.Format;
-import javax.measure.Unit;
-import javax.measure.quantity.Length;
 
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.cs.CSFactory;
-import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.datum.PrimeMeridian;
-import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.metadata.Identifier;
@@ -71,18 +59,9 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
-import org.apache.sis.referencing.datum.BursaWolfParameters;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
-import org.apache.sis.parameter.Parameterized;
-import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
@@ -92,7 +71,6 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.ReferencingServices;
-import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
@@ -510,7 +488,7 @@ public final class ServicesForMetadata extends ReferencingServices {
 
     ///////////////////////////////////////////////////////////////////////////////////////
     ////                                                                               ////
-    ////                          SERVICES FOR WKT FORMATTING                          ////
+    ////                    SERVICES FOR WKT PARSING AND FORMATTING                    ////
     ////                                                                               ////
     ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -526,151 +504,6 @@ public final class ServicesForMetadata extends ReferencingServices {
     }
 
     /**
-     * Converts the given object in a {@code FormattableObject} instance.
-     *
-     * @param  object  the object to wrap.
-     * @return the given object converted to a {@code FormattableObject} instance.
-     */
-    public static FormattableObject toFormattableObject(final IdentifiedObject object) {
-        return AbstractIdentifiedObject.castOrCopy(object);
-    }
-
-    /**
-     * Converts the given object in a {@code FormattableObject} instance. Callers should verify that the given
-     * object is not already an instance of {@code FormattableObject} before to invoke this method. This method
-     * returns {@code null} if it can not convert the object.
-     *
-     * @param  object    the object to wrap.
-     * @param  internal  {@code true} if the formatting convention is {@code Convention.INTERNAL}.
-     * @return the given object converted to a {@code FormattableObject} instance, or {@code null}.
-     *
-     * @since 0.6
-     */
-    public static FormattableObject toFormattableObject(final MathTransform object, boolean internal) {
-        Matrix matrix;
-        final ParameterValueGroup parameters;
-        if (internal && (matrix = MathTransforms.getMatrix(object)) != null) {
-            parameters = Affine.parameters(matrix);
-        } else if (object instanceof Parameterized) {
-            parameters = ((Parameterized) object).getParameterValues();
-        } else {
-            matrix = MathTransforms.getMatrix(object);
-            if (matrix == null) {
-                return null;
-            }
-            parameters = Affine.parameters(matrix);
-        }
-        return new FormattableObject() {
-            @Override
-            protected String formatTo(final Formatter formatter) {
-                WKTUtilities.appendParamMT(parameters, formatter);
-                return WKTKeywords.Param_MT;
-            }
-        };
-    }
-
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////
-    ////                                                                               ////
-    ////                           SERVICES FOR WKT PARSING                            ////
-    ////                                                                               ////
-    ///////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Returns a coordinate reference system for heights above the mean seal level.
-     *
-     * @return the "Mean Seal Level (MSL) height" coordinate reference system.
-     *
-     * @since 0.6
-     */
-    @Override
-    public VerticalCRS getMSLH() {
-        return CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
-    }
-
-    /**
-     * Returns the Greenwich prime meridian.
-     *
-     * @return the Greenwich prime meridian.
-     *
-     * @since 0.6
-     */
-    @Override
-    public PrimeMeridian getGreenwich() {
-        return CommonCRS.WGS84.primeMeridian();
-    }
-
-    /**
-     * Returns the coordinate system of a geocentric CRS using axes in the given unit of measurement.
-     *
-     * @param  linearUnit  the unit of measurement for the geocentric CRS axes.
-     * @return the coordinate system for a geocentric CRS with axes using the given unit of measurement.
-     *
-     * @since 0.6
-     */
-    @Override
-    public CartesianCS getGeocentricCS(final Unit<Length> linearUnit) {
-        return Legacy.standard(linearUnit);
-    }
-
-    /**
-     * Converts a geocentric coordinate system from the legacy WKT 1 to the current ISO 19111 standard.
-     * This method replaces the (Other, East, North) directions by (Geocentric X, Geocentric Y, Geocentric Z).
-     *
-     * @param  cs  the geocentric coordinate system to upgrade.
-     * @return the upgraded coordinate system, or {@code cs} if there is no change to apply.
-     *
-     * @since 0.6
-     */
-    @Override
-    public CartesianCS upgradeGeocentricCS(final CartesianCS cs) {
-        return Legacy.forGeocentricCRS(cs, false);
-    }
-
-    /**
-     * Creates a coordinate system of unknown type. This method is used during parsing of WKT version 1,
-     * since that legacy format did not specified any information about the coordinate system in use.
-     * This method should not need to be invoked for parsing WKT version 2.
-     *
-     * @param  properties  the coordinate system name, and optionally other properties.
-     * @param  axes        the axes of the unknown coordinate system.
-     * @return an "abstract" coordinate system using the given axes.
-     *
-     * @since 0.6
-     */
-    @Override
-    public CoordinateSystem createAbstractCS(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
-        return new AbstractCS(properties, axes);
-    }
-
-    /**
-     * Creates a derived CRS from the information found in a WKT 1 {@code FITTED_CS} element.
-     * This coordinate system can not be easily constructed from the information provided by the WKT 1 format.
-     * Note that this method is needed only for WKT 1 parsing, since WKT provides enough information for using
-     * the standard factories.
-     *
-     * @param  properties     the properties to be given to the {@code DerivedCRS} and {@code Conversion} objects.
-     * @param  baseCRS        coordinate reference system to base the derived CRS on.
-     * @param  method         the coordinate operation method (mandatory in all cases).
-     * @param  baseToDerived  transform from positions in the base CRS to positions in this target CRS.
-     * @param  derivedCS      the coordinate system for the derived CRS.
-     * @return the newly created derived CRS, potentially implementing an additional CRS interface.
-     *
-     * @since 0.6
-     */
-    @Override
-    public DerivedCRS createDerivedCRS(final Map<String,?>    properties,
-                                       final SingleCRS        baseCRS,
-                                       final OperationMethod  method,
-                                       final MathTransform    baseToDerived,
-                                       final CoordinateSystem derivedCS)
-    {
-        return DefaultDerivedCRS.create(properties, baseCRS, null, method, baseToDerived, derivedCS);
-    }
-
-    /**
      * Creates a format for {@link DirectPosition} instances.
      *
      * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
@@ -682,70 +515,6 @@ public final class ServicesForMetadata extends ReferencingServices {
     @Override
     public Format createCoordinateFormat(final Locale locale, final TimeZone timezone) {
         return new CoordinateFormat(locale, timezone);
-    }
-
-    /**
-     * Returns an axis direction from a pole along a meridian.
-     * The given meridian is usually, but not necessarily, relative to the Greenwich meridian.
-     *
-     * @param  baseDirection  the base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
-     * @param  meridian       the meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
-     *         Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
-     * @return the axis direction along the given meridian.
-     *
-     * @since 0.6
-     */
-    @Override
-    public AxisDirection directionAlongMeridian(final AxisDirection baseDirection, final double meridian) {
-        return CoordinateSystems.directionAlongMeridian(baseDirection, meridian);
-    }
-
-    /**
-     * Creates the {@code TOWGS84} element during parsing of a WKT version 1.
-     *
-     * @param  values  the 7 Bursa-Wolf parameter values.
-     * @return the {@link BursaWolfParameters}.
-     *
-     * @since 0.6
-     */
-    @Override
-    public Object createToWGS84(final double[] values) {
-        final BursaWolfParameters info = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
-        info.setValues(values);
-        return info;
-    }
-
-    /**
-     * Creates a single operation from the given properties.
-     * This method is provided here because not yet available in GeoAPI interfaces.
-     *
-     * @param  properties        the properties to be given to the identified object.
-     * @param  sourceCRS         the source CRS.
-     * @param  targetCRS         the target CRS.
-     * @param  interpolationCRS  the CRS of additional coordinates needed for the operation, or {@code null} if none.
-     * @param  method            the coordinate operation method (mandatory in all cases).
-     * @param  factory           the factory to use.
-     * @return the coordinate operation created from the given arguments.
-     * @throws FactoryException if the object creation failed.
-     *
-     * @since 0.6
-     */
-    @Override
-    public SingleOperation createSingleOperation(
-            final Map<String,?>              properties,
-            final CoordinateReferenceSystem  sourceCRS,
-            final CoordinateReferenceSystem  targetCRS,
-            final CoordinateReferenceSystem  interpolationCRS,
-            final OperationMethod            method,
-            final CoordinateOperationFactory factory) throws FactoryException
-    {
-        final DefaultCoordinateOperationFactory df;
-        if (factory instanceof DefaultCoordinateOperationFactory) {
-            df = (DefaultCoordinateOperationFactory) factory;
-        } else {
-            df = CoordinateOperations.factory();
-        }
-        return df.createSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, null);
     }
 
     /**
