@@ -56,7 +56,7 @@ import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
 import org.apache.sis.internal.referencing.provider.AbstractProvider;
@@ -389,9 +389,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
         OperationMethod method = methodsByName.get(identifier);
         if (method == null) {
-            final ReferencingServices services = ReferencingServices.getInstance();
             synchronized (methods) {
-                method = services.getOperationMethod(methods, identifier);
+                method = CoordinateOperations.getOperationMethod(methods, identifier);
             }
             if (method == null) {
                 throw new NoSuchIdentifierException(Resources.format(Resources.Keys.NoSuchOperationMethod_1, identifier), identifier);

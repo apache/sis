@@ -16,11 +16,8 @@
  */
 package org.apache.sis.internal.referencing;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.text.Format;
@@ -34,10 +31,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.CRSFactory;
-import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
@@ -59,7 +53,6 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
@@ -69,11 +62,9 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.internal.metadata.ReferencingServices;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.TemporalUtilities;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
@@ -484,7 +475,7 @@ public final class ServicesForMetadata extends ReferencingServices {
 
     ///////////////////////////////////////////////////////////////////////////////////////
     ////                                                                               ////
-    ////                    SERVICES FOR WKT PARSING AND FORMATTING                    ////
+    ////                          OTHER REFERENCING SERVICES                           ////
     ////                                                                               ////
     ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -514,38 +505,13 @@ public final class ServicesForMetadata extends ReferencingServices {
     }
 
     /**
-     * Returns the coordinate operation factory to use for the given properties and math transform factory.
-     * If the given properties are empty and the {@code mtFactory} is the system default, then this method
-     * returns the system default {@code CoordinateOperationFactory} instead of creating a new one.
+     * Returns the default coordinate operation factory.
      *
-     * <p>It is okay to set all parameters to {@code null} in order to get the system default factory.</p>
-     *
-     * @param  properties  the default properties.
-     * @param  mtFactory   the math transform factory to use.
-     * @param  crsFactory  the factory to use if the operation factory needs to create CRS for intermediate steps.
-     * @param  csFactory   the factory to use if the operation factory needs to create CS for intermediate steps.
      * @return the coordinate operation factory to use.
-     *
-     * @since 0.7
      */
     @Override
-    public CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties,
-            final MathTransformFactory mtFactory, final CRSFactory crsFactory, final CSFactory csFactory)
-    {
-        if (Containers.isNullOrEmpty(properties)) {
-            if (DefaultFactories.isDefaultInstance(MathTransformFactory.class, mtFactory) &&
-                DefaultFactories.isDefaultInstance(CRSFactory.class, crsFactory) &&
-                DefaultFactories.isDefaultInstance(CSFactory.class, csFactory))
-            {
-                return CoordinateOperations.factory();
-            }
-            properties = Collections.emptyMap();
-        }
-        final HashMap<String,Object> p = new HashMap<>(properties);
-        p.putIfAbsent(CRS_FACTORY, crsFactory);
-        p.putIfAbsent(CS_FACTORY,  csFactory);
-        properties = p;
-        return new DefaultCoordinateOperationFactory(properties, mtFactory);
+    public CoordinateOperationFactory getCoordinateOperationFactory() {
+        return CoordinateOperations.factory();
     }
 
     /**

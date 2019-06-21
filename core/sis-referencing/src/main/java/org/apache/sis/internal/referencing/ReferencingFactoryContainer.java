@@ -52,6 +52,28 @@ import org.apache.sis.referencing.CRS;
  */
 public class ReferencingFactoryContainer {
     /**
+     * The key for specifying a {@link MathTransformFactory} instance to use for geodetic object constructions.
+     * This is usually not needed for CRS construction, except in the special case of a derived CRS created
+     * from a defining conversion.
+     */
+    public static final String MT_FACTORY = "mtFactory";
+
+    /**
+     * The key for specifying a {@link CRSFactory} instance to use for geodetic object constructions.
+     */
+    public static final String CRS_FACTORY = "crsFactory";
+
+    /**
+     * The key for specifying a {@link CSFactory} instance to use for geodetic object constructions.
+     */
+    public static final String CS_FACTORY = "csFactory";
+
+    /**
+     * The key for specifying a {@link DatumFactory} instance to use for geodetic object constructions.
+     */
+    public static final String DATUM_FACTORY = "datumFactory";
+
+    /**
      * The factory for creating coordinate reference systems from authority codes.
      * If null, then a default factory will be created only when first needed.
      */

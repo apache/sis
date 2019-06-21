@@ -36,14 +36,15 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.datum.Datum;
+import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.MergedProperties;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.SpecializedOperationFactory;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -184,14 +185,14 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
              * MathTransformFactory because math transforms are intimately related to coordinate operations.
              */
             try {
-                crsFactory = (CRSFactory)           (value = properties.remove(key = ReferencingServices.CRS_FACTORY));
-                csFactory  = (CSFactory)            (value = properties.remove(key = ReferencingServices.CS_FACTORY));
-                mtFactory  = (MathTransformFactory) (value = properties.remove(key = ReferencingServices.MT_FACTORY));
+                crsFactory = (CRSFactory)           (value = properties.remove(key = ReferencingFactoryContainer.CRS_FACTORY));
+                csFactory  = (CSFactory)            (value = properties.remove(key = ReferencingFactoryContainer.CS_FACTORY));
+                mtFactory  = (MathTransformFactory) (value = properties.remove(key = ReferencingFactoryContainer.MT_FACTORY));
             } catch (ClassCastException e) {
                 throw new IllegalArgumentException(Errors.getResources(properties)
                         .getString(Errors.Keys.IllegalPropertyValueClass_2, key, Classes.getClass(value)));
             }
-            properties.remove(ReferencingServices.DATUM_FACTORY);
+            properties.remove(ReferencingFactoryContainer.DATUM_FACTORY);
             properties = CollectionsExt.compact(properties);
         }
         defaultProperties = properties;
@@ -310,7 +311,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         if (mtFactory instanceof DefaultMathTransformFactory) {
             return ((DefaultMathTransformFactory) mtFactory).getOperationMethod(name);
         }
-        final OperationMethod method = ReferencingServices.getInstance().getOperationMethod(
+        final OperationMethod method = CoordinateOperations.getOperationMethod(
                 mtFactory.getAvailableMethods(SingleOperation.class), name);
         if (method != null) {
             return method;
@@ -541,7 +542,7 @@ next:   for (int i=components.size(); --i >= 0;) {
          */
         if (transform == null) {
             final ParameterValueGroup parameters = Containers.property(properties,
-                    ReferencingServices.PARAMETERS_KEY, ParameterValueGroup.class);
+                    CoordinateOperations.PARAMETERS_KEY, ParameterValueGroup.class);
             if (parameters == null) {
                 throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, "transform"));
             }
@@ -556,7 +557,7 @@ next:   for (int i=components.size(); --i >= 0;) {
          * If we have both a 'baseType' and a Method.getOperationType(), take the most specific type.
          * An exception will be thrown if the two types are incompatible.
          */
-        Class<?> baseType = Containers.property(properties, ReferencingServices.OPERATION_TYPE_KEY, Class.class);
+        Class<?> baseType = Containers.property(properties, CoordinateOperations.OPERATION_TYPE_KEY, Class.class);
         if (baseType == null) {
             baseType = SingleOperation.class;
         }
@@ -567,7 +568,7 @@ next:   for (int i=components.size(); --i >= 0;) {
                     baseType = c;
                 } else if (!c.isAssignableFrom(baseType)) {
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatiblePropertyValue_1,
-                            ReferencingServices.OPERATION_TYPE_KEY));
+                            CoordinateOperations.OPERATION_TYPE_KEY));
                 }
             }
         }
@@ -720,9 +721,9 @@ next:   for (int i=components.size(); --i >= 0;) {
             if (single instanceof SingleOperation) {
                 final Map<String,Object> merge = new HashMap<>(
                         IdentifiedObjects.getProperties(single, CoordinateOperation.IDENTIFIERS_KEY));
-                merge.put(ReferencingServices.PARAMETERS_KEY, ((SingleOperation) single).getParameterValues());
+                merge.put(CoordinateOperations.PARAMETERS_KEY, ((SingleOperation) single).getParameterValues());
                 if (single instanceof AbstractIdentifiedObject) {
-                    merge.put(ReferencingServices.OPERATION_TYPE_KEY, ((AbstractIdentifiedObject) single).getInterface());
+                    merge.put(CoordinateOperations.OPERATION_TYPE_KEY, ((AbstractIdentifiedObject) single).getInterface());
                 }
                 merge.putAll(properties);
                 return createSingleOperation(merge, op.getSourceCRS(), op.getTargetCRS(),

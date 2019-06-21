@@ -38,7 +38,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.metadata.MetadataUtilities;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ExtentSelector;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.system.Loggers;
@@ -147,7 +147,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * The <code>{@value #BURSA_WOLF_KEY}</code> property for
      * {@linkplain #getBursaWolfParameters() Bursa-Wolf parameters}.
      */
-    public static final String BURSA_WOLF_KEY = ReferencingServices.BURSA_WOLF_KEY;
+    public static final String BURSA_WOLF_KEY = CoordinateOperations.BURSA_WOLF_KEY;
 
     /**
      * The array to be returned by {@link #getBursaWolfParameters()} when there is no Bursa-Wolf parameters.

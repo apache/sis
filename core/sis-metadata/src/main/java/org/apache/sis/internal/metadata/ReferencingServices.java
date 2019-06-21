@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.metadata;
 
-import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.text.Format;
@@ -24,13 +23,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.crs.CRSFactory;
-import org.opengis.referencing.cs.CSFactory;
-import org.opengis.referencing.datum.DatumFactory;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
-import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -41,7 +34,6 @@ import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.OptionalDependency;
 import org.apache.sis.internal.system.Modules;
-import org.apache.sis.util.Deprecable;
 
 
 /**
@@ -69,53 +61,6 @@ public class ReferencingServices extends OptionalDependency {
      * computed with {@code double} precision.
      */
     public static final double AUTHALIC_RADIUS = 6371007;
-
-    /**
-     * The {@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#BURSA_WOLF_KEY} value.
-     */
-    public static final String BURSA_WOLF_KEY = "bursaWolf";
-
-    /**
-     * The key for specifying explicitly the value to be returned by
-     * {@link org.apache.sis.referencing.operation.DefaultConversion#getParameterValues()}.
-     * It is usually not necessary to specify those parameters because they are inferred either from
-     * the {@link MathTransform}, or specified explicitly in a {@code DefiningConversion}. However
-     * there is a few cases, for example the Molodenski transform, where none of the above can apply,
-     * because SIS implements those operations as a concatenation of math transforms, and such
-     * concatenations do not have {@link org.opengis.parameter.ParameterValueGroup}.
-     */
-    public static final String PARAMETERS_KEY = "parameters";
-
-    /**
-     * The key for specifying the base type of the coordinate operation to create. This optional entry
-     * is used by {@code DefaultCoordinateOperationFactory.createSingleOperation(…)}. Apache SIS tries
-     * to infer this value automatically, but this entry may help SIS to perform a better choice in
-     * some cases. For example an "Affine" operation can be both a conversion or a transformation
-     * (the later is used in datum shift in geocentric coordinates).
-     */
-    public static final String OPERATION_TYPE_KEY = "operationType";
-
-    /**
-     * The key for specifying a {@link MathTransformFactory} instance to use for geodetic object constructions.
-     * This is usually not needed for CRS construction, except in the special case of a derived CRS created
-     * from a defining conversion.
-     */
-    public static final String MT_FACTORY = "mtFactory";
-
-    /**
-     * The key for specifying a {@link CRSFactory} instance to use for geodetic object constructions.
-     */
-    public static final String CRS_FACTORY = "crsFactory";
-
-    /**
-     * The key for specifying a {@link CSFactory} instance to use for geodetic object constructions.
-     */
-    public static final String CS_FACTORY = "csFactory";
-
-    /**
-     * The key for specifying a {@link DatumFactory} instance to use for geodetic object constructions.
-     */
-    public static final String DATUM_FACTORY = "datumFactory";
 
     /**
      * The services, fetched when first needed.
@@ -301,7 +246,7 @@ public class ReferencingServices extends OptionalDependency {
 
     ///////////////////////////////////////////////////////////////////////////////////////
     ////                                                                               ////
-    ////                          SERVICES FOR WKT FORMATTING                          ////
+    ////                          OTHER REFERENCING SERVICES                           ////
     ////                                                                               ////
     ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -332,68 +277,17 @@ public class ReferencingServices extends OptionalDependency {
     }
 
     /**
-     * Returns the coordinate operation factory to use for the given properties and math transform factory.
-     * If the given properties are empty and the {@code mtFactory} is the system default, then this method
-     * returns the system default {@code CoordinateOperationFactory} instead of creating a new one.
+     * Returns the default coordinate operation factory.
      *
-     * <p>It is okay to set all parameters to {@code null} in order to get the system default factory.</p>
-     *
-     * @param  properties  the default properties.
-     * @param  mtFactory   the math transform factory to use.
-     * @param  crsFactory  the factory to use if the operation factory needs to create CRS for intermediate steps.
-     * @param  csFactory   the factory to use if the operation factory needs to create CS for intermediate steps.
      * @return the coordinate operation factory to use.
-     *
-     * @since 0.7
      */
-    public CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties,
-            final MathTransformFactory mtFactory, final CRSFactory crsFactory, final CSFactory csFactory)
-    {
-        /*
-         * The check for 'properties' and 'mtFactory' is performed by the ServicesForMetadata subclass. If this code is
-         * executed, this means that the "sis-referencing" module is not on the classpath, in which case we do not know
-         * how to pass the 'properties' and 'mtFactory' arguments to the foreigner CoordinateOperationFactory anyway.
-         */
+    public CoordinateOperationFactory getCoordinateOperationFactory() {
         final CoordinateOperationFactory factory = DefaultFactories.forClass(CoordinateOperationFactory.class);
         if (factory != null) {
             return factory;
         } else {
             throw moduleNotFound();
         }
-    }
-
-    /**
-     * Returns the operation method for the specified name or identifier. The given argument shall be either a
-     * method name (e.g. <cite>"Transverse Mercator"</cite>) or one of its identifiers (e.g. {@code "EPSG:9807"}).
-     *
-     * @param  methods     the method candidates.
-     * @param  identifier  the name or identifier of the operation method to search.
-     * @return the coordinate operation method for the given name or identifier, or {@code null} if none.
-     *
-     * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
-     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getOperationMethod(String)
-     *
-     * @since 0.6
-     */
-    public final OperationMethod getOperationMethod(final Iterable<? extends OperationMethod> methods, final String identifier) {
-        OperationMethod fallback = null;
-        for (final OperationMethod method : methods) {
-            if (NameToIdentifier.isHeuristicMatchForName(method, identifier) ||
-                    NameToIdentifier.isHeuristicMatchForIdentifier(method.getIdentifiers(), identifier))
-            {
-                /*
-                 * Stop the iteration at the first non-deprecated method.
-                 * If we find only deprecated methods, take the first one.
-                 */
-                if (!(method instanceof Deprecable) || !((Deprecable) method).isDeprecated()) {
-                    return method;
-                }
-                if (fallback == null) {
-                    fallback = method;
-                }
-            }
-        }
-        return fallback;
     }
 
     /**

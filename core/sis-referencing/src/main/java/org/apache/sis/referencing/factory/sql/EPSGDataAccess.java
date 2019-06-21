@@ -67,10 +67,11 @@ import org.opengis.referencing.operation.*;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 
-import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
+import org.apache.sis.internal.referencing.CoordinateOperations;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.DeferredCoordinateOperation;
 import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.referencing.EPSGParameterDomain;
@@ -1167,7 +1168,7 @@ codes:  for (int i=0; i<codes.length; i++) {
         }
         properties.put(IdentifiedObject.REMARKS_KEY, remarks);
         properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
-        properties.put(ReferencingServices.MT_FACTORY, owner.mtFactory);
+        properties.put(ReferencingFactoryContainer.MT_FACTORY, owner.mtFactory);
         return properties;
     }
 
@@ -2970,8 +2971,8 @@ next:               while (r.next()) {
                                 opType = s.asSubclass(SingleOperation.class);
                             }
                         }
-                        opProperties.put(ReferencingServices.OPERATION_TYPE_KEY, opType);
-                        opProperties.put(ReferencingServices.PARAMETERS_KEY, parameters);
+                        opProperties.put(CoordinateOperations.OPERATION_TYPE_KEY, opType);
+                        opProperties.put(CoordinateOperations.PARAMETERS_KEY, parameters);
                         /*
                          * Following restriction will be removed in a future SIS version if the method is added to GeoAPI.
                          */

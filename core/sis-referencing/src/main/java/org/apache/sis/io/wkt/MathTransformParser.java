@@ -38,8 +38,8 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.WKTKeywords;
-import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.UnitFormat;
@@ -531,7 +531,7 @@ class MathTransformParser extends AbstractParser {
              * getLastMethod(). Performs a slower and less robust check as a fallback.
              */
             if (classification != null) {
-                lastMethod = ReferencingServices.getInstance().getOperationMethod(
+                lastMethod = CoordinateOperations.getOperationMethod(
                         mtFactory.getAvailableMethods(SingleOperation.class), classification);
             }
         }

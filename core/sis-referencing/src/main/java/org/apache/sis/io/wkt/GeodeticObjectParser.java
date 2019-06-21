@@ -75,7 +75,6 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.VerticalDatumTypes;
-import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
 import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.AxisDirections;
@@ -133,11 +132,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Used only for map projections and derived CRS.
      */
     private final CoordinateOperationFactory opFactory;
-
-    /**
-     * Other services from "sis-referencing" module which can not be provided by the standard factories.
-     */
-    private final ReferencingServices referencing;
 
     /**
      * During WKT 1 parsing, {@code true} means that {@code PRIMEM} and {@code PARAMETER} angular units
@@ -215,8 +209,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         crsFactory      = (CRSFactory)   factories;
         csFactory       = (CSFactory)    factories;
         datumFactory    = (DatumFactory) factories;
-        referencing     = ReferencingServices.getInstance();
-        opFactory       = referencing.getCoordinateOperationFactory(defaultProperties, mtFactory, crsFactory, csFactory);
+        opFactory       = CoordinateOperations.getCoordinateOperationFactory(defaultProperties, mtFactory, crsFactory, csFactory);
         transliterator  = Transliterator.DEFAULT;
         usesCommonUnits = false;
         ignoreAxes      = false;
@@ -246,14 +239,13 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         crsFactory      = getFactory(CRSFactory.class,   factories);
         csFactory       = getFactory(CSFactory.class,    factories);
         datumFactory    = getFactory(DatumFactory.class, factories);
-        referencing     = ReferencingServices.getInstance();
         usesCommonUnits = convention.usesCommonUnits;
         ignoreAxes      = convention == Convention.WKT1_IGNORE_AXES;
         final Factory f = factories.get(CoordinateOperationFactory.class);
         if (f != null) {
             opFactory = (CoordinateOperationFactory) f;
         } else {
-            opFactory = referencing.getCoordinateOperationFactory(null, mtFactory, crsFactory, csFactory);
+            opFactory = CoordinateOperations.getCoordinateOperationFactory(null, mtFactory, crsFactory, csFactory);
             factories.put(CoordinateOperationFactory.class, opFactory);
         }
     }
@@ -1429,7 +1421,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             meridian = CommonCRS.WGS84.primeMeridian();
         }
         if (toWGS84 != null) {
-            properties.put(ReferencingServices.BURSA_WOLF_KEY, toWGS84);
+            properties.put(CoordinateOperations.BURSA_WOLF_KEY, toWGS84);
         }
         try {
             return datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
@@ -2289,7 +2281,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Map<String,Object>        properties       = parseMetadataAndClose(element, name, method);
         final ParameterValueGroup       parameters       = method.getParameters().createValue();
         parseParameters(element, parameters, null, null);
-        properties.put(ReferencingServices.PARAMETERS_KEY, parameters);
+        properties.put(CoordinateOperations.PARAMETERS_KEY, parameters);
         if (accuracy != null) {
             properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
                     TransformationAccuracy.create(accuracy.pullDouble("accuracy")));
