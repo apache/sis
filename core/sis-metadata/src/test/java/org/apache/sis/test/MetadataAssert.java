@@ -25,10 +25,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
-import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.io.wkt.Symbols;
-import org.apache.sis.io.wkt.WKTFormat;
-import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.test.xml.DocumentComparator;
 import org.apache.sis.internal.xml.LegacyNamespaces;
@@ -56,18 +52,6 @@ import org.apache.sis.metadata.iso.quality.DefaultScope;
  * @module
  */
 public strictfp class MetadataAssert extends Assert {
-    /**
-     * The formatter to be used by {@link #assertWktEquals(String, Object)}.
-     * This formatter uses the {@code “…”} quotation marks instead of {@code "…"}
-     * for easier readability of {@link String} constants in Java code.
-     */
-    private static final WKTFormat WKT_FORMAT = new WKTFormat(null, null);
-    static {
-        final Symbols s = new Symbols(Symbols.SQUARE_BRACKETS);
-        s.setPairedQuotes("“”", "\"\"");
-        WKT_FORMAT.setSymbols(s);
-    }
-
     /**
      * For subclass constructor only.
      */
@@ -146,69 +130,6 @@ public strictfp class MetadataAssert extends Assert {
             actual[i] = actual[i].toString();
         }
         assertArrayEquals("metadata.lineage.source.scope.levelDescription.feature", features, actual);
-    }
-
-    /**
-     * Asserts that the WKT 2 of the given object is equal to the expected one.
-     * This method expected the {@code “…”} quotation marks instead of {@code "…"}
-     * for easier readability of {@link String} constants in Java code.
-     *
-     * @param expected  the expected text, or {@code null} if {@code object} is expected to be null.
-     * @param object    the object to format in <cite>Well Known Text</cite> format, or {@code null}.
-     */
-    public static void assertWktEquals(final String expected, final Object object) {
-        assertWktEquals(Convention.WKT2, expected, object);
-    }
-
-    /**
-     * Asserts that the WKT of the given object according the given convention is equal to the expected one.
-     * This method expected the {@code “…”} quotation marks instead of {@code "…"} for easier readability of
-     * {@link String} constants in Java code.
-     *
-     * @param convention  the WKT convention to use.
-     * @param expected    the expected text, or {@code null} if {@code object} is expected to be null.
-     * @param object      the object to format in <cite>Well Known Text</cite> format, or {@code null}.
-     */
-    public static void assertWktEquals(final Convention convention, final String expected, final Object object) {
-        if (expected == null) {
-            assertNull(object);
-        } else {
-            assertNotNull(object);
-            final String wkt;
-            synchronized (WKT_FORMAT) {
-                WKT_FORMAT.setConvention(convention);
-                wkt = WKT_FORMAT.format(object);
-            }
-            assertMultilinesEquals((object instanceof IdentifiedObject) ?
-                    ((IdentifiedObject) object).getName().getCode() : object.getClass().getSimpleName(), expected, wkt);
-        }
-    }
-
-    /**
-     * Asserts that the WKT of the given object according the given convention is equal to the given regular expression.
-     * This method is like {@link #assertWktEquals(String, Object)}, but the use of regular expression allows some
-     * tolerance for example on numerical parameter values that may be subject to a limited form of rounding errors.
-     *
-     * @param convention  the WKT convention to use.
-     * @param expected    the expected regular expression, or {@code null} if {@code object} is expected to be null.
-     * @param object      the object to format in <cite>Well Known Text</cite> format, or {@code null}.
-     *
-     * @since 0.6
-     */
-    public static void assertWktEqualsRegex(final Convention convention, final String expected, final Object object) {
-        if (expected == null) {
-            assertNull(object);
-        } else {
-            assertNotNull(object);
-            final String wkt;
-            synchronized (WKT_FORMAT) {
-                WKT_FORMAT.setConvention(convention);
-                wkt = WKT_FORMAT.format(object);
-            }
-            if (!wkt.matches(expected.replace("\n", System.lineSeparator()))) {
-                fail("WKT does not match the expected regular expression. The WKT that we got is:\n" + wkt);
-            }
-        }
     }
 
     /**

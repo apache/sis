@@ -30,7 +30,7 @@ import org.apache.sis.test.TestCase;
 import org.opengis.test.Validators;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**

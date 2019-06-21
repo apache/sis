@@ -124,18 +124,10 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.lineage.DefaultProcessStepTest.class,
     org.apache.sis.metadata.iso.constraint.DefaultLegalConstraintsTest.class,
     org.apache.sis.metadata.iso.DefaultIdentifierTest.class,
-    org.apache.sis.metadata.iso.ImmutableIdentifierTest.class,
     org.apache.sis.metadata.iso.DefaultMetadataTest.class,
     org.apache.sis.metadata.iso.CustomMetadataTest.class,
     org.apache.sis.metadata.iso.AllMetadataTest.class,
     org.apache.sis.metadata.iso.APIVerifier.class,
-
-    org.apache.sis.io.wkt.ConventionTest.class,
-    org.apache.sis.io.wkt.SymbolsTest.class,
-    org.apache.sis.io.wkt.TransliteratorTest.class,
-    org.apache.sis.io.wkt.ColorsTest.class,
-    org.apache.sis.io.wkt.FormatterTest.class,
-    org.apache.sis.io.wkt.ElementTest.class,
 
     org.apache.sis.internal.metadata.sql.SQLUtilitiesTest.class,
     org.apache.sis.internal.metadata.sql.TypeMapperTest.class,

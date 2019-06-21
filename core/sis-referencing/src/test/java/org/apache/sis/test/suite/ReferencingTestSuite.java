@@ -41,6 +41,15 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.jaxb.referencing.CodeTest.class,
     org.apache.sis.internal.jaxb.referencing.SecondDefiningParameterTest.class,
 
+    // Well Known Text (WKT) base.
+    org.apache.sis.io.wkt.ConventionTest.class,
+    org.apache.sis.io.wkt.SymbolsTest.class,
+    org.apache.sis.io.wkt.TransliteratorTest.class,
+    org.apache.sis.io.wkt.ColorsTest.class,
+    org.apache.sis.io.wkt.FormatterTest.class,
+    org.apache.sis.io.wkt.ElementTest.class,
+    org.apache.sis.metadata.iso.ImmutableIdentifierTest.class,
+
     // Identification of objects, needed by large parts of sis-referencing.
     org.apache.sis.referencing.NamedIdentifierTest.class,
     org.apache.sis.referencing.IdentifiedObjectsTest.class,

@@ -30,10 +30,9 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.xml.TestCase;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 import static org.opengis.referencing.ReferenceIdentifier.*;
 
 
@@ -45,7 +44,6 @@ import static org.opengis.referencing.ReferenceIdentifier.*;
  * @since   0.3
  * @module
  */
-@DependsOn(DefaultIdentifierTest.class)
 public final strictfp class ImmutableIdentifierTest extends TestCase {
     /**
      * Returns the properties map to be used in argument to test methods.

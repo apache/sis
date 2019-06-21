@@ -20,6 +20,7 @@ import org.apache.sis.metadata.iso.*;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.internal.xml.LegacyNamespaces;
@@ -62,6 +63,27 @@ public final class RS_Identifier extends DefaultIdentifier implements ReferenceI
      * Constructor for JAXB.
      */
     public RS_Identifier() {
+    }
+
+    /**
+     * Creates a new identifier initialized to the given code, code space and version number.
+     *
+     * @param codeSpace  identifier or namespace in which the code is valid, or {@code null} if not available.
+     * @param code       alphanumeric value identifying an instance in the namespace, or {@code null} if none.
+     * @param version    the version identifier for the namespace as specified by the code authority, or {@code null} if none.
+     */
+    public RS_Identifier(final String codeSpace, final String code, final String version) {
+        super(codeSpace, code, version);
+    }
+
+    /**
+     * Creates an identifier initialized to the given authority and code.
+     *
+     * @param authority  the the person or party responsible for maintenance of the namespace, or {@code null} if none.
+     * @param code       the alphanumeric value identifying an instance in the namespace, or {@code null} if none.
+     */
+    public RS_Identifier(final Citation authority, final String code) {
+        super(authority, code);
     }
 
     /**

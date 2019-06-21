@@ -540,8 +540,7 @@ public final class ServicesForMetadata extends ReferencingServices {
      * @param  object  the object to wrap.
      * @return the given object converted to a {@code FormattableObject} instance.
      */
-    @Override
-    public FormattableObject toFormattableObject(final IdentifiedObject object) {
+    public static FormattableObject toFormattableObject(final IdentifiedObject object) {
         return AbstractIdentifiedObject.castOrCopy(object);
     }
 
@@ -556,8 +555,7 @@ public final class ServicesForMetadata extends ReferencingServices {
      *
      * @since 0.6
      */
-    @Override
-    public FormattableObject toFormattableObject(final MathTransform object, boolean internal) {
+    public static FormattableObject toFormattableObject(final MathTransform object, boolean internal) {
         Matrix matrix;
         final ParameterValueGroup parameters;
         if (internal && (matrix = MathTransforms.getMatrix(object)) != null) {

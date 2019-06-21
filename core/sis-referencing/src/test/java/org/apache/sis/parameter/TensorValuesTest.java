@@ -35,7 +35,7 @@ import org.junit.Test;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.test.Validators.validate;
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.internal.util.Constants.NUM_ROW;
 import static org.apache.sis.internal.util.Constants.NUM_COL;
 
