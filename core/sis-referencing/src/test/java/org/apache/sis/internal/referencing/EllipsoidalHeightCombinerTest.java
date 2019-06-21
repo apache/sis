@@ -62,13 +62,7 @@ public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
      */
     private static EllipsoidalHeightCombiner create() {
         final GeodeticObjectFactory factory = new GeodeticObjectFactory();
-        return new EllipsoidalHeightCombiner(factory, factory, null) {
-            @Override protected void initialize(final int factoryTypes) {
-                if ((factoryTypes & OPERATION) != 0) {
-                    opFactory = new DefaultCoordinateOperationFactory();
-                }
-            }
-        };
+        return new EllipsoidalHeightCombiner(factory, factory, new DefaultCoordinateOperationFactory());
     }
 
     /**

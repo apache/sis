@@ -37,6 +37,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.CoordinateOperations;
+import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.provider.DatumShiftMethod;
@@ -970,8 +971,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             } else if (stepComponents.length == 1) {
                 stepTargetCRS = target;                 // Slight optimization of the next block.
             } else {
-                stepTargetCRS = toAuthorityDefinition(CoordinateReferenceSystem.class,
-                        new CompoundCRSBuilder(factory, factorySIS).createCompoundCRS(derivedFrom(target), stepComponents));
+                final EllipsoidalHeightCombiner c = new EllipsoidalHeightCombiner(factorySIS.getCRSFactory(), factorySIS.getCSFactory(), factory);
+                stepTargetCRS = toAuthorityDefinition(CoordinateReferenceSystem.class, c.createCompoundCRS(derivedFrom(target), stepComponents));
             }
             int delta = source.getCoordinateSystem().getDimension();
             final int startAtDimension = endAtDimension;

@@ -53,32 +53,20 @@ import org.apache.sis.util.ArraysExt;
  * @since 0.8
  * @module
  */
-public class EllipsoidalHeightCombiner {
-    /**
-     * The kind of factory initialized by {@link #initialize(int)}.
-     */
-    protected static final int CRS=1, CS=2, OPERATION=4;
-
-    /**
-     * The factory to use for creating compound or three-dimensional geographic CRS.
-     */
-    protected CRSFactory crsFactory;
-
-    /**
-     * The factory to use for creating three-dimensional ellipsoidal CS, if needed.
-     */
-    protected CSFactory csFactory;
-
-    /**
-     * The factory to use for creating defining conversions, if needed.
-     */
-    protected CoordinateOperationFactory opFactory;
-
+public final class EllipsoidalHeightCombiner extends ReferencingFactoryContainer {
     /**
      * Creates a new combiner with no initial factory.
-     * Subclasses must override the {@link #initialize(int)} method.
      */
-    protected EllipsoidalHeightCombiner() {
+    public EllipsoidalHeightCombiner() {
+    }
+
+    /**
+     * Creates a new instance initialized to the factories of the given container.
+     *
+     * @param  c  the container from which to fetch the factories.
+     */
+    protected EllipsoidalHeightCombiner(final ReferencingFactoryContainer c) {
+        super(c);
     }
 
     /**
@@ -92,20 +80,7 @@ public class EllipsoidalHeightCombiner {
     public EllipsoidalHeightCombiner(final CRSFactory crsFactory, final CSFactory csFactory,
                                      final CoordinateOperationFactory opFactory)
     {
-        this.crsFactory = crsFactory;
-        this.csFactory  = csFactory;
-        this.opFactory  = opFactory;
-    }
-
-    /**
-     * Initializes the factory identified by the given code. This is used for lazy initialization if any factory given
-     * to the constructor was null. In such case, subclass must override. If the same {@code EllipsoidalHeightCombiner}
-     * instance is used more than once, than it is subclass responsibility to verify that the {@link #crsFactory},
-     * {@link #csFactory} or {@link #opFactory} field has not already been set.
-     *
-     * @param  factoryTypes  a bitwise combination of {@link #CRS}, {@link #CS} and {@link #OPERATION}.
-     */
-    protected void initialize(final int factoryTypes) {
+        super(crsFactory, csFactory, opFactory);
     }
 
     /**
@@ -164,11 +139,9 @@ public class EllipsoidalHeightCombiner {
                     final Map<String,?> crsProps = (components.length == 2) ? properties
                                                    : IdentifiedObjects.getProperties(crs, CoordinateReferenceSystem.IDENTIFIERS_KEY);
                     if (crs instanceof GeodeticCRS) {
-                        initialize(CS | CRS);
-                        cs = csFactory.createEllipsoidalCS(csProps, axes[0], axes[1], axes[2]);
-                        crs = crsFactory.createGeographicCRS(crsProps, ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
+                        cs = getCSFactory().createEllipsoidalCS(csProps, axes[0], axes[1], axes[2]);
+                        crs = getCRSFactory().createGeographicCRS(crsProps, ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
                     } else {
-                        initialize(CS | CRS | OPERATION);
                         final ProjectedCRS proj = (ProjectedCRS) crs;
                         GeographicCRS base = proj.getBaseCRS();
                         if (base.getCoordinateSystem().getDimension() == 2) {
@@ -181,10 +154,11 @@ public class EllipsoidalHeightCombiner {
                          * for letting SIS create or associate new ones, which will be three-dimensional now.
                          */
                         Conversion fromBase = proj.getConversionFromBase();
-                        fromBase = opFactory.createDefiningConversion(IdentifiedObjects.getProperties(fromBase),
+                        fromBase = getCoordinateOperationFactory().createDefiningConversion(
+                                    IdentifiedObjects.getProperties(fromBase),
                                     fromBase.getMethod(), fromBase.getParameterValues());
-                        cs = csFactory.createCartesianCS(csProps, axes[0], axes[1], axes[2]);
-                        crs = crsFactory.createProjectedCRS(crsProps, base, fromBase, (CartesianCS) cs);
+                        cs = getCSFactory().createCartesianCS(csProps, axes[0], axes[1], axes[2]);
+                        crs = getCRSFactory().createProjectedCRS(crsProps, base, fromBase, (CartesianCS) cs);
                     }
                     /*
                      * Remove the VerticalCRS and store the three-dimensional GeographicCRS in place of the previous
@@ -200,7 +174,7 @@ public class EllipsoidalHeightCombiner {
         switch (components.length) {
             case 0:  return null;
             case 1:  return components[0];
-            default: initialize(CRS); return crsFactory.createCompoundCRS(properties, components);
+            default: return getCRSFactory().createCompoundCRS(properties, components);
         }
     }
 

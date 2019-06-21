@@ -508,13 +508,7 @@ public final class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> 
      * @throws FactoryException if the object creation failed.
      */
     public CoordinateReferenceSystem createCompoundCRS(final CoordinateReferenceSystem... components) throws FactoryException {
-        return new EllipsoidalHeightCombiner() {
-            @Override public void initialize(final int factoryTypes) {
-                if ((factoryTypes & CRS)       != 0) crsFactory = factories.getCRSFactory();
-                if ((factoryTypes & CS)        != 0)  csFactory = factories.getCSFactory();
-                if ((factoryTypes & OPERATION) != 0)  opFactory = factories.getCoordinateOperationFactory();
-            }
-        }.createCompoundCRS(properties, components);
+        return new EllipsoidalHeightCombiner(factories).createCompoundCRS(properties, components);
     }
 
     /**

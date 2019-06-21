@@ -62,6 +62,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DeferredCoordinateOperation;
+import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.provider.Affine;
@@ -1024,8 +1025,8 @@ class CoordinateOperationRegistry {
                 return candidate;               // Keep the existing instance since it may contain useful metadata.
             }
         }
-        return toAuthorityDefinition(CoordinateReferenceSystem.class,
-                new CompoundCRSBuilder(factory, factorySIS).createCompoundCRS(derivedFrom(crs), crs, CommonCRS.Vertical.ELLIPSOIDAL.crs()));
+        final EllipsoidalHeightCombiner c = new EllipsoidalHeightCombiner(factorySIS.getCRSFactory(), factorySIS.getCSFactory(), factory);
+        return toAuthorityDefinition(CoordinateReferenceSystem.class, c.createCompoundCRS(derivedFrom(crs), crs, CommonCRS.Vertical.ELLIPSOIDAL.crs()));
     }
 
     /**

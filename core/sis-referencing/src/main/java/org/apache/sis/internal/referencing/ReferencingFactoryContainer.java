@@ -28,9 +28,9 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.referencing.CRS;
 
 
 /**
@@ -113,6 +113,36 @@ public class ReferencingFactoryContainer {
      * Creates a new instance for the default factories.
      */
     public ReferencingFactoryContainer() {
+    }
+
+    /**
+     * Creates a new instance initialized to the factories of the given container.
+     *
+     * @param  c  the container from which to fetch the factories.
+     */
+    protected ReferencingFactoryContainer(final ReferencingFactoryContainer c) {
+        crsAuthorityFactory = c.crsAuthorityFactory;
+        datumFactory        = c.datumFactory;
+        csFactory           = c.csFactory;
+        crsFactory          = c.crsFactory;
+        operationFactory    = c.operationFactory;
+        mtFactory           = c.mtFactory;
+    }
+
+    /**
+     * Creates a new instance which will use the given factories.
+     * Any factory given in argument may be {@code null} if lazy instantiation is desired.
+     *
+     * @param  crsFactory        the factory to use for creating compound or three-dimensional geographic CRS.
+     * @param  csFactory         the factory to use for creating three-dimensional ellipsoidal CS, if needed.
+     * @param  operationFactory  the factory to use for creating defining conversions, if needed.
+     */
+    protected ReferencingFactoryContainer(final CRSFactory crsFactory, final CSFactory csFactory,
+                                          final CoordinateOperationFactory operationFactory)
+    {
+        this.crsFactory       = crsFactory;
+        this.csFactory        = csFactory;
+        this.operationFactory = operationFactory;
     }
 
     /**
