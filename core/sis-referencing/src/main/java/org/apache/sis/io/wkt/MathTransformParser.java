@@ -39,6 +39,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.CoordinateOperations;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.math.DecimalFunctions;
@@ -109,9 +110,9 @@ class MathTransformParser extends AbstractParser {
     };
 
     /**
-     * The factory to use for creating math transforms.
+     * The factories to use for creating math transforms and geodetic objects.
      */
-    final MathTransformFactory mtFactory;
+    final ReferencingFactoryContainer factories;
 
     /**
      * The classification of the last math transform or projection parsed, or {@code null} if none.
@@ -133,30 +134,31 @@ class MathTransformParser extends AbstractParser {
      * Do not change the method signature even if it doesn't break the compilation, unless the reflection code
      * is also updated.</p>
      *
-     * @param  mtFactory  the factory to use to create {@link MathTransform} objects.
+     * @param  mtFactory  the factory to use for creating {@link MathTransform} objects.
      */
     public MathTransformParser(final MathTransformFactory mtFactory) {
-        this(Symbols.getDefault(), Collections.emptyMap(), null, null, null, mtFactory, null);
+        this(Symbols.getDefault(), Collections.emptyMap(), null, null, null,
+                new ReferencingFactoryContainer(null, null, null, null, null, mtFactory), null);
     }
 
     /**
-     * Creates a parser using the specified set of symbols and factory.
+     * Creates a parser using the specified set of symbols and factories.
      *
      * @param  symbols       the set of symbols to use.
      * @param  fragments     reference to the {@link WKTFormat#fragments} map, or an empty map if none.
      * @param  numberFormat  the number format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param  dateFormat    the date format provided by {@link WKTFormat}, or {@code null} for a default format.
      * @param  unitFormat    the unit format provided by {@link WKTFormat}, or {@code null} for a default format.
-     * @param  mtFactory     the factory to use to create {@link MathTransform} objects.
+     * @param  factories     the factories to use for creating math transforms and geodetic objects.
      * @param  errorLocale   the locale for error messages (not for parsing), or {@code null} for the system default.
      */
     MathTransformParser(final Symbols symbols, final Map<String,Element> fragments,
             final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
-            final MathTransformFactory mtFactory, final Locale errorLocale)
+            final ReferencingFactoryContainer factories, final Locale errorLocale)
     {
         super(symbols, fragments, numberFormat, dateFormat, unitFormat, errorLocale);
-        this.mtFactory = mtFactory;
-        ensureNonNull("mtFactory", mtFactory);
+        this.factories = factories;
+        ensureNonNull("factories", factories);
     }
 
     /**
@@ -414,6 +416,7 @@ class MathTransformParser extends AbstractParser {
             return null;
         }
         classification = element.pullString("classification");
+        final MathTransformFactory mtFactory = factories.getMathTransformFactory();
         final ParameterValueGroup parameters;
         try {
             parameters = mtFactory.getDefaultParameters(classification);
@@ -482,7 +485,8 @@ class MathTransformParser extends AbstractParser {
             return null;
         }
         final int firstAffectedCoordinate = parent.pullInteger("firstAffectedCoordinate");
-        final MathTransform transform   = parseMathTransform(element, true);
+        final MathTransform transform = parseMathTransform(element, true);
+        final MathTransformFactory mtFactory = factories.getMathTransformFactory();
         element.close(ignoredElements);
         try {
             return mtFactory.createPassThroughTransform(firstAffectedCoordinate, transform, 0);
@@ -509,6 +513,7 @@ class MathTransformParser extends AbstractParser {
         }
         MathTransform transform = parseMathTransform(element, true);
         MathTransform optionalTransform;
+        final MathTransformFactory mtFactory = factories.getMathTransformFactory();
         while ((optionalTransform = parseMathTransform(element, false)) != null) {
             try {
                 transform = mtFactory.createConcatenatedTransform(transform, optionalTransform);
@@ -531,6 +536,7 @@ class MathTransformParser extends AbstractParser {
              * getLastMethod(). Performs a slower and less robust check as a fallback.
              */
             if (classification != null) {
+                final MathTransformFactory mtFactory = factories.getMathTransformFactory();
                 lastMethod = CoordinateOperations.getOperationMethod(
                         mtFactory.getAvailableMethods(SingleOperation.class), classification);
             }

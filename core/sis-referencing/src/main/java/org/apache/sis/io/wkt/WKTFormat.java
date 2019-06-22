@@ -46,6 +46,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 
 
 /**
@@ -229,7 +230,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @see #factories()
      */
-    private transient Map<Class<?>,Factory> factories;
+    private transient ReferencingFactoryContainer factories;
 
     /**
      * The warning produced by the last parsing or formatting operation, or {@code null} if none.
@@ -267,12 +268,13 @@ public class WKTFormat extends CompoundFormat<Object> {
     }
 
     /**
-     * Returns the {@link #factories} map, creating it when first needed.
+     * Returns the container of {@link #factories}, creating it when first needed.
+     * This container is needed at parsing time but not at formatting time.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private Map<Class<?>,Factory> factories() {
+    private ReferencingFactoryContainer factories() {
         if (factories == null) {
-            factories = new HashMap<>(8);
+            factories = new ReferencingFactoryContainer();
         }
         return factories;
     }
@@ -621,16 +623,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     public <T extends Factory> T getFactory(final Class<T> type) {
         ensureValidFactoryType(type);
-        if (type == CoordinateOperationFactory.class) {
-            /*
-             * HACK: we have a special way to get the CoordinateOperationFactory because of its dependency
-             * toward MathTransformFactory.  A lazy (but costly) way to ensure a consistent behavior is to
-             * let the GeodeticObjectParser constructor do its job.  This is costly, but should not happen
-             * often.
-             */
-            parser();
-        }
-        return GeodeticObjectParser.getFactory(type, factories());
+        return factories().getFactory(type);
     }
 
     /**
@@ -657,7 +650,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     public <T extends Factory> void setFactory(final Class<T> type, final T factory) {
         ensureValidFactoryType(type);
-        if (factories().put(type, factory) != factory) {
+        if (factories().setFactory(type, factory)) {
             parser = null;
         }
     }
@@ -789,7 +782,7 @@ public class WKTFormat extends CompoundFormat<Object> {
         Parser(final Symbols symbols, final Map<String,Element> fragments,
                 final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
                 final Convention convention, final Transliterator transliterator, final Locale errorLocale,
-                final Map<Class<?>,Factory> factories)
+                final ReferencingFactoryContainer factories)
         {
             super(symbols, fragments, numberFormat, dateFormat, unitFormat, convention, transliterator, errorLocale, factories);
         }

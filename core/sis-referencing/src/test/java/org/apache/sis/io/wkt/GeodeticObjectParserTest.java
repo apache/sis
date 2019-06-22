@@ -18,7 +18,6 @@ package org.apache.sis.io.wkt;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.text.ParsePosition;
@@ -35,6 +34,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
@@ -84,7 +84,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      */
     private void newParser(final Convention convention) {
         parser = new GeodeticObjectParser(Symbols.getDefault(), Collections.emptyMap(),
-                null, null, null, convention, Transliterator.DEFAULT, null, new HashMap<>());
+                null, null, null, convention, Transliterator.DEFAULT, null, new ReferencingFactoryContainer());
         assertEquals(GeodeticObjectFactory.class.getCanonicalName(), parser.getPublicFacade());
     }
 

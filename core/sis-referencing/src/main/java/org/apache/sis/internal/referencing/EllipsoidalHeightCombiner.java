@@ -52,11 +52,17 @@ import org.apache.sis.util.ArraysExt;
  * @since 0.8
  * @module
  */
-public final class EllipsoidalHeightCombiner extends ReferencingFactoryContainer {
+public final class EllipsoidalHeightCombiner {
+    /**
+     * The factories to use for creating geodetic objects.
+     */
+    private final ReferencingFactoryContainer factories;
+
     /**
      * Creates a new combiner with no initial factory.
      */
     public EllipsoidalHeightCombiner() {
+        factories = new ReferencingFactoryContainer();
     }
 
     /**
@@ -64,8 +70,8 @@ public final class EllipsoidalHeightCombiner extends ReferencingFactoryContainer
      *
      * @param  c  the container from which to fetch the factories.
      */
-    protected EllipsoidalHeightCombiner(final ReferencingFactoryContainer c) {
-        super(c);
+    public EllipsoidalHeightCombiner(final ReferencingFactoryContainer c) {
+        factories = c;
     }
 
     /**
@@ -79,7 +85,7 @@ public final class EllipsoidalHeightCombiner extends ReferencingFactoryContainer
     public EllipsoidalHeightCombiner(final CRSFactory crsFactory, final CSFactory csFactory,
                                      final CoordinateOperationFactory opFactory)
     {
-        super(crsFactory, csFactory, opFactory);
+        factories = new ReferencingFactoryContainer(null, crsFactory, csFactory, null, opFactory, null);
     }
 
     /**
@@ -138,8 +144,8 @@ public final class EllipsoidalHeightCombiner extends ReferencingFactoryContainer
                     final Map<String,?> crsProps = (components.length == 2) ? properties
                                                    : IdentifiedObjects.getProperties(crs, CoordinateReferenceSystem.IDENTIFIERS_KEY);
                     if (crs instanceof GeodeticCRS) {
-                        cs = getCSFactory().createEllipsoidalCS(csProps, axes[0], axes[1], axes[2]);
-                        crs = getCRSFactory().createGeographicCRS(crsProps, ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
+                        cs = factories.getCSFactory().createEllipsoidalCS(csProps, axes[0], axes[1], axes[2]);
+                        crs = factories.getCRSFactory().createGeographicCRS(crsProps, ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
                     } else {
                         final ProjectedCRS proj = (ProjectedCRS) crs;
                         GeographicCRS base = proj.getBaseCRS();
@@ -153,11 +159,11 @@ public final class EllipsoidalHeightCombiner extends ReferencingFactoryContainer
                          * for letting SIS create or associate new ones, which will be three-dimensional now.
                          */
                         Conversion fromBase = proj.getConversionFromBase();
-                        fromBase = getCoordinateOperationFactory().createDefiningConversion(
+                        fromBase = factories.getCoordinateOperationFactory().createDefiningConversion(
                                     IdentifiedObjects.getProperties(fromBase),
                                     fromBase.getMethod(), fromBase.getParameterValues());
-                        cs = getCSFactory().createCartesianCS(csProps, axes[0], axes[1], axes[2]);
-                        crs = getCRSFactory().createProjectedCRS(crsProps, base, fromBase, (CartesianCS) cs);
+                        cs = factories.getCSFactory().createCartesianCS(csProps, axes[0], axes[1], axes[2]);
+                        crs = factories.getCRSFactory().createProjectedCRS(crsProps, base, fromBase, (CartesianCS) cs);
                     }
                     /*
                      * Remove the VerticalCRS and store the three-dimensional GeographicCRS in place of the previous
@@ -173,7 +179,7 @@ public final class EllipsoidalHeightCombiner extends ReferencingFactoryContainer
         switch (components.length) {
             case 0:  return null;
             case 1:  return components[0];
-            default: return getCRSFactory().createCompoundCRS(properties, components);
+            default: return factories.getCRSFactory().createCompoundCRS(properties, components);
         }
     }
 
