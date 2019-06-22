@@ -58,7 +58,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.SimpleInternationalString;
 
 
@@ -309,7 +308,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      */
     private static int skipNamespace(final String code) throws NoSuchAuthorityCodeException {
         int isLegacy = 0;
-        int s = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
+        int s = code.indexOf(Constants.DEFAULT_SEPARATOR);
         if (s >= 0) {
             final int end   = CharSequences.skipTrailingWhitespaces(code, 0, s);
             final int start = CharSequences.skipLeadingWhitespaces (code, 0, end);
@@ -390,7 +389,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * Formats the given code with a {@code "CRS:"} or {@code "AUTO2:"} prefix.
      */
     private static String format(final int code) {
-        return ((code >= FIRST_PROJECTION_CODE) ? AUTO2 : Constants.CRS) + DefaultNameSpace.DEFAULT_SEPARATOR + code;
+        return ((code >= FIRST_PROJECTION_CODE) ? AUTO2 : Constants.CRS) + Constants.DEFAULT_SEPARATOR + code;
     }
 
     /**

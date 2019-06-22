@@ -46,8 +46,8 @@ import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroup;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
@@ -130,7 +130,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          * However there is a few cases, for example the Molodenski transform, where we can not infer the
          * parameters easily because the operation is implemented by a concatenation of math transforms.
          */
-        parameters = Parameters.unmodifiable(Containers.property(properties, ReferencingServices.PARAMETERS_KEY, ParameterValueGroup.class));
+        parameters = Parameters.unmodifiable(Containers.property(properties, CoordinateOperations.PARAMETERS_KEY, ParameterValueGroup.class));
     }
 
     /**

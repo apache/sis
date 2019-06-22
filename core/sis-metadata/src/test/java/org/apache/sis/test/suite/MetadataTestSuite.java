@@ -30,11 +30,10 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.internal.metadata.IdentifiersTest.class,
     org.apache.sis.internal.metadata.AxisNamesTest.class,
-    org.apache.sis.internal.metadata.WKTKeywordsTest.class,
     org.apache.sis.internal.metadata.NameMeaningTest.class,
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
-    org.apache.sis.internal.metadata.VerticalDatumTypesTest.class,
 
     // Classes using Java reflection.
     org.apache.sis.metadata.PropertyInformationTest.class,

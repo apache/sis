@@ -29,8 +29,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.metadata.NameMeaning;
-import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
@@ -472,8 +473,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
         if (code != null) {
             final String   codeSpace = getCodeSpace();
             final Citation authority = getAuthority();
-            final String cs = (codeSpace != null) ? codeSpace :
-                    org.apache.sis.internal.util.Citations.getIdentifier(authority, true);
+            final String cs = (codeSpace != null) ? codeSpace : Identifiers.getIdentifier(authority, true);
             if (cs != null) {
                 final Convention convention = formatter.getConvention();
                 if (convention.majorVersion() == 1) {
@@ -504,7 +504,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
                     final FormattableObject enclosing = formatter.getEnclosingElement(1);
                     final boolean              isRoot = formatter.getEnclosingElement(2) == null;
                     if (isRoot || !(enclosing instanceof ParameterValue<?>)) {
-                        final String citation = org.apache.sis.internal.util.Citations.getIdentifier(authority, false);
+                        final String citation = Identifiers.getIdentifier(authority, false);
                         if (citation != null && !citation.equals(cs)) {
                             formatter.append(new Cite(citation));
                         }

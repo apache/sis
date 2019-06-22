@@ -35,7 +35,6 @@ import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.FinalFieldSetter;
@@ -1134,7 +1133,7 @@ appPow: if (unit == null) {
                     failure = e;
                 }
                 throw (ParserException) new ParserException(Errors.format(Errors.Keys.UnknownUnit_1,
-                        Constants.EPSG + Citations.DEFAULT_SEPARATOR + code),
+                        Constants.EPSG + Constants.DEFAULT_SEPARATOR + code),
                         symbols, start + Math.max(0, uom.lastIndexOf(code))).initCause(failure);
             }
             /*

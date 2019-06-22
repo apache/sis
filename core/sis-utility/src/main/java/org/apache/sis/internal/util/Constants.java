@@ -37,6 +37,14 @@ import org.apache.sis.util.Static;
  */
 public final class Constants extends Static {
     /**
+     * The default separator, which is {@code ':'}.
+     * The separator is inserted between the code space and the code in identifiers.
+     *
+     * @see org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR
+     */
+    public static final char DEFAULT_SEPARATOR = ':';
+
+    /**
      * The default indentation value to use in various text formats (both WKT and XML).
      * We use a small value (2 instead of 4) because OGC's XML are very verbose.
      *

@@ -30,11 +30,11 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.util.Citations;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
@@ -138,7 +138,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @return the namespaces recognized by this factory, or an empty set if none.
      */
     public Set<String> getCodeSpaces() {
-        final String authority = org.apache.sis.metadata.iso.citation.Citations.toCodeSpace(getAuthority());
+        final String authority = Citations.toCodeSpace(getAuthority());
         return (authority != null) ? Collections.singleton(authority) : Collections.emptySet();
     }
 
@@ -1241,13 +1241,13 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @since 0.8
      */
     protected final String trimNamespace(final String code) {
-        int s = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
+        int s = code.indexOf(Constants.DEFAULT_SEPARATOR);
         if (s >= 0) {
             final int end   = CharSequences.skipTrailingWhitespaces(code, 0, s);
             final int start = CharSequences.skipLeadingWhitespaces (code, 0, end);
             for (final String codespace : getCodeSpaces()) {
                 if (regionMatches(codespace, code, start, end)) {
-                    final int n = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, s + 1);
+                    final int n = code.indexOf(Constants.DEFAULT_SEPARATOR, s + 1);
                     if (n >= 0) {
                         /*
                          * The separator sometime appears twice, as in "EPSG::4326" or "EPSG:8.9:4326".
@@ -1293,7 +1293,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
         final Identifier id = object.getName();
         final Citation authority = (id != null) ? id.getAuthority() : getAuthority();
         throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnexpectedTypeForReference_3, code, type, actual),
-                Citations.getIdentifier(authority, false), trimNamespace(code), code);
+                Citations.getIdentifier(authority), trimNamespace(code), code);
     }
 
     /**
@@ -1305,7 +1305,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this))
-                .append("[“").append(Citations.getIdentifier(getAuthority(), false)).append('”');
+                .append("[“").append(Citations.getIdentifier(getAuthority())).append('”');
         appendStringTo(buffer);
         return buffer.append(']').toString();
     }

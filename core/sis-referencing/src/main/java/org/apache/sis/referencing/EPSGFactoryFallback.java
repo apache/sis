@@ -49,7 +49,6 @@ import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Fallback;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
 import org.apache.sis.measure.Latitude;
@@ -285,7 +284,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
              * is used directly (not through MultiAuthoritiesFactory), which should be rare. The main case is
              * when using the factory returned by AuthorityFactories.fallback(…).
              */
-            code = CharSequences.trimWhitespaces(code, code.lastIndexOf(DefaultNameSpace.DEFAULT_SEPARATOR) + 1, code.length()).toString();
+            code = CharSequences.trimWhitespaces(code, code.lastIndexOf(Constants.DEFAULT_SEPARATOR) + 1, code.length()).toString();
             final short n = Short.parseShort(code);
             if ((kind & (ELLIPSOID | DATUM | CRS)) != 0) {
                 for (final CommonCRS crs : CommonCRS.values()) {

@@ -18,13 +18,21 @@ package org.apache.sis.metadata.iso.citation;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.Iterator;
+import java.util.Collection;
+import java.util.Locale;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;                // For javadoc
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.simple.CitationConstant;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
@@ -32,7 +40,7 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.metadata.iso.DefaultIdentifier;           // For javadoc
 
-import static org.apache.sis.internal.util.Citations.equalsFiltered;
+import static org.apache.sis.internal.util.CollectionsExt.nonEmptyIterator;
 
 
 /**
@@ -512,6 +520,19 @@ public final class Citations extends Static {
     }
 
     /**
+     * The method to be used consistently for comparing titles or identifiers in all {@code fooMathes(…)}
+     * methods declared in this class.
+     *
+     * @param  s1  the first characters sequence to compare, or {@code null}.
+     * @param  s2  the second characters sequence to compare, or {@code null}.
+     * @return {@code true} if both arguments are {@code null} or if the two given texts are equal,
+     *         ignoring case and any characters other than digits and letters.
+     */
+    private static boolean equalsFiltered(final CharSequence s1, final CharSequence s2) {
+        return CharSequences.equalsFiltered(s1, s2, Characters.Filter.LETTERS_AND_DIGITS, true);
+    }
+
+    /**
      * Returns {@code true} if at least one {@linkplain DefaultCitation#getTitle() title} or
      * {@linkplain DefaultCitation#getAlternateTitles() alternate title} in {@code c1} is leniently
      * equal to a title or alternate title in {@code c2}. The comparison is case-insensitive
@@ -523,7 +544,34 @@ public final class Citations extends Static {
      * @return {@code true} if both arguments are non-null, and at least one title or alternate title matches.
      */
     public static boolean titleMatches(final Citation c1, final Citation c2) {
-        return org.apache.sis.internal.util.Citations.titleMatches(c1, c2);
+        if (c1 != null && c2 != null) {
+            if (c1 == c2) {
+                return true;                                                // Optimisation for a common case.
+            }
+            InternationalString candidate = c2.getTitle();
+            Iterator<? extends InternationalString> iterator = null;
+            do {
+                if (candidate != null) {
+                    final String unlocalized = candidate.toString(Locale.ROOT);
+                    if (titleMatches(c1, unlocalized)) {
+                        return true;
+                    }
+                    final String localized = candidate.toString();
+                    if (!Objects.equals(localized, unlocalized)             // Slight optimization for a common case.
+                            && titleMatches(c1, localized))
+                    {
+                        return true;
+                    }
+                }
+                if (iterator == null) {
+                    iterator = nonEmptyIterator(c2.getAlternateTitles());
+                    if (iterator == null) break;
+                }
+                if (!iterator.hasNext()) break;
+                candidate = iterator.next();
+            } while (true);
+        }
+        return false;
     }
 
     /**
@@ -538,7 +586,31 @@ public final class Citations extends Static {
      *         title matches the given string.
      */
     public static boolean titleMatches(final Citation citation, final String title) {
-        return org.apache.sis.internal.util.Citations.titleMatches(citation, title);
+        if (citation != null && title != null) {
+            InternationalString candidate = citation.getTitle();
+            Iterator<? extends InternationalString> iterator = null;
+            do {
+                if (candidate != null) {
+                    final String unlocalized = candidate.toString(Locale.ROOT);
+                    if (equalsFiltered(unlocalized, title)) {
+                        return true;
+                    }
+                    final String localized = candidate.toString();
+                    if (!Objects.equals(localized, unlocalized)             // Slight optimization for a common case.
+                            && equalsFiltered(localized, title))
+                    {
+                        return true;
+                    }
+                }
+                if (iterator == null) {
+                    iterator = nonEmptyIterator(citation.getAlternateTitles());
+                    if (iterator == null) break;
+                }
+                if (!iterator.hasNext()) break;
+                candidate = iterator.next();
+            } while (true);
+        }
+        return false;
     }
 
     /**
@@ -558,8 +630,42 @@ public final class Citations extends Static {
      * @param  c2  the second citation to compare, or {@code null}.
      * @return {@code true} if both arguments are non-null, and at least one identifier matches.
      */
-    public static boolean identifierMatches(final Citation c1, final Citation c2) {
-        return org.apache.sis.internal.util.Citations.identifierMatches(c1, c2);
+    public static boolean identifierMatches(Citation c1, final Citation c2) {
+        if (c1 != null && c2 != null) {
+            if (c1 == c2) {
+                return true;                            // Optimisation for a common case.
+            }
+            /*
+             * If both argument are one of the constants defined in the Citations class,
+             * then we do not need to compare identifier; call to `equals` is sufficient.
+             * This special case avoids the potentially costly call to `getIdentifiers()`
+             * since that call may cause a connection to the spatial metadata database.
+             */
+            if (c1 instanceof CitationConstant && c2 instanceof CitationConstant) {
+                return c1.equals(c2);
+            }
+            /*
+             * If there is no identifier in both citations, fallback on title comparisons.
+             * If there is identifiers in only one citation, make sure that this citation
+             * is the second one (c2) in order to allow at least one call to
+             * 'identifierMatches(c1, String)'.
+             */
+            Iterator<? extends Identifier> iterator = nonEmptyIterator(c2.getIdentifiers());
+            if (iterator == null) {
+                iterator = nonEmptyIterator(c1.getIdentifiers());
+                if (iterator == null) {
+                    return titleMatches(c1, c2);
+                }
+                c1 = c2;
+            }
+            do {
+                final Identifier id = iterator.next();
+                if (id != null && identifierMatches(c1, id, id.getCode())) {
+                    return true;
+                }
+            } while (iterator.hasNext());
+        }
+        return false;
     }
 
     /**
@@ -580,7 +686,66 @@ public final class Citations extends Static {
      * @return {@code true} if both arguments are non-null, and an identifier matches the given string.
      */
     public static boolean identifierMatches(final Citation citation, final String identifier) {
-        return org.apache.sis.internal.util.Citations.identifierMatches(citation, null, identifier);
+        return identifierMatches(citation, null, identifier);
+    }
+
+    /**
+     * Returns {@code true} if the given citation has at least one identifier equals to the given string,
+     * ignoring case and non-alphanumeric characters. If and <em>only</em> if the citation does not contain
+     * any identifier, then this method fallback on titles comparison.
+     *
+     * @param  citation    the citation to check for, or {@code null}.
+     * @param  identifier  the identifier to compare, or {@code null} if unknown.
+     * @param  code        value of {@code identifier.getCode()}, or {@code null}.
+     * @return {@code true} if both arguments are non-null, and an identifier matches the given string.
+     */
+    static boolean identifierMatches(final Citation citation, final Identifier identifier, final String code) {
+        if (citation != null && code != null) {
+            final Collection<? extends Identifier> citIds = citation.getIdentifiers();
+            Iterator<? extends Identifier> it = nonEmptyIterator(citIds);
+            if (it == null) {
+                return titleMatches(citation, code);
+            }
+            while (it.hasNext()) {
+                final Identifier citId = it.next();
+                if (citId != null && equalsFiltered(code, citId.getCode())) {
+                    /*
+                     * Found a possible match. We will take the code space in account only if it is defined
+                     * by both identifiers. If a code space is undefined, we consider that we have a match.
+                     */
+                    if (identifier != null) {
+                        final String codeSpace = identifier.getCodeSpace();
+                        if (codeSpace != null) {
+                            final String cs = citId.getCodeSpace();
+                            if (cs != null && !equalsFiltered(codeSpace, cs)) {
+                                continue;       // Check other identifiers.
+                            }
+                        }
+                    }
+                    return true;
+                }
+            }
+            /*
+             * Before to give up, maybe the given code argument is actually written using a "codeSpace:code" syntax.
+             * Try to parse that syntax only if no Identifier argument were specified (otherwise we require the code
+             * and code space to be splitted as defined in the identifier).
+             */
+            if (identifier == null) {
+                int s = 0;
+                final int length = code.length();
+                while ((s = CharSequences.indexOf(code, Constants.DEFAULT_SEPARATOR, s, length)) >= 0) {
+                    final CharSequence codeSpace = code.subSequence(0, s);
+                    final CharSequence localPart = code.subSequence(++s, length);
+                    for (it = citIds.iterator(); it.hasNext();) {
+                        final Identifier id = it.next();
+                        if (equalsFiltered(codeSpace, id.getCodeSpace()) && equalsFiltered(localPart, id.getCode())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -641,7 +806,7 @@ public final class Citations extends Static {
      *         or {@code null} if the given citation is null or does not declare any identifier or title.
      */
     public static String getIdentifier(final Citation citation) {
-        return org.apache.sis.internal.util.Citations.getIdentifier(citation, false);
+        return Identifiers.getIdentifier(citation, false);
     }
 
     /**
@@ -662,8 +827,7 @@ public final class Citations extends Static {
      */
     @Deprecated
     public static String getUnicodeIdentifier(final Citation citation) {
-        return org.apache.sis.internal.util.Citations.removeIgnorableCharacters(
-               org.apache.sis.internal.util.Citations.getIdentifier(citation, true));
+        return removeIgnorableCharacters(Identifiers.getIdentifier(citation, true));
     }
 
     /**
@@ -711,8 +875,7 @@ public final class Citations extends Static {
         if (citation instanceof IdentifierSpace<?>) {
             return ((IdentifierSpace<?>) citation).getName();
         } else {
-            return org.apache.sis.internal.util.Citations.removeIgnorableCharacters(
-                   org.apache.sis.internal.util.Citations.getIdentifier(citation, true));
+            return removeIgnorableCharacters(Identifiers.getIdentifier(citation, true));
         }
     }
 
@@ -725,5 +888,53 @@ public final class Citations extends Static {
     @Deprecated
     public static String getCodeSpace(final Citation citation) {
         return toCodeSpace(citation);
+    }
+
+    /**
+     * Removes characters that are ignorable according Unicode specification.
+     *
+     * @param  identifier  the character sequence from which to remove ignorable characters, or {@code null}.
+     * @return a character sequence with ignorable character removed. May be the same instance than the given argument.
+     */
+    private static String removeIgnorableCharacters(final String identifier) {
+        if (identifier != null) {
+            /*
+             * First perform a quick check to see if there is any ignorable characters.
+             * We make this check because those characters are valid according Unicode
+             * but not according XML. However there is usually no such characters, so
+             * we will avoid the StringBuilder creation in the vast majority of times.
+             *
+             * Note that 'µ' and its friends are not ignorable, so we do not remove them.
+             * This method is aimed for "getUnicodeIdentifier", not "getXmlIdentifier".
+             */
+            final int length = identifier.length();
+            for (int i=0; i<length;) {
+                int c = identifier.codePointAt(i);
+                int n = Character.charCount(c);
+                if (Character.isIdentifierIgnorable(c)) {
+                    /*
+                     * Found an ignorable character. Create the buffer and copy non-ignorable characters.
+                     * Following algorithm is inefficient, since we fill the buffer character-by-character
+                     * (a more efficient approach would be to perform bulk appends). However we presume
+                     * that this block will be rarely executed, so it is not worth to optimize it.
+                     */
+                    final StringBuilder buffer = new StringBuilder(length - n).append(identifier, 0, i);
+                    while ((i += n) < length) {
+                        c = identifier.codePointAt(i);
+                        n = Character.charCount(c);
+                        if (!Character.isIdentifierIgnorable(c)) {
+                            buffer.appendCodePoint(c);
+                        }
+                    }
+                    /*
+                     * No need to verify if the buffer is empty, because ignorable
+                     * characters are not legal Unicode identifier start.
+                     */
+                    return buffer.toString();
+                }
+                i += n;
+            }
+        }
+        return identifier;
     }
 }

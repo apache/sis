@@ -67,10 +67,11 @@ import org.opengis.referencing.operation.*;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 
-import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
-import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
+import org.apache.sis.internal.referencing.CoordinateOperations;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.DeferredCoordinateOperation;
 import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.referencing.EPSGParameterDomain;
@@ -102,7 +103,6 @@ import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
@@ -1067,7 +1067,7 @@ codes:  for (int i=0; i<codes.length; i++) {
         }
         if (!quiet) {
             LogRecord record = Resources.forLocale(locale).getLogRecord(Level.WARNING, Resources.Keys.DeprecatedCode_3,
-                    Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code, replacedBy, reason);
+                    Constants.EPSG + Constants.DEFAULT_SEPARATOR + code, replacedBy, reason);
             record.setLoggerName(Loggers.CRS_FACTORY);
             Logging.log(EPSGDataAccess.class, method, record);
         }
@@ -1168,7 +1168,7 @@ codes:  for (int i=0; i<codes.length; i++) {
         }
         properties.put(IdentifiedObject.REMARKS_KEY, remarks);
         properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
-        properties.put(ReferencingServices.MT_FACTORY, owner.mtFactory);
+        properties.put(ReferencingFactoryContainer.MT_FACTORY, owner.mtFactory);
         return properties;
     }
 
@@ -1936,7 +1936,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                         // Both 'inverseFlattening' and 'semiMinorAxis' are defined.
                         // Log a warning and create the ellipsoid using the inverse flattening.
                         final LogRecord record = resources().getLogRecord(Level.WARNING,
-                                Resources.Keys.AmbiguousEllipsoid_1, Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code);
+                                Resources.Keys.AmbiguousEllipsoid_1, Constants.EPSG + Constants.DEFAULT_SEPARATOR + code);
                         record.setLoggerName(Loggers.CRS_FACTORY);
                         Logging.log(EPSGDataAccess.class, "createEllipsoid", record);
                     }
@@ -2971,8 +2971,8 @@ next:               while (r.next()) {
                                 opType = s.asSubclass(SingleOperation.class);
                             }
                         }
-                        opProperties.put(ReferencingServices.OPERATION_TYPE_KEY, opType);
-                        opProperties.put(ReferencingServices.PARAMETERS_KEY, parameters);
+                        opProperties.put(CoordinateOperations.OPERATION_TYPE_KEY, opType);
+                        opProperties.put(CoordinateOperations.PARAMETERS_KEY, parameters);
                         /*
                          * Following restriction will be removed in a future SIS version if the method is added to GeoAPI.
                          */

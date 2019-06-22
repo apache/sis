@@ -46,7 +46,6 @@ import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -509,13 +508,7 @@ public final class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> 
      * @throws FactoryException if the object creation failed.
      */
     public CoordinateReferenceSystem createCompoundCRS(final CoordinateReferenceSystem... components) throws FactoryException {
-        return new EllipsoidalHeightCombiner() {
-            @Override public void initialize(final int factoryTypes) {
-                if ((factoryTypes & CRS)       != 0) crsFactory = factories.getCRSFactory();
-                if ((factoryTypes & CS)        != 0)  csFactory = factories.getCSFactory();
-                if ((factoryTypes & OPERATION) != 0)  opFactory = factories.getCoordinateOperationFactory();
-            }
-        }.createCompoundCRS(properties, components);
+        return new EllipsoidalHeightCombiner(factories).createCompoundCRS(properties, components);
     }
 
     /**

@@ -35,7 +35,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Callback;
 import org.apache.sis.internal.gui.FontGlyphs;
-import org.apache.sis.internal.util.Citations;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
@@ -129,7 +129,7 @@ public class ResourceTree extends TreeTableView<Resource> {
                     if (i18n != null) {
                         id = i18n.toString();                   // TODO: use display locale.
                     } else {
-                        id = Citations.getIdentifier(identification.getCitation(), false);
+                        id = Citations.getIdentifier(identification.getCitation());
                     }
                     if (id != null && !(id = id.trim()).isEmpty()) {
                         if (title == null) {
