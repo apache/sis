@@ -45,7 +45,6 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.internal.util.Constants;
 
 import static java.lang.StrictMath.*;
@@ -94,7 +93,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
         assertEquals("code",       expected,      actual.getCode());
         assertEquals("codeSpace",  Constants.OGC, actual.getCodeSpace());
         assertSame  ("authority",  Citations.OGC, actual.getAuthority());
-        assertEquals("identifier", Constants.OGC + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
+        assertEquals("identifier", Constants.OGC + Constants.DEFAULT_SEPARATOR + expected,
                 IdentifiedObjects.toString(actual));
     }
 
@@ -112,7 +111,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
         assertEquals("code",       expected,        actual.getCode());
         assertEquals("codeSpace",  Constants.EPSG,  (actual instanceof ReferenceIdentifier) ? ((ReferenceIdentifier) actual).getCodeSpace() : null);
         assertEquals("authority",  Constants.EPSG,  Citations.toCodeSpace(actual.getAuthority()));
-        assertEquals("identifier", Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + expected,
+        assertEquals("identifier", Constants.EPSG + Constants.DEFAULT_SEPARATOR + expected,
                 IdentifiedObjects.toString(actual));
     }
 

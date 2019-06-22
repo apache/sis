@@ -49,7 +49,7 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.internal.referencing.provider.MapProjection;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
@@ -539,8 +539,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         if (factory instanceof DefaultMathTransformFactory) {
             method = ((DefaultMathTransformFactory) factory).getOperationMethod(name);
         } else {
-            method = ReferencingServices.getInstance().getOperationMethod(
-                    factory.getAvailableMethods(SingleOperation.class), name);
+            method = CoordinateOperations.getOperationMethod(factory.getAvailableMethods(SingleOperation.class), name);
         }
         if (method instanceof MathTransformProvider) {
             return ((MathTransformProvider) method).createMathTransform(factory, context);

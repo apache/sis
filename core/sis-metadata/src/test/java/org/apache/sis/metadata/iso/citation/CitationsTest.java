@@ -18,13 +18,16 @@ package org.apache.sis.metadata.iso.citation;
 
 import java.util.Set;
 import java.util.List;
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.lang.reflect.Field;
-import java.util.Collection;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.internal.simple.CitationConstant;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.util.Constants;
@@ -277,6 +280,32 @@ public final strictfp class CitationsTest extends TestCase {
                 final Object c = field.get(null);
                 assertSame(field.getName(), c, assertSerializedEquals(c));
             }
+        }
+    }
+
+    /**
+     * Tests {@link Citations#identifierMatches(Citation, Identifier, String)}.
+     */
+    @Test
+    public void testIdentifierMatches() {
+        final Identifier ogc = new Id("OGC", "06-042");
+        final Identifier iso = new Id("ISO", "19128");
+        final DefaultCitation citation = new DefaultCitation("Web Map Server");
+        citation.setIdentifiers(Arrays.asList(ogc, iso, new DefaultIdentifier("Foo", "06-042", null)));
+        assertTrue ("With full identifier",  Citations.identifierMatches(citation, ogc, ogc.getCode()));
+        assertTrue ("With full identifier",  Citations.identifierMatches(citation, iso, iso.getCode()));
+        assertFalse("With wrong code",       Citations.identifierMatches(citation, new Id("ISO", "19115"), "19115"));
+        assertFalse("With wrong code space", Citations.identifierMatches(citation, new Id("Foo", "19128"), "19128"));
+        assertFalse("With wrong code",       Citations.identifierMatches(citation, "Foo"));
+        assertTrue ("Without identifier",    Citations.identifierMatches(citation, "19128"));
+        assertTrue ("With parsing",          Citations.identifierMatches(citation, "ISO:19128"));
+        assertFalse("With wrong code space", Citations.identifierMatches(citation, "Foo:19128"));
+    }
+
+    @SuppressWarnings("serial")
+    private static final class Id extends DefaultIdentifier implements ReferenceIdentifier {
+        Id(String codeSpace, String code) {
+            super(codeSpace, code, null);
         }
     }
 }

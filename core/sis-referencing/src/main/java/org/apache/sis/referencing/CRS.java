@@ -30,7 +30,6 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
@@ -46,7 +45,6 @@ import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
@@ -56,8 +54,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.metadata.AxisDirections;
-import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
+import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -876,13 +874,7 @@ public final class CRS extends Static {
                 break;
             }
         }
-        return new EllipsoidalHeightCombiner() {
-            @Override public void initialize(final int factoryTypes) {
-                if ((factoryTypes & CRS)       != 0) crsFactory = DefaultFactories.forBuildin(CRSFactory.class);
-                if ((factoryTypes & CS)        != 0) csFactory  = DefaultFactories.forBuildin(CSFactory.class);
-                if ((factoryTypes & OPERATION) != 0) opFactory  = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
-            }
-        }.createCompoundCRS(components);
+        return new EllipsoidalHeightCombiner().createCompoundCRS(components);
     }
 
     /**

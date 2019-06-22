@@ -29,9 +29,9 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -404,7 +404,7 @@ public class IdentifiedObjectFinder {
              * because calling factory.getAuthorityCodes() or factory.getCodeSpaces() may be costly for
              * some implementations.
              */
-            if (code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR) >= 0) {
+            if (code.indexOf(Constants.DEFAULT_SEPARATOR) >= 0) {
                 final IdentifiedObject candidate;
                 try {
                     candidate = create(code);

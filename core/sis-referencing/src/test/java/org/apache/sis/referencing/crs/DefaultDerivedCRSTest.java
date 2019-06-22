@@ -25,7 +25,7 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.test.Validators;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefaultConversionTest;

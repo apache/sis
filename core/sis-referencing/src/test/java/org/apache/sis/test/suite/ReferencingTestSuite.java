@@ -30,13 +30,15 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.internal.metadata.AxisDirectionsTest.class,
     org.apache.sis.internal.referencing.LazySetTest.class,
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.referencing.j2d.ShapeUtilitiesTest.class,
+    org.apache.sis.internal.referencing.AxisDirectionsTest.class,
+    org.apache.sis.internal.referencing.VerticalDatumTypesTest.class,
     org.apache.sis.internal.referencing.PositionalAccuracyConstantTest.class,
     org.apache.sis.internal.referencing.ReferencingUtilitiesTest.class,
     org.apache.sis.internal.referencing.WraparoundAdjustmentTest.class,
+    org.apache.sis.internal.referencing.WKTKeywordsTest.class,
     org.apache.sis.internal.referencing.WKTUtilitiesTest.class,
     org.apache.sis.internal.jaxb.referencing.CodeTest.class,
     org.apache.sis.internal.jaxb.referencing.SecondDefiningParameterTest.class,
@@ -254,7 +256,7 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.EnvelopesTest.class,
     org.apache.sis.geometry.EnvelopeReducerTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
-    org.apache.sis.internal.metadata.EllipsoidalHeightCombinerTest.class,
+    org.apache.sis.internal.referencing.EllipsoidalHeightCombinerTest.class,
     org.apache.sis.geometry.CoordinateFormatTest.class,
 
     org.apache.sis.distance.LatLonPointRadiusTest.class,        // Pending refactoring in a geometry package.

@@ -33,7 +33,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @since   0.4
  * @module
  */
-@DependsOn(org.apache.sis.internal.metadata.AxisDirectionsTest.class)
+@DependsOn(org.apache.sis.internal.referencing.AxisDirectionsTest.class)
 public final strictfp class DirectionAlongMeridianTest extends TestCase {
     /**
      * Tests the {@link DirectionAlongMeridian#parse(AxisDirection)} method.

@@ -21,7 +21,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.opengis.referencing.datum.VerticalDatumType;
-import org.apache.sis.internal.metadata.VerticalDatumTypes;
+import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.Version;

@@ -50,7 +50,7 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Loggers;
@@ -284,7 +284,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
              */
             @Override
             protected Object invisibleEntry(final Object key) {
-                if (ReferencingServices.MT_FACTORY.equals(key)) {
+                if (ReferencingFactoryContainer.MT_FACTORY.equals(key)) {
                     return getMathTransformFactory();
                 } else {
                     return super.invisibleEntry(key);

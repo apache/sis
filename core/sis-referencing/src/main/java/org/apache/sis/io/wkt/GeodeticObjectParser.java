@@ -40,7 +40,6 @@ import javax.measure.quantity.Time;
 import javax.measure.format.ParserException;
 import javax.measure.IncommensurableException;
 
-import org.opengis.util.Factory;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
@@ -58,6 +57,15 @@ import org.opengis.referencing.operation.*;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.crs.DefaultDerivedCRS;
+import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.internal.referencing.CoordinateOperations;
+import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -65,19 +73,19 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
-import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.AxisNames;
-import org.apache.sis.internal.metadata.WKTKeywords;
-import org.apache.sis.internal.metadata.VerticalDatumTypes;
-import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
-import org.apache.sis.internal.metadata.EllipsoidalHeightCombiner;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.referencing.ServicesForMetadata;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
+import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
+import org.apache.sis.internal.referencing.VerticalDatumTypes;
+import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.Types;
 
 import static java.util.Collections.singletonMap;
@@ -104,32 +112,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * field names, which are derived from the EPSG database.
      */
     private static final String[] ToWGS84 = {"dx", "dy", "dz", "ex", "ey", "ez", "ppm"};
-
-    /**
-     * The factory to use for creating {@link CoordinateReferenceSystem} instances.
-     */
-    private final CRSFactory crsFactory;
-
-    /**
-     * The factory to use for creating {@link CoordinateSystem} instances.
-     */
-    private final CSFactory csFactory;
-
-    /**
-     * The factory to use for creating {@link Datum} instances.
-     */
-    private final DatumFactory datumFactory;
-
-    /**
-     * The factory to use for creating defining conversions.
-     * Used only for map projections and derived CRS.
-     */
-    private final CoordinateOperationFactory opFactory;
-
-    /**
-     * Other services from "sis-referencing" module which can not be provided by the standard factories.
-     */
-    private final ReferencingServices referencing;
 
     /**
      * During WKT 1 parsing, {@code true} means that {@code PRIMEM} and {@code PARAMETER} angular units
@@ -195,7 +177,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Do not change the method signature even if it doesn't break the compilation, unless the
      * reflection code is also updated.</p>
      *
-     * @param  defaultProperties  default properties to give to the object to create.
+     * @param  defaultProperties  default properties to give to the objects to create.
      * @param  factories  an object implementing {@link DatumFactory}, {@link CSFactory} and {@link CRSFactory}.
      * @param  mtFactory  the factory to use to create {@link MathTransform} objects.
      */
@@ -203,12 +185,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             final ObjectFactory factories, final MathTransformFactory mtFactory)
     {
         super(Symbols.getDefault(), Collections.emptyMap(), null, null, null,
-                mtFactory, (Locale) defaultProperties.get(Errors.LOCALE_KEY));
-        crsFactory      = (CRSFactory)   factories;
-        csFactory       = (CSFactory)    factories;
-        datumFactory    = (DatumFactory) factories;
-        referencing     = ReferencingServices.getInstance();
-        opFactory       = referencing.getCoordinateOperationFactory(defaultProperties, mtFactory, crsFactory, csFactory);
+                new ReferencingFactoryContainer(defaultProperties,
+                        (CRSFactory)   factories,
+                        (CSFactory)    factories,
+                        (DatumFactory) factories,
+                        null, mtFactory),
+                (Locale) defaultProperties.get(Errors.LOCALE_KEY));
         transliterator  = Transliterator.DEFAULT;
         usesCommonUnits = false;
         ignoreAxes      = false;
@@ -230,37 +212,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     GeodeticObjectParser(final Symbols symbols, final Map<String,Element> fragments,
             final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
             final Convention convention, final Transliterator transliterator, final Locale errorLocale,
-            final Map<Class<?>,Factory> factories)
+            final ReferencingFactoryContainer factories)
     {
-        super(symbols, fragments, numberFormat, dateFormat, unitFormat,
-                getFactory(MathTransformFactory.class, factories), errorLocale);
+        super(symbols, fragments, numberFormat, dateFormat, unitFormat, factories, errorLocale);
         this.transliterator = transliterator;
-        crsFactory      = getFactory(CRSFactory.class,   factories);
-        csFactory       = getFactory(CSFactory.class,    factories);
-        datumFactory    = getFactory(DatumFactory.class, factories);
-        referencing     = ReferencingServices.getInstance();
         usesCommonUnits = convention.usesCommonUnits;
         ignoreAxes      = convention == Convention.WKT1_IGNORE_AXES;
-        final Factory f = factories.get(CoordinateOperationFactory.class);
-        if (f != null) {
-            opFactory = (CoordinateOperationFactory) f;
-        } else {
-            opFactory = referencing.getCoordinateOperationFactory(null, mtFactory, crsFactory, csFactory);
-            factories.put(CoordinateOperationFactory.class, opFactory);
-        }
-    }
-
-    /**
-     * Returns the factory of the given type. This method fetches the factory from the given map.
-     * The factory actually used is stored in the map.
-     */
-    static <T extends Factory> T getFactory(final Class<T> type, final Map<Class<?>,Factory> factories) {
-        T factory = type.cast(factories.get(type));
-        if (factory == null) {
-            factory = DefaultFactories.forBuildin(type);
-            factories.put(type, factory);
-        }
-        return factory;
     }
 
     /**
@@ -294,12 +251,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             if (verticalElements != null) {
                 Exception ex = null;
                 try {
-                    verticalElements = verticalElements.resolve(referencing.getMSLH());     // Optional operation.
+                    verticalElements = verticalElements.resolve(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs());     // Optional operation.
                 } catch (UnsupportedOperationException e) {
                     ex = e;
                 }
                 if (verticalElements != null) try {
-                    verticalElements = verticalElements.complete(crsFactory, csFactory);
+                    verticalElements = verticalElements.complete(factories.getCRSFactory(), factories.getCSFactory());
                 } catch (FactoryException e) {
                     if (ex == null) ex = e;
                     else ex.addSuppressed(e);
@@ -788,6 +745,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * create default axes. This is possible only if we know the type of the CS to create, and only
          * for some of those CS types.
          */
+        final CSFactory csFactory = factories.getCSFactory();
         if (axes == null) {
             if (type == null) {
                 throw parent.missingComponent(WKTKeywords.Axis);
@@ -812,7 +770,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                         throw parent.missingComponent(WKTKeywords.LengthUnit);
                     }
                     if (is3D) {  // If dimension can not be 2, then CRS can not be Projected.
-                        return referencing.getGeocentricCS(defaultUnit.asType(Length.class));
+                        return Legacy.standard(defaultUnit.asType(Length.class));
                     }
                     nx = AxisNames.EASTING;  x = "E";
                     ny = AxisNames.NORTHING; y = "N";
@@ -935,7 +893,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             csProperties.put(CoordinateSystem.NAME_KEY, name);
         }
         if (type == null) {
-            return referencing.createAbstractCS(csProperties, axes);
+            /*
+             * Creates a coordinate system of unknown type. This block is executed during parsing of WKT version 1,
+             * since that legacy format did not specified any information about the coordinate system in use.
+             * This block should not be executed during parsing of WKT version 2.
+             */
+            return new AbstractCS(csProperties, axes);
         }
         /*
          * Finally, delegate to the factory method corresponding to the CS type and the number of axes.
@@ -991,11 +954,11 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
             case WKTKeywords.parametric: {
                 if (axes.length != (dimension = 1)) break;
-                return referencing.createParametricCS(csProperties, axes[0], csFactory);
+                return ServicesForMetadata.createParametricCS(csProperties, axes[0], csFactory);
             }
             default: {
                 warning(parent, WKTKeywords.CS, Errors.formatInternational(Errors.Keys.UnknownType_1, type), null);
-                return referencing.createAbstractCS(csProperties, axes);
+                return new AbstractCS(csProperties, axes);
             }
         }
         throw new UnparsableObjectException(errorLocale, (axes.length > dimension)
@@ -1057,7 +1020,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             if (m != null) {
                 angle = m.getConverterTo(Units.DEGREE).convert(angle);
             }
-            direction = referencing.directionAlongMeridian(direction, angle);
+            direction = CoordinateSystems.directionAlongMeridian(direction, angle);
         }
         /*
          * According ISO 19162, the abbreviation should be inserted between parenthesis in the name.
@@ -1105,6 +1068,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             order.close(ignoredElements);
         }
         final CoordinateSystemAxis axis;
+        final CSFactory csFactory = factories.getCSFactory();
         try {
             axis = csFactory.createCoordinateSystemAxis(parseMetadataAndClose(element, name, null), abbreviation, direction, unit);
         } catch (FactoryException exception) {
@@ -1181,6 +1145,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         } else if (angularUnit == null) {
             throw parent.missingComponent(WKTKeywords.AngleUnit);
         }
+        final DatumFactory datumFactory = factories.getDatumFactory();
         try {
             return datumFactory.createPrimeMeridian(parseMetadataAndClose(element, name, null), longitude, angularUnit);
         } catch (FactoryException exception) {
@@ -1215,7 +1180,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
         }
         element.close(ignoredElements);
-        return referencing.createToWGS84(values);
+        final BursaWolfParameters info = new BursaWolfParameters(CommonCRS.WGS84.datum(), null);
+        info.setValues(values);
+        return info;
     }
 
     /**
@@ -1248,6 +1215,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             unit = Units.METRE;
         }
         final Map<String,?> properties = parseMetadataAndClose(element, name, null);
+        final DatumFactory datumFactory = factories.getDatumFactory();
         try {
             if (inverseFlattening == 0) {                           // OGC convention for a sphere.
                 return datumFactory.createEllipsoid(properties, semiMajorAxis, semiMajorAxis, unit);
@@ -1293,15 +1261,17 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * not use the identifier.
          */
         FactoryException suppressed = null;
+        final CoordinateOperationFactory opFactory = factories.getCoordinateOperationFactory();
+        final MathTransformFactory mtFactory = factories.getMathTransformFactory();
         if (id instanceof ReferenceIdentifier) try {
             // CodeSpace is a mandatory attribute in ID[…] elements, so we do not test for null values.
-            return referencing.getOperationMethod(opFactory, mtFactory,
-                    ((ReferenceIdentifier) id).getCodeSpace() + DefaultNameSpace.DEFAULT_SEPARATOR + id.getCode());
+            return ServicesForMetadata.getOperationMethod(opFactory, mtFactory,
+                    ((ReferenceIdentifier) id).getCodeSpace() + Constants.DEFAULT_SEPARATOR + id.getCode());
         } catch (FactoryException e) {
             suppressed = e;
         }
         try {
-            return referencing.getOperationMethod(opFactory, mtFactory, name);
+            return ServicesForMetadata.getOperationMethod(opFactory, mtFactory, name);
         } catch (FactoryException e) {
             if (suppressed != null) {
                 e.addSuppressed(suppressed);
@@ -1377,6 +1347,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              * which we do not yet implement. See https://issues.apache.org/jira/browse/SIS-210
              */
         }
+        final CoordinateOperationFactory opFactory = factories.getCoordinateOperationFactory();
         try {
             return opFactory.createDefiningConversion(properties, method, parameters);
         } catch (FactoryException exception) {
@@ -1412,11 +1383,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Object             toWGS84    = parseToWGS84(OPTIONAL, element);
         final Map<String,Object> properties = parseAnchorAndClose(element, name);
         if (meridian == null) {
-            meridian = referencing.getGreenwich();
+            meridian = CommonCRS.WGS84.primeMeridian();
         }
         if (toWGS84 != null) {
-            properties.put(ReferencingServices.BURSA_WOLF_KEY, toWGS84);
+            properties.put(CoordinateOperations.BURSA_WOLF_KEY, toWGS84);
         }
+        final DatumFactory datumFactory = factories.getDatumFactory();
         try {
             return datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
         } catch (FactoryException exception) {
@@ -1458,6 +1430,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (type == null) {
             type = VerticalDatumTypes.guess(name, null, null);
         }
+        final DatumFactory datumFactory = factories.getDatumFactory();
         try {
             return datumFactory.createVerticalDatum(parseAnchorAndClose(element, name), type);
         } catch (FactoryException exception) {
@@ -1486,6 +1459,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Element origin = element.pullElement(MANDATORY, WKTKeywords.TimeOrigin);
         final Date    epoch  = origin .pullDate("origin");
         origin.close(ignoredElements);
+        final DatumFactory datumFactory = factories.getDatumFactory();
         try {
             return datumFactory.createTemporalDatum(parseAnchorAndClose(element, name), epoch);
         } catch (FactoryException exception) {
@@ -1511,8 +1485,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             return null;
         }
         final String name = element.pullString("name");
+        final DatumFactory datumFactory = factories.getDatumFactory();
         try {
-            return referencing.createParametricDatum(parseAnchorAndClose(element, name), datumFactory);
+            return ServicesForMetadata.createParametricDatum(parseAnchorAndClose(element, name), datumFactory);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -1548,6 +1523,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (isWKT1) {
             element.pullInteger("datum");                                       // Ignored for now.
         }
+        final DatumFactory datumFactory = factories.getDatumFactory();
         try {
             return datumFactory.createEngineeringDatum(parseAnchorAndClose(element, name));
         } catch (FactoryException exception) {
@@ -1572,6 +1548,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final String name = element.pullString("name");
         final PixelInCell pixelInCell = Types.forCodeName(PixelInCell.class,
                 element.pullVoidElement("pixelInCell").keyword, true);
+        final DatumFactory datumFactory = factories.getDatumFactory();
         try {
             return datumFactory.createImageDatum(parseAnchorAndClose(element, name), pixelInCell);
         } catch (FactoryException exception) {
@@ -1646,6 +1623,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (baseCRS == null) {                                                  // The most usual case.
             datum = parseEngineeringDatum(MANDATORY, element, isWKT1);
         }
+        final CRSFactory crsFactory = factories.getCRSFactory();
         try {
             final CoordinateSystem cs = parseCoordinateSystem(element, null, 1, isWKT1, unit, datum);
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
@@ -1680,7 +1658,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, false, unit, datum);
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
             if (cs instanceof AffineCS) {
-                return crsFactory.createImageCRS(properties, datum, (AffineCS) cs);
+                return factories.getCRSFactory().createImageCRS(properties, datum, (AffineCS) cs);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
@@ -1819,6 +1797,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * At this point, we have either a non-null 'datum' or non-null 'baseCRS' + 'fromBase'.
          * The coordinate system is parsed in the same way for both cases, but the CRS is created differently.
          */
+        final CRSFactory crsFactory = factories.getCRSFactory();
         final CoordinateSystem cs;
         try {
             cs = parseCoordinateSystem(element, csType, dimension, isWKT1, csUnit, null);
@@ -1850,7 +1829,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
             if (cs instanceof CartesianCS) {                                    // The second most frequent case.
                 return crsFactory.createGeocentricCRS(properties, datum,
-                        referencing.upgradeGeocentricCS((CartesianCS) cs));
+                        Legacy.forGeocentricCRS((CartesianCS) cs, false));
             }
             if (cs instanceof SphericalCS) {                                    // Not very common case.
                 return crsFactory.createGeocentricCRS(properties, datum, (SphericalCS) cs);
@@ -1923,6 +1902,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             cs = parseCoordinateSystem(element, WKTKeywords.vertical, 1, isWKT1, unit, datum);
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
             if (cs instanceof VerticalCS) {
+                final CRSFactory crsFactory = factories.getCRSFactory();
                 if (baseCRS != null) {
                     return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
                 }
@@ -1934,7 +1914,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 if (VerticalDatumType.OTHER_SURFACE.equals(datum.getVerticalDatumType())) {
                     final VerticalDatumType type = VerticalDatumTypes.guess(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));
                     if (!VerticalDatumType.OTHER_SURFACE.equals(type)) {
-                        datum = datumFactory.createVerticalDatum(referencing.getProperties(datum, true), type);
+                        final DatumFactory datumFactory = factories.getDatumFactory();
+                        datum = datumFactory.createVerticalDatum(IdentifiedObjects.getProperties(datum), type);
                     }
                 }
                 verticalCRS = crsFactory.createVerticalCRS(properties, datum, (VerticalCS) cs);
@@ -2002,6 +1983,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             cs = parseCoordinateSystem(element, WKTKeywords.temporal, 1, false, unit, datum);
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
             if (cs instanceof TimeCS) {
+                final CRSFactory crsFactory = factories.getCRSFactory();
                 if (baseCRS != null) {
                     return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
                 }
@@ -2062,10 +2044,11 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             cs = parseCoordinateSystem(element, WKTKeywords.parametric, 1, false, unit, datum);
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
             if (cs != null) {
+                final CRSFactory crsFactory = factories.getCRSFactory();
                 if (baseCRS != null) {
                     return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
                 }
-                return referencing.createParametricCRS(properties, datum, cs, crsFactory);
+                return ServicesForMetadata.createParametricCRS(properties, datum, cs, crsFactory);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
@@ -2147,6 +2130,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, isWKT1, csUnit, geoCRS.getDatum());
             final Map<String,?> properties = parseMetadataAndClose(element, name, conversion);
             if (cs instanceof CartesianCS) {
+                final CRSFactory crsFactory = factories.getCRSFactory();
                 return crsFactory.createProjectedCRS(properties, (GeographicCRS) geoCRS, conversion, (CartesianCS) cs);
             }
         } catch (FactoryException exception) {
@@ -2185,7 +2169,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             components.add(crs);
         }
         try {
-            return new EllipsoidalHeightCombiner(crsFactory, csFactory, opFactory).createCompoundCRS(
+            return new EllipsoidalHeightCombiner(factories).createCompoundCRS(
                             parseMetadataAndClose(element, name, null),
                             components.toArray(new CoordinateReferenceSystem[components.size()]));
         } catch (FactoryException exception) {
@@ -2227,6 +2211,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[toBase.getSourceDimensions()];
         final StringBuilder buffer = new StringBuilder(name).append(" axis ");
         final int start = buffer.length();
+        final CSFactory csFactory = factories.getCSFactory();
         try {
             for (int i=0; i<axes.length; i++) {
                 final String number = String.valueOf(i);
@@ -2237,14 +2222,16 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                         number, AxisDirection.OTHER, Units.UNITY);
             }
             final Map<String,Object> properties = parseMetadataAndClose(element, name, baseCRS);
-            final CoordinateSystem derivedCS = referencing.createAbstractCS(
+            final CoordinateSystem derivedCS = new AbstractCS(
                     singletonMap(CoordinateSystem.NAME_KEY, AxisDirections.appendTo(new StringBuilder("CS"), axes)), axes);
             /*
-             * We do not know which name to give to the conversion method.
-             * For now, use the CRS name.
+             * Creates a derived CRS from the information found in a WKT 1 {@code FITTED_CS} element.
+             * This coordinate system can not be easily constructed from the information provided by
+             * the WKT 1 format, which block us from using the standard Coordinate System factory.
+             * Note that we do not know which name to give to the conversion method; for now we use the CRS name.
              */
             properties.put("conversion.name", name);
-            return referencing.createDerivedCRS(properties, (SingleCRS) baseCRS, method, toBase.inverse(), derivedCS);
+            return DefaultDerivedCRS.create(properties, (SingleCRS) baseCRS, null, method, toBase.inverse(), derivedCS);
         } catch (FactoryException | NoninvertibleTransformException exception) {
             throw element.parseFailed(exception);
         }
@@ -2273,14 +2260,21 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Map<String,Object>        properties       = parseMetadataAndClose(element, name, method);
         final ParameterValueGroup       parameters       = method.getParameters().createValue();
         parseParameters(element, parameters, null, null);
-        properties.put(ReferencingServices.PARAMETERS_KEY, parameters);
+        properties.put(CoordinateOperations.PARAMETERS_KEY, parameters);
         if (accuracy != null) {
             properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
                     TransformationAccuracy.create(accuracy.pullDouble("accuracy")));
             accuracy.close(ignoredElements);
         }
         try {
-            return referencing.createSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, opFactory);
+            final DefaultCoordinateOperationFactory df;
+            final CoordinateOperationFactory opFactory = factories.getCoordinateOperationFactory();
+            if (opFactory instanceof DefaultCoordinateOperationFactory) {
+                df = (DefaultCoordinateOperationFactory) opFactory;
+            } else {
+                df = CoordinateOperations.factory();
+            }
+            return df.createSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, null);
         } catch (FactoryException e) {
             throw element.parseFailed(e);
         }

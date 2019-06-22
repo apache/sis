@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import javax.sql.DataSource;
 import org.opengis.util.CodeList;
+import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.system.Loggers;
@@ -70,6 +71,18 @@ public final class ServicesForUtility extends MetadataServices {
     @Override
     public String getCodeTitle(final CodeList<?> code, final Locale locale) {
         return Types.getCodeTitle(code).toString(locale);
+    }
+
+    /**
+     * Infers an identifier from the given citation, or returns {@code null} if no identifier has been found.
+     * This method returns a non-null value only if the identifier is a valid Unicode identifier.
+     *
+     * @param  citation  the citation for which to get the identifier, or {@code null}.
+     * @return a non-empty identifier without leading or trailing whitespaces, or {@code null}.
+     */
+    @Override
+    public String getUnicodeIdentifier(final Citation citation) {
+        return Identifiers.getIdentifier(citation, true);
     }
 
     /**

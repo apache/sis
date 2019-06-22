@@ -32,7 +32,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.AxisFilter;
@@ -41,12 +41,12 @@ import org.apache.sis.util.Utilities;
 
 /**
  * Helper class for separating the ellipsoidal height from the horizontal part of a CRS.
- * This is the converse of {@link org.apache.sis.internal.metadata.EllipsoidalHeightCombiner}.
+ * This is the converse of {@link org.apache.sis.internal.referencing.EllipsoidalHeightCombiner}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
- * @see org.apache.sis.internal.metadata.EllipsoidalHeightCombiner
+ * @see org.apache.sis.internal.referencing.EllipsoidalHeightCombiner
  *
  * @since 1.0
  * @module

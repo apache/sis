@@ -22,6 +22,7 @@ import java.util.TimeZone;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import org.opengis.annotation.UML;
+import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.OptionalDependency;
 import org.apache.sis.util.CharSequences;
@@ -132,6 +133,17 @@ public class MetadataServices extends OptionalDependency {
              */
         }
         return CharSequences.camelCaseToSentence(code.identifier()).toString();
+    }
+
+    /**
+     * Infers an identifier from the given citation, or returns {@code null} if no identifier has been found.
+     * This method returns a non-null value only if the identifier is a valid Unicode identifier.
+     *
+     * @param  citation  the citation for which to get the identifier, or {@code null}.
+     * @return a non-empty identifier without leading or trailing whitespaces, or {@code null}.
+     */
+    public String getUnicodeIdentifier(Citation citation) {
+        return null;
     }
 
     /**

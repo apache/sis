@@ -35,7 +35,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.metadata.content.TransferFunctionType;
-import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.referencing.operation.transform.TransferFunction;

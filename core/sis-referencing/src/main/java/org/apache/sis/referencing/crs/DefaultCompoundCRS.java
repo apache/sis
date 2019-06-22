@@ -41,7 +41,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultCompoundCS;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;

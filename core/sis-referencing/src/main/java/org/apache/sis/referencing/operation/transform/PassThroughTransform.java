@@ -29,7 +29,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.DirectPositionView;
-import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.io.wkt.Formatter;

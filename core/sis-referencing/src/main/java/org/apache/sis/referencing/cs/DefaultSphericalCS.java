@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.measure.Units;
 
 

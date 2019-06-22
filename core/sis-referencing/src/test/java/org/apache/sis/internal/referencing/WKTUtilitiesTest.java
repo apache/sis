@@ -19,7 +19,6 @@ package org.apache.sis.internal.referencing;
 import java.util.function.Function;
 import org.opengis.referencing.cs.*;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.math.Vector;

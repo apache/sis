@@ -46,7 +46,7 @@ import org.apache.sis.internal.util.X364;
 
 import static org.apache.sis.internal.util.X364.*;
 import static org.apache.sis.util.CharSequences.spaces;
-import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
+import static org.apache.sis.internal.util.Constants.DEFAULT_SEPARATOR;
 
 
 /**

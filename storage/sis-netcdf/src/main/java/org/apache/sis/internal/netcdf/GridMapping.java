@@ -51,7 +51,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
-import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;

@@ -30,7 +30,7 @@ import org.apache.sis.internal.jaxb.metadata.SV_OperationMetadata;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.GO_GenericName;
-import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.xml.Namespaces;
 
@@ -325,8 +325,8 @@ public class DefaultCoupledResource extends ISOMetadata {
              * If the given name does not have a namespace, add an arbitrary namespace
              * in order to get an instanceof ScopedName instead of LocalName after parsing.
              */
-            if (value.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR) < 0) {
-                value = "global" + DefaultNameSpace.DEFAULT_SEPARATOR + value;
+            if (value.indexOf(Constants.DEFAULT_SEPARATOR) < 0) {
+                value = "global" + Constants.DEFAULT_SEPARATOR + value;
             }
             setScopedName((ScopedName) Names.parseGenericName(null, null, value));
         }

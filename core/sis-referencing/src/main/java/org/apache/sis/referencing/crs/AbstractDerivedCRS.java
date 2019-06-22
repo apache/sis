@@ -36,8 +36,8 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.internal.jaxb.referencing.CC_Conversion;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.metadata.MetadataUtilities;
-import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.resources.Errors;
@@ -160,7 +160,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     private C createConversionFromBase(final Map<String,?> properties, final SingleCRS baseCRS, final Conversion conversion) {
         MathTransformFactory factory = null;
         if (properties != null) {
-            factory = (MathTransformFactory) properties.get(ReferencingServices.MT_FACTORY);
+            factory = (MathTransformFactory) properties.get(ReferencingFactoryContainer.MT_FACTORY);
         }
         if (factory == null) {
             factory = DefaultFactories.forBuildin(MathTransformFactory.class);

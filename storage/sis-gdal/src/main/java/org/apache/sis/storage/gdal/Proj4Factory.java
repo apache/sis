@@ -47,12 +47,12 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
-import org.apache.sis.internal.metadata.AxisDirections;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.referencing.LazySet;
+import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Vocabulary;
@@ -201,10 +201,10 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      */
     public Proj4Factory(Map<String,?> properties) {
         properties   = new HashMap<>(properties != null ? properties : Collections.emptyMap());
-        crsFactory   = factory(CRSFactory.class,           properties, ReferencingServices.CRS_FACTORY);
-        csFactory    = factory(CSFactory.class,            properties, ReferencingServices.CS_FACTORY);
-        datumFactory = factory(DatumFactory.class,         properties, ReferencingServices.DATUM_FACTORY);
-        mtFactory    = factory(MathTransformFactory.class, properties, ReferencingServices.MT_FACTORY);
+        crsFactory   = factory(CRSFactory.class,           properties, ReferencingFactoryContainer.CRS_FACTORY);
+        csFactory    = factory(CSFactory.class,            properties, ReferencingFactoryContainer.CS_FACTORY);
+        datumFactory = factory(DatumFactory.class,         properties, ReferencingFactoryContainer.DATUM_FACTORY);
+        mtFactory    = factory(MathTransformFactory.class, properties, ReferencingFactoryContainer.MT_FACTORY);
         defaultProperties = CollectionsExt.compact(properties);
     }
 
@@ -233,9 +233,9 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
         DefaultCoordinateOperationFactory factory = opFactory;
         if (factory == null) {
             final Map<String,Object> properties = new HashMap<>(defaultProperties);
-            properties.put(ReferencingServices.CRS_FACTORY,   crsFactory);
-            properties.put(ReferencingServices.CS_FACTORY,    csFactory);
-            properties.put(ReferencingServices.DATUM_FACTORY, datumFactory);
+            properties.put(ReferencingFactoryContainer.CRS_FACTORY,   crsFactory);
+            properties.put(ReferencingFactoryContainer.CS_FACTORY,    csFactory);
+            properties.put(ReferencingFactoryContainer.DATUM_FACTORY, datumFactory);
             factory = new DefaultCoordinateOperationFactory(properties, mtFactory);
             opFactory = factory;
         }

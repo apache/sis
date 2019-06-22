@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.metadata;
+package org.apache.sis.internal.referencing;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -25,6 +25,7 @@ import org.opengis.annotation.UML;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Utilities;
@@ -524,7 +525,7 @@ next:       for (int i=0; i <= limit; i++) {
                         if (equal) continue;
                     }
                     if (match) {
-                        match = ReferencingServices.getInstance().isHeuristicMatchForName(actual, expected.getName().getCode());
+                        match = NameToIdentifier.isHeuristicMatchForName(actual, expected.getName().getCode());
                     }
                 }
                 if (equal) {

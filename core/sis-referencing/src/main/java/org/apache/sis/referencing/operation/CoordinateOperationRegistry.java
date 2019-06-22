@@ -62,11 +62,11 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DeferredCoordinateOperation;
+import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.ArgumentChecks;
@@ -781,7 +781,7 @@ class CoordinateOperationRegistry {
         } else {
              type = Classes.getLeafInterfaces(operation.getClass(), CoordinateOperation.class)[0];
         }
-        properties.put(ReferencingServices.OPERATION_TYPE_KEY, type);
+        properties.put(CoordinateOperations.OPERATION_TYPE_KEY, type);
         /*
          * Reuse the same operation method, but we may need to change its number of dimension.
          * The capability to resize an OperationMethod is specific to Apache SIS, so we must
@@ -790,7 +790,7 @@ class CoordinateOperationRegistry {
          */
         if (SubTypes.isSingleOperation(operation)) {
             final SingleOperation single = (SingleOperation) operation;
-            properties.put(ReferencingServices.PARAMETERS_KEY, single.getParameterValues());
+            properties.put(CoordinateOperations.PARAMETERS_KEY, single.getParameterValues());
             if (method == null) {
                 final int sourceDimensions = transform.getSourceDimensions();
                 final int targetDimensions = transform.getTargetDimensions();
@@ -1025,8 +1025,8 @@ class CoordinateOperationRegistry {
                 return candidate;               // Keep the existing instance since it may contain useful metadata.
             }
         }
-        return toAuthorityDefinition(CoordinateReferenceSystem.class,
-                new CompoundCRSBuilder(factory, factorySIS).createCompoundCRS(derivedFrom(crs), crs, CommonCRS.Vertical.ELLIPSOIDAL.crs()));
+        final EllipsoidalHeightCombiner c = new EllipsoidalHeightCombiner(factorySIS.getCRSFactory(), factorySIS.getCSFactory(), factory);
+        return toAuthorityDefinition(CoordinateReferenceSystem.class, c.createCompoundCRS(derivedFrom(crs), crs, CommonCRS.Vertical.ELLIPSOIDAL.crs()));
     }
 
     /**
@@ -1157,9 +1157,9 @@ class CoordinateOperationRegistry {
             }
         }
         if (parameters != null) {
-            properties.put(ReferencingServices.PARAMETERS_KEY, parameters);
+            properties.put(CoordinateOperations.PARAMETERS_KEY, parameters);
         }
-        properties.put(ReferencingServices.OPERATION_TYPE_KEY, type);
+        properties.put(CoordinateOperations.OPERATION_TYPE_KEY, type);
         if (Conversion.class.isAssignableFrom(type) && transform.isIdentity()) {
             properties.replace(IdentifiedObject.NAME_KEY, AXIS_CHANGES, IDENTITY);
         }

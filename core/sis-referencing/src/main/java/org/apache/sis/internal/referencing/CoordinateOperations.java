@@ -17,24 +17,32 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Collections;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
+import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
-import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.util.Deprecable;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -42,11 +50,36 @@ import org.apache.sis.internal.jdk9.JDK9;
  * until first needed. Contains also utility methods related to coordinate operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */
 public final class CoordinateOperations extends SystemListener {
+    /**
+     * The {@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#BURSA_WOLF_KEY} value.
+     */
+    public static final String BURSA_WOLF_KEY = "bursaWolf";
+
+    /**
+     * The key for specifying explicitly the value to be returned by
+     * {@link org.apache.sis.referencing.operation.DefaultConversion#getParameterValues()}.
+     * It is usually not necessary to specify those parameters because they are inferred either from the
+     * {@link org.opengis.referencing.operation.MathTransform}, or specified explicitly in a {@code DefiningConversion}.
+     * However there is a few cases, for example the Molodenski transform, where none of the above can apply,
+     * because SIS implements those operations as a concatenation of math transforms,
+     * and such concatenations do not have {@link org.opengis.parameter.ParameterValueGroup}.
+     */
+    public static final String PARAMETERS_KEY = "parameters";
+
+    /**
+     * The key for specifying the base type of the coordinate operation to create. This optional entry
+     * is used by {@code DefaultCoordinateOperationFactory.createSingleOperation(…)}. Apache SIS tries
+     * to infer this value automatically, but this entry may help SIS to perform a better choice in
+     * some cases. For example an "Affine" operation can be both a conversion or a transformation
+     * (the later is used in datum shift in geocentric coordinates).
+     */
+    public static final String OPERATION_TYPE_KEY = "operationType";
+
     /**
      * Cached values or {@link #wrapAroundChanges wrapAroundChanges(…)}, created when first needed.
      * Indices are bit masks computed by {@link #changes changes(…)}. Since the most common "wrap around" axes
@@ -103,6 +136,70 @@ public final class CoordinateOperations extends SystemListener {
             factory = c = DefaultFactories.forBuildin(CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
         }
         return c;
+    }
+
+    /**
+     * Returns the coordinate operation factory to use for the given properties and math transform factory.
+     * If the given properties are empty and the {@code mtFactory} is the system default, then this method
+     * returns the system default {@code CoordinateOperationFactory} instead of creating a new one.
+     *
+     * <p>It is okay to set all parameters to {@code null} in order to get the system default factory.</p>
+     *
+     * @param  properties  the default properties.
+     * @param  mtFactory   the math transform factory to use.
+     * @param  crsFactory  the factory to use if the operation factory needs to create CRS for intermediate steps.
+     * @param  csFactory   the factory to use if the operation factory needs to create CS for intermediate steps.
+     * @return the coordinate operation factory to use.
+     */
+    public static CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties,
+            final MathTransformFactory mtFactory, final CRSFactory crsFactory, final CSFactory csFactory)
+    {
+        if (Containers.isNullOrEmpty(properties)) {
+            if (DefaultFactories.isDefaultInstance(MathTransformFactory.class, mtFactory) &&
+                DefaultFactories.isDefaultInstance(CRSFactory.class, crsFactory) &&
+                DefaultFactories.isDefaultInstance(CSFactory.class, csFactory))
+            {
+                return CoordinateOperations.factory();
+            }
+            properties = Collections.emptyMap();
+        }
+        final HashMap<String,Object> p = new HashMap<>(properties);
+        p.putIfAbsent(ReferencingFactoryContainer.CRS_FACTORY, crsFactory);
+        p.putIfAbsent(ReferencingFactoryContainer.CS_FACTORY,  csFactory);
+        properties = p;
+        return new DefaultCoordinateOperationFactory(properties, mtFactory);
+    }
+
+    /**
+     * Returns the operation method for the specified name or identifier. The given argument shall be either a
+     * method name (e.g. <cite>"Transverse Mercator"</cite>) or one of its identifiers (e.g. {@code "EPSG:9807"}).
+     *
+     * @param  methods     the method candidates.
+     * @param  identifier  the name or identifier of the operation method to search.
+     * @return the coordinate operation method for the given name or identifier, or {@code null} if none.
+     *
+     * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
+     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getOperationMethod(String)
+     */
+    public static OperationMethod getOperationMethod(final Iterable<? extends OperationMethod> methods, final String identifier) {
+        OperationMethod fallback = null;
+        for (final OperationMethod method : methods) {
+            if (NameToIdentifier.isHeuristicMatchForName(method, identifier) ||
+                    NameToIdentifier.isHeuristicMatchForIdentifier(method.getIdentifiers(), identifier))
+            {
+                /*
+                 * Stop the iteration at the first non-deprecated method.
+                 * If we find only deprecated methods, take the first one.
+                 */
+                if (!(method instanceof Deprecable) || !((Deprecable) method).isDeprecated()) {
+                    return method;
+                }
+                if (fallback == null) {
+                    fallback = method;
+                }
+            }
+        }
+        return fallback;
     }
 
     /**

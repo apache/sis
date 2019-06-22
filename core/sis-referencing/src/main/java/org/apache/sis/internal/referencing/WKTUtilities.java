@@ -34,6 +34,8 @@ import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AbstractCS;
@@ -42,7 +44,10 @@ import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.parameter.DefaultParameterValue;
+import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
@@ -205,6 +210,37 @@ public final class WKTUtilities extends Static {
         } else {
             return DefaultPrimeMeridian.castOrCopy(object);
         }
+    }
+
+    /**
+     * Converts the given object in a {@code FormattableObject} instance. Callers should verify that the
+     * given object is not already an instance of {@code FormattableObject} before to invoke this method.
+     * This method returns {@code null} if it can not convert the object.
+     *
+     * @param  object    the object to wrap.
+     * @param  internal  {@code true} if the formatting convention is {@code Convention.INTERNAL}.
+     * @return the given object converted to a {@code FormattableObject} instance, or {@code null}.
+     */
+    public static FormattableObject toFormattable(final MathTransform object, boolean internal) {
+        Matrix matrix;
+        final ParameterValueGroup parameters;
+        if (internal && (matrix = MathTransforms.getMatrix(object)) != null) {
+            parameters = Affine.parameters(matrix);
+        } else if (object instanceof Parameterized) {
+            parameters = ((Parameterized) object).getParameterValues();
+        } else {
+            matrix = MathTransforms.getMatrix(object);
+            if (matrix == null) {
+                return null;
+            }
+            parameters = Affine.parameters(matrix);
+        }
+        return new FormattableObject() {
+            @Override protected String formatTo(final Formatter formatter) {
+                WKTUtilities.appendParamMT(parameters, formatter);
+                return WKTKeywords.Param_MT;
+            }
+        };
     }
 
     /**

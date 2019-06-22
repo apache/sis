@@ -31,7 +31,7 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
-import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.SignReversalComment;
 import org.apache.sis.internal.referencing.provider.AbstractProvider;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
@@ -188,6 +188,6 @@ final class InverseOperationMethod extends DefaultOperationMethod {
             }
             copy.values().add(gp);
         }
-        target.put(ReferencingServices.PARAMETERS_KEY, copy);
+        target.put(CoordinateOperations.PARAMETERS_KEY, copy);
     }
 }
