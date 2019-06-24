@@ -127,8 +127,8 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
             fileName         = object.getFileName();
             fileDescription  = object.getFileDescription();
             fileType         = object.getFileType();
-            imageConstraints = object.getImageConstraints();
-            linkages         = object.getLinkages();
+            imageConstraints = copyCollection(object.getImageConstraints(), Constraints.class);
+            linkages         = copyCollection(object.getLinkages(), OnlineResource.class);
         }
     }
 

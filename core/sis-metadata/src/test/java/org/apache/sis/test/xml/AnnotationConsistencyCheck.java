@@ -548,6 +548,13 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
     }
 
     /**
+     * Returns {@code true} if the given method is public from a GeoAPI point of view.
+     */
+    private static boolean isPublic(final Method method) {
+        return (method.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) != 0;
+    }
+
+    /**
      * Returns {@code true} if the given method should be ignored,
      * either because it is a standard method from the JDK or because it is a non-standard extension.
      * If {@code true}, then {@code method} does not need to have {@link UML} or {@link XmlElement} annotation.
@@ -611,11 +618,13 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
             assertNotNull("Missing @UML annotation.", uml);
             if (!ControlledVocabulary.class.isAssignableFrom(type)) {
                 for (final Method method : type.getDeclaredMethods()) {
-                    testingMethod = method.getName();
-                    if (!isIgnored(method)) {
-                        uml = method.getAnnotation(UML.class);
-                        if (!method.isAnnotationPresent(Deprecated.class)) {
-                            assertNotNull("Missing @UML annotation.", uml);
+                    if (isPublic(method)) {
+                        testingMethod = method.getName();
+                        if (!isIgnored(method)) {
+                            uml = method.getAnnotation(UML.class);
+                            if (!method.isAnnotationPresent(Deprecated.class)) {
+                                assertNotNull("Missing @UML annotation.", uml);
+                            }
                         }
                     }
                 }
@@ -756,7 +765,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
             }
             testingClass = impl.getCanonicalName();
             for (final Method method : type.getDeclaredMethods()) {
-                if (isIgnored(method)) {
+                if (!isPublic(method) || isIgnored(method)) {
                     continue;
                 }
                 testingMethod = method.getName();
@@ -783,7 +792,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                     for (final Method pm : impl.getDeclaredMethods()) {
                         final XmlElement e = pm.getAnnotation(XmlElement.class);
                         if (e != null && identifier.equals(e.name())) {
-                            final boolean isPublic = Modifier.isPublic(pm.getModifiers());
+                            final boolean isPublic = isPublic(pm);
                             if (element != null) {
                                 if (isPublic & !wasPublic) continue;            // Give precedence to private methods.
                                 if (isPublic == wasPublic) {
