@@ -18,18 +18,8 @@ package org.apache.sis.internal.metadata.legacy;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
 import org.opengis.annotation.UML;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.Responsibility;
-import org.opengis.metadata.citation.Series;
-import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.CodeLists;
@@ -188,20 +178,11 @@ public final class MediumName extends CodeList<MediumName> implements Citation {
         return null;
     }
 
-    /** {@link Citation} methods provided for transition from legacy code list to new citation type. */
-    @Override public InternationalString             getTitle()                   {return Types.toInternationalString(name());}
-    @Override public Collection<InternationalString> getAlternateTitles()         {return Collections.emptySet();}
-    @Override public Collection<CitationDate>        getDates()                   {return Collections.emptySet();}
-    @Override public InternationalString             getEdition()                 {return null;}
-    @Override public Date                            getEditionDate()             {return null;}
-    @Override public Collection<Identifier>          getIdentifiers()             {return Collections.emptySet();}
-    @Override public Collection<Responsibility>      getCitedResponsibleParties() {return Collections.emptySet();}
-    @Override public Collection<PresentationForm>    getPresentationForms()       {return Collections.emptySet();}
-    @Override public Series                          getSeries()                  {return null;}
-    @Override public Collection<InternationalString> getOtherCitationDetails()    {return Collections.emptySet();}
-    @Override @Deprecated public InternationalString getCollectiveTitle()         {return null;}
-    @Override public String                          getISBN()                    {return null;}
-    @Override public String                          getISSN()                    {return null;}
-    @Override public Collection<OnlineResource>      getOnlineResources()         {return Collections.emptySet();}
-    @Override public Collection<BrowseGraphic>       getGraphics()                {return Collections.emptySet();}
+    /**
+     * {@link Citation} methods provided for transition from legacy code list to new citation type.
+     */
+    @Override
+    public InternationalString getTitle() {
+        return Types.toInternationalString(name());
+    }
 }

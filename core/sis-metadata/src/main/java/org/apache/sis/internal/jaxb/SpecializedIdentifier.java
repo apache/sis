@@ -32,7 +32,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 // Branch-dependent imports
 import org.opengis.metadata.Identifier;
-import org.opengis.util.InternationalString;
 
 
 /**
@@ -197,30 +196,6 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
     @Override
     public String getCodeSpace() {
         return Citations.toCodeSpace(authority);
-    }
-
-    /**
-     * Returns {@code null} since this class does not hold version information.
-     *
-     * @return {@code null}.
-     *
-     * @since 0.5
-     */
-    @Override
-    public String getVersion() {
-        return null;
-    }
-
-    /**
-     * Returns {@code null} since this class does not hold natural language description.
-     *
-     * @return {@code null}.
-     *
-     * @since 0.5
-     */
-    @Override
-    public InternationalString getDescription() {
-        return null;
     }
 
     /**

@@ -198,13 +198,4 @@ class MTFactory extends Proj4Factory implements CoordinateOperationFactory, Math
             throw new FactoryException(e);
         }
     }
-
-    /**
-     * No XML format is defined for math transform.
-     */
-    @Override
-    @Deprecated
-    public MathTransform createFromXML(String xml) throws FactoryException {
-        throw new UnsupportedOperationException();
-    }
 }

@@ -159,18 +159,6 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
     /**
      * Unimplemented method.
      *
-     * @param  xml  ignored.
-     * @return never returned.
-     */
-    @Override
-    @Deprecated
-    public MathTransform createFromXML(String xml) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Unimplemented method.
-     *
      * @param  wkt  ignored.
      * @return never returned.
      */

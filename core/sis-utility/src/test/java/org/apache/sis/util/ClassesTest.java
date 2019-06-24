@@ -44,6 +44,8 @@ import java.io.InvalidObjectException;
 import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.awt.geom.Point2D;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -119,7 +121,10 @@ public final strictfp class ClassesTest extends TestCase {
     /**
      * Dummy class for {@link #testGetLeafInterfaces()}.
      */
-    private abstract static class T1 implements GeographicCRS {}
+    private abstract static class T1 implements GeographicCRS {
+        @Override public InternationalString getScope() {return null;}
+        @Override public Extent getDomainOfValidity() {return null;}
+    }
     private abstract static class T2 extends T1 implements SingleCRS, CoordinateOperation {}
     private abstract static class T3 extends T2 implements Transformation {}
 

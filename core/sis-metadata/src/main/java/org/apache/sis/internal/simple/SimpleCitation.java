@@ -16,19 +16,9 @@
  */
 package org.apache.sis.internal.simple;
 
-import java.util.Date;
 import java.util.Objects;
-import java.util.Collection;
-import java.util.Collections;
 import java.io.Serializable;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.OnlineResource;
-import org.opengis.metadata.citation.PresentationForm;
-import org.opengis.metadata.citation.Responsibility;
-import org.opengis.metadata.citation.Series;
-import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.util.Strings;
@@ -77,28 +67,6 @@ public class SimpleCitation implements Citation, Serializable {
     public InternationalString getTitle() {
         return new SimpleInternationalString(title);
     }
-
-    /**
-     * Methods inherited from the {@link Citation} interface which are not of interest to this
-     * {@code SimpleCitation} implementation.
-     *
-     * @return an empty list.
-     */
-    @Override public Collection<? extends InternationalString>  getAlternateTitles()         {return Collections.emptyList();}
-    @Override public Collection<? extends CitationDate>         getDates()                   {return Collections.emptyList();}
-    @Override public InternationalString                        getEdition()                 {return null;}
-    @Override public Date                                       getEditionDate()             {return null;}
-    @Override public Collection<? extends Identifier>           getIdentifiers()             {return Collections.emptyList();}
-    @Override public Collection<? extends Responsibility>       getCitedResponsibleParties() {return Collections.emptyList();}
-    @Override public Collection<PresentationForm>               getPresentationForms()       {return Collections.emptyList();}
-    @Override public Series                                     getSeries()                  {return null;}
-    @Override public Collection<? extends InternationalString>  getOtherCitationDetails()    {return Collections.emptyList();}
-    @Override public Collection<? extends OnlineResource>       getOnlineResources()         {return Collections.emptyList();}
-    @Override public Collection<? extends BrowseGraphic>        getGraphics()                {return Collections.emptyList();}
-    @Override public String                                     getISBN()                    {return null;}
-    @Override public String                                     getISSN()                    {return null;}
-    @Deprecated
-    @Override public InternationalString                        getCollectiveTitle()         {return null;}
 
     /**
      * Compares the given object with this citation for equality.

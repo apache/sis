@@ -111,13 +111,6 @@ strictfp class MathTransformFactoryBase implements MathTransformFactory {
 
     /** Default implementation throws an exception. */
     @Override
-    @Deprecated
-    public MathTransform createFromXML(String xml) throws FactoryException {
-        throw new FactoryException(MESSAGE);
-    }
-
-    /** Default implementation throws an exception. */
-    @Override
     public MathTransform createFromWKT(String wkt) throws FactoryException {
         throw new FactoryException(MESSAGE);
     }

@@ -22,7 +22,6 @@ import java.io.ObjectStreamException;
 import java.io.InvalidObjectException;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
-import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -187,16 +186,6 @@ final class PJ implements Identifier, Serializable {
      */
     @Override
     public native String getCode();
-
-    /**
-     * Returns the string representation of the PJ structure.
-     *
-     * @return the string representation, or {@code null} if none.
-     */
-    @Override
-    public InternationalString getDescription() {
-        return null;
-    }
 
     /**
      * Returns the Coordinate Reference System type.

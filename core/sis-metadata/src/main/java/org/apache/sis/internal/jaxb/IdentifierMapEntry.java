@@ -21,9 +21,6 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.citation.Citations;
 
-// Branch-dependent imports
-import org.opengis.util.InternationalString;
-
 
 /**
  * An entry in {@link org.apache.sis.xml.IdentifierMap}. This class implements both the {@link AbstractMap.Entry}
@@ -77,30 +74,6 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
     }
 
     /**
-     * Returns {@code null} since this class does not hold version information.
-     *
-     * @return {@code null}.
-     *
-     * @since 0.5
-     */
-    @Override
-    public String getVersion() {
-        return null;
-    }
-
-    /**
-     * Returns {@code null} since this class does not hold natural language description.
-     *
-     * @return {@code null}.
-     *
-     * @since 0.5
-     */
-    @Override
-    public InternationalString getDescription() {
-        return null;
-    }
-
-    /**
      * Same than the above, but as an immutable entry. We use this implementation when the
      * entry has been created on-the-fly at iteration time rather than being stored in the
      * identifier collection.
@@ -111,7 +84,5 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
         @Override public Citation            getAuthority()   {return getKey();}
         @Override public String              getCode()        {return getValue();}
         @Override public String              getCodeSpace()   {return Citations.toCodeSpace(getAuthority());}
-        @Override public String              getVersion()     {return null;}
-        @Override public InternationalString getDescription() {return null;}
     }
 }

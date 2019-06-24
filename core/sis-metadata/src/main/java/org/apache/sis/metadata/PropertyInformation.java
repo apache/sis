@@ -181,30 +181,6 @@ final class PropertyInformation<E> extends SimpleIdentifier           // Impleme
     }
 
     /**
-     * Unconditionally returns {@code null}.
-     *
-     * @deprecated This property was defined in the 2003 edition of ISO 19115,
-     *             but has been removed in the 2014 edition.
-     */
-    @Override
-    @Deprecated
-    public String getShortName() {
-        return null;
-    }
-
-    /**
-     * Unconditionally returns {@code null}.
-     *
-     * @deprecated This property was defined in the 2003 edition of ISO 19115,
-     *             but has been removed in the 2014 edition.
-     */
-    @Override
-    @Deprecated
-    public Integer getDomainCode() {
-        return null;
-    }
-
-    /**
      * Returns the definition of this property, or {@code null} if none.
      */
     @Override
@@ -324,23 +300,6 @@ final class PropertyInformation<E> extends SimpleIdentifier           // Impleme
     @Override
     public InternationalString getRule() {
         return null;
-    }
-
-    /**
-     * Unconditionally returns {@code null}.
-     */
-    @Override
-    public InternationalString getRationale() {
-        return null;
-    }
-
-    /**
-     * Unconditionally returns an empty list.
-     */
-    @Override
-    @Deprecated
-    public Collection<InternationalString> getRationales() {
-        return Collections.emptyList();
     }
 
     /**

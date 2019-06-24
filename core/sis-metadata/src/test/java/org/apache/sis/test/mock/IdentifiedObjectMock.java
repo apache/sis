@@ -17,16 +17,13 @@
 package org.apache.sis.test.mock;
 
 import java.util.Arrays;
-import java.util.Set;
 import java.util.Collection;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -128,26 +125,6 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     }
 
     /**
-     * Returns the namespace version ({@code null} for now).
-     *
-     * @return the namespace version.
-     */
-    @Override
-    public final String getVersion() {
-        return null;
-    }
-
-    /**
-     * Returns the authority that define the object ({@code null} for now).
-     *
-     * @return the defining authority.
-     */
-    @Override
-    public final Citation getAuthority() {
-        return null;
-    }
-
-    /**
      * Returns {@link #alias} in an unmodifiable collection, or an empty collection if the alias is null.
      *
      * @return {@link #alias} singleton or an empty collection.
@@ -155,49 +132,6 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     @Override
     public final Collection<GenericName> getAlias() {
         return CollectionsExt.singletonOrEmpty(alias);
-    }
-
-    /**
-     * Returns the identifiers (currently null).
-     *
-     * @return the identifiers of this object.
-     */
-    @Override
-    public final Set<Identifier> getIdentifiers() {
-        return null;
-    }
-
-    /**
-     * Returns the description (currently null).
-     *
-     * @return the description associated to this object.
-     *
-     * @since 0.5
-     */
-    @Override
-    public InternationalString getDescription() {
-        return null;
-    }
-
-    /**
-     * Returns the remarks (currently null).
-     *
-     * @return the remarks associated to this object.
-     */
-    @Override
-    public final InternationalString getRemarks() {
-        return null;
-    }
-
-    /**
-     * Returns the WKT representation (currently none).
-     *
-     * @return the WKT representation of this object.
-     * @throws UnsupportedOperationException if there is no WKT representation.
-     */
-    @Override
-    public final String toWKT() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException();
     }
 
     /**

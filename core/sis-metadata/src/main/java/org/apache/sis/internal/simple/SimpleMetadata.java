@@ -19,36 +19,18 @@ package org.apache.sis.internal.simple;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
-import org.opengis.metadata.ApplicationSchemaInformation;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.MetadataExtensionInformation;
 import org.opengis.metadata.MetadataScope;
-import org.opengis.metadata.PortrayalCatalogueReference;
-import org.opengis.metadata.acquisition.AcquisitionInformation;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.Responsibility;
-import org.opengis.metadata.citation.Series;
-import org.opengis.metadata.constraint.Constraints;
-import org.opengis.metadata.content.ContentInformation;
-import org.opengis.metadata.distribution.Distribution;
-import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.identification.*;
-import org.opengis.metadata.lineage.Lineage;
-import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
-import org.opengis.metadata.quality.DataQuality;
-import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
-import org.opengis.referencing.ReferenceSystem;
-import org.opengis.temporal.Duration;
 import org.opengis.util.InternationalString;
 
 
@@ -92,24 +74,6 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     }
 
     /**
-     * Unique identifier for this metadata record.
-     */
-    @Override
-    public Identifier getMetadataIdentifier() {
-        return null;
-    }
-
-    /**
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataIdentifier()}
-     *             in order to include the codespace attribute.
-     */
-    @Override
-    @Deprecated
-    public String getFileIdentifier() {
-        return null;
-    }
-
-    /**
      * Language(s) used for documenting metadata.
      * Also the language(s) used within the data.
      */
@@ -119,64 +83,10 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     }
 
     /**
-     * @deprecated As of SIS 1.0, replaced by {@link #getLocalesAndCharsets()}.
-     */
-    @Override
-    @Deprecated
-    public Collection<Locale> getLanguages() {
-        return Collections.emptySet();                  // We use 'Set' because we handle 'Locale' like a CodeList.
-    }
-
-    /**
-     * @deprecated As of SIS 1.0, replaced by {@link #getLocalesAndCharsets()}.
-     */
-    @Override
-    @Deprecated
-    public Locale getLanguage() {
-        return null;
-    }
-
-    /**
-     * @deprecated As of SIS 1.0, replaced by {@link #getLocalesAndCharsets()}.
-     */
-    @Override
-    @Deprecated
-    public Collection<Locale> getLocales() {
-        return Collections.emptySet();                  // We use 'Set' because we handle 'Locale' like a CodeList.
-    }
-
-    /**
-     * @deprecated As of SIS 1.0, replaced by {@link #getLocalesAndCharsets()}.
-     */
-    @Override
-    @Deprecated
-    public Collection<Charset> getCharacterSets() {
-        return Collections.emptySet();                  // We use 'Set' because we handle 'Charset' like a CodeList.
-    }
-
-    /**
-     * @deprecated As of SIS 0.5, replaced by {@link #getCharacterSets()}.
-     */
-    @Override
-    @Deprecated
-    public CharacterSet getCharacterSet() {
-        return null;
-    }
-
-    /**
      * Identification of the parent metadata record.
      */
     @Override
     public Citation getParentMetadata() {
-        return null;
-    }
-
-    /**
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getParentMetadata()}.
-     */
-    @Override
-    @Deprecated
-    public String getParentIdentifier() {
         return null;
     }
 
@@ -203,35 +113,6 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     }
 
     /**
-     * Description of the metadata scope.
-     * This is part of the information provided by {@link #getMetadataScopes()}.
-     */
-    @Override
-    public InternationalString getName() {
-        return null;
-    }
-
-    /**
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataScopes()}
-     *             followed by {@link MetadataScope#getResourceScope()}.
-     */
-    @Override
-    @Deprecated
-    public Collection<ScopeCode> getHierarchyLevels() {
-        return Collections.singleton(getResourceScope());
-    }
-
-    /**
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataScopes()}
-     *             followed by {@link MetadataScope#getName()}.
-     */
-    @Override
-    @Deprecated
-    public Collection<String> getHierarchyLevelNames() {
-        return Collections.emptySet();
-    }
-
-    /**
      * Parties responsible for the metadata information.
      */
     @Override
@@ -244,101 +125,6 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      */
     @Override
     public Collection<CitationDate> getDateInfo() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getDateInfo()}.
-     */
-    @Override
-    @Deprecated
-    public Date getDateStamp() {
-        return null;
-    }
-
-    /**
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataStandards()}
-     *             followed by {@link Citation#getTitle()}.
-     */
-    @Override
-    @Deprecated
-    public String getMetadataStandardName() {
-        return null;
-    }
-
-    /**
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataStandards()}
-     *             followed by {@link Citation#getEdition()}.
-     */
-    @Override
-    @Deprecated
-    public String getMetadataStandardVersion() {
-        return null;
-    }
-
-    /**
-     * Citation(s) for the standard(s) to which the metadata conform.
-     */
-    @Override
-    public Collection<Citation> getMetadataStandards() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Citation(s) for the profile(s) of the metadata standard to which the metadata conform.
-     */
-    @Override
-    public Collection<Citation> getMetadataProfiles() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Reference(s) to alternative metadata or metadata in a non-ISO standard for the same resource.
-     */
-    @Override
-    public Collection<Citation> getAlternativeMetadataReferences() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Online location(s) where the metadata is available.
-     */
-    @Override
-    public Collection<OnlineResource> getMetadataLinkages() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getIdentificationInfo()} followed by
-     *    {@link Identification#getCitation()} followed by {@link Citation#getOnlineResources()}.
-     */
-    @Override
-    @Deprecated
-    public String getDataSetUri() {
-        return null;
-    }
-
-    /**
-     * Digital representation of spatial information in the dataset.
-     */
-    @Override
-    public Collection<SpatialRepresentation> getSpatialRepresentationInfo() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Description of the spatial and temporal reference systems used in the dataset.
-     */
-    @Override
-    public Collection<ReferenceSystem> getReferenceSystemInfo() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Information describing metadata extensions.
-     */
-    @Override
-    public Collection<MetadataExtensionInformation> getMetadataExtensionInfo() {
         return Collections.emptyList();
     }
 
@@ -361,78 +147,6 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     @Override
     public Collection<DataIdentification> getIdentificationInfo() {
         return Collections.singleton(this);
-    }
-
-    /**
-     * Information about the feature and coverage characteristics.
-     */
-    @Override
-    public Collection<ContentInformation> getContentInfo() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Information about the distributor of and options for obtaining the resource(s).
-     */
-    @Override
-    public Collection<Distribution> getDistributionInfo() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Overall assessment of quality of a resource(s).
-     */
-    @Override
-    public Collection<DataQuality> getDataQualityInfo() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Information about the catalogue of rules defined for the portrayal of a resource(s).
-     */
-    @Override
-    public Collection<PortrayalCatalogueReference> getPortrayalCatalogueInfo() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Restrictions on the access and use of metadata.
-     */
-    @Override
-    public Collection<Constraints> getMetadataConstraints() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Information about the conceptual schema of a dataset.
-     */
-    @Override
-    public Collection<ApplicationSchemaInformation> getApplicationSchemaInfo() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Information about the acquisition of the data.
-     */
-    @Override
-    public Collection<AcquisitionInformation> getAcquisitionInformation() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Information about the frequency of metadata updates, and the scope of those updates.
-     */
-    @Override
-    public MaintenanceInformation getMetadataMaintenance() {
-        return null;
-    }
-
-    /**
-     * Information about the provenance, sources and/or the production processes applied to the resource.
-     */
-    @Override
-    public Collection<Lineage> getResourceLineages() {
-        return Collections.emptyList();
     }
 
 
@@ -460,42 +174,6 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     }
 
     /**
-     * Summary of the intentions with which the resource was developed.
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public InternationalString getPurpose() {
-        return null;
-    }
-
-    /**
-     * Recognition of those who contributed to the resource.
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public Collection<InternationalString> getCredits() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Status of the resource.
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public Collection<Progress> getStatus() {
-        return Collections.emptySet();              // We use 'Set' because 'Progress' is a CodeList.
-    }
-
-    /**
-     * Identification of, and means of communication with, person(s) and organisations associated with the resource(s).
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public Collection<Responsibility> getPointOfContacts() {
-        return Collections.emptyList();
-    }
-
-    /**
      * Methods used to spatially represent geographic information.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
      * Default implementation returns {@link SpatialRepresentationType#VECTOR}.
@@ -504,24 +182,6 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     @Override
     public Collection<SpatialRepresentationType> getSpatialRepresentationTypes() {
         return Collections.singleton(SpatialRepresentationType.VECTOR);
-    }
-
-    /**
-     * Factor which provides a general understanding of the density of spatial data in the resource.
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public Collection<Resolution> getSpatialResolutions() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Smallest resolvable temporal period in a resource.
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public Collection<Duration> getTemporalResolutions() {
-        return Collections.emptyList();
     }
 
     /**
@@ -544,116 +204,6 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
         return Collections.emptyList();
     }
 
-    /**
-     * Other documentation associated with the resource.
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public Collection<Citation> getAdditionalDocumentations() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Code that identifies the level of processing in the producers coding system of a resource.
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public Identifier getProcessingLevel() {
-        return null;
-    }
-
-    /**
-     * Information about the frequency of resource updates, and the scope of those updates.
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public Collection<MaintenanceInformation> getResourceMaintenances() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Graphic that illustrates the resource(s) (should include a legend for the graphic).
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public Collection<BrowseGraphic> getGraphicOverviews() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Description of the format of the resource(s).
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public Collection<Format> getResourceFormats() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Category keywords, their type, and reference source.
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public Collection<Keywords> getDescriptiveKeywords() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Basic information about specific application(s) for which the resource(s)
-     * has/have been or is being used by different users.
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public Collection<Usage> getResourceSpecificUsages() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Information about constraints which apply to the resource(s).
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public Collection<Constraints> getResourceConstraints() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Associated resource information.
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public Collection<AssociatedResource> getAssociatedResources() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getAssociatedResources()}.
-     */
-    @Override
-    @Deprecated
-    public Collection<AggregateInformation> getAggregationInfo() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Description of the resource in the producer's processing environment, including items
-     * such as the software, the computer operating system, file name, and the dataset size.
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public InternationalString getEnvironmentDescription() {
-        return null;
-    }
-
-    /**
-     * Any other descriptive information about the resource.
-     * This is part of the information returned by {@link #getIdentificationInfo()}.
-     */
-    @Override
-    public InternationalString getSupplementalInformation() {
-        return null;
-    }
-
 
     /* -------------------------------------------------------------------------------------------------
      * Implementation of the Citation object returned by DataIdentification.getCitation().
@@ -669,61 +219,6 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     }
 
     /**
-     * Short names or other language names by which the cited information is known.
-     * This is part of the information returned by {@link #getCitation()}.
-     */
-    @Override
-    public Collection<InternationalString> getAlternateTitles() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Reference dates for the cited resource.
-     * This is part of the information returned by {@link #getCitation()}.
-     */
-    @Override
-    public Collection<CitationDate> getDates() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Version of the cited resource.
-     * This is part of the information returned by {@link #getCitation()}.
-     */
-    @Override
-    public InternationalString getEdition() {
-        return null;
-    }
-
-    /**
-     * Date of the edition.
-     * This is part of the information returned by {@link #getCitation()}.
-     */
-    @Override
-    public Date getEditionDate() {
-        return null;
-    }
-
-    /**
-     * Unique identifier for the resource.
-     * This is part of the information returned by {@link #getCitation()}.
-     */
-    @Override
-    public Collection<Identifier> getIdentifiers() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Role, name, contact and position information for individuals or organisations
-     * that are responsible for the resource.
-     * This is part of the information returned by {@link #getCitation()}.
-     */
-    @Override
-    public Collection<Responsibility> getCitedResponsibleParties() {
-        return Collections.emptyList();
-    }
-
-    /**
      * Mode in which the resource is represented.
      * This is part of the information returned by {@link #getCitation()}.
      * Default implementation returns {@link PresentationForm#TABLE_DIGITAL}.
@@ -732,68 +227,5 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     @Override
     public Collection<PresentationForm> getPresentationForms() {
         return Collections.singleton(PresentationForm.TABLE_DIGITAL);
-    }
-
-    /**
-     * Information about the series, or aggregate dataset, of which the dataset is a part.
-     * This is part of the information returned by {@link #getCitation()}.
-     */
-    @Override
-    public Series getSeries() {
-        return null;
-    }
-
-    /**
-     * Other information required to complete the citation that is not recorded elsewhere.
-     * This is part of the information returned by {@link #getCitation()}.
-     */
-    @Override
-    public Collection<InternationalString> getOtherCitationDetails() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * @deprecated Removed as of ISO 19115:2014.
-     */
-    @Override
-    @Deprecated
-    public InternationalString getCollectiveTitle() {
-        return null;
-    }
-
-    /**
-     * International Standard Book Number.
-     * This is part of the information returned by {@link #getCitation()}.
-     */
-    @Override
-    public String getISBN() {
-        return null;
-    }
-
-    /**
-     * International Standard Serial Number.
-     * This is part of the information returned by {@link #getCitation()}.
-     */
-    @Override
-    public String getISSN() {
-        return null;
-    }
-
-    /**
-     * Online references to the cited resource.
-     * This is part of the information returned by {@link #getCitation()}.
-     */
-    @Override
-    public Collection<OnlineResource> getOnlineResources() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Citation graphics or logo for cited party.
-     * This is part of the information returned by {@link #getCitation()}.
-     */
-    @Override
-    public Collection<BrowseGraphic> getGraphics() {
-        return Collections.emptyList();
     }
 }

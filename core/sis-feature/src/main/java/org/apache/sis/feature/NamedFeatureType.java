@@ -75,9 +75,13 @@ final class NamedFeatureType implements FeatureType, Serializable {
         return name;
     }
 
-    /** Undefined. */ @Override public InternationalString getDefinition()  {return null;}
-    /** Undefined. */ @Override public InternationalString getDesignation() {return null;}
-    /** Undefined. */ @Override public InternationalString getDescription() {return null;}
+    /**
+     * Undefined.
+     */
+    @Override
+    public InternationalString getDefinition() {
+        return null;
+    }
 
     /**
      * Declares that this feature shall not be instantiated.

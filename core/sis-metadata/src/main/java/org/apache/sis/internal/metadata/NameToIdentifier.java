@@ -125,24 +125,6 @@ public final class NameToIdentifier implements Identifier {
     }
 
     /**
-     * Returns {@code null} since names are not versioned.
-     */
-    @Override
-    public String getVersion() {
-        return null;
-    }
-
-    /**
-     * Returns {@code null} since we do not provide natural language description.
-     *
-     * @since 0.5
-     */
-    @Override
-    public InternationalString getDescription() {
-        return null;
-    }
-
-    /**
      * Returns a hash code value for this object.
      */
     @Override

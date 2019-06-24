@@ -160,26 +160,6 @@ public final class Link implements OnlineResource {
     }
 
     /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
-     * @return connection protocol to be used.
-     */
-    @Override
-    public String getProtocol() {
-        return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
-     * @return application profile that can be used with the online resource.
-     */
-    @Override
-    public String getApplicationProfile() {
-        return null;
-    }
-
-    /**
      * ISO 19115 metadata property determined by the {@link #text} field.
      *
      * @return name of the online resource.
