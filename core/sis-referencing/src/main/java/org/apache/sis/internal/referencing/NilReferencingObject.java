@@ -16,16 +16,11 @@
  */
 package org.apache.sis.internal.referencing;
 
-import java.util.Set;
-import java.util.Collection;
-import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.opengis.metadata.extent.Extent;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.NilObject;
-import org.apache.sis.io.wkt.UnformattableObjectException;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -80,21 +75,6 @@ public final class NilReferencingObject implements NilObject, ReferenceSystem {
      * Returning null for collection are okay in the particular case of SIS implementation,
      * because the constructor will replace empty collections by null references anyway.
      */
-    @Override public ReferenceIdentifier      getName()        {return UNNAMED;}
-    @Override public Collection<GenericName>  getAlias()       {return null;}
-    @Override public Set<ReferenceIdentifier> getIdentifiers() {return null;}
-    @Override public InternationalString      getRemarks()     {return null;}
-    @Override public InternationalString      getScope()       {return null;}
-    @Override public Extent getDomainOfValidity()              {return null;}
-
-    /**
-     * Throws the exception in all cases.
-     *
-     * @return never return.
-     * @throws UnformattableObjectException always thrown.
-     */
-    @Override
-    public String toWKT() throws UnformattableObjectException {
-        throw new UnformattableObjectException();
-    }
+    @Override public ReferenceIdentifier getName()  {return UNNAMED;}
+    @Override public InternationalString getScope() {return null;}
 }

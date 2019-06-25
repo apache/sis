@@ -16,12 +16,8 @@
  */
 package org.apache.sis.internal.simple;
 
-import java.util.Set;
 import java.util.Objects;
-import java.util.Collection;
-import java.util.Collections;
 import java.io.Serializable;
-import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -95,34 +91,6 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     }
 
     /**
-     * Method required by the {@link IdentifiedObject} interface.
-     * Current implementation returns an empty set.
-     *
-     * <p>If a future version allows this method to returns a non-empty set,
-     * revisit {@link #equals(Object, ComparisonMode)}.</p>
-     *
-     * @return the identifiers, or an empty set if none.
-     */
-    @Override
-    public final Set<ReferenceIdentifier> getIdentifiers() {
-        return Collections.emptySet();
-    }
-
-    /**
-     * Method required by the {@link IdentifiedObject} interface.
-     * Current implementation returns an empty set.
-     *
-     * <p>If a future version allows this method to returns a non-empty set,
-     * revisit {@link #equals(Object, ComparisonMode)}.</p>
-     *
-     * @return the aliases, or an empty set if none.
-     */
-    @Override
-    public final Collection<GenericName> getAlias() {
-        return Collections.emptySet();
-    }
-
-    /**
      * Method required by most {@link IdentifiedObject} sub-interfaces.
      * Current implementation returns {@code null}.
      *
@@ -145,20 +113,6 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * @return the scope, or {@code null} if none.
      */
     public final InternationalString getScope() {
-        return null;
-    }
-
-    /**
-     * Method required by the {@link IdentifiedObject} interface.
-     * Current implementation returns {@code null}.
-     *
-     * <p>If a future version allows this method to returns a non-null value,
-     * revisit {@link #equals(Object, ComparisonMode)}.</p>
-     *
-     * @return the remarks, or {@code null} if none.
-     */
-    @Override
-    public final InternationalString getRemarks() {
         return null;
     }
 
@@ -214,17 +168,6 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
             }
         }
         return false;
-    }
-
-    /**
-     * Throws an exception in all cases, since this object can't be formatted in a valid WKT.
-     *
-     * @return the Well Known Text.
-     * @throws UnsupportedOperationException always thrown.
-     */
-    @Override
-    public String toWKT() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException();
     }
 
     /**

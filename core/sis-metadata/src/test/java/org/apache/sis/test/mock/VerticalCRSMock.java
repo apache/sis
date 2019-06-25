@@ -16,7 +16,6 @@
  */
 package org.apache.sis.test.mock;
 
-import java.util.Date;
 import javax.measure.Unit;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -122,8 +121,6 @@ public final strictfp class VerticalCRSMock extends IdentifiedObjectMock
 
     @Override public String               getAbbreviation()      {return up ? "h" : "d";}
     @Override public InternationalString  getScope()             {return null;}
-    @Override public InternationalString  getAnchorPoint()       {return null;}
-    @Override public Date                 getRealizationEpoch()  {return null;}
     @Override public Extent               getDomainOfValidity()  {return null;}
     @Override public VerticalDatumType    getVerticalDatumType() {return type;}
     @Override public VerticalDatum        getDatum()             {return this;}

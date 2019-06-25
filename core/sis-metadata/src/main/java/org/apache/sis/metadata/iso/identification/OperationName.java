@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
@@ -26,8 +25,6 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.identification.CoupledResource;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.opengis.metadata.identification.OperationMetadata;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Strings;
 
 
@@ -62,12 +59,8 @@ final class OperationName implements OperationMetadata, Serializable {
      * Returns the operation name.
      */
     @Override public String                                   getOperationName()                 {return operationName;}
-    @Override public InternationalString                      getInvocationName()                {return null;}
-    @Override public InternationalString                      getOperationDescription()          {return null;}
     @Override public Collection<DistributedComputingPlatform> getDistributedComputingPlatforms() {return Collections.emptySet();}
     @Override public Collection<OnlineResource>               getConnectPoints()                 {return Collections.emptySet();}
-    @Override public Collection<ParameterDescriptor<?>>       getParameters()                    {return Collections.emptySet();}
-    @Override public List<OperationMetadata>                  getDependsOn()                     {return Collections.emptyList();}
 
     /**
      * Returns a string representation of this placeholder.

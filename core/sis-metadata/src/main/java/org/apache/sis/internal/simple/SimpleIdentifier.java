@@ -138,18 +138,6 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
     }
 
     /**
-     * Returns a natural language description of the meaning of the code value.
-     *
-     * @return natural language description, or {@code null} if none.
-     *
-     * @since 0.5
-     */
-    @Override
-    public InternationalString getDescription() {
-        return null;
-    }
-
-    /**
      * An optional free text.
      *
      * @since 0.6

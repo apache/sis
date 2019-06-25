@@ -16,13 +16,11 @@
  */
 package org.apache.sis.internal.jaxb.metadata.replace;
 
-import java.util.Set;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import javax.measure.Unit;
 import org.opengis.util.TypeName;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
@@ -377,16 +375,6 @@ public final class ServiceParameter extends SimpleIdentifiedObject implements Pa
     public int getMaximumOccurs() {
         return repeatability ? Integer.MAX_VALUE : 1;
     }
-
-    /**
-     * Optional properties.
-     * @return {@code null}.
-     */
-    @Override public Set<?>        getValidValues()  {return null;}     // Really null, not an empty set. See method contract.
-    @Override public Comparable<?> getMinimumValue() {return null;}
-    @Override public Comparable<?> getMaximumValue() {return null;}
-    @Override public Object        getDefaultValue() {return null;}
-    @Override public Unit<?>       getUnit()         {return null;}
 
     /**
      * Creates a new instance of {@code ParameterValue}.

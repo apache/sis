@@ -29,7 +29,6 @@ import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Telephone;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.Types;
@@ -148,16 +147,6 @@ public final class Person implements ResponsibleParty, Party, Contact, Address {
     }
 
     /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
-     * @return spatial or temporal extent of the role.
-     */
-    @Override
-    public Collection<Extent> getExtents() {
-        return Collections.emptyList();
-    }
-
-    /**
      * ISO 19115 metadata property determined by the {@link #name}, {@link #email} and {@link #link} fields.
      * Invoking this method is one of the steps in the path from the {@code Responsibility} root to the
      * {@link #getName()}, {@link #getElectronicMailAddresses()} and {@link #getOnlineResources()} methods.
@@ -243,7 +232,7 @@ public final class Person implements ResponsibleParty, Party, Contact, Address {
             return Collections.<Contact>singleton(Person.this).iterator();
         }
 
-        @Override public Collection<Telephone>         getPhones()              {return Person.this.getPhones();}
+        @Override public Collection<? extends Telephone> getPhones()            {return Person.this.getPhones();}
         @Override public Telephone                     getPhone()               {return Person.this.getPhone();}
         @Override public Collection<? extends Address> getAddresses()           {return Person.this.getAddresses();}
         @Override public Address                       getAddress()             {return Person.this.getAddress();}
@@ -261,25 +250,6 @@ public final class Person implements ResponsibleParty, Party, Contact, Address {
      * --------------------------------------------------------------------------------- */
 
     /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
-     * @return telephone numbers at which the organization or individual may be contacted.
-     */
-    @Override
-    public Collection<Telephone> getPhones() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getPhones()}.
-     */
-    @Override
-    @Deprecated
-    public Telephone getPhone() {
-        return null;
-    }
-
-    /**
      * ISO 19115 metadata property determined by the {@link #email} field.
      * Invoking this method is one of the steps in the path from the {@code Responsibility} root
      * to the {@link #getElectronicMailAddresses()} method.
@@ -294,15 +264,6 @@ public final class Person implements ResponsibleParty, Party, Contact, Address {
     }
 
     /**
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getAddresses()}.
-     */
-    @Override
-    @Deprecated
-    public Address getAddress() {
-        return (email != null) ? this : null;
-    }
-
-    /**
      * ISO 19115 metadata property determined by the {@link #link} field.
      *
      * @return on-line information that can be used to contact the individual or organization.
@@ -312,100 +273,11 @@ public final class Person implements ResponsibleParty, Party, Contact, Address {
         return (link != null) ? Collections.singleton(link) : Collections.emptySet();
     }
 
-    /**
-     * @deprecated As of ISO 19115:2014, replaced by {@link #getOnlineResources()}.
-     */
-    @Override
-    @Deprecated
-    public OnlineResource getOnlineResource() {
-        return link;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
-     * @return time period when individuals can contact the organization or individual.
-     */
-    @Override
-    public InternationalString getHoursOfService() {
-        return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
-     * @return supplemental instructions on how or when to contact the individual or organization.
-     */
-    @Override
-    public InternationalString getContactInstructions() {
-        return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
-     * @return type of the contact.
-     */
-    @Override
-    public InternationalString getContactType() {
-        return null;
-    }
-
 
     /* ---------------------------------------------------------------------------------
      * Implementation of the Address object returned by Contact.getAddresses().
      * Contains information about 'email' only (not 'name' or 'link').
      * --------------------------------------------------------------------------------- */
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
-     * @return address line for the location.
-     */
-    @Override
-    public Collection<String> getDeliveryPoints() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
-     * @return the city of the location.
-     */
-    @Override
-    public InternationalString getCity() {
-        return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
-     * @return state, province of the location.
-     */
-    @Override
-    public InternationalString getAdministrativeArea() {
-        return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
-     * @return ZIP or other postal code, or {@code null}.
-     */
-    @Override
-    public String getPostalCode() {
-        return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
-     * @return country of the physical address, or {@code null}.
-     */
-    @Override
-    public InternationalString getCountry() {
-        return null;
-    }
 
     /**
      * ISO 19115 metadata property determined by the {@link #email} field.

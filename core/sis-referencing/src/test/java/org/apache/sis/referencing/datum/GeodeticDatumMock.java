@@ -16,11 +16,8 @@
  */
 package org.apache.sis.referencing.datum;
 
-import java.util.Date;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import org.opengis.util.InternationalString;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
@@ -120,16 +117,12 @@ public final strictfp class GeodeticDatumMock extends IdentifiedObjectMock imple
         return new Object[] {getCode(), alias, semiMajorAxis, semiMinorAxis, inverseFlattening, isIvfDefinitive};
     }
 
-    @Override public PrimeMeridian        getPrimeMeridian()      {return PrimeMeridianMock.GREENWICH;}
-    @Override public Ellipsoid            getEllipsoid()          {return this;}
-    @Override public Unit<Length>         getAxisUnit()           {return Units.METRE;}
-    @Override public double               getSemiMajorAxis()      {return semiMajorAxis;}
-    @Override public double               getSemiMinorAxis()      {return semiMinorAxis;}
-    @Override public double               getInverseFlattening()  {return inverseFlattening;}
-    @Override public boolean              isSphere()              {return semiMajorAxis == semiMinorAxis;}
-    @Override public boolean              isIvfDefinitive()       {return isIvfDefinitive;}
-    @Override public InternationalString  getAnchorPoint()        {return null;}
-    @Override public Date                 getRealizationEpoch()   {return null;}
-    @Override public Extent               getDomainOfValidity()   {return null;}
-    @Override public InternationalString  getScope()              {return null;}
+    @Override public PrimeMeridian getPrimeMeridian()     {return PrimeMeridianMock.GREENWICH;}
+    @Override public Ellipsoid     getEllipsoid()         {return this;}
+    @Override public Unit<Length>  getAxisUnit()          {return Units.METRE;}
+    @Override public double        getSemiMajorAxis()     {return semiMajorAxis;}
+    @Override public double        getSemiMinorAxis()     {return semiMinorAxis;}
+    @Override public double        getInverseFlattening() {return inverseFlattening;}
+    @Override public boolean       isSphere()             {return semiMajorAxis == semiMinorAxis;}
+    @Override public boolean       isIvfDefinitive()      {return isIvfDefinitive;}
 }

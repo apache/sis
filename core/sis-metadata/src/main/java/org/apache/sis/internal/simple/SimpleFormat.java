@@ -20,9 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.distribution.Distributor;
 import org.opengis.metadata.distribution.Format;
-import org.opengis.metadata.distribution.Medium;
 import org.apache.sis.internal.util.Strings;
 
 
@@ -77,81 +75,6 @@ public class SimpleFormat extends SimpleCitation implements Format {
     @Override
     public Citation getFormatSpecificationCitation() {
         return this;
-    }
-
-    /**
-     * @deprecated Replaced by {@link #getTitle()}
-     *
-     * @return name of a subset, profile, or product specification of the format, or {@code null}.
-     */
-    @Override
-    @Deprecated
-    public InternationalString getSpecification() {
-        return getTitle();
-    }
-
-    /**
-     * @deprecated Replaced by {@link #getAlternateTitles()}
-     *
-     * @return name of the data transfer format(s).
-     */
-    @Override
-    @Deprecated
-    public InternationalString getName() {
-        return super.getTitle();
-    }
-
-    /**
-     * @deprecated Replaced by {@link #getEdition()}
-     *
-     * @return version of the format.
-     */
-    @Override
-    @Deprecated
-    public InternationalString getVersion() {
-        return getEdition();
-    }
-
-    /**
-     * Amendment number of the format version.
-     *
-     * @return amendment number of the format version, or {@code null}.
-     */
-    @Override
-    public InternationalString getAmendmentNumber() {
-        return null;
-    }
-
-    /**
-     * Recommendations of algorithms or processes that can be applied to read
-     * or expand resources to which compression techniques have been applied.
-     *
-     * @return processes that can be applied to read resources to which compression techniques have been applied,
-     *         or {@code null}.
-     */
-    @Override
-    public InternationalString getFileDecompressionTechnique() {
-        return null;
-    }
-
-    /**
-     * Media used by the format.
-     *
-     * @return media used by the format.
-     */
-    @Override
-    public Collection<? extends Medium> getMedia() {
-        return Collections.emptyList();
-    }
-
-    /**
-     * Provides information about the distributor's format.
-     *
-     * @return information about the distributor's format.
-     */
-    @Override
-    public Collection<? extends Distributor> getFormatDistributors() {
-        return Collections.emptyList();
     }
 
     /**

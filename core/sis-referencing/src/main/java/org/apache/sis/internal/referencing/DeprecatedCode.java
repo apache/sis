@@ -87,15 +87,4 @@ public final class DeprecatedCode extends ImmutableIdentifier implements Depreca
     public InternationalString getRemarks() {
         return super.getDescription();
     }
-
-    /**
-     * Returns {@code null}, since we used the description for the superseded information.
-     * See <cite>"Implementation note"</cite> in class javadoc.
-     *
-     * @return {@code null}.
-     */
-    @Override
-    public InternationalString getDescription() {
-        return null;
-    }
 }

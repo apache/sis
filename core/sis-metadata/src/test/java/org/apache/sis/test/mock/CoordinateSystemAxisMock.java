@@ -64,8 +64,6 @@ public strictfp class CoordinateSystemAxisMock extends IdentifiedObjectMock
     @Override public int                  getDimension()         {return 1;}
     @Override public CoordinateSystemAxis getAxis(int dimension) {return this;}
     @Override public AxisDirection        getDirection()         {return null;}
-    @Override public double               getMinimumValue()      {return Double.NEGATIVE_INFINITY;}
-    @Override public double               getMaximumValue()      {return Double.POSITIVE_INFINITY;}
     @Override public RangeMeaning         getRangeMeaning()      {return RangeMeaning.EXACT;}
     @Override public Unit<?>              getUnit()              {return null;}
 }

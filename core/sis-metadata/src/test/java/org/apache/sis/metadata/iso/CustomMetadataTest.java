@@ -26,17 +26,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.NameFactory;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.identification.*;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.ResponsibleParty;
-import org.opengis.metadata.constraint.Constraints;
-import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.maintenance.MaintenanceInformation;
-import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.opengis.util.InternationalString;
-import org.opengis.temporal.Duration;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -113,30 +106,10 @@ public final strictfp class CustomMetadataTest extends TestCase {
                 return factory.createInternationalString(names);
             }
 
-            @Override public InternationalString                   getSupplementalInformation()    {return null;}
-            @Override public Citation                              getCitation()                   {return null;}
-            @Override public InternationalString                   getPurpose()                    {return null;}
-            @Override public Identifier                            getProcessingLevel()            {return null;}
-            @Override public Collection<SpatialRepresentationType> getSpatialRepresentationTypes() {return null;}
-            @Override public Collection<Resolution>                getSpatialResolutions()         {return null;}
-            @Override public Collection<Duration>                  getTemporalResolutions()        {return null;}
-            @Override public Collection<Locale>                    getLanguages()                  {return null;}
-            @Override public Collection<CharacterSet>              getCharacterSets()              {return null;}
-            @Override public Collection<TopicCategory>             getTopicCategories()            {return null;}
-            @Override public Collection<Extent>                    getExtents()                    {return null;}
-            @Override public Collection<String>                    getCredits()                    {return null;}
-            @Override public Collection<Progress>                  getStatus()                     {return null;}
-            @Override public Collection<ResponsibleParty>          getPointOfContacts()            {return null;}
-            @Override public Collection<MaintenanceInformation>    getResourceMaintenances()       {return null;}
-            @Override public Collection<BrowseGraphic>             getGraphicOverviews()           {return null;}
-            @Override public Collection<Format>                    getResourceFormats()            {return null;}
-            @Override public Collection<Keywords>                  getDescriptiveKeywords()        {return null;}
-            @Override public Collection<Usage>                     getResourceSpecificUsages()     {return null;}
-            @Override public Collection<Constraints>               getResourceConstraints()        {return null;}
-@Deprecated @Override public Collection<AggregateInformation>      getAggregationInfo()            {return null;}
-            @Override public Collection<AssociatedResource>        getAssociatedResources()        {return null;}
-            @Override public Collection<Citation>                  getAdditionalDocumentations()   {return null;}
-            @Override public Map<Locale,Charset>                   getLocalesAndCharsets()         {return null;}
+            @Override public Citation                  getCitation()           {return null;}
+            @Override public Collection<TopicCategory> getTopicCategories()    {return null;}
+            @Override public Collection<Extent>        getExtents()            {return null;}
+            @Override public Map<Locale,Charset>       getLocalesAndCharsets() {return null;}
         };
         final DefaultMetadata data = new DefaultMetadata();
         data.setIdentificationInfo(singleton(identification));

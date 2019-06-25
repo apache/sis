@@ -25,18 +25,14 @@ import java.util.Locale;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.Role;
-import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.constraint.LegalConstraints;
 import org.opengis.metadata.constraint.Restriction;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -45,9 +41,6 @@ import org.apache.sis.util.iso.Types;
 // Branch-dependent imports
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Responsibility;
-import org.opengis.metadata.citation.ResponsibleParty;
-import org.opengis.metadata.constraint.Releasability;
-import org.opengis.metadata.maintenance.Scope;
 
 
 /**
@@ -184,27 +177,6 @@ resp:   for (final Responsibility r : c.getResponsibleParties()) {
     /**
      * ISO 19115 metadata property not specified by GPX.
      *
-     * @return limitation affecting the fitness for use of the resource.
-     */
-    @Override
-    public Collection<InternationalString> getUseLimitations() {
-        return Collections.emptySet();
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX. We could said that the constraint applies to the whole dataset
-     * with {@link org.opengis.metadata.maintenance.ScopeCode#DATASET}, but it is probably implicit enough for GPX.
-     *
-     * @return spatial and/or temporal extent, or levels of the application of the constraints restrictions.
-     */
-    @Override
-    public Scope getConstraintApplicationScope() {
-        return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
      * @return graphics or symbols indicating the constraint.
      */
     @Override
@@ -227,16 +199,6 @@ resp:   for (final Responsibility r : c.getResponsibleParties()) {
     @Override
     public Collection<? extends Citation> getReferences() {
         return thisOrEmpty(year != null || license != null);
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
-     * @return information concerning the parties to whom the resource can or cannot be released.
-     */
-    @Override
-    public Releasability getReleasability() {
-        return null;
     }
 
     /**
@@ -273,17 +235,6 @@ resp:   for (final Responsibility r : c.getResponsibleParties()) {
     }
 
     /**
-     * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getResponsibleParties()}.
-     *
-     * @return spatial or temporal extent of the role.
-     */
-    @Override
-    public Collection<Extent> getExtents() {
-        return Collections.emptySet();
-    }
-
-    /**
      * ISO 19115 metadata property determined by the {@link #author} field.
      * This is part of the properties returned by {@link #getResponsibleParties()}.
      * Invoking this method is one of the steps in the path from the {@code LegalConstraints} root
@@ -309,17 +260,6 @@ resp:   for (final Responsibility r : c.getResponsibleParties()) {
         return (author != null) ? new SimpleInternationalString(author) : null;
     }
 
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getParties()}.
-     *
-     * @return contact information for the party.
-     */
-    @Override
-    public Collection<Contact> getContactInfo() {
-        return Collections.emptySet();
-    }
-
 
     /* -----------------------------------------------------------------------------------
      * Implementation of the Citation object returned by LegalConstraints.getReferences().
@@ -336,17 +276,6 @@ resp:   for (final Responsibility r : c.getResponsibleParties()) {
     @Override
     public InternationalString getTitle() {
         return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
-     *
-     * @return other names for the resource.
-     */
-    @Override
-    public Collection<InternationalString> getAlternateTitles() {
-        return Collections.emptySet();
     }
 
     /**
@@ -391,53 +320,6 @@ resp:   for (final Responsibility r : c.getResponsibleParties()) {
     }
 
     /**
-     * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
-     *
-     * @return the license version, or {@code null} if none.
-     */
-    @Override
-    public InternationalString getEdition() {
-        return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
-     *
-     * @return the license edition date, or {@code null} if none.
-     */
-    @Override
-    public Date getEditionDate() {
-        return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
-     *
-     * @return the identifiers of the license.
-     */
-    @Override
-    public Collection<Identifier> getIdentifiers() {
-        return Collections.emptySet();
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
-     * It would be the license author if that information was provided.
-     *
-     * @return the information for individuals or organisations that are responsible for the license.
-     *
-     * @see #getResponsibleParties()
-     */
-    @Override
-    public Collection<ResponsibleParty> getCitedResponsibleParties() {
-        return Collections.emptySet();
-    }
-
-    /**
      * ISO 19115 metadata property fixed to {@link PresentationForm#DOCUMENT_DIGITAL}.
      * This is part of the properties returned by {@link #getReferences()}.
      *
@@ -446,62 +328,6 @@ resp:   for (final Responsibility r : c.getResponsibleParties()) {
     @Override
     public Collection<PresentationForm> getPresentationForms() {
         return Collections.singleton(PresentationForm.DOCUMENT_DIGITAL);
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
-     *
-     * @return the series or aggregate dataset of which the dataset is a part.
-     */
-    @Override
-    public Series getSeries() {
-        return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
-     *
-     * @return other details.
-     */
-    @Override
-    public InternationalString getOtherCitationDetails() {
-        return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
-     *
-     * @return the common title.
-     */
-    @Override
-    @Deprecated
-    public InternationalString getCollectiveTitle() {
-        return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
-     *
-     * @return the International Standard Book Number.
-     */
-    @Override
-    public String getISBN() {
-        return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@link #getReferences()}.
-     *
-     * @return the International Standard Serial Number.
-     */
-    @Override
-    public String getISSN() {
-        return null;
     }
 
     /**
