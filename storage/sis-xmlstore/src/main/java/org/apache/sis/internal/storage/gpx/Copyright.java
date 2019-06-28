@@ -167,16 +167,6 @@ resp:   for (final Responsibility r : c.getResponsibleParties()) {
     /**
      * ISO 19115 metadata property not specified by GPX.
      *
-     * @return other restrictions and legal prerequisites for accessing and using the resource.
-     */
-    @Override
-    public Collection<InternationalString> getOtherConstraints() {
-        return Collections.emptySet();
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     *
      * @return graphics or symbols indicating the constraint.
      */
     @Override

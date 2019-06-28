@@ -83,14 +83,6 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     }
 
     /**
-     * Identification of the parent metadata record.
-     */
-    @Override
-    public Citation getParentMetadata() {
-        return null;
-    }
-
-    /**
      * The scope or type of resource for which metadata is provided.
      * This method returns {@code this} for allowing call to {@link #getResourceScope()}.
      *

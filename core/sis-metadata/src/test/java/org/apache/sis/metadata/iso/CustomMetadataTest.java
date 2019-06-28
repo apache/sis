@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.Locale;
-import java.nio.charset.Charset;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
@@ -109,7 +108,6 @@ public final strictfp class CustomMetadataTest extends TestCase {
             @Override public Citation                  getCitation()           {return null;}
             @Override public Collection<TopicCategory> getTopicCategories()    {return null;}
             @Override public Collection<Extent>        getExtents()            {return null;}
-            @Override public Map<Locale,Charset>       getLocalesAndCharsets() {return null;}
         };
         final DefaultMetadata data = new DefaultMetadata();
         data.setIdentificationInfo(singleton(identification));

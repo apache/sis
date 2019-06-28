@@ -21,7 +21,6 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.VerticalExtent;
-import org.opengis.util.InternationalString;
 
 import static org.apache.sis.internal.util.CollectionsExt.singletonOrEmpty;
 
@@ -68,7 +67,6 @@ public final class SimpleExtent implements Extent {
         this.temporalElements   = temporalElements;
     }
 
-    @Override public InternationalString          getDescription()        {return null;}
     @Override public Collection<GeographicExtent> getGeographicElements() {return singletonOrEmpty(geographicElements);}
     @Override public Collection<VerticalExtent>   getVerticalElements()   {return singletonOrEmpty(verticalElements);}
     @Override public Collection<TemporalExtent>   getTemporalElements()   {return singletonOrEmpty(temporalElements);}

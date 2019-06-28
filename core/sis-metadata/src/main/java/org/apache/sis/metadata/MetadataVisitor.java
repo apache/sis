@@ -23,6 +23,7 @@ import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.Exceptions;
 
 
 /**
@@ -181,6 +182,7 @@ abstract class MetadataVisitor<R> {
                 } catch (MetadataVisitorException e) {
                     throw e;
                 } catch (Exception e) {
+                    e = Exceptions.unwrap(e);
                     throw new MetadataVisitorException(Arrays.copyOf(propertyPath, nestedCount), accessor.type, e);
                 } finally {
                     if (--nestedCount == 0) {

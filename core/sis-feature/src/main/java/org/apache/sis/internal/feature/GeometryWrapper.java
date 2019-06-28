@@ -22,7 +22,6 @@ import org.opengis.geometry.Boundary;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
-import org.opengis.geometry.Precision;
 import org.opengis.geometry.TransfiniteSet;
 import org.opengis.geometry.complex.Complex;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -77,7 +76,6 @@ public final class GeometryWrapper implements Geometry {
         return envelope;
     }
 
-    @Override public Precision      getPrecision()                            {throw new UnsupportedOperationException();}
     @Override public Geometry       getMbRegion()                             {throw new UnsupportedOperationException();}
     @Override public DirectPosition getRepresentativePoint()                  {throw new UnsupportedOperationException();}
     @Override public Boundary       getBoundary()                             {throw new UnsupportedOperationException();}
