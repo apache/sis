@@ -52,7 +52,10 @@ public final class GeometryWrapper implements Geometry {
         this.envelope = envelope;
     }
 
-    @Override public Geometry       clone() throws CloneNotSupportedException {throw new CloneNotSupportedException();}
+    @Override
+    public Geometry clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
+    }
 
     @Override
     public boolean equals(final Object obj) {

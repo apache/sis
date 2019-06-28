@@ -310,9 +310,9 @@ public final class Metadata extends SimpleMetadata {
     @Override
     public Collection<Keywords> getDescriptiveKeywords() {
         if (keywords != null) {
-            return Collections.singleton(new DefaultKeywords(keywords.toArray(new String[keywords.size()])));
+            return Collections.singletonList(new DefaultKeywords(keywords.toArray(new String[keywords.size()])));
         }
-        return super.getDescriptiveKeywords();
+        return Collections.emptyList();
     }
 
     /**
@@ -328,7 +328,7 @@ public final class Metadata extends SimpleMetadata {
             return (author != null) ? UnmodifiableArrayList.wrap(new ResponsibleParty[] {p, author})
                                     : Collections.singletonList(author);
         }
-        return (author != null) ? Collections.singletonList(author) : super.getPointOfContacts();
+        return (author != null) ? Collections.singletonList(author) : Collections.emptyList();
     }
 
     /**
@@ -339,7 +339,7 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public Collection<Constraints> getResourceConstraints() {
-        return (copyright != null) ? Collections.singleton(copyright) : super.getResourceConstraints();
+        return (copyright != null) ? Collections.singletonList(copyright) : Collections.emptyList();
     }
 
     /**
@@ -350,7 +350,7 @@ public final class Metadata extends SimpleMetadata {
      */
     @Override
     public Collection<Extent> getExtents() {
-        return (bounds != null) ? Collections.singleton(bounds) : super.getExtents();
+        return (bounds != null) ? Collections.singletonList(bounds) : Collections.emptyList();
     }
 
     /**
@@ -373,9 +373,9 @@ public final class Metadata extends SimpleMetadata {
     @Override
     public Collection<CitationDate> getDates() {
         if (time != null) {
-            return Collections.singleton(new DefaultCitationDate(time, DateType.CREATION));
+            return Collections.singletonList(new DefaultCitationDate(time, DateType.CREATION));
         }
-        return super.getDates();
+        return Collections.emptyList();
     }
 
     /**
@@ -388,7 +388,7 @@ public final class Metadata extends SimpleMetadata {
     @Override
     public Collection<ContentInformation> getContentInfo() {
         final Store store = this.store;
-        return (store != null) ? store.types.metadata : super.getContentInfo();
+        return (store != null) ? store.types.metadata : Collections.emptyList();
     }
 
     /**
@@ -409,7 +409,7 @@ public final class Metadata extends SimpleMetadata {
             }
             return Collections.singletonList(f);
         }
-        return super.getResourceFormats();
+        return Collections.emptyList();
     }
 
     /**
