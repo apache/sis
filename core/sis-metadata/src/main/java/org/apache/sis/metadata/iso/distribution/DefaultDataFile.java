@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.util.LocalName;
+import org.opengis.util.GenericName;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.DataFile;
 import org.apache.sis.xml.Namespaces;
@@ -38,10 +38,9 @@ import org.opengis.util.InternationalString;
  * The following properties are mandatory in a well-formed metadata according ISO 19115:
  *
  * <div class="preformat">{@code MX_DataFile}
- * {@code   └─fileFormat……………………………………………………………} Defines the format of the transfer data file.
- * {@code       └─formatSpecificationCitation……} Citation/URL of the specification format.
- * {@code           ├─title……………………………………………………} Name by which the cited resource is known.
- * {@code           └─date………………………………………………………} Reference date for the cited resource.</div>
+ * {@code   ├─fileName……………………………………………………………} Name or path of the file.
+ * {@code   ├─fileDescription…………………………………………} Text description of the data.
+ * {@code   └─fileType……………………………………………………………} Format in which the data is encoded.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -100,7 +99,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * This attribute may be omitted when the dataset is composed of a single file and/or the
      * data does not relate to a feature catalogue.
      */
-    private Collection<LocalName> featureTypes;
+    private Collection<GenericName> featureTypes;
 
     /**
      * Defines the format of the transfer data file.
@@ -128,9 +127,11 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
     public DefaultDataFile(final DataFile object) {
         super(object);
         if (object != null) {
-            featureTypes = copyCollection(object.getFeatureTypes(), LocalName.class);
-            fileFormat   = object.getFileFormat();
-            // TODO: copy other properties.
+            fileName        = object.getFileName();
+            fileDescription = object.getFileDescription();
+            fileType        = object.getFileType();
+            featureTypes    = copyCollection(object.getFeatureTypes(), GenericName.class);
+            fileFormat      = object.getFileFormat();
         }
     }
 
@@ -167,6 +168,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @see org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic#getFileName()
      * @since 1.0
      */
+    @Override
     @XmlElement(name = "fileName", required = true)
     public URI getFileName() {
         return fileName;
@@ -192,6 +194,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @see org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic#getFileDescription()
      * @since 1.0
      */
+    @Override
     @XmlElement(name = "fileDescription", required = true)
     public InternationalString getFileDescription() {
         return fileDescription;
@@ -217,6 +220,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @see org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic#getFileType()
      * @since 1.0
      */
+    @Override
     @XmlElement(name = "fileType", required = true)
     @XmlJavaTypeAdapter(MimeFileTypeAdapter.class)
     public String getFileType() {
@@ -245,8 +249,8 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      */
     @Override
     @XmlElement(name = "featureTypes")
-    public Collection<LocalName> getFeatureTypes() {
-        return featureTypes = nonNullCollection(featureTypes, LocalName.class);
+    public Collection<GenericName> getFeatureTypes() {
+        return featureTypes = nonNullCollection(featureTypes, GenericName.class);
     }
 
     /**
@@ -254,8 +258,8 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      *
      * @param newValues  the new feature type values.
      */
-    public void setFeatureTypes(final Collection<? extends LocalName> newValues) {
-        featureTypes = writeCollection(newValues, featureTypes, LocalName.class);
+    public void setFeatureTypes(final Collection<? extends GenericName> newValues) {
+        featureTypes = writeCollection(newValues, featureTypes, GenericName.class);
     }
 
     /**
