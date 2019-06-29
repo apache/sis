@@ -38,10 +38,9 @@ import org.opengis.util.InternationalString;
  * The following properties are mandatory in a well-formed metadata according ISO 19115:
  *
  * <div class="preformat">{@code MX_DataFile}
- * {@code   └─fileFormat……………………………………………………………} Defines the format of the transfer data file.
- * {@code       └─formatSpecificationCitation……} Citation/URL of the specification format.
- * {@code           ├─title……………………………………………………} Name by which the cited resource is known.
- * {@code           └─date………………………………………………………} Reference date for the cited resource.</div>
+ * {@code   ├─fileName……………………………………………………………} Name or path of the file.
+ * {@code   ├─fileDescription…………………………………………} Text description of the data.
+ * {@code   └─fileType……………………………………………………………} Format in which the data is encoded.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -128,9 +127,14 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
     public DefaultDataFile(final DataFile object) {
         super(object);
         if (object != null) {
+            if (object instanceof DefaultDataFile) {
+                DefaultDataFile df = (DefaultDataFile) object;
+                fileName        = df.getFileName();
+                fileDescription = df.getFileDescription();
+                fileType        = df.getFileType();
+            }
             featureTypes = copyCollection(object.getFeatureTypes(), LocalName.class);
             fileFormat   = object.getFileFormat();
-            // TODO: copy other properties.
         }
     }
 
