@@ -424,12 +424,6 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
                 }
                 break;
             }
-            case "featureType": {
-                if (org.opengis.metadata.distribution.DataFile.class.isAssignableFrom(enclosing)) {
-                    name = "featureTypes";                  // Spelling change in XSD files
-                }
-                break;
-            }
             case "valueType": {
                 if (org.opengis.metadata.quality.Result.class.isAssignableFrom(enclosing)) {
                     return "valueRecordType";

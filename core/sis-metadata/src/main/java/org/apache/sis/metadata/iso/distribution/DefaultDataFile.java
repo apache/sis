@@ -38,10 +38,9 @@ import org.opengis.util.InternationalString;
  * The following properties are mandatory in a well-formed metadata according ISO 19115:
  *
  * <div class="preformat">{@code MX_DataFile}
- * {@code   └─fileFormat……………………………………………………………} Defines the format of the transfer data file.
- * {@code       └─formatSpecificationCitation……} Citation/URL of the specification format.
- * {@code           ├─title……………………………………………………} Name by which the cited resource is known.
- * {@code           └─date………………………………………………………} Reference date for the cited resource.</div>
+ * {@code   ├─fileName……………………………………………………………} Name or path of the file.
+ * {@code   ├─fileDescription…………………………………………} Text description of the data.
+ * {@code   └─fileType……………………………………………………………} Format in which the data is encoded.</div>
  *
  * <p><b>Limitations:</b></p>
  * <ul>
@@ -128,9 +127,11 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
     public DefaultDataFile(final DataFile object) {
         super(object);
         if (object != null) {
-            featureTypes = copyCollection(object.getFeatureTypes(), LocalName.class);
-            fileFormat   = object.getFileFormat();
-            // TODO: copy other properties.
+            fileName        = object.getFileName();
+            fileDescription = object.getFileDescription();
+            fileType        = object.getFileType();
+            featureTypes    = copyCollection(object.getFeatureTypes(), LocalName.class);
+            fileFormat      = object.getFileFormat();
         }
     }
 
@@ -167,6 +168,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @see org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic#getFileName()
      * @since 1.0
      */
+    @Override
     @XmlElement(name = "fileName", required = true)
     public URI getFileName() {
         return fileName;
@@ -192,6 +194,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @see org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic#getFileDescription()
      * @since 1.0
      */
+    @Override
     @XmlElement(name = "fileDescription", required = true)
     public InternationalString getFileDescription() {
         return fileDescription;
@@ -217,6 +220,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @see org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic#getFileType()
      * @since 1.0
      */
+    @Override
     @XmlElement(name = "fileType", required = true)
     @XmlJavaTypeAdapter(MimeFileTypeAdapter.class)
     public String getFileType() {
