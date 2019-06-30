@@ -1354,19 +1354,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
-     * There is no XML format for math transforms.
-     *
-     * @param  xml  math transform encoded in XML format.
-     * @throws FactoryException if the object creation failed.
-     */
-    @Override
-    @Deprecated
-    public MathTransform createFromXML(String xml) throws FactoryException {
-        lastMethod.remove();
-        throw new FactoryException(Errors.format(Errors.Keys.UnsupportedOperation_1, "createFromXML"));
-    }
-
-    /**
      * Creates a math transform object from a
      * <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html"><cite>Well
      * Known Text</cite> (WKT)</a>.

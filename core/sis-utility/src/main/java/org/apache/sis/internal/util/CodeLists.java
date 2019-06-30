@@ -19,6 +19,7 @@ package org.apache.sis.internal.util;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.function.Predicate;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters.Filter;
@@ -29,15 +30,14 @@ import org.opengis.util.ControlledVocabulary;
 
 /**
  * Implementation of some {@link org.apache.sis.util.iso.Types} methods needed by {@code sis-utility} module.
- * This class opportunistically implements {@link CodeList.Filter} interface, but this should be considered
- * an implementation details.
+ * This class opportunistically implements {@link Predicate} interface, but this is an implementation details.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public final class CodeLists implements CodeList.Filter {
+public final class CodeLists implements Predicate<CodeList<?>> {
     /**
      * The name of bundle resources for code list titles. The resources should be loaded with
      * the same class loader than {@code org.opengis.annotation.UML.class.getClassLoader()}.
@@ -51,31 +51,19 @@ public final class CodeLists implements CodeList.Filter {
     private final String codename;
 
     /**
-     * {@code true} if {@link CodeList#valueOf} is allowed to create new code lists.
-     */
-    private final boolean canCreate;
-
-    /**
      * Creates a new filter for the specified code name.
      */
-    private CodeLists(final String codename, final boolean canCreate) {
+    private CodeLists(final String codename) {
         this.codename  = codename;
-        this.canCreate = canCreate;
-    }
-
-    /**
-     * Returns the name of the code to create, or {@code null} if no new code list shall be created.
-     */
-    @Override
-    public String codename() {
-        return canCreate ? codename : null;
     }
 
     /**
      * Returns {@code true} if the given code matches the name we are looking for.
+     *
+     * @param  code  the code list candidate.
      */
     @Override
-    public boolean accept(final CodeList<?> code) {
+    public boolean test(final CodeList<?> code) {
         for (final String candidate : code.names()) {
             if (accept(candidate, codename)) {
                 return true;
@@ -110,7 +98,7 @@ public final class CodeLists implements CodeList.Filter {
         if (name == null || name.isEmpty()) {
             return null;
         }
-        return CodeList.valueOf(codeType, new CodeLists(name, canCreate));
+        return CodeList.valueOf(codeType, new CodeLists(name), canCreate ? name : null);
     }
 
     /**
