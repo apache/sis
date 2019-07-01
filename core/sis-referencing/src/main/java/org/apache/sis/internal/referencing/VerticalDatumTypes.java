@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 import javax.measure.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.util.GenericName;
@@ -34,15 +35,15 @@ import org.apache.sis.util.Characters;
  * Those constants are not in public API because they were intentionally omitted from ISO 19111,
  * and the ISO experts said that they should really not be public.
  *
- * <p>This class implements {@code CodeList.Filter} for opportunist reasons.
+ * <p>This class implements {@link Predicate} for opportunist reasons.
  * This implementation convenience may change in any future SIS version.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.0
  * @since   0.4
  * @module
  */
-public final class VerticalDatumTypes implements CodeList.Filter {
+public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
     /**
      * A vertical datum for ellipsoidal heights that are measured along the
      * normal to the ellipsoid used in the definition of horizontal datum.
@@ -187,7 +188,7 @@ public final class VerticalDatumTypes implements CodeList.Filter {
             for (int i=0; i<name.length();) {
                 final int c = name.codePointAt(i);
                 if (Character.isLetter(c)) {
-                    return CodeList.valueOf(VerticalDatumType.class, new VerticalDatumTypes(name));
+                    return CodeList.valueOf(VerticalDatumType.class, new VerticalDatumTypes(name), null);
                 }
                 i += Character.charCount(c);
             }
@@ -230,19 +231,8 @@ public final class VerticalDatumTypes implements CodeList.Filter {
      * @return {@code true} if the code matches the criterion.
       */
     @Override
-    public boolean accept(final CodeList<?> code) {
+    public boolean test(final CodeList<?> code) {
         final int i = datum.indexOf(code.name());
         return (i == 0) || (i >= 0 && Character.isWhitespace(datum.codePointBefore(i)));
-    }
-
-    /**
-     * Returns {@code null} for disabling the creation of new code list elements.
-     * This method is public as an implementation side-effect and should be ignored.
-     *
-     * @return {@code null}.
-     */
-    @Override
-    public String codename() {
-        return null;
     }
 }
