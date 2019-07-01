@@ -62,6 +62,8 @@ public final class CodeLists implements CodeList.Filter {
 
     /**
      * Returns the name of the code to create, or {@code null} if no new code list shall be created.
+     *
+     * @return the name specified at construction time.
      */
     @Override
     public String codename() {
@@ -70,6 +72,8 @@ public final class CodeLists implements CodeList.Filter {
 
     /**
      * Returns {@code true} if the given code matches the name we are looking for.
+     *
+     * @param  code  the code list candidate.
      */
     @Override
     public boolean accept(final CodeList<?> code) {
