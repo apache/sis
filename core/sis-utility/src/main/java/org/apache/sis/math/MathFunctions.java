@@ -197,6 +197,8 @@ public final class MathFunctions extends Static {
      *     sqrt(vector[0]² + vector[1]² + … + vector[length-1]²)
      * }
      *
+     * If the given vector contains a NaN value, then the result is NaN.
+     *
      * <div class="section">Implementation note</div>
      * In the special case where only one element is different than zero, this method
      * returns directly the {@linkplain Math#abs(double) absolute value} of that element
@@ -207,7 +209,7 @@ public final class MathFunctions extends Static {
      * Cartesian coordinate system}.
      *
      * @param  vector  the vector for which to compute the magnitude.
-     * @return the magnitude of the given vector.
+     * @return the magnitude of the given vector as a positive number, of NaN.
      *
      * @see Math#hypot(double, double)
      */
@@ -219,7 +221,7 @@ public final class MathFunctions extends Static {
         do if (i == 0) return 0;
         while ((v1 = vector[--i]) == 0);
 
-        // We have found a non-zero element. If it is the only one, returns it directly.
+        // We have found a non-zero element. If it is the only one, returns its absolute value.
         double v2;
         do if (i == 0) return Math.abs(v1);
         while ((v2 = vector[--i]) == 0);
