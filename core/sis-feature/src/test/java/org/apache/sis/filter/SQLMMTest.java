@@ -53,6 +53,7 @@ public class SQLMMTest extends TestCase {
         //test invalid
         try {
             factory.function("ST_Transform");
+            Assert.fail("Creation with no argument should fail");
         } catch (IllegalArgumentException ex) {
             //ok
         }
@@ -67,17 +68,29 @@ public class SQLMMTest extends TestCase {
         final Feature feature = type.newInstance();
         feature.setPropertyValue("geom", geometry);
 
-        //transform function
-        final Function fct = factory.function("ST_Transform", factory.property("geom"), factory.literal("EPSG:4326"));
+        { //test transform function using epsg code
+            final Function fct = factory.function("ST_Transform", factory.property("geom"), factory.literal("EPSG:4326"));
 
-        //check result
-        final Object newGeom = fct.evaluate(feature);
-        Assert.assertTrue(newGeom instanceof Point);
-        final Point trs = (Point) newGeom;
-        Assert.assertEquals(outCrs, trs.getUserData());
-        Assert.assertEquals(30.0, trs.getX(), 0.0);
-        Assert.assertEquals(10.0, trs.getY(), 0.0);
+            //check result
+            final Object newGeom = fct.evaluate(feature);
+            Assert.assertTrue(newGeom instanceof Point);
+            final Point trs = (Point) newGeom;
+            Assert.assertEquals(outCrs, trs.getUserData());
+            Assert.assertEquals(30.0, trs.getX(), 0.0);
+            Assert.assertEquals(10.0, trs.getY(), 0.0);
+        }
 
+        { //test transform function using crs object
+            final Function fct = factory.function("ST_Transform", factory.property("geom"), factory.literal(outCrs));
+
+            //check result
+            final Object newGeom = fct.evaluate(feature);
+            Assert.assertTrue(newGeom instanceof Point);
+            final Point trs = (Point) newGeom;
+            Assert.assertEquals(outCrs, trs.getUserData());
+            Assert.assertEquals(30.0, trs.getX(), 0.0);
+            Assert.assertEquals(10.0, trs.getY(), 0.0);
+        }
 
     }
 

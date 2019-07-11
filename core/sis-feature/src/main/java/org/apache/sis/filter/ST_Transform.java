@@ -53,13 +53,24 @@ final class ST_Transform extends AbstractFunction implements FeatureExpression {
         if (!(parameters[1] instanceof Literal)) {
             throw new IllegalArgumentException("Second expression must be a Literal");
         }
-        final String crsCode = parameters[1].evaluate(null, String.class);
-        try {
-            this.outCrs = CRS.forCode(crsCode);
-        } catch (FactoryException ex) {
-            throw new IllegalArgumentException("Requested CRS" + crsCode + "is undefined.\n"+ex.getMessage(), ex);
+        final Object crsObj = parameters[1].evaluate(null);
+        if (crsObj instanceof CoordinateReferenceSystem) {
+            outCrs = (CoordinateReferenceSystem) crsObj;
+        } else if (crsObj instanceof Number) {
+            try {
+                this.outCrs = CRS.forCode("EPSG:" + crsObj);
+            } catch (FactoryException ex) {
+                throw new IllegalArgumentException("Requested CRS" + crsObj + "is undefined.\n"+ex.getMessage(), ex);
+            }
+        } else if (crsObj instanceof String) {
+            try {
+                this.outCrs = CRS.forCode((String) crsObj);
+            } catch (FactoryException ex) {
+                throw new IllegalArgumentException("Requested CRS" + crsObj + "is undefined.\n"+ex.getMessage(), ex);
+            }
+        } else {
+            throw new IllegalArgumentException("Second expression must be a Literal with a CRS, Number or String value");
         }
-
     }
 
     @Override

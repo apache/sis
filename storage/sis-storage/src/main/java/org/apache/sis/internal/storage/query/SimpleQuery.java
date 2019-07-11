@@ -19,7 +19,7 @@ package org.apache.sis.internal.storage.query;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import org.opengis.util.GenericName;
+import java.util.StringJoiner;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -29,15 +29,14 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.resources.Errors;
-
-// Branch-dependent imports
-import org.opengis.filter.Filter;
-import org.opengis.filter.sort.SortBy;
-import org.opengis.filter.expression.Expression;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyType;
+import org.opengis.filter.Filter;
+import org.opengis.filter.expression.Expression;
+import org.opengis.filter.sort.SortBy;
+import org.opengis.util.GenericName;
 
 
 /**
@@ -353,6 +352,7 @@ public class SimpleQuery extends Query {
             if (alias != null) {
                 b.append('"').append(alias).append('"');
             }
+            b.append(" = ").append(expression.getClass().getSimpleName());
             return b.append(']').toString();
         }
     }
@@ -420,4 +420,43 @@ public class SimpleQuery extends Query {
         }
         return true;
     }
+
+    /**
+     * Display a text representation looking like an SQL Select query.
+     *
+     * @return text representation
+     */
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ");
+        if (columns != null) {
+            final StringJoiner sj = new StringJoiner(", ");
+            for (Column col : columns) {
+                sj.add(col.toString());
+            }
+            sb.append(sj.toString());
+        }
+        if (filter != null && filter != Filter.INCLUDE) {
+            sb.append(" WHERE ").append(filter);
+        }
+        if (sortBy != null && sortBy != SortBy.UNSORTED) {
+            sb.append(" ORDER BY ");
+            final StringJoiner sj = new StringJoiner(", ");
+            for (SortBy s : sortBy) {
+                sj.add(s.toString());
+            }
+            sb.append(sj.toString());
+        }
+        if (limit != UNLIMITED) {
+            sb.append(" LIMIT ").append(limit);
+        }
+        if (skip != 0) {
+            sb.append(" OFFSET ").append(limit);
+        }
+
+        return sb.toString();
+    }
+
+
 }
