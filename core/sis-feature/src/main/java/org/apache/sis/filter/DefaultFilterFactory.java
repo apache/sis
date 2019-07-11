@@ -17,16 +17,21 @@
 package org.apache.sis.filter;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
+import org.apache.sis.internal.feature.FunctionRegister;
 import org.opengis.filter.*;
 import org.opengis.filter.capability.*;
+import org.opengis.filter.capability.SpatialOperator;
 import org.opengis.filter.expression.*;
 import org.opengis.filter.identity.*;
 import org.opengis.filter.sort.*;
 import org.opengis.filter.spatial.*;
 import org.opengis.filter.temporal.*;
-import org.opengis.filter.capability.SpatialOperator;       // Resolve ambiguity with org.opengis.filter.spatial.
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
 import org.opengis.util.GenericName;
@@ -46,6 +51,21 @@ import org.opengis.util.GenericName;
  * @module
  */
 public class DefaultFilterFactory implements FilterFactory2 {
+
+    //TODO we should use a class like FeatureNaming to store and find registers.
+    //but it is not accessible here, should we move it ?
+    private static Map<String,FunctionRegister> FUNCTION_REGISTERS = new HashMap<>();
+    static {
+        final Iterator<FunctionRegister> iterator = ServiceLoader.load(FunctionRegister.class).iterator();
+        while (iterator.hasNext()) {
+            FunctionRegister register = iterator.next();
+            for (String name : register.getNames()) {
+                FUNCTION_REGISTERS.put(name, register);
+            }
+        }
+    }
+
+
     /**
      * Creates a new factory.
      */
@@ -690,7 +710,11 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Function function(final String name, final Expression... parameters) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final FunctionRegister register = FUNCTION_REGISTERS.get(name);
+        if (register == null) {
+            throw new IllegalArgumentException("Unknown function "+name);
+        }
+        return register.create(name, parameters);
     }
 
     /**
