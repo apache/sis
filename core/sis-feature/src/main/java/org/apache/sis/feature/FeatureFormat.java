@@ -412,9 +412,10 @@ public class FeatureFormat extends TabularFormat<Object> {
                 value = feature.getPropertyValue(propertyType.getName().toString());
                 if (value == null) {
                     if (propertyType instanceof AttributeType<?>
-                            && ((AttributeType<?>) propertyType).getMinimumOccurs() == 0)
+                            && ((AttributeType<?>) propertyType).getMinimumOccurs() == 0
+                            && ((AttributeType<?>) propertyType).characteristics().isEmpty())
                     {
-                        continue;                           // If optional and no value, skip the full row.
+                        continue;                           // If optional, no value and no characteristics, skip the full row.
                     }
                     if (propertyType instanceof FeatureAssociationRole
                             && ((FeatureAssociationRole) propertyType).getMinimumOccurs() == 0)
