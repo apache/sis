@@ -18,8 +18,8 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import static java.lang.Double.NaN;
 import java.util.Collections;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.provider.SatelliteTracking;
 import org.apache.sis.measure.Units;
@@ -57,7 +57,7 @@ public class ConicSatelliteTrackingTest extends MapProjectionTestCase {
      * @param λ0 : central meridian.
      * @param φ1 : first parallel of conformality, with true scale.
      * @param φ2 : second parallel of conformality, without true scale.
-     * @param φ0 : lattitude_of_origin : latitude Crossing the central meridian
+     * @param φ0 : latitude_of_origin : latitude Crossing the central meridian
      * at the desired origin of rectangular coordinates (null or NaN for
      * cylindrical satellite tracking projection.)
      * @return
@@ -98,6 +98,9 @@ public class ConicSatelliteTrackingTest extends MapProjectionTestCase {
     /**
      * Tests the projection of a few points on a sphere.
      *
+     * Test based on the numerical example given by Snyder p. 360 to 363 of 
+     * <cite> Map Projections - A working Manual</cite>
+     *
      * @throws FactoryException if an error occurred while creating the map
      * projection.
      * @throws TransformException if an error occurred while projecting a point.
@@ -112,7 +115,7 @@ public class ConicSatelliteTrackingTest extends MapProjectionTestCase {
                 -90,     //central_meridian
                 45,      //standard_parallel_1
                 70,      //standard_parallel_2
-                30       //lattitude_of_origin
+                30       //latitude_of_origin
         );
         assertTrue(isInverseTransformSupported);
         verifyTransform(
@@ -122,6 +125,56 @@ public class ConicSatelliteTrackingTest extends MapProjectionTestCase {
                 new double[]{ // Expected (x,y) results in metres.
                     0.2001910, 0.2121685
                 });
+    }
+    
+    /**
+     * Tests the projection of a few points on a sphere.
+     *
+     * Test based on the sample coordinates for several of the
+     * Satellite-Tracking Projections shown in table 39 from
+     * <cite> Map Projections - A working Manual</cite>
+     *
+     * @throws FactoryException if an error occurred while creating the map
+     * projection.
+     * @throws TransformException if an error occurred while projecting a point.
+     */
+    @Test
+    public void testSampleCoordinates() throws FactoryException, TransformException {
+        
+        //Following tests don't pass with the former tolerance.
+        tolerance = Formulas.LINEAR_TOLERANCE; 
+        
+        //----------------------------------------------------------------------
+        // φ1 = 30° ; φ2 = 60°
+        //---------------------
+        createProjection(
+                99.092,  //satellite_orbit_inclination
+                103.267, //satellite_orbital_period
+                1440.0,  //ascending_node_period
+                -90,     //central_meridian
+                30,      //standard_parallel_1
+                60,      //standard_parallel_2
+                30       //latitude_of_origin
+        );
+//        double xConverterFactor=0.017453;
+//        verifyTransform(
+//                new double[]{ // (λ,φ) coordinates in degrees to project.
+//                      0,  0,
+////                     10,  0, 
+////                    -10, 10,
+////                     60, 40,
+////                     80, 70,
+////                    -120, 80.908  //Tracking limit
+//                },
+//                new double[]{ // Expected (x,y) results in metres.
+//                    0, 0,
+////                    xConverterFactor *   10,  0,
+////                    xConverterFactor *  -10,  0.17579,
+////                    xConverterFactor *   60,  0.79741,
+////                    xConverterFactor *   80,  2.34465,
+////                    xConverterFactor * -120,  7.23571 //Tracking limit
+//                });
+        
     }
 
 }

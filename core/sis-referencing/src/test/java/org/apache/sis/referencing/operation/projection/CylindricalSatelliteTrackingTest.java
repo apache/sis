@@ -51,7 +51,7 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
      * @param λ0 : central meridian.
      * @param φ1 : first parallel of conformality, with true scale.
      * @param φ2 : second parallel of conformality, without true scale.
-     * @param φ0 : lattitude_of_origin : latitude Crossing the central meridian
+     * @param φ0 : latitude_of_origin : latitude Crossing the central meridian
      * at the desired origin of rectangular coordinates (null or NaN for
      * cylindrical satellite tracking projection.)
      * @return
@@ -66,6 +66,9 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
     /**
      * Tests the projection of a few points on a sphere.
      *
+     * Test based on the numerical example given by Snyder p. 360 to 363 of 
+     * <cite> Map Projections - A working Manual</cite>
+     * 
      * @throws FactoryException if an error occurred while creating the map
      * projection.
      * @throws TransformException if an error occurred while projecting a point.
@@ -89,7 +92,28 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
                 new double[]{ // Expected (x,y) results in metres.
                     0.2267249, 0.6459071
                 });
+    }
+    
+    /**
+     * Tests the projection of a few points on a sphere.
+     *
+     * Test based on the sample coordinates for several of the
+     * Satellite-Tracking Projections shown in table 38 from
+     * <cite> Map Projections - A working Manual</cite>
+     *
+     * @throws FactoryException if an error occurred while creating the map
+     * projection.
+     * @throws TransformException if an error occurred while projecting a point.
+     */
+    @Test
+    public void testSampleCoordinates() throws FactoryException, TransformException {
         
+        //Following tests don't pass with the former tolerance.
+        tolerance = Formulas.LINEAR_TOLERANCE; 
+        
+        //----------------------------------------------------------------------
+        // φ1 = 0°
+        //---------
         createProjection(
                 99.092,  //satellite_orbit_inclination
                 103.267, //satellite_orbital_period
@@ -97,21 +121,88 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
                 0,       //central_meridian
                 0        //standard_parallel_1
         );
-        
-        tolerance = Formulas.LINEAR_TOLERANCE; //Don't pass with the former tolerance.
-        
-        final double xConverterFactor=0.017453;
+       
+        double xConverterFactor=0.017453;
         verifyTransform(
                 new double[]{ // (λ,φ) coordinates in degrees to project.
                       0,  0,
                      10,  0, 
-                    -10, 10
+                    -10, 10,
+                     60, 40,
+                     80, 70,
+                    -120, 80.908  //Tracking limit
                 },
                 new double[]{ // Expected (x,y) results in metres.
                     0, 0,
-                    xConverterFactor *  10,  0,
-                    xConverterFactor * -10,  0.17579,
+                    xConverterFactor *   10,  0,
+                    xConverterFactor *  -10,  0.17579,
+                    xConverterFactor *   60,  0.79741,
+                    xConverterFactor *   80,  2.34465,
+                    xConverterFactor * -120,  7.23571 //Tracking limit
                 });
+        
+        
+        //----------------------------------------------------------------------
+        // φ1 = +- 30°
+        //------------
+        createProjection(
+                99.092,  //satellite_orbit_inclination
+                103.267, //satellite_orbital_period
+                1440.0,  //ascending_node_period
+                0,       //central_meridian
+                -30        //standard_parallel_1
+        );
+       
+        xConverterFactor=0.015115;
+        verifyTransform(
+                new double[]{ // (λ,φ) coordinates in degrees to project.
+                      0,  0,
+                     10,  0, 
+                    -10, 10,
+                     60, 40,
+                     80, 70,
+                    -120, 80.908  //Tracking limit
+                },
+                new double[]{ // Expected (x,y) results in metres.
+                    0, 0,
+                    xConverterFactor *   10,  0,
+                    xConverterFactor *  -10,  0.14239,
+                    xConverterFactor *   60,  0.64591,
+                    xConverterFactor *   80,  1.89918,
+                    xConverterFactor * -120,  5.86095 //Tracking limit
+                });
+        
+        //----------------------------------------------------------------------
+        // φ1 = +- 45°
+        //------------
+        createProjection(
+                99.092,  //satellite_orbit_inclination
+                103.267, //satellite_orbital_period
+                1440.0,  //ascending_node_period
+                0,       //central_meridian
+                45        //standard_parallel_1
+        );
+       
+        xConverterFactor=0.012341;
+        verifyTransform(
+                new double[]{ // (λ,φ) coordinates in degrees to project.
+                      0,  0,
+                     10,  0, 
+                    -10, 10,
+                     60, 40,
+                     80, 70,
+                    -120, 80.908  //Tracking limit
+                },
+                new double[]{ // Expected (x,y) results in metres.
+                    0, 0,
+                    xConverterFactor *   10,  0,
+                    xConverterFactor *  -10,  0.10281,
+                    xConverterFactor *   60,  0.46636,
+                    xConverterFactor *   80,  1.37124,
+                    xConverterFactor * -120,  4.23171 //Tracking limit
+                });
+        
+        
     }
     
 }

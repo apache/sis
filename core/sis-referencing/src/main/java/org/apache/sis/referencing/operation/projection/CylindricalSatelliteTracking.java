@@ -191,7 +191,7 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
         final double L   = y * dF1 / cos_φ1; // In eq. Snyder 28-19 : L = y * dF1 / R . cos_φ1
         
         dstPts[dstOff  ] =  x;
-        dstPts[dstOff+1] = lattitudeFromNewtonMethod(L); //φ
+        dstPts[dstOff+1] = latitudeFromNewtonMethod(L); //φ
     }
 
 }

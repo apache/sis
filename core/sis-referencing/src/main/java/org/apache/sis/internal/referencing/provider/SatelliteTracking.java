@@ -19,10 +19,7 @@
 package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
-import static org.apache.sis.internal.referencing.provider.AbstractProvider.createZeroConstant;
-import static org.apache.sis.internal.referencing.provider.Mercator1SP.LATITUDE_OF_ORIGIN;
 import org.apache.sis.measure.Units;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.ConicSatelliteTracking;

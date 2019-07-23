@@ -27,7 +27,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 
 import static java.lang.Math.*;
-import java.util.function.DoubleUnaryOperator;
 import org.apache.sis.internal.referencing.Resources;
 import static org.apache.sis.internal.referencing.provider.SatelliteTracking.*;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -100,11 +99,14 @@ public class ConicSatelliteTracking extends NormalizedProjection{
      * Projection Cone's constant.
      */
     private final double n;
+    
     /**
-     * Approximation of the limiting lattitude to which the {@code L coefficient}
+     * Approximation of the Minimum latitude at infinite radius. 
+     * 
+     * Limiting latitude to which the {@code L coefficient}
      * is associated with a particular case {@code L equals -s0/n}.
      */
-    private final double lattitudeLimit;
+    private final double latitudeLimit;
     /**
      * Boolean attribute indicating if the projection cone's constant is positive.
      * */
@@ -174,31 +176,29 @@ public class ConicSatelliteTracking extends NormalizedProjection{
             final double sin_φ0 = sin(φ0);
             final double φ2 = toRadians(initializer.getAndStore(STANDARD_PARALLEL_2));   //appropriated use of toRadians??
 
-//        final double F0 = atan( (p2_on_p1*cos2_φ0 - cos_i)/sqrt(cos2_φ0 - cos2_i) );
-//        final double F1 = atan( (p2_on_p1*cos2_φ1 - cos_i)/sqrt(cos2_φ1 - cos2_i) );
-//        final double F2 = atan( (p2_on_p1*cos2_φ2 - cos_i)/sqrt(cos2_φ2 - cos2_i) );
-//        final double dλ0 = -asin(sin_φ0/sin_i);
-//        final double dλ1 = -asin(sin_φ1/sin_i);
-//        final double dλ2 = -asin(sin_φ2/sin_i);   
-//        final double λt0 = atan( tan(dλ0) * cos_i );
-//        final double λt1 = atan( tan(dλ1) * cos_i );
-//        final double λt2 = atan( tan(dλ2) * cos_i );
-            final DoubleUnaryOperator computeFn = (cos2_φn) -> atan((p2_on_p1 * cos2_φn - cos_i) / sqrt(cos2_φn - cos2_i)); // eq.28-9 in Snyder 
-            final double F0 = computeFn.applyAsDouble(cos2_φ0);
+//            final DoubleUnaryOperator computeFn = (cos2_φn) -> atan((p2_on_p1 * cos2_φn - cos_i) / sqrt(cos2_φn - cos2_i)); // eq.28-9 in Snyder 
+//            final double F0 = computeFn.applyAsDouble(cos2_φ0);
+//            final double F1 = computeFn.applyAsDouble(cos2_φ1);
+//            final DoubleUnaryOperator computedλn = (sin_φn) -> -asin(sin_φn / sin_i); // eq.28-2a in Snyder 
+//            final double dλ0 = computedλn.applyAsDouble(sin_φ0);
+//            final double dλ1 = computedλn.applyAsDouble(sin_φ1);
+//            final DoubleUnaryOperator computeλtn = (dλn) -> atan(tan(dλn) * cos_i); // eq.28-3a in Snyder 
+//            final double λt0 = computeλtn.applyAsDouble(dλ0);
+//            final double λt1 = computeλtn.applyAsDouble(dλ1);
+
+            final double F0 = computeFn(cos2_φ0);
             /*
-         *Inclination of the groundtrack to the meridian at latitude φ1
+             * Inclination of the groundtrack to the meridian at latitude φ1
              */
-            final double F1 = computeFn.applyAsDouble(cos2_φ1);
+            final double F1 = computeFn(cos2_φ1);
 
             cos_φ1xsin_F1 = cos_φ1 * sin(F1);
 
-            final DoubleUnaryOperator computedλn = (sin_φn) -> -asin(sin_φn / sin_i); // eq.28-2a in Snyder 
-            final double dλ0 = computedλn.applyAsDouble(sin_φ0);
-            final double dλ1 = computedλn.applyAsDouble(sin_φ1);
+            final double dλ0 = computedλn(sin_φ0);
+            final double dλ1 = computedλn(sin_φ1);
 
-            final DoubleUnaryOperator computeλtn = (dλn) -> atan(tan(dλn) * cos_i); // eq.28-3a in Snyder 
-            final double λt0 = computeλtn.applyAsDouble(dλ0);
-            final double λt1 = computeλtn.applyAsDouble(dλ1);
+            final double λt0 = computeλtn(dλ0);
+            final double λt1 = computeλtn(dλ1);
 
             final double L0 = λt0 - p2_on_p1 * dλ0;
             final double L1 = λt1 - p2_on_p1 * dλ1;
@@ -211,10 +211,12 @@ public class ConicSatelliteTracking extends NormalizedProjection{
                 final double cos_φ2 = cos(φ2);
                 final double cos2_φ2 = cos_φ2 * cos_φ2;
                 final double sin_φ2 = sin(φ2);
-                final double dλ2 = computedλn.applyAsDouble(sin_φ2);
-                final double λt2 = computeλtn.applyAsDouble(dλ2);
+//                final double dλ2 = computedλn.applyAsDouble(sin_φ2);
+                final double dλ2 = computedλn(sin_φ2);
+                final double λt2 = computeλtn(dλ2);
                 final double L2 = λt2 - p2_on_p1 * dλ2;
-                final double F2 = computeFn.applyAsDouble(cos2_φ2);
+//                final double F2 = computeFn.applyAsDouble(cos2_φ2);
+                final double F2 = computeFn(cos2_φ2);
                 n = (F2 - F1) / (L2 - L1);
             } else {
                 n = sin_φ1 * (p2_on_p1 * (2 * cos2_i - cos2_φ1) - cos_i) / (p2_on_p1 * cos2_φ1 - cos_i); //eq. 28-17 in Snyder 
@@ -223,28 +225,24 @@ public class ConicSatelliteTracking extends NormalizedProjection{
             ρ0 = cos_φ1xsin_F1 / (n * sin(n * L0 + s0)); // *R in eq.28-12 in Snyder 
 
             //======================== Unsure ======================================
-            // Aim to assess the limit lattitude associated with -s0/n L-value.
+            // Aim to assess the limit latitude associated with -s0/n L-value.
             //
-            lattitudeLimit = lattitudeFromNewtonMethod(-s0 / n);
+            latitudeLimit = latitudeFromNewtonMethod(-s0 / n);
             positiveN = (n >= 0);
             //======================================================================
 
 //            //Additionally we can compute the radius of the circle to which groundtracks
 //            //are tangent on the map :
 //            ρs = cos_φ1xsin_F1 / n; //*R
-
             //======================================================================        
             /*
          * At this point, all parameters have been processed. Now process to their
          * validation and the initialization of (de)normalize affine transforms.
              */
-        final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
-//        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-        normalize  .convertAfter (0, n, null);  //For conic tracking
-//        denormalize.convertBefore(0, 1/PI,     null);
-//        denormalize.convertBefore(1, , null);
+            final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+            normalize.convertAfter(0, n, null);  //For conic tracking
         }else{
-            n = lattitudeLimit = cos_φ1xsin_F1 = s0 = ρ0 = NaN;
+            n = latitudeLimit = cos_φ1xsin_F1 = s0 = ρ0 = NaN;
             positiveN = false;
         }
     }
@@ -275,7 +273,7 @@ public class ConicSatelliteTracking extends NormalizedProjection{
         /*
          * According to the Snyder (page 236) in those cases cannot or should not be plotted.
          */
-        if( ((positiveN)&&(φ<=lattitudeLimit)) || ((!positiveN)&&(φ>=lattitudeLimit)) ){
+        if( ((positiveN)&&(φ<=latitudeLimit)) || ((!positiveN)&&(φ>=latitudeLimit)) ){
             throw new ProjectionException(Resources.format(Resources.Keys.CanNotTransformCoordinates_2));
         }
         
@@ -285,11 +283,11 @@ public class ConicSatelliteTracking extends NormalizedProjection{
         final double L      = λt - p2_on_p1 * dλ;
         
         /*
-         * As {@code lattitudeLimit} is an approximation we repeat the test here.
+         * As {@code latitudeLimit} is an approximation we repeat the test here.
          */
         if( ((positiveN)&&(L<=-s0/n)) || ((!positiveN)&&(L>=-s0/n)) ){
             //TODO if usefull, could we add :
-            // lattitudeLimit = φ;
+            // latitudeLimit = φ;
             throw new ProjectionException(Resources.format(Resources.Keys.CanNotTransformCoordinates_2));
         }
         
@@ -349,10 +347,10 @@ public class ConicSatelliteTracking extends NormalizedProjection{
         
         //TODO ensure that λ0 will be added. ;  In eq. Snyder 28-23 : λ0 + θ/n
         dstPts[dstOff  ] =  θ ;//λ 
-        dstPts[dstOff+1] = lattitudeFromNewtonMethod(L); //φ
+        dstPts[dstOff+1] = latitudeFromNewtonMethod(L); //φ
     }
     
-    protected final double lattitudeFromNewtonMethod(final double l){
+    protected final double latitudeFromNewtonMethod(final double l){
         double dλ = -PI/2;
         double dλn = Double.MIN_VALUE;
         double A, A2, Δdλ;
@@ -382,10 +380,40 @@ public class ConicSatelliteTracking extends NormalizedProjection{
     }
     
     
-    public double getLattitudeLimit(){
-        return lattitudeLimit;
+    public double getLatitudeLimit(){
+        return latitudeLimit;
     }
     
+    /**
+     * Method to compute the φn coefficient according to equation 28-9
+     * in Snyder's Map Projections manual.
+     * 
+     * @param cos2_φn : square of the φn 's cosinus.
+     * @return Fn  coefficient associated with the φn latittude.
+     */
+    private double computeFn(final double cos2_φn) {
+        return atan((p2_on_p1 * cos2_φn - cos_i) / sqrt(cos2_φn - cos2_i)); // eq.28-9 in Snyder 
+    }
+    /**
+     * Method to compute the φn coefficient according to equation 28-2a
+     * in Snyder's Map Projections manual.
+     * 
+     * @param sin_φn : φn 's sinus.
+     * @return dλn  coefficient associated with the φn latittude.
+     */
+    private double computedλn(final double sin_φn) {
+        return -asin(sin_φn / sin_i); // eq.28-2a in Snyder 
+    }
+    /**
+     * Method to compute the φn coefficient according to equation 28-3a
+     * in Snyder's Map Projections manual.
+     * 
+     * @param dλn  coefficient associated with the φn latittude.
+     * @return λtn  coefficient associated with the φn latittude.
+     */
+    private double computeλtn(final double dλn) {
+        return atan(tan(dλn) * cos_i); // eq.28-3a in Snyder 
+    }
 //    /**
 //     * Radius of the circle radius of the circle to which groundtracks
 //     * are tangent on the map.
