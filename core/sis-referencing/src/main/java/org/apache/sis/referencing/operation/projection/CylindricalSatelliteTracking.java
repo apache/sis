@@ -29,15 +29,15 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 
 /**
- * <cite>Cylindrical Satellite-Tracking projections</cite>. 
- * 
+ * <cite>Cylindrical Satellite-Tracking projections</cite>.
+ *
  * <cite>
  * - All groundtracks
  * for satellites orbiting the Earth with the same orbital parameters are shown
  * as straight lines on the map.
  *
  * - Cylindrical {@link CylindricalSatelliteTracking}
- * or conical {@link ConicSatelliteTracking} form available. 
+ * or conical {@link ConicSatelliteTracking} form available.
  *
  * - Neither conformal nor equal-area.
  *
@@ -76,13 +76,13 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters;
  */
 public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
 
-    
+
     /**
-     * F1' in Snyder : tangente of the angle on both the globe and on the map between 
-     * the groundtrack and the meridian at latitude φ1. 
+     * F1' in Snyder : tangente of the angle on both the globe and on the map between
+     * the groundtrack and the meridian at latitude φ1.
      */
     final double dF1;
-    
+
     /**
      * Create a Cylindrical Satellite Tracking Projection from the given
      * parameters.
@@ -99,15 +99,15 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
 
     private CylindricalSatelliteTracking(final Initializer initializer) {
         super(initializer);
-        
+
         final double cos2_φ1 = cos_φ1 * cos_φ1;
         dF1 = (p2_on_p1 * cos2_φ1 - cos_i) / sqrt(cos2_φ1 - cos2_i);
-        
+
         final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
 //        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
 
         normalize  .convertAfter (0, cos_φ1, null);  //For conic tracking
-        
+
 //        denormalize.convertBefore(0, 1/PI,     null);
 //        denormalize.convertBefore(1, , null);
 
@@ -117,10 +117,10 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
      * Converts the specified (λ,φ) coordinate (units in radians) and stores the result in {@code dstPts}
      * (linear distance on a unit sphere). In addition, opportunistically computes the projection derivative
      * if {@code derivate} is {@code true}.
-     * 
+     *
      * <cite> The Yaxis lies along the central meridian λ0, y increasing northerly,
      * and X axis intersects perpendicularly at O_PARALLEL φ0, x increasing easterly.
-     * </cite> 
+     * </cite>
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
@@ -130,12 +130,12 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
     public Matrix transform(double[] srcPts, int srcOff,
             double[] dstPts, int dstOff,
             boolean derivate) throws ProjectionException {
-        
+
         final double λ = srcPts[srcOff];
         final double φ = srcPts[srcOff + 1];
 
         // TODO : check the condition and the thrown exception.
-        if (abs(φ) > PI / 2 - abs(PI / 2 - i)) {  // Exceed tracking limit 
+        if (abs(φ) > PI / 2 - abs(PI / 2 - i)) {  // Exceed tracking limit
             throw new ProjectionException(Resources.format(Resources.Keys.CanNotTransformCoordinates_2));
         }
 
@@ -155,8 +155,8 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
         /* =====================================================================
         * Uncomputed scale factors :
         *===========================
-        * F' : tangente of the angle on the globe between the groundtrack and 
-        * the meridian at latitude φ 
+        * F' : tangente of the angle on the globe between the groundtrack and
+        * the meridian at latitude φ
         * final double dF = (p2_on_p1 * cos2_φ - cos_i) / sqrt(cos2_φ - cos2_i);
         * k = cos_φ1/cos_φ;   // Parallel eq. Snyder 28-7
         * h = k* dF / dF1;    // Meridian eq. Snyder 28-8
@@ -170,7 +170,7 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
 //
 //        final double dy_dλ = 0;
 //        final double dy_dφ =
-                
+
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -181,15 +181,15 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
      * @throws ProjectionException if the coordinates can not be converted.
      */
     @Override
-    protected void inverseTransform(double[] srcPts, int srcOff, 
-                                    double[] dstPts, int dstOff) 
+    protected void inverseTransform(double[] srcPts, int srcOff,
+                                    double[] dstPts, int dstOff)
             throws ProjectionException {
-        
+
         final double x   = srcPts[srcOff];
         final double y   = srcPts[srcOff + 1];
-        
+
         final double L   = y * dF1 / cos_φ1; // In eq. Snyder 28-19 : L = y * dF1 / R . cos_φ1
-        
+
         dstPts[dstOff  ] =  x;
         dstPts[dstOff+1] = latitudeFromNewtonMethod(L); //φ
     }

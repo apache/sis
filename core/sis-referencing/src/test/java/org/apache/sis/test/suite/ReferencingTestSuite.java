@@ -180,6 +180,8 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.SinusoidalTest.class,
     org.apache.sis.referencing.operation.projection.PolyconicTest.class,
     org.apache.sis.referencing.operation.projection.MollweideTest.class,
+    org.apache.sis.referencing.operation.projection.ConicSatelliteTrackingTest.class,
+    org.apache.sis.referencing.operation.projection.CylindricalSatelliteTrackingTest.class,
 
     // Coordinate operation and derived Coordinate Reference Systems (cyclic dependency).
     org.apache.sis.referencing.operation.DefaultTransformationTest.class,

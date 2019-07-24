@@ -151,7 +151,7 @@ public class SatelliteTracking extends MapProjection {
         SATELLITE_ORBIT_INCLINATION = builder
                 .addName("satellite_orbit_inclination")
                 .setDescription("Angle of inclination between the plane of the Earth's Equator and the plane of the satellite orbit")
-                .create(0, Units.RADIAN);
+                .create(0, Units.DEGREE);
 
         SATELLITE_ORBITAL_PERIOD = builder
                 .addName("satellite_orbital_period")
@@ -162,7 +162,7 @@ public class SatelliteTracking extends MapProjection {
                 .addName("ascending_node_period")
                 .setDescription("Length of Earth's rotation with respect to the precessed ascending node")
                 .createStrictlyPositive(98.884, Units.MINUTE);
-                
+
         PARAMETERS = builder.addName(NAME)
                 .createGroupForMapProjection(CENTRAL_MERIDIAN,
                         STANDARD_PARALLEL_1, STANDARD_PARALLEL_2,
@@ -187,7 +187,7 @@ public class SatelliteTracking extends MapProjection {
     protected NormalizedProjection createProjection(final Parameters parameters) throws ParameterNotFoundException {
         ArgumentChecks.ensureNonNull("Parameters", parameters);
 
-        if (parameters.getValue(STANDARD_PARALLEL_2) == -parameters.getValue(STANDARD_PARALLEL_1)) { 
+        if (parameters.getValue(STANDARD_PARALLEL_2) == -parameters.getValue(STANDARD_PARALLEL_1)) {
             return new org.apache.sis.referencing.operation.projection.CylindricalSatelliteTracking(this, parameters);
         } else {
             return new org.apache.sis.referencing.operation.projection.ConicSatelliteTracking(this, parameters);

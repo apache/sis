@@ -35,9 +35,9 @@ import org.opengis.util.FactoryException;
  * @module
  */
 public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest {
-    
-    
-    
+
+
+
     /**
      * Creates a new instance of {@link ConicSatelliteTracking} concatenated
      * with the (de)normalization matrices. The new instance is stored in the
@@ -58,17 +58,17 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
      */
     private void createProjection(final double i,
             final double orbitalT, final double ascendingNodeT,
-            final double λ0,       final double φ1) 
+            final double λ0,       final double φ1)
             throws FactoryException {
         super.createProjection(i, orbitalT, ascendingNodeT, λ0, φ1, NaN, NaN);
     }
-    
+
     /**
      * Tests the projection of a few points on a sphere.
      *
-     * Test based on the numerical example given by Snyder p. 360 to 363 of 
+     * Test based on the numerical example given by Snyder p. 360 to 363 of
      * <cite> Map Projections - A working Manual</cite>
-     * 
+     *
      * @throws FactoryException if an error occurred while creating the map
      * projection.
      * @throws TransformException if an error occurred while projecting a point.
@@ -93,7 +93,7 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
                     0.2267249, 0.6459071
                 });
     }
-    
+
     /**
      * Tests the projection of a few points on a sphere.
      *
@@ -106,11 +106,12 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    public void testSampleCoordinates() throws FactoryException, TransformException {
-        
+    public void testSampleCoordinatesCylindricalProjection()
+            throws FactoryException, TransformException {
+
         //Following tests don't pass with the former tolerance.
-        tolerance = Formulas.LINEAR_TOLERANCE; 
-        
+        tolerance = Formulas.LINEAR_TOLERANCE;
+
         //----------------------------------------------------------------------
         // φ1 = 0°
         //---------
@@ -121,12 +122,12 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
                 0,       //central_meridian
                 0        //standard_parallel_1
         );
-       
+
         double xConverterFactor=0.017453;
         verifyTransform(
                 new double[]{ // (λ,φ) coordinates in degrees to project.
                       0,  0,
-                     10,  0, 
+                     10,  0,
                     -10, 10,
                      60, 40,
                      80, 70,
@@ -140,8 +141,8 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
                     xConverterFactor *   80,  2.34465,
                     xConverterFactor * -120,  7.23571 //Tracking limit
                 });
-        
-        
+
+
         //----------------------------------------------------------------------
         // φ1 = +- 30°
         //------------
@@ -152,12 +153,12 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
                 0,       //central_meridian
                 -30        //standard_parallel_1
         );
-       
+
         xConverterFactor=0.015115;
         verifyTransform(
                 new double[]{ // (λ,φ) coordinates in degrees to project.
                       0,  0,
-                     10,  0, 
+                     10,  0,
                     -10, 10,
                      60, 40,
                      80, 70,
@@ -171,7 +172,7 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
                     xConverterFactor *   80,  1.89918,
                     xConverterFactor * -120,  5.86095 //Tracking limit
                 });
-        
+
         //----------------------------------------------------------------------
         // φ1 = +- 45°
         //------------
@@ -182,12 +183,12 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
                 0,       //central_meridian
                 45        //standard_parallel_1
         );
-       
+
         xConverterFactor=0.012341;
         verifyTransform(
                 new double[]{ // (λ,φ) coordinates in degrees to project.
                       0,  0,
-                     10,  0, 
+                     10,  0,
                     -10, 10,
                      60, 40,
                      80, 70,
@@ -201,8 +202,8 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
                     xConverterFactor *   80,  1.37124,
                     xConverterFactor * -120,  4.23171 //Tracking limit
                 });
-        
-        
+
+
     }
-    
+
 }
