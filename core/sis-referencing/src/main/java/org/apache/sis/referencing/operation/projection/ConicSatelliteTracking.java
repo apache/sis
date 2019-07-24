@@ -27,8 +27,10 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 
 import static java.lang.Math.*;
+import java.util.Map;
 import org.apache.sis.internal.referencing.Resources;
 import static org.apache.sis.internal.referencing.provider.SatelliteTracking.*;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 
@@ -111,12 +113,13 @@ public class ConicSatelliteTracking extends NormalizedProjection{
     private final double latitudeLimit;
     /**
      * Boolean attribute indicating if the projection cone's constant is positive.
-     * */
+     */
     private final boolean positiveN;
     /**
      * Coefficients for the Conic Satellite-Tracking Projection.
+     * cosφ1xsinF1_n = cos(φ1)*sin(F1)/n
      */
-    private final double cos_φ1xsin_F1, s0, ρ0;
+    private final double cosφ1xsinF1_n, s0, ρ0;
 
     /**
      * Work around for RFE #4093999 in Sun's bug database ("Relax constraint on
@@ -194,8 +197,6 @@ public class ConicSatelliteTracking extends NormalizedProjection{
              */
             final double F1 = computeFn(cos2_φ1);
 
-            cos_φ1xsin_F1 = cos_φ1 * sin(F1);
-
             final double dλ0 = computedλn(sin_φ0);
             final double dλ1 = computedλn(sin_φ1);
 
@@ -223,8 +224,10 @@ public class ConicSatelliteTracking extends NormalizedProjection{
             } else {
                 n = sin_φ1 * (p2_on_p1 * (2 * cos2_i - cos2_φ1) - cos_i) / (p2_on_p1 * cos2_φ1 - cos_i); //eq. 28-17 in Snyder
             }
+
+            cosφ1xsinF1_n = cos_φ1 * sin(F1)/n;
             s0 = F1 - n * L1;
-            ρ0 = cos_φ1xsin_F1 / (n * sin(n * L0 + s0)); // *R in eq.28-12 in Snyder
+            ρ0 = cosφ1xsinF1_n / sin(n * L0 + s0); // *R in eq.28-12 in Snyder
 
             //======================== Unsure ======================================
             // Aim to assess the limit latitude associated with -s0/n L-value.
@@ -247,7 +250,7 @@ public class ConicSatelliteTracking extends NormalizedProjection{
             final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
             denormalize.convertBefore(1, 1, ρ0);  //For conic tracking
         } else {
-            n = latitudeLimit = cos_φ1xsin_F1 = s0 = ρ0 = NaN;
+            n = latitudeLimit = cosφ1xsinF1_n = s0 = ρ0 = NaN;
             positiveN = false;
         }
     }
@@ -283,8 +286,10 @@ public class ConicSatelliteTracking extends NormalizedProjection{
         }
 
         final double sin_φ  = sin(φ);
-        final double dλ     = -asin(sin_φ / sin_i);
-        final double λt     = atan(tan(dλ) * cos_i);
+        final double sinφ_sini = sin_φ / sin_i;
+        final double dλ     = -asin(sinφ_sini);
+        final double tan_dλ = tan(dλ);
+        final double λt     = atan(tan_dλ * cos_i);
         final double L      = λt - p2_on_p1 * dλ;
 
         /*
@@ -296,34 +301,46 @@ public class ConicSatelliteTracking extends NormalizedProjection{
             throw new ProjectionException(Resources.format(Resources.Keys.CanNotTransformCoordinates_2));
         }
 
-        final double ρ      = cos_φ1xsin_F1/(n*sin(n*L+s0));
-        final double θ      = λ;      // extracted n
+        final double nLandS0 = n*L+s0;
+        final double sin_nLandS0 = sin(nLandS0);
 
-        final double sinθ = sin(θ);
-        final double cosθ = cos(θ);
+        final double ρ      = cosφ1xsinF1_n/sin_nLandS0;
+//        final double ρ      = 1/sin(n*L+s0);
+
+        final double sinλ = sin(λ);
+        final double cosλ = cos(λ);
         if (dstPts != null) {
-            dstPts[dstOff    ] = ρ * sinθ;   // x
-//            dstPts[dstOff + 1] = ρ0 - ρ*cosθ;  // y       //TODO : extract ρ0 when ensuring : λ = λ - λ0;
-            dstPts[dstOff + 1] = - ρ*cosθ;
+            dstPts[dstOff    ] = ρ * sinλ;   // x
+            dstPts[dstOff + 1] = - ρ*cosλ;   // y
         }
 
          if (!derivate) {
             return null;
         }
 
-        //=========================TO Resolve =================================
-//        final double dx_dλ = ρ*n*cosθ;
-//        final double dx_dφ =?;
-//
-//        final double dy_dλ =  ρ*n*sinθ;
-//        final double dy_dφ = ?;
+        //=========================To check the resolution =====================
+        final double dρ_dφ = cosφ1xsinF1_n  * (-1 / (sin_nLandS0*sin_nLandS0)) *cos(nLandS0)  * n
+                // dL/dφ :
+                * ((cos(φ) / sin_i) *(1/sqrt(1-sinφ_sini*sinφ_sini)))  // derivative of (-dλ/dφ)
+                * ( p2_on_p1 - ((1+tan_dλ*tan_dλ)*cos_i/(1+λt*λt) ) );
+
+        final double dx_dλ = ρ*cosλ;
+        final double dx_dφ = sinλ * dρ_dφ;
+
+        final double dy_dλ =  ρ*sinλ;
+        final double dy_dφ = -cosλ * dρ_dφ;
         //======================================================================
 
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new Matrix2(dx_dλ, dy_dλ,
+                           dx_dφ, dy_dφ);
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 
-        //Additionally we can compute the scale factors :
-        // k = ρ*n/cos(φ); // /R
-        // h = k*tan(F)/tan(n*L+s0);
+        /* =====================================================================
+        * Uncomputed scale factors :
+        *===========================
+        * k = ρ*n/cos(φ); // /R
+        * h = k*tan(F)/tan(n*L+s0);
+        ===================================================================== */
     }
 
     /**
@@ -338,10 +355,7 @@ public class ConicSatelliteTracking extends NormalizedProjection{
                                     throws ProjectionException {
 
         final double x   = srcPts[srcOff];
-//        final double y   = srcPts[srcOff + 1] - ρ0;
         final double y   = srcPts[srcOff + 1];
-
-        //TODO : extract - ρ0 : MatrixSIS convertBefore and convertAfter??
 
         if ((x== 0) && (y == 0)) {
             //TODO : which values does it imply?
@@ -350,13 +364,22 @@ public class ConicSatelliteTracking extends NormalizedProjection{
 
         final double ρ = positiveN ? hypot(x,y) : -hypot(x,y);
         final double θ = atan(x/(-y) ); //undefined if x=y=0
-        final double L = (asin(cos_φ1xsin_F1/(ρ*n)) -s0)/n; //undefined if x=y=0  //eq.28-26 in Snyder with R=1
+        final double L = (asin(cosφ1xsinF1_n/ρ) -s0)/n; //undefined if x=y=0  //eq.28-26 in Snyder with R=1
 
-        //TODO ensure that λ0 will be added. ;  In eq. Snyder 28-23 : λ0 + θ/n
         dstPts[dstOff  ] =  θ ;//λ
         dstPts[dstOff+1] = latitudeFromNewtonMethod(L); //φ
     }
 
+    /**
+     * Return an approximation of the latitude associated with L coefficient
+     * by applying Newton-Raphson method.
+     *
+     * Eq. 28-24, 28-25 and then 28-22 in Snyder's Manual.
+     *
+     * @param l the L coefficient used in (cylindrical and conic)
+     * satellite-tracking projections.
+     * @return Approximation of the associated latitude.
+     */
     protected final double latitudeFromNewtonMethod(final double l){
         double dλ = -PI/2;
         double dλn = Double.MIN_VALUE;
@@ -371,17 +394,17 @@ public class ConicSatelliteTracking extends NormalizedProjection{
             }
             dλn = dλ;
 
+            // Alternative calculation with Snyder's eq.  28-20 and 28-21
 //            λt = l + p2_on_p1 * dλ_n;
 //            dλ = atan(tan(λt) / cos_i);
 
-            A = tan(l + p2_on_p1*dλn) / cos_i;
+            A = tan(l + p2_on_p1 * dλn) / cos_i;
             A2=A*A;
             Δdλ = -(dλn-atan(A)) / (1- (A2 + 1/cos2_i) * (p2_on_p1*cos_i/(A2+1)) );
             dλ = dλn + Δdλ ;
 
             count++;
         }
-//        λt = L + p2_on_p1 * dλ;
         final double sin_dλ = sin(dλ);
         return -asin(sin_dλ * sin_i);
     }
@@ -421,13 +444,5 @@ public class ConicSatelliteTracking extends NormalizedProjection{
     private double computeλtn(final double dλn) {
         return atan(tan(dλn) * cos_i); // eq.28-3a in Snyder
     }
-//    /**
-//     * Radius of the circle radius of the circle to which groundtracks
-//     * are tangent on the map.
-//     *
-//     * @return radius ρs.
-//     */
-//    public double getRadiusOfTangencyCircle(){
-//        return ρs;
-//    }
+
 }

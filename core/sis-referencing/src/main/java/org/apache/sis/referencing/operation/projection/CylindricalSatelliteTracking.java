@@ -25,6 +25,7 @@ import org.opengis.referencing.operation.OperationMethod;
 
 import static java.lang.Math.*;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 
@@ -76,13 +77,6 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters;
  */
 public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
 
-
-    /**
-     * F1' in Snyder : tangente of the angle on both the globe and on the map between
-     * the groundtrack and the meridian at latitude φ1.
-     */
-    final double dF1;
-
     /**
      * Create a Cylindrical Satellite Tracking Projection from the given
      * parameters.
@@ -101,15 +95,13 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
         super(initializer);
 
         final double cos2_φ1 = cos_φ1 * cos_φ1;
-        dF1 = (p2_on_p1 * cos2_φ1 - cos_i) / sqrt(cos2_φ1 - cos2_i);
+        final double cosφ1_dF1 = sqrt(cos2_φ1 - cos2_i) *cos_φ1 / (p2_on_p1 * cos2_φ1 - cos_i);
 
         final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
-//        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-
         normalize  .convertAfter (0, cos_φ1, null);  //For conic tracking
 
-//        denormalize.convertBefore(0, 1/PI,     null);
-//        denormalize.convertBefore(1, , null);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
+        denormalize.convertBefore(1, cosφ1_dF1,     null);
 
     }
 
@@ -139,17 +131,17 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
             throw new ProjectionException(Resources.format(Resources.Keys.CanNotTransformCoordinates_2));
         }
 
-//        final double cos_φ  = cos(φ);
-//        final double cos2_φ = cos_φ * cos_φ;
         final double sin_φ  = sin(φ);
+        final double sinφ_sini = sin_φ / sin_i;
 
         final double dλ     = -asin(sin_φ / sin_i);
+        final double tan_dλ = tan(dλ);
         final double λt     = atan(tan(dλ) * cos_i);
         final double L      = λt - p2_on_p1 * dλ;
 
         if (dstPts != null) {
             dstPts[dstOff    ] = λ;   // In eq. Snyder 28-5 : R(λ - λ0) cos_φ1
-            dstPts[dstOff + 1] = L * cos_φ1 / dF1;  // In eq. Snyder 28-6 : R L cos(φ1)/F'1
+            dstPts[dstOff + 1] = L;   // In eq. Snyder 28-6 : R L cos(φ1)/F'1
         }
 
         /* =====================================================================
@@ -159,19 +151,25 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
         * the meridian at latitude φ
         * final double dF = (p2_on_p1 * cos2_φ - cos_i) / sqrt(cos2_φ - cos2_i);
         * k = cos_φ1/cos_φ;   // Parallel eq. Snyder 28-7
-        * h = k* dF / dF1;    // Meridian eq. Snyder 28-8
+        * h = k* dF / cosφ1_dF1;    // Meridian eq. Snyder 28-8
         ===================================================================== */
         if (!derivate) {
             return null;
         }
 
-//        final double dx_dλ = cos_φ1; //*R
-//        final double dx_dφ = 0;
-//
-//        final double dy_dλ = 0;
-//        final double dy_dφ =
+        //=========================To check the resolution =====================
+        final double dx_dλ = 1; //*R
+        final double dx_dφ = 0;
 
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        final double dy_dλ = 0;
+        final double dy_dφ = ((cos(φ) / sin_i) *(1/sqrt(1-sinφ_sini*sinφ_sini)))  // derivative of (-dλ/dφ)
+                * ( p2_on_p1 - ((1+tan_dλ*tan_dλ)*cos_i/(1+λt*λt) ) );
+        //======================================================================
+
+        return new Matrix2(dx_dλ, dy_dλ,
+                           dx_dφ, dy_dφ);
+
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     /**
@@ -186,12 +184,10 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
             throws ProjectionException {
 
         final double x   = srcPts[srcOff];
-        final double y   = srcPts[srcOff + 1];
-
-        final double L   = y * dF1 / cos_φ1; // In eq. Snyder 28-19 : L = y * dF1 / R . cos_φ1
+        final double y   = srcPts[srcOff + 1]; // In eq. Snyder 28-19 : y = yinit * cosφ1_dF1 / R . cos_φ1
 
         dstPts[dstOff  ] =  x;
-        dstPts[dstOff+1] = latitudeFromNewtonMethod(L); //φ
+        dstPts[dstOff+1] = latitudeFromNewtonMethod(y); //φ
     }
 
 }

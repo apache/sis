@@ -33,6 +33,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 
 import static java.lang.StrictMath.toRadians;
+import org.apache.sis.test.DependsOnMethod;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -242,5 +243,34 @@ public class ConicSatelliteTrackingTest extends MapProjectionTestCase {
                     0.40484 * sin(n * (toRadians(   0 - -90))), 2.58980,
                     0.21642 * sin(n * (toRadians(-120 - -90))), 2.46908 //Tracking limit
                 });
+    }
+
+
+    /**
+     * Tests the derivatives at a few points on a sphere. This method compares the derivatives computed
+     * by the projection with an estimation of derivatives computed by the finite differences method.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a point.
+     */
+    @Test
+    @DependsOnMethod("testInverseDerivative")
+    public void testDerivativeOnSphere() throws FactoryException, TransformException {
+        createProjection(
+                99.092, //satellite_orbit_inclination
+                103.267, //satellite_orbital_period
+                1440.0, //ascending_node_period
+                -90, //central_meridian
+                45, //standard_parallel_1
+                70, //standard_parallel_2
+                30 //latitude_of_origin
+        );
+        final double delta = (1.0 / 60) / 1852;                 // Approximately 1 metre.
+        derivativeDeltas = new double[] {delta, delta};
+        tolerance = Formulas.LINEAR_TOLERANCE / 10;
+        verifyDerivative(   0, -10);
+        verifyDerivative(-100,  3);
+        verifyDerivative( -56, 50);
+        verifyDerivative( -20, 47);
     }
 }
