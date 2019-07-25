@@ -127,21 +127,17 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
         final double φ = srcPts[srcOff + 1];
 
         // TODO : check the condition and the thrown exception.
-        if (abs(φ) > PI / 2 - abs(PI / 2 - i)) {  // Exceed tracking limit
+            // if (abs(φ) > PI / 2 - abs(PI - i)) {  // Exceed tracking limit
+        if (φ > PI - i) {  // Exceed tracking limit
             throw new ProjectionException(Resources.format(Resources.Keys.CanNotTransformCoordinates_2));
         }
 
-        final double sin_φ  = sin(φ);
-        final double sinφ_sini = sin_φ / sin_i;
-
-        final double dλ     = -asin(sin_φ / sin_i);
-        final double tan_dλ = tan(dλ);
-        final double λt     = atan(tan(dλ) * cos_i);
-        final double L      = λt - p2_on_p1 * dλ;
+        // compute an double array with {L} or {L, dL/dφ} if derivate recquired.
+        final double[] vector_L = computeLanddLdφForDirectTransform(φ, derivate);
 
         if (dstPts != null) {
             dstPts[dstOff    ] = λ;   // In eq. Snyder 28-5 : R(λ - λ0) cos_φ1
-            dstPts[dstOff + 1] = L;   // In eq. Snyder 28-6 : R L cos(φ1)/F'1
+            dstPts[dstOff + 1] = vector_L[0];   // In eq. Snyder 28-6 : R L cos(φ1)/F'1
         }
 
         /* =====================================================================
@@ -162,8 +158,7 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
         final double dx_dφ = 0;
 
         final double dy_dλ = 0;
-        final double dy_dφ = ((cos(φ) / sin_i) *(1/sqrt(1-sinφ_sini*sinφ_sini)))  // derivative of (-dλ/dφ)
-                * ( p2_on_p1 - ((1+tan_dλ*tan_dλ)*cos_i/(1+λt*λt) ) );
+        final double dy_dφ = vector_L[1]; //dL/dφ
         //======================================================================
 
         return new Matrix2(dx_dλ, dx_dφ,

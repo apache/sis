@@ -285,13 +285,9 @@ public class ConicSatelliteTracking extends NormalizedProjection{
             throw new ProjectionException(Resources.format(Resources.Keys.CanNotTransformCoordinates_2));
         }
 
-        final double sin_φ  = sin(φ);
-        final double sinφ_sini = sin_φ / sin_i;
-        final double dλ     = -asin(sinφ_sini);
-        final double tan_dλ = tan(dλ);
-        final double λt     = atan(tan_dλ * cos_i);
-        final double L      = λt - p2_on_p1 * dλ;
-
+        // compute an double array with {L} or {L, dL/dφ} if derivate recquired.
+        final double[] vector_L = computeLanddLdφForDirectTransform(φ, derivate);
+        final double L = vector_L[0];
         /*
          * As {@code latitudeLimit} is an approximation we repeat the test here.
          */
@@ -301,17 +297,15 @@ public class ConicSatelliteTracking extends NormalizedProjection{
             throw new ProjectionException(Resources.format(Resources.Keys.CanNotTransformCoordinates_2));
         }
 
-        final double nLandS0 = n*L+s0;
+        final double nLandS0     = n*L+s0;
         final double sin_nLandS0 = sin(nLandS0);
-
-        final double ρ      = cosφ1xsinF1_n/sin_nLandS0;
-//        final double ρ      = 1/sin(n*L+s0);
+        final double ρ           = cosφ1xsinF1_n/sin_nLandS0;
 
         final double sinλ = sin(λ);
         final double cosλ = cos(λ);
         if (dstPts != null) {
-            dstPts[dstOff    ] = ρ * sinλ;   // x
-            dstPts[dstOff + 1] = - ρ*cosλ;   // y
+            dstPts[dstOff    ] =   ρ * sinλ;   // x
+            dstPts[dstOff + 1] = - ρ * cosλ;   // y
         }
 
          if (!derivate) {
@@ -320,14 +314,12 @@ public class ConicSatelliteTracking extends NormalizedProjection{
 
         //=========================To check the resolution =====================
         final double dρ_dφ = cosφ1xsinF1_n  * (-1 / (sin_nLandS0*sin_nLandS0)) *cos(nLandS0)  * n
-                // dL/dφ :
-                * ((cos(φ) / sin_i) *(1/sqrt(1-sinφ_sini*sinφ_sini)))  // derivative of (-dλ/dφ)
-                * ( p2_on_p1 - ((1+tan_dλ*tan_dλ)*cos_i/(1+λt*λt) ) );
+                * vector_L[1]; // dL/dφ
 
         final double dx_dλ = ρ*cosλ;
         final double dx_dφ = sinλ * dρ_dφ;
 
-        final double dy_dλ =  ρ*sinλ;
+        final double dy_dλ = ρ*sinλ;
         final double dy_dφ = -cosλ * dρ_dφ;
         //======================================================================
 
@@ -443,6 +435,41 @@ public class ConicSatelliteTracking extends NormalizedProjection{
      */
     private double computeλtn(final double dλn) {
         return atan(tan(dλn) * cos_i); // eq.28-3a in Snyder
+    }
+
+    /**
+     * Method returning the L coefficient used for the direct transformation of
+     * the Satellite-tracking projections and its partial derivate dL_dφ if
+     * queried by a true value of the input parameter derivate.
+     *
+     * This method is used By :
+     *     {@link ConicSatelliteTracking#transform(double[], int, double[], int, boolean) }
+     * and {@link CylindricalSatelliteTracking#transform(double[], int, double[], int, boolean) }
+     *
+     * @param φ : input latitude of the projection's (direct)  method.
+     * @param derivate : boolean value indicating if the partial derivate dL_dφ
+     *                  must be computed.
+     * @return a double array. It contains :
+     *        - if derivate is false :  only the L coefficient value.
+     *        - if derivate is true :  the L coefficient value and the partial
+     *          derivate dL_dφ respectively at the at index 0 and 1 of the
+     *          resulting array.
+     */
+    double[] computeLanddLdφForDirectTransform(final double φ, final boolean derivate){
+
+        final double sinφ_sini = sin(φ) / sin_i;
+        final double dλ        = -asin(sinφ_sini);
+        final double tan_dλ    = tan(dλ);
+        final double λt        = atan(tan_dλ * cos_i);
+        final double L         = λt - p2_on_p1 * dλ;
+
+        if (derivate){
+            final double dL_dφ = ((cos(φ) / sin_i) *(1/sqrt(1-sinφ_sini*sinφ_sini)))  // first computed term associated with derivative of (-dλ/dφ)
+                               * ( p2_on_p1 - ((1+tan_dλ*tan_dλ)*cos_i/(1+λt*λt) ) );
+            return new double[] {L, dL_dφ};
+        } else {
+            return new double[] {L};
+        }
     }
 
 }
