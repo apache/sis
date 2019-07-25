@@ -166,8 +166,8 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
                 * ( p2_on_p1 - ((1+tan_dλ*tan_dλ)*cos_i/(1+λt*λt) ) );
         //======================================================================
 
-        return new Matrix2(dx_dλ, dy_dλ,
-                           dx_dφ, dy_dφ);
+        return new Matrix2(dx_dλ, dx_dφ,
+                           dy_dλ, dy_dφ);
 
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

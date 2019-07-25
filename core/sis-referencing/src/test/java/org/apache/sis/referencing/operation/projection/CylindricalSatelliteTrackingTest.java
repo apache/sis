@@ -226,7 +226,8 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
         );
         final double delta = (1.0 / 60) / 1852;                 // Approximately 1 metre.
         derivativeDeltas = new double[] {delta, delta};
-        tolerance = Formulas.LINEAR_TOLERANCE / 10;
+        tolerance = Formulas.LINEAR_TOLERANCE / 100;
+        verifyDerivative(-75, 40);
         verifyDerivative(-100,  3);
         verifyDerivative( -56, 50);
         verifyDerivative( -20, 47);

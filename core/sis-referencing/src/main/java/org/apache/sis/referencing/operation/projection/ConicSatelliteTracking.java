@@ -331,8 +331,8 @@ public class ConicSatelliteTracking extends NormalizedProjection{
         final double dy_dφ = -cosλ * dρ_dφ;
         //======================================================================
 
-        return new Matrix2(dx_dλ, dy_dλ,
-                           dx_dφ, dy_dφ);
+        return new Matrix2(dx_dλ, dx_dφ,
+                           dy_dλ, dy_dφ);
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 
         /* =====================================================================
