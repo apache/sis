@@ -266,17 +266,17 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
     }
 
     /**
-     * Tests {@link GeodeticCalculator#createCircularRegion2D(double)}.
+     * Tests {@link GeodeticCalculator#createGeodesicCircle2D(double)}.
      *
      * @throws TransformException if an error occurred while transforming coordinates.
      */
     @Test
     @DependsOnMethod("testUsingTransform")
-    public void testCircularRegion2D() throws TransformException {
+    public void testGeodesicCircle2D() throws TransformException {
         final GeodeticCalculator c = create(true);
         c.setStartGeographicPoint(-33.0, -71.6);                // Valparaíso
         c.setGeodesicDistance(100000);                          // 100 km
-        Shape region = c.createCircularRegion2D(10000);
+        Shape region = c.createGeodesicCircle2D(10000);
         if (VisualCheck.SHOW_WIDGET) {
             VisualCheck.show(region);
         }

@@ -36,7 +36,7 @@ import org.apache.sis.referencing.GeodeticCalculator;
  * Represents a 2D point associated with a radius to enable great circle
  * estimation on earth surface.
  *
- * @deprecated Replaced by {@link org.apache.sis.referencing.GeodeticCalculator#createCircularRegion2D(double)}.
+ * @deprecated Replaced by {@link org.apache.sis.referencing.GeodeticCalculator#createGeodesicCircle2D(double)}.
  */
 @Deprecated
 public class LatLonPointRadius {

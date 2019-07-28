@@ -715,9 +715,12 @@ public class GeodeticCalculator {
      * The {@code tolerance} parameter should not be too small for avoiding creation of unreasonably long chain of Bézier curves.
      * For example a value of 1/10 of geodesic length may be sufficient.
      *
-     * <b>Limitations:</b>
-     * This method depends on the presence of {@code java.desktop} module. This limitations may be addressed
+     * <div class="note"><b>Note:</b>
+     * this method depends on the presence of {@code java.desktop} module. This constraint may be addressed
      * in a future Apache SIS version (see <a href="https://issues.apache.org/jira/browse/SIS-453">SIS-453</a>).
+     * The "2D" suffix in the method name represents this relationship with Java2D.
+     * The {@code createGeodesicPath(…)} method name (without suffix) is reserved for a future version
+     * using ISO curves instead.</div>
      *
      * @param  tolerance  maximal error between the approximated curve and actual geodesic track
      *                    in the units of measurement given by {@link #getDistanceUnit()}.
@@ -746,18 +749,26 @@ public class GeodeticCalculator {
     }
 
     /**
-     * Creates an approximation of the region at a constant geodesic distance around the start point.
+     * Creates an approximation of the curve at a constant geodesic distance around the start point.
      * The returned shape is circlelike with the {@linkplain #getStartPoint() start point} in its center.
      * The coordinates are expressed in the coordinate reference system specified at creation time.
      * The approximation uses cubic Bézier curves.
      *
-     * <p>This method tries to stay within the given tolerance threshold of the geodesic track.
-     * The {@code tolerance} parameter should not be too small for avoiding creation of unreasonably long chain of Bézier curves.
-     * For example a value of 1/10 of geodesic length may be sufficient.</p>
+     * <div class="note"><b>Note:</b>
+     * some authors define geodesic circle as the curve which enclose the maximum area for a given perimeter.
+     * This method adopts a different definition, the locus of points at a fixed geodesic distance from center point.
+     * </div>
      *
-     * <b>Limitations:</b>
-     * This method depends on the presence of {@code java.desktop} module. This limitations may be addressed
+     * This method tries to stay within the given tolerance threshold of the geodesic track.
+     * The {@code tolerance} parameter should not be too small for avoiding creation of unreasonably long chain of Bézier curves.
+     * For example a value of 1/10 of geodesic length may be sufficient.
+     *
+     * <div class="note"><b>Note:</b>
+     * this method depends on the presence of {@code java.desktop} module. This constraint may be addressed
      * in a future Apache SIS version (see <a href="https://issues.apache.org/jira/browse/SIS-453">SIS-453</a>).
+     * The "2D" suffix in the method name represents this relationship with Java2D.
+     * The {@code createGeodesicCircle(…)} method name (without suffix) is reserved for a future version
+     * using ISO curves instead.</div>
      *
      * @param  tolerance  maximal error in the units of measurement given by {@link #getDistanceUnit()}.
      *                    This is approximate; the actual errors may vary around that value.
@@ -765,7 +776,7 @@ public class GeodeticCalculator {
      * @throws TransformException if the coordinates can not be transformed to {@linkplain #getPositionCRS() position CRS}.
      * @throws IllegalStateException if some required properties have not been specified.
      */
-    public Shape createCircularRegion2D(final double tolerance) throws TransformException {
+    public Shape createGeodesicCircle2D(final double tolerance) throws TransformException {
         ArgumentChecks.ensureStrictlyPositive("tolerance", tolerance);
         if (isInvalid(START_POINT | GEODESIC_DISTANCE)) {
             computeDistance();
