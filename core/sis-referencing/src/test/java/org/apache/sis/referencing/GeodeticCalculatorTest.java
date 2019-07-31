@@ -490,11 +490,11 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
                     }
                 } else {
                     /*
-                     * When ellipsoidal formulas are used, we aim for an 1 cm accuracy in coordinate values.
+                     * When ellipsoidal formulas are used, we aim for an 1 mm accuracy in coordinate values.
                      * We also aim for azimuthd such as the error is less than 1 cm after the first 10 km.
                      * If points are nearly antipodal, we relax the azimuth tolerance threshold to 1 meter.
                      */
-                    linearTolerance    = Formulas.LINEAR_TOLERANCE;
+                    linearTolerance    = Formulas.LINEAR_TOLERANCE / GeodesicsOnEllipsoid.ACCURACY_IMPROVEMENT;
                     latitudeTolerance  = Formulas.ANGULAR_TOLERANCE;
                     longitudeTolerance = Formulas.ANGULAR_TOLERANCE / cosφ2;
                     azimuthTolerance   = Formulas.LINEAR_TOLERANCE * (180/PI) / 10000;

@@ -72,15 +72,37 @@ import static java.lang.Math.*;
  *   </li>
  * </ul>
  *
+ * <div class="section">Algorithms and accuracy</div>
+ * {@code GeodeticCalculator} uses two set of formulas, depending if the figure of the Earth
+ * {@linkplain Ellipsoid#isSphere() is a sphere} or an ellipsoid.
+ * Publications relevant to this class are:
+ *
+ * <ul>
+ *   <li>Wikipedia, <a href="https://en.wikipedia.org/wiki/Great-circle_navigation">Great-circle navigation</a>
+ *       for the spherical formulas.</li>
+ *   <li>Charles F. F. Karney (2013), <a href="https://doi.org/10.1007/s00190-012-0578-z">Algorithms for geodesics</a>
+ *       for the ellipsoidal formulas.</li>
+ *   <li>Charles F. F. Karney (2010), <a href="http://doi.org/10.5281/zenodo.32156">Test set for geodesics</a>
+ *       for {@code GeodeticCalculator} tests.</li>
+ *   <li>Charles F. F. Karney, <a href="https://geographiclib.sourceforge.io/">GeographicLib</a>
+ *       for the reference implementation.</li>
+ * </ul>
+ *
+ * {@code GeodeticCalculator} aims for a positional accuracy of one millimetre.
+ * Azimuthal accuracy corresponds to an error of one millimeter at a distance of one kilometer,
+ * except for nearly antipodal points (less than 1° of longitude and latitude from antipode)
+ * and points close to the poles where the azimuthal errors are larger.
+ * Karney's GeographicLib should be used if better accuracy is desired.
+ * Apache SIS accuracy does not go as far as GeographicLib because the rest of Apache SIS
+ * library (map projections, <i>etc.</i>) aims for an one centimetre accuracy anyway.
+ *
+ * <div class="section">Thread safety</div>
  * This class is not thread-safe. If geodetic calculations are needed in a multi-threads environment,
  * then a distinct instance of {@code GeodeticCalculator} needs to be created for each thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- *
- * @see <a href="https://en.wikipedia.org/wiki/Great-circle_navigation">Great-circle navigation on Wikipedia</a>
- *
- * @since 1.0
+ * @since   1.0
  * @module
  */
 public class GeodeticCalculator {

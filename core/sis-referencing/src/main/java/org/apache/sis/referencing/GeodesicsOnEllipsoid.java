@@ -80,12 +80,23 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  */
 class GeodesicsOnEllipsoid extends GeodeticCalculator {
     /**
-     * Whether to include code used for JUnit tests only.
-     * This value should be {@code false} in releases.
+     * Factor by which the accuracy is improved compared to {@link Formulas#ANGULAR_TOLERANCE} value.
+     * For example the linear accuracy that {@code GeodesicsOnEllipsoid} aims to achieve is:
      *
-     * @see #snapshot()
+     * <blockquote><code>
+     * accuracy = {@linkplain Formulas#LINEAR_TOLERANCE} / ACCURACY_IMPROVEMENT
+     * </code></blockquote>
+     *
+     * We take a finer accuracy than default SIS configuration in order to met the accuracy of numbers
+     * published in Karney (2013). If this value is modified, the effect can be verified by executing
+     * the {@code GeodesicsOnEllipsoidTest} methods that compare computed values against Karney's tables.
+     * Remember to update {@link GeodeticCalculator} class javadoc if this value is changed.
+     *
+     * <p><b>Note:</b> when the iteration loop detects that it reached this requested accuracy, the loop
+     * completes the iteration step which was in progress. Consequently the final accuracy is one iteration
+     * better than the accuracy computed from this value.</p>
      */
-    static final boolean STORE_LOCAL_VARIABLES = true;
+    static final double ACCURACY_IMPROVEMENT = 20;
 
     /**
      * Difference between ending point and antipode of starting point for considering them as nearly antipodal.
@@ -115,15 +126,12 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     private static final double LATITUDE_THRESHOLD = 0.001 / (NAUTICAL_MILE*60) * (PI/180);
 
     /**
-     * Desired accuracy in radians. We take a finer accuracy than default SIS configuration in order to met the
-     * accuracy of numbers published in Karney (2013). If this value is modified, the effect can be verified by
-     * executing the {@code GeodesicsOnEllipsoidTest} methods that compare computed values against Karney's tables.
+     * Whether to include code used for JUnit tests only.
+     * This value should be {@code false} in releases.
      *
-     * <p><b>Note:</b> when the iteration loop detects that it reached this accuracy, the loop completes the
-     * iteration step which was in progress. Consequently the final accuracy is one iteration better than this
-     * accuracy.</p>
+     * @see #snapshot()
      */
-    private static final double ACCURACY = Formulas.ANGULAR_TOLERANCE * (PI/180) / 20;
+    static final boolean STORE_LOCAL_VARIABLES = true;
 
     /**
      * The square of eccentricity: ℯ² = (a²-b²)/a² where
@@ -746,7 +754,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             λ1E = sphericalToGeodeticLongitude(ω1, σ1);
             λ2E = sphericalToGeodeticLongitude(ω2, σ2);
             final double Δλ_error = IEEEremainder(λ2E - λ1E - Δλ, 2*PI);
-            final boolean done = (abs(Δλ_error) <= ACCURACY);
+            final boolean done = (abs(Δλ_error) <= Formulas.ANGULAR_TOLERANCE * (PI/180) / ACCURACY_IMPROVEMENT);
             if (--nbIter < 0 && !done) {
                 throw new GeodesicException(Resources.format(Resources.Keys.NoConvergence));
             }
