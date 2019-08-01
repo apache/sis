@@ -165,7 +165,9 @@ public class GeodeticCalculator {
      *
      * <ul>
      *   <li>m⋅sin(α) is proportional to a displacement in the λ direction.</li>
-     *   <li>m⋅cos(α) is proportional to a displacement in the φ direction.</li>
+     *   <li>m⋅cos(α) is proportional to a displacement in the φ direction.
+     *     The unit of measurement is the unit of any conformal projection.
+     *     For representing a displacement in degrees, divide by {@linkplain #dφ_dy(double) ∂y/∂φ}.</li>
      * </ul>
      *
      * Those vectors may not be normalized to unitary vectors. For example {@code msinα} is {@code sinα} multiplied
@@ -561,7 +563,7 @@ public class GeodeticCalculator {
      *
      * @see org.apache.sis.referencing.operation.projection.ConformalProjection#dy_dφ
      */
-    private double dφ_dy(final double φ) {
+    double dφ_dy(final double φ) {
         return cos(φ);
     }
 

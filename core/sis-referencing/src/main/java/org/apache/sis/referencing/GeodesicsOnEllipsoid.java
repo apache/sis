@@ -885,6 +885,19 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     }
 
     /**
+     * Computes (∂y/∂φ)⁻¹ at the given latitude on an ellipsoid with semi-major axis length of 1.
+     * This derivative is close to cos(φ) for a slightly flattened sphere.
+     *
+     * @see org.apache.sis.referencing.operation.projection.ConformalProjection#dy_dφ
+     */
+    @Override
+    double dφ_dy(final double φ) {
+        final double sinφ = sin(φ);
+        final double cosφ = cos(φ);
+        return cosφ/(1  -  eccentricitySquared * (cosφ*cosφ) / (1 - eccentricitySquared * (sinφ*sinφ)));
+    }
+
+    /**
      * Takes a snapshot of the current fields in this class. This is used for JUnit tests only. During development phases,
      * {@link #STORE_LOCAL_VARIABLES} should be {@code true} for allowing {@code GeodesicsOnEllipsoidTest} to verify the
      * values of a large range of local variables. But when the storage of locale variables is disabled, this method allows
