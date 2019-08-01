@@ -466,9 +466,9 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     final void computeEndPoint() {
         canComputeEndPoint();                                       // May throw IllegalStateException.
         if (isInvalid(COEFFICIENTS_FOR_START_POINT)) {
-            final double vm    = hypot(dφ1, dλ1);
-            final double sinα1 = dλ1 / vm;                          // α is a geographic (not arithmetic) angle.
-            final double cosα1 = dφ1 / vm;
+            final double m     = hypot(msinα1, mcosα1);
+            final double sinα1 = msinα1 / m;                        // α is a geographic (not arithmetic) angle.
+            final double cosα1 = mcosα1 / m;
             final double tanβ1 = axisRatio * tan(φ1);               // β₁ is reduced latitude (Karney 6).
             final double cosβ1 = 1 / sqrt(1 + tanβ1*tanβ1);
             final double sinβ1 = tanβ1 * cosβ1;
@@ -507,20 +507,20 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
          * We do not need atan2(y,x) because we keep x and y components separated. It is not necessary to
          * normalize to a vector of length 1.
          */
-        dλ2 = sinα0;                                // cos(π/2 − θ)  =  sin(θ)
-        dφ2 = cosα0 * cosσ2;                        // sin(π/2 − θ)  =  cos(θ)
+        msinα2 = sinα0;
+        mcosα2 = cosα0 * cosσ2;
         /*
          * Ending point coordinates on auxiliary sphere: Latitude β is given by Karney equation 13:
          *
          *   β₂ = atan2(cos(α₀)⋅sin(σ₂), hypot(cos(α₀)⋅cos(σ₂), sin(α₀))
          *
-         * We replace cos(α₀)⋅cos(σ₂) by dφ2 since we computed it above.  Then we avoid the call to
+         * We replace cos(α₀)⋅cos(σ₂) by mcosα2 since we computed it above. Then we avoid the call to
          * atan2(y,x) by storing directly the y and x values. Note that `sinβ2` and `cosβ2` are not
          * really sine and cosine since we do not normalize them to sin² + cos² = 1. We do not need
          * to normalize because we use either a ratio of those 2 quantities or give them to atan2(…).
          */
         final double sinβ2 = cosα0 * sinσ2;
-        final double cosβ2 = hypot(dφ2, sinα0);
+        final double cosβ2 = hypot(sinα0, mcosα2);
         final double ω2    = atan2(sinα0*sinσ2, cosσ2);                         // (Karney 12).
         /*
          * Convert reduced longitude ω and latitude β on auxiliary sphere
@@ -628,8 +628,8 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             }
             final double Δφ = φ2 - φ1;
             geodesicDistance = hypot(Δλ, Δφ) * ellipsoid.getSemiMajorAxis();
-            dλ1 = dλ2 = (inverseLongitudeSigns ^ swapPoints) ? -Δλ : Δλ;
-            dφ1 = dφ2 = (inverseLatitudeSigns  ^ swapPoints) ? -Δφ : Δφ;
+            msinα1 = msinα2 = (inverseLongitudeSigns ^ swapPoints) ? -Δλ : Δλ;
+            mcosα1 = mcosα2 = (inverseLatitudeSigns  ^ swapPoints) ? -Δφ : Δφ;
             setValid(STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE);
             return;
         }
@@ -813,10 +813,10 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                 store("Δs",    (I1_σ2 - I1_σ1) * semiMinor);
             }
             if (done) {
-                dλ1 = sinα1;
-                dφ1 = cosα1;
-                dλ2 = sinα0;
-                dφ2 = cosα2_cosβ2;
+                msinα1 = sinα1;
+                mcosα1 = cosα1;
+                msinα2 = sinα0;
+                mcosα2 = cosα2_cosβ2;
                 break;
             }
         }
@@ -829,16 +829,16 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
          */
         if (swapPoints) {
             double t;
-            t = dφ1; dφ1 = dφ2; dφ2 = t;
-            t = dλ1; dλ1 = dλ2; dλ2 = t;
+            t = msinα1; msinα1 = msinα2; msinα2 = t;
+            t = mcosα1; mcosα1 = mcosα2; mcosα2 = t;
         }
         if (inverseLongitudeSigns ^ swapPoints) {
-            dλ1 = -dλ1;
-            dλ2 = -dλ2;
+            msinα1 = -msinα1;
+            msinα2 = -msinα2;
         }
         if (inverseLatitudeSigns ^ swapPoints) {
-            dφ1 = -dφ1;
-            dφ2 = -dφ2;
+            mcosα1 = -mcosα1;
+            mcosα2 = -mcosα2;
         }
         setValid(STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE);
         if (!(swapPoints | inverseLongitudeSigns | inverseLatitudeSigns)) {

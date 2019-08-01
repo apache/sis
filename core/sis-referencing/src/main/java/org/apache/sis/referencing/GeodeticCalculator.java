@@ -151,28 +151,32 @@ public class GeodeticCalculator {
     double φ2, λ2;
 
     /**
-     * The azimuth at start point and end point as vector components.
-     * Angles can be obtained as below (reminder: tan(π/2 − α) = 1/tan(α)):
+     * The azimuth at start point (α₁) and at end point (α₂) as vector components.
+     * Angles can be obtained as below, with α a <em>geographic</em> (not arithmetic) angle:
      *
      * <ul>
-     *   <li>Arithmetic angle: {@code atan2(dφ, dλ)} (radians increasing anticlockwise)</li>
-     *   <li>Geographic angle: {@code atan2(dλ, dφ)} gives the azimuth in radians between -π and +π
+     *   <li>Geographic angle: {@code atan2(msinα, mcosα)} gives the azimuth in radians between -π and +π
      *       with 0° pointing toward North and values increasing clockwise.</li>
+     *   <li>Arithmetic angle: {@code atan2(mcosα, msinα)} (radians increasing anticlockwise).
+     *       Obtained using the tan(π/2 − α) = 1/tan(α) identity.</li>
      * </ul>
      *
-     * Those vectors may not be normalized to unitary vectors. This is often not needed because most formulas are
-     * written in a way that cancel the magnitude. If nevertheless needed, normalization will be applied in formulas.
-     * Those quantities are related to α as below, with α a <em>geographic</em> (not arithmetic) angle:
+     * Sine and cosine of azimuth can are related to vector components as below:
      *
      * <ul>
-     *   <li>{@code sinα = dλ / hypot(dφ, dλ)}</li>
-     *   <li>{@code cosα = dφ / hypot(dφ, dλ)}</li>
+     *   <li>m⋅sin(α) is proportional to a displacement in the λ direction.</li>
+     *   <li>m⋅cos(α) is proportional to a displacement in the φ direction.</li>
      * </ul>
+     *
+     * Those vectors may not be normalized to unitary vectors. For example {@code msinα} is {@code sinα} multiplied
+     * by an unknown constant <var>m</var>. It is often not needed to know <var>m</var> value because most formulas
+     * are written in a way that cancel the magnitude. If nevertheless needed, normalization is applied by dividing
+     * those fields by {@code m = hypot(msinα, mcosα)}.
      *
      * @see #STARTING_AZIMUTH
      * @see #ENDING_AZIMUTH
      */
-    double dφ1, dλ1, dφ2, dλ2;
+    double msinα1, mcosα1, msinα2, mcosα2;
 
     /**
      * The shortest distance from the starting point ({@link #φ1},{@link #λ1}) to the end point ({@link #φ2},{@link #λ2}).
@@ -441,7 +445,7 @@ public class GeodeticCalculator {
         if (isInvalid(STARTING_AZIMUTH)) {
             computeDistance();
         }
-        return toDegrees(atan2(dλ1, dφ1));                  // tan(π/2 − θ)  =  1/tan(θ)
+        return toDegrees(atan2(msinα1, mcosα1));
     }
 
     /**
@@ -458,8 +462,8 @@ public class GeodeticCalculator {
     public void setStartingAzimuth(double azimuth) {
         ArgumentChecks.ensureFinite("azimuth", azimuth);
         azimuth = toRadians(azimuth);
-        dφ1 = cos(azimuth);                                 // sin(π/2 − θ)  =  cos(θ)
-        dλ1 = sin(azimuth);                                 // cos(π/2 − θ)  =  sin(θ)
+        msinα1  = sin(azimuth);
+        mcosα1  = cos(azimuth);
         setValid(STARTING_AZIMUTH);
         validity &= ~(END_POINT | ENDING_AZIMUTH | RHUMBLINE_LENGTH | COEFFICIENTS_FOR_START_POINT);
     }
@@ -482,7 +486,7 @@ public class GeodeticCalculator {
                 computeDistance();                      // Compute also ending azimuth from start point and end point.
             }
         }
-        return toDegrees(atan2(dλ2, dφ2));
+        return toDegrees(atan2(msinα2, mcosα2));
     }
 
     /**
@@ -633,16 +637,16 @@ public class GeodeticCalculator {
 
         final double cosφ1_sinφ2 = cosφ1 * sinφ2;
         final double cosφ2_sinφ1 = cosφ2 * sinφ1;
-        dλ1 = cosφ2*sinΔλ;
-        dλ2 = cosφ1*sinΔλ;
-        dφ1 = cosφ1_sinφ2 - cosφ2_sinφ1*cosΔλ;
-        dφ2 = cosφ1_sinφ2*cosΔλ - cosφ2_sinφ1;
+        msinα1 = cosφ2*sinΔλ;
+        msinα2 = cosφ1*sinΔλ;
+        mcosα1 = cosφ1_sinφ2 - cosφ2_sinφ1*cosΔλ;
+        mcosα2 = cosφ1_sinφ2*cosΔλ - cosφ2_sinφ1;
         /*
          * Δσ = acos(sinφ₁⋅sinφ₂ + cosφ₁⋅cosφ₂⋅cosΔλ) is a first estimation inaccurate for small distances.
          * Δσ = atan2(…) computes the same value but with better accuracy.
          */
         double Δσ = sinφ1*sinφ2 + cosφ1*cosφ2*cosΔλ;        // Actually Δσ = acos(…).
-        Δσ = atan2(hypot(dλ1, dφ1), Δσ);                    // Δσ ∈ [0…π].
+        Δσ = atan2(hypot(msinα1, mcosα1), Δσ);              // Δσ ∈ [0…π].
         geodesicDistance = authalicRadius * Δσ;
         setValid(STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE);
     }
@@ -674,24 +678,23 @@ public class GeodeticCalculator {
      */
     void computeEndPoint() throws GeodesicException {
         canComputeEndPoint();                   // May throw IllegalStateException.
-        final double vm    = hypot(dφ1, dλ1);
+        final double m     = hypot(msinα1, mcosα1);
         final double Δσ    = geodesicDistance / authalicRadius;
         final double sinΔσ = sin(Δσ);
         final double cosΔσ = cos(Δσ);
         final double sinφ1 = sin(φ1);
         final double cosφ1 = cos(φ1);
-        final double sinα1 = dλ1 / vm;          // α₁ is the azimuth at starting point as a geographic (not arithmetic) angle.
-        final double cosα1 = dφ1 / vm;
+        final double sinα1 = msinα1 / m;        // α₁ is the azimuth at starting point as a geographic (not arithmetic) angle.
+        final double cosα1 = mcosα1 / m;
         final double sinΔσ_cosα1 = sinΔσ * cosα1;
-        final double Δλy = sinΔσ * sinα1;
-        final double Δλx = cosΔσ*cosφ1 - sinφ1*sinΔσ_cosα1;
-        final double Δλ  = atan2(Δλy, Δλx);
-
+        final double Δλy   = sinΔσ * sinα1;
+        final double Δλx   = cosΔσ*cosφ1 - sinφ1*sinΔσ_cosα1;
+        final double Δλ    = atan2(Δλy, Δλx);
         final double sinφ2 = sinφ1*cosΔσ + cosφ1*sinΔσ_cosα1;       // First estimation of φ2.
-        φ2  = atan(sinφ2 / hypot(Δλx, Δλy));                        // Improve accuracy close to poles.
-        λ2  = IEEEremainder(λ1 + Δλ, 2*PI);
-        dφ2 = cosΔσ*cosα1 - sinφ1/cosφ1 * sinΔσ;
-        dλ2 = sinα1;
+        φ2     = atan(sinφ2 / hypot(Δλx, Δλy));                     // Improve accuracy close to poles.
+        λ2     = IEEEremainder(λ1 + Δλ, 2*PI);
+        mcosα2 = cosΔσ*cosα1 - sinφ1/cosφ1 * sinΔσ;
+        msinα2 = sinα1;
         setValid(END_POINT | ENDING_AZIMUTH);
     }
 
@@ -708,8 +711,8 @@ public class GeodeticCalculator {
         if (isInvalid(END_POINT)) {
             computeEndPoint();
         }
-        φ1 = φ2;  dφ1 = dφ2;
-        λ1 = λ2;  dλ1 = dλ2;
+        φ1 = φ2;  mcosα1 = mcosα2;
+        λ1 = λ2;  msinα1 = msinα2;
         /*
          * Following assumes that ENDING_AZIMUTH >>> 1 == STARTING_AZIMUTH.
          * This is verified by GeodeticCalculatorTest.testMoveToEndPoint().
@@ -825,7 +828,7 @@ public class GeodeticCalculator {
          * The final (f) coordinates and derivatives, together with geodesic and loxodromic distances.
          * Saved for later restoration by {@link #reset()}.
          */
-        private final double dφf, dλf, φf, λf, distance, length;
+        private final double mcosαf, msinαf, φf, λf, distance, length;
 
         /**
          * {@link #validity} flags at the time {@code PathBuilder} is instantiated.
@@ -843,7 +846,8 @@ public class GeodeticCalculator {
          */
         PathBuilder(final double εx) {
             super(ReferencingUtilities.getDimension(userToGeodetic.defaultCRS));
-            dφf = dφ2;  dλf = dλ2;  φf = φ2;  λf = λ2;
+            msinαf = msinα2;  λf = λ2;
+            mcosαf = mcosα2;  φf = φ2;
             tolerance = toDegrees(εx / authalicRadius);
             distance  = geodesicDistance;
             length    = rhumblineLength;
@@ -861,11 +865,11 @@ public class GeodeticCalculator {
         @Override
         protected void evaluateAt(final double t) throws TransformException {
             if (t == 0) {
-                φ2 = φ1;  dφ2 = dφ1;            // Start point requested.
-                λ2 = λ1;  dλ2 = dλ1;
+                φ2 = φ1;  mcosα2 = mcosα1;          // Start point requested.
+                λ2 = λ1;  msinα2 = msinα1;
             } else if (t == 1) {
-                φ2 = φf;  dφ2 = dφf;            // End point requested.
-                λ2 = λf;  dλ2 = dλf;
+                φ2 = φf;  mcosα2 = mcosαf;          // End point requested.
+                λ2 = λf;  msinα2 = msinαf;
             } else {
                 geodesicDistance = distance * t;
                 setValid(GEODESIC_DISTANCE);
@@ -880,8 +884,8 @@ public class GeodeticCalculator {
          * derivative ∂y/∂x in the {@link #dx}, {@link #dy} fields.
          */
         final void evaluateAtEndPoint() throws TransformException {
-            if ((λ2 - λ1) * dλ1 < 0) {            // Reminder: Δλ or dλ₁ may be zero.
-                λ2 += 2*PI * signum(dλ1);         // We need λ₁ < λ₂ if heading east, or λ₁ > λ₂ if heading west.
+            if ((λ2 - λ1) * msinα1 < 0) {            // Reminder: Δλ or sin(α₁) may be zero.
+                λ2 += 2*PI * signum(msinα1);         // We need λ₁ < λ₂ if heading east, or λ₁ > λ₂ if heading west.
             }
             final Matrix d = geographic(φ2, λ2).inverseTransform(point);    // `point` coordinates in user-specified CRS.
             final double dφ_dy = dφ_dy(φ2);                                 // ∂φ/∂y = cos(φ) for Mercator on a sphere of radius 1.
@@ -899,20 +903,20 @@ public class GeodeticCalculator {
              * Said otherwise, the angle value computed from the (dx,dy) vector is "real" only in a conformal projection.
              * Consequently if the output CRS is a Mercator projection, then the angle computed from the (dx,dy) vector
              * at the end of this method should be the ending azimuth angle unchanged. We achieve this equivalence by
-             * multiplying dφ by a factor which will cancel the ∂y/∂φ factor of Mercator projection at that latitude.
-             * Note that there is no need to modify dλ since ∂x/∂λ = 1 everywhere on Mercator projection with a=1.
+             * multiplying mcosα2 by a factor which will cancel the ∂y/∂φ factor of Mercator projection at that latitude.
+             * Note that there is no need to scale msinα2 since ∂x/∂λ = 1 everywhere on Mercator projection with a=1.
              */
-            t  = dφ2 * dφ_dy;
-            dx = m00*t + m01*dλ2;                                           // Reminder: coordinates in (φ,λ) order.
-            dy = m10*t + m11*dλ2;
+            t  = mcosα2 * dφ_dy;
+            dx = m00*t + m01*msinα2;                                        // Reminder: coordinates in (φ,λ) order.
+            dy = m10*t + m11*msinα2;
         }
 
         /**
          * Restores the enclosing {@link GeodeticCalculator} to the state that it has at {@code PathBuilder} instantiation time.
          */
         void reset() {
-            dφ2 = dφf;  φ2 = φf;
-            dλ2 = dλf;  λ2 = λf;
+            msinα2 = msinαf;  λ2 = λf;
+            mcosα2 = mcosαf;  φ2 = φf;
             geodesicDistance = distance;
             rhumblineLength  = length;
             validity         = flags;
@@ -926,15 +930,15 @@ public class GeodeticCalculator {
         /**
          * The initial (i) derivatives, saved for later restoration by {@link #reset()}.
          */
-        private final double dφi, dλi;
+        private final double mcosαi, msinαi;
 
         /**
          * Creates a builder for the given tolerance in degrees at equator.
          */
         CircularPath(final double εx) {
             super(εx);
-            dφi = dφ1;
-            dλi = dλ1;
+            msinαi = msinα1;
+            mcosαi = mcosα1;
             forceCubic = true;
         }
 
@@ -949,8 +953,8 @@ public class GeodeticCalculator {
         @Override
         protected void evaluateAt(final double t) throws TransformException {
             final double α1 = t * (2*PI);
-            dλ1 = sin(α1);
-            dφ1 = cos(α1);
+            msinα1 = sin(α1);
+            mcosα1 = cos(α1);
             setValid(STARTING_AZIMUTH);
             validity &= ~COEFFICIENTS_FOR_START_POINT;
             computeEndPoint();
@@ -969,8 +973,8 @@ public class GeodeticCalculator {
          */
         @Override
         void reset() {
-            dφ1 = dφi;
-            dλ1 = dλi;
+            msinα1 = msinαi;
+            mcosα1 = mcosαi;
             super.reset();
         }
     }
