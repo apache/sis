@@ -150,10 +150,10 @@
  *
  * <div class="section">References</div>
  * <ul>
- *   <li>"Coordinate Conversions and Transformations including Formulas",<br>
+ *   <li>IOGP. <u>Coordinate Conversions and Transformations including Formulas.</u><br>
  *       Geomatics Guidance Note Number 7, part 2, Version 49.</li>
- *   <li>John P. Snyder (Map Projections - A Working Manual,<br>
- *       U.S. Geological Survey Professional Paper 1395, 1987)</li>
+ *   <li>Snyder, John P. <u>Map Projections - A Working Manual.</u><br>
+ *       U.S. Geological Survey Professional Paper 1395, 1987.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
