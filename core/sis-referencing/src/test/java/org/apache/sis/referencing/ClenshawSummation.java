@@ -349,7 +349,10 @@ public final class ClenshawSummation {
     }
 
     /**
-     * Performs the Clenshaw summation.
+     * Performs the Clenshaw summation. Current implementation uses hard-coded coefficients for 6 terms.
+     * See Karney (2010) equation 59 if generalization to an arbitrary number of coefficients is desired.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-465">SIS-465</a>
      */
     private void compute() {
         if (sineCoefficients.length > 6) {

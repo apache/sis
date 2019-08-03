@@ -226,6 +226,8 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      *
      * The <var>Cₓₓ</var> coefficients are hard-coded, except the <var>C₃ₓ</var> coefficients
      * (used together with <var>A₃</var>) which depend on {@link #sinα0} and {@link #cosα0}.
+     * Note that the <var>C</var> coefficients differ from the ones published by Karney because
+     * they have been combined using Clenshaw summation.
      *
      * <p>All those coefficients must be recomputed when the starting point or starting azimuth change.
      * The {@link #COEFFICIENTS_FOR_START_POINT} flag specifies whether those fields need to be recomputed.</p>
@@ -293,27 +295,25 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                + ε*(3./64   +   n*(1./32)
                + ε*(3./128)))));
         /*
-         * Karney equation 25 with fε = εⁿ where n = 1, 2, 3, …
-         *
-         * TODO: combine using the technic described in sphericalToEllipsoidalAngle,
-         * then make constant positive.
+         * Karney equation 25 with fε = εⁿ where n = 1, 2, 3, …. The coefficients below differ from
+         * the ones published by Karney because they have been combined using Clenshaw summation.
          */
         double fε;
         C31 = (fε  = ε) * ( 1./4     +   n*(-1./4)
                    + ε  * ( 1./8     +   n*(             n*(-1./8 ))
-                   + ε  * ( 3./64    +   n*(3./64    +   n*(-1./64))
-                   + ε  * ( 5./128   +   n*(1./64)
-                   + ε  * ( 3./128)))));
-        C32 = (fε *= ε) * ( 1./16    +   n*(-3./32   +   n*( 1./32))
-                   + ε  * ( 3./64    +   n*(-1./32   +   n*(-3./64))
-                   + ε  * ( 3./128   +   n*( 1./128)
-                   + ε  * ( 5./256))));
-        C33 = (fε *= ε) * ( 5./192   +   n*(-3./64   +   n*( 5./192))
-                   + ε  * ( 3./128   +   n*(-5./192)
-                   + ε  * ( 7./512)));
-        C34 = (fε *= ε) * ( 7./512   +   n*(-7./256)
-                   + ε  * ( 7./512));
-        C35 = (fε *  ε) * (21./2560);
+                   + ε  * ( 1./48    +   n*( 3./32   +   n*(-1./24))
+                   + ε  * ( 1./64    +   n*( 1./24)
+                   + ε  * (23./1280)))));
+        C32 = (fε *= ε) * ( 1./8     +   n*(-3./16   +   n*( 1./16))
+                   + ε  * ( 3./32    +   n*(-1./16   +   n*(-3./32))
+                   + ε  * (-1./128   +   n*( 1./8)
+                   + ε  * (-1./64))));
+        C33 = (fε *= ε) * ( 5./48    +   n*(-3./16   +   n*(5./48))
+                   + ε  * ( 3./32    +   n*(-5./48)
+                   + ε  * (-7./160)));
+        C34 = (fε *= ε) * ( 7./64    +   n*(-7./32)
+                   + ε  * ( 7./64));
+        C35 = (fε *  ε) * (21./160);
         return k2;
     }
 
@@ -449,20 +449,18 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * @param  σ  spherical arc length from equatorial point E to point on auxiliary sphere
      *            along a geodesic with azimuth α₀ at equator.
      * @return geodetic longitude λ from the equatorial point E to the point.
-     *
-     * @todo combine using the technic described in sphericalToEllipsoidalAngle,
      */
     private double sphericalToGeodeticLongitude(final double ω, final double σ) {
         /*
-         * Derived from Karney (2013) equation 23.
+         * Derived from Karney (2013) equation 23:
          *
          *   I₃(σ) = A₃⋅(σ + ∑C₃ₓ⋅sin(x⋅θ))
+         *
+         * but with the sum of sine terms replaced by Clenshaw summation.
          */
-        final double I3 = A3*(C35 * sin(2 * 5 * σ)
-                            + C34 * sin(2 * 4 * σ)
-                            + C33 * sin(2 * 3 * σ)
-                            + C32 * sin(2 * 2 * σ)
-                            + C31 * sin(2 * 1 * σ) + σ);
+        final double θ    = σ * 2;
+        final double cosθ = cos(θ);
+        final double I3   = A3*(sin(θ)*(C31 + cosθ*(C32 + cosθ*(C33 + cosθ*(C34 + cosθ*C35)))) + σ);
         if (STORE_LOCAL_VARIABLES) store("I₃(σ)", I3);
         return ω - sinα0() * I3 * (1 - axisRatio);
     }
