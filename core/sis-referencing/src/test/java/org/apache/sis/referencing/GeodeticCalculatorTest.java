@@ -48,6 +48,7 @@ import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.opengis.test.Assert.*;
+import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
 
 /**
@@ -494,7 +495,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
                      * We also aim for azimuthd such as the error is less than 1 cm after the first 10 km.
                      * If points are nearly antipodal, we relax the azimuth tolerance threshold to 1 meter.
                      */
-                    linearTolerance    = Formulas.LINEAR_TOLERANCE / (GeodesicsOnEllipsoid.ACCURACY_IMPROVEMENT / 2);
+                    linearTolerance    = 2 * GeodesicsOnEllipsoid.ITERATION_TOLERANCE * AUTHALIC_RADIUS;
                     latitudeTolerance  = Formulas.ANGULAR_TOLERANCE;
                     longitudeTolerance = Formulas.ANGULAR_TOLERANCE / cosφ2;
                     azimuthTolerance   = Formulas.LINEAR_TOLERANCE * (180/PI) / 10000;

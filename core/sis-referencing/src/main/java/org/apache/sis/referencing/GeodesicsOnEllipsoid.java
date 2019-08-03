@@ -88,13 +88,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     static final boolean STORE_LOCAL_VARIABLES = false;
 
     /**
-     * Factor by which the accuracy is improved compared to {@link Formulas#ANGULAR_TOLERANCE} value.
-     * For example the linear accuracy that {@code GeodesicsOnEllipsoid} aims to achieve is:
-     *
-     * <blockquote><code>
-     * accuracy = {@linkplain Formulas#LINEAR_TOLERANCE} / ACCURACY_IMPROVEMENT
-     * </code></blockquote>
-     *
+     * Accuracy threshold iterative computations, in radians.
      * We take a finer accuracy than default SIS configuration in order to met the accuracy of numbers
      * published in Karney (2013). If this value is modified, the effect can be verified by executing
      * the {@code GeodesicsOnEllipsoidTest} methods that compare computed values against Karney's tables.
@@ -104,7 +98,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * completes the iteration step which was in progress. Consequently the final accuracy is one iteration
      * better than the accuracy computed from this value.</p>
      */
-    static final double ACCURACY_IMPROVEMENT = 20;
+    static final double ITERATION_TOLERANCE = Formulas.ANGULAR_TOLERANCE * (PI/180) / 20;
 
     /**
      * Difference between ending point and antipode of starting point for considering them as nearly antipodal.
@@ -776,7 +770,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             λ1E = sphericalToGeodeticLongitude(ω1, σ1);
             λ2E = sphericalToGeodeticLongitude(ω2, σ2);
             final double Δλ_error = IEEEremainder(λ2E - λ1E - Δλ, 2*PI);
-            if ((abs(Δλ_error) <= Formulas.ANGULAR_TOLERANCE * (PI/180) / ACCURACY_IMPROVEMENT)) {
+            if (abs(Δλ_error) <= ITERATION_TOLERANCE) {
                 moreRefinements = 0;
             } else if (--moreRefinements == 0) {
                 throw new GeodesicException(Resources.format(Resources.Keys.NoConvergence));
