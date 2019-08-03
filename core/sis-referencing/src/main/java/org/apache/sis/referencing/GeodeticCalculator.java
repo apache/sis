@@ -51,6 +51,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.io.TableAppender;
 
 import static java.lang.Math.*;
+import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
 
 
 /**
@@ -106,6 +107,26 @@ import static java.lang.Math.*;
  * @module
  */
 public class GeodeticCalculator {
+    /**
+     * Maximal difference (in radians) between two latitudes for enabling the use of simplified formulas.
+     * This is used in two contexts:
+     *
+     * <ul>
+     *   <li>Maximal difference between latitude φ₁ and equator for using the equatorial approximation.</li>
+     *   <li>Maximal difference between |β₁| and |β₂| for enabling the use of Karney's equation 47.</li>
+     * </ul>
+     *
+     * Those special cases are needed when general formulas produce indeterminations like 0/0.
+     * Current angular value corresponds to a distance of 1 millimetre on a planet of the size
+     * of Earth, which is about 1.57E-10 radians. This value is chosen empirically by trying to
+     * minimize the amount of "No convergence errors" reported by {@code GeodesicsOnEllipsoidTest}
+     * in the {@code compareAgainstDataset()} method.
+     *
+     * <p><b>Note:</b> this is an angular tolerance threshold, but is also used with sine and cosine values
+     * because sin(θ) ≈ θ for small angles.</p>
+     */
+    static final double LATITUDE_THRESHOLD = 0.001 / (NAUTICAL_MILE*60) * (PI/180);
+
     /**
      * The transform from user coordinates to geodetic coordinates used in computation.
      * This object also holds the following information:
@@ -592,7 +613,7 @@ public class GeodeticCalculator {
         final double Δλ = λ2 - λ1;
         final double Δφ = φ2 - φ1;
         final double factor;
-        if (abs(Δφ) < Formulas.ANGULAR_TOLERANCE) {
+        if (abs(Δφ) < LATITUDE_THRESHOLD) {
             factor = Δλ * cos((φ1 + φ2)/2);
         } else {
             /*
