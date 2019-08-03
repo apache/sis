@@ -80,6 +80,14 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  */
 class GeodesicsOnEllipsoid extends GeodeticCalculator {
     /**
+     * Whether to include code used for JUnit tests only. This field should be
+     * set to {@code true} during development and to {@code false} in releases.
+     *
+     * @see #snapshot()
+     */
+    static final boolean STORE_LOCAL_VARIABLES = false;
+
+    /**
      * Factor by which the accuracy is improved compared to {@link Formulas#ANGULAR_TOLERANCE} value.
      * For example the linear accuracy that {@code GeodesicsOnEllipsoid} aims to achieve is:
      *
@@ -124,14 +132,6 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * because sin(θ) ≈ θ for small angles.</p>
      */
     private static final double LATITUDE_THRESHOLD = 0.001 / (NAUTICAL_MILE*60) * (PI/180);
-
-    /**
-     * Whether to include code used for JUnit tests only.
-     * This value should be {@code false} in releases.
-     *
-     * @see #snapshot()
-     */
-    static final boolean STORE_LOCAL_VARIABLES = true;
 
     /**
      * The square of eccentricity: ℯ² = (a²-b²)/a² where
