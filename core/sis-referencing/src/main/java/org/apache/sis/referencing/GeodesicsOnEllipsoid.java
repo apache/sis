@@ -210,6 +210,11 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     private double A1, A2, A3, C31, C32, C33, C34, C35;
 
     /**
+     * Coefficients for Rhumb line calculation from Bennett (1996) equation 2.
+     */
+    private final double R0, R2, R4, R6;
+
+    /**
      * Constructs a new geodetic calculator expecting coordinates in the supplied CRS.
      *
      * @param  crs         the referencing system for the {@link Position} arguments and return values.
@@ -225,6 +230,14 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         thirdFlattening = (a - b) / (a + b);
         axisRatio = b / a;
         semiMinor = b;
+        /*
+         * For rhumb-line calculation.
+         */
+        double fe;
+        R0 = 1  +  (eccentricitySquared)*(-1./4   + eccentricitySquared*(-3./64 + eccentricitySquared*(-5./256)));
+        R2 = (fe  = eccentricitySquared)*( 3./8   + eccentricitySquared*( 3./32 + eccentricitySquared*(45./1024)));
+        R4 = (fe *= eccentricitySquared)*(15./256 + eccentricitySquared*(45./1024));
+        R6 = (fe *  eccentricitySquared)*(35./3072);
     }
 
     /**
@@ -920,5 +933,59 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      */
     double computedToGiven(double α1) {
         return α1;
+    }
+
+    /**
+     * Computes rhumb line using series expansion.
+     *
+     * <p><b>Source:</b> G.G. Bennett, 1996. <a href="https://doi.org/10.1017/S0373463300013151">Practical
+     * Rhumb Line Calculations on the Spheroid</a>. J. Navigation 49(1), 112--119.</p>
+     */
+    @Override
+    void computeRhumbLine() {
+        canComputeDistance();
+        final double Δλ = λ2 - λ1;
+        final double Ψ1 = Ψ(φ1);                    // Bennett equation 1.
+        final double Ψ2 = Ψ(φ2);
+        final double ΔΨ = Ψ2 - Ψ1;
+        final double azimuth = atan2(Δλ, ΔΨ);
+        final double m1 = m(φ1);
+        final double m2 = m(φ2);
+        final double φm = (φ1 + φ2)/2;
+        final double sinφ = sin(φm);
+        double S = (m2 - m1) / cos(azimuth);
+        if (φ1 == φ2) {
+            S = Δλ * cos(φm) / (sin(azimuth) * (1 - eccentricitySquared*(sinφ*sinφ)));     // Bennett equation 4.
+        }
+        rhumblineLength = S * (semiMinor / axisRatio);      // TODO: compute semiMajor only once.
+        if (STORE_LOCAL_VARIABLES) {
+            store("Δλ", Δλ);
+            store("Ψ₁", Ψ1);
+            store("Ψ₂", Ψ2);
+            store("ΔΨ", ΔΨ);
+            store("m₁", m1);
+            store("m₂", m2);
+            store("Δm", m2 - m1);
+            store("C",  azimuth);
+        }
+    }
+
+    /**
+     * Returns the isometric latitude Ψ for the given geodetic latitude φ.
+     * This is equation 1 in Bennett (1996).
+     *
+     * @see org.apache.sis.referencing.operation.projection.ConformalProjection#expΨ
+     */
+    private double Ψ(final double φ) {
+        final double eccentricity = sqrt(eccentricitySquared);      // TODO: avoid computing on each invocation.
+        final double ℯsinφ = eccentricity * sin(φ);
+        return log(tan(PI/4 + φ/2) * pow((1 - ℯsinφ) / (1 + ℯsinφ), eccentricity/2));
+    }
+
+    /**
+     * Computes Bennett (1996) equation 2.
+     */
+    private double m(final double φ) {
+        return R0*φ - R2*sin(2*φ) + R4*sin(4*φ) - R6*sin(6*φ);
     }
 }

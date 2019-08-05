@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
+import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
 
 
 /**
@@ -152,13 +153,6 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
                 }
             }
         }
-
-        /** Temporary implementation for allowing tests to pass. */
-        @Override @Deprecated final void computeRhumbLine() {
-            super.computeRhumbLine();
-            rhumblineLength *= ellipsoid.getSemiMajorAxis() / authalicRadius;
-            if (φ1 != 0 || φ2 != 0) rhumblineLength *= 1.1;     // DELETE ME!
-        }
     }
 
     /**
@@ -275,7 +269,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
         assertValueEquals("k²",     0, 0.00574802962857, 1E-14, false);
         assertValueEquals("ε",      0, 0.00143289220416, 1E-14, false);
         assertValueEquals("A₁",     0, 1.00143546236207, 1E-14, false);
-        assertValueEquals("I₁(σ₁)", 0, 0.76831538886412, 1E-14,  false);
+        assertValueEquals("I₁(σ₁)", 0, 0.76831538886412, 1E-14, false);
         assertValueEquals("s₁",     0,  4883990.626232,  1E-6,  false);
         assertValueEquals("s₂",     0, 14883990.626232,  1E-6,  false);
         assertValueEquals("τ₂",     0, 133.96266050208,  1E-11, true);
@@ -510,5 +504,33 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
             return false;                           // Ignore antipodal case.
         }
         return super.isFailure(expected);
+    }
+
+    /**
+     * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using the example given in Bennett (1996) appendix.
+     */
+    @Test
+    public void testRhumblineLength() {
+        createTracked();
+        verifyParametersForWGS84();
+        /*
+         * Bennett (1996) example 1. For comparing with values given by Bennett:
+         *
+         *   M = Ψ * 10800/PI.
+         *   m = m * semiMajor / 1852
+         */
+        testedEarth.setStartGeographicPoint(10+18.4/60,  37+41.7/60);
+        testedEarth.setEndGeographicPoint  (53+29.5/60, 113+17.1/60);
+        final double distance = testedEarth.getRhumblineLength();
+        final double scale = testedEarth.ellipsoid.getSemiMajorAxis() / NAUTICAL_MILE;
+        assertValueEquals("Δλ", 0, 75+35.4 / 60,         1E-11, true);
+        assertValueEquals("Ψ₁", 0,  617.64 / (10800/PI), 1E-5, false);
+        assertValueEquals("Ψ₂", 0, 3794.54 / (10800/PI), 1E-5, false);
+        assertValueEquals("ΔΨ", 0, 3176.89 / (10800/PI), 1E-5, false);
+        assertValueEquals("m₁", 0,  615.43 / scale,      1E-6, false);
+        assertValueEquals("m₂", 0, 3201.59 / scale,      1E-6, false);
+        assertValueEquals("Δm", 0, 2586.16 / scale,      1E-6, false);
+        assertValueEquals("C",  0, 54.9900,              1E-4, true);
+        assertEquals("distance", 4507.7 * NAUTICAL_MILE, distance, 0.05 * NAUTICAL_MILE);
     }
 }
