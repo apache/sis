@@ -336,7 +336,7 @@ public class GridDerivation {
      * Adapts the base grid for the geographic area and resolution of the given grid geometry.
      * The new grid geometry will cover the spatiotemporal region given by {@code gridOfInterest} envelope
      * (coordinate operations are applied as needed if the Coordinate Reference Systems are not the same).
-     * The the new grid geometry resolution will be integer multiples of the {@link #base} grid geometry resolution.
+     * The new grid geometry resolution will be integer multiples of the {@link #base} grid geometry resolution.
      *
      * <div class="note"><b>Usage:</b>
      * This method can be helpful for implementation of
