@@ -269,22 +269,23 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                + ε*(3./128)))));
         /*
          * Karney equation 25 with fε = εⁿ where n = 1, 2, 3, …. The coefficients below differ from
-         * the ones published by Karney because they have been combined using Clenshaw summation.
+         * the ones published by Karney because they have been combined using Clenshaw summation
+         * (see sphericalToEllipsoidalAngle(…) below for a simpler example for Clenshaw summation).
          */
         double fε;
-        C31 = (fε  = ε) * ( 1./4     +   n*(-1./4)
-                   + ε  * ( 1./8     +   n*(             n*(-1./8 ))
-                   + ε  * ( 1./48    +   n*( 3./32   +   n*(-1./24))
-                   + ε  * ( 1./64    +   n*( 1./24)
+        C31 = (fε  = ε) * ( 1./4     -   n*(1./4)
+                   + ε  * ( 1./8     -   n*(            n*(1./8 ))
+                   + ε  * ( 1./48    +   n*(3./32   -   n*(1./24))
+                   + ε  * ( 1./64    +   n*(1./24)
                    + ε  * (23./1280)))));
-        C32 = (fε *= ε) * ( 1./8     +   n*(-3./16   +   n*( 1./16))
-                   + ε  * ( 3./32    +   n*(-1./16   +   n*(-3./32))
-                   + ε  * (-1./128   +   n*( 1./8)
+        C32 = (fε *= ε) * ( 1./8     -   n*(3./16   -   n*(1./16))
+                   + ε  * ( 3./32    -   n*(1./16   +   n*(3./32))
+                   + ε  * (-1./128   +   n*(1./8)
                    + ε  * (-1./64))));
-        C33 = (fε *= ε) * ( 5./48    +   n*(-3./16   +   n*(5./48))
-                   + ε  * ( 3./32    +   n*(-5./48)
+        C33 = (fε *= ε) * ( 5./48    -   n*(3./16   -   n*(5./48))
+                   + ε  * ( 3./32    -   n*(5./48)
                    + ε  * (-7./160)));
-        C34 = (fε *= ε) * ( 7./64    +   n*(-7./32)
+        C34 = (fε *= ε) * ( 7./64    -   n*(7./32)
                    + ε  * ( 7./64));
         C35 = (fε *  ε) * (21./160);
         return k2;

@@ -550,6 +550,7 @@ public class GeodeticCalculator {
     /**
      * Returns or computes the length of rhumb line (part of constant heading) from start point to end point.
      * This is sometime called "loxodrome". This is <strong>not</strong> the shortest path between two points.
+     * The rhumb line distance may be up to 50% longer than the geodesic distance.
      *
      * @return length of rhumb line in the unit of measurement given by {@link #getDistanceUnit()}.
      * @throws IllegalStateException if a point has not been set.
