@@ -570,7 +570,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
             GridExtent areaOfInterest = targetGeometry.getIntersection();           // Pixel indices of data to read.
             int[]      subsamplings   = targetGeometry.getSubsamplings();           // Slice to read or subsampling to apply.
             int        numBuffers     = bands.length;                               // By default, one variable per band.
-            domain = targetGeometry.subsample(subsamplings).build();                // Adjust user-specified domain to data geometry.
+            domain = targetGeometry.build();                                        // Adjust user-specified domain to data geometry.
             if (bandDimension >= 0) {
                 areaOfInterest = rangeIndices.insertBandDimension(areaOfInterest, bandDimension);
                 subsamplings   = rangeIndices.insertSubsampling  (subsamplings,   bandDimension);
