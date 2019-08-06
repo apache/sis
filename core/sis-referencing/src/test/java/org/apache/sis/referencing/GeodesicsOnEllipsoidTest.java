@@ -507,7 +507,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
     }
 
     /**
-     * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using the example given in Bennett (1996) appendix.
+     * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using the example 1 given in Bennett (1996) appendix.
      */
     @Test
     public void testRhumblineLength() {
@@ -532,5 +532,38 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
         assertValueEquals("Δm", 0, 2586.16 / scale,      1E-6, false);
         assertValueEquals("C",  0, 54.9900,              1E-4, true);
         assertEquals("distance", 4507.7 * NAUTICAL_MILE, distance, 0.05 * NAUTICAL_MILE);
+    }
+
+    /**
+     * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using the example 3 given in Bennett (1996) appendix.
+     */
+    @Test
+    public void testRhumblineNearlyEquatorial() {
+        createTracked();
+        verifyParametersForWGS84();
+        testedEarth.setStartGeographicPoint(-52-47.8/60, -97-31.6/60);
+        testedEarth.setEndGeographicPoint  (-53-10.8/60, -41-34.6/60);
+        final double distance = testedEarth.getRhumblineLength();
+        assertValueEquals("Δλ", 0,  55+57.0 / 60,         1E-11, true);
+        assertValueEquals("Ψ₁", 0, -3725.18 / (10800/PI), 1E-5, false);
+        assertValueEquals("Ψ₂", 0, -3763.30 / (10800/PI), 1E-5, false);
+        assertValueEquals("ΔΨ", 0,   -38.12 / (10800/PI), 1E-5, false);
+        assertValueEquals("C",  0,  90.6505,              1E-4, true);
+        assertEquals("distance", 2028.9 * NAUTICAL_MILE, distance, 0.05 * NAUTICAL_MILE);
+    }
+
+    /**
+     * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using the example 4 given in Bennett (1996) appendix.
+     */
+    @Test
+    public void testRhumblineEquatorial() {
+        createTracked();
+        verifyParametersForWGS84();
+        testedEarth.setStartGeographicPoint(48+45.0/60, -61-31.1/60);
+        testedEarth.setEndGeographicPoint  (48+45.0/60,   5+13.2/60);
+        final double distance = testedEarth.getRhumblineLength();
+        assertValueEquals("Δλ", 0, 4004.3 / 60, 1E-11, true);
+        assertValueEquals("C",  0,   90.0,      1E-4, true);
+        assertEquals("distance", 2649.9 * NAUTICAL_MILE, distance, 0.1 * NAUTICAL_MILE);
     }
 }

@@ -938,24 +938,31 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     /**
      * Computes rhumb line using series expansion.
      *
-     * <p><b>Source:</b> G.G. Bennett, 1996. <a href="https://doi.org/10.1017/S0373463300013151">Practical
-     * Rhumb Line Calculations on the Spheroid</a>. J. Navigation 49(1), 112--119.</p>
+     * <p><b>Source:</b> G.G. Bennett, 1996. <a href="https://doi.org/10.1017/S0373463300013151">
+     * Practical Rhumb Line Calculations on the Spheroid</a>. J. Navigation 49(1), 112--119.</p>
      */
     @Override
-    void computeRhumbLine() {
+    final void computeRhumbLine() {
         canComputeDistance();
         final double Δλ = λ2 - λ1;
         final double Ψ1 = Ψ(φ1);                    // Bennett equation 1.
         final double Ψ2 = Ψ(φ2);
         final double ΔΨ = Ψ2 - Ψ1;
         final double azimuth = atan2(Δλ, ΔΨ);
-        final double m1 = m(φ1);
-        final double m2 = m(φ2);
-        final double φm = (φ1 + φ2)/2;
-        final double sinφ = sin(φm);
-        double S = (m2 - m1) / cos(azimuth);
-        if (φ1 == φ2) {
-            S = Δλ * cos(φm) / (sin(azimuth) * (1 - eccentricitySquared*(sinφ*sinφ)));     // Bennett equation 4.
+        final double S;
+        if (abs(φ1 - φ2) < LATITUDE_THRESHOLD) {
+            final double φm = (φ1 + φ2)/2;
+            final double sinφ = sin(φm);
+            S = Δλ * cos(φm) / (sin(azimuth) * sqrt(1 - eccentricitySquared*(sinφ*sinφ)));      // Bennett equation 4.
+        } else {
+            final double m1 = m(φ1);
+            final double m2 = m(φ2);
+            S = (m2 - m1) / cos(azimuth);
+            if (STORE_LOCAL_VARIABLES) {
+                store("m₁", m1);
+                store("m₂", m2);
+                store("Δm", m2 - m1);
+            }
         }
         rhumblineLength = S * (semiMinor / axisRatio);      // TODO: compute semiMajor only once.
         if (STORE_LOCAL_VARIABLES) {
@@ -963,9 +970,6 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             store("Ψ₁", Ψ1);
             store("Ψ₂", Ψ2);
             store("ΔΨ", ΔΨ);
-            store("m₁", m1);
-            store("m₂", m2);
-            store("Δm", m2 - m1);
             store("C",  azimuth);
         }
     }
