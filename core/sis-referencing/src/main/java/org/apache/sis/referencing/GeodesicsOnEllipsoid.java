@@ -944,10 +944,32 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     @Override
     final void computeRhumbLine() {
         canComputeDistance();
+        /*
+         * Bennett (1996) equation 1 computes isometric latitudes Ψ for given geodetic latitudes φ:
+         *
+         *     Ψ(φ) = log(tan(PI/4 + φ/2) * pow((1 - ℯsinφ) / (1 + ℯsinφ), ℯ/2));
+         *
+         * (ℯ is the eccentricity, not squared). However we need only the isometric latitudes difference:
+         *
+         *     ΔΨ = Ψ(φ₂) - Ψ(φ₁)
+         *
+         * We rewrite the equation using log(Ψ₁) - log(Ψ₂) = log(Ψ₁/Ψ₂) and other identities:
+         *
+         *     ΔΨ = log(tan(PI/4 + φ₂/2)) + log(pow((1 - ℯsinφ₂) / (1 + ℯsinφ₂), ℯ/2))
+         *        - log(tan(PI/4 + φ₁/2)) - log(pow((1 - ℯsinφ₁) / (1 + ℯsinφ₁), ℯ/2))
+         *
+         *        = log(tan(PI/4 + φ₂/2) /
+         *              tan(PI/4 + φ₁/2) *
+         *              pow(((1 - ℯsinφ₂)*(1 + ℯsinφ₁)) /
+         *                  ((1 + ℯsinφ₂)*(1 - ℯsinφ₁)), ℯ/2))
+         */
+        final double eccentricity = sqrt(eccentricitySquared);      // TODO: avoid computing on each invocation.
+        final double sinφ1 = sin(φ1);
+        final double sinφ2 = sin(φ2);
+        final double sd = eccentricity * (sinφ1 - sinφ2);
+        final double sm = 1 - eccentricitySquared * (sinφ1 * sinφ2);
+        final double ΔΨ = log(tan(PI/4 + φ2/2) / tan(PI/4 + φ1/2) * pow((sm+sd)/(sm-sd), eccentricity/2));
         final double Δλ = λ2 - λ1;
-        final double Ψ1 = Ψ(φ1);                    // Bennett equation 1.
-        final double Ψ2 = Ψ(φ2);
-        final double ΔΨ = Ψ2 - Ψ1;
         final double azimuth = atan2(Δλ, ΔΨ);
         final double S;
         if (abs(φ1 - φ2) < LATITUDE_THRESHOLD) {
@@ -967,23 +989,9 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         rhumblineLength = S * (semiMinor / axisRatio);      // TODO: compute semiMajor only once.
         if (STORE_LOCAL_VARIABLES) {
             store("Δλ", Δλ);
-            store("Ψ₁", Ψ1);
-            store("Ψ₂", Ψ2);
             store("ΔΨ", ΔΨ);
             store("C",  azimuth);
         }
-    }
-
-    /**
-     * Returns the isometric latitude Ψ for the given geodetic latitude φ.
-     * This is equation 1 in Bennett (1996).
-     *
-     * @see org.apache.sis.referencing.operation.projection.ConformalProjection#expΨ
-     */
-    private double Ψ(final double φ) {
-        final double eccentricity = sqrt(eccentricitySquared);      // TODO: avoid computing on each invocation.
-        final double ℯsinφ = eccentricity * sin(φ);
-        return log(tan(PI/4 + φ/2) * pow((1 - ℯsinφ) / (1 + ℯsinφ), eccentricity/2));
     }
 
     /**

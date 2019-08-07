@@ -524,8 +524,6 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
         final double distance = testedEarth.getRhumblineLength();
         final double scale = testedEarth.ellipsoid.getSemiMajorAxis() / NAUTICAL_MILE;
         assertValueEquals("Δλ", 0, 75+35.4 / 60,         1E-11, true);
-        assertValueEquals("Ψ₁", 0,  617.64 / (10800/PI), 1E-5, false);
-        assertValueEquals("Ψ₂", 0, 3794.54 / (10800/PI), 1E-5, false);
         assertValueEquals("ΔΨ", 0, 3176.89 / (10800/PI), 1E-5, false);
         assertValueEquals("m₁", 0,  615.43 / scale,      1E-6, false);
         assertValueEquals("m₂", 0, 3201.59 / scale,      1E-6, false);
@@ -545,8 +543,6 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
         testedEarth.setEndGeographicPoint  (-53-10.8/60, -41-34.6/60);
         final double distance = testedEarth.getRhumblineLength();
         assertValueEquals("Δλ", 0,  55+57.0 / 60,         1E-11, true);
-        assertValueEquals("Ψ₁", 0, -3725.18 / (10800/PI), 1E-5, false);
-        assertValueEquals("Ψ₂", 0, -3763.30 / (10800/PI), 1E-5, false);
         assertValueEquals("ΔΨ", 0,   -38.12 / (10800/PI), 1E-5, false);
         assertValueEquals("C",  0,  90.6505,              1E-4, true);
         assertEquals("distance", 2028.9 * NAUTICAL_MILE, distance, 0.05 * NAUTICAL_MILE);
