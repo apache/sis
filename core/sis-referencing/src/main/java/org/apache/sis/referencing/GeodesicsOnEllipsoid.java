@@ -210,7 +210,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     private double A1, A2, A3, C31, C32, C33, C34, C35;
 
     /**
-     * Coefficients for Rhumb line calculation from Bennett (1996) equation 2.
+     * Coefficients for Rhumb line calculation from Bennett (1996) equation 2, modified with Clenshaw summation.
      */
     private final double R0, R2, R4, R6;
 
@@ -231,13 +231,13 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         axisRatio = b / a;
         semiMinor = b;
         /*
-         * For rhumb-line calculation.
+         * For rhumb-line calculation from Bennett (1996) equation 2, modified with Clenshaw summation.
          */
         double fe;
-        R0 = 1  +  (eccentricitySquared)*(-1./4   + eccentricitySquared*(-3./64 + eccentricitySquared*(-5./256)));
-        R2 = (fe  = eccentricitySquared)*( 3./8   + eccentricitySquared*( 3./32 + eccentricitySquared*(45./1024)));
-        R4 = (fe *= eccentricitySquared)*(15./256 + eccentricitySquared*(45./1024));
-        R6 = (fe *  eccentricitySquared)*(35./3072);
+        R0 = 1  -  (eccentricitySquared)*(  1./4   + eccentricitySquared*( 3./64 + eccentricitySquared*( 5./256)));
+        R2 = (fe  = eccentricitySquared)*( -3./8   - eccentricitySquared*( 3./32 + eccentricitySquared*(25./768)));
+        R4 = (fe *= eccentricitySquared)*( 15./128 + eccentricitySquared*(45./512));
+        R6 = (fe *  eccentricitySquared)*(-35./768);
     }
 
     /**
@@ -977,8 +977,8 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             final double sinφ = sin(φm);
             S = Δλ * cos(φm) / (sin(azimuth) * sqrt(1 - eccentricitySquared*(sinφ*sinφ)));      // Bennett equation 4.
         } else {
-            final double m1 = m(φ1);
-            final double m2 = m(φ2);
+            final double m1 = m(φ1, sinφ1);
+            final double m2 = m(φ2, sinφ2);
             S = (m2 - m1) / cos(azimuth);
             if (STORE_LOCAL_VARIABLES) {
                 store("m₁", m1);
@@ -995,9 +995,12 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     }
 
     /**
-     * Computes Bennett (1996) equation 2.
+     * Computes Bennett (1996) equation 2 modified with Clenshaw summation.
      */
-    private double m(final double φ) {
-        return R0*φ - R2*sin(2*φ) + R4*sin(4*φ) - R6*sin(6*φ);
+    private double m(final double φ, final double sinφ) {
+        final double cosφ = cos(φ);
+        final double sinθ = 2*sinφ*cosφ;                        // sin(2φ)
+        final double cosθ = (cosφ + sinφ) * (cosφ - sinφ);      // cos(2φ)  =  cos²φ - sin²φ
+        return R0*φ + sinθ*(R2 + cosθ*(R4 + cosθ*R6));
     }
 }

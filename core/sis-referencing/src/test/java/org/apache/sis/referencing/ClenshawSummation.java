@@ -431,6 +431,19 @@ public final class ClenshawSummation {
     }
 
     /**
+     * Coefficients for Rhumb line calculation from Bennett (1996) equation 2.
+     *
+     * @return Bennett (1996) equation 2.
+     */
+    public static ClenshawSummation Bennett2() {
+        return new ClenshawSummation(
+            new Coefficient(t(-3, 8), t(-3,  32), t(-45, 1024)),
+            new Coefficient(null,     t(15, 256), t( 45, 1024)),
+            new Coefficient(null,     null,       t(-35, 3072))
+        );
+    }
+
+    /**
      * Computes the Clenshaw summation of a series and display the code to standard output.
      * This method has been used for generating the Java code implemented in methods such as
      * {@link GeodesicsOnEllipsoid#computeSeriesExpansionCoefficients()} and may be executed
