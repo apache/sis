@@ -136,7 +136,9 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      *
      * @see org.opengis.referencing.datum.Ellipsoid#getSemiMinorAxis()
      */
-    private final double semiMinor;
+    private double semiMinorAxis() {
+        return semiMajorAxis * axisRatio;
+    }
 
     /**
      * The α value computed from the starting point and starting azimuth.
@@ -222,14 +224,13 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      */
     GeodesicsOnEllipsoid(final CoordinateReferenceSystem crs, final Ellipsoid ellipsoid) {
         super(crs, ellipsoid);
-        final double a = ellipsoid.getSemiMajorAxis();
+        final double a = semiMajorAxis;
         final double b = ellipsoid.getSemiMinorAxis();
         final double Δ2 = a*a - b*b;
         eccentricitySquared = Δ2 / (a*a);
         secondEccentricitySquared = Δ2 / (b*b);
         thirdFlattening = (a - b) / (a + b);
         axisRatio = b / a;
-        semiMinor = b;
         /*
          * For rhumb-line calculation from Bennett (1996) equation 2, modified with Clenshaw summation.
          */
@@ -509,7 +510,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         /*
          * Distance from equatorial point E to ending point P₂ along the geodesic: s₂ = s₁ + ∆s.
          */
-        final double s2b = I1_σ1 + geodesicDistance / semiMinor;            // (Karney 18) + ∆s/b
+        final double s2b = I1_σ1 + geodesicDistance / semiMinorAxis();      // (Karney 18) + ∆s/b
         final double σ2  = ellipsoidalToSphericalAngle(s2b / A1);           // (Karney 21)
         final double sinσ2 = sin(σ2);
         final double cosσ2 = cos(σ2);
@@ -541,7 +542,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         φ2 = atan(sinβ2 / (cosβ2 * axisRatio));                                 // (Karney 6).
         setValid(END_POINT | ENDING_AZIMUTH);
         if (STORE_LOCAL_VARIABLES) {                // For comparing values with Karney table 2.
-            store("s₂", s2b * semiMinor);
+            store("s₂", s2b * semiMinorAxis());
             store("τ₂", s2b / A1);
             store("σ₂", σ2);
             store("α₂", atan2(msinα2, mcosα2));
@@ -637,7 +638,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                 throw new GeodesicException("Can not compute geodesics for antipodal points on equator.");
             }
             final double Δφ = φ2 - φ1;
-            geodesicDistance = hypot(Δλ, Δφ) * ellipsoid.getSemiMajorAxis();
+            geodesicDistance = hypot(Δλ, Δφ) * semiMajorAxis;
             msinα1 = msinα2 = (inverseLongitudeSigns ^ swapPoints) ? -Δλ : Δλ;
             mcosα1 = mcosα2 = (inverseLatitudeSigns  ^ swapPoints) ? -Δφ : Δφ;
             setValid(STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE);
@@ -797,7 +798,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                 if (STORE_LOCAL_VARIABLES) {
                     store("J(σ₁)", J1);
                     store("J(σ₂)", J2);
-                    store("Δm",    Δm * semiMinor);
+                    store("Δm",    Δm * semiMinorAxis());
                 }
             }
             final double dα1 = Δλ_error / dΔλ_dα1;                  // Opposite sign of Karney δα₁ term.
@@ -819,14 +820,14 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                 store("dλ/dα", dΔλ_dα1);
                 store("δσ₁",  -dα1);
                 store("α₁",    α1);
-                store("s₂",    I1_σ2 * semiMinor);
-                store("Δs",    (I1_σ2 - I1_σ1) * semiMinor);
+                store("s₂",    I1_σ2 * semiMinorAxis());
+                store("Δs",    (I1_σ2 - I1_σ1) * semiMinorAxis());
             }
         } while (moreRefinements != 0);
         final double I1_σ2;
         I1_σ1 = sphericalToEllipsoidalAngle(σ1, false);
         I1_σ2 = sphericalToEllipsoidalAngle(σ2, false);
-        geodesicDistance = (I1_σ2 - I1_σ1) * semiMinor;
+        geodesicDistance = (I1_σ2 - I1_σ1) * semiMinorAxis();
         /*
          * Restore the coordinate sign and order to the original configuration.
          */
@@ -913,7 +914,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         store("A₃",     A3);
         store("α₀",     atan2(sinα0(), cosα0));
         store("I₁(σ₁)", I1_σ1);
-        store("s₁",     I1_σ1 * semiMinor);
+        store("s₁",     I1_σ1 * semiMinorAxis());
         store("λ₁",     λ1E);
     }
 
@@ -991,7 +992,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                 store("Δm", m2 - m1);
             }
         }
-        rhumblineLength = S * h * (semiMinor / axisRatio);          // TODO: compute semiMajor only once.
+        rhumblineLength = S * h * semiMajorAxis;
         if (STORE_LOCAL_VARIABLES) {
             store("Δλ", Δλ);
             store("ΔΨ", ΔΨ);

@@ -147,13 +147,9 @@ public class GeodeticCalculator {
     final Ellipsoid ellipsoid;
 
     /**
-     * The radius of a hypothetical sphere having the same surface than the {@linkplain #ellipsoid}.
-     * Used for the approximation using spherical formulas.
-     * Subclasses using ellipsoidal formulas will ignore this field.
-     *
-     * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
+     * Length of the semi-major axis. For a sphere, this is the radius of the sphere.
      */
-    final double authalicRadius;
+    final double semiMajorAxis;
 
     /**
      * The (<var>latitude</var>, <var>longitude</var>) coordinates of the start point <strong>in radians</strong>.
@@ -255,7 +251,7 @@ public class GeodeticCalculator {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1, ReferencingUtilities.getInterface(crs)));
         }
         this.ellipsoid = ellipsoid;
-        authalicRadius = Formulas.getAuthalicRadius(ellipsoid);
+        semiMajorAxis  = ellipsoid.getSemiMajorAxis();
         userToGeodetic = new PositionTransformer(crs, geographic, null);
     }
 
@@ -631,7 +627,7 @@ public class GeodeticCalculator {
             final double ΔΨ = log(tan(PI/4 + φ2/2) / tan(PI/4 + φ1/2));
             factor = Δφ / ΔΨ * hypot(Δλ, ΔΨ);
         }
-        rhumblineLength = authalicRadius * abs(factor);
+        rhumblineLength = semiMajorAxis * abs(factor);
         setValid(RHUMBLINE_LENGTH);
     }
 
@@ -672,7 +668,7 @@ public class GeodeticCalculator {
          */
         double Δσ = sinφ1*sinφ2 + cosφ1*cosφ2*cosΔλ;        // Actually Δσ = acos(…).
         Δσ = atan2(hypot(msinα1, mcosα1), Δσ);              // Δσ ∈ [0…π].
-        geodesicDistance = authalicRadius * Δσ;
+        geodesicDistance = semiMajorAxis * Δσ;
         setValid(STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE);
     }
 
@@ -704,7 +700,7 @@ public class GeodeticCalculator {
     void computeEndPoint() throws GeodesicException {
         canComputeEndPoint();                   // May throw IllegalStateException.
         final double m     = hypot(msinα1, mcosα1);
-        final double Δσ    = geodesicDistance / authalicRadius;
+        final double Δσ    = geodesicDistance / semiMajorAxis;
         final double sinΔσ = sin(Δσ);
         final double cosΔσ = cos(Δσ);
         final double sinφ1 = sin(φ1);
@@ -873,7 +869,7 @@ public class GeodeticCalculator {
             super(ReferencingUtilities.getDimension(userToGeodetic.defaultCRS));
             msinαf = msinα2;  λf = λ2;
             mcosαf = mcosα2;  φf = φ2;
-            tolerance = toDegrees(εx / authalicRadius);
+            tolerance = toDegrees(εx / semiMajorAxis);
             distance  = geodesicDistance;
             length    = rhumblineLength;
             flags     = validity;

@@ -116,7 +116,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
      * Returns a reference implementation for the given geodetic calculator.
      */
     private static Geodesic createReferenceImplementation(final GeodeticCalculator c) {
-        return new Geodesic(c.ellipsoid.getSemiMajorAxis(), 1/c.ellipsoid.getInverseFlattening());
+        return new Geodesic(c.semiMajorAxis, 1/c.ellipsoid.getInverseFlattening());
     }
 
     /**
@@ -408,7 +408,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
         final Statistics   yError   = new Statistics("∆y/r");
         final Statistics   aErrors  = new Statistics("∆α (°)");
         final double       azimuth  = c.getStartingAzimuth();
-        final double       toMetres = (PI/180) * c.authalicRadius;
+        final double       toMetres = (PI/180) * c.semiMajorAxis;
         final double[]     buffer   = new double[2];
         while (!iterator.isDone()) {
             switch (iterator.currentSegment(buffer)) {
@@ -478,7 +478,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
                      * especially near poles and between antipodal points. Following are empirical thresholds.
                      */
                     linearTolerance    = expected[COLUMN_Δs] * 0.01;
-                    latitudeTolerance  = toDegrees(linearTolerance / c.authalicRadius);
+                    latitudeTolerance  = toDegrees(linearTolerance / c.semiMajorAxis);
                     longitudeTolerance = expected[COLUMN_φ2] > 89.5 ? 180 : latitudeTolerance / cosφ2;
                     azimuthTolerance   = 0.5;                                   // About 8.8 metres at distance of 1 km.
                     if (isTestingInverse) {
@@ -492,7 +492,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
                 } else {
                     /*
                      * When ellipsoidal formulas are used, we aim for an 1 mm accuracy in coordinate values.
-                     * We also aim for azimuthd such as the error is less than 1 cm after the first 10 km.
+                     * We also aim for azimuths such as the error is less than 1 cm after the first 10 km.
                      * If points are nearly antipodal, we relax the azimuth tolerance threshold to 1 meter.
                      */
                     linearTolerance    = 2 * GeodesicsOnEllipsoid.ITERATION_TOLERANCE * AUTHALIC_RADIUS;

@@ -199,10 +199,9 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
      * <p><b>Source:</b>Karney (2013) table 1.</p>
      */
     private void verifyParametersForWGS84() {
-        assertEquals("1/f",  298.257223563,       testedEarth.ellipsoid.getInverseFlattening(), 1E-9);
-        assertEquals("a",    6378137,             testedEarth.ellipsoid.getSemiMajorAxis(),     STRICT);
+        assertEquals("a",    6378137,             testedEarth.semiMajorAxis,                    STRICT);
         assertEquals("b",    6356752.314245,      testedEarth.ellipsoid.getSemiMinorAxis(),     1E-6);
-        assertEquals("c",    6371007.180918,      testedEarth.authalicRadius,                   1E-6);
+        assertEquals("1/f",  298.257223563,       testedEarth.ellipsoid.getInverseFlattening(), 1E-9);
         assertEquals("ℯ²",   0.00669437999014132, testedEarth.eccentricitySquared,              1E-17);
         assertEquals("ℯ′²",  0.00673949674227643, testedEarth.secondEccentricitySquared,        1E-17);
         assertEquals("n",    0.00167922038638370, testedEarth.thirdFlattening,                  1E-16);
@@ -523,7 +522,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
         testedEarth.setStartGeographicPoint(10+18.4/60,  37+41.7/60);
         testedEarth.setEndGeographicPoint  (53+29.5/60, 113+17.1/60);
         final double distance = testedEarth.getRhumblineLength();
-        final double scale = testedEarth.ellipsoid.getSemiMajorAxis() / NAUTICAL_MILE;
+        final double scale = testedEarth.semiMajorAxis / NAUTICAL_MILE;
         assertValueEquals("Δλ", 0, 75+35.4 / 60,         1E-11, true);
         assertValueEquals("ΔΨ", 0, 3176.89 / (10800/PI), 1E-5, false);
         assertValueEquals("m₁", 0,  615.43 / scale,      1E-6, false);
