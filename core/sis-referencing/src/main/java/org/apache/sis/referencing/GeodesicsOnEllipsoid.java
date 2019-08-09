@@ -604,16 +604,6 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             Δλ = -Δλ;
         }
         /*
-         * Compute reduced latitudes β (Karney 6). Actually we don't need the β angles
-         * (except for a special case), but rather their sine and cosine values.
-         */
-        final double tanβ1 = axisRatio * tan(φ1);
-        final double tanβ2 = axisRatio * tan(φ2);
-        final double cosβ1 = 1 / sqrt(1 + tanβ1*tanβ1);
-        final double cosβ2 = 1 / sqrt(1 + tanβ2*tanβ2);
-        final double sinβ1 = tanβ1 * cosβ1;
-        final double sinβ2 = tanβ2 * cosβ2;
-        /*
          * Compute an approximation of the azimuth α₁ at starting point. This estimation will be refined by iteration
          * in the loop later, but that iteration will not converge if the first α₁ estimation is not good enough. The
          * general formula does not give good α₁ initial value for antipodal points, so we need to check for special
@@ -637,13 +627,19 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                 // Karney's special case documented before equation 45.
                 throw new GeodesicException("Can not compute geodesics for antipodal points on equator.");
             }
-            final double Δφ = φ2 - φ1;
-            geodesicDistance = hypot(Δλ, Δφ) * semiMajorAxis;
-            msinα1 = msinα2 = (inverseLongitudeSigns ^ swapPoints) ? -Δλ : Δλ;
-            mcosα1 = mcosα2 = (inverseLatitudeSigns  ^ swapPoints) ? -Δφ : Δφ;
-            setValid(STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE);
+            super.computeDistance();
             return;
         }
+        /*
+         * Reduced latitudes β (Karney 6). Actually we don't need the β angles
+         * (except for a special case), but rather their sine and cosine values.
+         */
+        final double tanβ1 = axisRatio * tan(φ1);
+        final double tanβ2 = axisRatio * tan(φ2);
+        final double cosβ1 = 1 / sqrt(1 + tanβ1*tanβ1);
+        final double cosβ2 = 1 / sqrt(1 + tanβ2*tanβ2);
+        final double sinβ1 = tanβ1 * cosβ1;
+        final double sinβ2 = tanβ2 * cosβ2;
         double α1;
         if (Δλ >= PI - NEARLY_ANTIPODAL_Δλ && abs(φ1 + φ2) <= NEARLY_ANTIPODAL_Δλ) {
             /*
