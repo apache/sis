@@ -607,7 +607,7 @@ public class GeodeticCalculator {
      */
     void computeRhumbLine() {
         canComputeDistance();
-        final double Δλ = λ2 - λ1;
+        final double Δλ = IEEEremainder(λ2 - λ1, 2*PI);
         final double Δφ = φ2 - φ1;
         final double factor;
         if (abs(Δφ) < LATITUDE_THRESHOLD) {
@@ -867,12 +867,15 @@ public class GeodeticCalculator {
          */
         PathBuilder(final double εx) {
             super(ReferencingUtilities.getDimension(userToGeodetic.defaultCRS));
-            msinαf = msinα2;  λf = λ2;
-            mcosαf = mcosα2;  φf = φ2;
+            φf        = φ2;
+            λf        = λ2;
+            msinαf    = msinα2;
+            mcosαf    = mcosα2;
             tolerance = toDegrees(εx / semiMajorAxis);
             distance  = geodesicDistance;
             length    = rhumblineLength;
-            flags     = validity;
+            flags     = validity & (START_POINT | STARTING_AZIMUTH | END_POINT | ENDING_AZIMUTH |
+                                    GEODESIC_DISTANCE | RHUMBLINE_LENGTH);
         }
 
         /**
@@ -936,8 +939,8 @@ public class GeodeticCalculator {
          * Restores the enclosing {@link GeodeticCalculator} to the state that it has at {@code PathBuilder} instantiation time.
          */
         void reset() {
-            msinα2 = msinαf;  λ2 = λf;
-            mcosα2 = mcosαf;  φ2 = φf;
+            λ2 = λf;  msinα2 = msinαf;
+            φ2 = φf;  mcosα2 = mcosαf;
             geodesicDistance = distance;
             rhumblineLength  = length;
             validity         = flags;

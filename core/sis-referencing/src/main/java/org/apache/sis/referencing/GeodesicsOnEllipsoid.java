@@ -971,7 +971,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         final double sd = eccentricity * (sinφ1 - sinφ2);
         final double sm = 1 - eccentricitySquared * (sinφ1 * sinφ2);
         final double ΔΨ = log(tan(PI/4 + φ2/2) / tan(PI/4 + φ1/2) * pow((sm+sd)/(sm-sd), eccentricity/2));
-        final double Δλ = λ2 - λ1;
+        final double Δλ = IEEEremainder(λ2 - λ1, 2*PI);
         final double h  = hypot(Δλ, ΔΨ);
         final double S;
         if (abs(φ1 - φ2) < LATITUDE_THRESHOLD) {
