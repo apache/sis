@@ -962,6 +962,11 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
          *              tan(PI/4 + φ₁/2) *
          *              pow(((1 - ℯsinφ₂)*(1 + ℯsinφ₁)) /
          *                  ((1 + ℯsinφ₂)*(1 - ℯsinφ₁)), ℯ/2))
+         *
+         * The code below combines ℯsinφ terms otherwise. Note that we could also use product-to-sum
+         * identities for rewriting the  tan(¼π + ½φ₂) / tan(¼π + ½φ₁)  expression as  (a + b) / (a - b)
+         * where  a = cos((φ₂+φ₁)/2)  and  b = sin((φ₂-φ₁)/2), but the amount of trigonometric method calls
+         * would be about the same and result may be less accurate.
          */
         final double eccentricity = sqrt(eccentricitySquared);      // TODO: avoid computing on each invocation.
         final double sinφ1 = sin(φ1);
@@ -970,27 +975,27 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         final double sm = 1 - eccentricitySquared * (sinφ1 * sinφ2);
         final double ΔΨ = log(tan(PI/4 + φ2/2) / tan(PI/4 + φ1/2) * pow((sm+sd)/(sm-sd), eccentricity/2));
         final double Δλ = λ2 - λ1;
-        final double azimuth = atan2(Δλ, ΔΨ);
+        final double h  = hypot(Δλ, ΔΨ);
         final double S;
         if (abs(φ1 - φ2) < LATITUDE_THRESHOLD) {
             final double φm = (φ1 + φ2)/2;
             final double sinφ = sin(φm);
-            S = Δλ * cos(φm) / (sin(azimuth) * sqrt(1 - eccentricitySquared*(sinφ*sinφ)));      // Bennett equation 4.
+            S = cos(φm) / sqrt(1 - eccentricitySquared*(sinφ*sinφ));        // Bennett equation 4 with sin(α) = Δλ/h.
         } else {
             final double m1 = m(φ1, sinφ1);
             final double m2 = m(φ2, sinφ2);
-            S = (m2 - m1) / cos(azimuth);
+            S = (m2 - m1) / ΔΨ;                                             // Bennett (1996) with cos(α) = ΔΨ/h.
             if (STORE_LOCAL_VARIABLES) {
                 store("m₁", m1);
                 store("m₂", m2);
                 store("Δm", m2 - m1);
             }
         }
-        rhumblineLength = S * (semiMinor / axisRatio);      // TODO: compute semiMajor only once.
+        rhumblineLength = S * h * (semiMinor / axisRatio);          // TODO: compute semiMajor only once.
         if (STORE_LOCAL_VARIABLES) {
             store("Δλ", Δλ);
             store("ΔΨ", ΔΨ);
-            store("C",  azimuth);
+            store("C",  atan2(Δλ, ΔΨ));         // Azimuth.
         }
     }
 
