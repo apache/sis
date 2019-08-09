@@ -510,6 +510,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
      * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using the example 1 given in Bennett (1996) appendix.
      */
     @Test
+    @Override
     public void testRhumblineLength() {
         createTracked();
         verifyParametersForWGS84();
@@ -536,6 +537,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
      * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using the example 3 given in Bennett (1996) appendix.
      */
     @Test
+    @Override
     public void testRhumblineNearlyEquatorial() {
         createTracked();
         verifyParametersForWGS84();
@@ -552,6 +554,7 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
      * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using the example 4 given in Bennett (1996) appendix.
      */
     @Test
+    @Override
     public void testRhumblineEquatorial() {
         createTracked();
         verifyParametersForWGS84();

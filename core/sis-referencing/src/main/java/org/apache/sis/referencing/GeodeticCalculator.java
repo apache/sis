@@ -621,14 +621,15 @@ public class GeodeticCalculator {
              * Inverse of Gudermannian function is log(tan(π/4 + φ/2)).
              * The loxodrome formula involves the following difference:
              *
-             *   ΔG  =  log(tan(π/4 + φ₁/2)) - log(tan(π/4 + φ₂/2))
+             *   ΔΨ  =  log(tan(π/4 + φ₁/2)) - log(tan(π/4 + φ₂/2))
              *       =  log(tan(π/4 + φ₁/2) / tan(π/4 + φ₂/2))
+             *   α   =  atan2(Δλ, ΔΨ)
              *
-             * Note that ΔG=0 if φ₁=φ₂, which implies cos(α)=0.
+             * Note that ΔΨ=0 if φ₁=φ₂, which implies cos(α)=0.
+             * Code below replaces cos(α) by ΔΨ/hypot(Δλ, ΔΨ).
              */
-            final double ΔG = log(tan(PI/4 + φ1/2) / tan(PI/4 + φ2/2));
-            final double α = atan(Δλ / ΔG);
-            factor = Δφ / cos(α);
+            final double ΔΨ = log(tan(PI/4 + φ2/2) / tan(PI/4 + φ1/2));
+            factor = Δφ / ΔΨ * hypot(Δλ, ΔΨ);
         }
         rhumblineLength = authalicRadius * abs(factor);
         setValid(RHUMBLINE_LENGTH);

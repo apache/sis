@@ -562,4 +562,40 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
     boolean isFailure(final double[] expected) {
         return true;
     }
+
+    /**
+     * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using points given by Bennett (1996).
+     * This is an anti-regression test since the result was computed by SIS for the spherical case.
+     */
+    @Test
+    public void testRhumblineLength() {
+        final GeodeticCalculator c = create(false);
+        c.setStartGeographicPoint(10+18.4/60,  37+41.7/60);
+        c.setEndGeographicPoint  (53+29.5/60, 113+17.1/60);
+        assertEquals(8344561, c.getRhumblineLength(), 1);
+    }
+
+    /**
+     * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using points given by Bennett (1996).
+     * This is an anti-regression test since the result was computed by SIS for the spherical case.
+     */
+    @Test
+    public void testRhumblineNearlyEquatorial() {
+        final GeodeticCalculator c = create(false);
+        c.setStartGeographicPoint(-52-47.8/60, -97-31.6/60);
+        c.setEndGeographicPoint  (-53-10.8/60, -41-34.6/60);
+        assertEquals(3745332, c.getRhumblineLength(), 1);
+    }
+
+    /**
+     * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using points given by Bennett (1996).
+     * This is an anti-regression test since the result was computed by SIS for the spherical case.
+     */
+    @Test
+    public void testRhumblineEquatorial() {
+        final GeodeticCalculator c = create(false);
+        c.setStartGeographicPoint(48+45.0/60, -61-31.1/60);
+        c.setEndGeographicPoint  (48+45.0/60,   5+13.2/60);
+        assertEquals(4892987, c.getRhumblineLength(), 1);
+    }
 }
