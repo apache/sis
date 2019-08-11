@@ -529,7 +529,9 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
         assertValueEquals("m₂", 0, 3201.59 / scale,      1E-6, false);
         assertValueEquals("Δm", 0, 2586.16 / scale,      1E-6, false);
         assertValueEquals("C",  0, 54.9900,              1E-4, true);
-        assertEquals("distance", 4507.7 * NAUTICAL_MILE, distance, 0.05 * NAUTICAL_MILE);
+        assertEquals("distance", 4507.7 * NAUTICAL_MILE, distance, 0.05 * NAUTICAL_MILE);   // From Bennett (1996)
+        assertEquals("distance", 8348285.202, distance, Formulas.LINEAR_TOLERANCE);         // From Karney's online calculator.
+//      assertEquals("azimuth",  54.99008056, azimuth,  1E-8);
     }
 
     /**
@@ -546,7 +548,9 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
         assertValueEquals("Δλ", 0,  55+57.0 / 60,         1E-11, true);
         assertValueEquals("ΔΨ", 0,   -38.12 / (10800/PI), 1E-5, false);
         assertValueEquals("C",  0,  90.6505,              1E-4, true);
-        assertEquals("distance", 2028.9 * NAUTICAL_MILE, distance, 0.05 * NAUTICAL_MILE);
+        assertEquals("distance", 2028.9 * NAUTICAL_MILE, distance, 0.05 * NAUTICAL_MILE);   // From Bennett (1996)
+        assertEquals("distance", 3757550.656, distance, Formulas.LINEAR_TOLERANCE);         // From Karney's online calculator.
+//      assertEquals("azimuth",  90.65049570, azimuth,  1E-8);
     }
 
     /**
@@ -562,6 +566,8 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
         final double distance = testedEarth.getRhumblineLength();
         assertValueEquals("Δλ", 0, 4004.3 / 60, 1E-11, true);
         assertValueEquals("C",  0,   90.0,      1E-4, true);
-        assertEquals("distance", 2649.9 * NAUTICAL_MILE, distance, 0.1 * NAUTICAL_MILE);
+        assertEquals("distance", 2649.9 * NAUTICAL_MILE, distance, 0.1 * NAUTICAL_MILE);    // From Bennett (1996)
+        assertEquals("distance", 4907757.375, distance, Formulas.LINEAR_TOLERANCE);         // From Karney's online calculator.
+//      assertEquals("azimuth",  90.00000000, azimuth,  1E-8);
     }
 }
