@@ -573,6 +573,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
         c.setStartGeographicPoint(10+18.4/60,  37+41.7/60);
         c.setEndGeographicPoint  (53+29.5/60, 113+17.1/60);
         assertEquals(8344561, c.getRhumblineLength(), 1);
+        assertEquals(54.8682, c.getConstantAzimuth(), 1E-4);
     }
 
     /**
@@ -585,6 +586,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
         c.setStartGeographicPoint(-52-47.8/60, -97-31.6/60);
         c.setEndGeographicPoint  (-53-10.8/60, -41-34.6/60);
         assertEquals(3745332, c.getRhumblineLength(), 1);
+        assertEquals(90.6521, c.getConstantAzimuth(), 1E-4);
     }
 
     /**
@@ -597,5 +599,6 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
         c.setStartGeographicPoint(48+45.0/60, -61-31.1/60);
         c.setEndGeographicPoint  (48+45.0/60,   5+13.2/60);
         assertEquals(4892987, c.getRhumblineLength(), 1);
+        assertEquals(90, c.getConstantAzimuth(), STRICT);
     }
 }

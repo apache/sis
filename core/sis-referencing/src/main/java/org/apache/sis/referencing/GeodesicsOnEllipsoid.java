@@ -977,10 +977,10 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             }
         }
         rhumblineLength = S * h * semiMajorAxis;
+        rhumblineAzimuth = atan2(Δλ, ΔΨ);
         if (STORE_LOCAL_VARIABLES) {
             store("Δλ", Δλ);
             store("ΔΨ", ΔΨ);
-            store("C",  atan2(Δλ, ΔΨ));         // Azimuth.
         }
     }
 

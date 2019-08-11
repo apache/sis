@@ -216,6 +216,13 @@ public class GeodeticCalculator {
     double rhumblineLength;
 
     /**
+     * Constant bearing on the rhumb line path, in radians.
+     *
+     * @see #getConstantAzimuth()
+     */
+    double rhumblineAzimuth;
+
+    /**
      * A bitmask specifying which information are valid. For example if the {@link #END_POINT} bit is not set,
      * then {@link #φ2} and {@link #λ2} need to be computed, which implies the computation of ∂φ/∂λ as well.
      * If the {@link #GEODESIC_DISTANCE} bit is not set, then {@link #geodesicDistance} needs to be computed,
@@ -450,7 +457,8 @@ public class GeodeticCalculator {
     }
 
     /**
-     * Returns or computes the angular heading (relative to geographic North) at the starting point.
+     * Returns or computes the angular heading at the starting point of a geodesic path.
+     * Azimuth is relative to geographic North with values increasing clockwise.
      * This method returns the azimuth normalized to [-180 … +180]° range given in last call to
      * {@link #setStartingAzimuth(double)} method, unless the {@link #setEndPoint(Position) setEndPoint(…)}
      * method has been invoked more recently. In the later case, the azimuth will be computed from the
@@ -468,7 +476,7 @@ public class GeodeticCalculator {
     }
 
     /**
-     * Sets the angular heading (relative to geographic North) at the starting point.
+     * Sets the angular heading at the starting point of a geodesic path.
      * Azimuth is relative to geographic North with values increasing clockwise.
      * The {@linkplain #getEndingAzimuth() ending azimuth}, {@linkplain #getEndPoint() end point}
      * and {@linkplain #getRhumblineLength() rhumb line length}
@@ -488,7 +496,8 @@ public class GeodeticCalculator {
     }
 
     /**
-     * Computes the angular heading (relative to geographic North) at the ending point. This method computes the azimuth
+     * Computes the angular heading at the ending point of a geodesic path.
+     * Azimuth is relative to geographic North with values increasing clockwise. This method computes the azimuth
      * from the current {@linkplain #setStartPoint(Position) start point} and {@linkplain #setEndPoint(Position) end point},
      * or from start point and the current {@linkplain #setStartingAzimuth(double) starting azimuth} and
      * {@linkplain #setGeodesicDistance(double) geodesic distance}.
@@ -506,6 +515,20 @@ public class GeodeticCalculator {
             }
         }
         return toDegrees(atan2(msinα2, mcosα2));
+    }
+
+    /**
+     * Computes the angular heading of a rhumb line path.
+     * Azimuth is relative to geographic North with values increasing clockwise.
+     *
+     * @return the azimuth in degrees from -180° to +180°. 0° is toward North and values are increasing clockwise.
+     * @throws IllegalStateException if a point has not been set.
+     */
+    public double getConstantAzimuth() {
+        if (isInvalid(RHUMBLINE_LENGTH)) {
+            computeRhumbLine();
+        }
+        return toDegrees(rhumblineAzimuth);
     }
 
     /**
@@ -612,6 +635,7 @@ public class GeodeticCalculator {
         final double factor;
         if (abs(Δφ) < LATITUDE_THRESHOLD) {
             factor = Δλ * cos((φ1 + φ2)/2);
+            rhumblineAzimuth = copySign(PI/2, Δλ);
         } else {
             /*
              * Inverse of Gudermannian function is log(tan(π/4 + φ/2)).
@@ -626,6 +650,7 @@ public class GeodeticCalculator {
              */
             final double ΔΨ = log(tan(PI/4 + φ2/2) / tan(PI/4 + φ1/2));
             factor = Δφ / ΔΨ * hypot(Δλ, ΔΨ);
+            rhumblineAzimuth = atan2(Δλ, ΔΨ);
         }
         rhumblineLength = semiMajorAxis * abs(factor);
         setValid(RHUMBLINE_LENGTH);
