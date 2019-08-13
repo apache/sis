@@ -19,7 +19,6 @@ package org.apache.sis.referencing;
 import org.opengis.geometry.coordinate.Position;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.referencing.operation.GeodesicException;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.math.MathFunctions;
@@ -555,10 +554,10 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * </ul>
      *
      * @throws IllegalStateException if the distance or azimuth has not been set.
-     * @throws GeodesicException if an azimuth or the distance can not be computed.
+     * @throws GeodeticException if an azimuth or the distance can not be computed.
      */
     @Override
-    final void computeDistance() throws GeodesicException {
+    final void computeDistance() {
         canComputeDistance();
         /*
          * The algorithm in this method requires the following canonical configuration:
@@ -612,7 +611,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
              */
             if (Δλ > axisRatio * PI) {
                 // Karney's special case documented before equation 45.
-                throw new GeodesicException("Can not compute geodesics for antipodal points on equator.");
+                throw new GeodeticException("Can not compute geodesics for antipodal points on equator.");
             }
             super.computeDistance();
             return;
@@ -751,7 +750,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             if (abs(Δλ_error) <= ITERATION_TOLERANCE) {
                 moreRefinements = 0;
             } else if (--moreRefinements == 0) {
-                throw new GeodesicException(Resources.format(Resources.Keys.NoConvergence));
+                throw new GeodeticException(Resources.format(Resources.Keys.NoConvergence));
             }
             /*
              * Special case for α₁ = π/2 and β₂ = ±β₁ (Karney's equation 47). We replace the β₂ = ±β₁

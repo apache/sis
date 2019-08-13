@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.Arrays;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.GeodesicException;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -224,11 +222,9 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
      * Those values are verified if {@link GeodesicsOnEllipsoid#STORE_LOCAL_VARIABLES} is {@code true}.
      *
      * <p><b>Source:</b> Karney (2013), <u>Algorithms for geodesics</u> table 2.</p>
-     *
-     * @throws TransformException should never happen since this method does not apply map projections.
      */
     @Test
-    public void testComputeEndPoint() throws TransformException {
+    public void testComputeEndPoint() {
         createTracked();
         verifyParametersForWGS84();
         testedEarth.setStartGeographicPoint(40, 10);
@@ -316,12 +312,10 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
      * Those values are verified if {@link GeodesicsOnEllipsoid#STORE_LOCAL_VARIABLES} is {@code true}.
      *
      * <p><b>Source:</b> Karney (2013), <u>Algorithms for geodesics</u> table 3.</p>
-     *
-     * @throws GeodesicException if a geodesic can not be computed.
      */
     @Test
     @DependsOnMethod("testComputeEndPoint")
-    public void testComputeShortDistance() throws GeodesicException {
+    public void testComputeShortDistance() {
         createTracked();
         verifyParametersForWGS84();
         testedEarth.setStartGeographicPoint(-30.12345, 2);
@@ -375,12 +369,10 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
      * Those values are verified if {@link GeodesicsOnEllipsoid#STORE_LOCAL_VARIABLES} is {@code true}.
      *
      * <p><b>Source:</b> Karney (2013), <u>Algorithms for geodesics</u> tables 4, 5 and 6.</p>
-     *
-     * @throws GeodesicException if a geodesic can not be computed.
      */
     @Test
     @DependsOnMethod("testComputeShortDistance")
-    public void testComputeNearlyAntipodal() throws GeodesicException {
+    public void testComputeNearlyAntipodal() {
         createTracked();
         verifyParametersForWGS84();
         testedEarth.setStartGeographicPoint(-30, 0);
@@ -452,13 +444,11 @@ public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorT
      * Same test than the one defined in parent class, but with expected results modified for ellipsoidal formulas.
      * Input points are from <a href="https://en.wikipedia.org/wiki/Great-circle_navigation#Example">Wikipedia</a>.
      * Outputs were computed with GeographicLib.
-     *
-     * @throws TransformException if an error occurred while transforming coordinates.
      */
     @Test
     @Override
     @DependsOnMethod({"testComputeEndPoint", "testComputeNearlyAntipodal"})
-    public void testGeodesicDistanceAndAzimuths() throws TransformException {
+    public void testGeodesicDistanceAndAzimuths() {
         final GeodeticCalculator c = create(false);
         c.setStartGeographicPoint(-33.0, -71.6);            // Valparaíso
         c.setEndGeographicPoint  ( 31.4, 121.8);            // Shanghai

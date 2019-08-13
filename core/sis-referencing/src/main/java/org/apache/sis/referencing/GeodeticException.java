@@ -14,25 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.operation;
-
-import org.opengis.referencing.operation.TransformException;
+package org.apache.sis.referencing;
 
 
 /**
- * Thrown when an error occurred while computing geodesic between two points.
- *
- * <div class="note"><b>API note:</b>
- * defined as a sub-type of {@link TransformException} because some kind of coordinate operations are involved in
- * geodesics calculation (e.g. transformation of latitudes and longitudes to coordinates on an auxiliary sphere).
- * The starting and ending points can also be given in a CRS that require additional coordinate operations.</div>
+ * Thrown when an error occurred while computing geodesic or rhumb line between two points.
+ * This exception may have a {@link org.opengis.referencing.operation.TransformException} as its cause.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   1.0
+ *
+ * @see GeodeticCalculator
+ *
+ * @since 1.0
  * @module
  */
-public class GeodesicException extends TransformException {
+public class GeodeticException extends RuntimeException {
     /**
      * For cross-version compatibility.
      */
@@ -41,7 +38,7 @@ public class GeodesicException extends TransformException {
     /**
      * Constructs a new exception with no message.
      */
-    public GeodesicException() {
+    public GeodeticException() {
         super();
     }
 
@@ -50,7 +47,17 @@ public class GeodesicException extends TransformException {
      *
      * @param message  the detail message, or {@code null} if none.
      */
-    public GeodesicException(final String message) {
+    public GeodeticException(final String message) {
         super(message);
+    }
+
+    /**
+     * Constructs a new exception with the specified detail message and cause.
+     *
+     * @param message  the detail message, or {@code null} if none.
+     * @param cause    the cause, or {@code null} if none.
+     */
+    public GeodeticException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 }

@@ -24,7 +24,6 @@ import java.awt.geom.Rectangle2D;
 
 // GeoAPI import
 import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.operation.TransformException;
 
 //SIS imports
 import org.apache.sis.geometry.DirectPosition2D;
@@ -86,15 +85,11 @@ public class LatLonPointRadius {
     calculator.setStartGeographicPoint(center.getOrdinate(1), center.getOrdinate(0));
     calculator.setGeodesicDistance(radius);
 
-    try {
-      for (int i = 0; i < numberOfPoints; i++)
-      {
-        calculator.setStartingAzimuth(i * bearingIncrement);
-        DirectPosition p = calculator.getEndPoint();
-        points[i] = new DirectPosition2D(p.getOrdinate(1), p.getOrdinate(0));
-      }
-    } catch (TransformException e) {
-      throw new IllegalStateException(e);       // Should never happen.
+    for (int i = 0; i < numberOfPoints; i++)
+    {
+      calculator.setStartingAzimuth(i * bearingIncrement);
+      DirectPosition p = calculator.getEndPoint();
+      points[i] = new DirectPosition2D(p.getOrdinate(1), p.getOrdinate(0));
     }
 
     points[numberOfPoints] = points[0];
@@ -121,24 +116,20 @@ public class LatLonPointRadius {
     Path2D path = new Path2D.Double();
     double initX = Double.NaN, previousX = Double.NaN;
     calculator.setGeodesicDistance(radius);
-    try {
-      for (int i = 0; i < 360; i++) {
-        calculator.setStartingAzimuth(i);
-        DirectPosition pt = calculator.getEndPoint();
-        double x = pt.getOrdinate(1) + 180.0;
-        double y = pt.getOrdinate(0) + 90.0;
-        if (i == 0) {
-          initX = Longitude.normalize(x);
-          path.moveTo(x, y);
-        } else {
-          path.lineTo(x, y);
-          if (dateLineCrossOver(previousX, previousX = Longitude.normalize(x))) {
-            numberOfCrossOvers++;
-          }
+    for (int i = 0; i < 360; i++) {
+      calculator.setStartingAzimuth(i);
+      DirectPosition pt = calculator.getEndPoint();
+      double x = pt.getOrdinate(1) + 180.0;
+      double y = pt.getOrdinate(0) + 90.0;
+      if (i == 0) {
+        initX = Longitude.normalize(x);
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+        if (dateLineCrossOver(previousX, previousX = Longitude.normalize(x))) {
+          numberOfCrossOvers++;
         }
       }
-    } catch (TransformException e) {
-      throw new IllegalStateException(e);       // Should never happen.
     }
     if (dateLineCrossOver(previousX, initX)) {
       numberOfCrossOvers++;

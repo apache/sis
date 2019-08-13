@@ -37,7 +37,6 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.geometry.CoordinateFormat;
-import org.apache.sis.referencing.operation.GeodesicException;
 import org.apache.sis.internal.referencing.PositionTransformer;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
@@ -344,21 +343,34 @@ public class GeodeticCalculator {
     }
 
     /**
+     * Returns the error message to give to {@link GeodeticException} when a {@link TransformException} occurred.
+     *
+     * @param  toCRS  {@code false} if converting from the position CRS, {@code true} if converting to the position CRS.
+     */
+    private String transformError(final boolean toCRS) {
+        return Resources.format(Resources.Keys.CanNotConvertCoordinates_2,
+                toCRS ? 1 : 0, IdentifiedObjects.getName(getPositionCRS(), null));
+    }
+
+    /**
      * Returns the starting point in the CRS specified at construction time.
      * This method returns the last point given to a {@code setStartPoint(…)} method,
      * transformed to the {@linkplain #getPositionCRS() position CRS}.
      *
      * @return the starting point represented in the CRS specified at construction time.
-     * @throws TransformException if the coordinates can not be transformed to {@linkplain #getPositionCRS() position CRS}.
      * @throws IllegalStateException if the start point has not yet been specified.
+     * @throws GeodeticException if the coordinates can not be transformed to {@linkplain #getPositionCRS() position CRS}.
      *
      * @see #getEndPoint()
      */
-    public DirectPosition getStartPoint() throws TransformException {
+    public DirectPosition getStartPoint() {
         if (isInvalid(START_POINT)) {
             throw new IllegalStateException(Resources.format(Resources.Keys.StartOrEndPointNotSet_1, 0));
+        } else try {
+            return geographic(φ1, λ1).inverseTransform();
+        } catch (TransformException e) {
+            throw new GeodeticException(transformError(true), e);
         }
-        return geographic(φ1, λ1).inverseTransform();
     }
 
     /**
@@ -368,12 +380,17 @@ public class GeodeticCalculator {
      * the CRS specified at construction time.
      *
      * @param  point  the starting point in any coordinate reference system.
-     * @throws TransformException if the coordinates can not be transformed.
+     * @throws IllegalArgumentException if the given coordinates can not be transformed.
      *
      * @see #setEndPoint(Position)
      */
-    public void setStartPoint(final Position point) throws TransformException {
-        final DirectPosition p = userToGeodetic.transform(point.getDirectPosition());
+    public void setStartPoint(final Position point) {
+        final DirectPosition p;
+        try {
+            p = userToGeodetic.transform(point.getDirectPosition());
+        } catch (TransformException e) {
+            throw new IllegalArgumentException(transformError(false), e);
+        }
         setStartGeographicPoint(p.getOrdinate(0), p.getOrdinate(1));
     }
 
@@ -407,16 +424,20 @@ public class GeodeticCalculator {
      * and the current azimuth and distance.
      *
      * @return the destination (end point) represented in the CRS specified at construction time.
-     * @throws TransformException if the coordinates can not be computed.
      * @throws IllegalStateException if the destination point, azimuth or distance have not been set.
+     * @throws GeodeticException if the coordinates can not be computed.
      *
      * @see #getStartPoint()
      */
-    public DirectPosition getEndPoint() throws TransformException {
+    public DirectPosition getEndPoint() {
         if (isInvalid(END_POINT)) {
             computeEndPoint();
         }
-        return geographic(φ2, λ2).inverseTransform();
+        try {
+            return geographic(φ2, λ2).inverseTransform();
+        } catch (TransformException e) {
+            throw new GeodeticException(transformError(true), e);
+        }
     }
 
     /**
@@ -426,12 +447,17 @@ public class GeodeticCalculator {
      * the CRS specified at construction time.
      *
      * @param  position  the destination (end point) in any coordinate reference system.
-     * @throws TransformException if the coordinates can not be transformed.
+     * @throws IllegalArgumentException if the given coordinates can not be transformed.
      *
      * @see #setStartPoint(Position)
      */
-    public void setEndPoint(final Position position) throws TransformException {
-        final DirectPosition p = userToGeodetic.transform(position.getDirectPosition());
+    public void setEndPoint(final Position position) {
+        final DirectPosition p;
+        try {
+            p = userToGeodetic.transform(position.getDirectPosition());
+        } catch (TransformException e) {
+            throw new IllegalArgumentException(transformError(false), e);
+        }
         setEndGeographicPoint(p.getOrdinate(0), p.getOrdinate(1));
     }
 
@@ -466,9 +492,9 @@ public class GeodeticCalculator {
      *
      * @return the azimuth in degrees from -180° to +180°. 0° is toward North and values are increasing clockwise.
      * @throws IllegalStateException if the end point, azimuth or distance have not been set.
-     * @throws GeodesicException if the azimuth can not be computed.
+     * @throws GeodeticException if the azimuth can not be computed.
      */
-    public double getStartingAzimuth() throws GeodesicException {
+    public double getStartingAzimuth() {
         if (isInvalid(STARTING_AZIMUTH)) {
             computeDistance();
         }
@@ -504,9 +530,9 @@ public class GeodeticCalculator {
      *
      * @return the azimuth in degrees from -180° to +180°. 0° is toward North and values are increasing clockwise.
      * @throws IllegalStateException if the destination point, azimuth or distance have not been set.
-     * @throws GeodesicException if the azimuth can not be computed.
+     * @throws GeodeticException if the azimuth can not be computed.
      */
-    public double getEndingAzimuth() throws GeodesicException {
+    public double getEndingAzimuth() {
         if (isInvalid(ENDING_AZIMUTH)) {
             if (isInvalid(END_POINT)) {
                 computeEndPoint();                      // Compute also ending azimuth from start point and distance.
@@ -522,7 +548,8 @@ public class GeodeticCalculator {
      * Azimuth is relative to geographic North with values increasing clockwise.
      *
      * @return the azimuth in degrees from -180° to +180°. 0° is toward North and values are increasing clockwise.
-     * @throws IllegalStateException if a point has not been set.
+     * @throws IllegalStateException if the start point or end point has not been set.
+     * @throws GeodeticException if the azimuth can not be computed.
      */
     public double getConstantAzimuth() {
         if (isInvalid(RHUMBLINE_LENGTH)) {
@@ -538,12 +565,12 @@ public class GeodeticCalculator {
      * the distance will be computed from the {@linkplain #getStartPoint() start point} and current end point.
      *
      * @return the shortest distance in the unit of measurement given by {@link #getDistanceUnit()}.
-     * @throws IllegalStateException if a point has not been set.
-     * @throws GeodesicException if the distance can not be computed.
+     * @throws IllegalStateException if the start point or end point has not been set.
+     * @throws GeodeticException if the distance can not be computed.
      *
      * @see #getDistanceUnit()
      */
-    public double getGeodesicDistance() throws GeodesicException {
+    public double getGeodesicDistance() {
         if (isInvalid(GEODESIC_DISTANCE)) {
             computeDistance();
         }
@@ -669,9 +696,9 @@ public class GeodeticCalculator {
      * </ul>
      *
      * @throws IllegalStateException if the distance or azimuth has not been set.
-     * @throws GeodesicException if an azimuth or the distance can not be computed.
+     * @throws GeodeticException if an azimuth or the distance can not be computed.
      */
-    void computeDistance() throws GeodesicException {
+    void computeDistance() {
         canComputeDistance();
         final double Δλ    = λ2 - λ1;           // No need to reduce to −π … +π range.
         final double sinΔλ = sin(Δλ);
@@ -720,9 +747,9 @@ public class GeodeticCalculator {
      * spherical formulas. Subclasses should override if they can provide ellipsoidal formulas.</p>
      *
      * @throws IllegalStateException if the start point, azimuth or distance has not been set.
-     * @throws GeodesicException if the end point or azimuth can not be computed.
+     * @throws GeodeticException if the end point or ending azimuth can not be computed.
      */
-    void computeEndPoint() throws GeodesicException {
+    void computeEndPoint() {
         canComputeEndPoint();                   // May throw IllegalStateException.
         final double m     = hypot(msinα1, mcosα1);
         final double Δσ    = geodesicDistance / semiMajorAxis;
@@ -751,9 +778,9 @@ public class GeodeticCalculator {
      * some of them will need to be specified again.
      *
      * @see #setStartGeographicPoint(double, double)
-     * @throws GeodesicException if the end point or azimuth can not be computed.
+     * @throws GeodeticException if the end point or ending azimuth can not be computed.
      */
-    public void moveToEndPoint() throws GeodesicException {
+    public void moveToEndPoint() {
         if (isInvalid(END_POINT)) {
             computeEndPoint();
         }
@@ -797,10 +824,10 @@ public class GeodeticCalculator {
      *                    in the units of measurement given by {@link #getDistanceUnit()}.
      *                    This is approximate; the actual errors may vary around that value.
      * @return an approximation of geodesic track as Bézier curves in a Java2D object.
-     * @throws TransformException if the coordinates can not be transformed to {@linkplain #getPositionCRS() position CRS}.
      * @throws IllegalStateException if some required properties have not been specified.
+     * @throws GeodeticException if some coordinates can not be computed.
      */
-    public Shape createGeodesicPath2D(final double tolerance) throws TransformException {
+    public Shape createGeodesicPath2D(final double tolerance) {
         ArgumentChecks.ensureStrictlyPositive("tolerance", tolerance);
         if (isInvalid(START_POINT | STARTING_AZIMUTH | END_POINT | ENDING_AZIMUTH | GEODESIC_DISTANCE)) {
             if (isInvalid(END_POINT)) {
@@ -813,6 +840,8 @@ public class GeodeticCalculator {
         final Path2D path;
         try {
             path = bezier.build();
+        } catch (TransformException e) {
+            throw new GeodeticException(transformError(true), e);
         } finally {
             bezier.reset();
         }
@@ -844,10 +873,10 @@ public class GeodeticCalculator {
      * @param  tolerance  maximal error in the units of measurement given by {@link #getDistanceUnit()}.
      *                    This is approximate; the actual errors may vary around that value.
      * @return an approximation of circular region as a Java2D object.
-     * @throws TransformException if the coordinates can not be transformed to {@linkplain #getPositionCRS() position CRS}.
      * @throws IllegalStateException if some required properties have not been specified.
+     * @throws GeodeticException if some coordinates can not be computed.
      */
-    public Shape createGeodesicCircle2D(final double tolerance) throws TransformException {
+    public Shape createGeodesicCircle2D(final double tolerance) {
         ArgumentChecks.ensureStrictlyPositive("tolerance", tolerance);
         if (isInvalid(START_POINT | GEODESIC_DISTANCE)) {
             computeDistance();
@@ -856,6 +885,8 @@ public class GeodeticCalculator {
         final Path2D path;
         try {
             path = bezier.build();
+        } catch (TransformException e) {
+            throw new GeodeticException(transformError(true), e);
         } finally {
             bezier.reset();
         }
@@ -1086,7 +1117,7 @@ public class GeodeticCalculator {
                         pointFormat.format(endPoint ? getEndPoint() : getStartPoint(), table);
                         table.nextColumn();
                         table.append(azimuthFormat.format(endPoint ? getEndingAzimuth() : getStartingAzimuth()));
-                    } catch (IllegalStateException | TransformException e) {
+                    } catch (IllegalStateException | GeodeticException e) {
                         // Ignore.
                     }
                     table.nextLine();
@@ -1106,7 +1137,7 @@ public class GeodeticCalculator {
                 resources.appendLabel(Vocabulary.Keys.GeodesicDistance, buffer);
                 buffer.append(' ').append(nf.format(distance))
                       .append(' ').append(unit).append(lineSeparator);
-            } catch (IllegalStateException | GeodesicException e) {
+            } catch (IllegalStateException | GeodeticException e) {
                 // Ignore.
             }
         } catch (IOException e) {
