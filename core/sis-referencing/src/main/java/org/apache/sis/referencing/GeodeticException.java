@@ -18,8 +18,10 @@ package org.apache.sis.referencing;
 
 
 /**
- * Thrown when an error occurred while computing geodesic or rhumb line between two points.
- * This exception may have a {@link org.opengis.referencing.operation.TransformException} as its cause.
+ * Unchecked exception thrown when an error occurred while computing a geodetic value.
+ * This exception may be used in contexts where a checked exception can not be thrown.
+ * This exception typically has a {@link org.opengis.util.FactoryException} or
+ * {@link org.opengis.referencing.operation.TransformException} as its cause.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -49,6 +51,15 @@ public class GeodeticException extends RuntimeException {
      */
     public GeodeticException(final String message) {
         super(message);
+    }
+
+    /**
+     * Constructs a new exception with the specified cause.
+     *
+     * @param cause  the cause, or {@code null} if none.
+     */
+    public GeodeticException(final Throwable cause) {
+        super(cause);
     }
 
     /**
