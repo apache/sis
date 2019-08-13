@@ -54,7 +54,7 @@ public final class JTS extends Static {
      *
      * @see #getCoordinateReferenceSystem(Geometry)
      */
-    static final String CRS_KEY = "CRS";
+    public static final String CRS_KEY = "CRS";
 
     /**
      * Do not allow instantiation of this class.
