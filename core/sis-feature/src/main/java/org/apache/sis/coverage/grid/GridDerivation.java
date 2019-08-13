@@ -289,6 +289,7 @@ public class GridDerivation {
      * @throws IllegalStateException if a {@link #subgrid(GridGeometry) subgrid(…)} or {@link #slice(DirectPosition) slice(…)}
      *         method has already been invoked.
      *
+     * @see #subsample(int...)
      * @see GridExtent#resize(long...)
      */
     public GridDerivation resize(GridExtent extent, double... scales) {
@@ -370,7 +371,7 @@ public class GridDerivation {
      *   <li>{@linkplain GridGeometry#getExtent() Extent} in {@link #base} grid.</li>
      * </ul>
      *
-     * An optional {@link #margin(int...) margin} can be specified for increasing the size of the grid extent computed by this method.
+     * An optional {@linkplain #margin(int...) margin} can be specified for increasing the size of the grid extent computed by this method.
      * For example if the caller wants to apply bilinear interpolations in an image, (s)he will need 1 more pixel on each image border.
      * If the caller wants to apply bi-cubic interpolations, (s)he will need 2 more pixels on each image border.
      *
@@ -392,8 +393,8 @@ public class GridDerivation {
      * @throws IllegalStateException if a {@link #subgrid(Envelope, double...) subgrid(…)} or {@link #slice(DirectPosition) slice(…)}
      *         method has already been invoked.
      *
+     * @see #getIntersection()
      * @see #getSubsamplings()
-     * @see #subsample(int...)
      */
     public GridDerivation subgrid(final GridGeometry gridOfInterest) {
         ArgumentChecks.ensureNonNull("gridOfInterest", gridOfInterest);
@@ -491,7 +492,8 @@ public class GridDerivation {
      * @throws IllegalStateException if a {@link #subgrid(GridGeometry) subgrid(…)} or {@link #slice(DirectPosition) slice(…)}
      *         method has already been invoked.
      *
-     * @see GridExtent#subsample(int[])
+     * @see #getIntersection()
+     * @see #getSubsamplings()
      */
     public GridDerivation subgrid(final Envelope areaOfInterest, double... resolution) {
         ensureSubgridNotSet();
@@ -662,7 +664,7 @@ public class GridDerivation {
 
     /**
      * Applies a subsampling on the grid geometry to build.
-     * The {@code subsamplings} argument is often the array returned by {@link #getSubsamplings()}, but not necessarily.
+     * This method can be invoked as an alternative to {@code subgrid(…)} methods if only the resolution needs to be changed.
      * The {@linkplain GridGeometry#getExtent() extent} of the {@linkplain #build() built} grid geometry will be derived
      * from {@link #getIntersection()} as below for each dimension <var>i</var>:
      *
@@ -918,7 +920,9 @@ public class GridDerivation {
     }
 
     /**
-     * Returns an <em>estimation</em> of the steps for accessing cells along each axis of base grid.
+     * Returns an <em>estimation</em> of the strides for accessing cells along each axis of base grid.
+     * If {@link #subsample(int...)} has been invoked, then this method returns the argument values given to that method.
+     * Otherwise if a {@code subgrid(…)} method has been invoked, then this method computes the subsamplings as below:
      * Given a conversion from {@code gridOfInterest} grid coordinates
      * (<var>x</var>, <var>y</var>, <var>z</var>) to {@link #base} grid coordinates
      * (<var>x′</var>, <var>y′</var>, <var>z′</var>) defined as below (generalize to as many dimensions as needed):
@@ -932,13 +936,13 @@ public class GridDerivation {
      * Then this method returns {|s₀|, |s₁|, |s₂|} rounded toward zero or nearest integer
      * (depending on the {@linkplain GridRoundingMode grid rounding mode}) and clamped to 1
      * (i.e. all values in the returned array are strictly positive, no zero values).
-     * It means that an iteration over {@code gridOfInterest} grid coordinates with a step Δ<var>x</var>=1
-     * corresponds approximately to an iteration in {@link #base} grid coordinates with a step of Δ<var>x′</var>=s₀,
-     * a step Δ<var>y</var>=1 corresponds approximately to a step Δ<var>y′</var>=s₁, <i>etc.</i>
+     * It means that an iteration over {@code gridOfInterest} grid coordinates with a stride Δ<var>x</var>=1
+     * corresponds approximately to an iteration in {@link #base} grid coordinates with a stride of Δ<var>x′</var>=s₀,
+     * a stride Δ<var>y</var>=1 corresponds approximately to a stride Δ<var>y′</var>=s₁, <i>etc.</i>
      * If the conversion changes grid axis order, then the order of elements in the returned array
      * is the order of axes in the {@link #base} grid.
      *
-     * @return an <em>estimation</em> of the steps for accessing cells along each axis of {@link #base} grid.
+     * @return an <em>estimation</em> of the strides for accessing cells along each axis of {@link #base} grid.
      *
      * @see #subgrid(GridGeometry)
      * @see #subgrid(Envelope, double...)

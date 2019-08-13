@@ -79,22 +79,33 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  *
  * <ul>
  *   <li>Wikipedia, <a href="https://en.wikipedia.org/wiki/Great-circle_navigation">Great-circle navigation</a>
- *       for the spherical formulas.</li>
+ *       for spherical formulas.</li>
+ *   <li>Wikipedia, <a href="https://en.wikipedia.org/wiki/Rhumb_line">Rhumb line</a>
+ *       for spherical formulas.</li>
  *   <li>Charles F. F. Karney (2013), <a href="https://doi.org/10.1007/s00190-012-0578-z">Algorithms for geodesics</a>
- *       for the ellipsoidal formulas.</li>
+ *       for ellipsoidal formulas.</li>
+ *   <li>G.G. Bennett, 1996. <a href="https://doi.org/10.1017/S0373463300013151">Practical Rhumb Line Calculations
+ *       on the Spheroid</a> for ellipsoidal formulas.</li>
  *   <li>Charles F. F. Karney (2010), <a href="http://doi.org/10.5281/zenodo.32156">Test set for geodesics</a>
  *       for {@code GeodeticCalculator} tests.</li>
  *   <li>Charles F. F. Karney, <a href="https://geographiclib.sourceforge.io/">GeographicLib</a>
  *       for the reference implementation.</li>
  * </ul>
  *
- * {@code GeodeticCalculator} aims for a positional accuracy of one millimetre.
- * Azimuthal accuracy corresponds to an error of one millimeter at a distance of one kilometer,
+ * {@code GeodeticCalculator} aims for a positional accuracy of one centimetre.
+ * Azimuthal accuracy corresponds to an error of one centimetre at a distance of one kilometer,
  * except for nearly antipodal points (less than 1° of longitude and latitude from antipode)
  * and points close to the poles where the azimuthal errors are larger.
  * Karney's GeographicLib should be used if better accuracy is desired.
  * Apache SIS accuracy does not go as far as GeographicLib because the rest of Apache SIS
  * library (map projections, <i>etc.</i>) aims for an one centimetre accuracy anyway.
+ *
+ * <div class="section">Limitations</div>
+ * Current implementation can not compute the geodesics in some cases.
+ * In particular, calculation may fail for antipodal points on an ellipsoid.
+ * Karney's algorithm should cover those cases,
+ * but this {@code GeodeticCalculator} implementation may not be sufficiently tuned.
+ * See <a href="https://issues.apache.org/jira/browse/SIS-467">SIS-467</a> for more information.
  *
  * <div class="section">Thread safety</div>
  * This class is not thread-safe. If geodetic calculations are needed in a multi-threads environment,

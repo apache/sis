@@ -60,6 +60,7 @@ import static java.lang.Math.*;
  *
  * <p><b>Limitations:</b>
  * Current implementation is still unable to compute the geodesics in some cases.
+ * In particular, calculation may fail for antipodal points.
  * See <a href="https://issues.apache.org/jira/browse/SIS-467">SIS-467</a>.</p>
  *
  * <p>If the following cases where more than one geodesics exist, current implementation returns an arbitrary one:</p>
@@ -923,7 +924,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * Computes rhumb line using series expansion.
      *
      * <p><b>Source:</b> G.G. Bennett, 1996. <a href="https://doi.org/10.1017/S0373463300013151">
-     * Practical Rhumb Line Calculations on the Spheroid</a>. J. Navigation 49(1), 112--119.</p>
+     * Practical Rhumb Line Calculations on the Spheroid</a>. J. Navigation 49(1), 112-119.</p>
      */
     @Override
     final void computeRhumbLine() {
