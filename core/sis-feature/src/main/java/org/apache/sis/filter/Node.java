@@ -87,7 +87,7 @@ abstract class Node implements Serializable {
      *
      * @return the name of this node.
      */
-    protected abstract String name();
+    protected abstract String getName();
 
     /**
      * Returns the children of this node, or an empty collection if none. This is used for
@@ -101,15 +101,15 @@ abstract class Node implements Serializable {
     protected abstract Collection<?> getChildren();
 
     /**
-     * Builds a tree representation of this node, including all children. This method expects
-     * an initially empty node, which will be set to the {@linkplain #name()} of this node.
+     * Builds a tree representation of this node, including all children. This method expects an
+     * initially empty node, which will be set to the {@linkplain #getName() name} of this node.
      * Then all children will be appended recursively, with a check against cyclic graph.
      *
      * @param  root     where to create a tree representation of this node.
      * @param  visited  nodes already visited. This method will write in this map.
      */
     private void toTree(final TreeTable.Node root, final Map<Object,Boolean> visited) {
-        root.setValue(TableColumn.VALUE, name());
+        root.setValue(TableColumn.VALUE, getName());
         for (final Object child : getChildren()) {
             final TreeTable.Node node = root.newChild();
             final String value;

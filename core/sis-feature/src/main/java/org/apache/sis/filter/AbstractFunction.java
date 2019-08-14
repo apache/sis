@@ -49,11 +49,6 @@ abstract class AbstractFunction extends Node implements Function {
     }
 
     @Override
-    protected String name() {
-        return name;
-    }
-
-    @Override
     protected Collection<?> getChildren() {
         return parameters;
     }

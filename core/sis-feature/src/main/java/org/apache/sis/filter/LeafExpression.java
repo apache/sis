@@ -107,7 +107,7 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
         }
 
         /** Identification of this expression. */
-        @Override protected String name() {
+        @Override protected String getName() {
             return "PropertyName";
         }
 
@@ -194,7 +194,7 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
         }
 
         /** Identification of this expression. */
-        @Override protected String name() {
+        @Override protected String getName() {
             return "Literal";
         }
 

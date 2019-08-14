@@ -131,8 +131,8 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         }
 
         /** Identification of this operation. */
-        @Override protected String name() {return NAME;}
-        @Override protected char symbol() {return '+';}
+        @Override protected String getName() {return NAME;}
+        @Override protected char   symbol()  {return '+';}
 
         /** Applies this expression to the given operands. */
         @Override protected Number applyAsDouble  (double     left, double     right) {return left + right;}
@@ -165,8 +165,8 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         }
 
         /** Identification of this operation. */
-        @Override protected String name() {return NAME;}
-        @Override protected char symbol() {return '−';}
+        @Override protected String getName() {return NAME;}
+        @Override protected char   symbol()  {return '−';}
 
         /** Applies this expression to the given operands. */
         @Override protected Number applyAsDouble  (double     left, double     right) {return left - right;}
@@ -199,8 +199,8 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         }
 
         /** Identification of this operation. */
-        @Override protected String name() {return NAME;}
-        @Override protected char symbol() {return '×';}
+        @Override protected String getName() {return NAME;}
+        @Override protected char   symbol()  {return '×';}
 
         /** Applies this expression to the given operands. */
         @Override protected Number applyAsDouble  (double     left, double     right) {return left * right;}
@@ -233,8 +233,8 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         }
 
         /** Identification of this operation. */
-        @Override protected String name() {return NAME;}
-        @Override protected char symbol() {return '÷';}
+        @Override protected String getName() {return NAME;}
+        @Override protected char   symbol()  {return '÷';}
 
         /** Applies this expression to the given operands. */
         @Override protected Number applyAsDouble  (double     left, double     right) {return left / right;}
