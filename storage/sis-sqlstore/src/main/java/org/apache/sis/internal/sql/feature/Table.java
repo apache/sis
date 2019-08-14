@@ -16,47 +16,55 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.Map;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import java.sql.DatabaseMetaData;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import javax.sql.DataSource;
-import org.opengis.util.GenericName;
+
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.FeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.GenericName;
+
+import org.apache.sis.feature.builder.AssociationRoleBuilder;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
-import org.apache.sis.feature.builder.AssociationRoleBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.internal.metadata.sql.Reflection;
+import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.internal.util.DecoratedStream;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Numbers;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.WeakValueHashMap;
 
 // Branch-dependent imports
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.FeatureAssociationRole;
 
 
 /**
@@ -602,21 +610,30 @@ final class Table extends AbstractFeatureSet {
      */
     @Override
     public Stream<Feature> features(final boolean parallel) throws DataStoreException {
-        DataStoreException ex;
-        Connection connection = null;
-        try {
-            connection = source.getConnection();
-            final Features iter = features(connection, new ArrayList<>(), null);
-            return StreamSupport.stream(iter, parallel).onClose(iter);
-        } catch (SQLException cause) {
-            ex = new DataStoreException(Exceptions.unwrap(cause));
+        final AtomicReference<Connection> connectionRef = new AtomicReference<>();
+        final Stream<Feature> featureStream = Stream.generate(uncheck(() -> source.getConnection()))
+                .peek(connectionRef::set)
+                .flatMap(conn -> {
+                    try {
+                        final Features iter = features(conn, new ArrayList<>(), null);
+                        return StreamSupport.stream(iter, parallel).onClose(iter);
+                    } catch (SQLException | InternalDataStoreException e) {
+                        throw new BackingStoreException(e);
+                    }
+                })
+                .onClose(() -> closeRef(connectionRef));
+        return new CountOverload<>(featureStream);
+    }
+
+    private void closeRef(final AtomicReference<Connection> ref) {
+        final Connection conn = ref.get();
+        if (conn != null) {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                warning(e);
+            }
         }
-        if (connection != null) try {
-            connection.close();
-        } catch (SQLException e) {
-            ex.addSuppressed(e);
-        }
-        throw ex;
     }
 
     /**
@@ -630,5 +647,44 @@ final class Table extends AbstractFeatureSet {
             throws SQLException, InternalDataStoreException
     {
         return new Features(this, connection, attributeNames, attributeColumns, importedKeys, exportedKeys, following, noFollow);
+    }
+
+    private class CountOverload<T> extends DecoratedStream<T> {
+
+        CountOverload(Stream<T> source) {
+            super(source);
+        }
+
+        @Override
+        public long count() {
+            try (Connection conn = Table.this.source.getConnection()) {
+                final String query = new SQLBuilder(conn.getMetaData(), true)
+                        .append("SELECT COUNT(")
+                        .appendIdentifier(attributeColumns[0])
+                        .append(')')
+                        .append(" FROM ")
+                        .appendIdentifier(name.catalog, name.schema, name.table)
+                        .toString();
+                try (final Statement st = conn.createStatement(); final ResultSet rs = st.executeQuery(query)) {
+                    if (rs.next()) {
+                        return rs.getLong(1);
+                    } else return 0;
+                }
+            } catch (SQLException e) {
+                throw new BackingStoreException("Cannot estimate feature set size using SQL COUNT query", e);
+            }
+        }
+    }
+
+    private static <T> Supplier<T> uncheck(final Callable<T> generator) {
+        return () -> {
+            try {
+                return generator.call();
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new BackingStoreException(e);
+            }
+        };
     }
 }
