@@ -304,6 +304,7 @@ public class FeatureFormat extends TabularFormat<Object> {
      * @throws IOException if an error occurred while writing to the given appendable.
      */
     @Override
+    @SuppressWarnings("null")       // Many false positives in this method.
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
         ArgumentChecks.ensureNonNull("object",     object);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);

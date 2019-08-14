@@ -17,24 +17,34 @@
 package org.apache.sis.filter;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-import org.apache.sis.internal.feature.FunctionRegister;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.Function;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.feature.FunctionRegister;
+
 
 /**
- * SQL/MM function register.
+ * A register of functions defined by the SQL/MM standard.
  *
- * @author Johann Sorel (Geomatys)
+ * @todo Hide from public API.
+ * @todo Implement all SQL/MM specification functions.
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
+ * @module
  */
 public final class SQLMM implements FunctionRegister {
+    /**
+     * Names of all functions known to this register.
+     */
+    private static final Set<String> FUNCTIONS = Collections.singleton(ST_Transform.NAME);
 
-    private static final Set<String> NAMES;
-    static {
-        Set<String> names = new HashSet<>();
-        names.add(ST_Transform.NAME);
-        NAMES = Collections.unmodifiableSet(names);
+    /**
+     * Creates the default register.
+     */
+    public SQLMM() {
     }
 
     @Override
@@ -44,15 +54,20 @@ public final class SQLMM implements FunctionRegister {
 
     @Override
     public Set<String> getNames() {
-        return NAMES;
+        return FUNCTIONS;
     }
 
     @Override
-    public Function create(String name, Expression... parameters) {
-        switch (name) {
-            case ST_Transform.NAME : return new ST_Transform(parameters);
+    public Function create(final String name, Expression... parameters) {
+        ArgumentChecks.ensureNonNull("name", name);
+        ArgumentChecks.ensureNonNull("parameters", parameters);
+        parameters = parameters.clone();
+        for (int i=0; i<parameters.length; i++) {
+            ArgumentChecks.ensureNonNullElement("parameters", i, parameters[i]);
         }
-        throw new IllegalArgumentException("Unknown function "+name);
+        switch (name) {
+            case ST_Transform.NAME: return new ST_Transform(parameters);
+            default: throw new IllegalArgumentException("Unknown function " + name);
+        }
     }
-
 }

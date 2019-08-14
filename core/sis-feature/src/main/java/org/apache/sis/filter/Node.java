@@ -82,7 +82,7 @@ abstract class Node implements Serializable {
     }
 
     /**
-     * Returns a name or symbol for this node. This is used for information purpose only,
+     * Returns a name or symbol for this node. This is used for information purpose,
      * for example in order to build a string representation.
      *
      * @return the name of this node.
@@ -90,8 +90,8 @@ abstract class Node implements Serializable {
     protected abstract String getName();
 
     /**
-     * Returns the children of this node, or an empty collection if none. This is used for
-     * information purpose only, for example in order to build a string representation.
+     * Returns the children of this node, or an empty collection if none. This is used
+     * for information purpose, for example in order to build a string representation.
      *
      * <p>The name of this method is the same as {@link BinaryLogicOperator#getChildren()}
      * in order to have only one method to override.</p>

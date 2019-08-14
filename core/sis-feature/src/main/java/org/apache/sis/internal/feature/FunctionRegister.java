@@ -20,12 +20,12 @@ import java.util.Set;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.Function;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
 public interface FunctionRegister {
-
     /**
      *
      * Note : should it be the starting element of all function names to avoid any conflict ?
@@ -50,5 +50,4 @@ public interface FunctionRegister {
      * @throws IllegalArgumentException if function name is unknown or parameters do not match
      */
     Function create(String name, Expression... parameters) throws IllegalArgumentException;
-
 }

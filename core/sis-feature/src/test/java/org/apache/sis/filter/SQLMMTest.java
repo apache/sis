@@ -30,6 +30,7 @@ import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.expression.Function;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)
@@ -91,7 +92,5 @@ public class SQLMMTest extends TestCase {
             Assert.assertEquals(30.0, trs.getX(), 0.0);
             Assert.assertEquals(10.0, trs.getY(), 0.0);
         }
-
     }
-
 }

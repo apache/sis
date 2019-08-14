@@ -30,23 +30,32 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 
+
 /**
- * TODO implement all SQL/MM specification functions.
+ * An expression which transforms a geometry from one CRS to another CRS.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-final class ST_Transform extends AbstractFunction implements FeatureExpression {
-
-    public static final String NAME = "ST_Transform";
+final class ST_Transform extends NamedFunction implements FeatureExpression {
+    /**
+     * Name of this function as defined by SQL/MM standard.
+     */
+    static final String NAME = "ST_Transform";
 
     private final CoordinateReferenceSystem outCrs;
 
-    public ST_Transform(Expression[] parameters) {
-        super(NAME, parameters, null);
-        if (parameters.length != 2) throw new IllegalArgumentException("Reproject function expect 2 parameters, an expression for the geometry and a literal for the target CRS.");
+    /**
+     * Creates a new function with the given parameters. It is caller's responsibility to ensure
+     * that the given array is non-null, has been cloned and does not contain null elements.
+     */
+    ST_Transform(final Expression[] parameters) {
+        super(parameters);
+        if (parameters.length != 2) {
+            throw new IllegalArgumentException("Reproject function expect 2 parameters, an expression for the geometry and a literal for the target CRS.");
+        }
         if (!(parameters[0] instanceof FeatureExpression)) {
             throw new IllegalArgumentException("First expression must be a FeatureExpression");
         }
@@ -74,23 +83,24 @@ final class ST_Transform extends AbstractFunction implements FeatureExpression {
     }
 
     @Override
-    public Object evaluate(Object object) {
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public Object evaluate(final Object object) {
         final Expression inGeometry = parameters.get(0);
         Geometry geometry = inGeometry.evaluate(object, Geometry.class);
-        if (geometry == null) return null;
-
-        try {
+        if (geometry != null) try {
             return JTS.transform(geometry, outCrs);
-        } catch (TransformException ex) {
-            warning(ex);
-        } catch (FactoryException ex) {
-            warning(ex);
+        } catch (TransformException | FactoryException e) {
+            warning(e);
         }
         return null;
     }
 
     @Override
-    public PropertyType expectedType(FeatureType type) {
+    public PropertyType expectedType(final FeatureType type) {
         final FeatureExpression inGeometry = (FeatureExpression) parameters.get(0);
 
         PropertyType expectedType = inGeometry.expectedType(type);
@@ -103,6 +113,4 @@ final class ST_Transform extends AbstractFunction implements FeatureExpression {
         }
         return new FeatureTypeBuilder().addAttribute(att).setCRS(outCrs).build();
     }
-
-
 }
