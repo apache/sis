@@ -18,6 +18,8 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import java.util.Collection;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyType;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.ExpressionVisitor;
 import org.opengis.filter.expression.Function;
@@ -25,7 +27,9 @@ import org.opengis.filter.expression.Literal;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
@@ -144,6 +148,24 @@ abstract class NamedFunction extends Node implements Function {
             warning(e);
             return null;                    // As per method contract.
         }
+    }
+
+    /**
+     * Returns the type of results computed by the parameters at given index, or {@code null} if unknown.
+     * If the expression implements {@link FeatureExpression}, its {@code expectedType(valueType)} method
+     * will be invoked. Otherwise this method returns the single property of the given feature type if it
+     * contains exactly one property, or returns {@code null} otherwise.
+     *
+     * @param  parameter  index of the expression for which to get the result type.
+     * @param  valueType  the type of features on which to apply the expression at given index.
+     * @return expected expression result type, or {@code null} if unknown.
+     */
+    final PropertyType expectedType(final int parameter, final FeatureType valueType) {
+        final Expression exp = parameters.get(parameter);
+        if (exp instanceof FeatureExpression) {
+            return ((FeatureExpression) exp).expectedType(valueType);
+        }
+        return CollectionsExt.singletonOrNull(valueType.getProperties(true));
     }
 
     /**

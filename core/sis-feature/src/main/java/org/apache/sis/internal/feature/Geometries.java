@@ -19,8 +19,13 @@ package org.apache.sis.internal.feature;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import org.apache.sis.util.logging.Logging;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.math.Vector;
@@ -145,6 +150,35 @@ public abstract class Geometries<G> {
     }
 
     /**
+     * If the given geometry is an implementation of this library, returns its coordinate reference system.
+     * Otherwise returns {@code null}. The default implementation returns {@code null} because only a few
+     * geometry implementations can store CRS information.
+     *
+     * @see #tryTransform(Object, CoordinateOperation, CoordinateReferenceSystem)
+     */
+    CoordinateReferenceSystem tryGetCoordinateReferenceSystem(Object point) throws FactoryException {
+        return null;
+    }
+
+    /**
+     * Gets the Coordinate Reference System (CRS) from the given geometry. If no CRS information is found or
+     * if the geometry implementation can not store this information, then this method returns {@code null}.
+     *
+     * @param  geometry the geometry from which to get the CRS, or {@code null}.
+     * @return the coordinate reference system, or {@code null}.
+     * @throws FactoryException if the CRS is defined by a SRID code and that code can not be used.
+     *
+     * @see #transform(Object, CoordinateReferenceSystem)
+     */
+    public static CoordinateReferenceSystem getCoordinateReferenceSystem(final Object geometry) throws FactoryException {
+        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+            CoordinateReferenceSystem crs = g.tryGetCoordinateReferenceSystem(geometry);
+            if (crs != null) return crs;
+        }
+        return null;
+    }
+
+    /**
      * If the given point is an implementation of this library, returns its coordinate.
      * Otherwise returns {@code null}.
      */
@@ -160,6 +194,7 @@ public abstract class Geometries<G> {
      * @return the coordinate of the given point as an array of length 2 or 3,
      *         or {@code null} if the given object is not a recognized implementation.
      *
+     * @see #getCoordinateReferenceSystem(Object)
      * @see #createPoint(double, double)
      */
     public static double[] getCoordinate(final Object point) {
@@ -314,6 +349,98 @@ public abstract class Geometries<G> {
             }
         }
         return null;
+    }
+
+    /**
+     * Tries to transforms the given geometry to the specified Coordinate Reference System (CRS),
+     * or returns {@code null} if this method can not perform this operation on the given object.
+     * Exactly one of {@code operation} and {@code targetCRS} shall be non-null. If operation is
+     * null and geometry has no Coordinate Reference System, a {@link TransformException} is thrown.
+     *
+     * <p>Current default implementation returns {@code null} because current Apache SIS implementation
+     * supports geometry transformations only with JTS geometries.</p>
+     *
+     * @param  geometry   the geometry to transform.
+     * @param  operation  the coordinate operation to apply, or {@code null}.
+     * @param  targetCRS  the target coordinate reference system, or {@code null}.
+     * @return the transformed geometry, or the same geometry if it is already in target CRS.
+     *
+     * @see #tryGetCoordinateReferenceSystem(Object)
+     */
+    Object tryTransform(Object geometry, CoordinateOperation operation, CoordinateReferenceSystem targetCRS)
+            throws FactoryException, TransformException
+    {
+        return null;
+    }
+
+    /**
+     * Transforms the given geometry using the given coordinate operation.
+     * If the geometry or the operation is null, then the geometry is returned unchanged.
+     * If the geometry uses a different CRS than the source CRS of the given operation,
+     * then a new operation to the target CRS will be used.
+     *
+     * <p>This method is preferred to {@link #transform(Object, CoordinateReferenceSystem)}
+     * when possible because not all geometry libraries store the CRS of their objects.</p>
+     *
+     * @param  geometry   the geometry to transform, or {@code null}.
+     * @param  operation  the coordinate operation to apply, or {@code null}.
+     * @return the transformed geometry, or the same geometry if it is already in target CRS.
+     * @throws FactoryException if transformation to the target CRS can not be constructed.
+     * @throws TransformException if the given geometry can not be transformed.
+     */
+    public static Object transform(final Object geometry, final CoordinateOperation operation)
+            throws FactoryException, TransformException
+    {
+        /*
+         * Do NOT check MathTransform.isIdentity() below because the source CRS may not match
+         * the geometry CRS. This verification will be done by tryTransform(…) implementation.
+         */
+        if (geometry != null && operation != null) {
+            for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+                final Object result = g.tryTransform(geometry, operation, null);
+                if (result != null) {
+                    return result;
+                }
+            }
+            if (!operation.getMathTransform().isIdentity()) {
+                final int dimension = ReferencingUtilities.getDimension(operation.getTargetCRS());
+                throw unsupported(dimension != 0 ? dimension : 2);
+            }
+        }
+        return geometry;
+    }
+
+    /**
+     * Transforms the given geometry to the specified Coordinate Reference System (CRS).
+     * If the given CRS or the given geometry is null, the geometry is returned unchanged.
+     * If the geometry has no Coordinate Reference System, a {@link TransformException} is thrown.
+     *
+     * <p>Consider using {@link #transform(Object, CoordinateOperation)} instead of this method
+     * as much as possible, both for performance reasons and because not all geometry libraries
+     * provide information about the CRS of their geometries.</p>
+     *
+     * @param  geometry   the geometry to transform, or {@code null}.
+     * @param  targetCRS  the target coordinate reference system, or {@code null}.
+     * @return the transformed geometry, or the same geometry if it is already in target CRS.
+     * @throws FactoryException if transformation to the target CRS can not be constructed.
+     * @throws TransformException if the given geometry has no CRS or can not be transformed.
+     *
+     * @see #getCoordinateReferenceSystem(Object)
+     */
+    public static Object transform(final Object geometry, final CoordinateReferenceSystem targetCRS)
+            throws FactoryException, TransformException
+    {
+        if (geometry != null && targetCRS != null) {
+            for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+                final Object result = g.tryTransform(geometry, null, targetCRS);
+                if (result != null) {
+                    return result;
+                }
+            }
+            final int dimension = ReferencingUtilities.getDimension(targetCRS);
+            throw unsupported(dimension != 0 ? dimension : 2);
+        }
+        return geometry;
     }
 
     /**

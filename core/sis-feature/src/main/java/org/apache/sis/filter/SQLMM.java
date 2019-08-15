@@ -16,8 +16,9 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Collections;
 import java.util.Set;
+import java.util.Collections;
+import org.opengis.util.FactoryException;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.Function;
 import org.apache.sis.util.ArgumentChecks;
@@ -65,9 +66,13 @@ public final class SQLMM implements FunctionRegister {
         for (int i=0; i<parameters.length; i++) {
             ArgumentChecks.ensureNonNullElement("parameters", i, parameters[i]);
         }
-        switch (name) {
-            case ST_Transform.NAME: return new ST_Transform(parameters);
-            default: throw new IllegalArgumentException("Unknown function " + name);
+        try {
+            switch (name) {
+                case ST_Transform.NAME: return new ST_Transform(parameters);
+                default: throw new IllegalArgumentException("Unknown function " + name);
+            }
+        } catch (FactoryException e) {
+            throw new IllegalArgumentException(e);
         }
     }
 }
