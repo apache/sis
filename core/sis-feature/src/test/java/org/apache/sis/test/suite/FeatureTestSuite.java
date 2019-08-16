@@ -55,6 +55,7 @@ import org.junit.runners.Suite;
     org.apache.sis.filter.DefaultObjectIdTest.class,
     org.apache.sis.filter.FilterByIdentifierTest.class,
     org.apache.sis.filter.ArithmeticFunctionTest.class,
+    org.apache.sis.filter.ComparisonFunctionTest.class,
     org.apache.sis.filter.SQLMMTest.class,
     org.apache.sis.internal.feature.AttributeConventionTest.class,
     org.apache.sis.internal.feature.j2d.ShapePropertiesTest.class,
