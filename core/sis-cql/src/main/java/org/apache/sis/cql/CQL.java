@@ -19,17 +19,10 @@ package org.apache.sis.cql;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.tree.DefaultMutableTreeNode;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CodePointCharStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.internal.cql.CQLLexer;
-import org.apache.sis.internal.cql.CQLParser;
+import org.apache.sis.internal.cql.AntlrCQL;
 import static org.apache.sis.internal.cql.CQLParser.*;
 import org.apache.sis.internal.cql.CQLParser.CoordinateContext;
 import org.apache.sis.internal.cql.CQLParser.CoordinateSerieContext;
@@ -42,7 +35,6 @@ import org.apache.sis.internal.cql.CQLParser.ExpressionTermContext;
 import org.apache.sis.internal.cql.CQLParser.ExpressionUnaryContext;
 import org.apache.sis.internal.cql.CQLParser.FilterContext;
 import org.apache.sis.internal.cql.CQLParser.FilterGeometryContext;
-import org.apache.sis.internal.cql.CQLParser.FilterOrExpressionContext;
 import org.apache.sis.internal.cql.CQLParser.FilterTermContext;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.locationtech.jts.geom.Coordinate;
@@ -73,73 +65,12 @@ public final class CQL {
     private CQL() {
     }
 
-    private static Object compileExpression(String cql) {
-        try {
-            //lexer splits input into tokens
-            final CodePointCharStream input = CharStreams.fromString(cql);
-            final TokenStream tokens = new CommonTokenStream(new CQLLexer(input));
-
-            //parser generates abstract syntax tree
-            final CQLParser parser = new CQLParser(tokens);
-            final ExpressionContext ctx = parser.expression();
-            return ctx;
-
-        } catch (RecognitionException e) {
-            throw new IllegalStateException("Recognition exception is never thrown, only declared.");
-        }
-    }
-
-    private static Object compileFilter(String cql) {
-        try {
-            //lexer splits input into tokens
-            final CodePointCharStream input = CharStreams.fromString(cql);
-            final TokenStream tokens = new CommonTokenStream(new CQLLexer(input));
-
-            //parser generates abstract syntax tree
-            final CQLParser parser = new CQLParser(tokens);
-            final FilterContext retfilter = parser.filter();
-
-            return retfilter;
-
-        } catch (RecognitionException e) {
-            throw new IllegalStateException("Recognition exception is never thrown, only declared.");
-        }
-    }
-
-    private static Object compileFilterOrExpression(String cql) {
-        try {
-            //lexer splits input into tokens
-            final CodePointCharStream input = CharStreams.fromString(cql);
-            final TokenStream tokens = new CommonTokenStream(new CQLLexer(input));
-
-            //parser generates abstract syntax tree
-            final CQLParser parser = new CQLParser(tokens);
-            final FilterOrExpressionContext retfilter = parser.filterOrExpression();
-
-            return retfilter;
-
-        } catch (RecognitionException e) {
-            throw new IllegalStateException("Recognition exception is never thrown, only declared.");
-        }
-    }
-
-    public static ParseTree compile(String cql) {
-        final Object obj = compileFilterOrExpression(cql);
-
-        ParseTree tree = null;
-        if (obj instanceof ParseTree) {
-            tree = (ParseTree) obj;
-        }
-
-        return tree;
-    }
-
     public static Expression parseExpression(String cql) throws CQLException {
         return parseExpression(cql, null);
     }
 
     public static Expression parseExpression(String cql, FilterFactory2 factory) throws CQLException {
-        final Object obj = compileExpression(cql);
+        final Object obj = AntlrCQL.compileExpression(cql);
 
         ParseTree tree = null;
         Expression result = null;
@@ -166,7 +97,7 @@ public final class CQL {
             return Filter.INCLUDE;
         }
 
-        final Object obj = compileFilter(cql);
+        final Object obj = AntlrCQL.compileFilter(cql);
 
         ParseTree tree = null;
         Filter result = null;
@@ -199,20 +130,6 @@ public final class CQL {
         final StringBuilder sb = new StringBuilder();
         exp.accept(FilterToCQLVisitor.INSTANCE, sb);
         return sb.toString();
-    }
-
-    /**
-     * Create a TreeNode for the given tree. method is recursive.
-     */
-    private static DefaultMutableTreeNode explore(ParseTree tree) {
-        final DefaultMutableTreeNode node = new DefaultMutableTreeNode(tree);
-
-        final int nb = tree.getChildCount();
-        for (int i = 0; i < nb; i++) {
-            final DefaultMutableTreeNode n = explore((ParseTree) tree.getChild(i));
-            node.add(n);
-        }
-        return node;
     }
 
     /**
