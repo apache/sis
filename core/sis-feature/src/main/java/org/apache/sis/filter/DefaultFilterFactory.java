@@ -564,7 +564,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public After after(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.After(expression1, expression2);
     }
 
     /**
@@ -572,7 +572,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public AnyInteracts anyInteracts(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.AnyInteracts(expression1, expression2);
     }
 
     /**
@@ -580,7 +580,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Before before(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.Before(expression1, expression2);
     }
 
     /**
@@ -588,7 +588,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Begins begins(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.Begins(expression1, expression2);
     }
 
     /**
@@ -596,7 +596,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public BegunBy begunBy(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.BegunBy(expression1, expression2);
     }
 
     /**
@@ -604,7 +604,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public During during(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.During(expression1, expression2);
     }
 
     /**
@@ -612,7 +612,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Ends ends(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.Ends(expression1, expression2);
     }
 
     /**
@@ -620,7 +620,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public EndedBy endedBy(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.EndedBy(expression1, expression2);
     }
 
     /**
@@ -628,7 +628,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Meets meets(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.Meets(expression1, expression2);
     }
 
     /**
@@ -636,7 +636,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public MetBy metBy(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.MetBy(expression1, expression2);
     }
 
     /**
@@ -644,7 +644,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public OverlappedBy overlappedBy(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.OverlappedBy(expression1, expression2);
     }
 
     /**
@@ -652,7 +652,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public TContains tcontains(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.TContains(expression1, expression2);
     }
 
     /**
@@ -660,7 +660,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public TEquals tequals(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.TEquals(expression1, expression2);
     }
 
     /**
@@ -668,7 +668,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public TOverlaps toverlaps(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.TOverlaps(expression1, expression2);
     }
 
     // EXPRESSIONS /////////////////////////////////////////////////////////////
