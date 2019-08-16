@@ -16,13 +16,14 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Set;
 import java.util.Collections;
-import org.opengis.util.FactoryException;
+import java.util.HashSet;
+import java.util.Set;
+import org.apache.sis.internal.feature.FunctionRegister;
+import org.apache.sis.util.ArgumentChecks;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.Function;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.feature.FunctionRegister;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -40,7 +41,14 @@ public final class SQLMM implements FunctionRegister {
     /**
      * Names of all functions known to this register.
      */
-    private static final Set<String> FUNCTIONS = Collections.singleton(ST_Transform.NAME);
+    private static final Set<String> FUNCTIONS;
+    static {
+        Set<String> names = new HashSet<>();
+        names.add(ST_Transform.NAME);
+        names.add(ST_Centroid.NAME);
+        names.add(ST_Buffer.NAME);
+        FUNCTIONS = Collections.unmodifiableSet(names);
+    }
 
     /**
      * Creates the default register.
@@ -69,6 +77,8 @@ public final class SQLMM implements FunctionRegister {
         try {
             switch (name) {
                 case ST_Transform.NAME: return new ST_Transform(parameters);
+                case ST_Centroid.NAME: return new ST_Centroid(parameters);
+                case ST_Buffer.NAME: return new ST_Buffer(parameters);
                 default: throw new IllegalArgumentException("Unknown function " + name);
             }
         } catch (FactoryException e) {

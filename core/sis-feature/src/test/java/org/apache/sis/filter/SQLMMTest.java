@@ -22,8 +22,11 @@ import org.apache.sis.test.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.FilterFactory2;
@@ -32,8 +35,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
+ * Tests {@link SQLMM} functions implementations.
  *
  * @author Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
+ * @module
  */
 public class SQLMMTest extends TestCase {
     /**
@@ -92,5 +99,76 @@ public class SQLMMTest extends TestCase {
             Assert.assertEquals(30.0, trs.getX(), 0.0);
             Assert.assertEquals(10.0, trs.getY(), 0.0);
         }
+    }
+
+    /**
+     * Test SQL/MM ST_Centroid function.
+     */
+    @Test
+    public void ST_CentroidTest() {
+
+        CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic();
+
+        //test invalid
+        try {
+            factory.function("ST_Centroid");
+            Assert.fail("Creation with no argument should fail");
+        } catch (IllegalArgumentException ex) {
+            //ok
+        }
+
+        final LineString geometry = gf.createLineString(new Coordinate[]{new Coordinate(10, 20), new Coordinate(30, 20)});
+        geometry.setSRID(4326);
+        geometry.setUserData(crs);
+
+
+        final Function fct = factory.function("ST_Centroid", factory.literal(geometry));
+
+        //check result
+        final Object newGeom = fct.evaluate(null);
+        Assert.assertTrue(newGeom instanceof Point);
+        final Point trs = (Point) newGeom;
+        Assert.assertEquals(crs, trs.getUserData());
+        Assert.assertEquals(4326, trs.getSRID());
+        Assert.assertEquals(20.0, trs.getX(), 0.0);
+        Assert.assertEquals(20.0, trs.getY(), 0.0);
+
+    }
+
+    /**
+     * Test SQL/MM ST_Buffer function.
+     */
+    @Test
+    public void ST_BufferTest() {
+
+        CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic();
+
+        //test invalid
+        try {
+            factory.function("ST_Buffer");
+            Assert.fail("Creation with no argument should fail");
+        } catch (IllegalArgumentException ex) {
+            //ok
+        }
+
+        final Point geometry = gf.createPoint(new Coordinate(10, 20));
+        geometry.setSRID(4326);
+        geometry.setUserData(crs);
+
+
+        final Function fct = factory.function("ST_Buffer", factory.literal(geometry), factory.literal(1.0));
+
+        //check result
+        final Object newGeom = fct.evaluate(null);
+        Assert.assertTrue(newGeom instanceof Polygon);
+        final Polygon trs = (Polygon) newGeom;
+        Assert.assertEquals(crs, trs.getUserData());
+        Assert.assertEquals(4326, trs.getSRID());
+        Envelope env = trs.getEnvelopeInternal();
+        Assert.assertEquals(9.0, env.getMinX(), 0.0);
+        Assert.assertEquals(11.0, env.getMaxX(), 0.0);
+        Assert.assertEquals(19.0, env.getMinY(), 0.0);
+        Assert.assertEquals(21.0, env.getMaxY(), 0.0);
+
     }
 }
