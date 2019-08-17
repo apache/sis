@@ -17,18 +17,24 @@
 package org.apache.sis.internal.storage.query;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Objects;
-import java.util.StringJoiner;
+import org.opengis.util.GenericName;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.resources.Errors;
+
+// Branch-dependent imports
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.FeatureType;
@@ -36,7 +42,6 @@ import org.opengis.feature.PropertyType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.sort.SortBy;
-import org.opengis.util.GenericName;
 
 
 /**
@@ -113,13 +118,23 @@ public class SimpleQuery extends Query {
      * property in the returned features.
      * This is equivalent to the column names in the {@code SELECT} clause of a SQL statement.
      *
-     * @param columns columns to retrieve, or null to retrieve all properties.
+     * @param  columns  columns to retrieve, or {@code null} to retrieve all properties.
+     * @throws IllegalArgumentException if a column or an alias is duplicated.
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     public void setColumns(Column... columns) {
-        columns = columns.clone();
-        for (int i=0; i<columns.length; i++) {
-            ArgumentChecks.ensureNonNullElement("columns", i, columns[i]);
+        if (columns != null) {
+            columns = columns.clone();
+            final Map<Object,Integer> uniques = new LinkedHashMap<>(Containers.hashMapCapacity(columns.length));
+            for (int i=0; i<columns.length; i++) {
+                final Column c = columns[i];
+                ArgumentChecks.ensureNonNullElement("columns", i, c);
+                final Object key = c.alias != null ? c.alias : c.expression;
+                final Integer p = uniques.putIfAbsent(key, i);
+                if (p != null) {
+                    throw new IllegalArgumentException(Resources.format(Resources.Keys.DuplicatedQueryProperty_3, key, p, i));
+                }
+            }
         }
         this.columns = columns;
     }
@@ -128,7 +143,7 @@ public class SimpleQuery extends Query {
      * Returns the columns to retrieve, or {@code null} if all columns shall be included in the query.
      * This is the columns specified in the last call to {@link #setColumns(Column...)}.
      *
-     * @return columns to retrieve, or null to retrieve all feature properties.
+     * @return columns to retrieve, or {@code null} to retrieve all feature properties.
      */
     public List<Column> getColumns() {
         return UnmodifiableArrayList.wrap(columns);
@@ -210,8 +225,8 @@ public class SimpleQuery extends Query {
     /**
      * Sets the expressions to use for sorting the feature instances.
      * {@code SortBy} objects are used to order the {@link org.opengis.feature.Feature} instances
-     * returned by the {@link org.apache.sis.storage.FeatureSet}. {@code SortBy} clauses are applied
-     * in declaration order, like SQL.
+     * returned by the {@link org.apache.sis.storage.FeatureSet}.
+     * {@code SortBy} clauses are applied in declaration order, like SQL.
      *
      * @param  sortBy  expressions to use for sorting the feature instances.
      */
@@ -302,8 +317,11 @@ public class SimpleQuery extends Query {
                 // TODO: remove this hack if we can get more type-safe Expression.
                 resultType = expression.evaluate(type, PropertyType.class);
             }
+            /*
+             * If a name has been explicitly given, rename the result type.
+             * We allow renaming only for attributes and associations.
+             */
             if (alias != null && !alias.equals(resultType.getName())) {
-                // Rename the result type.
                 resultType = new FeatureTypeBuilder().addProperty(resultType).setName(alias).build();
                 if (!(resultType instanceof AttributeType<?>) && !(resultType instanceof FeatureAssociationRole)) {
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
@@ -348,12 +366,20 @@ public class SimpleQuery extends Query {
          */
         @Override
         public String toString() {
-            final StringBuilder b = new StringBuilder(getClass().getSimpleName()).append('[');
+            final StringBuilder buffer = new StringBuilder();
+            buffer.append(getClass().getSimpleName()).append('[');      // Class name without enclosing class.
+            appendTo(buffer);
+            return buffer.append(']').toString();
+        }
+
+        /**
+         * Appends a string representation of this column in the given buffer.
+         */
+        final void appendTo(final StringBuilder buffer) {
+            buffer.append(Classes.getShortClassName(expression));       // Class name with enclosing class if any.
             if (alias != null) {
-                b.append('"').append(alias).append('"');
+                buffer.append(" AS “").append(alias).append('”');
             }
-            b.append(" = ").append(expression.getClass().getSimpleName());
-            return b.append(']').toString();
         }
     }
 
@@ -418,45 +444,42 @@ public class SimpleQuery extends Query {
                    Arrays.equals(columns, other.columns) &&
                    Arrays.equals(sortBy,  other.sortBy);
         }
-        return true;
+        return false;
     }
 
     /**
-     * Display a text representation looking like an SQL Select query.
+     * Returns a textual representation looking like an SQL Select query.
      *
-     * @return text representation
+     * @return textual representation of this query.
      */
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder(80);
         sb.append("SELECT ");
         if (columns != null) {
-            final StringJoiner sj = new StringJoiner(", ");
-            for (Column col : columns) {
-                sj.add(col.toString());
+            for (int i=0; i<columns.length; i++) {
+                if (i != 0) sb.append(", ");
+                columns[i].appendTo(sb);
             }
-            sb.append(sj.toString());
+        } else {
+            sb.append('*');
         }
-        if (filter != null && filter != Filter.INCLUDE) {
+        if (filter != Filter.INCLUDE) {
             sb.append(" WHERE ").append(filter);
         }
-        if (sortBy != null && sortBy != SortBy.UNSORTED) {
+        if (sortBy != SortBy.UNSORTED) {
             sb.append(" ORDER BY ");
-            final StringJoiner sj = new StringJoiner(", ");
-            for (SortBy s : sortBy) {
-                sj.add(s.toString());
+            for (int i=0; i<sortBy.length; i++) {
+                if (i != 0) sb.append(", ");
+                sb.append(sortBy[i]);
             }
-            sb.append(sj.toString());
         }
         if (limit != UNLIMITED) {
             sb.append(" LIMIT ").append(limit);
         }
         if (skip != 0) {
-            sb.append(" OFFSET ").append(limit);
+            sb.append(" OFFSET ").append(skip);
         }
-
         return sb.toString();
     }
-
-
 }

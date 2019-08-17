@@ -167,6 +167,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DirectoryContent_1 = 35;
 
         /**
+         * Query property “{0}” is duplicated at indices {1} and {2}.
+         */
+        public static final short DuplicatedQueryProperty_3 = 54;
+
+        /**
          * Sample dimension index {0} is duplicated.
          */
         public static final short DuplicatedSampleDimensionIndex_1 = 53;
