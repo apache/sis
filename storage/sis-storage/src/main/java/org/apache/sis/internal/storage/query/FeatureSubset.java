@@ -22,6 +22,8 @@ import java.util.stream.Stream;
 import org.opengis.util.GenericName;
 import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
+import org.apache.sis.filter.InvalidExpressionException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 
@@ -84,8 +86,10 @@ final class FeatureSubset extends AbstractFeatureSet {
      */
     @Override
     public synchronized FeatureType getType() throws DataStoreException {
-        if (resultType == null) {
+        if (resultType == null) try {
             resultType = query.expectedType(source.getType());
+        } catch (IllegalArgumentException | InvalidExpressionException e) {
+            throw new DataStoreContentException(e);
         }
         return resultType;
     }

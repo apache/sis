@@ -184,6 +184,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IncompatibleTile_2 = 35;
 
         /**
+         * Invalid or unsupported “{1}” expression at index {0}.
+         */
+        public static final short InvalidExpression_2 = 56;
+
+        /**
          * Iteration is finished.
          */
         public static final short IterationIsFinished = 36;

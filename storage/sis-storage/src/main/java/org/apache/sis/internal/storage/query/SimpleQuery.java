@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import org.opengis.util.GenericName;
+import org.apache.sis.filter.InvalidExpressionException;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -305,17 +306,22 @@ public class SimpleQuery extends Query {
         }
 
         /**
-         * Returns the expected property type for this column.
+         * Returns the type of results computed by this column.
+         *
+         * @param  valueType  the type of features to be evaluated by the expression in this column.
+         * @param  column     index of this column. Used for error message only.
+         * @return expected type resulting from expression evaluation (never null).
+         * @throws IllegalArgumentException if this method can operate only on some feature types
+         *         and the given type is not one of them.
+         * @throws InvalidExpressionException if this method can not determine the result type of the expression
+         *         in this column. It may be because that expression is backed by an unsupported implementation.
          *
          * @see SimpleQuery#expectedType(FeatureType)
          */
-        final PropertyType expectedType(final FeatureType type) {
-            PropertyType resultType;
-            if (expression instanceof FeatureExpression) {
-                resultType = ((FeatureExpression) expression).expectedType(type);
-            } else {
-                // TODO: remove this hack if we can get more type-safe Expression.
-                resultType = expression.evaluate(type, PropertyType.class);
+        final PropertyType expectedType(final FeatureType valueType, final int column) {
+            PropertyType resultType = FeatureExpression.expectedType(expression, valueType);
+            if (resultType == null) {
+                throw new InvalidExpressionException(expression, column);
             }
             /*
              * If a name has been explicitly given, rename the result type.
@@ -401,15 +407,22 @@ public class SimpleQuery extends Query {
     }
 
     /**
-     * Returns the expected property type for this query executed on features of the given type.
+     * Returns the type or values evaluated by this query when executed on features of the given type.
+     *
+     * @param  valueType  the type of features to be evaluated by the expressions in this query.
+     * @return type resulting from expressions evaluation (never null).
+     * @throws IllegalArgumentException if this method can operate only on some feature types
+     *         and the given type is not one of them.
+     * @throws InvalidExpressionException if this method can not determine the result type of an expression
+     *         in this query. It may be because that expression is backed by an unsupported implementation.
      */
-    final FeatureType expectedType(final FeatureType source) {
+    final FeatureType expectedType(final FeatureType valueType) {
         if (columns == null) {
-            return source;          // All columns included: result is of the same type.
+            return valueType;           // All columns included: result is of the same type.
         }
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName(source.getName());
-        for (final Column col : columns) {
-            ftb.addProperty(col.expectedType(source));
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName(valueType.getName());
+        for (int i=0; i<columns.length; i++) {
+            ftb.addProperty(columns[i].expectedType(valueType, i));
         }
         return ftb.build();
     }

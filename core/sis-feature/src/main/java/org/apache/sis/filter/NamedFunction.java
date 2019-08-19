@@ -29,7 +29,6 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
@@ -151,25 +150,29 @@ abstract class NamedFunction extends Node implements Function {
     }
 
     /**
-     * Returns the type of results computed by the parameters at given index, or {@code null} if unknown.
-     * If the expression implements {@link FeatureExpression}, its {@code expectedType(valueType)} method
-     * will be invoked. Otherwise this method returns the single property of the given feature type if it
-     * contains exactly one property, or returns {@code null} otherwise.
+     * Returns the type of results computed by the parameters at given index.
+     * This method applies heuristic rules documented in {@link FeatureExpression}.
      *
      * @param  parameter  index of the expression for which to get the result type.
-     * @param  valueType  the type of features on which to apply the expression at given index.
-     * @return expected expression result type, or {@code null} if unknown.
+     * @param  valueType  the type of features to be evaluated by the given expression.
+     * @return expected type resulting from expression evaluation (never null).
+     * @throws IllegalArgumentException if this method can operate only on some feature types
+     *         and the given type is not one of them.
+     * @throws InvalidExpressionException if this method can not determine the result type of the expression
+     *         at given index. It may be because that expression is backed by an unsupported implementation.
      */
     final PropertyType expectedType(final int parameter, final FeatureType valueType) {
-        final Expression exp = parameters.get(parameter);
-        if (exp instanceof FeatureExpression) {
-            return ((FeatureExpression) exp).expectedType(valueType);
+        final Expression expression = parameters.get(parameter);
+        final PropertyType pt = FeatureExpression.expectedType(expression, valueType);
+        if (pt == null) {
+            throw new InvalidExpressionException(expression, parameter);
         }
-        return CollectionsExt.singletonOrNull(valueType.getProperties(true));
+        return pt;
     }
 
     /**
      * Implementation of the visitor pattern.
+     * Not used in Apache SIS implementation.
      */
     @Override
     public Object accept(final ExpressionVisitor visitor, final Object extraData) {
