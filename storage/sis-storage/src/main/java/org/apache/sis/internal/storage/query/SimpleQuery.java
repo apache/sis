@@ -24,6 +24,7 @@ import java.util.Objects;
 import org.opengis.util.GenericName;
 import org.apache.sis.filter.InvalidExpressionException;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.storage.Resources;
@@ -33,13 +34,9 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.Names;
-import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.sort.SortBy;
@@ -306,11 +303,11 @@ public class SimpleQuery extends Query {
         }
 
         /**
-         * Returns the type of results computed by this column.
+         * Adds in the given builder the type of results computed by this column.
          *
-         * @param  valueType  the type of features to be evaluated by the expression in this column.
          * @param  column     index of this column. Used for error message only.
-         * @return expected type resulting from expression evaluation (never null).
+         * @param  valueType  the type of features to be evaluated by the expression in this column.
+         * @param  addTo      where to add the type of properties evaluated by expression in this column.
          * @throws IllegalArgumentException if this method can operate only on some feature types
          *         and the given type is not one of them.
          * @throws InvalidExpressionException if this method can not determine the result type of the expression
@@ -318,23 +315,14 @@ public class SimpleQuery extends Query {
          *
          * @see SimpleQuery#expectedType(FeatureType)
          */
-        final PropertyType expectedType(final FeatureType valueType, final int column) {
-            PropertyType resultType = FeatureExpression.expectedType(expression, valueType);
+        final void expectedType(final int column, final FeatureType valueType, final FeatureTypeBuilder addTo) {
+            final PropertyTypeBuilder resultType = FeatureExpression.expectedType(expression, valueType, addTo);
             if (resultType == null) {
                 throw new InvalidExpressionException(expression, column);
             }
-            /*
-             * If a name has been explicitly given, rename the result type.
-             * We allow renaming only for attributes and associations.
-             */
             if (alias != null && !alias.equals(resultType.getName())) {
-                resultType = new FeatureTypeBuilder().addProperty(resultType).setName(alias).build();
-                if (!(resultType instanceof AttributeType<?>) && !(resultType instanceof FeatureAssociationRole)) {
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
-                                alias, AttributeType.class, Classes.getStandardType(Classes.getClass(resultType))));
-                }
+                resultType.setName(alias);
             }
-            return resultType;
         }
 
         /**
@@ -422,7 +410,7 @@ public class SimpleQuery extends Query {
         }
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName(valueType.getName());
         for (int i=0; i<columns.length; i++) {
-            ftb.addProperty(columns[i].expectedType(valueType, i));
+            columns[i].expectedType(i, valueType, ftb);
         }
         return ftb.build();
     }

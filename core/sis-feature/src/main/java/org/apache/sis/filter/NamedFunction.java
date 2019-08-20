@@ -19,7 +19,6 @@ package org.apache.sis.filter;
 import java.util.List;
 import java.util.Collection;
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.ExpressionVisitor;
 import org.opengis.filter.expression.Function;
@@ -27,8 +26,13 @@ import org.opengis.filter.expression.Literal;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.FeatureExpression;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.feature.builder.AttributeTypeBuilder;
 
 
 /**
@@ -150,24 +154,49 @@ abstract class NamedFunction extends Node implements Function {
     }
 
     /**
-     * Returns the type of results computed by the parameters at given index.
-     * This method applies heuristic rules documented in {@link FeatureExpression}.
+     * Copies into the given builder the property type evaluated by the expression at the specified index.
+     * The property type is determined by the heuristic rules documented in {@link FeatureExpression}.
+     * This method returns the the property type builder for allowing caller to modify the property.
      *
      * @param  parameter  index of the expression for which to get the result type.
      * @param  valueType  the type of features to be evaluated by the given expression.
-     * @return expected type resulting from expression evaluation (never null).
+     * @param  addTo      where to add the type of properties evaluated by the specified expression.
+     * @return builder of type resulting from expression evaluation (never null).
      * @throws IllegalArgumentException if this method can operate only on some feature types
      *         and the given type is not one of them.
      * @throws InvalidExpressionException if this method can not determine the result type of the expression
      *         at given index. It may be because that expression is backed by an unsupported implementation.
      */
-    final PropertyType expectedType(final int parameter, final FeatureType valueType) {
+    final PropertyTypeBuilder copyType(final int parameter, final FeatureType valueType, final FeatureTypeBuilder addTo) {
         final Expression expression = parameters.get(parameter);
-        final PropertyType pt = FeatureExpression.expectedType(expression, valueType);
+        final PropertyTypeBuilder pt = FeatureExpression.expectedType(expression, valueType, addTo);
         if (pt == null) {
             throw new InvalidExpressionException(expression, parameter);
         }
         return pt;
+    }
+
+    /**
+     * Copies into the given builder the property type evaluated by the first expression.
+     * That property must be an attribute storing geometric object, otherwise an
+     * {@link IllegalArgumentException} will be thrown.
+     *
+     * @param  valueType  the type of features to be evaluated by the given expression.
+     * @param  addTo      where to add the type of properties evaluated by the specified expression.
+     * @return builder of type resulting from expression evaluation (never null).
+     * @throws IllegalArgumentException if the given feature type does not contain the expected properties.
+     * @throws InvalidExpressionException if this method can not determine the result type of the expression
+     *         at given index. It may be because that expression is backed by an unsupported implementation.
+     */
+    final AttributeTypeBuilder<?> copyGeometryType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
+        final PropertyTypeBuilder type = copyType(0, valueType, addTo);
+        if (type instanceof AttributeTypeBuilder<?>) {
+            AttributeTypeBuilder<?> att = (AttributeTypeBuilder<?>) type;
+            if (Geometries.isKnownType(att.getValueClass())) {
+                return att;
+            }
+        }
+        throw new IllegalArgumentException(Resources.format(Resources.Keys.NotAGeometryAtFirstExpression));
     }
 
     /**

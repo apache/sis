@@ -251,6 +251,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NonLinearInDimensions_1 = 45;
 
         /**
+         * Value provided by first expression is not a geometry.
+         */
+        public static final short NotAGeometryAtFirstExpression = 57;
+
+        /**
          * Property “{0}” contains more than one value.
          */
         public static final short NotASingleton_1 = 14;

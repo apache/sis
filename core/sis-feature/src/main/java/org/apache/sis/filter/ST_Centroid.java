@@ -16,15 +16,15 @@
  */
 package org.apache.sis.filter;
 
+import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.util.ArgumentChecks;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
-import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
 import org.opengis.filter.expression.Expression;
 import org.opengis.util.FactoryException;
 
@@ -93,22 +93,16 @@ final class ST_Centroid extends NamedFunction implements FeatureExpression {
     }
 
     /**
-     * Returns the expected type of values produced by this expression when a feature of the given
-     * type is evaluated.
+     * Provides the type of values produced by this expression when a feature of the given type is evaluated.
      *
-     * @param  valueType  the type of features on which to apply the expression.
-     * @return expected expression result type.
-     * @throws IllegalArgumentException if this method can not determine the property type for the given feature type.
+     * @param  valueType  the type of features on which to apply this expression.
+     * @param  addTo      where to add the type of properties evaluated by this expression.
+     * @return builder of type resulting from expression evaluation (never null).
+     * @throws IllegalArgumentException if the given feature type does not contain the expected properties.
      */
     @Override
-    public PropertyType expectedType(final FeatureType valueType) {
-        final PropertyType expectedType = expectedType(0, valueType);
-        if (expectedType instanceof AttributeType<?>) {
-            AttributeType<?> att = (AttributeType<?>) expectedType;
-            if (Geometries.isKnownType(att.getValueClass())) {
-                return new FeatureTypeBuilder().addAttribute(att).setValueClass(Point.class).build();
-            }
-        }
-        throw new IllegalArgumentException("First expression must result in a geometric attribute");        // TODO: localize.
+    public PropertyTypeBuilder expectedType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
+        final AttributeTypeBuilder<?> pt = copyGeometryType(valueType, addTo);
+        return pt.setValueClass(Geometries.implementation(pt.getValueClass()).pointClass);
     }
 }

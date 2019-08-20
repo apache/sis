@@ -137,6 +137,20 @@ public abstract class Geometries<G> {
     }
 
     /**
+     * Returns an accessor to the library implementation for a geometry of the given type.
+     * If the given type is not recognized, then this method returns the default library.
+     *
+     * @param  type  the type to verify.
+     * @return a geometry implementation compatible with the given type.
+     */
+    public static Geometries<?> implementation(final Class<?> type) {
+        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+            if (g.rootClass.isAssignableFrom(type)) return g;
+        }
+        return implementation;
+    }
+
+    /**
      * Returns {@code true} if the given type is one of the types known to Apache SIS.
      *
      * @param  type  the type to verify.

@@ -20,6 +20,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.Fraction;
@@ -27,7 +29,6 @@ import org.apache.sis.math.Fraction;
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
 import org.opengis.filter.expression.BinaryExpression;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.ExpressionVisitor;
@@ -65,6 +66,20 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
      */
     static AttributeType<Number> createNumericType(final String name) {
         return createType(Number.class, name);
+    }
+
+    /**
+     * Returns the type of results computed by this arithmetic function.
+     */
+    protected abstract AttributeType<Number> expectedType();
+
+    /**
+     * Provides the type of results computed by this expression. That type depends only
+     * on the {@code ArithmeticFunction} subclass and is given by {@link #expectedType()}.
+     */
+    @Override
+    public final PropertyTypeBuilder expectedType(FeatureType ignored, FeatureTypeBuilder addTo) {
+        return addTo.addProperty(expectedType());
     }
 
     /**
@@ -123,7 +138,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
 
         /** Description of results of the {@value #NAME} expression. */
         private static final AttributeType<Number> TYPE = createNumericType(NAME);
-        @Override public PropertyType expectedType(FeatureType type) {return TYPE;}
+        @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
         /** Creates a new expression for the {@value #NAME} operation. */
         Add(Expression expression1, Expression expression2) {
@@ -157,7 +172,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
 
         /** Description of results of the {@value #NAME} expression. */
         private static final AttributeType<Number> TYPE = createNumericType(NAME);
-        @Override public PropertyType expectedType(FeatureType type) {return TYPE;}
+        @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
         /** Creates a new expression for the {@value #NAME} operation. */
         Subtract(Expression expression1, Expression expression2) {
@@ -191,7 +206,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
 
         /** Description of results of the {@value #NAME} expression. */
         private static final AttributeType<Number> TYPE = createNumericType(NAME);
-        @Override public PropertyType expectedType(FeatureType type) {return TYPE;}
+        @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
         /** Creates a new expression for the {@value #NAME} operation. */
         Multiply(Expression expression1, Expression expression2) {
@@ -225,7 +240,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
 
         /** Description of results of the {@value #NAME} expression. */
         private static final AttributeType<Number> TYPE = createNumericType(NAME);
-        @Override public PropertyType expectedType(FeatureType type) {return TYPE;}
+        @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
         /** Creates a new expression for the {@value #NAME} operation. */
         Divide(Expression expression1, Expression expression2) {
