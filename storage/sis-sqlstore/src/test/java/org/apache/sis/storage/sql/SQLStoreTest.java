@@ -16,26 +16,37 @@
  */
 package org.apache.sis.storage.sql;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
-import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.test.sql.TestDatabase;
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
-
-// Branch-dependent imports
+import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.FeatureAssociationRole;
+
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.test.TestCase;
+import org.apache.sis.test.sql.TestDatabase;
+
+import org.junit.Test;
+
+import static org.apache.sis.test.Assert.assertEquals;
+import static org.apache.sis.test.Assert.assertInstanceOf;
+import static org.apache.sis.test.Assert.assertNotEquals;
+import static org.apache.sis.test.Assert.assertNotNull;
+import static org.apache.sis.test.Assert.assertSame;
+import static org.apache.sis.test.Assert.assertTrue;
+import static org.apache.sis.test.Assert.fail;
+
+// Branch-dependent imports
 
 
 /**
@@ -51,6 +62,13 @@ public final strictfp class SQLStoreTest extends TestCase {
      * The schema where will be stored the features to test.
      */
     private static final String SCHEMA = "features";
+
+    private static final int[] POPULATIONS = {
+            13622267,  // Tokyo,    2016.
+            2206488,   // Paris,    2017.
+            1704694,   // Montréal, 2016.
+            531902     // Québec,   2016.
+    };
 
     /**
      * Number of time that the each country has been seen while iterating over the cities.
@@ -130,12 +148,63 @@ public final strictfp class SQLStoreTest extends TestCase {
                 try (Stream<Feature> features = cities.features(false)) {
                     features.forEach((f) -> verifyContent(f));
                 }
+
+                // Now, we'll check that overloaded stream operations are functionally stable, even stacked.
+                verifyStreamOperations(cities);
+
             }
         }
         assertEquals(Integer.valueOf(2), countryCount.remove("CAN"));
         assertEquals(Integer.valueOf(1), countryCount.remove("FRA"));
         assertEquals(Integer.valueOf(1), countryCount.remove("JPN"));
         assertTrue  (countryCount.isEmpty());
+    }
+
+    /**
+     * Checks that operations stacked on feature stream are well executed. This test focus on mapping and peeking
+     * actions overloaded by sql streams. We'd like to test skip and limit operations too, but ignore it for now,
+     * because ordering of results matters for such a test.
+     *
+     * @implNote Most of stream operations used here are meaningless. We just want to ensure that the pipeline does not
+     * skip any operation.
+     *
+     * @param cities The feature set to read from. We expect a feature set containing all cities defined for the test
+     *               class.
+     * @throws DataStoreException Let's propagate any error raised by input feature set.
+     */
+    private static void verifyStreamOperations(final FeatureSet cities) throws DataStoreException {
+        try (Stream<Feature> features = cities.features(false)) {
+            final AtomicInteger peekCount = new AtomicInteger();
+            final AtomicInteger mapCount = new AtomicInteger();
+            final long populations = features.peek(f -> peekCount.incrementAndGet())
+                    .peek(f -> peekCount.incrementAndGet())
+                    .map(f -> {
+                        mapCount.incrementAndGet();
+                        return f;
+                    })
+                    .peek(f -> peekCount.incrementAndGet())
+                    .map(f -> {
+                        mapCount.incrementAndGet();
+                        return f;
+                    })
+                    .map(f -> f.getPropertyValue("population"))
+                    .mapToDouble(obj -> ((Number) obj).doubleValue())
+                    .peek(f -> peekCount.incrementAndGet())
+                    .peek(f -> peekCount.incrementAndGet())
+                    .boxed()
+                    .mapToDouble(d -> {mapCount.incrementAndGet(); return d;})
+                    .mapToObj(d -> {mapCount.incrementAndGet(); return d;})
+                    .mapToDouble(d -> {mapCount.incrementAndGet(); return d;})
+                    .map(d -> {mapCount.incrementAndGet(); return d;})
+                    .mapToLong(d -> (long) d)
+                    .sum();
+
+            long expectedPopulations = 0;
+            for (long pop : POPULATIONS) expectedPopulations += pop;
+            assertEquals("Overall population count via Stream pipeline", expectedPopulations, populations);
+            assertEquals("Number of mapping (by element in the stream)", 24, mapCount.get());
+            assertEquals("Number of peeking (by element in the stream)", 20, peekCount.get());
+        }
     }
 
     /**
@@ -178,7 +247,7 @@ public final strictfp class SQLStoreTest extends TestCase {
                 englishName = "Tōkyō";
                 country     = "JPN";
                 countryName = "日本";
-                population  = 13622267;         // In 2016.
+                population  = POPULATIONS[0];
                 parks       = new String[] {"Yoyogi-kōen", "Shinjuku Gyoen"};
                 break;
             }
@@ -186,7 +255,7 @@ public final strictfp class SQLStoreTest extends TestCase {
                 englishName = "Paris";
                 country     = "FRA";
                 countryName = "France";
-                population  = 2206488;          // In 2017.
+                population  = POPULATIONS[1];
                 parks       = new String[] {"Tuileries Garden", "Luxembourg Garden"};
                 break;
             }
@@ -194,7 +263,7 @@ public final strictfp class SQLStoreTest extends TestCase {
                 englishName = "Montreal";
                 country     = "CAN";
                 countryName = "Canada";
-                population  = 1704694;          // In 2016.
+                population  = POPULATIONS[2];
                 isCanada    = true;
                 parks       = new String[] {"Mount Royal"};
                 break;
@@ -203,7 +272,7 @@ public final strictfp class SQLStoreTest extends TestCase {
                 englishName = "Quebec";
                 country     = "CAN";
                 countryName = "Canada";
-                population  = 531902;           // In 2016.
+                population  = POPULATIONS[3];
                 isCanada    = true;
                 parks = new String[] {};
                 break;

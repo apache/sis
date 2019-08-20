@@ -16,15 +16,17 @@
  */
 package org.apache.sis.util;
 
-import java.util.Map;                                               // For javadoc
 import java.util.BitSet;
-import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.geometry.Envelope;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
-import org.apache.sis.internal.util.Strings;
+import java.util.Collection;
+import java.util.Map;
 
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Envelope;
+import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CoordinateSystem;
+
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -185,6 +187,24 @@ public final class ArgumentChecks extends Static {
             throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, name));
         }
         if (array.length == 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
+        }
+    }
+
+    /**
+     * Makes sure that given collection is non-null and non-empty. If it is null, then a {@link NullArgumentException}
+     * is thrown. Otherwise if it {@link Collection#isEmpty() is empty}, then an {@link IllegalArgumentException} is thrown.
+     *
+     * @param name the name of the argument to be checked. Used only if an exception is thrown.
+     * @param toCheck the user argument to check against null value and empty collection.
+     * @throws NullArgumentException if {@code toCheck} is null.
+     * @throws IllegalArgumentException if {@code toCheck} is empty.
+     */
+    public static void ensureNonEmpty(final String name, final Collection<?> toCheck) {
+        if (toCheck == null) {
+            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, name));
+        }
+        if (toCheck.isEmpty()) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, name));
         }
     }

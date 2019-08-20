@@ -16,29 +16,37 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collection;
-import java.util.Spliterator;
-import java.util.function.Consumer;
+import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.lang.reflect.Array;
-import org.apache.sis.internal.metadata.sql.SQLBuilder;
-import org.apache.sis.storage.InternalDataStoreException;
-import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.util.ArraysExt;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
-// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+
+import org.apache.sis.internal.metadata.sql.SQLBuilder;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.InternalDataStoreException;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.collection.WeakValueHashMap;
+
+import static org.apache.sis.util.ArgumentChecks.ensureNonEmpty;
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
+// Branch-dependent imports
 
 
 /**
@@ -141,25 +149,45 @@ final class Features implements Spliterator<Feature>, Runnable {
 
     /**
      * Creates a new iterator over the feature instances.
+     * TODO: This object is far too complicated. A builder of some sort should be used. We should even consider a
+     * third-party tool like JOOQ, which is a great abstraction for SQL query building.
      *
      * @param table             the table for which we are creating an iterator.
      * @param connection        connection to the database.
-     * @param attributeNames    value of {@link Table#attributeNames}:   where to store simple values.
-     * @param attributeColumns  value of {@link Table#attributeColumns}: often the same as attribute names.
-     * @param importedKeys      value of {@link Table#importedKeys}:     targets of this table foreign keys.
-     * @param exportedKeys      value of {@link Table#exportedKeys}:     foreigner keys of other tables.
+     * @param columns           Names of columns to read, along with an eventual alias. The alias (or name if no alias
+     *                          is provided) must match a property name in output feature type.
      * @param following         the relations that we are following. Used for avoiding never ending loop.
      * @param noFollow          relation to not follow, or {@code null} if none.
+     * @param distinct          True if we should return only distinct result, false otherwise.
+     * @param offset            An offset (nuber of rows to skip) in underlying SQL query. A negative or zeero value
+     *                          means no offset will be set.
+     * @param limit             Maximum number of rows to return. Corresponds to a LIMIT statement in underlying SQL
+     *                          query. A negative or 0 value means no limit will be set.
      */
-    Features(final Table table, final Connection connection, final String[] attributeNames, final String[] attributeColumns,
-             final Relation[] importedKeys, final Relation[] exportedKeys, final List<Relation> following, final Relation noFollow)
+    Features(final Table table, final Connection connection, final Collection<ColumnRef> columns,
+             final List<Relation> following, final Relation noFollow,
+             boolean distinct, final long offset, final long limit)
              throws SQLException, InternalDataStoreException
     {
+        ensureNonEmpty("Columns to fetch", columns);
+        String[] attributeColumns = new String[columns.size()];
+        attributeNames = new String[attributeColumns.length];
+        int i = 0;
+        for (ColumnRef column : columns) {
+            attributeColumns[i] = column.name;
+            attributeNames[i++] = column.getAttributeName();
+        }
         this.featureType = table.featureType;
-        this.attributeNames = attributeNames;
         final DatabaseMetaData metadata = connection.getMetaData();
         estimatedSize = following.isEmpty() ? table.countRows(metadata, true) : 0;
+        /*
+         * Create a SELECT clause with all columns that are ordinary attributes. Order matter, since 'Features'
+         * iterator will map the columns to the attributes listed in the 'attributeNames' array in that order.
+         * Moreover, we optionaly add a "distinct" clause on user request.
+         */
         final SQLBuilder sql = new SQLBuilder(metadata, true).append("SELECT");
+        if (distinct) sql.append(" DISTINCT");
+
         final Map<String,Integer> columnIndices = new HashMap<>();
         /*
          * Create a SELECT clause with all columns that are ordinary attributes.
@@ -169,12 +197,13 @@ final class Features implements Spliterator<Feature>, Runnable {
         for (String column : attributeColumns) {
             appendColumn(sql, column, columnIndices);
         }
+
         /*
          * Collect information about associations in local arrays before to assign
          * them to the final fields, because some array lengths may be adjusted.
          */
-        int importCount = (importedKeys != null) ? importedKeys.length : 0;
-        int exportCount = (exportedKeys != null) ? exportedKeys.length : 0;
+        int importCount = (table.importedKeys != null) ? table.importedKeys.length : 0;
+        int exportCount = (table.exportedKeys != null) ? table.exportedKeys.length : 0;
         int totalCount  = importCount + exportCount;
         if (totalCount == 0) {
             dependencies        = EMPTY;
@@ -192,7 +221,7 @@ final class Features implements Spliterator<Feature>, Runnable {
              */
             if (importCount != 0) {
                 importCount = 0;                                                    // We will recount.
-                for (final Relation dependency : importedKeys) {
+                for (final Relation dependency : table.importedKeys) {
                     if (dependency != noFollow) {
                         dependency.startFollowing(following);                       // Safety against never-ending recursivity.
                         associationNames   [importCount] = dependency.propertyName;
@@ -212,8 +241,8 @@ final class Features implements Spliterator<Feature>, Runnable {
              * associations we need to iterate over all "Parks" rows referencing the city.
              */
             if (exportCount != 0) {
-                int i = importCount;
-                for (final Relation dependency : exportedKeys) {
+                i = importCount;
+                for (final Relation dependency : table.exportedKeys) {
                     dependency.startFollowing(following);                   // Safety against never-ending recursivity.
                     final Table foreigner  = dependency.getSearchTable();
                     final Relation inverse = foreigner.getInverseOf(dependency, table.name);
@@ -241,7 +270,13 @@ final class Features implements Spliterator<Feature>, Runnable {
             statement = null;
             instances = null;       // A future SIS version could use the map opportunistically if it exists.
             keyComponentClass = null;
-            result = connection.createStatement().executeQuery(sql.toString());
+            addOffsetLimit(sql, offset, limit);
+            final Statement statement = connection.createStatement();
+            /* Why this parameter ? See: https://gitlab.geomatys.com/geomatys-group/knowledge-base/wikis/cookbook/jdbc
+             * TODO : allow parameterization ?
+             */
+            statement.setFetchSize(100);
+            result = statement.executeQuery(sql.toString());
         } else {
             final Relation componentOf = following.get(following.size() - 1);
             String separator = " WHERE ";
@@ -249,6 +284,7 @@ final class Features implements Spliterator<Feature>, Runnable {
                 sql.append(separator).appendIdentifier(primaryKey).append("=?");
                 separator = " AND ";
             }
+            addOffsetLimit(sql, offset, limit);
             statement = connection.prepareStatement(sql.toString());
             /*
              * Following assumes that the foreigner key references the primary key of this table,
@@ -266,11 +302,22 @@ final class Features implements Spliterator<Feature>, Runnable {
     }
 
     /**
+     * If a limit or an offset is appended, a space will be added beforehand to the given builder.
+     * @param toEdit The builder to add offset and limit to.
+     * @param offset The offset to use. If  zero or negative, it will be ignored.
+     * @param limit the value for limit parameter. If  zero or negative, it will be ignored.
+     */
+    private static void addOffsetLimit(final SQLBuilder toEdit, final long offset, final long limit) {
+        if (limit > 0) toEdit.append(" LIMIT ").append(limit);
+        if (offset > 0) toEdit.append(" OFFSET ").append(offset);
+    }
+
+    /**
      * Appends a columns in the given builder and remember the column indices.
      * An exception is thrown if the column has already been added (should never happen).
      */
     private static int appendColumn(final SQLBuilder sql, final String column,
-            final Map<String,Integer> columnIndices) throws InternalDataStoreException
+                                    final Map<String,Integer> columnIndices) throws InternalDataStoreException
     {
         int columnCount = columnIndices.size();
         if (columnCount != 0) sql.append(',');
@@ -283,8 +330,7 @@ final class Features implements Spliterator<Feature>, Runnable {
      * Computes the 1-based indices of given columns, adding the columns in the given builder if necessary.
      */
     private static int[] getColumnIndices(final SQLBuilder sql, final Collection<String> columns,
-            final Map<String,Integer> columnIndices) throws InternalDataStoreException
-    {
+                                          final Map<String,Integer> columnIndices) throws InternalDataStoreException {
         int i = 0;
         final int[] indices = new int[columns.size()];
         for (final String column : columns) {
@@ -494,6 +540,80 @@ final class Features implements Spliterator<Feature>, Runnable {
             close();
         } catch (SQLException e) {
             throw new BackingStoreException(e);
+        }
+    }
+
+    /**
+     * Useful to customiez value retrieval on result sets. Example:
+     * {@code
+     * SQLBiFunction<ResultSet, Integer, Integer> get = ResultSet::getInt;
+     * }
+     * @param <T>
+     * @param <U>
+     * @param <R>
+     */
+    @FunctionalInterface
+    interface SQLBiFunction<T, U, R> {
+        R apply(T t, U u) throws SQLException;
+
+        /**
+         * Returns a composed function that first applies this function to
+         * its input, and then applies the {@code after} function to the result.
+         * If evaluation of either function throws an exception, it is relayed to
+         * the caller of the composed function.
+         *
+         * @param <V> the type of output of the {@code after} function, and of the
+         *           composed function
+         * @param after the function to apply after this function is applied
+         * @return a composed function that first applies this function and then
+         * applies the {@code after} function
+         * @throws NullPointerException if after is null
+         */
+        default <V> SQLBiFunction<T, U, V> andThen(Function<? super R, ? extends V> after) {
+            ensureNonNull("After function", after);
+            return (T t, U u) -> after.apply(apply(t, u));
+        }
+    }
+
+    static class Builder {
+
+        final Table parent;
+        long limit, offset;
+        boolean distinct;
+
+        Builder(Table parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * Warning : This does not work with relations. It is only a rough estimation of the parameterized query.
+         * @param count True if a count query must be generated. False for a simple selection.
+         * @return A text representing (roughly) the SQL query which will be posted.
+         * @throws SQLException If we cannot initialize an sql statement builder.
+         */
+        String getSnapshot(final boolean count) throws SQLException {
+            final SQLBuilder sql = new SQLBuilder(parent.dbMeta, true).append("SELECT ");
+            if (count) sql.append("COUNT(");
+            if (distinct) sql.append("DISTINCT ");
+            // If we want a count and no distinct clause is specified, we can query it for a single column.
+            if (count && !distinct) sql.appendIdentifier(parent.attributes.get(0).name);
+            else {
+                final Iterator<ColumnRef> it = parent.attributes.iterator();
+                sql.appendIdentifier(it.next().name);
+                while (it.hasNext()) {
+                    sql.append(',').appendIdentifier(it.next().name);
+                }
+            }
+
+            if (count) sql.append(')');
+            sql.append(" FROM ").appendIdentifier(parent.name.catalog, parent.name.schema, parent.name.table);
+            addOffsetLimit(sql, offset, limit);
+
+            return sql.toString();
+        }
+
+        Features build(final Connection conn) throws SQLException, DataStoreException {
+            return new Features(parent, conn, parent.attributes, new ArrayList<>(), null, distinct, offset, limit);
         }
     }
 }

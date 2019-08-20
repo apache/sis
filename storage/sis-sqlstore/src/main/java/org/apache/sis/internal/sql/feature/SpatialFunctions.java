@@ -17,16 +17,18 @@
 package org.apache.sis.internal.sql.feature;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.LocalDateTime;
-import java.time.OffsetTime;
-import java.time.OffsetDateTime;
-import java.sql.Types;
+import java.sql.DatabaseMetaData;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.DatabaseMetaData;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.setup.GeometryLibrary;
 
@@ -112,9 +114,9 @@ class SpatialFunctions {
             case Types.CHAR:
             case Types.VARCHAR:
             case Types.LONGVARCHAR:             return String.class;
-            case Types.DATE:                    return LocalDate.class;
-            case Types.TIME:                    return LocalTime.class;
-            case Types.TIMESTAMP:               return LocalDateTime.class;
+            case Types.DATE:                    return Date.class;
+            case Types.TIME:                    return Time.class;
+            case Types.TIMESTAMP:               return Timestamp.class;
             case Types.TIME_WITH_TIMEZONE:      return OffsetTime.class;
             case Types.TIMESTAMP_WITH_TIMEZONE: return OffsetDateTime.class;
             case Types.BINARY:

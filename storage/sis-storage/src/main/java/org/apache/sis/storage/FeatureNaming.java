@@ -36,7 +36,8 @@ import org.apache.sis.internal.storage.Resources;
  * actually puts no restriction on the kind of object associated to {@code GenericName}s;
  * {@link DataStore} implementations are free to choose their internal object.
  * Those objects can be stored and fetched using the {@code String} representation of their name
- * as given by {@link GenericName#toString()}, or a shortened name when there is no ambiguity.
+ * as given by {@link GenericName#toString()}, or a shortened name when there is no ambiguity. Note that search is
+ * case sensitive.
  *
  * <div class="note"><b>Example:</b>
  * a data store may contain a {@code FeatureType} named {@code "foo:bar"}.
@@ -146,7 +147,7 @@ public class FeatureNaming<E> {
     }
 
     /**
-     * Returns the value associated to the given name.
+     * Returns the value associated to the given name. Case sensitive.
      *
      * @param  store  the data store for which to get a value, or {@code null} if unknown.
      * @param  name   the name for which to get a value.

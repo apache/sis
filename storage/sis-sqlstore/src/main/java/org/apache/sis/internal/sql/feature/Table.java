@@ -20,19 +20,16 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import javax.sql.DataSource;
 
 import org.opengis.feature.AttributeType;
@@ -52,7 +49,6 @@ import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.DecoratedStream;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
@@ -60,7 +56,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.WeakValueHashMap;
 
@@ -83,7 +78,7 @@ final class Table extends AbstractFeatureSet {
     /**
      * Provider of (pooled) connections to the database.
      */
-    private final DataSource source;
+    final DataSource source;
 
     /**
      * The structure of this table represented as a feature. Each feature attribute is a table column,
@@ -98,18 +93,11 @@ final class Table extends AbstractFeatureSet {
     final TableReference name;
 
     /**
-     * Name of attributes in feature instances, excluding operations and associations to other tables.
-     * Those names are in the order of columns declared in the {@code SELECT <columns} statement.
-     * This array shall not be modified after construction.
+     * Name of all columns to fetch from database, optionally amended with an alias. Alias is used for feature type
+     * attributes which have been renamed to avoid name collisions. In any case, a call to {@link ColumnRef#getAttributeName()}}
+     * will return the name available in target feature type.
      */
-    private final String[] attributeNames;
-
-    /**
-     * Name of columns corresponding to each {@link #attributeNames}. This is often a reference to the
-     * same array than {@link #attributeNames}, but may be different if some attributes have been renamed
-     * for avoiding name collisions.
-     */
-    private final String[] attributeColumns;
+    final List<ColumnRef> attributes;
 
     /**
      * The columns that constitute the primary key, or {@code null} if there is no primary key.
@@ -120,13 +108,13 @@ final class Table extends AbstractFeatureSet {
      * The primary keys of other tables that are referenced by this table foreign key columns.
      * They are 0:1 relations. May be {@code null} if there is no imported keys.
      */
-    private final Relation[] importedKeys;
+    final Relation[] importedKeys;
 
     /**
      * The foreign keys of other tables that reference this table primary key columns.
      * They are 0:N relations. May be {@code null} if there is no exported keys.
      */
-    private final Relation[] exportedKeys;
+    final Relation[] exportedKeys;
 
     /**
      * The class of primary key values, or {@code null} if there is no primary keys.
@@ -152,6 +140,11 @@ final class Table extends AbstractFeatureSet {
     final boolean hasGeometry;
 
     /**
+     * Keep a reference of target database metadata, to ease creation of {@link SQLBuilder}.
+     */
+    final DatabaseMetaData dbMeta;
+
+    /**
      * Creates a description of the table of the given name.
      * The table is identified by {@code id}, which contains a (catalog, schema, name) tuple.
      * The catalog and schema parts are optional and can be null, but the table is mandatory.
@@ -165,6 +158,7 @@ final class Table extends AbstractFeatureSet {
             throws SQLException, DataStoreException
     {
         super(analyzer.listeners);
+        this.dbMeta = analyzer.metadata;
         this.source = analyzer.source;
         this.name   = id;
         final String tableEsc  = analyzer.escape(id.table);
@@ -230,8 +224,7 @@ final class Table extends AbstractFeatureSet {
         boolean  primaryKeyNonNull = true;
         boolean  hasGeometry       = false;
         int startWithLowerCase     = 0;
-        final List<String> attributeNames = new ArrayList<>();
-        final List<String> attributeColumns = new ArrayList<>();
+        final List<ColumnRef> attributes = new ArrayList<>();
         final FeatureTypeBuilder feature = new FeatureTypeBuilder(analyzer.nameFactory, analyzer.functions.library, analyzer.locale);
         try (ResultSet reflect = analyzer.metadata.getColumns(id.catalog, schemaEsc, tableEsc, null)) {
             while (reflect.next()) {
@@ -251,6 +244,8 @@ final class Table extends AbstractFeatureSet {
                         startWithLowerCase--;
                     }
                 }
+
+                ColumnRef colRef = new ColumnRef(column);
                 /*
                  * Add the column as an attribute. Foreign keys are excluded (they will be replaced by associations),
                  * except if the column is also a primary key. In the later case we need to keep that column because
@@ -258,8 +253,6 @@ final class Table extends AbstractFeatureSet {
                  */
                 AttributeTypeBuilder<?> attribute = null;
                 if (isPrimaryKey || dependencies == null) {
-                    attributeNames.add(column);
-                    attributeColumns.add(column);
                     final String typeName = reflect.getString(Reflection.TYPE_NAME);
                     Class<?> type = analyzer.functions.toJavaType(reflect.getInt(Reflection.DATA_TYPE), typeName);
                     if (type == null) {
@@ -339,12 +332,14 @@ final class Table extends AbstractFeatureSet {
                              */
                             if (attribute != null) {
                                 attribute.setName(analyzer.nameFactory.createGenericName(null, "pk", column));
-                                attributeNames.set(attributeNames.size() - 1, attribute.getName().toString());
+                                colRef = colRef.as(attribute.getName().toString());
                                 attribute = null;
                             }
                         }
                     }
                 }
+
+                attributes.add(colRef);
             }
         }
         /*
@@ -420,9 +415,7 @@ final class Table extends AbstractFeatureSet {
         this.exportedKeys     = toArray(exportedKeys);
         this.primaryKeyClass  = primaryKeyClass;
         this.hasGeometry      = hasGeometry;
-        this.attributeNames   = attributeNames.toArray(new String[attributeNames.size()]);
-        this.attributeColumns = attributeColumns.equals(attributeNames) ? this.attributeNames
-                              : attributeColumns.toArray(new String[attributeColumns.size()]);
+        this.attributes = Collections.unmodifiableList(attributes);
     }
 
     /**
@@ -501,8 +494,8 @@ final class Table extends AbstractFeatureSet {
     @Debug
     final void appendTo(TreeTable.Node parent) {
         parent = Relation.newChild(parent, featureType.getName().toString());
-        for (final String attribute : attributeNames) {
-            TableReference.newChild(parent, attribute);
+        for (final ColumnRef attribute : attributes) {
+            TableReference.newChild(parent, attribute.getAttributeName());
         }
         appendAll(parent, importedKeys, " → ");
         appendAll(parent, exportedKeys, " ← ");
@@ -610,22 +603,10 @@ final class Table extends AbstractFeatureSet {
      */
     @Override
     public Stream<Feature> features(final boolean parallel) throws DataStoreException {
-        final AtomicReference<Connection> connectionRef = new AtomicReference<>();
-        final Stream<Feature> featureStream = Stream.generate(uncheck(() -> source.getConnection()))
-                .peek(connectionRef::set)
-                .flatMap(conn -> {
-                    try {
-                        final Features iter = features(conn, new ArrayList<>(), null);
-                        return StreamSupport.stream(iter, parallel).onClose(iter);
-                    } catch (SQLException | InternalDataStoreException e) {
-                        throw new BackingStoreException(e);
-                    }
-                })
-                .onClose(() -> closeRef(connectionRef));
-        return new CountOverload<>(featureStream);
+        return new StreamSQL(this);
     }
 
-    private void closeRef(final AtomicReference<Connection> ref) {
+    void closeRef(final AtomicReference<Connection> ref) {
         final Connection conn = ref.get();
         if (conn != null) {
             try {
@@ -646,45 +627,6 @@ final class Table extends AbstractFeatureSet {
     final Features features(final Connection connection, final List<Relation> following, final Relation noFollow)
             throws SQLException, InternalDataStoreException
     {
-        return new Features(this, connection, attributeNames, attributeColumns, importedKeys, exportedKeys, following, noFollow);
-    }
-
-    private class CountOverload<T> extends DecoratedStream<T> {
-
-        CountOverload(Stream<T> source) {
-            super(source);
-        }
-
-        @Override
-        public long count() {
-            try (Connection conn = Table.this.source.getConnection()) {
-                final String query = new SQLBuilder(conn.getMetaData(), true)
-                        .append("SELECT COUNT(")
-                        .appendIdentifier(attributeColumns[0])
-                        .append(')')
-                        .append(" FROM ")
-                        .appendIdentifier(name.catalog, name.schema, name.table)
-                        .toString();
-                try (final Statement st = conn.createStatement(); final ResultSet rs = st.executeQuery(query)) {
-                    if (rs.next()) {
-                        return rs.getLong(1);
-                    } else return 0;
-                }
-            } catch (SQLException e) {
-                throw new BackingStoreException("Cannot estimate feature set size using SQL COUNT query", e);
-            }
-        }
-    }
-
-    private static <T> Supplier<T> uncheck(final Callable<T> generator) {
-        return () -> {
-            try {
-                return generator.call();
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new BackingStoreException(e);
-            }
-        };
+        return new Features(this, connection, attributes, following, noFollow, false, -1, -1);
     }
 }

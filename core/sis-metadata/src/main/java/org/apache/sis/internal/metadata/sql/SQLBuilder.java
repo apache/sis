@@ -121,6 +121,17 @@ public class SQLBuilder {
     }
 
     /**
+     * Appends the given long.
+     *
+     * @param  n  the long to append.
+     * @return this builder, for method call chaining.
+     */
+    public final SQLBuilder append(final long n) {
+        buffer.append(n);
+        return this;
+    }
+
+    /**
      * Appends the given character.
      *
      * @param  c  the character to append.
