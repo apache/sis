@@ -72,6 +72,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotCreateFolderStore_1 = 43;
 
         /**
+         * Can not infer the feature type resulting from “{0}” filtering.
+         */
+        public static final short CanNotDeriveTypeFromFeature_1 = 55;
+
+        /**
          * Can not get metadata common to “{0}” files. The reason is: {1}
          */
         public static final short CanNotGetCommonMetadata_2 = 39;
