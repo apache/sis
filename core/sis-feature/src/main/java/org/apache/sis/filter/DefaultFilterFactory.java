@@ -445,7 +445,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyIsGreaterThan greater(final Expression expression1, final Expression expression2) {
-        return greater(expression1,expression2,false, MatchAction.ANY);
+        return greater(expression1, expression2, true, MatchAction.ANY);
     }
 
     /**
@@ -463,7 +463,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyIsGreaterThanOrEqualTo greaterOrEqual(final Expression expression1, final Expression expression2) {
-        return greaterOrEqual(expression1, expression2,false, MatchAction.ANY);
+        return greaterOrEqual(expression1, expression2, true, MatchAction.ANY);
     }
 
     /**
@@ -481,7 +481,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyIsLessThan less(final Expression expression1, final Expression expression2) {
-        return less(expression1, expression2, false, MatchAction.ANY);
+        return less(expression1, expression2, true, MatchAction.ANY);
     }
 
     /**
@@ -499,7 +499,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyIsLessThanOrEqualTo lessOrEqual(final Expression expression1, final Expression expression2) {
-        return lessOrEqual(expression1, expression2, false, MatchAction.ANY);
+        return lessOrEqual(expression1, expression2, true, MatchAction.ANY);
     }
 
     /**
@@ -527,7 +527,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     public PropertyIsLike like(final Expression expression, final String pattern,
             final String wildcard, final String singleChar, final String escape)
     {
-        return like(expression,pattern,wildcard,singleChar,escape,false);
+        return like(expression, pattern, wildcard, singleChar, escape, true);
     }
 
     /**
