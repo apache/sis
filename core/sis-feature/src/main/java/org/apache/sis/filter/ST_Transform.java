@@ -160,6 +160,10 @@ final class ST_Transform extends NamedFunction implements FeatureExpression {
     /**
      * Evaluates the first expression as a geometry object, transforms that geometry to the CRS given
      * by the second expression and returns the result.
+     *
+     * @param  value  the object from which to get a geometry.
+     * @return the transformed geometry, or {@code null} if the given object is not an instance of
+     *         a supported geometry library (JTS, ERSI, Java2D…).
      */
     @Override
     public Object evaluate(final Object value) {
@@ -178,7 +182,7 @@ final class ST_Transform extends NamedFunction implements FeatureExpression {
                 }
             }
             return Geometries.transform(geometry, targetCRS);
-        } catch (FactoryException | TransformException e) {
+        } catch (UnsupportedOperationException | FactoryException | TransformException e) {
             warning(e);
         }
         return null;

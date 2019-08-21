@@ -22,16 +22,13 @@ import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.util.ArgumentChecks;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.Point;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.expression.Expression;
-import org.opengis.util.FactoryException;
 
 
 /**
- * An expression which compute a geometry centroid.
- * This expression expects one arguments:
+ * An expression which computes the centroid of a geometry.
+ * This expression expects one argument:
  *
  * <ol class="verbose">
  *   <li>An expression returning a geometry object. The evaluated value shall be an instance of
@@ -48,7 +45,7 @@ final class ST_Centroid extends NamedFunction implements FeatureExpression {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -3993074123019061170L;
 
     /**
      * Name of this function as defined by SQL/MM standard.
@@ -60,9 +57,8 @@ final class ST_Centroid extends NamedFunction implements FeatureExpression {
      * that the given array is non-null, has been cloned and does not contain null elements.
      *
      * @throws IllegalArgumentException if the number of arguments is not equal to 1.
-     * @throws FactoryException if CRS can not be constructed from the second expression.
      */
-    ST_Centroid(final Expression[] parameters) throws FactoryException {
+    ST_Centroid(final Expression[] parameters) {
         super(parameters);
         ArgumentChecks.ensureExpectedCount("parameters", 1, parameters.length);
     }
@@ -76,20 +72,12 @@ final class ST_Centroid extends NamedFunction implements FeatureExpression {
     }
 
     /**
-     * Evaluates the first expression as a geometry object, transforms that geometry to the CRS given
-     * by the second expression and returns the result.
+     * Evaluates the first expression as a geometry object, gets the centroid of that geometry and
+     * returns the result. If the geometry is not a supported implementation, returns {@code null}.
      */
     @Override
     public Object evaluate(final Object value) {
-        Object geometry = parameters.get(0).evaluate(value);
-        if (geometry instanceof Geometry) {
-            final Geometry jts = (Geometry) geometry;
-            final Point centroid = jts.getCentroid();
-            centroid.setSRID(jts.getSRID());
-            centroid.setUserData(jts.getUserData());
-            return centroid;
-        }
-        return null;
+        return Geometries.getCentroid(parameters.get(0).evaluate(value));
     }
 
     /**

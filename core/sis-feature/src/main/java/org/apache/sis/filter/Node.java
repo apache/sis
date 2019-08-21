@@ -165,6 +165,8 @@ abstract class Node implements Serializable {
      * This method assumes that the warning occurred in an {@code evaluate(…)} method.
      *
      * @todo Consider defining a {@code Context} class providing, among other information, listeners where to report warnings.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-460">SIS-460</a>
      */
     final void warning(final Exception e) {
         Logging.recoverableException(Logging.getLogger(Loggers.FILTER), getClass(), "evaluate", e);

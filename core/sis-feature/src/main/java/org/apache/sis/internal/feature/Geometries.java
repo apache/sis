@@ -23,9 +23,11 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.UnsupportedImplementationException;
+import org.apache.sis.util.Classes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.math.Vector;
@@ -243,6 +245,29 @@ public abstract class Geometries<G> {
     }
 
     /**
+     * If the given geometry is the type supported by this {@code Geometries} instance, returns its
+     * centroid or center as a point instance of the same library. Otherwise returns {@code null}.
+     */
+    abstract Object tryGetCentroid(Object geometry);
+
+    /**
+     * If the given object is one of the recognized types, returns its mathematical centroid
+     * (if possible) or center (as a fallback) as a point instance of the same library.
+     * Otherwise returns {@code null}.
+     *
+     * @param  geometry  the geometry from which to get the centroid, or {@code null}.
+     * @return the centroid of the given geometry, or {@code null} if the given object
+     *         is not a recognized geometry.
+     */
+    public static Object getCentroid(final Object geometry) {
+        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+            Object center = g.tryGetCentroid(geometry);
+            if (center != null) return center;
+        }
+        return null;
+    }
+
+    /**
      * If the given geometry is the type supported by this {@code Geometries} instance,
      * returns a short string representation of the class name. Otherwise returns {@code null}.
      */
@@ -347,7 +372,8 @@ public abstract class Geometries<G> {
      *
      * @param  paths  the points or polylines to merge in a single polyline object.
      * @return the merged polyline, or {@code null} if the given iterator has no element.
-     * @throws ClassCastException if not all elements in the given iterator are instances of the same library.
+     * @throws ClassCastException if collection elements are not instances of a supported library,
+     *         or not all elements are instances of the same library.
      */
     public static Object mergePolylines(final Iterator<?> paths) {
         while (paths.hasNext()) {
@@ -359,8 +385,40 @@ public abstract class Geometries<G> {
                         return merged;
                     }
                 }
-                throw unsupported(2);
+                /*
+                 * Use the same exception type than `tryMergePolylines(…)` implementations.
+                 * Also the same type than exception occurring elsewhere in the code of the
+                 * caller (GroupAsPolylineOperation).
+                 */
+                throw new ClassCastException(unsupportedImplementation(first));
             }
+        }
+        return null;
+    }
+
+    /**
+     * If the given geometry is the type supported by this {@code Geometries} instance, computes
+     * its buffer as a geometry instance of the same library. Otherwise returns {@code null}.
+     */
+    Object tryBuffer(Object geometry, double distance) {
+        if (rootClass.isInstance(geometry)) {
+            throw new UnsupportedImplementationException(unsupported("buffer"));
+        }
+        return null;
+    }
+
+    /**
+     * If the given object is one of the recognized types, computes its buffer as a geometry instance
+     * of the same library. Otherwise returns {@code null}.
+     *
+     * @param  geometry  the geometry from which to compute a buffer, or {@code null}.
+     * @param  distance  the buffer distance in the CRS of the geometry object.
+     * @return the buffer of the given geometry, or {@code null} if the given object is not recognized.
+     */
+    public static Object buffer(final Object geometry, final double distance) {
+        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+            Object center = g.tryBuffer(geometry, distance);
+            if (center != null) return center;
         }
         return null;
     }
@@ -371,8 +429,8 @@ public abstract class Geometries<G> {
      * Exactly one of {@code operation} and {@code targetCRS} shall be non-null. If operation is
      * null and geometry has no Coordinate Reference System, a {@link TransformException} is thrown.
      *
-     * <p>Current default implementation returns {@code null} because current Apache SIS implementation
-     * supports geometry transformations only with JTS geometries.</p>
+     * <p>Default implementation throws {@link UnsupportedImplementationException} because current
+     * Apache SIS implementation supports geometry transformations only with JTS geometries.</p>
      *
      * @param  geometry   the geometry to transform.
      * @param  operation  the coordinate operation to apply, or {@code null}.
@@ -384,6 +442,9 @@ public abstract class Geometries<G> {
     Object tryTransform(Object geometry, CoordinateOperation operation, CoordinateReferenceSystem targetCRS)
             throws FactoryException, TransformException
     {
+        if (rootClass.isInstance(geometry)) {
+            throw new UnsupportedImplementationException(unsupported("transform"));
+        }
         return null;
     }
 
@@ -392,13 +453,15 @@ public abstract class Geometries<G> {
      * If the geometry or the operation is null, then the geometry is returned unchanged.
      * If the geometry uses a different CRS than the source CRS of the given operation,
      * then a new operation to the target CRS will be used.
+     * If the given object is not a known implementation, then this method returns {@code null}.
      *
      * <p>This method is preferred to {@link #transform(Object, CoordinateReferenceSystem)}
      * when possible because not all geometry libraries store the CRS of their objects.</p>
      *
      * @param  geometry   the geometry to transform, or {@code null}.
      * @param  operation  the coordinate operation to apply, or {@code null}.
-     * @return the transformed geometry, or the same geometry if it is already in target CRS.
+     * @return the transformed geometry (may be the same geometry instance), or {@code null}.
+     * @throws UnsupportedImplementationException if this operation is not supported for the given geometry.
      * @throws FactoryException if transformation to the target CRS can not be constructed.
      * @throws TransformException if the given geometry can not be transformed.
      */
@@ -417,8 +480,7 @@ public abstract class Geometries<G> {
                 }
             }
             if (!operation.getMathTransform().isIdentity()) {
-                final int dimension = ReferencingUtilities.getDimension(operation.getTargetCRS());
-                throw unsupported(dimension != 0 ? dimension : 2);
+                return null;
             }
         }
         return geometry;
@@ -428,6 +490,7 @@ public abstract class Geometries<G> {
      * Transforms the given geometry to the specified Coordinate Reference System (CRS).
      * If the given CRS or the given geometry is null, the geometry is returned unchanged.
      * If the geometry has no Coordinate Reference System, a {@link TransformException} is thrown.
+     * If the given object is not a known implementation, then this method returns {@code null}.
      *
      * <p>Consider using {@link #transform(Object, CoordinateOperation)} instead of this method
      * as much as possible, both for performance reasons and because not all geometry libraries
@@ -435,7 +498,8 @@ public abstract class Geometries<G> {
      *
      * @param  geometry   the geometry to transform, or {@code null}.
      * @param  targetCRS  the target coordinate reference system, or {@code null}.
-     * @return the transformed geometry, or the same geometry if it is already in target CRS.
+     * @return the transformed geometry (may be the same geometry instance), or {@code null}.
+     * @throws UnsupportedImplementationException if this operation is not supported for the given geometry.
      * @throws FactoryException if transformation to the target CRS can not be constructed.
      * @throws TransformException if the given geometry has no CRS or can not be transformed.
      *
@@ -451,18 +515,35 @@ public abstract class Geometries<G> {
                     return result;
                 }
             }
-            final int dimension = ReferencingUtilities.getDimension(targetCRS);
-            throw unsupported(dimension != 0 ? dimension : 2);
+            return null;
         }
         return geometry;
     }
 
     /**
-     * Returns an error message for an unsupported geometry object.
+     * Returns an error message for an unsupported operation. This error message is used by non-abstract methods
+     * in {@code Geometries} subclasses, after we identified the geometry library implementation to use but that
+     * library does not provided the required functionality.
+     */
+    static String unsupported(final String operation) {
+        return Errors.format(Errors.Keys.UnsupportedOperation_1, operation);
+    }
+
+    /**
+     * Returns an error message for an unsupported number of dimensions in a geometry object.
      *
      * @param  dimension  number of dimensions (2 or 3) requested for the geometry object.
      */
-    static UnsupportedOperationException unsupported(final int dimension) {
-        return new UnsupportedOperationException(Resources.format(Resources.Keys.UnsupportedGeometryObject_1, dimension));
+    static String unsupported(final int dimension) {
+        return Resources.format(Resources.Keys.UnsupportedGeometryObject_1, dimension);
+    }
+
+    /**
+     * Returns an error message for an unsupported geometry object implementation.
+     *
+     * @param  geometry  the unsupported object.
+     */
+    private static String unsupportedImplementation(final Object geometry) {
+        return Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(geometry));
     }
 }

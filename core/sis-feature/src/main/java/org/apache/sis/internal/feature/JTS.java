@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -158,6 +159,40 @@ final class JTS extends Geometries<Geometry> {
     }
 
     /**
+     * Copies coordinate reference system information from the given source geometry to the target geometry.
+     * Current implementation copies only CRS information, but future implementations could copy some other
+     * values if they may apply to the target geometry as well.
+     */
+    private static void copyMetadata(final Geometry source, final Geometry target) {
+        target.setSRID(source.getSRID());
+        Object crs = source.getUserData();
+        if (!(crs instanceof CoordinateReferenceSystem)) {
+            if (!(crs instanceof Map<?,?>)) {
+                return;
+            }
+            crs = ((Map<?,?>) crs).get(org.apache.sis.internal.feature.jts.JTS.CRS_KEY);
+            if (!(crs instanceof CoordinateReferenceSystem)) {
+                return;
+            }
+        }
+        target.setUserData(crs);
+    }
+
+    /**
+     * If the given object is a JTS geometry, returns its centroid. Otherwise returns {@code null}.
+     */
+    @Override
+    final Object tryGetCentroid(final Object geometry) {
+        if (geometry instanceof Geometry) {
+            final Geometry jts = (Geometry) geometry;
+            final Point centroid = jts.getCentroid();
+            copyMetadata(jts, centroid);
+            return centroid;
+        }
+        return null;
+    }
+
+    /**
      * Creates a two-dimensional point from the given coordinate.
      *
      * @return the point for the given coordinate values.
@@ -171,13 +206,15 @@ final class JTS extends Geometries<Geometry> {
      * Creates a polyline from the given coordinate values.
      * Each {@link Double#NaN} coordinate value starts a new path.
      *
+     * @param  dimension  the number of dimensions (2 or 3).
      * @return the geometric object for the given points.
+     * @throws UnsupportedOperationException if this operation is not implemented for the given number of dimensions.
      */
     @Override
     public Geometry createPolyline(final int dimension, final Vector... coords) {
         final boolean is3D = (dimension == 3);
         if (!is3D && dimension != 2) {
-            throw unsupported(dimension);
+            throw new UnsupportedOperationException(unsupported(dimension));
         }
         final List<Coordinate> coordinates = new ArrayList<>(32);
         final List<LineString> lines = new ArrayList<>();
@@ -282,6 +319,20 @@ add:    for (;;) {
         }
         toLineString(coordinates, lines);
         return toGeometry(lines);
+    }
+
+    /**
+     * If the given geometry is a JTS geometry, computes its buffer. Otherwise returns {@code null}.
+     */
+    @Override
+    Object tryBuffer(final Object geometry, final double distance) {
+        if (geometry instanceof Geometry) {
+            final Geometry jts = (Geometry) geometry;
+            final Geometry buffer = jts.buffer(distance);
+            copyMetadata(jts, buffer);
+            return buffer;
+        }
+        return null;
     }
 
     /**
