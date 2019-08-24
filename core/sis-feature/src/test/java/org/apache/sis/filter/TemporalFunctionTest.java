@@ -16,18 +16,19 @@
  */
 package org.apache.sis.filter;
 
-import static org.apache.sis.test.Assert.*;
+import org.opengis.filter.FilterFactory;
+import org.opengis.filter.temporal.BinaryTemporalOperator;
 import org.apache.sis.test.TestCase;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.opengis.filter.Filter;
-import org.opengis.filter.FilterFactory2;
+
+import static org.apache.sis.test.Assert.*;
 
 
 /**
  * Tests {@link TemporalFunction} implementations.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -36,122 +37,192 @@ public final strictfp class TemporalFunctionTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final FilterFactory2 factory = new DefaultFilterFactory();
+    private final FilterFactory factory;
 
     /**
-     * Tests "After" (construction, evaluation, serialization, equality).
+     * The filter to test. This field shall be assigned by each {@code testFoo()} method by invoking
+     * a {@link #factory} method with {@link #expression1} and {@link #expression2} in arguments.
      */
-    @Ignore
-    @Test
-    public void testAfter() {
+    private BinaryTemporalOperator filter;
+
+    /**
+     * The expression to test. They are the arguments to be given to {@link #factory} method.
+     * Each expression will return a period made of {@link PeriodLiteral#begin} and {@link PeriodLiteral#end}.
+     * Date pattern is {@code "yyyy-MM-dd HH:mm:ss"} in UTC timezone.
+     */
+    private final PeriodLiteral expression1, expression2;
+
+    /**
+     * Creates a new test case.
+     */
+    public TemporalFunctionTest() {
+        factory = new DefaultFilterFactory();
+        expression1 = new PeriodLiteral();
+        expression2 = new PeriodLiteral();
+        expression1.begin = expression2.begin = "2010-04-20 10:00:00";
+        expression1.end   = expression2.end   = "2010-04-25 15:00:00";
+        expression1.begin = expression2.begin = "2010-04-20 10:00:00";
+        expression1.end   = expression2.end   = "2010-04-25 15:00:00";
     }
 
     /**
-     * Tests "AnyInteracts" (construction, evaluation, serialization, equality).
+     * Performs some validation on newly created filter.
+     *
+     * @param  name  expected filter name.
      */
-    @Ignore
-    @Test
-    public void testAnyInteracts() {
+    private void validate(final String name) {
+        assertInstanceOf("Expected SIS implementation.", TemporalFunction.class, filter);
+        final TemporalFunction f = ((TemporalFunction) filter);
+        assertEquals("name", name, f.getName());
+        assertSame("expression1", expression1, f.expression1);
+        assertSame("expression2", expression2, f.expression2);
+        assertSerializedEquals(filter);
     }
 
     /**
-     * Tests "Before" (construction, evaluation, serialization, equality).
+     * Evaluates the filter.
      */
-    @Ignore
-    @Test
-    public void testBefore() {
-    }
-
-    /**
-     * Tests "Begins" (construction, evaluation, serialization, equality).
-     */
-    @Ignore
-    @Test
-    public void testBegins() {
-    }
-
-    /**
-     * Tests "BegunBy" (construction, evaluation, serialization, equality).
-     */
-    @Ignore
-    @Test
-    public void testBegunBy() {
-    }
-
-    /**
-     * Tests "During" (construction, evaluation, serialization, equality).
-     */
-    @Ignore
-    @Test
-    public void testDuring() {
-    }
-
-    /**
-     * Tests "EndedBy" (construction, evaluation, serialization, equality).
-     */
-    @Ignore
-    @Test
-    public void testEndedBy() {
-    }
-
-    /**
-     * Tests "Ends" (construction, evaluation, serialization, equality).
-     */
-    @Ignore
-    @Test
-    public void testEnds() {
-    }
-
-    /**
-     * Tests "Meets" (construction, evaluation, serialization, equality).
-     */
-    @Ignore
-    @Test
-    public void testMeets() {
-    }
-
-    /**
-     * Tests "MetBy" (construction, evaluation, serialization, equality).
-     */
-    @Ignore
-    @Test
-    public void testMetBy() {
-    }
-
-    /**
-     * Tests "OverlappedBy" (construction, evaluation, serialization, equality).
-     */
-    @Ignore
-    @Test
-    public void testOverlappedBy() {
-    }
-
-    /**
-     * Tests "TContains" (construction, evaluation, serialization, equality).
-     */
-    @Ignore
-    @Test
-    public void testTContains() {
+    private boolean evaluate() {
+        return filter.evaluate(null);
     }
 
     /**
      * Tests "TEquals" (construction, evaluation, serialization, equality).
      */
-    @Ignore
     @Test
-    public void testTEquals() {
+    public void testEquals() {
+        filter = factory.tequals(expression1, expression2);
+        validate("TEquals");
+        assertTrue(evaluate());
+    }
+
+    /**
+     * Tests "Before" (construction, evaluation, serialization, equality).
+     */
+    @Test
+    public void testBefore() {
+        filter = factory.before(expression1, expression2);
+        validate("Before");
+        assertFalse(evaluate());
+    }
+
+    /**
+     * Tests "After" (construction, evaluation, serialization, equality).
+     */
+    @Test
+    public void testAfter() {
+        filter = factory.after(expression1, expression2);
+        validate("After");
+        assertFalse(evaluate());
+    }
+
+    /**
+     * Tests "Begins" (construction, evaluation, serialization, equality).
+     */
+    @Test
+    public void testBegins() {
+        filter = factory.begins(expression1, expression2);
+        validate("Begins");
+        assertFalse(evaluate());
+    }
+
+    /**
+     * Tests "Ends" (construction, evaluation, serialization, equality).
+     */
+    @Test
+    public void testEnds() {
+        filter = factory.ends(expression1, expression2);
+        validate("Ends");
+        assertFalse(evaluate());
+    }
+
+    /**
+     * Tests "BegunBy" (construction, evaluation, serialization, equality).
+     */
+    @Test
+    public void testBegunBy() {
+        filter = factory.begunBy(expression1, expression2);
+        validate("BegunBy");
+        assertFalse(evaluate());
+    }
+
+    /**
+     * Tests "EndedBy" (construction, evaluation, serialization, equality).
+     */
+    @Test
+    public void testEndedBy() {
+        filter = factory.endedBy(expression1, expression2);
+        validate("EndedBy");
+        assertFalse(evaluate());
+    }
+
+    /**
+     * Tests "Meets" (construction, evaluation, serialization, equality).
+     */
+    @Test
+    public void testMeets() {
+        filter = factory.meets(expression1, expression2);
+        validate("Meets");
+        assertFalse(evaluate());
+    }
+
+    /**
+     * Tests "MetBy" (construction, evaluation, serialization, equality).
+     */
+    @Test
+    public void testMetBy() {
+        filter = factory.metBy(expression1, expression2);
+        validate("MetBy");
+        assertFalse(evaluate());
+    }
+
+    /**
+     * Tests "During" (construction, evaluation, serialization, equality).
+     */
+    @Test
+    public void testDuring() {
+        filter = factory.during(expression1, expression2);
+        validate("During");
+        assertFalse(evaluate());
+    }
+
+    /**
+     * Tests "TContains" (construction, evaluation, serialization, equality).
+     */
+    @Test
+    public void testContains() {
+        filter = factory.tcontains(expression1, expression2);
+        validate("TContains");
+        assertFalse(evaluate());
     }
 
     /**
      * Tests "TOverlaps" (construction, evaluation, serialization, equality).
      */
-    @Ignore
     @Test
-    public void testTOverlaps() {
+    public void testOverlaps() {
+        filter = factory.toverlaps(expression1, expression2);
+        validate("TOverlaps");
+        assertFalse(evaluate());
     }
 
-    private static void assertFilter(boolean expected, Filter op) {
-        assertEquals(expected, op.evaluate(null));
-        assertSerializedEquals(op);
+    /**
+     * Tests "OverlappedBy" (construction, evaluation, serialization, equality).
+     */
+    @Test
+    public void testOverlappedBy() {
+        filter = factory.overlappedBy(expression1, expression2);
+        validate("OverlappedBy");
+        assertFalse(evaluate());
+    }
+
+    /**
+     * Tests "AnyInteracts" (construction, evaluation, serialization, equality).
+     */
+    @Test
+    public void testAnyInteracts() {
+        filter = factory.anyInteracts(expression1, expression2);
+        validate("AnyInteracts");
+        assertTrue(evaluate());
     }
 }

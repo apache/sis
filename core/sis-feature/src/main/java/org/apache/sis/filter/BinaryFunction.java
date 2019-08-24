@@ -77,6 +77,9 @@ abstract class BinaryFunction extends Node {
     /**
      * Returns the first of the two expressions to be used by this function.
      * This is the value specified at construction time.
+     *
+     * @see org.opengis.filter.BinaryComparisonOperator#getExpression1()
+     * @see org.opengis.filter.temporal.BinaryTemporalOperator#getExpression1()
      */
     public final Expression getExpression1() {
         return expression1;
@@ -85,6 +88,9 @@ abstract class BinaryFunction extends Node {
     /**
      * Returns the second of the two expressions to be used by this function.
      * This is the value specified at construction time.
+     *
+     * @see org.opengis.filter.BinaryComparisonOperator#getExpression1()
+     * @see org.opengis.filter.temporal.BinaryTemporalOperator#getExpression2()
      */
     public final Expression getExpression2() {
         return expression2;
@@ -102,10 +108,13 @@ abstract class BinaryFunction extends Node {
     /**
      * Evaluates the expression for producing a result of numeric type.
      * This method delegates to one of the {@code applyAs(…)} methods.
+     * If no {@code applyAs(…)} implementations can return null values,
+     * this this method never return {@code null}.
      *
      * @param  left   the left operand. Can not be null.
      * @param  right  the right operand. Can not be null.
      * @return result of this function applied on the two given operands.
+     *         May be {@code null} only if an {@code applyAs(…)} implementation returned a null value.
      * @throws ArithmeticException if the operation overflows the capacity of the type used.
      */
     protected final Number apply(final Number left, final Number right) {
@@ -139,6 +148,7 @@ abstract class BinaryFunction extends Node {
      * Calculates this function using given operands of {@code long} primitive type. If this function is a
      * filter, then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
      * Otherwise the result is usually a {@link Long}, except for division which may produce a floating point number.
+     * This method may return {@code null} if the operation can not apply on numbers.
      *
      * @throws ArithmeticException if the operation overflows the 64 bits integer capacity.
      */
@@ -148,6 +158,7 @@ abstract class BinaryFunction extends Node {
      * Calculates this function using given operands of {@code double} primitive type. If this function is a
      * filter, then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
      * Otherwise the result is usually a {@link Double}.
+     * This method may return {@code null} if the operation can not apply on numbers.
      */
     protected abstract Number applyAsDouble(double left, double right);
 
@@ -155,6 +166,7 @@ abstract class BinaryFunction extends Node {
      * Calculates this function using given operands of {@code Fraction} type. If this function is a filter,
      * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
      * Otherwise the result is usually a {@link Fraction}.
+     * This method may return {@code null} if the operation can not apply on numbers.
      */
     protected abstract Number applyAsFraction(Fraction left, Fraction right);
 
@@ -162,6 +174,7 @@ abstract class BinaryFunction extends Node {
      * Calculates this function using given operands of {@code BigInteger} type. If this function is a filter,
      * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
      * Otherwise the result is usually a {@link BigInteger}.
+     * This method may return {@code null} if the operation can not apply on numbers.
      */
     protected abstract Number applyAsInteger(BigInteger left, BigInteger right);
 
@@ -169,6 +182,7 @@ abstract class BinaryFunction extends Node {
      * Calculates this function using given operands of {@code BigDecimal} type. If this function is a filter,
      * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
      * Otherwise the result is usually a {@link BigDecimal}.
+     * This method may return {@code null} if the operation can not apply on numbers.
      */
     protected abstract Number applyAsDecimal(BigDecimal left, BigDecimal right);
 

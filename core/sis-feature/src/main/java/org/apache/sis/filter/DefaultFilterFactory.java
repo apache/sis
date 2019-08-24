@@ -652,7 +652,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public TContains tcontains(Expression expression1, Expression expression2) {
-        return new TemporalFunction.TContains(expression1, expression2);
+        return new TemporalFunction.Contains(expression1, expression2);
     }
 
     /**
@@ -660,7 +660,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public TEquals tequals(Expression expression1, Expression expression2) {
-        return new TemporalFunction.TEquals(expression1, expression2);
+        return new TemporalFunction.Equals(expression1, expression2);
     }
 
     /**
@@ -668,7 +668,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public TOverlaps toverlaps(Expression expression1, Expression expression2) {
-        return new TemporalFunction.TOverlaps(expression1, expression2);
+        return new TemporalFunction.Overlaps(expression1, expression2);
     }
 
     // EXPRESSIONS /////////////////////////////////////////////////////////////

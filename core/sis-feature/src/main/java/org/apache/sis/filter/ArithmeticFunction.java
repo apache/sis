@@ -133,7 +133,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
      * The "Add" (+) expression.
      */
     static final class Add extends ArithmeticFunction implements org.opengis.filter.expression.Add {
-        /** For cross-version compatibility. */
+        /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 5445433312445869201L;
 
         /** Description of results of the {@value #NAME} expression. */
@@ -156,7 +156,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         @Override protected Number applyAsInteger (BigInteger left, BigInteger right) {return left.add(right);}
         @Override protected Number applyAsLong    (long       left, long       right) {return Math.addExact(left, right);}
 
-        /** Implementation of the visitor pattern. */
+        /** Implementation of the visitor pattern (not used by Apache SIS). */
         @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
             return visitor.visit(this, extraData);
         }
@@ -167,7 +167,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
      * The "Sub" (−) expression.
      */
     static final class Subtract extends ArithmeticFunction implements org.opengis.filter.expression.Subtract {
-        /** For cross-version compatibility. */
+        /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 3048878022726271508L;
 
         /** Description of results of the {@value #NAME} expression. */
@@ -190,7 +190,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         @Override protected Number applyAsInteger (BigInteger left, BigInteger right) {return left.subtract(right);}
         @Override protected Number applyAsLong    (long       left, long       right) {return Math.subtractExact(left, right);}
 
-        /** Implementation of the visitor pattern. */
+        /** Implementation of the visitor pattern (not used by Apache SIS). */
         @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
             return visitor.visit(this, extraData);
         }
@@ -201,7 +201,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
      * The "Mul" (×) expression.
      */
     static final class Multiply extends ArithmeticFunction implements org.opengis.filter.expression.Multiply {
-        /** For cross-version compatibility. */
+        /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -1300022614832645625L;
 
         /** Description of results of the {@value #NAME} expression. */
@@ -224,7 +224,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         @Override protected Number applyAsInteger (BigInteger left, BigInteger right) {return left.multiply(right);}
         @Override protected Number applyAsLong    (long       left, long       right) {return Math.multiplyExact(left, right);}
 
-        /** Implementation of the visitor pattern. */
+        /** Implementation of the visitor pattern (not used by Apache SIS). */
         @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
             return visitor.visit(this, extraData);
         }
@@ -235,7 +235,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
      * The "Div" (÷) expression.
      */
     static final class Divide extends ArithmeticFunction implements org.opengis.filter.expression.Divide {
-        /** For cross-version compatibility. */
+        /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -7709291845568648891L;
 
         /** Description of results of the {@value #NAME} expression. */
@@ -273,7 +273,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
             }
         }
 
-        /** Implementation of the visitor pattern. */
+        /** Implementation of the visitor pattern (not used by Apache SIS). */
         @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
             return visitor.visit(this, extraData);
         }
