@@ -66,15 +66,15 @@ public final strictfp class TemporalFunctionTest extends TestCase {
 
     /**
      * Performs some validation on newly created filter.
+     * The {@link #filter} field must be initialized before this method is invoked.
      *
      * @param  name  expected filter name.
      */
     private void validate(final String name) {
         assertInstanceOf("Expected SIS implementation.", TemporalFunction.class, filter);
-        final TemporalFunction f = ((TemporalFunction) filter);
-        assertEquals("name", name, f.getName());
-        assertSame("expression1", expression1, f.expression1);
-        assertSame("expression2", expression2, f.expression2);
+        assertEquals("name", name, ((TemporalFunction) filter).getName());
+        assertSame("expression1", expression1, filter.getExpression1());
+        assertSame("expression2", expression2, filter.getExpression2());
         assertSerializedEquals(filter);
     }
 
@@ -93,6 +93,8 @@ public final strictfp class TemporalFunctionTest extends TestCase {
         filter = factory.tequals(expression1, expression2);
         validate("TEquals");
         assertTrue(evaluate());
+
+        // Break the "self.end = other.end" condition.
         expression1.end++;
         assertFalse(evaluate());
     }
@@ -105,9 +107,13 @@ public final strictfp class TemporalFunctionTest extends TestCase {
         filter = factory.before(expression1, expression2);
         validate("Before");
         assertFalse(evaluate());
+
+        // Move before expression 2.
         expression1.begin -= 10 * MILLISECONDS_PER_DAY;
         expression1.end   -= 10 * MILLISECONDS_PER_DAY;
         assertTrue(evaluate());
+
+        // Break the "self.end < other.begin" condition.
         expression1.end = expression2.begin;
         assertFalse(evaluate());
     }
@@ -120,9 +126,13 @@ public final strictfp class TemporalFunctionTest extends TestCase {
         filter = factory.after(expression1, expression2);
         validate("After");
         assertFalse(evaluate());
+
+        // Move after expression 2.
         expression1.begin += 10 * MILLISECONDS_PER_DAY;
         expression1.end   += 10 * MILLISECONDS_PER_DAY;
         assertTrue(evaluate());
+
+        // Break the "self.begin > other.end" condition.
         expression1.begin = expression2.end;
         assertFalse(evaluate());
     }
@@ -135,8 +145,12 @@ public final strictfp class TemporalFunctionTest extends TestCase {
         filter = factory.begins(expression1, expression2);
         validate("Begins");
         assertFalse(evaluate());
+
+        // End before ending of expression 2.
         expression1.end--;
         assertTrue(evaluate());
+
+        // Break the "self.begin = other.begin" condition.
         expression1.begin++;
         assertFalse(evaluate());
     }
@@ -149,8 +163,12 @@ public final strictfp class TemporalFunctionTest extends TestCase {
         filter = factory.ends(expression1, expression2);
         validate("Ends");
         assertFalse(evaluate());
+
+        // Begin after beginning of expression 2.
         expression1.begin++;
         assertTrue(evaluate());
+
+        // Break the "self.end = other.end" condition.
         expression1.end--;
         assertFalse(evaluate());
     }
@@ -163,8 +181,12 @@ public final strictfp class TemporalFunctionTest extends TestCase {
         filter = factory.begunBy(expression1, expression2);
         validate("BegunBy");
         assertFalse(evaluate());
+
+        // End after ending of expression 2.
         expression1.end++;
         assertTrue(evaluate());
+
+        // Break the "self.begin = other.begin" condition.
         expression1.begin--;
         assertFalse(evaluate());
     }
@@ -177,8 +199,12 @@ public final strictfp class TemporalFunctionTest extends TestCase {
         filter = factory.endedBy(expression1, expression2);
         validate("EndedBy");
         assertFalse(evaluate());
+
+        // Begin before beginning of expression 2.
         expression1.begin--;
         assertTrue(evaluate());
+
+        // Break the "self.end = other.end" condition.
         expression1.end++;
         assertFalse(evaluate());
     }
@@ -191,9 +217,13 @@ public final strictfp class TemporalFunctionTest extends TestCase {
         filter = factory.meets(expression1, expression2);
         validate("Meets");
         assertFalse(evaluate());
+
+        // Move before expression 2.
         expression1.begin -= 10 * MILLISECONDS_PER_DAY;
         expression1.end   -= 10 * MILLISECONDS_PER_DAY;
         assertFalse(evaluate());
+
+        // Met the "self.end = other.begin" condition.
         expression1.end = expression2.begin;
         assertTrue(evaluate());
     }
@@ -206,9 +236,13 @@ public final strictfp class TemporalFunctionTest extends TestCase {
         filter = factory.metBy(expression1, expression2);
         validate("MetBy");
         assertFalse(evaluate());
+
+        // Move after expression 2.
         expression1.begin += 10 * MILLISECONDS_PER_DAY;
         expression1.end   += 10 * MILLISECONDS_PER_DAY;
         assertFalse(evaluate());
+
+        // Met the "self.begin = other.end" condition.
         expression1.begin = expression2.end;
         assertTrue(evaluate());
     }
@@ -221,9 +255,13 @@ public final strictfp class TemporalFunctionTest extends TestCase {
         filter = factory.during(expression1, expression2);
         validate("During");
         assertFalse(evaluate());
+
+        // Shrink inside expression 2.
         expression1.begin++;
         expression1.end--;
         assertTrue(evaluate());
+
+        // Break the "self.end < other.end" condition.
         expression1.end += 2;
         assertFalse(evaluate());
     }
@@ -236,9 +274,13 @@ public final strictfp class TemporalFunctionTest extends TestCase {
         filter = factory.tcontains(expression1, expression2);
         validate("TContains");
         assertFalse(evaluate());
+
+        // Expand to encompass expression 2.
         expression1.begin--;
         expression1.end++;
         assertTrue(evaluate());
+
+        // Break the "self.end > other.end" condition.
         expression1.end -= 2;
         assertFalse(evaluate());
     }
@@ -251,9 +293,13 @@ public final strictfp class TemporalFunctionTest extends TestCase {
         filter = factory.toverlaps(expression1, expression2);
         validate("TOverlaps");
         assertFalse(evaluate());
+
+        // Translate to overlap left part of expression 2.
         expression1.begin--;
         expression1.end--;
         assertTrue(evaluate());
+
+        // Break the "self.end < other.end" condition.
         expression1.end += 2;
         assertFalse(evaluate());
     }
@@ -266,9 +312,13 @@ public final strictfp class TemporalFunctionTest extends TestCase {
         filter = factory.overlappedBy(expression1, expression2);
         validate("OverlappedBy");
         assertFalse(evaluate());
+
+        // Translate to overlap right part of expression 2.
         expression1.begin++;
         expression1.end++;
         assertTrue(evaluate());
+
+        // Break the "self.end > other.end" condition.
         expression1.end -= 2;
         assertFalse(evaluate());
     }
