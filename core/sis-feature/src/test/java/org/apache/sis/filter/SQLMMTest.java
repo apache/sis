@@ -16,159 +16,185 @@
  */
 package org.apache.sis.filter;
 
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.test.TestCase;
-import org.junit.Assert;
-import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
-import org.opengis.filter.FilterFactory2;
+import org.opengis.filter.FilterFactory;
 import org.opengis.filter.expression.Function;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.opengis.test.Assert.*;
 
 
 /**
  * Tests {@link SQLMM} functions implementations.
+ * Current implementation tests Java Topology Suite (JTS) implementation only.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public class SQLMMTest extends TestCase {
+public final strictfp class SQLMMTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final FilterFactory2 factory = new DefaultFilterFactory();
-    private final GeometryFactory gf = new GeometryFactory();
+    private final FilterFactory factory;
 
     /**
-     * Test SQL/MM ST_Transform function.
+     * The factory to use for creating Java Topology Suite (JTS) objects.
      */
-    @Test
-    public void ST_TransformTest() {
+    private final GeometryFactory geometryFactory;
 
-        CoordinateReferenceSystem inCrs = CommonCRS.WGS84.normalizedGeographic();
-        CoordinateReferenceSystem outCrs = CommonCRS.WGS84.geographic();
+    /**
+     * Creates a new test case.
+     */
+    public SQLMMTest() {
+        factory = new DefaultFilterFactory();
+        geometryFactory = new GeometryFactory();
+    }
 
-        //test invalid
+    /**
+     * Verifies that attempts to create a function of the given name fail if no argument is provided.
+     */
+    private void assertRequireArguments(final String functionName) {
         try {
-            factory.function("ST_Transform");
-            Assert.fail("Creation with no argument should fail");
+            factory.function(functionName);
+            fail("Creation with no argument should fail");
         } catch (IllegalArgumentException ex) {
-            //ok
+            final String message = ex.getMessage();
+            assertTrue(message, message.contains("parameters"));
         }
+    }
 
-        //create a test feature
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.setName("test");
-        ftb.addAttribute(Point.class).setName("geom").setCRS(inCrs);
+    /**
+     * Wraps the given geometry in a feature object. The geometry will be stored in a property named {@code "geom"}.
+     *
+     * @param  geometry  the geometry to wrap in a feature.
+     * @param  crs       the coordinate reference system to assign to the geometry.
+     */
+    private static Feature wrapInFeature(final Geometry geometry, final CoordinateReferenceSystem crs) {
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName("test");
+        ftb.addAttribute(Point.class).setName("geom").setCRS(crs);
         final FeatureType type = ftb.build();
-        final Point geometry = gf.createPoint(new Coordinate(10, 30));
-        geometry.setUserData(inCrs);
+        geometry.setUserData(crs);
         final Feature feature = type.newInstance();
         feature.setPropertyValue("geom", geometry);
-
-        { //test transform function using epsg code
-            final Function fct = factory.function("ST_Transform", factory.property("geom"), factory.literal("EPSG:4326"));
-
-            //check result
-            final Object newGeom = fct.evaluate(feature);
-            Assert.assertTrue(newGeom instanceof Point);
-            final Point trs = (Point) newGeom;
-            Assert.assertEquals(outCrs, trs.getUserData());
-            Assert.assertEquals(30.0, trs.getX(), 0.0);
-            Assert.assertEquals(10.0, trs.getY(), 0.0);
-        }
-
-        { //test transform function using crs object
-            final Function fct = factory.function("ST_Transform", factory.property("geom"), factory.literal(outCrs));
-
-            //check result
-            final Object newGeom = fct.evaluate(feature);
-            Assert.assertTrue(newGeom instanceof Point);
-            final Point trs = (Point) newGeom;
-            Assert.assertEquals(outCrs, trs.getUserData());
-            Assert.assertEquals(30.0, trs.getX(), 0.0);
-            Assert.assertEquals(10.0, trs.getY(), 0.0);
-        }
+        return feature;
     }
 
     /**
-     * Test SQL/MM ST_Centroid function.
+     * Evaluates the given function and returns its result as an object of the given type.
+     *
+     * @param  expectedType  the expected type of the result.
+     * @param  feature       the feature to use as input value. May be {@code null}.
+     * @param  testing       the function to test.
+     * @return evaluation result.
+     */
+    private static <G extends Geometry> G evaluate(final Class<G> expectedType, final Feature feature, final Function testing) {
+        final Object result = testing.evaluate(feature);
+        assertInstanceOf("Expected JTS geometry.", expectedType, result);
+        return expectedType.cast(result);
+    }
+
+    /**
+     * Test SQL/MM {@link ST_Transform} function.
      */
     @Test
-    public void ST_CentroidTest() {
-
-        CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic();
-
-        //test invalid
-        try {
-            factory.function("ST_Centroid");
-            Assert.fail("Creation with no argument should fail");
-        } catch (IllegalArgumentException ex) {
-            //ok
-        }
-
-        final LineString geometry = gf.createLineString(new Coordinate[]{new Coordinate(10, 20), new Coordinate(30, 20)});
-        geometry.setSRID(4326);
-        geometry.setUserData(crs);
-
-
-        final Function fct = factory.function("ST_Centroid", factory.literal(geometry));
-
-        //check result
-        final Object newGeom = fct.evaluate(null);
-        Assert.assertTrue(newGeom instanceof Point);
-        final Point trs = (Point) newGeom;
-        Assert.assertEquals(crs, trs.getUserData());
-        Assert.assertEquals(4326, trs.getSRID());
-        Assert.assertEquals(20.0, trs.getX(), 0.0);
-        Assert.assertEquals(20.0, trs.getY(), 0.0);
-
+    public void testTransform() {
+        /*
+         * Verify that creation of a function without arguments is not allowed.
+         */
+        assertRequireArguments("ST_Transform");
+        /*
+         * Create a feature to be used for testing purpose. For this test, the CRS transformation
+         * will be simply a change of axis order from (λ,φ) to (φ,λ).
+         */
+        final Point geometry = geometryFactory.createPoint(new Coordinate(10, 30));
+        final Feature feature = wrapInFeature(geometry, HardCodedCRS.WGS84);
+        /*
+         * Test transform function using the full CRS object, then using only EPSG code.
+         */
+        testTransform(feature, HardCodedCRS.WGS84_φλ, HardCodedCRS.WGS84_φλ);
+        testTransform(feature, "EPSG:4326", CommonCRS.WGS84.geographic());
     }
 
     /**
-     * Test SQL/MM ST_Buffer function.
+     * Tests {@link ST_Transform} on the given feature. The feature must have a property named {@code "geom"}.
+     * The result is expected to be a geometry using WGS84 datum with (φ,λ) axis order.
+     *
+     * @param  feature       the feature to use for testing the function.
+     * @param  specifiedCRS  the argument to give to the {@code "ST_Transform"} function.
+     * @param  expectedCRS   the CRS expected as a result of the transform function.
+     */
+    private void testTransform(final Feature feature, final Object specifiedCRS, final CoordinateReferenceSystem expectedCRS) {
+        final Point result = evaluate(Point.class, feature, factory.function("ST_Transform",
+                factory.property("geom"), factory.literal(specifiedCRS)));
+        assertEquals("userData", expectedCRS, result.getUserData());
+        assertEquals(30, result.getX(), STRICT);
+        assertEquals(10, result.getY(), STRICT);
+    }
+
+    /**
+     * Test SQL/MM {@link ST_Centroid} function.
+     */
+    @Test
+    public void testCentroid() {
+        assertRequireArguments("ST_Centroid");
+        /*
+         * Creates a single linestring for testing the centroid function. The CRS is not used by this computation,
+         * but we declare it in order to verify that the information is propagated to the result.
+         */
+        final LineString geometry = geometryFactory.createLineString(new Coordinate[] {
+            new Coordinate(10, 20),
+            new Coordinate(30, 20)
+        });
+        geometry.setSRID(4326);
+        geometry.setUserData(HardCodedCRS.WGS84_φλ);
+        /*
+         * Execute the function and check the result.
+         */
+        final Point result = evaluate(Point.class, null, factory.function("ST_Centroid", factory.literal(geometry)));
+        assertEquals("userData", HardCodedCRS.WGS84_φλ, result.getUserData());
+        assertEquals("SRID", 4326, result.getSRID());
+        assertEquals(20, result.getX(), STRICT);
+        assertEquals(20, result.getY(), STRICT);
+    }
+
+    /**
+     * Test SQL/MM {@link ST_Buffer} function.
      */
     @Test
     public void ST_BufferTest() {
-
-        CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic();
-
-        //test invalid
-        try {
-            factory.function("ST_Buffer");
-            Assert.fail("Creation with no argument should fail");
-        } catch (IllegalArgumentException ex) {
-            //ok
-        }
-
-        final Point geometry = gf.createPoint(new Coordinate(10, 20));
+        assertRequireArguments("ST_Buffer");
+        /*
+         * Creates a single point for testing the buffer function. The CRS is not used by this computation,
+         * but we declare it in order to verify that the information is propagated to the result.
+         */
+        final Point geometry = geometryFactory.createPoint(new Coordinate(10, 20));
+        geometry.setUserData(HardCodedCRS.WGS84_φλ);
         geometry.setSRID(4326);
-        geometry.setUserData(crs);
-
-
-        final Function fct = factory.function("ST_Buffer", factory.literal(geometry), factory.literal(1.0));
-
-        //check result
-        final Object newGeom = fct.evaluate(null);
-        Assert.assertTrue(newGeom instanceof Polygon);
-        final Polygon trs = (Polygon) newGeom;
-        Assert.assertEquals(crs, trs.getUserData());
-        Assert.assertEquals(4326, trs.getSRID());
-        Envelope env = trs.getEnvelopeInternal();
-        Assert.assertEquals(9.0, env.getMinX(), 0.0);
-        Assert.assertEquals(11.0, env.getMaxX(), 0.0);
-        Assert.assertEquals(19.0, env.getMinY(), 0.0);
-        Assert.assertEquals(21.0, env.getMaxY(), 0.0);
-
+        /*
+         * Execute the function and check the result.
+         */
+        final Polygon result = evaluate(Polygon.class, null, factory.function("ST_Buffer", factory.literal(geometry), factory.literal(1)));
+        assertEquals("userData", HardCodedCRS.WGS84_φλ, result.getUserData());
+        assertEquals("SRID", 4326, result.getSRID());
+        final Envelope env = result.getEnvelopeInternal();
+        assertEquals( 9, env.getMinX(), STRICT);
+        assertEquals(11, env.getMaxX(), STRICT);
+        assertEquals(19, env.getMinY(), STRICT);
+        assertEquals(21, env.getMaxY(), STRICT);
     }
 }

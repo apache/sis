@@ -320,6 +320,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnknownDataType_1 = 50;
 
         /**
+         * Function “{0}” is unknown or unsupported.
+         */
+        public static final short UnknownFunction_1 = 58;
+
+        /**
          * Feature named “{0}” has not yet been resolved.
          */
         public static final short UnresolvedFeatureName_1 = 18;
