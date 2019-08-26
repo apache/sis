@@ -17,18 +17,17 @@
 package org.apache.sis.cql;
 
 import java.text.ParseException;
-import org.apache.sis.filter.DefaultFilterFactory;
-import static org.junit.Assert.*;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
-import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.expression.Expression;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
 
 /**
  * Test writing in CQL expressions.
@@ -38,13 +37,9 @@ import org.opengis.filter.expression.Expression;
  * @since   1.0
  * @module
  */
-public class ExpressionWritingTest {
-
-    private final FilterFactory2 FF = new DefaultFilterFactory();
-    private final GeometryFactory GF = new GeometryFactory();
-
+public final strictfp class ExpressionWritingTest extends CQLTestCase {
     @Test
-    public void testPropertyName1() throws CQLException{
+    public void testPropertyName1() throws CQLException {
         final Expression exp = FF.property("geom");
         final String cql = CQL.write(exp);
         assertNotNull(cql);
@@ -52,7 +47,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testPropertyName2() throws CQLException{
+    public void testPropertyName2() throws CQLException {
         final Expression exp = FF.property("the geom");
         final String cql = CQL.write(exp);
         assertNotNull(cql);
@@ -60,7 +55,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testInteger() throws CQLException{
+    public void testInteger() throws CQLException {
         final Expression exp = FF.literal(15);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
@@ -68,7 +63,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testNegativeInteger() throws CQLException{
+    public void testNegativeInteger() throws CQLException {
         final Expression exp = FF.literal(-15);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
@@ -76,7 +71,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testDecimal1() throws CQLException{
+    public void testDecimal1() throws CQLException {
         final Expression exp = FF.literal(3.14);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
@@ -84,7 +79,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testDecimal2() throws CQLException{
+    public void testDecimal2() throws CQLException {
         final Expression exp = FF.literal(9.0E-21);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
@@ -94,7 +89,7 @@ public class ExpressionWritingTest {
     @Ignore
     @Test
     public void testDate() throws CQLException, ParseException{
-        final Expression exp = FF.literal(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"));
+        final Expression exp = FF.literal(parseDate("2012-03-21T05:42:36Z"));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
         assertEquals("2012-03-21T05:42:36Z", cql);
@@ -102,7 +97,7 @@ public class ExpressionWritingTest {
 
 
     @Test
-    public void testNegativeDecimal() throws CQLException{
+    public void testNegativeDecimal() throws CQLException {
         final Expression exp = FF.literal(-3.14);
         final String cql = CQL.write(exp);
         assertNotNull(cql);
@@ -110,7 +105,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testText() throws CQLException{
+    public void testText() throws CQLException {
         final Expression exp = FF.literal("hello world");
         final String cql = CQL.write(exp);
         assertNotNull(cql);
@@ -118,7 +113,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testAdd() throws CQLException{
+    public void testAdd() throws CQLException {
         final Expression exp = FF.add(FF.literal(3),FF.literal(2));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
@@ -126,7 +121,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testSubtract() throws CQLException{
+    public void testSubtract() throws CQLException {
         final Expression exp = FF.subtract(FF.literal(3),FF.literal(2));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
@@ -134,7 +129,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testMultiply() throws CQLException{
+    public void testMultiply() throws CQLException {
         final Expression exp = FF.multiply(FF.literal(3),FF.literal(2));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
@@ -142,7 +137,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testDivide() throws CQLException{
+    public void testDivide() throws CQLException {
         final Expression exp = FF.divide(FF.literal(3),FF.literal(2));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
@@ -151,7 +146,7 @@ public class ExpressionWritingTest {
 
     @Ignore
     @Test
-    public void testFunction1() throws CQLException{
+    public void testFunction1() throws CQLException {
         final Expression exp = FF.function("max",FF.property("att"), FF.literal(15));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
@@ -160,7 +155,7 @@ public class ExpressionWritingTest {
 
     @Ignore
     @Test
-    public void testFunction2() throws CQLException{
+    public void testFunction2() throws CQLException {
         final Expression exp = FF.function("min",FF.property("att"), FF.function("cos",FF.literal(3.14d)));
         final String cql = CQL.write(exp);
         assertNotNull(cql);
@@ -168,7 +163,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testCombine1() throws CQLException{
+    public void testCombine1() throws CQLException {
         final Expression exp =
                 FF.divide(
                     FF.add(
@@ -182,7 +177,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testCombine2() throws CQLException{
+    public void testCombine2() throws CQLException {
         final Expression exp =
                 FF.add(
                         FF.multiply(FF.literal(3), FF.literal(1)),
@@ -196,7 +191,7 @@ public class ExpressionWritingTest {
 
     @Ignore
     @Test
-    public void testCombine3() throws CQLException{
+    public void testCombine3() throws CQLException {
         final Expression exp =
                 FF.add(
                         FF.multiply(
@@ -211,7 +206,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testPoint() throws CQLException{
+    public void testPoint() throws CQLException {
         final Geometry geom = GF.createPoint(new Coordinate(15, 30));
         final Expression exp = FF.literal(geom);
         final String cql = CQL.write(exp);
@@ -220,7 +215,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testMPoint() throws CQLException{
+    public void testMPoint() throws CQLException {
         final Geometry geom = GF.createMultiPoint(
                 new Coordinate[]{
                     new Coordinate(15, 30),
@@ -233,7 +228,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testLineString() throws CQLException{
+    public void testLineString() throws CQLException {
         final Geometry geom = GF.createLineString(
                 new Coordinate[]{
                     new Coordinate(10, 20),
@@ -247,7 +242,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testMLineString() throws CQLException{
+    public void testMLineString() throws CQLException {
         final Geometry geom = GF.createMultiLineString(
                 new LineString[]{
                     GF.createLineString(
@@ -271,7 +266,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testPolygon() throws CQLException{
+    public void testPolygon() throws CQLException {
         final Geometry geom = GF.createPolygon(
                 GF.createLinearRing(
                     new Coordinate[]{
@@ -297,7 +292,7 @@ public class ExpressionWritingTest {
     }
 
     @Test
-    public void testMPolygon() throws CQLException{
+    public void testMPolygon() throws CQLException {
         final Polygon geom1 = GF.createPolygon(
                 GF.createLinearRing(
                     new Coordinate[]{

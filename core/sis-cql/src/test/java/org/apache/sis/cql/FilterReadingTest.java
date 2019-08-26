@@ -18,18 +18,11 @@ package org.apache.sis.cql;
 
 import java.text.ParseException;
 import java.util.Date;
-import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
-import static org.junit.Assert.*;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
 import org.opengis.filter.And;
 import org.opengis.filter.Filter;
-import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.Not;
 import org.opengis.filter.Or;
 import org.opengis.filter.PropertyIsBetween;
@@ -68,6 +61,12 @@ import org.opengis.filter.temporal.OverlappedBy;
 import org.opengis.filter.temporal.TContains;
 import org.opengis.filter.temporal.TEquals;
 import org.opengis.filter.temporal.TOverlaps;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
 
 /**
  * Test reading CQL filters.
@@ -77,11 +76,9 @@ import org.opengis.filter.temporal.TOverlaps;
  * @since   1.0
  * @module
  */
-public class FilterReadingTest {
+public final strictfp class FilterReadingTest extends CQLTestCase {
 
     private static final double DELTA = 0.00000001;
-    private final FilterFactory2 FF = new DefaultFilterFactory();
-    private final GeometryFactory GF = new GeometryFactory();
     private final Geometry baseGeometry = GF.createPolygon(
                 GF.createLinearRing(
                     new Coordinate[]{
@@ -648,7 +645,7 @@ public class FilterReadingTest {
         assertTrue(filter.getExpression2() instanceof Literal);
         assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
         final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
     }
 
     @Ignore
@@ -663,7 +660,7 @@ public class FilterReadingTest {
         assertTrue(filter.getExpression2() instanceof Literal);
         assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
         final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
     }
 
     @Ignore
@@ -678,7 +675,7 @@ public class FilterReadingTest {
         assertTrue(filter.getExpression2() instanceof Literal);
         assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
         final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
     }
 
     @Ignore
@@ -693,7 +690,7 @@ public class FilterReadingTest {
         assertTrue(filter.getExpression2() instanceof Literal);
         assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
         final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
     }
 
     @Ignore
@@ -708,7 +705,7 @@ public class FilterReadingTest {
         assertTrue(filter.getExpression2() instanceof Literal);
         assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
         final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
     }
 
     @Ignore
@@ -723,7 +720,7 @@ public class FilterReadingTest {
         assertTrue(filter.getExpression2() instanceof Literal);
         assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
         final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
     }
 
     @Ignore
@@ -738,7 +735,7 @@ public class FilterReadingTest {
         assertTrue(filter.getExpression2() instanceof Literal);
         assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
         final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
     }
 
     @Ignore
@@ -753,7 +750,7 @@ public class FilterReadingTest {
         assertTrue(filter.getExpression2() instanceof Literal);
         assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
         final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
     }
 
     @Ignore
@@ -768,7 +765,7 @@ public class FilterReadingTest {
         assertTrue(filter.getExpression2() instanceof Literal);
         assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
         final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
     }
 
     @Ignore
@@ -783,7 +780,7 @@ public class FilterReadingTest {
         assertTrue(filter.getExpression2() instanceof Literal);
         assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
         final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
     }
 
     @Ignore
@@ -798,7 +795,7 @@ public class FilterReadingTest {
         assertTrue(filter.getExpression2() instanceof Literal);
         assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
         final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
     }
 
     @Ignore
@@ -813,7 +810,7 @@ public class FilterReadingTest {
         assertTrue(filter.getExpression2() instanceof Literal);
         assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
         final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
     }
 
     @Ignore
@@ -828,7 +825,7 @@ public class FilterReadingTest {
         assertTrue(filter.getExpression2() instanceof Literal);
         assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
         final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
     }
 
     @Ignore
@@ -843,7 +840,7 @@ public class FilterReadingTest {
         assertTrue(filter.getExpression2() instanceof Literal);
         assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
         final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
     }
 
 }

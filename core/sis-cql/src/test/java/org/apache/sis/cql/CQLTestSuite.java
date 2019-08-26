@@ -17,6 +17,7 @@
 package org.apache.sis.cql;
 
 import org.apache.sis.test.TestSuite;
+import org.junit.BeforeClass;
 import org.junit.runners.Suite;
 
 
@@ -35,5 +36,13 @@ import org.junit.runners.Suite;
     org.apache.sis.cql.FilterWritingTest.class,
 })
 public final strictfp class CQLTestSuite extends TestSuite {
-
+    /**
+     * Verifies the list of tests before to run the suite.
+     * See {@link #verifyTestList(Class, Class[])} for more information.
+     */
+    @BeforeClass
+    public static void verifyTestList() {
+        assertNoMissingTest(CQLTestSuite.class);
+        verifyTestList(CQLTestSuite.class);
+    }
 }

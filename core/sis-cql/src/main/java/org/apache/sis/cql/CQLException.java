@@ -18,21 +18,35 @@ package org.apache.sis.cql;
 
 
 /**
- * CQL exception.
+ * Thrown when a CQL statement can not be parsed.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-public final class CQLException extends Exception{
+public final class CQLException extends Exception {
+    /**
+     * Serial number for inter-operability with different versions.
+     */
+    private static final long serialVersionUID = -1494977914551289727L;
 
+    /**
+     * Constructs an exception with the specified detail message.
+     *
+     * @param  message  the detail message.
+     */
     public CQLException(String message) {
         super(message);
     }
 
+    /**
+     * Constructs an exception with the specified detail message and cause.
+     *
+     * @param  message  the detail message.
+     * @param  cause    the cause for this exception.
+     */
     public CQLException(String message, Throwable cause) {
         super(message, cause);
     }
-
 }

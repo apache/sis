@@ -16,19 +16,45 @@
  */
 package org.apache.sis.cql;
 
+import java.time.Instant;
 import java.util.Date;
+import org.opengis.filter.FilterFactory2;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.apache.sis.filter.DefaultFilterFactory;
+import org.apache.sis.test.TestCase;
+
 
 /**
+ * Base class of all CQL tests.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
  */
-class TemporalUtilities {
+strictfp class CQLTestCase extends TestCase {
+    /**
+     * The factory to use for creating filter and expressions.
+     */
+    final FilterFactory2 FF;
 
-    static Date parseDate(String date) {
-        throw new UnsupportedOperationException("todo");
+    /**
+     * The factory to use for creating Java Topology Suite (JTS) objects.
+     */
+    final GeometryFactory GF;
+
+    /**
+     * Creates a new test case.
+     */
+    CQLTestCase() {
+        FF = new DefaultFilterFactory();
+        GF = new GeometryFactory();
     }
 
+    /**
+     * Returns a date from the given string.
+     */
+    static Date parseDate(final String date) {
+        return Date.from(Instant.parse(date));
+    }
 }

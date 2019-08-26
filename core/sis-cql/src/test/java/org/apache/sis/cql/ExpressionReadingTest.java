@@ -17,14 +17,9 @@
 package org.apache.sis.cql;
 
 import java.text.ParseException;
-import org.apache.sis.filter.DefaultFilterFactory;
-import static org.junit.Assert.*;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.MultiLineString;
@@ -32,7 +27,6 @@ import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
-import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.expression.Add;
 import org.opengis.filter.expression.Divide;
 import org.opengis.filter.expression.Function;
@@ -40,6 +34,11 @@ import org.opengis.filter.expression.Literal;
 import org.opengis.filter.expression.Multiply;
 import org.opengis.filter.expression.PropertyName;
 import org.opengis.filter.expression.Subtract;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
 
 /**
  * Test reading CQL expressions.
@@ -49,13 +48,9 @@ import org.opengis.filter.expression.Subtract;
  * @since   1.0
  * @module
  */
-public class ExpressionReadingTest {
-
-    private final FilterFactory2 FF = new DefaultFilterFactory();
-    private final GeometryFactory GF = new GeometryFactory();
-
+public final strictfp class ExpressionReadingTest extends CQLTestCase {
     @Test
-    public void testPropertyName1() throws CQLException{
+    public void testPropertyName1() throws CQLException {
         final String cql = "geom";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof PropertyName);
@@ -64,7 +59,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testPropertyName2() throws CQLException{
+    public void testPropertyName2() throws CQLException {
         final String cql = "\"geom\"";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof PropertyName);
@@ -73,7 +68,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testPropertyName3() throws CQLException{
+    public void testPropertyName3() throws CQLException {
         final String cql = "ùth{e_$uglY^_pr@perté";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof PropertyName);
@@ -82,7 +77,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testInteger() throws CQLException{
+    public void testInteger() throws CQLException {
         final String cql = "15";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -91,7 +86,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testNegativeInteger() throws CQLException{
+    public void testNegativeInteger() throws CQLException {
         final String cql = "-15";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -100,7 +95,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testDecimal1() throws CQLException{
+    public void testDecimal1() throws CQLException {
         final String cql = "3.14";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -109,7 +104,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testDecimal2() throws CQLException{
+    public void testDecimal2() throws CQLException {
         final String cql = "9e-1";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -118,7 +113,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testNegativeDecimal() throws CQLException{
+    public void testNegativeDecimal() throws CQLException {
         final String cql = "-3.14";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -127,7 +122,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testText() throws CQLException{
+    public void testText() throws CQLException {
         final String cql = "'hello world'";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -136,7 +131,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testText2() throws CQLException{
+    public void testText2() throws CQLException {
         final String cql = "'Valle d\\'Aosta'";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -145,7 +140,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testText3() throws CQLException{
+    public void testText3() throws CQLException {
         final String cql = "'Valle d\\'Aosta/Vallée d\\'Aoste'";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -161,7 +156,7 @@ public class ExpressionReadingTest {
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
         final Literal expression = (Literal) obj;
-        assertEquals(TemporalUtilities.parseDate("2012-03-21T05:42:36Z"), expression.getValue());
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), expression.getValue());
     }
 
     @Ignore
@@ -189,7 +184,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testAddition() throws CQLException{
+    public void testAddition() throws CQLException {
         final String cql = "3 + 2";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Add);
@@ -199,7 +194,7 @@ public class ExpressionReadingTest {
 
     @Ignore
     @Test
-    public void testAddition2() throws CQLException{
+    public void testAddition2() throws CQLException {
         final String cql = "'test' + '23'";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Add);
@@ -210,7 +205,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testSubstract() throws CQLException{
+    public void testSubstract() throws CQLException {
         final String cql = "3 - 2";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Subtract);
@@ -219,7 +214,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testMultiply() throws CQLException{
+    public void testMultiply() throws CQLException {
         final String cql = "3 * 2";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Multiply);
@@ -228,7 +223,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testDivide() throws CQLException{
+    public void testDivide() throws CQLException {
         final String cql = "3 / 2";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Divide);
@@ -238,7 +233,7 @@ public class ExpressionReadingTest {
 
     @Ignore
     @Test
-    public void testFunction1() throws CQLException{
+    public void testFunction1() throws CQLException {
         final String cql = "max(\"att\",15)";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Function);
@@ -248,7 +243,7 @@ public class ExpressionReadingTest {
 
     @Ignore
     @Test
-    public void testFunction2() throws CQLException{
+    public void testFunction2() throws CQLException {
         final String cql = "min(\"att\",cos(3.14))";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Function);
@@ -257,7 +252,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryPoint() throws CQLException{
+    public void testGeometryPoint() throws CQLException {
         final String cql = "POINT(15 30)";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -267,7 +262,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryPointEmpty() throws CQLException{
+    public void testGeometryPointEmpty() throws CQLException {
         final String cql = "POINT EMPTY";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -278,7 +273,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryMPoint() throws CQLException{
+    public void testGeometryMPoint() throws CQLException {
         final String cql = "MULTIPOINT(15 30, 45 60)";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -292,7 +287,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryMPointEmpty() throws CQLException{
+    public void testGeometryMPointEmpty() throws CQLException {
         final String cql = "MULTIPOINT EMPTY";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -303,7 +298,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryLineString() throws CQLException{
+    public void testGeometryLineString() throws CQLException {
         final String cql = "LINESTRING(10 20, 30 40, 50 60)";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -318,7 +313,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryLineStringEmpty() throws CQLException{
+    public void testGeometryLineStringEmpty() throws CQLException {
         final String cql = "LINESTRING EMPTY";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -329,7 +324,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryMLineString() throws CQLException{
+    public void testGeometryMLineString() throws CQLException {
         final String cql = "MULTILINESTRING((10 20, 30 40, 50 60),(70 80, 90 100, 110 120))";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -354,7 +349,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryMLineStringEmpty() throws CQLException{
+    public void testGeometryMLineStringEmpty() throws CQLException {
         final String cql = "MULTILINESTRING EMPTY";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -365,7 +360,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryPolygon() throws CQLException{
+    public void testGeometryPolygon() throws CQLException {
         final String cql = "POLYGON((10 20, 30 40, 50 60, 10 20), (70 80, 90 100, 110 120, 70 80))";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -392,7 +387,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryPolygonEmpty() throws CQLException{
+    public void testGeometryPolygonEmpty() throws CQLException {
         final String cql = "POLYGON EMPTY";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -403,7 +398,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryMPolygon() throws CQLException{
+    public void testGeometryMPolygon() throws CQLException {
         final String cql = "MULTIPOLYGON("
                 + "((10 20, 30 40, 50 60, 10 20), (70 80, 90 100, 110 120, 70 80)),"
                 + "((11 21, 31 41, 51 61, 11 21), (71 81, 91 101, 111 121, 71 81))"
@@ -452,7 +447,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryMPolygonEmpty() throws CQLException{
+    public void testGeometryMPolygonEmpty() throws CQLException {
         final String cql = "MULTIPOLYGON EMPTY";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -463,7 +458,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryCollection() throws CQLException{
+    public void testGeometryCollection() throws CQLException {
         final String cql = "GEOMETRYCOLLECTION( POINT(15 30), LINESTRING(10 20, 30 40, 50 60) )";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -483,7 +478,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryCollectionEmpty() throws CQLException{
+    public void testGeometryCollectionEmpty() throws CQLException {
         final String cql = "GEOMETRYCOLLECTION EMPTY";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -494,7 +489,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryEnvelope() throws CQLException{
+    public void testGeometryEnvelope() throws CQLException {
         final String cql = "ENVELOPE(10, 20, 40, 30)";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -514,7 +509,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testGeometryEnvelopeEmpty() throws CQLException{
+    public void testGeometryEnvelopeEmpty() throws CQLException {
         final String cql = "ENVELOPE EMPTY";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Literal);
@@ -525,7 +520,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testCombine1() throws CQLException{
+    public void testCombine1() throws CQLException {
         final String cql = "((3*1)+(2-6))/4";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Divide);
@@ -541,7 +536,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testCombine2() throws CQLException{
+    public void testCombine2() throws CQLException {
         final String cql = "3*1+2/4";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Add);
@@ -558,7 +553,7 @@ public class ExpressionReadingTest {
 
     @Ignore
     @Test
-    public void testCombine3() throws CQLException{
+    public void testCombine3() throws CQLException {
         final String cql = "3*max(val,15)+2/4";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Add);
@@ -578,7 +573,7 @@ public class ExpressionReadingTest {
 
     @Ignore
     @Test
-    public void testCombine4() throws CQLException{
+    public void testCombine4() throws CQLException {
         final String cql = "3 * max ( val , 15 ) + 2 / 4";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Add);
@@ -597,7 +592,7 @@ public class ExpressionReadingTest {
     }
 
     @Test
-    public void testCombine5() throws CQLException{
+    public void testCombine5() throws CQLException {
         final String cql = "(\"NB-Curistes\"*50)/12000";
         final Object obj = CQL.parseExpression(cql);
         assertTrue(obj instanceof Divide);

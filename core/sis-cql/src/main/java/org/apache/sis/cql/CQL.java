@@ -23,7 +23,6 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.internal.cql.AntlrCQL;
-import static org.apache.sis.internal.cql.CQLParser.*;
 import org.apache.sis.internal.cql.CQLParser.CoordinateContext;
 import org.apache.sis.internal.cql.CQLParser.CoordinateSerieContext;
 import org.apache.sis.internal.cql.CQLParser.CoordinateSeriesContext;
@@ -51,11 +50,14 @@ import org.opengis.filter.Or;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.PropertyName;
 
+import static org.apache.sis.internal.cql.CQLParser.*;
+
+
 /**
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
- * @since 1.0
+ * @since   1.0
  * @module
  */
 public final class CQL {
@@ -71,7 +73,6 @@ public final class CQL {
 
     public static Expression parseExpression(String cql, FilterFactory2 factory) throws CQLException {
         final Object obj = AntlrCQL.compileExpression(cql);
-
         ParseTree tree = null;
         Expression result = null;
         if (obj instanceof ExpressionContext) {
@@ -81,7 +82,6 @@ public final class CQL {
             }
             result = convertExpression(tree, factory);
         }
-
         return result;
     }
 
@@ -92,7 +92,7 @@ public final class CQL {
     public static Filter parseFilter(String cql, FilterFactory2 factory) throws CQLException {
         cql = cql.trim();
 
-        //bypass parsing for inclusive filter
+        // Bypass parsing for inclusive filter.
         if (cql.isEmpty() || "*".equals(cql)) {
             return Filter.INCLUDE;
         }
@@ -108,7 +108,6 @@ public final class CQL {
             }
             result = convertFilter(tree, factory);
         }
-
         return result;
     }
 
@@ -116,7 +115,6 @@ public final class CQL {
         if (filter == null) {
             return "";
         }
-
         final StringBuilder sb = new StringBuilder();
         filter.accept(FilterToCQLVisitor.INSTANCE, sb);
         return sb.toString();
@@ -126,7 +124,6 @@ public final class CQL {
         if (exp == null) {
             return "";
         }
-
         final StringBuilder sb = new StringBuilder();
         exp.accept(FilterToCQLVisitor.INSTANCE, sb);
         return sb.toString();
@@ -136,7 +133,6 @@ public final class CQL {
      * Convert the given tree in an Expression.
      */
     private static Expression convertExpression(ParseTree tree, FilterFactory2 ff) throws CQLException {
-
         if (tree instanceof ExpressionContext) {
             //: expression MULT expression
             //| expression UNARY expression
@@ -199,7 +195,7 @@ public final class CQL {
                     return ff.property(name);
                 }
 
-                //handle as a function
+                // Handle as a function.
                 final List<ExpressionContext> params = prm.expression();
                 final List<Expression> exps = new ArrayList<Expression>();
                 for (int i = 0, n = params.size(); i < n; i++) {
@@ -207,7 +203,6 @@ public final class CQL {
                 }
                 return ff.function(name, exps.toArray(new Expression[exps.size()]));
             }
-
         } else if (tree instanceof ExpressionUnaryContext) {
             //: UNARY? expressionNum ;
             final ExpressionUnaryContext exp = (ExpressionUnaryContext) tree;
@@ -379,10 +374,8 @@ public final class CQL {
                 }
                 return ff.literal(geom);
             }
-
             return convertExpression(tree.getChild(0), ff);
         }
-
         throw new CQLException("Unreconized expression : type=" + tree.getText());
     }
 
@@ -422,7 +415,6 @@ public final class CQL {
      * Convert the given tree in a Filter.
      */
     private static Filter convertFilter(ParseTree tree, FilterFactory2 ff) throws CQLException {
-
         if (tree instanceof FilterContext) {
             //: filter (AND filter)+
             //| filter (OR filter)+
@@ -672,7 +664,7 @@ public final class CQL {
                 return ff.toverlaps(left, right);
 
             } else if (exp.filterGeometry() != null) {
-                //expression filterGeometry
+                // expression filterGeometry
                 return convertFilter(exp.filterGeometry(), ff);
             }
 
@@ -754,11 +746,7 @@ public final class CQL {
                 final Expression exp2 = convertExpression(exps.get(1), ff);
                 return ff.within(exp1, exp2);
             }
-
         }
-
         throw new CQLException("Unreconized filter : type=" + tree.getText());
-
     }
-
 }

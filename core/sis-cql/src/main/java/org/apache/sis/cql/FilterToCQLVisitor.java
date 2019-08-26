@@ -18,8 +18,6 @@ package org.apache.sis.cql;
 
 import java.util.Date;
 import java.util.List;
-import java.util.SimpleTimeZone;
-import java.util.TimeZone;
 import java.util.regex.Pattern;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.locationtech.jts.geom.Geometry;
@@ -78,19 +76,19 @@ import org.opengis.filter.temporal.TContains;
 import org.opengis.filter.temporal.TEquals;
 import org.opengis.filter.temporal.TOverlaps;
 
+
 /**
- * Visitor to convert a Filter in CQL.<br>
+ * Visitor to convert a Filter in CQL.
  * Returned object is a StringBuilder containing the CQL text.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
- * @since 1.0
+ * @since   1.0
  * @module
  */
 final class FilterToCQLVisitor implements FilterVisitor, ExpressionVisitor {
 
-    public static final FilterToCQLVisitor INSTANCE = new FilterToCQLVisitor();
-    private static final TimeZone TZ = new SimpleTimeZone(0, "Out Timezone");
+    static final FilterToCQLVisitor INSTANCE = new FilterToCQLVisitor();
 
     /**
      * Pattern to check for property name to escape against regExp
@@ -655,5 +653,4 @@ final class FilterToCQLVisitor implements FilterVisitor, ExpressionVisitor {
     public Object visit(final NilExpression exp, final Object o) {
         throw new UnsupportedOperationException("NilExpression not supported in CQL.");
     }
-
 }

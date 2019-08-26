@@ -23,12 +23,13 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
+
 /**
  * ANTLR CQL parser methods.
- * 
- * @author Johann Sorel (Geomatys)
+ *
+ * @author  Johann Sorel (Geomatys)
  * @version 1.0
- * @since 1.0
+ * @since   1.0
  * @module
  */
 public final class AntlrCQL {
@@ -38,22 +39,20 @@ public final class AntlrCQL {
 
     public static ParseTree compile(String cql) {
         final Object obj = compileFilterOrExpression(cql);
-
         ParseTree tree = null;
         if (obj instanceof ParseTree) {
             tree = (ParseTree) obj;
         }
-
         return tree;
     }
 
     public static Object compileExpression(String cql) {
         try {
-            //lexer splits input into tokens
+            // Lexer splits input into tokens.
             final CodePointCharStream input = CharStreams.fromString(cql);
             final TokenStream tokens = new CommonTokenStream(new CQLLexer(input));
 
-            //parser generates abstract syntax tree
+            // Parser generates abstract syntax tree.
             final CQLParser parser = new CQLParser(tokens);
             final CQLParser.ExpressionContext ctx = parser.expression();
             return ctx;
@@ -65,11 +64,11 @@ public final class AntlrCQL {
 
     public static Object compileFilter(String cql) {
         try {
-            //lexer splits input into tokens
+            // Lexer splits input into tokens.
             final CodePointCharStream input = CharStreams.fromString(cql);
             final TokenStream tokens = new CommonTokenStream(new CQLLexer(input));
 
-            //parser generates abstract syntax tree
+            // Parser generates abstract syntax tree.
             final CQLParser parser = new CQLParser(tokens);
             final CQLParser.FilterContext retfilter = parser.filter();
 
@@ -82,11 +81,11 @@ public final class AntlrCQL {
 
     public static Object compileFilterOrExpression(String cql) {
         try {
-            //lexer splits input into tokens
+            // Lexer splits input into tokens.
             final CodePointCharStream input = CharStreams.fromString(cql);
             final TokenStream tokens = new CommonTokenStream(new CQLLexer(input));
 
-            //parser generates abstract syntax tree
+            // Parser generates abstract syntax tree.
             final CQLParser parser = new CQLParser(tokens);
             final CQLParser.FilterOrExpressionContext retfilter = parser.filterOrExpression();
 
@@ -96,5 +95,4 @@ public final class AntlrCQL {
             throw new IllegalStateException("Recognition exception is never thrown, only declared.");
         }
     }
-
 }
