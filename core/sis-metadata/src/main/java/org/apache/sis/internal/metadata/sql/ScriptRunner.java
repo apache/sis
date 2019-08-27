@@ -110,14 +110,6 @@ public class ScriptRunner implements AutoCloseable {
     private final Map<String,String> replacements = new HashMap<>();
 
     /**
-     * A sentinel value for the {@linkplain #replacements} map meaning that {@code ScriptRunner}
-     * needs to look also at the word after the word associated to {@code MORE_WORDS}.
-     *
-     * @see #addReplacement(String, String)
-     */
-    protected static final String MORE_WORDS = "…";
-
-    /**
      * The quote character for identifiers actually used in the database,
      * as determined by {@link DatabaseMetaData#getIdentifierQuoteString()}.
      */
@@ -392,16 +384,15 @@ public class ScriptRunner implements AutoCloseable {
      * <div class="note"><b>Example</b>
      * this is used for mapping the table names in the EPSG scripts to table names as they were in the MS-Access
      * flavor of EPSG database. It may also contains the mapping between SQL keywords used in the SQL scripts to
-     * SQL keywords understood by the database (for example Derby does not support the {@code TEXT} data type,
-     * which need to be replaced by {@code VARCHAR}).</div>
+     * SQL keywords understood by the database. For example if a database does not support the {@code "TEXT"}
+     * data type, it may be replaced by {@code "LONG VARCHAR"}.</div>
      *
-     * If a text to replace contains two or more words, then this map needs to contain an entry for the first word
-     * associated to the {@link #MORE_WORDS} value. For example if one needs to replace the {@code "CREATE TABLE"}
-     * words, then in addition to the {@code "CREATE TABLE"} entry the {@code replacements} map shall also contain
-     * a {@code "CREATE"} entry associated with the {@link #MORE_WORDS} value.
+     * <b>Limitation:</b> the {@code inScript} word to replace must be a single word with no space.
+     * If the text to replace contains two words (for example {@code "CREATE TABLE"}), then revert
+     * the commit after {@code 90949f7b5d9e58af90c517cadebc845faf734167} for bringing back this functionality.
      *
-     * @param  inScript     the word in the script which need to be replaced.
-     * @param  replacement  the word to use instead.
+     * @param  inScript     the single word in the script which need to be replaced.
+     * @param  replacement  the word(s) to use instead of {@code inScript} word.
      */
     protected final void addReplacement(final String inScript, final String replacement) {
         if (replacements.put(inScript, replacement) != null) {
@@ -544,13 +535,9 @@ parseLine:  while (pos < length) {
                          */
                         final String word = buffer.substring(start, pos);
                         final String replace = replacements.get(word);
-                        boolean moreWords = false;
                         if (replace != null) {
-                            moreWords = replace.equals(MORE_WORDS);
-                            if (!moreWords) {
-                                length = buffer.replace(start, pos, replace).length();
-                                pos = start + replace.length();
-                            }
+                            length = buffer.replace(start, pos, replace).length();
+                            pos = start + replace.length();
                         }
                         /*
                          * Skip whitespaces and set the 'c' variable to the next character, which may be either
@@ -563,9 +550,7 @@ parseLine:  while (pos < length) {
                             c = buffer.codePointAt(pos);
                             n = Character.charCount(c);
                         }
-                        if (!moreWords) {
-                            start = pos;
-                        }
+                        start = pos;
                     }
                 }
                 switch (c) {
