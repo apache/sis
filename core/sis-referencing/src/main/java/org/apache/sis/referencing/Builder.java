@@ -147,7 +147,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * See {@link org.apache.sis.parameter.ParameterBuilder} class javadoc for more examples with the
  * <cite>Mercator</cite> projection parameters.
  *
- * <div class="section">Note for subclass implementors</div>
+ * <div class="section">Note for subclass implementers</div>
  * <ul>
  *   <li>The type {@code <B>} shall be exactly the subclass type.
  *       For performance reasons, this is verified only if Java assertions are enabled.</li>
@@ -188,7 +188,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY} and
      * {@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY} keys.
      *
-     * <p>See <cite>Notes for subclass implementors</cite> in class javadoc for usage conditions.</p>
+     * <p>See <cite>Notes for subclass implementers</cite> in class javadoc for usage conditions.</p>
      *
      * @see #onCreate(boolean)
      */

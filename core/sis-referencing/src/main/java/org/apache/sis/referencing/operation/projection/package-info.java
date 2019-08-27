@@ -18,7 +18,7 @@
 /**
  * Map projection implementations.
  * This package is mostly for documentation purpose (each projection documents its name and parameters)
- * and for implementors who want to extend a map projection. This package should usually not be used directly.
+ * and for implementers who want to extend a map projection. This package should usually not be used directly.
  *
  * <p>The best way to get a projection is to use the
  * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory coordinate operation factory}

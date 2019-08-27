@@ -43,7 +43,7 @@ public interface Parameterized {
      *
      * <div class="section">Modifying parameter values</div>
      * Unless explicitly allowed by the implementation class, callers should not modify the values
-     * returned by this method. Implementors are encouraged to protect their internal data by returning
+     * returned by this method. Implementers are encouraged to protect their internal data by returning
      * an unmodifiable view or a copy of their parameters. If the caller wishes to edit parameter values,
      * then (s)he should {@linkplain DefaultParameterValueGroup#clone() clone} the parameters before to
      * modify them, then use the modified parameters for creating a new {@code Parameterized} object.

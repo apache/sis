@@ -504,7 +504,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * Implementations shall invoke {@link #writeList writeList} or {@link #writeSet writeSet} methods
      * instead than this method when the collection type is enforced by ISO specification.
      * When the type is not enforced by the specification, some freedom are allowed at
-     * implementor choice. The default implementation invokes {@link #collectionType(Class)}
+     * implementer choice. The default implementation invokes {@link #collectionType(Class)}
      * in order to get a hint about whether a {@link List} or a {@link Set} should be used.
      *
      * @param  <E>          the type represented by the {@code Class} argument.
@@ -815,7 +815,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * <div class="section">Choosing a collection type</div>
      * Implementations shall invoke {@link #nonNullList nonNullList(…)} or {@link #nonNullSet nonNullSet(…)}
      * instead than this method when the collection type is enforced by ISO specification.
-     * When the type is not enforced by the specification, some freedom are allowed at implementor choice.
+     * When the type is not enforced by the specification, some freedom are allowed at implementer choice.
      * The default implementation invokes {@link #collectionType(Class)} in order to get a hint about whether
      * a {@link List} or a {@link Set} should be used.
      *

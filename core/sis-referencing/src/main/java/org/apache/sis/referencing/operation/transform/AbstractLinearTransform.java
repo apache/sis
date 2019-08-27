@@ -246,7 +246,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
 
     /**
      * Compares this math transform with an object which is known to be of the same class.
-     * Implementors can safely cast the {@code object} argument to their subclass.
+     * Implementers can safely cast the {@code object} argument to their subclass.
      *
      * @param  object  the object to compare with this transform.
      * @return {@code true} if the given object is considered equals to this math transform.

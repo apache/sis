@@ -67,7 +67,7 @@ public abstract class DataStoreProvider {
      * A parameter named {@value} should be included in the group of parameters returned by {@link #getOpenParameters()}.
      * The parameter value is often a {@link java.net.URI} or a {@link java.nio.file.Path}, but other types are allowed.
      *
-     * <p>Implementors are encouraged to define a parameter with this name
+     * <p>Implementers are encouraged to define a parameter with this name
      * to ensure a common and consistent definition among providers.
      * The parameter should be defined as mandatory and typed with a well-known Java class such as
      * {@link java.net.URI}, {@link java.nio.file.Path}, JDBC {@linkplain javax.sql.DataSource}, <i>etc</i>.
@@ -85,7 +85,7 @@ public abstract class DataStoreProvider {
      * {@link #getOpenParameters()} if the data store supports write operations. The parameter value is often a
      * {@link Boolean} and the default value should be {@link Boolean#FALSE} or equivalent.
      *
-     * <p>Implementors are encouraged to define an <em>optional</em> parameter with this name in complement to the
+     * <p>Implementers are encouraged to define an <em>optional</em> parameter with this name in complement to the
      * {@value #LOCATION} parameter <em>only if</em> write operations are supported. If this parameter value is not
      * set or is set to {@code false}, then the {@link #open(ParameterValueGroup)} method should fail if no file or
      * database exists at the URL or path given by the {@value #LOCATION} parameter. Otherwise if this parameter is
@@ -184,7 +184,7 @@ public abstract class DataStoreProvider {
      * Those parameters provide an alternative to {@link StorageConnector} for opening a {@link DataStore}
      * from a path or URL, together with additional information like character encoding.
      *
-     * <p>Implementors are responsible for declaring all parameters and whether they are mandatory or optional.
+     * <p>Implementers are responsible for declaring all parameters and whether they are mandatory or optional.
      * It is recommended to define at least a parameter named {@value #LOCATION}, completed by {@value #CREATE}
      * if the data store supports write operations.
      * That parameter will be recognized by the default {@code DataStoreProvider} methods and used whenever a
@@ -228,8 +228,8 @@ public abstract class DataStoreProvider {
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
-     * <p>Implementors are responsible for restoring the input to its original stream position on return of this method.
-     * Implementors can use a mark/reset pair for this purpose. Marks are available as
+     * <p>Implementers are responsible for restoring the input to its original stream position on return of this method.
+     * Implementers can use a mark/reset pair for this purpose. Marks are available as
      * {@link java.nio.ByteBuffer#mark()}, {@link java.io.InputStream#mark(int)} and
      * {@link javax.imageio.stream.ImageInputStream#mark()}.</p>
      *
@@ -277,7 +277,7 @@ public abstract class DataStoreProvider {
      * (for example an {@link java.io.InputStream}).
      *
      * <div class="section">Implementation note</div>
-     * Implementors shall invoke {@link StorageConnector#closeAllExcept(Object)} after {@code DataStore}
+     * Implementers shall invoke {@link StorageConnector#closeAllExcept(Object)} after {@code DataStore}
      * creation, keeping open only the needed resource.
      *
      * @param  connector  information about the storage (URL, stream, JDBC connection, <i>etc</i>).

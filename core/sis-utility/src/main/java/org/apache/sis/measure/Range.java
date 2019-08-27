@@ -75,7 +75,7 @@ import org.apache.sis.util.Numbers;
  * <div class="section">Immutability and thread safety</div>
  * This class and the {@link NumberRange} / {@link MeasurementRange} subclasses are immutable,
  * and thus inherently thread-safe. Other subclasses may or may not be immutable, at implementation choice.
- * But implementors are encouraged to make sure that all subclasses remain immutable for more predictable behavior.
+ * But implementers are encouraged to make sure that all subclasses remain immutable for more predictable behavior.
  *
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)

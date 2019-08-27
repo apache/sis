@@ -38,7 +38,7 @@ import javax.measure.Unit;
  *
  * <div class="section">Default implementation</div>
  * All methods in this interface have a default implementation equivalent to <i>no-operation</i>.
- * Implementors need to override only the methods for the aspects to change.
+ * Implementers need to override only the methods for the aspects to change.
  *
  * <div class="section">Limitations</div>
  * This interface is not for changing axis order.

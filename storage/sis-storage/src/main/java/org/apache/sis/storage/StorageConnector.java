@@ -856,7 +856,7 @@ public class StorageConnector implements Serializable {
      * only for handling the cases where using a view has an indirect impact on another view.</p>
      *
      * <div class="note"><b>Rational:</b>
-     * {@link DataStoreProvider#probeContent(StorageConnector)} contract requires that implementors reset the
+     * {@link DataStoreProvider#probeContent(StorageConnector)} contract requires that implementers reset the
      * input stream themselves. However if {@link ChannelDataInput} or {@link InputStreamReader} has been used,
      * then the user performed a call to {@link ChannelDataInput#reset()} (for instance), which did not reseted
      * the underlying input stream. So we need to perform the missing {@link InputStream#reset()} here, then
