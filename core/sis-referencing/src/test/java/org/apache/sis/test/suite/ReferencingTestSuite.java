@@ -246,6 +246,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.cs.CodesTest.class,
     org.apache.sis.referencing.CRSTest.class,
     org.apache.sis.referencing.GeodeticCalculatorTest.class,
+    org.apache.sis.referencing.GeodesicsOnEllipsoidTest.class,
     org.apache.sis.internal.referencing.DefinitionVerifierTest.class,
     org.apache.sis.internal.referencing.CoordinateOperationsTest.class,
 

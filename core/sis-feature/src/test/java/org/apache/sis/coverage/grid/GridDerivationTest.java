@@ -115,27 +115,25 @@ public final strictfp class GridDerivationTest extends TestCase {
         GridExtentTest.assertExtentEquals(extent, 1, -1000, 8000);
         assertArrayEquals("subsamplings", new int[] {50, 300}, change.getSubsamplings());       // s = scaleSource / scaleTarget
         /*
-         * If we do not ask for subsamplings, the 'gridToCRS' transforms shall be the same than the 'target' geometry.
-         * The envelope is the intersection of the envelopes of 'source' and 'target' geometries, documented above.
+         * Above (50, 300) subsampling shall be applied and the `gridToCRS` transform adjusted consequently.
          */
-        GridGeometry tg = change.build();
-        assertSame("extent",      extent, tg.getExtent());
-        assertSame("CELL_CORNER", target.getGridToCRS(PixelInCell.CELL_CORNER), tg.getGridToCRS(PixelInCell.CELL_CORNER));
-        assertSame("CELL_CENTER", target.getGridToCRS(PixelInCell.CELL_CENTER), tg.getGridToCRS(PixelInCell.CELL_CENTER));
-        GeneralEnvelope expected = new GeneralEnvelope(2);
-        expected.setRange(0,  4200, 11300);
-        expected.setRange(1, -7501,  1500);
-        assertEnvelopeEquals(expected, tg.getEnvelope(), STRICT);
-        /*
-         * If we ask for subsamplings, then the envelope should be approximately the same or smaller. Note that without
-         * the clipping documented in GridExtent(GridExtent, int...) constructor, the envelope could be larger.
-         */
-        tg = change.subsample(50, 300).build();
-        assertEnvelopeEquals(expected, tg.getEnvelope(), STRICT);
+        final GridGeometry tg = change.build();
+        extent = tg.getExtent();
+        GridExtentTest.assertExtentEquals(extent, 0,  40, 110);
+        GridExtentTest.assertExtentEquals(extent, 1,  -3,  27);               // NEAREST grid rounding mode.
         assertMatrixEquals("gridToCRS", new Matrix3(
                 100,    0, 200,
                   0, -300, 600,
                   0,    0,   1), MathTransforms.getMatrix(tg.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
+        /*
+         * The envelope is the intersection of the envelopes of `source` and `target` grid geometries, documented above.
+         * That intersection should be approximately the same or smaller. Note that without the clipping documented in
+         * `GridExtent(GridExtent, int...)` constructor, the envelope would have been larger.
+         */
+        GeneralEnvelope expected = new GeneralEnvelope(2);
+        expected.setRange(0,  4200, 11300);
+        expected.setRange(1, -7501,  1500);
+        assertEnvelopeEquals(expected, tg.getEnvelope(), STRICT);
     }
 
     /**

@@ -235,6 +235,8 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
      * Returns the type of attribute values.
      *
      * @return the type of attribute values.
+     *
+     * @see Features#getValueClass(PropertyType)
      */
     @Override
     public final Class<V> getValueClass() {

@@ -82,16 +82,16 @@ abstract class Node implements Serializable {
     }
 
     /**
-     * Returns a name or symbol for this node. This is used for information purpose only,
+     * Returns a name or symbol for this node. This is used for information purpose,
      * for example in order to build a string representation.
      *
      * @return the name of this node.
      */
-    protected abstract String name();
+    protected abstract String getName();
 
     /**
-     * Returns the children of this node, or an empty collection if none. This is used for
-     * information purpose only, for example in order to build a string representation.
+     * Returns the children of this node, or an empty collection if none. This is used
+     * for information purpose, for example in order to build a string representation.
      *
      * <p>The name of this method is the same as {@link BinaryLogicOperator#getChildren()}
      * in order to have only one method to override.</p>
@@ -101,15 +101,15 @@ abstract class Node implements Serializable {
     protected abstract Collection<?> getChildren();
 
     /**
-     * Builds a tree representation of this node, including all children. This method expects
-     * an initially empty node, which will be set to the {@linkplain #name()} of this node.
+     * Builds a tree representation of this node, including all children. This method expects an
+     * initially empty node, which will be set to the {@linkplain #getName() name} of this node.
      * Then all children will be appended recursively, with a check against cyclic graph.
      *
      * @param  root     where to create a tree representation of this node.
      * @param  visited  nodes already visited. This method will write in this map.
      */
     private void toTree(final TreeTable.Node root, final Map<Object,Boolean> visited) {
-        root.setValue(TableColumn.VALUE, name());
+        root.setValue(TableColumn.VALUE, getName());
         for (final Object child : getChildren()) {
             final TreeTable.Node node = root.newChild();
             final String value;
@@ -165,6 +165,8 @@ abstract class Node implements Serializable {
      * This method assumes that the warning occurred in an {@code evaluate(…)} method.
      *
      * @todo Consider defining a {@code Context} class providing, among other information, listeners where to report warnings.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-460">SIS-460</a>
      */
     final void warning(final Exception e) {
         Logging.recoverableException(Logging.getLogger(Loggers.FILTER), getClass(), "evaluate", e);

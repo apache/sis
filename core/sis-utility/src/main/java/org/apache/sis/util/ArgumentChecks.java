@@ -247,6 +247,31 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
+     * Ensures that a method receiving a variable number of arguments got the expected count.
+     * If {@code actual} = {@code expected}, then this method does nothing.
+     * Otherwise a message saying "Too few" or "Too many arguments" is thrown.
+     *
+     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expected  expected number of arguments.
+     * @param  actual    actual number of arguments.
+     *
+     * @since 1.0
+     */
+    public static void ensureExpectedCount(final String name, final int expected, final int actual) {
+        if (actual != expected) {
+            final String message;
+            if (actual == 0) {
+                message = Errors.format(Errors.Keys.EmptyArgument_1, name);
+            } else if (actual < expected) {
+                message = Errors.format(Errors.Keys.TooFewArguments_2, expected, actual);
+            } else {
+                message = Errors.format(Errors.Keys.TooManyArguments_2, expected, actual);
+            }
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    /**
      * Ensures that the specified value is null or an instance assignable to the given type.
      * If this method does not thrown an exception, then the value can be casted to the class
      * represented by {@code expectedType} without throwing a {@link ClassCastException}.

@@ -16,10 +16,15 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Iterator;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
@@ -125,7 +130,7 @@ final class JTS extends Geometries<Geometry> {
         } else {
             return null;
         }
-        final double z = pt.z;
+        final double z = pt.getZ();
         final double[] coord;
         if (Double.isNaN(z)) {
             coord = new double[2];
@@ -136,6 +141,55 @@ final class JTS extends Geometries<Geometry> {
         coord[1] = pt.y;
         coord[0] = pt.x;
         return coord;
+    }
+
+    /**
+     * If the given geometry is an implementation of this library, returns its coordinate reference system.
+     * Otherwise returns {@code null}.
+     *
+     * @see #tryTransform(Object, CoordinateOperation, CoordinateReferenceSystem)
+     */
+    @Override
+    final CoordinateReferenceSystem tryGetCoordinateReferenceSystem(final Object geometry) throws FactoryException {
+        if (geometry instanceof Geometry) {
+            return org.apache.sis.internal.feature.jts.JTS.getCoordinateReferenceSystem((Geometry) geometry);
+        } else {
+            return super.tryGetCoordinateReferenceSystem(geometry);
+        }
+    }
+
+    /**
+     * Copies coordinate reference system information from the given source geometry to the target geometry.
+     * Current implementation copies only CRS information, but future implementations could copy some other
+     * values if they may apply to the target geometry as well.
+     */
+    private static void copyMetadata(final Geometry source, final Geometry target) {
+        target.setSRID(source.getSRID());
+        Object crs = source.getUserData();
+        if (!(crs instanceof CoordinateReferenceSystem)) {
+            if (!(crs instanceof Map<?,?>)) {
+                return;
+            }
+            crs = ((Map<?,?>) crs).get(org.apache.sis.internal.feature.jts.JTS.CRS_KEY);
+            if (!(crs instanceof CoordinateReferenceSystem)) {
+                return;
+            }
+        }
+        target.setUserData(crs);
+    }
+
+    /**
+     * If the given object is a JTS geometry, returns its centroid. Otherwise returns {@code null}.
+     */
+    @Override
+    final Object tryGetCentroid(final Object geometry) {
+        if (geometry instanceof Geometry) {
+            final Geometry jts = (Geometry) geometry;
+            final Point centroid = jts.getCentroid();
+            copyMetadata(jts, centroid);
+            return centroid;
+        }
+        return null;
     }
 
     /**
@@ -152,13 +206,15 @@ final class JTS extends Geometries<Geometry> {
      * Creates a polyline from the given coordinate values.
      * Each {@link Double#NaN} coordinate value starts a new path.
      *
+     * @param  dimension  the number of dimensions (2 or 3).
      * @return the geometric object for the given points.
+     * @throws UnsupportedOperationException if this operation is not implemented for the given number of dimensions.
      */
     @Override
     public Geometry createPolyline(final int dimension, final Vector... coords) {
         final boolean is3D = (dimension == 3);
         if (!is3D && dimension != 2) {
-            throw unsupported(dimension);
+            throw new UnsupportedOperationException(unsupported(dimension));
         }
         final List<Coordinate> coordinates = new ArrayList<>(32);
         final List<LineString> lines = new ArrayList<>();
@@ -263,5 +319,45 @@ add:    for (;;) {
         }
         toLineString(coordinates, lines);
         return toGeometry(lines);
+    }
+
+    /**
+     * If the given geometry is a JTS geometry, computes its buffer. Otherwise returns {@code null}.
+     */
+    @Override
+    Object tryBuffer(final Object geometry, final double distance) {
+        if (geometry instanceof Geometry) {
+            final Geometry jts = (Geometry) geometry;
+            final Geometry buffer = jts.buffer(distance);
+            copyMetadata(jts, buffer);
+            return buffer;
+        }
+        return null;
+    }
+
+    /**
+     * Tries to transforms the given geometry to the specified Coordinate Reference System (CRS),
+     * or returns {@code null} if this method can not perform this operation on the given object.
+     * Exactly one of {@code operation} and {@code targetCRS} shall be non-null.
+     *
+     * @param  geometry   the geometry to transform.
+     * @param  operation  the coordinate operation to apply, or {@code null}.
+     * @param  targetCRS  the target coordinate reference system, or {@code null}.
+     * @return the transformed geometry, or the same geometry if it is already in target CRS.
+     *
+     * @see #tryGetCoordinateReferenceSystem(Object)
+     */
+    @Override
+    Geometry tryTransform(final Object geometry, final CoordinateOperation operation, final CoordinateReferenceSystem targetCRS)
+            throws FactoryException, TransformException
+    {
+        if (geometry instanceof Geometry) {
+            if (operation != null) {
+                return org.apache.sis.internal.feature.jts.JTS.transform((Geometry) geometry, operation);
+            } else {
+                return org.apache.sis.internal.feature.jts.JTS.transform((Geometry) geometry, targetCRS);
+            }
+        }
+        return null;
     }
 }

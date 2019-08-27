@@ -184,6 +184,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IncompatibleTile_2 = 35;
 
         /**
+         * Invalid or unsupported “{1}” expression at index {0}.
+         */
+        public static final short InvalidExpression_2 = 56;
+
+        /**
          * Iteration is finished.
          */
         public static final short IterationIsFinished = 36;
@@ -244,6 +249,11 @@ public final class Resources extends IndexedResourceBundle {
          * non-linear in {0} dimension{0,choice,1#|2#s}:
          */
         public static final short NonLinearInDimensions_1 = 45;
+
+        /**
+         * Value provided by first expression is not a geometry.
+         */
+        public static final short NotAGeometryAtFirstExpression = 57;
 
         /**
          * Property “{0}” contains more than one value.
@@ -308,6 +318,11 @@ public final class Resources extends IndexedResourceBundle {
          * Raster data type ‘{0}’ is unknown or unsupported.
          */
         public static final short UnknownDataType_1 = 50;
+
+        /**
+         * Function “{0}” is unknown or unsupported.
+         */
+        public static final short UnknownFunction_1 = 58;
 
         /**
          * Feature named “{0}” has not yet been resolved.

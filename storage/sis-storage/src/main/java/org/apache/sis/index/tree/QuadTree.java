@@ -342,9 +342,9 @@ public class QuadTree {
         if (node == null) {
             return matches;
         } else if (node.getNodeType() != NodeType.GRAY) {
-            if (node.getNodeType() == NodeType.WHITE)
+            if (node.getNodeType() == NodeType.WHITE) {
                 return matches;
-            else {
+            } else {
                 QuadTreeData[] data = node.getData();
                 for (int i = 0; i < node.getCount(); i++) {
                     DirectPosition2D latLon = data[i].getLatLon();
@@ -360,7 +360,6 @@ public class QuadTree {
                 }
                 return matches;
             }
-
         } else {
             Rectangle2D swRectangle = new Rectangle2D.Double(nodeRegion.getX(), nodeRegion.getY(),
                     nodeRegion.getWidth() / 2, nodeRegion.getHeight() / 2);

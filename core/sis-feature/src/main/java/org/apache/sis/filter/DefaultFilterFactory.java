@@ -17,19 +17,26 @@
 package org.apache.sis.filter;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import org.opengis.filter.*;
 import org.opengis.filter.capability.*;
+import org.opengis.filter.capability.SpatialOperator;
 import org.opengis.filter.expression.*;
 import org.opengis.filter.identity.*;
 import org.opengis.filter.sort.*;
 import org.opengis.filter.spatial.*;
 import org.opengis.filter.temporal.*;
-import org.opengis.filter.capability.SpatialOperator;       // Resolve ambiguity with org.opengis.filter.spatial.
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
 import org.opengis.util.GenericName;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.feature.FunctionRegister;
+import org.apache.sis.internal.feature.Resources;
 
 
 /**
@@ -46,6 +53,25 @@ import org.opengis.util.GenericName;
  * @module
  */
 public class DefaultFilterFactory implements FilterFactory2 {
+    /**
+     * All functions identified by a name like {@code "cos"}, {@code "hypot"}, <i>etc</i>.
+     * The actual function creations is delegated to an external factory such as {@link SQLMM}.
+     * The factories are fetched by {@link #function(String, Expression...)} when first needed.
+     * This factory is cleared if classpath changes, for allowing dynamic reloading.
+     *
+     * @see #function(String, Expression...)
+     */
+    private static final Map<String,FunctionRegister> FUNCTION_REGISTERS = new HashMap<>();
+    static {
+        SystemListener.add(new SystemListener(Modules.FEATURE) {
+            @Override protected void classpathChanged() {
+                synchronized (FUNCTION_REGISTERS) {
+                    FUNCTION_REGISTERS.clear();
+                }
+            }
+        });
+    }
+
     /**
      * Creates a new factory.
      */
@@ -77,7 +103,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public BBOX bbox(final Expression e, final double minx, final double miny,
@@ -87,7 +113,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public BBOX bbox(final Expression e, final Envelope bounds) {
@@ -115,7 +141,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Beyond beyond(final Expression left, final Expression right,
@@ -125,7 +151,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Contains contains(final String propertyName, final Geometry geometry) {
@@ -135,7 +161,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Contains contains(final Expression left, final Expression right) {
@@ -143,7 +169,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Crosses crosses(final String propertyName, final Geometry geometry) {
@@ -153,7 +179,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Crosses crosses(final Expression left, final Expression right) {
@@ -161,7 +187,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Disjoint disjoint(final String propertyName, final Geometry geometry) {
@@ -171,7 +197,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Disjoint disjoint(final Expression left, final Expression right) {
@@ -179,7 +205,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public DWithin dwithin(final String propertyName, final Geometry geometry,
@@ -191,7 +217,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public DWithin dwithin(final Expression left, final Expression right,
@@ -201,7 +227,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Equals equals(final String propertyName, final Geometry geometry) {
@@ -211,7 +237,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Equals equal(final Expression left, final Expression right) {
@@ -219,7 +245,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Intersects intersects(final String propertyName, final Geometry geometry) {
@@ -229,7 +255,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Intersects intersects(final Expression left, final Expression right) {
@@ -237,7 +263,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Overlaps overlaps(final String propertyName, final Geometry geometry) {
@@ -247,7 +273,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Overlaps overlaps(final Expression left, final Expression right) {
@@ -255,7 +281,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Touches touches(final String propertyName, final Geometry geometry) {
@@ -265,7 +291,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Touches touches(final Expression left, final Expression right) {
@@ -273,7 +299,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Within within(final String propertyName, final Geometry geometry) {
@@ -283,7 +309,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Within within(final Expression left, final Expression right) {
@@ -293,7 +319,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     // IDENTIFIERS /////////////////////////////////////////////////////////////
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public FeatureId featureId(final String id) {
@@ -301,7 +327,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public GmlObjectId gmlObjectId(final String id) {
@@ -311,7 +337,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     // FILTERS /////////////////////////////////////////////////////////////////
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public And and(final Filter filter1, final Filter filter2) {
@@ -319,7 +345,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public And and(final List<Filter> filters) {
@@ -327,7 +353,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Or or(final Filter filter1, final Filter filter2) {
@@ -335,7 +361,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Or or(final List<Filter> filters) {
@@ -343,7 +369,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Not not(final Filter filter) {
@@ -351,7 +377,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Id id(final Set<? extends Identifier> ids) {
@@ -359,7 +385,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyName property(final GenericName name) {
@@ -377,7 +403,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsBetween between(final Expression expression, final Expression lower, final Expression upper) {
@@ -385,7 +411,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsEqualTo equals(final Expression expression1, final Expression expression2) {
@@ -393,7 +419,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsEqualTo equal(final Expression expression1, final Expression expression2,
@@ -403,7 +429,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsNotEqualTo notEqual(final Expression expression1, final Expression expression2) {
@@ -411,7 +437,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsNotEqualTo notEqual(final Expression expression1, final Expression expression2,
@@ -421,15 +447,15 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsGreaterThan greater(final Expression expression1, final Expression expression2) {
-        return greater(expression1,expression2,false, MatchAction.ANY);
+        return greater(expression1, expression2, true, MatchAction.ANY);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsGreaterThan greater(final Expression expression1, final Expression expression2,
@@ -439,15 +465,15 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsGreaterThanOrEqualTo greaterOrEqual(final Expression expression1, final Expression expression2) {
-        return greaterOrEqual(expression1, expression2,false, MatchAction.ANY);
+        return greaterOrEqual(expression1, expression2, true, MatchAction.ANY);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsGreaterThanOrEqualTo greaterOrEqual(final Expression expression1, final Expression expression2,
@@ -457,15 +483,15 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsLessThan less(final Expression expression1, final Expression expression2) {
-        return less(expression1, expression2, false, MatchAction.ANY);
+        return less(expression1, expression2, true, MatchAction.ANY);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsLessThan less(final Expression expression1, final Expression expression2,
@@ -475,15 +501,15 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsLessThanOrEqualTo lessOrEqual(final Expression expression1, final Expression expression2) {
-        return lessOrEqual(expression1, expression2, false, MatchAction.ANY);
+        return lessOrEqual(expression1, expression2, true, MatchAction.ANY);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsLessThanOrEqualTo lessOrEqual(final Expression expression1, final Expression expression2,
@@ -493,7 +519,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsLike like(final Expression expression, final String pattern) {
@@ -501,17 +527,17 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsLike like(final Expression expression, final String pattern,
             final String wildcard, final String singleChar, final String escape)
     {
-        return like(expression,pattern,wildcard,singleChar,escape,false);
+        return like(expression, pattern, wildcard, singleChar, escape, true);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsLike like(final Expression expression, final String pattern,
@@ -522,7 +548,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsNull isNull(final Expression expression) {
@@ -530,7 +556,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public PropertyIsNil isNil(Expression expression) {
@@ -540,121 +566,121 @@ public class DefaultFilterFactory implements FilterFactory2 {
     // TEMPORAL FILTER /////////////////////////////////////////////////////////
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public After after(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.After(expression1, expression2);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public AnyInteracts anyInteracts(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.AnyInteracts(expression1, expression2);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Before before(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.Before(expression1, expression2);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Begins begins(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.Begins(expression1, expression2);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public BegunBy begunBy(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.BegunBy(expression1, expression2);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public During during(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.During(expression1, expression2);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Ends ends(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.Ends(expression1, expression2);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public EndedBy endedBy(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.EndedBy(expression1, expression2);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Meets meets(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.Meets(expression1, expression2);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public MetBy metBy(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.MetBy(expression1, expression2);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public OverlappedBy overlappedBy(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.OverlappedBy(expression1, expression2);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public TContains tcontains(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.Contains(expression1, expression2);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public TEquals tequals(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.Equals(expression1, expression2);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public TOverlaps toverlaps(Expression expression1, Expression expression2) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new TemporalFunction.Overlaps(expression1, expression2);
     }
 
     // EXPRESSIONS /////////////////////////////////////////////////////////////
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Add add(final Expression expression1, final Expression expression2) {
@@ -662,7 +688,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Divide divide(final Expression expression1, final Expression expression2) {
@@ -670,7 +696,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Multiply multiply(final Expression expression1, final Expression expression2) {
@@ -678,7 +704,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Subtract subtract(final Expression expression1, final Expression expression2) {
@@ -686,15 +712,39 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Function function(final String name, final Expression... parameters) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final FunctionRegister register;
+        synchronized (FUNCTION_REGISTERS) {
+            if (FUNCTION_REGISTERS.isEmpty()) {
+                /*
+                 * Load functions when first needed or if classpath changed since last invocation.
+                 * The SQLMM factory is hard-coded because it is considered as a basic service to
+                 * be provided by all DefaultFilterFactory implementations, and for avoiding the
+                 * need to make SQLMM class public.
+                 */
+                final SQLMM r = new SQLMM();
+                for (final String fn : r.getNames()) {
+                    FUNCTION_REGISTERS.put(fn, r);
+                }
+                for (final FunctionRegister er : ServiceLoader.load(FunctionRegister.class)) {
+                    for (final String fn : er.getNames()) {
+                        FUNCTION_REGISTERS.putIfAbsent(fn, er);
+                    }
+                }
+            }
+            register = FUNCTION_REGISTERS.get(name);
+        }
+        if (register == null) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownFunction_1, name));
+        }
+        return register.create(name, parameters);
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Literal literal(final Object value) {
@@ -702,7 +752,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Literal literal(final byte value) {
@@ -710,7 +760,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Literal literal(final short value) {
@@ -718,7 +768,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Literal literal(final int value) {
@@ -726,7 +776,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Literal literal(final long value) {
@@ -734,7 +784,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Literal literal(final float value) {
@@ -742,7 +792,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Literal literal(final double value) {
@@ -750,7 +800,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Literal literal(final char value) {
@@ -758,7 +808,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Literal literal(final boolean value) {
@@ -768,7 +818,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     // SORT BY /////////////////////////////////////////////////////////////////
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public SortBy sort(final String propertyName, final SortOrder order) {
@@ -778,7 +828,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     // CAPABILITIES ////////////////////////////////////////////////////////////
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Operator operator(final String name) {
@@ -786,7 +836,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public SpatialOperator spatialOperator(final String name, final GeometryOperand[] geometryOperands) {
@@ -794,7 +844,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public FunctionName functionName(final String name, final int nargs) {
@@ -802,7 +852,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Functions functions(final FunctionName[] functionNames) {
@@ -810,7 +860,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public SpatialOperators spatialOperators(final SpatialOperator[] spatialOperators) {
@@ -818,7 +868,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public ComparisonOperators comparisonOperators(final Operator[] comparisonOperators) {
@@ -826,7 +876,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public ArithmeticOperators arithmeticOperators(final boolean simple, final Functions functions) {
@@ -834,7 +884,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public ScalarCapabilities scalarCapabilities(final ComparisonOperators comparison,
@@ -844,7 +894,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public SpatialCapabilities spatialCapabilities(
@@ -854,7 +904,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public IdCapabilities idCapabilities(final boolean eid, final boolean fid) {
@@ -862,7 +912,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public FilterCapabilities capabilities(final String version,
@@ -873,7 +923,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public TemporalCapabilities temporalCapabilities(TemporalOperand[] temporalOperands, TemporalOperators temporal) {

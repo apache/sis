@@ -54,7 +54,7 @@ public final class JTS extends Static {
      *
      * @see #getCoordinateReferenceSystem(Geometry)
      */
-    static final String CRS_KEY = "CRS";
+    public static final String CRS_KEY = "CRS";
 
     /**
      * Do not allow instantiation of this class.
@@ -102,6 +102,32 @@ public final class JTS extends Static {
     }
 
     /**
+     * Finds an operation between the given CRS valid in the given area of interest.
+     * This method does not verify the CRS of the given geometry.
+     *
+     * @param  sourceCRS       the CRS of source coordinates.
+     * @param  targetCRS       the CRS of target coordinates.
+     * @param  areaOfInterest  the area of interest.
+     * @return the mathematical operation from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation can not be created.
+     */
+    private static CoordinateOperation findOperation(final CoordinateReferenceSystem sourceCRS,
+                                                     final CoordinateReferenceSystem targetCRS,
+                                                     final Geometry areaOfInterest)
+            throws FactoryException
+    {
+        DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox();
+        try {
+            final Envelope e = areaOfInterest.getEnvelopeInternal();
+            bbox.setBounds(new Envelope2D(sourceCRS, e.getMinX(), e.getMinY(), e.getWidth(), e.getHeight()));
+        } catch (TransformException ex) {
+            bbox = null;
+            Logging.ignorableException(Logging.getLogger(Loggers.GEOMETRY), JTS.class, "transform", ex);
+        }
+        return CRS.findOperation(sourceCRS, targetCRS, bbox);
+    }
+
+    /**
      * Transforms the given geometry to the specified Coordinate Reference System (CRS).
      * If the given CRS or the given geometry is null, the geometry is returned unchanged.
      * If the geometry has no Coordinate Reference System, a {@link TransformException} is thrown.
@@ -114,11 +140,11 @@ public final class JTS extends Static {
      * @param  geometry   the geometry to transform, or {@code null}.
      * @param  targetCRS  the target coordinate reference system, or {@code null}.
      * @return the transformed geometry, or the same geometry if it is already in target CRS.
-     * @throws TransformException if the given geometry has no CRS or can not be transformed.
      * @throws FactoryException if transformation to the target CRS can not be constructed.
+     * @throws TransformException if the given geometry has no CRS or can not be transformed.
      */
     public static Geometry transform(Geometry geometry, final CoordinateReferenceSystem targetCRS)
-            throws TransformException, FactoryException
+            throws FactoryException, TransformException
     {
         if (geometry != null && targetCRS != null) {
             final CoordinateReferenceSystem sourceCRS = getCoordinateReferenceSystem(geometry);
@@ -126,33 +152,36 @@ public final class JTS extends Static {
                 throw new TransformException(Errors.format(Errors.Keys.UnspecifiedCRS));
             }
             if (!Utilities.equalsIgnoreMetadata(sourceCRS, targetCRS)) {
-                DefaultGeographicBoundingBox areaOfInterest = new DefaultGeographicBoundingBox();
-                try {
-                    final Envelope e = geometry.getEnvelopeInternal();
-                    areaOfInterest.setBounds(new Envelope2D(sourceCRS, e.getMinX(), e.getMinY(), e.getWidth(), e.getHeight()));
-                } catch (TransformException ex) {
-                    areaOfInterest = null;
-                    Logging.ignorableException(Logging.getLogger(Loggers.GEOMETRY), JTS.class, "transform", ex);
-                }
-                geometry = transform(geometry, CRS.findOperation(sourceCRS, targetCRS, areaOfInterest));
+                geometry = transform(geometry, findOperation(sourceCRS, targetCRS, geometry));
             }
         }
         return geometry;
     }
 
     /**
-     * Transform the given geometry using the given coordinate operation.
+     * Transforms the given geometry using the given coordinate operation.
      * If the geometry or the operation is null, then the geometry is returned unchanged.
+     * If the source CRS is not equals to the geometry CRS, a new operation is inferred.
      *
      * @todo Handle antimeridian case.
      *
      * @param  geometry   the geometry to transform, or {@code null}.
      * @param  operation  the coordinate operation to apply, or {@code null}.
      * @return the transformed geometry, or the same geometry if it is already in target CRS.
+     * @throws FactoryException if transformation to the target CRS can not be constructed.
      * @throws TransformException if the given geometry can not be transformed.
      */
-    public static Geometry transform(Geometry geometry, final CoordinateOperation operation) throws TransformException {
+    public static Geometry transform(Geometry geometry, CoordinateOperation operation)
+            throws FactoryException, TransformException
+    {
         if (geometry != null && operation != null) {
+            final CoordinateReferenceSystem sourceCRS = operation.getSourceCRS();
+            if (sourceCRS != null) {
+                final CoordinateReferenceSystem crs = getCoordinateReferenceSystem(geometry);
+                if (crs != null && !Utilities.equalsIgnoreMetadata(sourceCRS, crs)) {
+                    operation = findOperation(crs, operation.getTargetCRS(), geometry);
+                }
+            }
             geometry = transform(geometry, operation.getMathTransform());
             geometry.setUserData(operation.getTargetCRS());
         }
@@ -169,7 +198,7 @@ public final class JTS extends Static {
      * @throws TransformException if the given geometry can not be transformed.
      */
     public static Geometry transform(Geometry geometry, MathTransform transform) throws TransformException {
-        if (geometry != null && transform != null) {
+        if (geometry != null && transform != null && !transform.isIdentity()) {
             final GeometryCoordinateTransform gct = new GeometryCoordinateTransform(transform, geometry.getFactory());
             geometry = gct.transform(geometry);
         }

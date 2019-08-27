@@ -26,8 +26,8 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.internal.feature.FeatureExpression;
-import org.apache.sis.feature.DefaultAssociationRole;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.PropertyTypeBuilder;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -107,7 +107,7 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
         }
 
         /** Identification of this expression. */
-        @Override protected String name() {
+        @Override protected String getName() {
             return "PropertyName";
         }
 
@@ -130,7 +130,7 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
          *   <li>A {@link Map}, in which case {@link Map#get(Object)} will be invoked.</li>
          * </ul>
          *
-         * If no value is found for the given property, then this method returns {@code null}.
+         * If no value is found for the given feature, then this method returns {@code null}.
          */
         @Override
         public Object evaluate(final Object candidate) {
@@ -146,25 +146,27 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
         }
 
         /**
-         * Returns the expected type of values produced by this expression when a feature of the given type is evaluated.
+         * Provides the expected type of values produced by this expression when a feature of the given type is evaluated.
          *
+         * @param  valueType  the type of features to be evaluated by the given expression.
+         * @param  addTo      where to add the type of properties evaluated by the given expression.
+         * @return builder of the added property, or {@code null} if this method can not add a property.
          * @throws IllegalArgumentException if this method can not determine the property type for the given feature type.
          */
         @Override
-        public PropertyType expectedType(final FeatureType type) {
-            PropertyType propertyType = type.getProperty(name);         // May throw IllegalArgumentException.
-            while (propertyType instanceof Operation) {
-                final IdentifiedType it = ((Operation) propertyType).getResult();
-                if (it instanceof PropertyType) {
-                    propertyType = (PropertyType) it;
-                } else if (it instanceof FeatureType) {
-                    return new DefaultAssociationRole(Collections.singletonMap(DefaultAssociationRole.NAME_KEY, name), type, 1, 1);
+        public PropertyTypeBuilder expectedType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
+            PropertyType type = valueType.getProperty(name);        // May throw IllegalArgumentException.
+            while (type instanceof Operation) {
+                final IdentifiedType result = ((Operation) type).getResult();
+                if (result != type && result instanceof PropertyType) {
+                    type = (PropertyType) result;
+                } else if (result instanceof FeatureType) {
+                    return addTo.addAssociation((FeatureType) result).setName(name);
                 } else {
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
-                                name, PropertyType.class, Classes.getStandardType(Classes.getClass(it))));
+                    return null;
                 }
             }
-            return propertyType;
+            return addTo.addProperty(type);
         }
 
         /** Implementation of the visitor pattern. */
@@ -194,7 +196,7 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
         }
 
         /** Identification of this expression. */
-        @Override protected String name() {
+        @Override protected String getName() {
             return "Literal";
         }
 
@@ -214,21 +216,24 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
         }
 
         /**
-         * Returns the type of values returned by {@link #evaluate(Object)},
-         * wrapped in an {@code AttributeType} named "Literal".
+         * Provides the type of values returned by {@link #evaluate(Object)}
+         * wrapped in an {@link AttributeType} named "Literal".
+         *
+         * @param  addTo  where to add the type of properties evaluated by the given expression.
+         * @return builder of the added property.
          */
         @Override
-        public AttributeType<?> expectedType(FeatureType ignored) {
+        public PropertyTypeBuilder expectedType(FeatureType ignored, final FeatureTypeBuilder addTo) {
             final Class<?> valueType = value.getClass();
-            AttributeType<?> type = TYPES.get(valueType);
-            if (type == null) {
+            AttributeType<?> propertyType = TYPES.get(valueType);
+            if (propertyType == null) {
                 final Class<?> standardType = Classes.getStandardType(valueType);
-                type = TYPES.computeIfAbsent(standardType, Literal::newType);
+                propertyType = TYPES.computeIfAbsent(standardType, Literal::newType);
                 if (valueType != standardType) {
-                    TYPES.put(valueType, type);
+                    TYPES.put(valueType, propertyType);
                 }
             }
-            return type;
+            return addTo.addProperty(propertyType);
         }
 
         /**

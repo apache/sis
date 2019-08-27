@@ -17,8 +17,8 @@
 package org.apache.sis.test.suite;
 
 import org.apache.sis.test.TestSuite;
-import org.junit.runners.Suite;
 import org.junit.BeforeClass;
+import org.junit.runners.Suite;
 
 
 /**
@@ -55,6 +55,9 @@ import org.junit.BeforeClass;
     org.apache.sis.filter.DefaultObjectIdTest.class,
     org.apache.sis.filter.FilterByIdentifierTest.class,
     org.apache.sis.filter.ArithmeticFunctionTest.class,
+    org.apache.sis.filter.ComparisonFunctionTest.class,
+    org.apache.sis.filter.TemporalFunctionTest.class,
+    org.apache.sis.filter.SQLMMTest.class,
     org.apache.sis.internal.feature.AttributeConventionTest.class,
     org.apache.sis.internal.feature.j2d.ShapePropertiesTest.class,
     org.apache.sis.internal.feature.Java2DTest.class,

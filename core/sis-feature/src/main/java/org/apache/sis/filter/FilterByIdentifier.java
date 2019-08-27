@@ -69,7 +69,7 @@ final class FilterByIdentifier extends Node implements Id {
      * Returns a name identifying this kind of filter.
      */
     @Override
-    protected String name() {
+    protected String getName() {
         return "Id";
     }
 

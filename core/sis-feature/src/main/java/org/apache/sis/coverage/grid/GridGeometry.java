@@ -931,6 +931,7 @@ public class GridGeometry implements Serializable {
 
     /**
      * Computes the resolution for the given grid extent and transform, or returns {@code null} if unknown.
+     * Resolutions are given in order of target axes and give a scale factor from source to target coordinates.
      * If the {@code gridToCRS} transform is linear, we do not even need to check the grid extent; it can be null.
      * Otherwise (if the transform is non-linear) the extent is necessary. The easiest way to estimate a resolution
      * is then to ask for the derivative at some arbitrary point (the point of interest).
@@ -941,6 +942,7 @@ public class GridGeometry implements Serializable {
      * @param  gridToCRS  a transform for which to compute the resolution, or {@code null} if none.
      * @param  domain     the domain for which to get a resolution, or {@code null} if none.
      *                    If non-null, must be the source of {@code gridToCRS}.
+     * @return the resolutions as positive numbers. May contain NaN values.
      */
     static double[] resolution(final MathTransform gridToCRS, final GridExtent domain) {
         final Matrix matrix = MathTransforms.getMatrix(gridToCRS);
@@ -956,11 +958,13 @@ public class GridGeometry implements Serializable {
 
     /**
      * Computes the resolutions from the given matrix. This is the magnitude of each row vector.
+     * Resolutions are given in order of target axes.
      *
      * @param  gridToCRS    Jacobian matrix or affine transform for which to compute the resolution.
      * @param  numToIgnore  number of rows and columns to ignore at the end of the matrix.
      *         This is 0 if the matrix is a derivative (i.e. we ignore nothing), or 1 if the matrix
      *         is an affine transform (i.e. we ignore the translation column and the [0 0 … 1] row).
+     * @return the resolutions as positive numbers. May contain NaN values.
      */
     private static double[] resolution(final Matrix gridToCRS, final int numToIgnore) {
         final double[] resolution = new double[gridToCRS.getNumRow() - numToIgnore];
