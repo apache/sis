@@ -313,6 +313,8 @@ public class ScriptRunner implements AutoCloseable {
                  * HSQLDB stores tables in memory by default. For storing the tables on files, we have to
                  * use "CREATE CACHED TABLE" statement, which is HSQL-specific. For avoiding SQL dialect,
                  * the following statement change the default setting on current connection.
+                 *
+                 * Reference: http://hsqldb.org/doc/guide/dbproperties-chapt.html#dpc_db_props_url
                  */
                 statement.execute("SET DATABASE DEFAULT TABLE TYPE CACHED");
                 break;
@@ -389,7 +391,7 @@ public class ScriptRunner implements AutoCloseable {
      *
      * <b>Limitation:</b> the {@code inScript} word to replace must be a single word with no space.
      * If the text to replace contains two words (for example {@code "CREATE TABLE"}), then revert
-     * the commit after {@code 90949f7b5d9e58af90c517cadebc845faf734167} for bringing back this functionality.
+     * commit {@code bceb569558bfb7e3cf1a14aaf9261e786db06856} for bringing back this functionality.
      *
      * @param  inScript     the single word in the script which need to be replaced.
      * @param  replacement  the word(s) to use instead of {@code inScript} word.
