@@ -140,6 +140,8 @@ public strictfp class TestDatabase implements AutoCloseable {
      * @return connection to the test database.
      * @throws SQLException if an error occurred while creating the database.
      *
+     * @see <a href="http://hsqldb.org/doc/apidocs/org/hsqldb/jdbc/JDBCDataSource.html">JDBC data source for HSQL</a>
+     *
      * @since 1.0
      */
     public static TestDatabase createOnHSQLDB(final String name, final boolean pooled) throws SQLException {
@@ -148,12 +150,10 @@ public strictfp class TestDatabase implements AutoCloseable {
         final String url = "jdbc:hsqldb:mem:".concat(name);
         if (pooled) {
             pool = new JDBCPool();
-            pool.setDatabaseName("Apache SIS test database");
             pool.setURL(url);
             ds = pool;
         } else {
             final JDBCDataSource simple = new JDBCDataSource();
-            simple.setDatabaseName("Apache SIS test database");
             simple.setURL(url);
             ds = simple;
             pool = null;

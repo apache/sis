@@ -281,16 +281,18 @@ public class ScriptRunner implements AutoCloseable {
      * @param  maxRowsPerInsert  maximum number of rows per {@code "INSERT INTO"} statement.
      * @throws SQLException if an error occurred while creating a SQL statement.
      */
-    public ScriptRunner(final Connection connection, int maxRowsPerInsert) throws SQLException {
+    public ScriptRunner(final Connection connection, final int maxRowsPerInsert) throws SQLException {
         ArgumentChecks.ensureNonNull("connection", connection);
         ArgumentChecks.ensurePositive("maxRowsPerInsert", maxRowsPerInsert);
         final DatabaseMetaData metadata = connection.getMetaData();
+        this.maxRowsPerInsert   = maxRowsPerInsert;
         this.dialect            = Dialect.guess(metadata);
         this.identifierQuote    = metadata.getIdentifierQuoteString();
         this.isSchemaSupported  = metadata.supportsSchemasInTableDefinitions() &&
                                   metadata.supportsSchemasInDataManipulation();
         this.isCatalogSupported = metadata.supportsCatalogsInTableDefinitions() &&
                                   metadata.supportsCatalogsInDataManipulation();
+        this.statement          = connection.createStatement();
         switch (dialect) {
             default: {
                 isEnumTypeSupported      = false;
@@ -315,23 +317,15 @@ public class ScriptRunner implements AutoCloseable {
                 isGrantOnTableSupported  = false;
                 isCreateLanguageRequired = false;
                 isCommentSupported       = false;
-                if (maxRowsPerInsert != 0) {
-                    maxRowsPerInsert = 1;
-                }
                 /*
-                 * HSQLDB does not seem to support the {@code UNIQUE} keyword in {@code CREATE TABLE} statements.
-                 * In addition, we must declare explicitly that we want the tables to be cached on disk. Finally,
-                 * HSQL expects "CHR" to be spelled "CHAR".
+                 * HSQLDB stores tables in memory by default. For storing the tables on files, we have to
+                 * use "CREATE CACHED TABLE" statement, which is HSQL-specific. For avoiding SQL dialect,
+                 * the following statement change the default setting on current connection.
                  */
-                addReplacement("UNIQUE", "");
-                addReplacement("CHR", "CHAR");
-                addReplacement("CREATE", MORE_WORDS);
-                addReplacement("CREATE TABLE", "CREATE CACHED TABLE");
+                statement.execute("SET DATABASE DEFAULT TABLE TYPE CACHED");
                 break;
             }
         }
-        this.maxRowsPerInsert = maxRowsPerInsert;
-        statement = connection.createStatement();
         /*
          * Now build the list of statements to skip, depending of which features are supported by the database.
          * WARNING: do not use capturing group here, because some subclasses (e.g. EPSGInstaller) will use their
@@ -403,7 +397,7 @@ public class ScriptRunner implements AutoCloseable {
      *
      * If a text to replace contains two or more words, then this map needs to contain an entry for the first word
      * associated to the {@link #MORE_WORDS} value. For example if one needs to replace the {@code "CREATE TABLE"}
-     * words, then in addition to the {@code "CREATE TABLE"} entry this {@code replacements} map shall also contain
+     * words, then in addition to the {@code "CREATE TABLE"} entry the {@code replacements} map shall also contain
      * a {@code "CREATE"} entry associated with the {@link #MORE_WORDS} value.
      *
      * @param  inScript     the word in the script which need to be replaced.
@@ -544,9 +538,9 @@ parseLine:  while (pos < length) {
                             if (!Character.isUnicodeIdentifierPart(c)) break;
                         }
                         /*
-                         * Perform in-place replacement if the Unicode identifier is one of the keys in the listed
-                         * in the 'replacements' map. This operation may change the buffer length.  The 'pos' must
-                         * be updated if needed for staying the position after the Unicode identifier.
+                         * Perform in-place replacement if the Unicode identifier is one of the keys listed
+                         * in the 'replacements' map. This operation may change the buffer length. The 'pos'
+                         * must be updated if needed for staying at position after the Unicode identifier.
                          */
                         final String word = buffer.substring(start, pos);
                         final String replace = replacements.get(word);
