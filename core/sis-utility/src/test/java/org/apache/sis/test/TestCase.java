@@ -126,6 +126,9 @@ public abstract strictfp class TestCase {
         out = new PrintWriter(buffer = new StringWriter());
         VERBOSE = Boolean.getBoolean(TestConfiguration.VERBOSE_OUTPUT_KEY);
         RUN_EXTENSIVE_TESTS = Boolean.getBoolean(TestConfiguration.EXTENSIVE_TESTS_KEY);
+        if (VERBOSE) {
+            System.setErr(System.out);      // For avoiding log records to be interleaved with block of text.
+        }
     }
 
     /**

@@ -135,10 +135,15 @@ public class SimpleQuery extends Query {
     }
 
     /**
-     * Returns the expected property type for this query executed on features of the given type.
+     * Returns the type or values evaluated by this query when executed on features of the given type.
+     *
+     * @param  valueType  the type of features to be evaluated by the expressions in this query.
+     * @return type resulting from expressions evaluation (never null).
+     * @throws IllegalArgumentException if this method can operate only on some feature types
+     *         and the given type is not one of them.
      */
-    final DefaultFeatureType expectedType(final DefaultFeatureType source) {
-        return source;          // More developped code in JDK8 branch.
+    final DefaultFeatureType expectedType(final DefaultFeatureType valueType) {
+        return valueType;       // More elaborated code in geoapi-4.0 branch.
     }
 
     /**
@@ -167,6 +172,25 @@ public class SimpleQuery extends Query {
             return skip  == other.skip &&
                    limit == other.limit;
         }
-        return true;
+        return false;
+    }
+
+    /**
+     * Returns a textual representation looking like an SQL Select query.
+     *
+     * @return textual representation of this query.
+     */
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder(80);
+        sb.append("SELECT ");
+        sb.append('*');
+        if (limit != UNLIMITED) {
+            sb.append(" LIMIT ").append(limit);
+        }
+        if (skip != 0) {
+            sb.append(" OFFSET ").append(skip);
+        }
+        return sb.toString();
     }
 }

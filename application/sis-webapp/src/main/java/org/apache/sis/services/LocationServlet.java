@@ -51,7 +51,6 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.operation.TransformException;
 
 //SIS imports
 import org.apache.sis.geometry.DirectPosition2D;
@@ -312,14 +311,10 @@ public class LocationServlet extends HttpServlet {
 
         StringBuilder regionStr = new StringBuilder();
 
-        try {
-          for (int i = 0; i <= 360; i += 10) {
-            calculator.setStartingAzimuth(i);
-            DirectPosition pt = calculator.getEndPoint();
-            regionStr.append(pt.getOrdinate(1)).append(',').append(pt.getOrdinate(0)).append(',');
-          }
-        } catch (TransformException e) {
-          throw new ServletException(e);            // Should never happen.
+        for (int i = 0; i <= 360; i += 10) {
+          calculator.setStartingAzimuth(i);
+          DirectPosition pt = calculator.getEndPoint();
+          regionStr.append(pt.getOrdinate(1)).append(',').append(pt.getOrdinate(0)).append(',');
         }
         regions.add(regionStr.substring(0, regionStr.length() - 1));
 

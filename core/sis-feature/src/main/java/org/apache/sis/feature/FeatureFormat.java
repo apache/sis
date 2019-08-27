@@ -292,6 +292,7 @@ public class FeatureFormat extends TabularFormat<Object> {
      * @throws IOException if an error occurred while writing to the given appendable.
      */
     @Override
+    @SuppressWarnings("null")       // Many false positives in this method.
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
         ArgumentChecks.ensureNonNull("object",     object);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
@@ -399,7 +400,15 @@ public class FeatureFormat extends TabularFormat<Object> {
                 }
                 value = feature.getPropertyValue(propertyType.getName().toString());
                 if (value == null) {
-                    if (propertyType instanceof FieldType && ((FieldType) propertyType).getMinimumOccurs() == 0) {
+                    if (propertyType instanceof DefaultAttributeType<?>
+                            && ((DefaultAttributeType<?>) propertyType).getMinimumOccurs() == 0
+                            && ((DefaultAttributeType<?>) propertyType).characteristics().isEmpty())
+                    {
+                        continue;                           // If optional, no value and no characteristics, skip the full row.
+                    }
+                    if (propertyType instanceof DefaultAssociationRole
+                            && ((DefaultAssociationRole) propertyType).getMinimumOccurs() == 0)
+                    {
                         continue;                           // If optional and no value, skip the full row.
                     }
                     cardinality = 0;

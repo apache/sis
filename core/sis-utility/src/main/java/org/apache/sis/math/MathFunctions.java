@@ -23,9 +23,13 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.DoubleDouble;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 import static java.lang.Float.intBitsToFloat;
+import static java.lang.Float.floatToIntBits;
 import static java.lang.Float.floatToRawIntBits;
 import static java.lang.Double.longBitsToDouble;
+import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.doubleToRawLongBits;
 import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
 import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
@@ -197,6 +201,8 @@ public final class MathFunctions extends Static {
      *     sqrt(vector[0]² + vector[1]² + … + vector[length-1]²)
      * }
      *
+     * If the given vector contains a NaN value, then the result is NaN.
+     *
      * <div class="section">Implementation note</div>
      * In the special case where only one element is different than zero, this method
      * returns directly the {@linkplain Math#abs(double) absolute value} of that element
@@ -207,7 +213,7 @@ public final class MathFunctions extends Static {
      * Cartesian coordinate system}.
      *
      * @param  vector  the vector for which to compute the magnitude.
-     * @return the magnitude of the given vector.
+     * @return the magnitude of the given vector as a positive number, of NaN.
      *
      * @see Math#hypot(double, double)
      */
@@ -219,9 +225,9 @@ public final class MathFunctions extends Static {
         do if (i == 0) return 0;
         while ((v1 = vector[--i]) == 0);
 
-        // We have found a non-zero element. If it is the only one, returns it directly.
+        // We have found a non-zero element. If it is the only one, returns its absolute value.
         double v2;
-        do if (i == 0) return Math.abs(v1);
+        do if (i == 0) return abs(v1);
         while ((v2 = vector[--i]) == 0);
 
         // If there is exactly 2 elements, use Math.hypot which is more robust than our algorithm.
@@ -404,7 +410,7 @@ public final class MathFunctions extends Static {
      * @since 0.6
      */
     public static double asinh(final double x) {
-        return Math.log(x + Math.sqrt(x*x + 1));
+        return Math.log(x + sqrt(x*x + 1));
     }
 
     /**
@@ -419,7 +425,7 @@ public final class MathFunctions extends Static {
      * @since 0.6
      */
     public static double acosh(final double x) {
-        return Math.log(x + Math.sqrt(x*x - 1));
+        return Math.log(x + sqrt(x*x - 1));
     }
 
     /**
@@ -599,7 +605,7 @@ public final class MathFunctions extends Static {
      * @return {@code true} if both values are equal given the tolerance threshold.
      */
     public static boolean epsilonEqual(final float v1, final float v2, final float ε) {
-        return (Math.abs(v1 - v2) <= ε) || Float.floatToIntBits(v1) == Float.floatToIntBits(v2);
+        return (abs(v1 - v2) <= ε) || floatToIntBits(v1) == floatToIntBits(v2);
     }
 
     /**
@@ -621,7 +627,7 @@ public final class MathFunctions extends Static {
      * @return {@code true} if both values are equal given the tolerance threshold.
      */
     public static boolean epsilonEqual(final double v1, final double v2, final double ε) {
-        return (Math.abs(v1 - v2) <= ε) || Double.doubleToLongBits(v1) == Double.doubleToLongBits(v2);
+        return (abs(v1 - v2) <= ε) || doubleToLongBits(v1) == doubleToLongBits(v2);
     }
 
     /**
@@ -775,7 +781,7 @@ public final class MathFunctions extends Static {
                     primes = Arrays.copyOf(primes, Math.min((index | 0xF) + 1, PRIMES_LENGTH_16_BITS));
                     do {
 testNextNumber:         while (true) {      // Simulate a "goto" statement (usually not recommanded...)
-                            final int stopAt = (int) Math.sqrt(n += 2);
+                            final int stopAt = (int) sqrt(n += 2);
                             int prime;
                             int j = 0;
                             do {
@@ -840,7 +846,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
         if (number == 0) {
             return ArraysExt.EMPTY_INT;
         }
-        number = Math.abs(number);
+        number = abs(number);
         int[] divisors = new int[16];
         divisors[0] = 1;
         int count = 1;
@@ -850,7 +856,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
          * values before that point, i.e. if n=p1*p2 and p2 is greater than 'sqrt', than p1
          * most be lower than 'sqrt'.
          */
-        final int sqrt = (int) Math.sqrt(number);               // Really want rounding toward 0.
+        final int sqrt = (int) sqrt(number);               // Really want rounding toward 0.
         for (int p,i=0; (p=primeNumberAt(i)) <= sqrt; i++) {
             if (number % p == 0) {
                 if (count == divisors.length) {
@@ -923,7 +929,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
          */
         int minValue = Integer.MAX_VALUE;
         for (int i=0; i<numbers.length; i++) {
-            final int n = Math.abs(numbers[i]);
+            final int n = abs(numbers[i]);
             if (n <= minValue) {
                 minValue = n;
             }
@@ -935,7 +941,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
          */
         int count = divisors.length;
         for (int i=0; i<numbers.length; i++) {
-            final int n = Math.abs(numbers[i]);
+            final int n = abs(numbers[i]);
             if (n != minValue) {
                 for (int j=count; --j>0;) {         // Do not test j==0, since divisors[0] ==  1.
                     if (n % divisors[j] != 0) {
@@ -945,5 +951,230 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
             }
         }
         return ArraysExt.resize(divisors, count);
+    }
+
+    /**
+     * Returns the real (non-complex) roots of a polynomial equation having the given coefficients.
+     * This method returns the <var>x</var> values for which <var>y</var>=0 in the following equation:
+     *
+     * <blockquote><var>y</var> =
+     * <var>c<sub>0</sub></var> +
+     * <var>c<sub>1</sub></var>⋅<var>x</var> +
+     * <var>c<sub>2</sub></var>⋅<var>x</var><sup>2</sup> +
+     * <var>c<sub>3</sub></var>⋅<var>x</var><sup>3</sup> + … +
+     * <var>c<sub>n</sub></var>⋅<var>x</var><sup>n</sup>
+     * </blockquote>
+     *
+     * Current implementation can resolve polynomials described by a maximum of 5 coefficients, ignoring
+     * leading and trailing zeros. They correspond to linear, quadratic, cubic and quartic polynomials.
+     *
+     * @param  coefficients  the <var>c<sub>0</sub></var>, <var>c<sub>1</sub></var>, <var>c<sub>2</sub></var>, …
+     *                       <var>c<sub>n</sub></var> coefficients, in that order.
+     * @return the non-complex roots, or an empty array if none.
+     * @throws UnsupportedOperationException if given arguments contain more non-zero coefficients than this method can handle.
+     *
+     * @see java.awt.geom.QuadCurve2D#solveQuadratic(double[])
+     * @see java.awt.geom.CubicCurve2D#solveCubic(double[])
+     *
+     * @since 1.0
+     */
+    public static double[] polynomialRoots(final double... coefficients) {
+        int upper = coefficients.length;
+        while (upper > 0) {
+            double a = coefficients[--upper];                   // Coefficient of the term with highest exponent.
+            if (a == 0) {
+                continue;                                       // Search the last non-zero coefficient.
+            }
+            double c;                                           // Coefficient of the term with lowest exponent.
+            int lower = 0;
+            while ((c = coefficients[lower]) == 0) lower++;
+            switch (upper - lower) {
+                /*
+                 * c = 0
+                 *
+                 * Can not compute x. We could return an arbitrary value if c = 0, but we rather return
+                 * an empty array for keeping the number of root equals to the highest exponent.
+                 */
+                case 0: {
+                    break;
+                }
+                /*
+                 * ax + c = 0    →    x = -c/a
+                 */
+                case 1: {
+                    final double x = -c / a;
+                    if (Double.isNaN(x)) break;
+                    return new double[] {x};
+                }
+                /*
+                 * ax² + bx + c = 0    →    x = (-b ± √[b² - 4ac]) / (2a)
+                 *
+                 * Above equation is numerically unstable. More stable algorithm is given
+                 * by Numerical Recipes §5.6 (quadratic equation), which is applied below.
+                 */
+                case 2: {
+                    final double b = coefficients[lower + 1];
+                    final double q = -0.5 * (b + Math.copySign(sqrt(b*b - 4*a*c), b));
+                    final double x1 = q/a;
+                    final double x2 = c/q;
+                    if (Double.isNaN(x1) && Double.isNaN(x2)) break;
+                    return (x1 != x2) ? new double[] {x1, x2} : new double[] {x1};
+                }
+                /*
+                 * x³ + ax² + bx + c = 0
+                 *
+                 * Numerical Recipes §5.6 (cubic equation) is applied below.
+                 * Solution usually have either 1 or 3 roots.
+                 */
+                case 3: {
+                    return refineRoots(coefficients, solveCubic(
+                                       coefficients[lower + 2] / a,
+                                       coefficients[lower + 1] / a,
+                                       c / a, false));
+                }
+                /*
+                 * x⁴ + ax³ + bx² + cx + d = 0
+                 *
+                 * https://dlmf.nist.gov/1.11 in "Quartic equations" section.
+                 * This algorithm reduces the equation to a cubic equation.
+                 */
+                case 4: {
+                    double b,d;
+                    d = c / a;
+                    c = coefficients[lower + 1] / a;
+                    b = coefficients[lower + 2] / a;
+                    a = coefficients[lower + 3] / a;
+                    final double a2 = a*a;
+                    final double p = -3./8   * (a2)     +  b;
+                    final double q =  1./8   * (a2*a)   -  1./2  * (a*b)   +  c;
+                    final double r = -3./256 * (a2*a2)  +  1./16 * (a2*b)  -  1./4 * (a*c) + d;
+                    final double[] roots = solveCubic(-2*p, p*p-4*r, q*q, true);
+                    if (roots.length != 4) break;
+                    for (int i=0; i<3; i++) {
+                        roots[i] = sqrt(-roots[i]);
+                    }
+                    if (isPositive(q)) {
+                        for (int i=0; i<3; i++) {
+                            roots[i] = -roots[i];
+                        }
+                    }
+                    final double α = roots[0], β = roots[1], γ = roots[2];
+                    final double s = α + β + γ;
+                    if (Double.isNaN(s)) break;
+                    roots[0] = s/2 - (a /= 4);
+                    roots[1] = (+α - β - γ)/2 - a;
+                    roots[2] = (-α + β - γ)/2 - a;
+                    roots[3] = (-α - β + γ)/2 - a;
+                    return refineRoots(coefficients, removeDuplicated(roots));
+                }
+                default: {
+                    throw new UnsupportedOperationException();
+                }
+            }
+            break;
+        }
+        return ArraysExt.EMPTY_DOUBLE;
+    }
+
+    /**
+     * Solves cubic equation x³ + ax² + bx + c = 0. The solution before simplification has either 1 or 3 roots.
+     * The {@code quartic} argument specifies whether this cubic equation is used as a step for solving a quartic equation:
+     *
+     * <ul>
+     *   <li>If {@code true}, then we are interested only in the 3 roots solution and we do not check for duplicated values.
+     *       The length of returned array is 4 for allowing the caller to reuse the same array.</li>
+     *   <li>If {@code false}, then this method may simplify the 3 roots to 2 roots if two of them are equal,
+     *       or may return the 1 root solution. The length of returned array is the number of roots.</li>
+     * </ul>
+     */
+    private static double[] solveCubic(double a, double b, double c, final boolean quartic) {
+        final double Q = (a*a - 3*b) / 9;                           // Q from Numerical Recipes 5.6.10.
+        final double R = (a*(a*a - 4.5*b) + 13.5*c) / 27;           // R from Numerical Recipes 5.6.10.
+        final double Q3 = Q*Q*Q;
+        final double R2 = R*R;
+        a /= 3;                                                     // Last term of Numerical Recipes 5.6.12, 17 and 18.
+        if (R2 < Q3) {
+            /*
+             * Numerical Recipes 5.6.11 and 5.6.12 uses acos(R/sqrt(Q³)). It is possible to rewrite as
+             * atan2(sqrt(Q3 - R2), R) using the  cos(θ) = 1/√[1 + tan²θ]  trigonometric identity, but
+             * this substitution seems to decrease accuracy instead of increasing it in our tests.
+             */
+            b = Math.acos(R/sqrt(Q3)) / 3;                          // θ from Numerical recipes 5.6.11, then b = θ/3.
+            c = -2 * sqrt(Q);                                       // First part of Numerical Recipes 5.6.12.
+            double[] roots = new double[quartic ? 4 : 3];
+            roots[2] = c*Math.cos(b - 2*Math.PI/3) - a;             // TODO: try Math.fma with JDK9.
+            roots[1] = c*Math.cos(b + 2*Math.PI/3) - a;
+            roots[0] = c*Math.cos(b) - a;
+            if (!quartic) {
+                roots = removeDuplicated(roots);
+            }
+            return roots;
+        }
+        if (!quartic) {
+            b = -Math.copySign(Math.cbrt(abs(R) + sqrt(R2 - Q3)), R);       // A from Numerical Recipes 5.6.15.
+            final double x = (b == 0 ? 0 : b + Q/b) - a;
+            if (!Double.isNaN(x)) {
+                return new double[] {x};
+            }
+        }
+        return ArraysExt.EMPTY_DOUBLE;
+    }
+
+    /**
+     * Remove duplicated values in the given array. This method is okay only for very small arrays (3 or 4 elements).
+     * Duplicated values should be very rare and occur mostly as a consequence of rounding errors while computing the
+     * roots of polynomial equations. Because if the algebraic solution has less roots than what we would expect from
+     * the largest exponent (for example ax² + bx = 0 has only one root instead of two), then {@link #polynomialRoots}
+     * should have reduced the equation to a lower degrees (ax + b = 0 in above example), in which case there is no
+     * duplicated roots to remove.
+     */
+    private static double[] removeDuplicated(double[] roots) {
+        int i = 1;
+next:   while (i < roots.length) {
+            for (int j=i; --j >= 0;) {
+                if (roots[j] == roots[i]) {
+                    roots = ArraysExt.remove(roots, i, 1);
+                    continue next;
+                }
+            }
+            i++;
+        }
+        return roots;
+    }
+
+    /**
+     * Tries to improves accuracy of polynomial roots by applying small displacements
+     * to the <var>x</var> values using ∂y/∂x derivative around those values.
+     *
+     * <div class="note"><b>Purpose:</b>
+     * this refinement is significant in a {@link org.apache.sis.referencing.GeodesicsOnEllipsoid}
+     * test checking the value of an μ(x²,y²) function.</div>
+     *
+     * @param  coefficients  the user-specified coefficients.
+     * @param  roots         the roots. This array will be modified in place.
+     * @return {@code roots}.
+     */
+    private static double[] refineRoots(final double[] coefficients, final double[] roots) {
+        for (int i=0; i < roots.length; i++) {
+            double ymin = Double.POSITIVE_INFINITY;
+            double x = roots[i];
+            double dx;
+            do {
+                double px = 1;                              // Power of x: 1, x¹, x², x³, …
+                double dy = 0;                              // First derivative of polynomial at x.
+                double y  = coefficients[0];                // Value of polynomial at x.
+                double ey = 0, edy = 0;                     // Error terms for Kahan summation algorithm.
+                for (int j=1; j<coefficients.length; j++) {
+                    final double c = coefficients[j];
+                    double s;
+                    s = c * (px *  i) + edy; edy = s + (dy - (dy += s));        // Kahan summation of dy.
+                    s = c * (px *= x) +  ey;  ey = s + ( y - ( y += s));        // Kahan summation of y.
+                }
+                if (!(ymin > (ymin = abs(y)))) break;       // If result not better than previous result, stop.
+                roots[i] = x;
+                dx = y/dy;
+            } while (x != (x -= dx) && Double.isFinite(x));
+        }
+        return roots;
     }
 }

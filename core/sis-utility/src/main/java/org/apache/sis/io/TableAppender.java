@@ -25,6 +25,7 @@ import java.io.UncheckedIOException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.X364;
 
@@ -868,7 +869,9 @@ public class TableAppender extends Appender implements Flushable {
      * @param  count  number of repetition.
      */
     private static void repeat(final Appendable out, final char car, int count) throws IOException {
-        while (--count >= 0) {
+        if (out instanceof StringBuilder) {
+            StringBuilders.repeat((StringBuilder) out, car, count);
+        } else while (--count >= 0) {
             out.append(car);
         }
     }

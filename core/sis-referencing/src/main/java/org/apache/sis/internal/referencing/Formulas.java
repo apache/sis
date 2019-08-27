@@ -88,8 +88,10 @@ public final class Formulas extends Static {
      * Maximum number of iterations for iterative computations. Defined in this {@code Formulas} class as a default value,
      * but some classes may use a derived value (for example twice this amount). This constant is mostly useful for identifying
      * places where iterations occur.
+     *
+     * <p>Current value has been determined empirically for allowing {@code GeodesicsOnEllipsoidTest} to pass.</p>
      */
-    public static final int MAXIMUM_ITERATIONS = 15;
+    public static final int MAXIMUM_ITERATIONS = 18;
 
     /**
      * Do not allow instantiation of this class.

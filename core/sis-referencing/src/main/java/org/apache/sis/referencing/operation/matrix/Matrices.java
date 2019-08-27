@@ -29,6 +29,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.internal.util.Numerics;
@@ -1187,10 +1188,8 @@ public final class Matrices extends Static {
                         s += 2;
                     } else {
                         int n = Math.min(s, maximumPaddingZeros[flatIndex]);
+                        StringBuilders.repeat(buffer, '0', n);
                         s -= n;
-                        while (--n >= 0) {
-                            buffer.append('0');
-                        }
                     }
                     buffer.append(CharSequences.spaces(s));
                 }

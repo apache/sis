@@ -17,7 +17,6 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Set;
-import org.apache.sis.referencing.CRS;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
@@ -33,6 +32,8 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.GeodeticException;
 
 
 /**
@@ -59,7 +60,7 @@ public final class EPSGFactoryProxy implements CRSAuthorityFactory {
         try {
             return factory().getAuthority();
         } catch (FactoryException e) {
-            throw new RuntimeException(e);
+            throw new GeodeticException(e);
         }
     }
 
@@ -68,7 +69,7 @@ public final class EPSGFactoryProxy implements CRSAuthorityFactory {
         try {
             return factory().getVendor();
         } catch (FactoryException e) {
-            throw new RuntimeException(e);
+            throw new GeodeticException(e);
         }
     }
 

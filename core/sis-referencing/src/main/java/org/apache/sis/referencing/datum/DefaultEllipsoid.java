@@ -111,7 +111,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.referencing.CommonCRS#ellipsoid()
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEllipsoid(String)
@@ -536,7 +536,12 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @param  λ2  longitude of second point (in decimal degrees).
      * @param  φ2  latitude  of second point (in decimal degrees).
      * @return the orthodromic distance (in the units of this ellipsoid's axis).
+     *
+     * @deprecated Replaced by {@link org.apache.sis.referencing.GeodeticCalculator}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-386">SIS-386</a>
      */
+    @Deprecated
     public double orthodromicDistance(double λ1, double φ1, double λ2, double φ2) {
         λ1 = toRadians(λ1);
         φ1 = toRadians(φ1);

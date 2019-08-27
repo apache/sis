@@ -26,7 +26,6 @@ import java.util.Random;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilitiesExt;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -46,6 +45,7 @@ import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static org.opengis.test.Assert.*;
+import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
 
 /**
@@ -57,11 +57,20 @@ import static org.opengis.test.Assert.*;
  *   <li>Charles Karney's <a href="https://geographiclib.sourceforge.io/">GeographicLib</a> implementation.</li>
  * </ul>
  *
+ * This base class tests calculator using spherical formulas.
+ * Subclass executes the same test but using ellipsoidal formulas.
+ *
  * @version 1.0
- * @since 1.0
+ * @since   1.0
  * @module
  */
-public final strictfp class GeodeticCalculatorTest extends TestCase {
+public strictfp class GeodeticCalculatorTest extends TestCase {
+    /**
+     * Creates a new test case.
+     */
+    public GeodeticCalculatorTest() {
+    }
+
     /**
      * Verifies that the given point is equals to the given latitude and longitude.
      *
@@ -70,7 +79,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
      * @param p  the actual position to verify.
      * @param ε  the tolerance threshold.
      */
-    private static void assertPositionEquals(final double φ, final double λ, final DirectPosition p, final double ε) {
+    static void assertPositionEquals(final double φ, final double λ, final DirectPosition p, final double ε) {
         assertEquals("φ", φ, p.getOrdinate(0), ε);
         assertEquals("λ", λ, p.getOrdinate(1), ε);
     }
@@ -89,12 +98,22 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     }
 
     /**
-     * Returns the calculator to use for testing purpose. This classes uses a calculator for a sphere.
+     * Returns the calculator to use for testing purpose. Default implementation uses a calculator
+     * for a sphere. Subclasses should override for creating instances of the class to be tested.
      *
      * @param  normalized  whether to force (longitude, latitude) axis order.
      */
-    private static GeodeticCalculator create(final boolean normalized) {
-        return new GeodeticCalculator(normalized ? HardCodedCRS.SPHERE : HardCodedCRS.SPHERE_φλ);
+    GeodeticCalculator create(final boolean normalized) {
+        final GeodeticCalculator c = GeodeticCalculator.create(normalized ? HardCodedCRS.SPHERE : HardCodedCRS.SPHERE_φλ);
+        assertEquals(GeodeticCalculator.class, c.getClass());       // Expect the implementation with spherical formulas.
+        return c;
+    }
+
+    /**
+     * Returns a reference implementation for the given geodetic calculator.
+     */
+    private static Geodesic createReferenceImplementation(final GeodeticCalculator c) {
+        return new Geodesic(c.semiMajorAxis, 1/c.ellipsoid.getInverseFlattening());
     }
 
     /**
@@ -117,6 +136,7 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
      * Tests azimuths at poles.
      */
     @Test
+    @DependsOnMethod("testCardinalAzimuths")
     public void testAzimuthAtPoles() {
         final GeodeticCalculator c = create(false);
         final double tolerance = 0.2;
@@ -139,12 +159,15 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
      */
     @Test
     public void testDistanceAtEquator() {
-        final Random random = TestUtilities.createRandomNumberGenerator();
+        final Random random = TestUtilities.createRandomNumberGenerator(86909845084528L);
         final GeodeticCalculator c = create(false);
-        final double r = c.ellipsoid.getSemiMajorAxis() * (PI / 180);
+        final double a = c.ellipsoid.getSemiMajorAxis();
+        final double b = c.ellipsoid.getSemiMinorAxis();
+        final double r = a * (PI / 180);
+        final double λmax = nextDown((b/a) * 180);
         c.setStartGeographicPoint(0, 0);
         for (int i=0; i<100; i++) {
-            final double x = 360 * random.nextDouble() - 180;
+            final double x = (2*λmax) * random.nextDouble() - λmax;
             c.setEndGeographicPoint(0, x);
             final double expected = abs(x) * r;
             assertEquals("Geodesic",   expected, c.getGeodesicDistance(), Formulas.LINEAR_TOLERANCE);
@@ -156,12 +179,11 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
      * Tests {@link GeodeticCalculator#getGeodesicDistance()} and azimuths with the example given in Wikipedia.
      * This computes the great circle route from Valparaíso (33°N 71.6W) to Shanghai (31.4°N 121.8°E).
      *
-     * @throws TransformException if an error occurred while transforming coordinates.
-     *
      * @see <a href="https://en.wikipedia.org/wiki/Great-circle_navigation#Example">Great-circle navigation on Wikipedia</a>
      */
     @Test
-    public void testGeodesicDistanceAndAzimuths() throws TransformException {
+    @DependsOnMethod({"testCardinalAzimuths", "testDistanceAtEquator"})
+    public void testGeodesicDistanceAndAzimuths() {
         final GeodeticCalculator c = create(false);
         c.setStartGeographicPoint(-33.0, -71.6);            // Valparaíso
         c.setEndGeographicPoint  ( 31.4, 121.8);            // Shanghai
@@ -194,35 +216,49 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
      * Tests geodetic calculator involving a coordinate operation.
      * This test uses a simple CRS with only the axis order interchanged.
      * The coordinates are the same than {@link #testGeodesicDistanceAndAzimuths()}.
-     *
-     * @throws TransformException if an error occurred while transforming coordinates.
      */
     @Test
     @DependsOnMethod("testGeodesicDistanceAndAzimuths")
-    public void testUsingTransform() throws TransformException {
+    public void testUsingTransform() {
         final GeodeticCalculator c = create(true);
         final double φ = -33.0;
         final double λ = -71.6;
         c.setStartPoint(new DirectPosition2D(λ, φ));
         assertPositionEquals(λ, φ, c.getStartPoint(), Formulas.ANGULAR_TOLERANCE);
-
+        /*
+         * Test the "Valparaíso to Shanghai" geodesic given by Wikipedia, but with a larger tolerance threshold for allowing
+         * the test to pass with both spherical and ellipsoidal formula. It is not the purpose of this test to check accuracy;
+         * that check is done by `testGeodesicDistanceAndAzimuths()`.
+         */
         c.setStartingAzimuth(-94.41);
         c.setGeodesicDistance(18743000);
-        assertPositionEquals(121.8, 31.4, c.getEndPoint(), 0.01);
+        assertPositionEquals(121.8, 31.4, c.getEndPoint(), 0.2);
     }
 
     /**
-     * Tests {@link GeodeticCalculator#createCircularRegion2D(double)}.
-     *
-     * @throws TransformException if an error occurred while transforming coordinates.
+     * Tests {@link GeodeticCalculator#moveToEndPoint()}.
+     */
+    @Test
+    public void testMoveToEndPoint() {
+        // Following relationship is required by GeodeticCalculator.moveToEndPoint() implementation.
+        assertEquals(GeodeticCalculator.ENDING_AZIMUTH >>> 1, GeodeticCalculator.STARTING_AZIMUTH);
+        final GeodeticCalculator c = create(false);
+        c.setStartGeographicPoint(-33.0, -71.6);            // Valparaíso
+        c.setEndGeographicPoint  ( 31.4, 121.8);            // Shanghai
+        c.moveToEndPoint();
+        assertPositionEquals(31.4, 121.8, c.getStartPoint(), 1E-12);
+    }
+
+    /**
+     * Tests {@link GeodeticCalculator#createGeodesicCircle2D(double)}.
      */
     @Test
     @DependsOnMethod("testUsingTransform")
-    public void testCircularRegion2D() throws TransformException {
+    public void testGeodesicCircle2D() {
         final GeodeticCalculator c = create(true);
         c.setStartGeographicPoint(-33.0, -71.6);                // Valparaíso
         c.setGeodesicDistance(100000);                          // 100 km
-        Shape region = c.createCircularRegion2D(10000);
+        Shape region = c.createGeodesicCircle2D(10000);
         if (VisualCheck.SHOW_WIDGET) {
             VisualCheck.show(region);
         }
@@ -238,24 +274,23 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
      * as a way to verify that user-specified CRS is taken in account. The start point and end point are the same
      * than in {@link #testGeodesicDistanceAndAzimuths()}. Note that this path crosses the anti-meridian,
      * so the end point needs to be shifted by 360°.
-     *
-     * @throws TransformException if an error occurred while transforming coordinates.
      */
     @Test
     @DependsOnMethod("testUsingTransform")
-    public void testGeodesicPath2D() throws TransformException {
+    public void testGeodesicPath2D() {
         final GeodeticCalculator c = create(true);
-        final double tolerance = 0.05;
         c.setStartGeographicPoint(-33.0, -71.6);                                        // Valparaíso
         c.setEndGeographicPoint  ( 31.4, 121.8);                                        // Shanghai
         final Shape singleCurve = c.createGeodesicPath2D(Double.POSITIVE_INFINITY);
         final Shape multiCurves = c.createGeodesicPath2D(10000);                        // 10 km tolerance.
         /*
          * The approximation done by a single curve is not very good, but is easier to test.
+         * The coordinate at t=0.5 has a larger tolerance threshold because it varies slightly
+         * depending on whether we are testing with spherical or ellipsoidal formulas.
          */
-        assertPointEquals( -71.6, -33.0, ShapeUtilitiesExt.pointOnBezier(singleCurve, 0),   tolerance);
-        assertPointEquals(-238.2,  31.4, ShapeUtilitiesExt.pointOnBezier(singleCurve, 1),   tolerance);       // λ₂ = 121.8° - 360°
-        assertPointEquals(-159.2,  -6.8, ShapeUtilitiesExt.pointOnBezier(singleCurve, 0.5), tolerance);
+        assertPointEquals( -71.6, -33.0, ShapeUtilitiesExt.pointOnBezier(singleCurve, 0),   0.05);
+        assertPointEquals(-238.2,  31.4, ShapeUtilitiesExt.pointOnBezier(singleCurve, 1),   0.05);      // λ₂ = 121.8° - 360°
+        assertPointEquals(-159.2,  -6.9, ShapeUtilitiesExt.pointOnBezier(singleCurve, 0.5), 0.25);
         /*
          * The more accurate curve can not be simplified to a Java2D primitive.
          */
@@ -267,11 +302,9 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
 
     /**
      * Verifies that all <var>y</var> coordinates are zero for a geodesic path on equator.
-     *
-     * @throws TransformException if an error occurred while transforming coordinates.
      */
     @Test
-    public void testGeodesicPathOnEquator() throws TransformException {
+    public void testGeodesicPathOnEquator() {
         final GeodeticCalculator c = create(false);
         final double tolerance = 1E-12;
         c.setStartGeographicPoint(0, 20);
@@ -290,15 +323,13 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     /**
      * Tests geodesic path between random points. The coordinates are compared with values computed by
      * <a href="https://geographiclib.sourceforge.io/">GeographicLib</a>, taken as reference implementation.
-     *
-     * @throws TransformException if an error occurred while transforming coordinates.
      */
     @Test
-    public void testBetweenRandomPoints() throws TransformException {
+    public void testBetweenRandomPoints() {
         final Random random = TestUtilities.createRandomNumberGenerator();
         final GeodeticCalculator c = create(false);
-        final Geodesic reference = new Geodesic(c.ellipsoid.getSemiMajorAxis(), 1/c.ellipsoid.getInverseFlattening());
-        final StatisticsFormat sf = VERBOSE ? StatisticsFormat.getInstance() : null;
+        final Geodesic reference = createReferenceImplementation(c);
+        Statistics[] errors = null;
         for (int i=0; i<100; i++) {
             final double φ1 = random.nextDouble() * 180 -  90;
             final double λ1 = random.nextDouble() * 360 - 180;
@@ -314,32 +345,45 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
             assertEquals("Starting azimuth",  expected.azi1, c.getStartingAzimuth(), Formulas.ANGULAR_TOLERANCE);
             assertEquals("Ending azimuth",    expected.azi2, c.getEndingAzimuth(),   Formulas.ANGULAR_TOLERANCE);
             assertTrue  ("Rhumb ≧ geodesic",  rhumbLine >= geodesic);
-            if (sf != null) {
+            if (VERBOSE) {
                 // Checks the geodesic path on only 10% of test data, because this computation is expensive.
                 if ((i % 10) == 0) {
-                    out.println(c);
-                    out.println(sf.format(geodesicPathFitness(c, 1000)));
+                    final Statistics[] stats = geodesicPathFitness(c, 1000);
+                    if (errors == null) {
+                        errors = stats;
+                    } else for (int j=0; j<errors.length; j++) {
+                        errors[j].combine(stats[j]);
+                    }
                 }
             }
+        }
+        if (errors != null) {
+            out.println("Distance between points on Bézier curve and points on geodesic.");
+            out.println("∆x/r and ∆y/r should be smaller than 1:");
+            out.println(StatisticsFormat.getInstance().format(errors));
         }
     }
 
     /**
      * Estimates the differences between the points on the Bézier curves and the points computed by geodetic calculator.
-     * This method estimates the length of the path returned by {@link GeodeticCalculator#createGeodesicPath2D(double)}
-     * and compares with the expected distance and azimuth at each point, by iterating over line segments and computing
-     * the geodesic distance of each segment. The state of the given calculator is modified by this method.
+     * This method approximates the Bézier curve by line segments. Then for each point of the approximated Bézier curve,
+     * this method computes the location of a close point on the geodesic (more specifically a point at the same geodesic
+     * distance from the start point). The distance in metres between the two points is measured and accumulated as a
+     * fraction of the expected resolution <var>r</var>. Consequently the values in ∆x/r and ∆y/r columns should be less
+     * than 1.
+     *
+     * <div class="note"><b>Note:</b> the state of the given calculator is modified by this method.</div>
      *
      * @param  resolution  tolerance threshold for the curve approximation, in metres.
      * @return statistics about errors relative to the resolution.
      */
-    private static Statistics[] geodesicPathFitness(final GeodeticCalculator c, final double resolution) throws TransformException {
+    private static Statistics[] geodesicPathFitness(final GeodeticCalculator c, final double resolution) {
         final PathIterator iterator = c.createGeodesicPath2D(resolution).getPathIterator(null, Formulas.ANGULAR_TOLERANCE);
-        final Statistics   xError   = new Statistics("Δx/r");
-        final Statistics   yError   = new Statistics("Δy/r");
-        final Statistics   aErrors  = new Statistics("Δα (°)");
+        final Statistics   xError   = new Statistics("∆x/r");
+        final Statistics   yError   = new Statistics("∆y/r");
+        final Statistics   aErrors  = new Statistics("∆α (°)");
         final double       azimuth  = c.getStartingAzimuth();
-        final double       toMetres = (PI/180) * Formulas.getAuthalicRadius(c.ellipsoid);
+        final double       toMetres = (PI/180) * c.semiMajorAxis;
         final double[]     buffer   = new double[2];
         while (!iterator.isDone()) {
             switch (iterator.currentSegment(buffer)) {
@@ -364,108 +408,171 @@ public final strictfp class GeodeticCalculatorTest extends TestCase {
     }
 
     /**
+     * Column index for stating/ending latitude/longitude and geodesic distance.
+     * Used by {@link #compareAgainstDataset()} only.
+     */
+    static final int COLUMN_φ1 = 0, COLUMN_λ1 = 1, COLUMN_α1 = 2,
+                     COLUMN_φ2 = 3, COLUMN_λ2 = 4, COLUMN_α2 = 5,
+                     COLUMN_Δs = 6;
+
+    /**
      * Compares computations against values provided in <cite>Karney (2010) Test set for geodesics</cite>.
      * This is an optional test executed only if the {@code $SIS_DATA/Tests/GeodTest.dat} file is found.
      *
      * @throws IOException if an error occurred while reading the test file.
-     * @throws TransformException if an error occurred while transforming coordinates.
      */
     @Test
-    public void compareAgainstDataset() throws IOException, TransformException {
+    public void compareAgainstDataset() throws IOException {
+        int noConvergenceCount = 0;
         try (LineNumberReader reader = OptionalTestData.GEODESIC.reader()) {
-            final GeodeticCalculator c = new GeodeticCalculator(HardCodedCRS.WGS84_φλ);
-            final Geodesic reference = new Geodesic(Formulas.getAuthalicRadius(c.ellipsoid), 0);
             final Random random = TestUtilities.createRandomNumberGenerator();
-            final double[] data = new double[7];
-            try {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    Arrays.fill(data, Double.NaN);
-                    final CharSequence[] split = CharSequences.split(line, ' ');
-                    for (int i=min(split.length, data.length); --i >= 0;) {
-                        data[i] = Double.parseDouble(split[i].toString());
-                    }
-                    /*
-                     * We aim for an 1 cm accuracy. However when spherical formulas are used instead
-                     * than ellipsoidal formulas, an error up to 1% is expected (Wikipedia).
-                     */
-                    final double tolerance = data[6] * 0.01;                // 1% of distance.
-                    final double cosφ = abs(cos(toRadians(data[3])));       // For adjusting longitude tolerance.
-                    c.setStartGeographicPoint(data[0], data[1]);            // (φ₁, λ₁)
-                    if (random.nextBoolean()) {
-                        /*
-                         * Computes the end point from a distance and azimuth. The angular tolerance
-                         * is derived from the linear tolerance, except at pole where we disable the
-                         * check of longitude and azimuth values.
-                         */
-                        c.setStartingAzimuth (data[2]);
-                        c.setGeodesicDistance(data[6]);
-                        final double latitudeTolerance = tolerance * (1d/6371007 * (180/PI));
-                        final double longitudeTolerance;
-                        if (data[3] > 89.5) {
-                            longitudeTolerance = 180;               // TODO: remove after we use spherical formulas.
-                        } else {
-                            longitudeTolerance = latitudeTolerance / cosφ;
-                        }
-                        final double azimuthTolerance = 0.5 / cosφ;
-                        compareGeodeticData(data, c, latitudeTolerance, longitudeTolerance,
-                                            azimuthTolerance, Formulas.LINEAR_TOLERANCE);
-                        /*
-                         * Replace the distance and azimuth values by values computed using spherical formulas,
-                         * then compare again with values computed by GeodeticCalculator but with low tolerance.
-                         */
-                        final GeodesicData gd = reference.Direct(data[0], data[1], data[2], data[6]);
-                        data[3] = gd.lat2;
-                        data[4] = gd.lon2;
-                        data[5] = gd.azi2;
-                    } else {
-                        /*
-                         * Compute the distance and azimuth values between two points. We perform
-                         * this test or the above test randomly instead of always executing both
-                         * of them for making sure that GeodeticCalculator never see the expected
-                         * values.
-                         */
-                        c.setEndGeographicPoint(data[3], data[4]);  // (φ₂, λ₂)
-                        compareGeodeticData(data, c,
-                                Formulas.ANGULAR_TOLERANCE,         // Latitude tolerance
-                                Formulas.ANGULAR_TOLERANCE,         // Longitude tolerance
-                                100 / cosφ, tolerance);             // Azimuth is inaccurate for reason not yet identified.
-                        /*
-                         * Replace the distance and azimuth values by values computed using spherical formulas,
-                         * then compare again with values computed by GeodeticCalculator but with low tolerance.
-                         */
-                        final GeodesicData gd = reference.Inverse(data[0], data[1], data[3], data[4]);
-                        data[2] = gd.azi1;
-                        data[5] = gd.azi2;
-                        data[6] = gd.s12;
-                    }
-                    compareGeodeticData(data, c, Formulas.ANGULAR_TOLERANCE,
-                            Formulas.ANGULAR_TOLERANCE, 1E-4, Formulas.LINEAR_TOLERANCE);
+            final GeodeticCalculator c = create(false);
+            final boolean isSphere = c.ellipsoid.isSphere();
+            final double[] expected = new double[7];
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Arrays.fill(expected, Double.NaN);
+                final CharSequence[] split = CharSequences.split(line, ' ');
+                for (int i=min(split.length, expected.length); --i >= 0;) {
+                    expected[i] = Double.parseDouble(split[i].toString());
                 }
-            } catch (AssertionError e) {
-                out.printf("Test failure at line %d%nGeodetic calculator is:%n", reader.getLineNumber());
-                out.println(c);
-                throw e;
+                /*
+                 * Choose randomly whether we will test the direct or inverse geodesic problem.
+                 * We execute only one test for each row instead than executing both tests,
+                 * for making sure that `GeodeticCalculator` never see the expected values.
+                 */
+                final boolean isTestingInverse = random.nextBoolean();
+                final double cosφ1 = abs(cos(toRadians(expected[COLUMN_φ1])));          // For adjusting longitude tolerance.
+                final double cosφ2 = abs(cos(toRadians(expected[COLUMN_φ2])));
+                double linearTolerance, latitudeTolerance, longitudeTolerance, azimuthTolerance;
+                if (isSphere) {
+                    /*
+                     * When spherical formulas are used instead than ellipsoidal formulas, an error up to 1% is expected
+                     * in distance calculations (source: Wikipedia). A yet larger error is observed for azimuth values,
+                     * especially near poles and between antipodal points. Following are empirical thresholds.
+                     */
+                    linearTolerance    = expected[COLUMN_Δs] * 0.01;
+                    latitudeTolerance  = toDegrees(linearTolerance / c.semiMajorAxis);
+                    longitudeTolerance = expected[COLUMN_φ2] > 89.5 ? 180 : latitudeTolerance / cosφ2;
+                    azimuthTolerance   = 0.5;                                   // About 8.8 metres at distance of 1 km.
+                    if (isTestingInverse) {
+                        final double Δλ = abs(expected[COLUMN_λ2] - expected[COLUMN_λ1]);
+                             if (Δλ > 179) azimuthTolerance = 100;
+                        else if (Δλ > 178) azimuthTolerance = 20;
+                        else if (Δλ > 175) azimuthTolerance = 10;
+                        else if (Δλ > 168) azimuthTolerance = 3;
+                        else if (Δλ > 158) azimuthTolerance = 1;
+                    }
+                } else {
+                    /*
+                     * When ellipsoidal formulas are used, we aim for an 1 mm accuracy in coordinate values.
+                     * We also aim for azimuths such as the error is less than 1 cm after the first 10 km.
+                     * If points are nearly antipodal, we relax the azimuth tolerance threshold to 1 meter.
+                     */
+                    linearTolerance    = 2 * GeodesicsOnEllipsoid.ITERATION_TOLERANCE * AUTHALIC_RADIUS;
+                    latitudeTolerance  = Formulas.ANGULAR_TOLERANCE;
+                    longitudeTolerance = Formulas.ANGULAR_TOLERANCE / cosφ2;
+                    azimuthTolerance   = Formulas.LINEAR_TOLERANCE * (180/PI) / 10000;
+                    if (isTestingInverse) {
+                        final double Δ = max(abs(180 - abs(expected[COLUMN_λ2] - expected[COLUMN_λ1])),
+                                                       abs(expected[COLUMN_φ1] + expected[COLUMN_φ2]));
+                        if (Δ < 1) {
+                            azimuthTolerance = 1 * (180/PI) / 10000;                // 1 meter for 10 km.
+                        }
+                    }
+                }
+                /*
+                 * Set input values, compute then verify results. The azimuth tolerance is divided by cos(φ).
+                 * This is consistent with the ∂y/∂φ = 1/cos(φ) term in the Jacobian of Mercator projection.
+                 * An error of ε in the calculation of φ causes an error of ε/cos(φ) in calculation of tan(α).
+                 * Given that tan(α)+ε ≈ tan(α+ε) for small ε values, we assume that the error on α is also
+                 * proportional to 1/cos(φ).
+                 */
+                c.setStartGeographicPoint(expected[COLUMN_φ1], expected[COLUMN_λ1]);
+                if (isTestingInverse) {
+                    c.setEndGeographicPoint(expected[COLUMN_φ2], expected[COLUMN_λ2]);
+                } else {
+                    c.setStartingAzimuth (expected[COLUMN_α1]);
+                    c.setGeodesicDistance(expected[COLUMN_Δs]);
+                }
+                final DirectPosition start = c.getStartPoint();
+                final DirectPosition end   = c.getEndPoint();
+                try {
+                    assertEquals("φ₁", expected[COLUMN_φ1], start.getOrdinate(0),    Formulas.ANGULAR_TOLERANCE);
+                    assertEquals("λ₁", expected[COLUMN_λ1], start.getOrdinate(1),    Formulas.ANGULAR_TOLERANCE);
+                    assertEquals("α₁", expected[COLUMN_α1], c.getStartingAzimuth(),  azimuthTolerance / cosφ1);
+                    assertEquals("φ₂", expected[COLUMN_φ2], end.getOrdinate(0),      latitudeTolerance);
+                    assertEquals("λ₂", expected[COLUMN_λ2], end.getOrdinate(1),      longitudeTolerance);
+                    assertEquals("α₂", expected[COLUMN_α2], c.getEndingAzimuth(),    azimuthTolerance / cosφ2);
+                    assertEquals("∆s", expected[COLUMN_Δs], c.getGeodesicDistance(), linearTolerance);
+                } catch (GeodeticException | AssertionError e) {
+                    if (!isTestingInverse || e instanceof AssertionError || isFailure(expected)) {
+                        out.printf("Test failure at line %d: %s%n"
+                                + "The values provided in the test file are:%n"
+                                + "(φ₁,λ₁) = %16.12f %16.12f%n"
+                                + "(φ₂,λ₂) = %16.12f %16.12f%n"
+                                + "The values computed by the geodesic calculator are:%n",
+                                reader.getLineNumber(), e.getLocalizedMessage(),
+                                expected[0], expected[1], expected[3], expected[4]);
+                        out.println(c);
+                        throw e;
+                    }
+                    noConvergenceCount++;
+                }
             }
         }
+        assertTrue("Unexpected amount of no convergence errors.", noConvergenceCount <= 8);
     }
 
     /**
-     * Verifies that geodetic calculator results are equal to the given values.
-     * Order in the {@code data} array is as documented in {@link OptionalTestData#GEODESIC}.
+     * Tells whether failure to compute geodesic for the given data should cause the test case to fail.
+     * The default implementation always return {@code true}. Subclass can override if some points are
+     * known to fail.
+     *
+     * @param  expected  a row from the {@code $SIS_DATA/Tests/GeodTest.dat} file.
+     *         Use {@code COLUMN_*} constant for accessing values by column indices.
+     * @return whether the JUnit test should fail.
      */
-    private static void compareGeodeticData(final double[] expected, final GeodeticCalculator c,
-            final double latitudeTolerance, final double longitudeTolerance, final double azimuthTolerance,
-            final double linearTolerance) throws TransformException
-    {
-        final DirectPosition start = c.getStartPoint();
-        final DirectPosition end   = c.getEndPoint();
-        assertEquals("φ₁",  expected[0], start.getOrdinate(0),    Formulas.ANGULAR_TOLERANCE);
-        assertEquals("λ₁",  expected[1], start.getOrdinate(1),    Formulas.ANGULAR_TOLERANCE);
-        assertEquals("α₁",  expected[2], c.getStartingAzimuth(),  azimuthTolerance);
-        assertEquals("φ₂",  expected[3], end.getOrdinate(0),      latitudeTolerance);
-        assertEquals("λ₂",  expected[4], end.getOrdinate(1),      longitudeTolerance);
-        assertEquals("α₂",  expected[5], c.getEndingAzimuth(),    azimuthTolerance);
-        assertEquals("s₁₂", expected[6], c.getGeodesicDistance(), linearTolerance);
+    boolean isFailure(final double[] expected) {
+        return true;
+    }
+
+    /**
+     * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using points given by Bennett (1996).
+     * This is an anti-regression test since the result was computed by SIS for the spherical case.
+     */
+    @Test
+    public void testRhumblineLength() {
+        final GeodeticCalculator c = create(false);
+        c.setStartGeographicPoint(10+18.4/60,  37+41.7/60);
+        c.setEndGeographicPoint  (53+29.5/60, 113+17.1/60);
+        assertEquals(8344561, c.getRhumblineLength(), 1);
+        assertEquals(54.8682, c.getConstantAzimuth(), 1E-4);
+    }
+
+    /**
+     * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using points given by Bennett (1996).
+     * This is an anti-regression test since the result was computed by SIS for the spherical case.
+     */
+    @Test
+    public void testRhumblineNearlyEquatorial() {
+        final GeodeticCalculator c = create(false);
+        c.setStartGeographicPoint(-52-47.8/60, -97-31.6/60);
+        c.setEndGeographicPoint  (-53-10.8/60, -41-34.6/60);
+        assertEquals(3745332, c.getRhumblineLength(), 1);
+        assertEquals(90.6521, c.getConstantAzimuth(), 1E-4);
+    }
+
+    /**
+     * Tests {@link GeodesicsOnEllipsoid#getRhumblineLength()} using points given by Bennett (1996).
+     * This is an anti-regression test since the result was computed by SIS for the spherical case.
+     */
+    @Test
+    public void testRhumblineEquatorial() {
+        final GeodeticCalculator c = create(false);
+        c.setStartGeographicPoint(48+45.0/60, -61-31.1/60);
+        c.setEndGeographicPoint  (48+45.0/60,   5+13.2/60);
+        assertEquals(4892987, c.getRhumblineLength(), 1);
+        assertEquals(90, c.getConstantAzimuth(), STRICT);
     }
 }

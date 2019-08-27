@@ -70,7 +70,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
     /**
      * The tolerance factor for comparing the {@link BursaWolfParameters} values.
      * We use a tolerance of 1E-6 ({@value Formulas#LINEAR_TOLERANCE} / 10000) based on the knowledge
-     * that the translation terms are in metres and the rotation terms have the some order of magnitude.
+     * that the translation terms are in metres and the rotation terms have the same order of magnitude.
      * Actually we could use a value of zero, but we add a small tolerance for rounding errors.
      */
     private static final double BURSAWOLF_TOLERANCE = Formulas.LINEAR_TOLERANCE / 10000;

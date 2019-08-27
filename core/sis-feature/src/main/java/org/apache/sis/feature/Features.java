@@ -124,6 +124,12 @@ public final class Features extends Static {
         return (types != null) ? CommonParentFinder.select(types) : null;
     }
 
+    /*
+     * Following method is omitted on master because it depends on GeoAPI interfaces not yet published:
+     *
+     *     public static Class<?> getValueClass(PropertyType type)
+     */
+
     /**
      * Returns the name of the type of values that the given property can take.
      * The type of value can be a {@link Class}, a {@code FeatureType}

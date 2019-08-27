@@ -17,8 +17,8 @@
 package org.apache.sis.test.suite;
 
 import org.apache.sis.test.TestSuite;
-import org.junit.runners.Suite;
 import org.junit.BeforeClass;
+import org.junit.runners.Suite;
 
 
 /**

@@ -22,6 +22,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RectangularShape;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.j2d.ShapeProperties;
@@ -29,6 +30,7 @@ import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.UnsupportedImplementationException;
 
 
 /**
@@ -103,6 +105,19 @@ final class Java2D extends Geometries<Shape> {
     }
 
     /**
+     * If the given object is a Java2D geometry, returns its centroid. Otherwise returns {@code null}.
+     */
+    @Override
+    final Object tryGetCentroid(final Object geometry) {
+        if (geometry instanceof Shape) {
+            final RectangularShape frame = (geometry instanceof RectangularShape)
+                    ? (RectangularShape) geometry : ((Shape) geometry).getBounds2D();
+            return new Point2D.Double(frame.getCenterX(), frame.getCenterY());
+        }
+        return null;
+    }
+
+    /**
      * Creates a two-dimensional point from the given coordinate.
      */
     @Override
@@ -115,11 +130,14 @@ final class Java2D extends Geometries<Shape> {
      * Each {@link Double#NaN} coordinate value starts a new path.
      * The geometry may be backed by {@code float} or {@code double} primitive type,
      * depending on the type used by the given vectors.
+     *
+     * @param  dimension  the number of dimensions (2 or 3).
+     * @throws UnsupportedOperationException if this operation is not implemented for the given number of dimensions.
      */
     @Override
     public Shape createPolyline(final int dimension, final Vector... coordinates) {
         if (dimension != 2) {
-            throw unsupported(dimension);
+            throw new UnsupportedOperationException(unsupported(dimension));
         }
         /*
          * Computes the total length of all vectors and verifies if any vector
@@ -236,6 +254,6 @@ add:    for (;;) {
      */
     @Override
     public Object parseWKT(final String wkt) {
-        throw unsupported(2);
+        throw new UnsupportedImplementationException(unsupported("parseWKT"));
     }
 }
