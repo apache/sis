@@ -57,7 +57,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @since   1.0
  * @module
  */
-final class Features implements Spliterator<Feature>, Runnable {
+final class Features implements Spliterator<Feature> {
     /**
      * An empty array of iterators, used when there is no dependency.
      */
@@ -527,19 +527,6 @@ final class Features implements Spliterator<Feature>, Runnable {
                     dependency.close();
                 }
             }
-        }
-    }
-
-    /**
-     * Closes the (pooled) connection, including the statements of all dependencies.
-     * This is a handler to be invoked by {@link java.util.stream.Stream#close()}.
-     */
-    @Override
-    public void run() {
-        try {
-            close();
-        } catch (SQLException e) {
-            throw new BackingStoreException(e);
         }
     }
 

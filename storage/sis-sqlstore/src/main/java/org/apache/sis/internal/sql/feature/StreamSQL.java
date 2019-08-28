@@ -38,6 +38,8 @@ import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import javax.sql.DataSource;
+
 import org.opengis.feature.Feature;
 
 import org.apache.sis.internal.util.DoubleStreamDecoration;
@@ -163,20 +165,33 @@ class StreamSQL extends StreamDecoration<Feature> {
     @Override
     protected synchronized Stream<Feature> createDecoratedStream() {
         final AtomicReference<Connection> connectionRef = new AtomicReference<>();
-        Stream<Feature> featureStream = Stream.of(uncheck(() -> queryBuilder.parent.source.getConnection()))
+        Stream<Feature> featureStream = Stream.of(uncheck(this::connectNoAuto))
                 .map(Supplier::get)
                 .peek(connectionRef::set)
                 .flatMap(conn -> {
                     try {
                         final Features iter = queryBuilder.build(conn);
-                        return StreamSupport.stream(iter, parallel).onClose(iter);
+                        return StreamSupport.stream(iter, parallel);
                     } catch (SQLException | DataStoreException e) {
                         throw new BackingStoreException(e);
                     }
                 })
-                .onClose(() -> queryBuilder.parent.closeRef(connectionRef));
+                .onClose(() -> queryBuilder.parent.closeRef(connectionRef, true));
         if (peekAction != null) featureStream = featureStream.peek(peekAction);
         return featureStream;
+    }
+
+    /**
+     * Acquire a connection over {@link Table parent table} database, forcing
+     * {@link Connection#setAutoCommit(boolean) auto-commit} to false.
+     *
+     * @return A new connection to {@link Table parent table} database, with deactivated auto-commit.
+     * @throws SQLException If we cannot create a new connection. See {@link DataSource#getConnection()} for details.
+     */
+    private Connection connectNoAuto() throws SQLException {
+        final Connection conn = queryBuilder.parent.source.getConnection();
+        conn.setAutoCommit(false);
+        return conn;
     }
 
     /**

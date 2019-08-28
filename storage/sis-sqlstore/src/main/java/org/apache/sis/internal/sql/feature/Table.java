@@ -606,10 +606,11 @@ final class Table extends AbstractFeatureSet {
         return new StreamSQL(this);
     }
 
-    void closeRef(final AtomicReference<Connection> ref) {
+    void closeRef(final AtomicReference<Connection> ref, boolean forceRollback) {
         final Connection conn = ref.get();
         if (conn != null) {
             try {
+                if (forceRollback) conn.rollback();
                 conn.close();
             } catch (SQLException e) {
                 warning(e);
