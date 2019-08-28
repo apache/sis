@@ -11,7 +11,7 @@
 --
 
 SET client_encoding = 'UTF8';
-SET search_path = epsg;
+SET search_path = 'EPSG';
 
 
 --
