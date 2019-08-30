@@ -73,7 +73,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe if the bundles created by {@link #getBundle(Locale)}
- * is also immutable. Subclasses may or may not be immutable, at implementation choice. But implementors are
+ * is also immutable. Subclasses may or may not be immutable, at implementation choice. But implementers are
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

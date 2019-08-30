@@ -155,7 +155,7 @@ public interface LenientComparable {
      *     }
      * }
      *
-     * Implementors shall ensure that the following conditions hold. Unless the {@code equals}
+     * Implementers shall ensure that the following conditions hold. Unless the {@code equals}
      * behavior is clearly documented in the interface javadoc (as for example in the Java
      * collection framework), {@link ComparisonMode#STRICT} is the only reliable mode for
      * this method implementation.

@@ -201,9 +201,9 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code ProjectedCRS.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code ProjectedCRS}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with
      * their own set of interfaces.</div>
      *
      * @return {@code ProjectedCRS.class} or a user-defined sub-interface.

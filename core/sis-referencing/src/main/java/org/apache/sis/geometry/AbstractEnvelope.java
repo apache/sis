@@ -61,7 +61,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * or {@link Cloneable} interfaces. The internal representation, and the choice to be cloneable or
  * serializable, is left to subclasses.
  *
- * <p>Implementors needs to define at least the following methods:</p>
+ * <p>Implementers needs to define at least the following methods:</p>
  * <ul>
  *   <li>{@link #getDimension()}</li>
  *   <li>{@link #getCoordinateReferenceSystem()}</li>

@@ -89,7 +89,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * Subclasses will typically return a hard-coded constant such as
      * {@link MetadataStandard#ISO_19115}.
      *
-     * <div class="section">Note for implementors</div>
+     * <div class="section">Note for implementers</div>
      * Implementation of this method shall not depend on the object state,
      * since this method may be indirectly invoked by copy constructors.
      *
@@ -124,7 +124,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *
      * Note that empty properties can be removed by calling the {@link ModifiableMetadata#prune()} method.
      *
-     * <div class="section">Note for implementors</div>
+     * <div class="section">Note for implementers</div>
      * The default implementation uses Java reflection indirectly, by iterating over all entries
      * returned by {@link MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)}.
      * Subclasses that override this method should usually not invoke {@code super.isEmpty()},

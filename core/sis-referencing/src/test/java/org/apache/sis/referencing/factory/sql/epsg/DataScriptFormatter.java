@@ -38,8 +38,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.test.sql.TestDatabase;
 
-import static org.junit.Assert.assertEquals;
-
 
 /**
  * Rewrites the {@code INSERT TO ...} statements in a SQL script in a more compact form.
@@ -61,8 +59,8 @@ public final class DataScriptFormatter extends ScriptRunner {
      * The values of those arguments are typically:
      *
      * <ol>
-     *   <li>{@code PostgreSQL_Table_Script.sql}</li>
-     *   <li>{@code core/sis-referencing/src/main/resources/org/apache/sis/referencing/factory/sql/Data.sql}</li>
+     *   <li>{@code $EPSG_SCRIPTS/PostgreSQL_Table_Script.sql}</li>
+     *   <li>{@code sis-epsg/src/main/resources/org/apache/sis/referencing/factory/sql/epsg/Data.sql}</li>
      * </ol>
      *
      * @param  arguments  the source files and the destination file.
@@ -233,7 +231,9 @@ public final class DataScriptFormatter extends ScriptRunner {
         if (CharSequences.regionMatches(sql, ++lower, oldValue)) {
             final int s = CharSequences.skipLeadingWhitespaces(sql, 0, lower);
             if (CharSequences.regionMatches(sql, s, "INSERT INTO " + table + " VALUES")) {
-                assertEquals("oldValue.length", oldValue.length(), --upper - lower);
+                if (--upper - lower != oldValue.length()) {
+                    throw new AssertionError("Unexpected length");
+                }
                 if (before != null) {
                     final int i = sql.indexOf(before);
                     if (i < 0 || i >= lower) return;

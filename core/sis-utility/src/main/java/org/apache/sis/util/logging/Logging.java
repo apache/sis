@@ -30,7 +30,7 @@ import org.apache.sis.internal.system.Modules;
 
 
 /**
- * A set of utilities method for configuring loggings in SIS. Library implementors should fetch
+ * A set of utilities method for configuring loggings in SIS. Library implementers should fetch
  * their loggers using the {@link #getLogger(String)} static method defined in this {@code Logging}
  * class rather than the one defined in the standard {@link Logger} class, in order to give SIS a
  * chance to redirect the logs to an other framework like

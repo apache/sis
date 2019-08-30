@@ -256,7 +256,7 @@ public class OptionKey<T> implements Serializable {
 
     /**
      * Returns the option value in the given map for this key, or {@code null} if none.
-     * This is a convenience method for implementors, which can be used as below:
+     * This is a convenience method for implementers, which can be used as below:
      *
      * {@preformat java
      *     public <T> T getOption(final OptionKey<T> key) {
@@ -274,7 +274,7 @@ public class OptionKey<T> implements Serializable {
 
     /**
      * Sets a value for this option key in the given map, or in a new map if the given map is {@code null}.
-     * This is a convenience method for implementors, which can be used as below:
+     * This is a convenience method for implementers, which can be used as below:
      *
      * {@preformat java
      *     public <T> void setOption(final OptionKey<T> key, final T value) {

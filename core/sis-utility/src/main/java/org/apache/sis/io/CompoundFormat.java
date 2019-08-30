@@ -348,7 +348,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * <div class="note"><b>Note:</b>
      * Strictly speaking, an {@link IOException} could still occur if a subclass overrides the above {@code format}
      * method and performs some I/O operation outside the given {@link StringBuffer}. However this is not the intended
-     * usage of this class and implementors should avoid such unexpected I/O operation.</div>
+     * usage of this class and implementers should avoid such unexpected I/O operation.</div>
      *
      * @param  object      the object to format.
      * @param  toAppendTo  where to format the object.

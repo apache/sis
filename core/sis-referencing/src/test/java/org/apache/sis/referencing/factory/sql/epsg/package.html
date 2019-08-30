@@ -21,6 +21,7 @@
     <meta charset="UTF-8">
     <style>
       p {text-align: justify;}
+      pre > i {color:red}
     </style>
   </head>
   <body>
@@ -52,6 +53,7 @@
     <h2>How to apply EPSG geodetic dataset updates</h2>
     <p>
       This page explains how to convert the SQL scripts published by EPSG into the more compact form used by Apache SIS.
+      The compact form is about half the size of the original files. Compaction is achieved by avoiding redundant statements.
       This conversion applies only to the data types, the integrity constraints and the way the SQL scripts are written.
       No data value should be altered. Steps to follow:
     </p>
@@ -68,61 +70,95 @@ export EPSG_SCRIPTS=$PWD</pre>
       <li><p>If a copy of the original SQL scripts (as downloaded from EPSG) for the previous version is still available,
           and if the following commands report no difference, then jump to step 4.</p>
 
-        <pre>diff PostgreSQL_Table_Script.sql &lt;path to previous version&gt;/PostgreSQL_Table_Script.sql
-diff PostgreSQL_FKey_Script.sql  &lt;path to previous version&gt;/PostgreSQL_FKey_Script.sql</pre>
+        <pre>cd <i>&lt;directory containing EPSG scripts of previous version&gt;</i>
+diff PostgreSQL_Table_Script.sql $EPSG_SCRIPTS/PostgreSQL_Table_Script.sql
+diff PostgreSQL_FKey_Script.sql  $EPSG_SCRIPTS/PostgreSQL_FKey_Script.sql</pre>
 
-        <p>Otherwise:</p>
-        <ol>
-          <li><p>Move to the directory which contains the Apache SIS scripts:</p>
-            <pre>cd &lt;SIS_HOME&gt;/non-free/sis-epsg/src/main/resources/org/apache/sis/referencing/factory/sql/epsg/</pre>
-          </li>
+        <details>
+          <summary>Otherwise:</summary>
+          <ol style="list-style-type: lower-roman">
+            <li><p>Move to the directory which contains the Apache SIS scripts:</p>
+              <pre>cd &lt;SIS_HOME&gt;/non-free/sis-epsg/src/main/resources/org/apache/sis/referencing/factory/sql/epsg/</pre>
+            </li>
 
-          <li><p>Overwrite <code>Tables.sql</code> and <code>FKeys.sql</code> with the new SQL scripts
-              Do not overwrite <code>Data.sql</code> and <code>Indexes.sql</code>:</p>
-            <pre>cp $EPSG_SCRIPTS/PostgreSQL_Table_Script.sql Tables.sql
+            <li><p>Overwrite <code>Tables.sql</code> and <code>FKeys.sql</code> with the new SQL scripts
+                Do not overwrite <code>Data.sql</code> and <code>Indexes.sql</code>:</p>
+              <pre>cp $EPSG_SCRIPTS/PostgreSQL_Table_Script.sql Tables.sql
 cp $EPSG_SCRIPTS/PostgreSQL_FKey_Script.sql  FKeys.sql</pre>
-          </li>
+            </li>
 
-          <li><p>Open the <code>Tables.sql</code> file for edition:</p>
-            <ul>
-              <li>Keep the header comments that existed in the overwritten file.</li>
-              <li>In the statement creating the <code>coordinateaxis</code> table,
-                add the <code>NOT NULL</code> constraint to the <code>coord_axis_code</code> column.</li>
-              <li>In the statement creating the <code>change</code> table,
-                remove the <code>UNIQUE</code> constraint on the <code>change_id</code> column
-                and add a <code>CONSTRAINT pk_change PRIMARY KEY (change_id)</code> line instead.</li>
-              <li>In the statement creating the <code>epsg_datum</code> table,
-                change the type of the <code>realization_epoch</code> column to <code>DATE</code>.</li>
-              <li>Change the type of <code>ellipsoid_shape</code>, <code>reverse_op</code>, <code>param_sign_reversal</code>
-                <code>show_crs</code>, <code>show_operation</code> and all <code>deprecated</code> fields from <code>SMALLINT</code>
-                (or sometime <code>VARCHAR(3)</code>) to <code>BOOLEAN</code>.</li>
-              <li>Change the type of every <code>table_name</code> columns from <code>VARCHAR(80)</code> to <code>epsg_table_name</code>.</li>
-              <li>Change the type of <code>coord_ref_sys_kind</code> column from <code>VARCHAR(24)</code> to <code>epsg_crs_kind</code>.</li>
-              <li>Change the type of <code>coord_sys_type</code> column from <code>VARCHAR(24)</code> to <code>epsg_cs_kind</code>.</li>
-              <li>Change the type of <code>datum_type</code> column from <code>VARCHAR(24)</code> to <code>epsg_datum_kind</code>.</li>
-              <li>Suppress trailing spaces and save.</li>
-            </ul>
-            <p>Usually this results in no change at all compared to the previous script (ignoring white spaces),
-              in which case the maintainer can just revert the changes in order to preserve the formatting.</p>
-          </li>
+            <li><p>Open the <code>Tables.sql</code> file for edition:</p>
+              <ul>
+                <li>Keep the header comments that existed in the overwritten file.</li>
+                <li>In the statement creating the <code>coordinateaxis</code> table,
+                  add the <code>NOT NULL</code> constraint to the <code>coord_axis_code</code> column.</li>
+                <li>In the statement creating the <code>change</code> table,
+                  remove the <code>UNIQUE</code> constraint on the <code>change_id</code> column
+                  and add a <code>CONSTRAINT pk_change PRIMARY KEY (change_id)</code> line instead.</li>
+                <li>In the statement creating the <code>epsg_datum</code> table,
+                  change the type of the <code>realization_epoch</code> column to <code>DATE</code>.</li>
+                <li>Change the type of <code>ellipsoid_shape</code>, <code>reverse_op</code>, <code>param_sign_reversal</code>
+                  <code>show_crs</code>, <code>show_operation</code> and all <code>deprecated</code> fields from <code>SMALLINT</code>
+                  (or sometime <code>VARCHAR(3)</code>) to <code>BOOLEAN</code>.</li>
+                <li>Change the type of every <code>table_name</code> columns from <code>VARCHAR(80)</code> to <code>epsg_table_name</code>.</li>
+                <li>Change the type of <code>coord_ref_sys_kind</code> column from <code>VARCHAR(24)</code> to <code>epsg_crs_kind</code>.</li>
+                <li>Change the type of <code>coord_sys_type</code> column from <code>VARCHAR(24)</code> to <code>epsg_cs_kind</code>.</li>
+                <li>Change the type of <code>datum_type</code> column from <code>VARCHAR(24)</code> to <code>epsg_datum_kind</code>.</li>
+                <li>Suppress trailing spaces and save.</li>
+              </ul>
+              <p>Usually this results in no change at all compared to the previous script (ignoring white spaces),
+                in which case the maintainer can just revert the changes in order to preserve the formatting.</p>
+            </li>
 
-          <li><p>Open the <code>FKeys.sql</code> file for edition:</p>
-            <ul>
-              <li>At the end of all <code>ALTER TABLE</code> statement,
-                append <code>ON UPDATE RESTRICT ON DELETE RESTRICT</code>.</li>
-              <li>suppress trailing spaces and save.</li>
-            </ul>
-            <p>In most cases this results in unmodified <code>FKeys.sql</code> file compared to the previous version.</p>
-          </li>
-        </ol>
+            <li><p>Open the <code>FKeys.sql</code> file for edition:</p>
+              <ul>
+                <li>At the end of all <code>ALTER TABLE</code> statement,
+                  append <code>ON UPDATE RESTRICT ON DELETE RESTRICT</code>.</li>
+                <li>suppress trailing spaces and save.</li>
+              </ul>
+              <p>In most cases this results in unmodified <code>FKeys.sql</code> file compared to the previous version.</p>
+            </li>
+          </ol>
+        </details>
       </li>
 
-      <li><p>Open the <code>org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter</code> class
-          located in the test directory of the <code>sis-referencing</code> module
-          and run the <code>main</code> method of that class.</p></li>
+      <li><p>Execute the <code>main</code> method of the
+          <code>org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter</code> class
+          located in the test directory of <code>sis-referencing</code> module
+          (adjust version numbers as needed; we may provide an easier way after migration to Jigsaw modules):</p>
+
+        <pre>cd <i>&lt;path to SIS project directory&gt;</i>
+mvn clean install
+export CLASSPATH=~/.m2/repository/org/apache/derby/derby/10.14.2.0/derby-10.14.2.0.jar
+export CLASSPATH=$PWD/core/sis-metadata/target/test-classes:$CLASSPATH
+export CLASSPATH=$PWD/target/binaries/sis-referencing-2.0-SNAPSHOT.jar:$CLASSPATH
+export CLASSPATH=$PWD/core/sis-metadata/target/test-classes:$CLASSPATH
+export CLASSPATH=$PWD/core/sis-referencing/target/test-classes:$CLASSPATH
+cd <i>&lt;path to local copy of <a href="http://svn.apache.org/repos/asf/sis/data/non-free/">http://svn.apache.org/repos/asf/sis/data/non-free/</a>&gt;</i>
+java org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter $EPSG_SCRIPTS/PostgreSQL_Data_Script.sql \
+     sis-epsg/src/main/resources/org/apache/sis/referencing/factory/sql/epsg/Data.sql</pre></li>
+
+     <li><p>Run the tests. It it convenient to run <code>org.apache.sis.referencing.factory.sql.EPSGInstallerTest</code> in an IDE first,
+       for easier debugging if some changes in database structure or content broke some code. Then the whole Apache SIS project should be
+       <a href="http://sis.apache.org/source.html#tests">tested extensively</a>, preferably with a PostgreSQL server ready to accept local
+       connections to <code>SpatialMetadataTest</code> database:</p>
+
+       <pre>mvn install -Dorg.apache.sis.test.extensive=true</pre></li>
 
       <li><p>Upgrade the <code>FACTORY.VERSION</code> value defined in the
-          <code>org.apache.sis.referencing.report.CoordinateReferenceSystems</code> class.</p></li>
+          <code>org.apache.sis.referencing.report.CoordinateReferenceSystems</code> class, then execute that class.
+          It can be executed from the IDE since the <code>main</code> method takes no argument.
+          This class will write a <code>CoordinateReferenceSystems.html</code> file in current directory
+          (the full path will be printed in the standard output).
+          That file should be moved to the <code>site/content/tables/</code> directory,
+          where <code>site</code> is the directory containing a local checkout of
+          <a href="http://svn.apache.org/repos/asf/sis/site/trunk">http://svn.apache.org/repos/asf/sis/site/trunk</a>.</p></li>
+
+      <li><p>Execute the <code>org.apache.sis.referencing.report.CoordinateOperationMethods</code> class.
+          It can be executed from the IDE since the <code>main</code> method takes no argument.
+          This class will write a <code>CoordinateOperationMethods.html</code> file in current directory.
+          That file should be moved to the <code>site/content/tables/</code> directory,
+          where <code>site</code> is the directory than above.</p></li>
     </ol>
   </body>
 </html>

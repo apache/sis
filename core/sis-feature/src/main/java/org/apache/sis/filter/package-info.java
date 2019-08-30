@@ -19,6 +19,10 @@
  * Filters features according their properties.
  * A <cite>filter expression</cite> is a construct used to constraint a feature set to a subset.
  *
+ * <p>All filter and expression implementations provided by Apache SIS are thread-safe.
+ * They are not necessarily stateless however; for example a filter may remember which
+ * warnings have been reported in order to avoid to report the same warning twice.</p>
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

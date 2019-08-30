@@ -31,8 +31,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 /**
  * Helper class for {@linkplain DefaultParameterDescriptor parameter descriptor} instantiations.
  * This builder can be helpful to operation or process <em>providers</em> (e.g. map projection
- * implementors). Operation <em>users</em> do not need this builder since they can invoke
- * {@link ParameterDescriptor#createValue()} on the descriptor provided by the implementor.
+ * implementers). Operation <em>users</em> do not need this builder since they can invoke
+ * {@link ParameterDescriptor#createValue()} on the descriptor provided by the implementer.
  *
  * <div class="section">Identification properties</div>
  * The following properties are cleared after a call to any {@code createXXX(…)} method,

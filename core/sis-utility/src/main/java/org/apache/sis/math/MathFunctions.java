@@ -117,7 +117,7 @@ public final class MathFunctions extends Static {
      * <blockquote>
      *    There are actually two types of NaNs, signaling NaNs and quiet NaNs. Java doesn't support the features necessary
      *    to reliably distinguish the two. However, the relevant point is that copying a signaling NaN may (or may not, at
-     *    the implementors discretion) yield a quiet NaN — a NaN with a different bit pattern (IEEE 754 6.2). Therefore, on
+     *    the implementers discretion) yield a quiet NaN — a NaN with a different bit pattern (IEEE 754 6.2). Therefore, on
      *    IEEE 754 compliant platforms it may be impossible to find a signaling NaN stored in an array since a signaling NaN
      *    passed as an argument to binarySearch may get replaced by a quiet NaN.
      * </blockquote>

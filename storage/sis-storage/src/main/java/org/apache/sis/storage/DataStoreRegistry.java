@@ -249,7 +249,7 @@ search:     do {
             /*
              * If a provider has been found, or if a provider returned UNDETERMINED, use that one
              * for opening a DataStore. Note that if more than one provider returned UNDETERMINED,
-             * the selected one is arbitrary and may change in different execution. Implementors
+             * the selected one is arbitrary and may change in different execution. Implementers
              * shall avoid the UNDETERMINED value as much as possible (this value should be used
              * only for RAW image format).
              */

@@ -333,8 +333,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      *   the same. Computing those two information in a single step can help to reduce redundant calculation.</li>
      * </ul>
      *
-     * <div class="section">Note for implementors</div>
-     * The source and destination may overlap. Consequently, implementors must read all source
+     * <div class="section">Note for implementers</div>
+     * The source and destination may overlap. Consequently, implementers must read all source
      * coordinate values before to start writing the transformed coordinates in the destination array.
      *
      * @param  srcPts    the array containing the source coordinate (can not be {@code null}).

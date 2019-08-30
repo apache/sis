@@ -48,7 +48,7 @@ import org.apache.sis.util.resources.Errors;
  * This class has a natural ordering that is inconsistent with {@link #equals(Object)}.
  * See {@link #compareTo(GenericName)} for more information.
  *
- * <div class="section">Note for implementors</div>
+ * <div class="section">Note for implementers</div>
  * Subclasses need only to implement the following methods:
  * <ul>
  *   <li>{@link #scope()}</li>

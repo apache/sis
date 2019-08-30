@@ -164,7 +164,7 @@ public final strictfp class ConsistencyTest extends TestCase {
     }
 
     /**
-     * Formats the given CRS using the given formatter, parses it and reformat again.
+     * Formats the given CRS using the given formatter, parses it and reformats again.
      * Then the two WKT are compared.
      *
      * @param  f     the formatter to use.

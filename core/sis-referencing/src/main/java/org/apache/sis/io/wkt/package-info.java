@@ -53,7 +53,7 @@
  *       <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">shown on GeoAPI</a>.</li>
  * </ul>
  *
- * The WKT 1 format has been interpreted differently by various implementors.
+ * The WKT 1 format has been interpreted differently by various implementers.
  * One noticeable difference is the unit of measurement of prime meridians and projection parameters.
  * The WKT 2 format aims to solve the inter-operability problem caused by such mismatches,
  * but not all software products support this new format. Consequently importing or exporting data from/to a software
