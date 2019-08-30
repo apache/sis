@@ -509,8 +509,8 @@ public final class DecimalFunctions extends Static {
      * <table class="sis">
      *   <caption>Examples</caption>
      *   <tr><th>Accurate</th> <th>Approximate</th> <th>Result</th> <th>Comment</th></tr>
-     *   <tr><td>0.123456</td> <td>0.123</td>       <td>true</td>   <td>Differ on in digits not specified by {@code approximate}.</td></tr>
-     *   <tr><td>0.123456</td> <td>0.123000</td>    <td>true</td>   <td>This method can no distinguish missing digits from trailing zeros.</td></tr>
+     *   <tr><td>0.123456</td> <td>0.123</td>       <td>true</td>   <td>Differ in digits not specified by {@code approximate}.</td></tr>
+     *   <tr><td>0.123456</td> <td>0.123000</td>    <td>true</td>   <td>This method can not distinguish missing digits from trailing zeros.</td></tr>
      *   <tr><td>0.123456</td> <td>0.123001</td>    <td>false</td>  <td>No missing digits, and some of them differ.</td></tr>
      *   <tr><td>0.123</td>    <td>0.123456</td>    <td>false</td>  <td>{@code approximate} and {@code accurate} can not be interchanged.</td></tr>
      * </table>
