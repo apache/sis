@@ -151,9 +151,9 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code EngineeringDatum.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code EngineeringDatum}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
      * own set of interfaces.</div>
      *
      * @return {@code EngineeringDatum.class} or a user-defined sub-interface.

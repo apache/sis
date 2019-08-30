@@ -349,14 +349,19 @@ fill:   for (int i=0; ; i++) {
                     if (sections.contains(LOGGING)) {
                         nameKey = Vocabulary.Keys.Level;
                         final Level level = Logging.getLogger("").getLevel();   // Root logger level.
-                        value = level.getLocalizedName();
-                        final Map<String,Level> levels = Loggers.getEffectiveLevels();
-                        if (levels.size() != 1 || !level.equals(levels.get(Loggers.ROOT))) {
-                            int j = 0;
-                            children = new String[levels.size() * 2];
-                            for (final Map.Entry<String,Level> entry : levels.entrySet()) {
-                                children[j++] = entry.getKey();
-                                children[j++] = entry.getValue().getLocalizedName();
+                        if (level == null) {
+                            // May happen when some code outside Apache SIS define their own loggers.
+                            value = resources.getString(Vocabulary.Keys.Unknown);
+                        } else {
+                            value = level.getLocalizedName();
+                            final Map<String,Level> levels = Loggers.getEffectiveLevels();
+                            if (levels.size() != 1 || !level.equals(levels.get(Loggers.ROOT))) {
+                                int j = 0;
+                                children = new String[levels.size() * 2];
+                                for (final Map.Entry<String,Level> entry : levels.entrySet()) {
+                                    children[j++] = entry.getKey();
+                                    children[j++] = entry.getValue().getLocalizedName();
+                                }
                             }
                         }
                     }

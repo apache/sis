@@ -91,10 +91,10 @@ import org.apache.sis.util.Debug;
  * (i.e. returned values are converted to the units of measurement specified by the given parameter descriptor).
  *
  *
- * <div class="section">Note for subclass implementors</div>
+ * <div class="section">Note for subclass implementers</div>
  * This class does not implement any method from the {@link ParameterValueGroup} interface
  * (this class is not named “{@code AbstractParameterValueGroup}” for that reason).
- * Extending this class or extending {@link Object} make almost no difference for implementors;
+ * Extending this class or extending {@link Object} make almost no difference for implementers;
  * {@code Parameters} purpose is mostly to extend the API for users convenience.
  * All methods in this class get their information from the {@link ParameterValueGroup} methods.
  * In addition, unless otherwise specified, methods in this class is isolated from all others:
@@ -390,7 +390,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
          * However we will not throw the exception if this method is invoked from the getParameter(…)
          * method of a Parameters instance wrapping a non-SIS implementation. The reason is that for
          * foreigner implementations, the package-private getParameter(…) method will conservatively
-         * delegate to the public parameter(…) method, in case the implementor overrides it. But for
+         * delegate to the public parameter(…) method, in case the implementer overrides it. But for
          * Apache SIS implementations in this package, we rely on the exception being thrown.
          *
          * Note that all classes in this package except UnmodifiableParameterValueGroup override this

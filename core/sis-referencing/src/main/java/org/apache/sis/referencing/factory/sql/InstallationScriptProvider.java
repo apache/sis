@@ -175,7 +175,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
 
     /**
      * Returns a reader for the SQL script at the given index. Contents may be read from files in a local directory,
-     * or from resources in a JAR file, or from entries in a ZIP file, or any other means at implementor choice.
+     * or from resources in a JAR file, or from entries in a ZIP file, or any other means at implementer choice.
      * The {@link BufferedReader} instances shall be closed by the caller.
      *
      * <div class="section">EPSG case</div>
@@ -192,7 +192,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      *   <li>Content of {@link #FINISH}, an optional data definition and data control script that create indexes and set permissions.</li>
      * </ol>
      *
-     * Implementors are free to return a different set of scripts with equivalent content.
+     * Implementers are free to return a different set of scripts with equivalent content.
      *
      * <div class="section">Default implementation</div>
      * The default implementation invokes {@link #openStream(String)} – except for {@link #PREPARE} and {@link #FINISH}

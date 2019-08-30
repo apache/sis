@@ -65,7 +65,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  *
  * <div class="section">Immutability and thread safety</div>
  * This class and the {@link MeasurementRange} subclasses are immutable, and thus inherently thread-safe.
- * Other subclasses may or may not be immutable, at implementation choice. But implementors are encouraged
+ * Other subclasses may or may not be immutable, at implementation choice. But implementers are encouraged
  * to make sure that all subclasses remain immutable for more predictable behavior.
  *
  * <div class="section">Shared instances</div>

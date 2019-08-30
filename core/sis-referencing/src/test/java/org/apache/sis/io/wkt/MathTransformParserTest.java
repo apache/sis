@@ -25,6 +25,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -37,7 +38,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link MathTransformParser}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.0
  * @since   0.6
  * @module
  */
@@ -47,6 +48,24 @@ public final strictfp class MathTransformParserTest extends TestCase {
      * The parser to use for the test.
      */
     private MathTransformParser parser;
+
+    /**
+     * Tests {@link MathTransformParser#completeUnitFactor(Unit, double)}.
+     * This is not used directly by {@link MathTransformParser}, but is needed by subclass.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-377">SIS-377</a>
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-433">SIS-433</a>
+     */
+    @Test
+    public void testCompleteUnitFactor() {
+        assertEquals(0.017453292519943295, MathTransformParser.completeUnitFactor(Units.RADIAN, 0.01745329252), STRICT);    // SIS-377
+        assertEquals(0.01745329252,        MathTransformParser.completeUnitFactor(Units.METRE,  0.01745329252), STRICT);    // Not the right kind of units.
+        assertEquals(0.3048,               MathTransformParser.completeUnitFactor(Units.METRE,  0.3048),        STRICT);    // Check there is no confusion with US survey foot.
+        assertEquals(0.30480060960121924,  MathTransformParser.completeUnitFactor(Units.METRE,  0.3048006096),  STRICT);    // US survey foot.
+        assertEquals(0.3048007491,         MathTransformParser.completeUnitFactor(Units.METRE,  0.3048007491),  STRICT);    // British foot (1936).
+        assertEquals(0.30479841,           MathTransformParser.completeUnitFactor(Units.METRE,  0.30479841),    STRICT);    // Indian foot (1937).
+        assertEquals(0.3047,               MathTransformParser.completeUnitFactor(Units.METRE,  0.3047),        STRICT);
+    }
 
     /**
      * Parses the given text.

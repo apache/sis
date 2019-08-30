@@ -388,9 +388,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code CoordinateSystemAxis.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code CoordinateSystemAxis}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their own
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their own
      * set of interfaces.</div>
      *
      * @return {@code CoordinateSystemAxis.class} or a user-defined sub-interface.
@@ -641,7 +641,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
              * Checking the abbreviation is not sufficient. For example the polar angle and the
              * spherical latitude have the same abbreviation (θ). Legacy names like "Longitude"
              * (in addition to ISO 19111 "Geodetic longitude") bring more potential confusion.
-             * Furthermore, not all implementors use the greek letters. For example most CRS in
+             * Furthermore, not all implementers use the greek letters. For example most CRS in
              * WKT format use the "Lat" abbreviation instead of the greek letter φ.
              * For comparisons without metadata, we ignore the unreliable abbreviation and check
              * the axis name instead. These names are constrained by ISO 19111 specification

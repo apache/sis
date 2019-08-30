@@ -283,7 +283,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * with {@linkplain org.apache.sis.measure.Units#METRE metre} or
      * {@linkplain org.apache.sis.measure.Units#DEGREE degree} units.
      *
-     * <p><b>Note for implementors:</b> since this method is invoked at construction time, it shall not depend
+     * <p><b>Note for implementers:</b> since this method is invoked at construction time, it shall not depend
      * on this object's state. This method is not in public API for that reason.</p>
      *
      * @param  direction  the direction to test for compatibility (never {@code null}).

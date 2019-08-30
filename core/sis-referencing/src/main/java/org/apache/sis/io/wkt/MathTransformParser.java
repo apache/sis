@@ -81,8 +81,8 @@ class MathTransformParser extends AbstractParser {
     };
 
     /**
-     * The base unit associated to the {@link #UNIT_KEYWORDS}, ignoring {@link WKTKeywords#Unit}.
-     * For each {@code UNIT_KEYWORDS[i]} element, the associated base unit is {@code BASE_UNIT[i]}.
+     * The base units associated to the {@link #UNIT_KEYWORDS}, ignoring {@link WKTKeywords#Unit}.
+     * For each {@code UNIT_KEYWORDS[i]} element, the associated base unit is {@code BASE_UNIT[i-1]}.
      */
     private static final Unit<?>[] BASE_UNITS = {
         Units.METRE, Units.RADIAN, Units.UNITY, Units.SECOND
@@ -93,14 +93,17 @@ class MathTransformParser extends AbstractParser {
      * Some Well Known Texts define factors with low accuracy, as in {@code ANGLEUNIT["degree", 0.01745329252]}.
      * This causes the parser to fail to recognize that the unit is degree and to convert angles with that factor.
      * This may result in surprising behavior like <a href="https://issues.apache.org/jira/browse/SIS-377">SIS-377</a>.
-     * This array is a workaround for that problem, adding the missing accuracy to factors. Only factors having many
-     * digits need to appear here. For example there is no need to declare the conversion factor for foot (0.3048)
-     * because that factor requires only 4 fraction digits, which are usually present in WKT.
+     * This array is a workaround for that problem, adding the missing accuracy to factors.
+     * This workaround should be removed in a future version if we fix
+     * <a href="https://issues.apache.org/jira/browse/SIS-433">SIS-433</a>.
      *
      * <p>Values in each array <strong>must</strong> be sorted in ascending order.</p>
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-377">SIS-377</a>
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-433">SIS-433</a>
      */
     private static final double[][] CONVERSION_FACTORS = {
-        {0.3047972654,              // Clarke's foot
+        {0.3048,                    // foot, declared for avoiding that unit to be confused with US survey foot.
          0.30480060960121924,       // US survey foot
          1609.3472186944375},       // US survey mile
         {Math.PI/(180*60*60),       // Arc-second:  4.84813681109536E-6
@@ -291,8 +294,8 @@ class MathTransformParser extends AbstractParser {
 
     /**
      * If the unit conversion factor specified in the Well Known Text is missing some fraction digits,
-     * try to complete them. The main use case is to replace 0.01745329252 by 0.017453292519943295 in
-     * degree units.
+     * tries to complete them. The main use case is to replace 0.01745329252 by 0.017453292519943295
+     * in degree units.
      *
      * @param  predefined  some known conversion factors, in ascending order.
      * @param  factor      the conversion factor specified in the Well Known Text element.
@@ -318,8 +321,8 @@ class MathTransformParser extends AbstractParser {
 
     /**
      * If the unit conversion factor specified in the Well Known Text is missing some fraction digits,
-     * try to complete them. The main use case is to replace 0.01745329252 by 0.017453292519943295 in
-     * degree units.
+     * tries to complete them. The main use case is to replace 0.01745329252 by 0.017453292519943295
+     * in degree units.
      *
      * @param  baseUnit  the base unit for which to complete the conversion factor.
      * @param  factor    the conversion factor specified in the Well Known Text element.

@@ -328,7 +328,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * the {@linkplain #getMatrix(MatrixRole) normalization / denormalization} transforms, in the kernel, or both.</p>
      *
      * <div class="note"><b>Note:</b>
-     * The definition of "kernel" is left to implementors.
+     * The definition of "kernel" is left to implementers.
      * In the particular case of Apache SIS implementation of map projections,
      * kernels are instances of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}.
      * Other "kernels" in SIS are {@link EllipsoidToCentricTransform} and {@link MolodenskyTransform}.</div>

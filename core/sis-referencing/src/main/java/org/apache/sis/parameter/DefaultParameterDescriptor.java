@@ -297,9 +297,9 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code ParameterDescriptor.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code ParameterDescriptor}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their own
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their own
      * set of interfaces.</div>
      *
      * @return {@code ParameterDescriptor.class} or a user-defined sub-interface.

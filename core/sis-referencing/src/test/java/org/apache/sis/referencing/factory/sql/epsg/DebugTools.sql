@@ -5,13 +5,13 @@
 
 
 --
--- Creates views for manual inspections of EPSG database. We recommand to execute
--- those scripts on a PostgreSQL database installation after an EPSG update. This
--- file is not actually used in any JUnit test.
+-- Creates views for manual inspections of EPSG dataset. This script can be executed after EPSG database
+-- installation on PostgreSQL. This file is never read by Apache SIS; it is provided only as a debugging
+-- tool when the developer is looking for some information about the EPSG dataset.
 --
 
 SET client_encoding = 'UTF8';
-SET search_path = epsg;
+SET search_path = 'EPSG';
 
 
 --

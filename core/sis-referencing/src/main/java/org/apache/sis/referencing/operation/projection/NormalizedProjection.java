@@ -679,7 +679,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * The input longitude and latitude are usually (but not always) in the range [-π … π] and [-π/2 … π/2] respectively.
      * However values outside those ranges are accepted on the assumption that most implementations use those values
      * only in trigonometric functions like {@linkplain Math#sin(double) sine} and {@linkplain Math#cos(double) cosine}.
-     * If this assumption is not applicable to a particular subclass, then it is implementor's responsibility to check
+     * If this assumption is not applicable to a particular subclass, then it is implementer responsibility to check
      * the range.
      *
      * @param  srcPts    the array containing the source point coordinate, as (<var>longitude</var>, <var>latitude</var>)
