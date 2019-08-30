@@ -21,8 +21,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashSet;
-import java.util.HashMap;
 import java.util.TreeMap;
+import java.util.NavigableMap;
 import java.io.File;
 import java.io.IOException;
 
@@ -80,308 +80,184 @@ import static org.junit.Assert.*;
  */
 public final strictfp class CoordinateReferenceSystems extends AuthorityCodesReport {
     /**
-     * The titles of some sections in the list of CRS. We use sections for grouping related CRS together.
-     * By default (if no mapping is specified below), the section titles will be the datum names.
-     * But in some cases we use a slightly different title. Sometime the changes are only cosmetic
-     * (e.g. "Reseau Geodesique Francais" → "Réseau Géodésique Français").
-     * But sometime the changes have the effect of merging different datums under the same section.
-     * We do that only when the datums are closely related, and the decision to merge or not is taken on a
-     * case-by-case basis. For example we merge the "Arc 1950" and "Arc 1960" sections into a single "Arc" section,
+     * The titles of some sections where to group CRS. By default CRS are grouped by datum names.
+     * But if a name is listed in this map, then that alternative name will be used for grouping purpose.
+     * Sometime the change is only cosmetic (e.g. "Reseau Geodesique Francais" → "Réseau Géodésique Français").
+     * But sometime the changes have the effect of merging different datum under the same section.
+     * For example we merge the "Arc 1950" and "Arc 1960" sections into a single "Arc" section,
      * since those sections were small and we do not want to scatter the HTML page with too many sections.
      * However we do not merge "NAD83" and "NAD83(HARN)" because those sections are already quite large,
      * and merging them will result in a too large section.
      *
      * <p>The decision to merge or not is arbitrary. Generally, we try to avoid small sections (less that 5 CRS)
-     * but without merging together unrelated datums.</p>
+     * but without merging together unrelated datum. Every CRS having a datum whose name <em>starts</em> with a
+     * value in the left column will be reported in the section given in the right column.</p>
      */
-    private static final Map<String,String> SECTION_TITLES = new HashMap<>();
+    private static final NavigableMap<String,String> SECTION_TITLES = new TreeMap<>();
     static {
-        rd("American Samoa 1962",                                         "American Samoa");
-        rd("American Samoa Vertical Datum of 2002",                       "American Samoa");
-        rd("Arc 1950",                                                    "Arc");
-        rd("Arc 1960",                                                    "Arc");
-        rd("Ancienne Triangulation Francaise (Paris)",                    "Ancienne Triangulation Française");
-        rd("Australian Geodetic Datum 1966",                              "Australian Geodetic Datum");
-        rd("Australian Geodetic Datum 1984",                              "Australian Geodetic Datum");
-        rd("Australian Height Datum (Tasmania)",                          "Australian Height Datum");
-        rd("Azores Central Islands 1948",                                 "Azores Islands");
-        rd("Azores Central Islands 1995",                                 "Azores Islands");
-        rd("Azores Occidental Islands 1939",                              "Azores Islands");
-        rd("Azores Oriental Islands 1940",                                "Azores Islands");
-        rd("Azores Oriental Islands 1995",                                "Azores Islands");
-        rd("Baltic 1980",                                                 "Baltic");
-        rd("Baltic 1982",                                                 "Baltic");
-        rd("Baltic Sea",                                                  "Baltic");
-        rd("Batavia (Jakarta)",                                           "Batavia");
-        rd("Bermuda 1957",                                                "Bermuda");
-        rd("Bermuda 2000",                                                "Bermuda");
-        rd("Bogota 1975 (Bogota)",                                        "Bogota 1975");
-        rd("Carthage (Paris)",                                            "Carthage");
-        rd("Bern 1938",                                                   "Bern / CH1903");
-        rd("Cais da Figueirinha - Angra do Heroísmo",                     "Cais");
-        rd("Cais da Madalena",                                            "Cais");
-        rd("Cais da Pontinha - Funchal",                                  "Cais");
-        rd("Cais da Vila - Porto Santo",                                  "Cais");
-        rd("Cais da Vila do Porto",                                       "Cais");
-        rd("Cais das Velas",                                              "Cais");
-        rd("Cayman Brac Vertical Datum 1961",                             "Cayman Islands");
-        rd("Cayman Islands Geodetic Datum 2011",                          "Cayman Islands");
-        rd("CH1903",                                                      "Bern / CH1903");
-        rd("CH1903+",                                                     "Bern / CH1903");
-        rd("CH1903 (Bern)",                                               "Bern / CH1903");
-        rd("Canadian Geodetic Vertical Datum of 1928",                    "Canadian Geodetic Vertical Datum");
-        rd("Canadian Geodetic Vertical Datum of 2013",                    "Canadian Geodetic Vertical Datum");
-        rd("Chatham Islands Datum 1971",                                  "Chatham Islands Datum");
-        rd("Chatham Islands Datum 1979",                                  "Chatham Islands Datum");
-        rd("Corrego Alegre 1961",                                         "Corrego Alegre");
-        rd("Corrego Alegre 1970-72",                                      "Corrego Alegre");
-        rd("Danger 1950",                                                 "Saint Pierre et Miquelon 1950");
-        rd("Dansk Normal Nul",                                            "Dansk");
-        rd("Dansk Vertikal Reference 1990",                               "Dansk");
-        rd("Dealul Piscului 1930",                                        "Dealul Piscului");
-        rd("Dealul Piscului 1970",                                        "Dealul Piscului");
-        rd("Deutsches Haupthoehennetz 1912",                              "Deutsches Haupthoehennetz");
-        rd("Deutsches Haupthoehennetz 1985",                              "Deutsches Haupthoehennetz");
-        rd("Deutsches Haupthoehennetz 1992",                              "Deutsches Haupthoehennetz");
-        rd("Deutsches Haupthoehennetz 2016",                              "Deutsches Haupthoehennetz");
-        rd("Douala 1948",                                                 "Douala");
-        rd("Dunedin 1958",                                                "Dunedin");
-        rd("Dunedin-Bluff 1960",                                          "Dunedin");
-        rd("EGM2008 geoid",                                               "EGM geoid");
-        rd("EGM84 geoid",                                                 "EGM geoid");
-        rd("EGM96 geoid",                                                 "EGM geoid");
-        rd("Egypt 1907",                                                  "Egypt");
-        rd("Egypt 1930",                                                  "Egypt");
-        rd("Egypt Gulf of Suez S-650 TL",                                 "Egypt");
-        rd("EPSG example  X",                                             "Seismic bin grid datum");     // 2 spaces before "X".
-        rd("Estonia 1992",                                                "Estonia");
-        rd("Estonia 1997",                                                "Estonia");
-        rd("European Datum 1950",                                         "European Datum");
-        rd("European Datum 1950(1977)",                                   "European Datum");
-        rd("European Datum 1979",                                         "European Datum");
-        rd("European Datum 1987",                                         "European Datum");
-        rd("European Terrestrial Reference Frame 1989",                   "European Terrestrial Reference Frame");
-        rd("European Terrestrial Reference Frame 1990",                   "European Terrestrial Reference Frame");
-        rd("European Terrestrial Reference Frame 1991",                   "European Terrestrial Reference Frame");
-        rd("European Terrestrial Reference Frame 1992",                   "European Terrestrial Reference Frame");
-        rd("European Terrestrial Reference Frame 1993",                   "European Terrestrial Reference Frame");
-        rd("European Terrestrial Reference Frame 1994",                   "European Terrestrial Reference Frame");
-        rd("European Terrestrial Reference Frame 1996",                   "European Terrestrial Reference Frame");
-        rd("European Terrestrial Reference Frame 1997",                   "European Terrestrial Reference Frame");
-        rd("European Terrestrial Reference Frame 2000",                   "European Terrestrial Reference Frame");
-        rd("European Vertical Reference Frame 2000",                      "European Vertical Reference Frame");
-        rd("European Vertical Reference Frame 2007",                      "European Vertical Reference Frame");
-        rd("Fahud Height Datum",                                          "Fahud");
-        rd("Fao 1979",                                                    "Fao");
-        rd("Fehmarnbelt Datum 2010",                                      "Fehmarnbelt");
-        rd("Fehmarnbelt Vertical Reference 2010",                         "Fehmarnbelt");
-        rd("Faroe Datum 1954",                                            "Faroe Islands");
-        rd("Faroe Islands Vertical Reference 2009",                       "Faroe Islands");
-        rd("fk89",                                                        "Faroe Islands");
-        rd("Fiji 1956",                                                   "Fiji");
-        rd("Fiji Geodetic Datum 1986",                                    "Fiji");
-        rd("Gan 1970",                                                    "Gandajika");
-        rd("Grand Cayman Geodetic Datum 1959",                            "Grand Cayman");
-        rd("Grand Cayman Vertical Datum 1954",                            "Grand Cayman");
-        rd("Greek (Athens)",                                              "Greek");
-        rd("Greek Geodetic Reference System 1987",                        "Greek");
-        rd("Guadeloupe 1948",                                             "Guadeloupe");
-        rd("Guadeloupe 1951",                                             "Guadeloupe");
-        rd("Guadeloupe 1988",                                             "Guadeloupe");
-        rd("Guam 1963",                                                   "Guam");
-        rd("Guam Vertical Datum of 1963",                                 "Guam");
-        rd("Guam Vertical Datum of 2004",                                 "Guam");
-        rd("Gunung Segara (Jakarta)",                                     "Gunung Segara");
-        rd("Hong Kong 1963",                                              "Hong Kong");
-        rd("Hong Kong 1963(67)",                                          "Hong Kong");
-        rd("Hong Kong 1980",                                              "Hong Kong");
-        rd("Hong Kong Chart Datum",                                       "Hong Kong");
-        rd("Hong Kong Principal Datum",                                   "Hong Kong");
-        rd("Hungarian Datum 1909",                                        "Hungarian Datum");
-        rd("Hungarian Datum 1972",                                        "Hungarian Datum");
-        rd("IGN 1962 Kerguelen",                                          "IGN");
-        rd("IGN 1966",                                                    "IGN");
-        rd("IGN 1988 LS",                                                 "IGN");
-        rd("IGN 1988 MG",                                                 "IGN");
-        rd("IGN 1988 SB",                                                 "IGN");
-        rd("IGN 1988 SM",                                                 "IGN");
-        rd("IGN 1992 LD",                                                 "IGN");
-        rd("IGN Astro 1960",                                              "IGN");
-        rd("IGN53 Mare",                                                  "IGN");
-        rd("IGN56 Lifou",                                                 "IGN");
-        rd("IGN63 Hiva Oa",                                               "IGN");
-        rd("IGN72 Grande Terre",                                          "IGN");
-        rd("IGN72 Nuku Hiva",                                             "IGN");
-        rd("Indian 1954",                                                 "Indian");
-        rd("Indian 1960",                                                 "Indian");
-        rd("Indian 1975",                                                 "Indian");
-        rd("Indian Spring Low Water",                                     "Indian");
-        rd("International Great Lakes Datum 1955",                        "International Great Lakes Datum");
-        rd("International Great Lakes Datum 1985",                        "International Great Lakes Datum");
-        rd("International Terrestrial Reference Frame 1988",              "International Terrestrial Reference Frame");
-        rd("International Terrestrial Reference Frame 1989",              "International Terrestrial Reference Frame");
-        rd("International Terrestrial Reference Frame 1990",              "International Terrestrial Reference Frame");
-        rd("International Terrestrial Reference Frame 1991",              "International Terrestrial Reference Frame");
-        rd("International Terrestrial Reference Frame 1992",              "International Terrestrial Reference Frame");
-        rd("International Terrestrial Reference Frame 1993",              "International Terrestrial Reference Frame");
-        rd("International Terrestrial Reference Frame 1994",              "International Terrestrial Reference Frame");
-        rd("International Terrestrial Reference Frame 1996",              "International Terrestrial Reference Frame");
-        rd("International Terrestrial Reference Frame 1997",              "International Terrestrial Reference Frame");
-        rd("International Terrestrial Reference Frame 2000",              "International Terrestrial Reference Frame");
-        rd("International Terrestrial Reference Frame 2005",              "International Terrestrial Reference Frame");
-        rd("International Terrestrial Reference Frame 2008",              "International Terrestrial Reference Frame");
-        rd("International Terrestrial Reference Frame 2014",              "International Terrestrial Reference Frame");
-        rd("Islands Net 1993",                                            "Islands Net");
-        rd("Islands Net 2004",                                            "Islands Net");
-        rd("Israeli Geodetic Datum 2005",                                 "Israeli Geodetic Datum");
-        rd("Israeli Geodetic Datum 2005(2012)",                           "Israeli Geodetic Datum");
-        rd("Jamaica 1875",                                                "Jamaica");
-        rd("Jamaica 1969",                                                "Jamaica");
-        rd("Jamaica 2001",                                                "Jamaica");
-        rd("Japanese Geodetic Datum 2011 (vertical)",                     "Japanese Geodetic Datum 2011");
-        rd("Japanese Standard Levelling Datum 1969",                      "Japanese Standard Levelling Datum");
-        rd("Japanese Standard Levelling Datum 1972",                      "Japanese Standard Levelling Datum");
-        rd("Kalianpur 1880",                                              "Kalianpur");
-        rd("Kalianpur 1937",                                              "Kalianpur");
-        rd("Kalianpur 1962",                                              "Kalianpur");
-        rd("Kalianpur 1975",                                              "Kalianpur");
-        rd("Kertau (RSO)",                                                "Kertau");
-        rd("Kertau 1968",                                                 "Kertau");
-        rd("KOC Construction Datum",                                      "KOC Construction Datum / Well Datum");
-        rd("KOC Well Datum",                                              "KOC Construction Datum / Well Datum");
-        rd("Korean Datum 1985",                                           "Korean Datum");
-        rd("Korean Datum 1995",                                           "Korean Datum");
-        rd("Kuwait Oil Company",                                          "Kuwait Oil Company / Kuwait Utility");
-        rd("Kuwait PWD",                                                  "Kuwait Oil Company / Kuwait Utility");
-        rd("Kuwait Utility",                                              "Kuwait Oil Company / Kuwait Utility");
-        rd("Lao 1993",                                                    "Lao");
-        rd("Lao National Datum 1997",                                     "Lao");
-        rd("Latvia 1992",                                                 "Latvia");
-        rd("Latvian Height System 2000",                                  "Latvia");
-        rd("Lisbon 1890",                                                 "Lisbon");
-        rd("Lisbon 1890 (Lisbon)",                                        "Lisbon");
-        rd("Lisbon 1937",                                                 "Lisbon");
-        rd("Lisbon 1937 (Lisbon)",                                        "Lisbon");
-        rd("Lower Low Water Large Tide",                                  "Low Water");
-        rd("Lowest Astronomic Tide",                                      "Low Water");
-        rd("Makassar (Jakarta)",                                          "Makassar");
-        rd("Manoca 1962",                                                 "Manoca");
-        rd("Martinique 1938",                                             "Martinique");
-        rd("Martinique 1955",                                             "Martinique");
-        rd("Martinique 1987",                                             "Martinique");
-        rd("Maupiti 83",                                                  "Maupiti");
-        rd("Maupiti SAU 2001",                                            "Maupiti");
-        rd("Mean High Water",                                             "Mean Sea Level");
-        rd("Mean High Water Spring Tides",                                "Mean Sea Level");
-        rd("Mean Higher High Water",                                      "Mean Sea Level");
-        rd("Mean Low Water",                                              "Mean Sea Level");
-        rd("Mean Low Water Spring Tides",                                 "Mean Sea Level");
-        rd("Mean Lower Low Water",                                        "Mean Sea Level");
-        rd("Mean Lower Low Water Spring Tides",                           "Mean Sea Level");
-        rd("Missao Hidrografico Angola y Sao Tome 1951",                  "Missao Hidrografico Angola y Sao Tome");
-        rd("Mhast (offshore)",                                            "Missao Hidrografico Angola y Sao Tome");
-        rd("Mhast (onshore)",                                             "Missao Hidrografico Angola y Sao Tome");
-        rd("Militar-Geographische Institut (Ferro)",                      "Militar-Geographische Institut");
-        rd("Monte Mario (Rome)",                                          "Monte Mario");
-        rd("Moorea 87",                                                   "Moorea");
-        rd("Moorea SAU 1981",                                             "Moorea");
-        rd("Nahrwan 1934",                                                "Nahrwan");
-        rd("Nahrwan 1967",                                                "Nahrwan");
-        rd("Naparima 1955",                                               "Naparima");
-        rd("Naparima 1972",                                               "Naparima");
-        rd("Nivellement General de la Corse 1948",                        "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
-        rd("Nivellement General de la France - IGN69",                    "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
-        rd("Nivellement General de la France - IGN78",                    "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
-        rd("Nivellement General de la France - Lallemand",                "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
-        rd("Nivellement General de Nouvelle Caledonie",                   "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
-        rd("Nivellement General de Polynesie Francaise",                  "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
-        rd("Nivellement General du Luxembourg",                           "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
-        rd("Nivellement General Guyanais 1977",                           "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
-        rd("NGO 1948 (Oslo)",                                             "NGO 1948");
-        rd("NAD83 (High Accuracy Reference Network)",                     "North American Datum 1983 — High Accuracy Reference Network");
-        rd("NAD83 (National Spatial Reference System 2007)",              "North American Datum 1983 — National Spatial Reference System 2007");
-        rd("NAD83 Canadian Spatial Reference System",                     "North American Datum 1983 — Canadian Spatial Reference System");
-        rd("Nouvelle Triangulation Francaise",                            "Nouvelle Triangulation Française");
-        rd("Nouvelle Triangulation Francaise (Paris)",                    "Nouvelle Triangulation Française");
-        rd("NAD83 (Continuously Operating Reference Station 1996)",       "North American Datum 1983 — Continuously Operating Reference Station 1996");       // For better sort order.
-        rd("NAD83 (National Spatial Reference System 2011)",              "North American Datum 1983 — National Spatial Reference System 2011");
-        rd("NAD83 (National Spatial Reference System MA11)",              "North American Datum 1983 — National Spatial Reference System MA11 / PA11");
-        rd("NAD83 (National Spatial Reference System PA11)",              "North American Datum 1983 — National Spatial Reference System MA11 / PA11");
-        rd("New Zealand Vertical Datum 2009",                             "New Zealand Vertical Datum");
-        rd("New Zealand Vertical Datum 2016",                             "New Zealand Vertical Datum");
-        rd("Norway Normal Null 1954",                                     "Norway Normal Null");
-        rd("Norway Normal Null 2000",                                     "Norway Normal Null");
-        rd("Ordnance Datum Newlyn (Offshore)",                            "Ordnance Datum Newlyn");
-        rd("Ordnance Datum Newlyn (Orkney Isles)",                        "Ordnance Datum Newlyn");
-        rd("OSGB 1936",                                                   "OSGB");
-        rd("OSGB 1970 (SN)",                                              "OSGB");
-        rd("Padang 1884 (Jakarta)",                                       "Padang 1884");
-        rd("Parametry Zemli 1990",                                        "Parametry Zemli 1990");
-        rd("Parametry Zemli 1990.02",                                     "Parametry Zemli 1990");
-        rd("Parametry Zemli 1990.11",                                     "Parametry Zemli 1990");
-        rd("PDO Height Datum 1993",                                       "PDO Survey / Height Datum 1993");
-        rd("PDO Survey Datum 1993",                                       "PDO Survey / Height Datum 1993");
-        rd("Pitcairn 1967",                                               "Pitcairn");
-        rd("Pitcairn 2006",                                               "Pitcairn");
-        rd("Port Moresby 1996",                                           "Port Moresby");
-        rd("Port Moresby 2008",                                           "Port Moresby");
-        rd("Porto Santo 1936",                                            "Porto Santo");
-        rd("Porto Santo 1995",                                            "Porto Santo");
-        rd("Posiciones Geodésicas Argentinas 1994",                       "Posiciones Geodésicas Argentinas");
-        rd("Posiciones Geodésicas Argentinas 1998",                       "Posiciones Geodésicas Argentinas");
-        rd("Posiciones Geodésicas Argentinas 2007",                       "Posiciones Geodésicas Argentinas");
-        rd("Puerto Rico Vertical Datum of 2002",                          "Puerto Rico");
-        rd("Qatar 1948",                                                  "Qatar");
-        rd("Qatar 1974",                                                  "Qatar");
-        rd("Qatar National Datum 1995",                                   "Qatar");
-        rd("Qornoq 1927",                                                 "Qornoq");
-        rd("Reseau Geodesique Nouvelle Caledonie 1991",                   "Réseau Géodésique de Nouvelle-Calédonie");
-        rd("Reseau Geodesique de Nouvelle Caledonie 91-93",               "Réseau Géodésique de Nouvelle-Calédonie");
-        rd("Reseau National Belge 1950",                                  "Réseau National Belge");
-        rd("Reseau National Belge 1950 (Brussels)",                       "Réseau National Belge");
-        rd("Reseau National Belge 1972",                                  "Réseau National Belge");
-        rd("Reunion 1947",                                                "Réunion");
-        rd("Reunion 1989",                                                "Réunion");
-        rd("Rikets hojdsystem 1900",                                      "Rikets hojdsystem");
-        rd("Rikets hojdsystem 1970",                                      "Rikets hojdsystem");
-        rd("Rikets hojdsystem 2000",                                      "Rikets hojdsystem");
-        rd("Santa Cruz da Graciosa",                                      "Santa Cruz");
-        rd("Santa Cruz das Flores",                                       "Santa Cruz");
-        rd("Sierra Leone 1968",                                           "Sierra Leone");
-        rd("Sierra Leone Colony 1924",                                    "Sierra Leone");
-        rd("SIRGAS-Chile",                                                "SIRGAS");
-        rd("SIRGAS-ROU98",                                                "SIRGAS");
-        rd("SIRGAS_ES2007.8",                                             "SIRGAS");
-        rd("South American Datum 1969",                                   "South American Datum");
-        rd("South American Datum 1969(96)",                               "South American Datum");
-        rd("Sri Lanka Datum 1999",                                        "Sri Lanka");
-        rd("Sri Lanka Vertical Datum",                                    "Sri Lanka");
-        rd("Stockholm 1938 (Stockholm)",                                  "Stockholm 1938");
-        rd("Systém Jednotné Trigonometrické Síte Katastrální (Ferro)",    "Systém Jednotné Trigonometrické Síte Katastrální");
-        rd("Systém Jednotné Trigonometrické Síte Katastrální/05",         "Systém Jednotné Trigonometrické Síte Katastrální");
-        rd("Systém Jednotné Trigonometrické Síte Katastrální/05 (Ferro)", "Systém Jednotné Trigonometrické Síte Katastrální");
-        rd("Tahaa 54",                                                    "Tahaa");
-        rd("Tahaa SAU 2001",                                              "Tahaa");
-        rd("Tahiti 52",                                                   "Tahiti");
-        rd("Tahiti 79",                                                   "Tahiti");
-        rd("Taiwan Datum 1967",                                           "Taiwan Datum");
-        rd("Taiwan Datum 1997",                                           "Taiwan Datum");
-        rd("Tananarive 1925 (Paris)",                                     "Tananarive 1925");
-        rd("Tokyo 1892",                                                  "Tokyo");
-        rd("Viti Levu 1912",                                              "Viti Levu");
-        rd("Voirol 1875",                                                 "Voirol");
-        rd("Voirol 1875 (Paris)",                                         "Voirol");
-        rd("Voirol 1879",                                                 "Voirol");
-        rd("Voirol 1879 (Paris)",                                         "Voirol");
-        rd("WGS 72 Transit Broadcast Ephemeris",                          "World Geodetic System 1972 — Transit Broadcast Ephemeris");
-        rd("World Geodetic System 1984 (G1150)",                          "World Geodetic System 1984");
-        rd("World Geodetic System 1984 (G1674)",                          "World Geodetic System 1984");
-        rd("World Geodetic System 1984 (G1762)",                          "World Geodetic System 1984");
-        rd("World Geodetic System 1984 (G730)",                           "World Geodetic System 1984");
-        rd("World Geodetic System 1984 (G873)",                           "World Geodetic System 1984");
-        rd("World Geodetic System 1984 (Transit)",                        "World Geodetic System 1984");
-        rd("Yellow Sea 1956",                                             "Yellow Sea");
-        rd("Yellow Sea 1985",                                             "Yellow Sea");
+        rd("American Samoa",                                          "American Samoa");
+        rd("Arc",                                                     "Arc");
+        rd("Ancienne Triangulation Francaise",                        "Ancienne Triangulation Française");
+        rd("Australian Geodetic Datum",                               "Australian Geodetic Datum");
+        rd("Australian Height Datum",                                 "Australian Height Datum");
+        rd("Azores Central Islands",                                  "Azores Islands");
+        rd("Azores Occidental Islands",                               "Azores Islands");
+        rd("Azores Oriental Islands",                                 "Azores Islands");
+        rd("Baltic",                                                  "Baltic");
+        rd("Batavia",                                                 "Batavia");
+        rd("Bermuda",                                                 "Bermuda");
+        rd("Bogota 1975",                                             "Bogota 1975");
+        rd("Carthage",                                                "Carthage");
+        rd("Bern 1938",                                               "Bern / CH1903");
+        rd("Cais",                                                    "Cais");
+        rd("Cayman Brac",                                             "Cayman Islands");
+        rd("Cayman Islands",                                          "Cayman Islands");
+        rd("CH1903",                                                  "Bern / CH1903");
+        rd("CH1903+",                                                 "Bern / CH1903");
+        rd("Canadian Geodetic Vertical Datum",                        "Canadian Geodetic Vertical Datum");
+        rd("Chatham Islands Datum",                                   "Chatham Islands Datum");
+        rd("Corrego Alegre",                                          "Corrego Alegre");
+        rd("Croatian Terrestrial Reference System",                   "Croatian Reference System");
+        rd("Croatian Vertical Reference System",                      "Croatian Reference System");
+        rd("Danger 1950",                                             "Saint Pierre et Miquelon 1950");
+        rd("Dansk",                                                   "Dansk");
+        rd("Dealul Piscului",                                         "Dealul Piscului");
+        rd("Deutsches Haupthoehennetz",                               "Deutsches Haupthoehennetz");
+        rd("Douala",                                                  "Douala");
+        rd("Dunedin",                                                 "Dunedin");
+        rd("Dunedin-Bluff",                                           "Dunedin");
+        rd("EGM2008 geoid",                                           "EGM geoid");
+        rd("EGM84 geoid",                                             "EGM geoid");
+        rd("EGM96 geoid",                                             "EGM geoid");
+        rd("Egypt",                                                   "Egypt");
+        rd("EPSG example",                                            "EPSG example");
+        rd("Estonia",                                                 "Estonia");
+        rd("European Datum",                                          "European Datum");
+        rd("European Terrestrial Reference Frame",                    "European Terrestrial Reference Frame");
+        rd("European Vertical Reference Frame",                       "European Vertical Reference Frame");
+        rd("Fahud",                                                   "Fahud");
+        rd("Fao",                                                     "Fao");
+        rd("Fehmarnbelt",                                             "Fehmarnbelt");
+        rd("Faroe Datum",                                             "Faroe Islands");
+        rd("Faroe Islands",                                           "Faroe Islands");
+        rd("fk89",                                                    "Faroe Islands");
+        rd("Fiji",                                                    "Fiji");
+        rd("Gan 1970",                                                "Gandajika");
+        rd("Grand Cayman",                                            "Grand Cayman");
+        rd("Greek",                                                   "Greek");
+        rd("Greenland",                                               "Greenland");
+        rd("Guadeloupe",                                              "Guadeloupe");
+        rd("Guam",                                                    "Guam");
+        rd("Gunung Segara",                                           "Gunung Segara");
+        rd("Helsinki",                                                "Helsinki");
+        rd("High Water",                                              "High Water");
+        rd("Higher High Water",                                       "High Water");
+        rd("Highest Astronomic Tide",                                 "High Water");
+        rd("Hong Kong",                                               "Hong Kong");
+        rd("Hungarian",                                               "Hungarian Datum");
+        rd("IG05",                                                    "Israeli Grid");
+        rd("IGb",                                                     "IGb");
+        rd("IGN",                                                     "IGN");
+        rd("IGS",                                                     "IGS");
+        rd("Indian",                                                  "Indian");
+        rd("International Great Lakes Datum",                         "International Great Lakes Datum");
+        rd("International Terrestrial Reference Frame",               "International Terrestrial Reference Frame");
+        rd("Islands Net",                                             "Islands Net");
+        rd("Israeli Geodetic Datum",                                  "Israeli Geodetic Datum");
+        rd("Jamaica",                                                 "Jamaica");
+        rd("Japanese Geodetic Datum 2000",                            "Japanese Geodetic Datum 2000");
+        rd("Japanese Geodetic Datum 2011",                            "Japanese Geodetic Datum 2011");
+        rd("Japanese Standard Levelling Datum",                       "Japanese Standard Levelling Datum");
+        rd("Kalianpur",                                               "Kalianpur");
+        rd("Kertau",                                                  "Kertau");
+        rd("KOC Construction Datum",                                  "KOC Construction Datum / Well Datum");
+        rd("KOC Well Datum",                                          "KOC Construction Datum / Well Datum");
+        rd("Korean Datum",                                            "Korean Datum");
+        rd("Kuwait Oil Company",                                      "Kuwait Oil Company / Kuwait Utility");
+        rd("Kuwait PWD",                                              "Kuwait Oil Company / Kuwait Utility");
+        rd("Kuwait Utility",                                          "Kuwait Oil Company / Kuwait Utility");
+        rd("Lao",                                                     "Lao");
+        rd("Latvia",                                                  "Latvia");
+        rd("Lisbon",                                                  "Lisbon");
+        rd("Lower Low Water Large Tide",                              "Low Water");
+        rd("Lowest Astronomic Tide",                                  "Low Water");
+        rd("Macao",                                                   "Macao");
+        rd("Makassar",                                                "Makassar");
+        rd("Manoca",                                                  "Manoca");
+        rd("Martinique",                                              "Martinique");
+        rd("Maupiti",                                                 "Maupiti");
+        rd("Mean High Water",                                         "Mean Sea Level");
+        rd("Mean Higher High Water",                                  "Mean Sea Level");
+        rd("Mean Low Water",                                          "Mean Sea Level");
+        rd("Mean Lower Low Water",                                    "Mean Sea Level");
+        rd("Missao Hidrografico Angola y Sao Tome 1951",              "Missao Hidrografico Angola y Sao Tome");
+        rd("Mhast (offshore)",                                        "Missao Hidrografico Angola y Sao Tome");
+        rd("Mhast (onshore)",                                         "Missao Hidrografico Angola y Sao Tome");
+        rd("Militar-Geographische Institut (Ferro)",                  "Militar-Geographische Institut");
+        rd("MOMRA",                                                   "MOMRA");
+        rd("Monte Mario (Rome)",                                      "Monte Mario");
+        rd("Moorea",                                                  "Moorea");
+        rd("Nahrwan",                                                 "Nahrwan");
+        rd("Naparima",                                                "Naparima");
+        rd("Nivellement General de la Corse",                         "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
+        rd("Nivellement General de la France",                        "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
+        rd("Nivellement General de Nouvelle Caledonie",               "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
+        rd("Nivellement General de Polynesie Francaise",              "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
+        rd("Nivellement General du Luxembourg",                       "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
+        rd("Nivellement General Guyanais",                            "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
+        rd("NGO 1948",                                                "NGO 1948");
+        rd("Nouvelle Triangulation Francaise",                        "Nouvelle Triangulation Française");
+        rd("NAD83 Canadian Spatial Reference System",                 "North American Datum 1983 — Canadian Spatial Reference System");
+        rd("NAD83 (Continuously Operating Reference Station 1996)",   "North American Datum 1983 — Continuously Operating Reference Station 1996");       // For better sort order.
+        rd("NAD83 (Federal Base Network)",                            "North American Datum 1983 — Federal Base Network");
+        rd("NAD83 (High Accuracy Reference Network)",                 "North American Datum 1983 — High Accuracy Reference Network");
+        rd("NAD83 (High Accuracy Reference Network - Corrected)",     "North American Datum 1983 — High Accuracy Reference Network");
+        rd("NAD83 (National Spatial Reference System 2007)",          "North American Datum 1983 — National Spatial Reference System 2007");
+        rd("NAD83 (National Spatial Reference System 2011)",          "North American Datum 1983 — National Spatial Reference System 2011");
+        rd("NAD83 (National Spatial Reference System MA11)",          "North American Datum 1983 — National Spatial Reference System MA11 / PA11");
+        rd("NAD83 (National Spatial Reference System PA11)",          "North American Datum 1983 — National Spatial Reference System MA11 / PA11");
+        rd("North American Datum of 1983 (CSRS)",                     "North American Datum 1983 — CSRS");
+        rd("North American Datum of 1983 (CSRS96)",                   "North American Datum 1983 — CSRS");
+        rd("New Zealand Vertical Datum",                              "New Zealand Vertical Datum");
+        rd("Norway Normal Null",                                      "Norway Normal Null");
+        rd("Ordnance Datum Newlyn",                                   "Ordnance Datum Newlyn");
+        rd("OSGB",                                                    "OSGB");
+        rd("Padang 1884",                                             "Padang 1884");
+        rd("Parametry Zemli 1990",                                    "Parametry Zemli 1990");
+        rd("PDO Height Datum 1993",                                   "PDO Survey / Height Datum 1993");
+        rd("PDO Survey Datum 1993",                                   "PDO Survey / Height Datum 1993");
+        rd("Pitcairn",                                                "Pitcairn");
+        rd("Port Moresby",                                            "Port Moresby");
+        rd("Porto Santo",                                             "Porto Santo");
+        rd("Posiciones Geodésicas Argentinas",                        "Posiciones Geodésicas Argentinas");
+        rd("Puerto Rico",                                             "Puerto Rico");
+        rd("Qatar",                                                   "Qatar");
+        rd("Qornoq",                                                  "Qornoq");
+        rd("Reseau Geodesique de Nouvelle Caledonie",                 "Réseau Géodésique de Nouvelle-Calédonie");
+        rd("Reseau National Belge",                                   "Réseau National Belge");
+        rd("Reunion",                                                 "Réunion");
+        rd("Rikets hojdsystem",                                       "Rikets hojdsystem");
+        rd("Santa Cruz",                                              "Santa Cruz");
+        rd("Serbian",                                                 "Serbian Reference System / Network");
+        rd("Sierra Leone",                                            "Sierra Leone");
+        rd("SIRGAS",                                                  "SIRGAS");
+        rd("Slovenia",                                                "Slovenia");
+        rd("Slovenian",                                               "Slovenia");
+        rd("South American Datum",                                    "South American Datum");
+        rd("Sri Lanka",                                               "Sri Lanka");
+        rd("Stockholm 1938",                                          "Stockholm 1938");
+        rd("St. Helena",                                              "St. Helena");
+        rd("System of the Unified Trigonometrical Cadastral Network", "System of the Unified Trigonometrical Cadastral Network");
+        rd("Tahaa",                                                   "Tahaa");
+        rd("Tahiti",                                                  "Tahiti");
+        rd("Taiwan",                                                  "Taiwan");
+        rd("Tananarive 1925",                                         "Tananarive 1925");
+        rd("Tokyo",                                                   "Tokyo");
+        rd("Viti Levu",                                               "Viti Levu");
+        rd("Voirol",                                                  "Voirol");
+        rd("WGS 72 Transit Broadcast Ephemeris",                      "World Geodetic System 1972 — Transit Broadcast Ephemeris");
+        rd("World Geodetic System 1984",                              "World Geodetic System 1984");
+        rd("Yellow Sea",                                              "Yellow Sea");
     }
 
     /**
@@ -497,7 +373,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     /**
      * Generates the HTML report.
      *
-     * @param  args Ignored.
+     * @param  args  ignored.
      * @throws FactoryException if an error occurred while fetching the CRS.
      * @throws IOException if an error occurred while writing the HTML file.
      */
@@ -705,6 +581,9 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
      */
     @Override
     protected Row createRow(final String code, final FactoryException exception) {
+        if (code.startsWith("Proj4:")) {
+            return null;
+        }
         final Row row = super.createRow(code, exception);
         try {
             row.name = factory.getDescriptionText(code).toString(getLocale());
@@ -787,8 +666,16 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
                     datumName = null;       // Keep ordering based on the name.
                 }
             }
-            section = SECTION_TITLES.getOrDefault(datumName, datumName);
-            unusedDatumMapping.remove(datumName);
+            if (datumName != null) {
+                final String prefix;
+                final Map.Entry<String,String> group = SECTION_TITLES.floorEntry(datumName);
+                if (group != null && datumName.startsWith(prefix = group.getKey())) {
+                    unusedDatumMapping.remove(prefix);
+                    section = group.getValue();
+                } else {
+                    section = datumName;
+                }
+            }
             /*
              * Get a copy of the name in all lower case.
              */

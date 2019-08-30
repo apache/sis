@@ -60,7 +60,7 @@ import static org.junit.Assume.*;
  *
  * <p><b>References:</b>
  * <ul>
- *   <li><a href="https://db.apache.org/derby/docs/10.13/adminguide/radminembeddedserverex.html">Embedded server example</a></li>
+ *   <li><a href="http://db.apache.org/derby/docs/10.15/adminguide/radminembeddedserverex.html">Embedded server example</a></li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -101,6 +101,8 @@ public strictfp class TestDatabase implements AutoCloseable {
     /**
      * Creates a temporary database. This method creates a Derby in-memory database by default,
      * but this default can be changed by setting the {@link #TEST_DATABASE} hard-coded value.
+     *
+     * <p>See class javadoc if there is a need to inspect content of that in-memory database.</p>
      *
      * @param  name  the database name (without {@code "memory:"} prefix).
      * @return connection to the test database (usually on Apache Derby).
@@ -178,6 +180,7 @@ public strictfp class TestDatabase implements AutoCloseable {
      *   <li>{@link TestCase#RUN_EXTENSIVE_TESTS} is {@code true} (for reducing the risk of messing with user installation).</li>
      *   <li>A PostgreSQL server is running on the local host and listening to the default port.</li>
      *   <li>A database named {@value #NAME} exists.</li>
+     *   <li>A role with Unix user name exists and can connect to the database without password.</li>
      *   <li>The database does not contain any schema of the given name.</li>
      * </ol>
      *
@@ -188,6 +191,8 @@ public strictfp class TestDatabase implements AutoCloseable {
      * @param  create  whether the schema should be created by this method.
      * @return connection to a PostgreSQL database
      * @throws SQLException if an error occurred while connecting to the database or creating the schema.
+     *
+     * @see <a href="http://sis.apache.org/source.html#postgres">Configuring PostgreSQL for Apache SIS tests</a>
      *
      * @since 1.0
      */

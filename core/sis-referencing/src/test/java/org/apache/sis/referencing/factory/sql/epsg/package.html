@@ -138,10 +138,27 @@ cd <i>&lt;path to local copy of <a href="http://svn.apache.org/repos/asf/sis/dat
 java org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter $EPSG_SCRIPTS/PostgreSQL_Data_Script.sql \
      sis-epsg/src/main/resources/org/apache/sis/referencing/factory/sql/epsg/Data.sql</pre></li>
 
-     <li><p>Run <code>org.apache.sis.referencing.factory.sql.EPSGInstallerTest</code> tests.</p></li>
+     <li><p>Run the tests. It it convenient to run <code>org.apache.sis.referencing.factory.sql.EPSGInstallerTest</code> in an IDE first,
+       for easier debugging if some changes in database structure or content broke some code. Then the whole Apache SIS project should be
+       <a href="http://sis.apache.org/source.html#tests">tested extensively</a>, preferably with a PostgreSQL server ready to accept local
+       connections to <code>SpatialMetadataTest</code> database:</p>
+
+       <pre>mvn install -Dorg.apache.sis.test.extensive=true</pre></li>
 
       <li><p>Upgrade the <code>FACTORY.VERSION</code> value defined in the
-          <code>org.apache.sis.referencing.report.CoordinateReferenceSystems</code> class.</p></li>
+          <code>org.apache.sis.referencing.report.CoordinateReferenceSystems</code> class, then execute that class.
+          It can be executed from the IDE since the <code>main</code> method takes no argument.
+          This class will write a <code>CoordinateReferenceSystems.html</code> file in current directory
+          (the full path will be printed in the standard output).
+          That file should be moved to the <code>site/content/tables/</code> directory,
+          where <code>site</code> is the directory containing a local checkout of
+          <a href="http://svn.apache.org/repos/asf/sis/site/trunk">http://svn.apache.org/repos/asf/sis/site/trunk</a>.</p></li>
+
+      <li><p>Execute the <code>org.apache.sis.referencing.report.CoordinateOperationMethods</code> class.
+          It can be executed from the IDE since the <code>main</code> method takes no argument.
+          This class will write a <code>CoordinateOperationMethods.html</code> file in current directory.
+          That file should be moved to the <code>site/content/tables/</code> directory,
+          where <code>site</code> is the directory than above.</p></li>
     </ol>
   </body>
 </html>
