@@ -91,11 +91,6 @@ public class MarshallerPool {
     private final Implementation implementation;
 
     /**
-     * The mapper between namespaces and prefix.
-     */
-    private final Object mapper;
-
-    /**
      * The provider of {@code AdapterReplacement} instances.
      * <strong>Every usage of this service loader must be synchronized.</strong>
      *
@@ -194,19 +189,8 @@ public class MarshallerPool {
          */
         template = new PooledTemplate(properties, implementation);
         final Object rootNamespace = template.remove(XML.DEFAULT_NAMESPACE, "");
-        /*
-         * Instantiates the OGCNamespacePrefixMapper appropriate for the implementation
-         * we just detected. Note that we may get NoClassDefFoundError instead than the
-         * usual ClassNotFoundException if the class was found but its parent class has
-         * not been found.
-         */
-        final String classname = implementation.mapper;
-        if (classname == null) {
-            mapper = null;
-        } else try {
-            mapper = Class.forName(classname).getConstructor(String.class).newInstance(rootNamespace);
-        } catch (ReflectiveOperationException | NoClassDefFoundError exception) {
-            throw new JAXBException(exception);
+        if (rootNamespace != null) {
+            Logging.getLogger(Loggers.XML).warning(XML.DEFAULT_NAMESPACE + " property is no longer supported.");
         }
         marshallers        = new ConcurrentLinkedDeque<>();
         unmarshallers      = new ConcurrentLinkedDeque<>();
@@ -436,9 +420,6 @@ public class MarshallerPool {
          * said that the default value is "UTF-8", which is what we want.
          */
         String key;
-        if ((key = implementation.mapperKey) != null) {
-            marshaller.setProperty(key, mapper);
-        }
         if ((key = implementation.indentKey) != null) {
             marshaller.setProperty(key, CharSequences.spaces(Constants.DEFAULT_INDENTATION));
         }

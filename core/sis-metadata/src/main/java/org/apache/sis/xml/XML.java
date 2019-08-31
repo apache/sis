@@ -179,11 +179,8 @@ public final class XML extends Static {
      * Specifies the default namespace of the XML document to write.
      * An example of value for this key is {@code "http://www.isotc211.org/2005/gmd"}.
      *
-     * <div class="section">Current limitation</div>
-     * In current SIS implementation, this property is honored only by the {@link MarshallerPool} constructors.
-     * Specifying this property to {@link javax.xml.bind.Marshaller#setProperty(String, Object)} is too late.
-     *
-     * @deprecated Use {@link javax.xml.bind.annotation.XmlSchema} instead.
+     * @deprecated This property is no longer honored by Apache SIS 1.0.
+     *             Use {@link javax.xml.bind.annotation.XmlSchema} instead.
      */
     @Deprecated
     public static final String DEFAULT_NAMESPACE = "org.apache.sis.xml.defaultNamespace";

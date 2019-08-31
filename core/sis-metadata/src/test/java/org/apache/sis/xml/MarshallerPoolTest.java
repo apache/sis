@@ -19,7 +19,6 @@ package org.apache.sis.xml;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -34,7 +33,6 @@ import static org.junit.Assert.*;
  * @since   0.3
  * @module
  */
-@DependsOn(OGCNamespacePrefixMapperTest.class)
 public final strictfp class MarshallerPoolTest extends TestCase {
     /**
      * Tests a marshaller which is acquired, then released.
