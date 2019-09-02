@@ -62,7 +62,6 @@ import org.junit.BeforeClass;
     org.apache.sis.xml.NilReasonTest.class,
     org.apache.sis.xml.LegacyCodesTest.class,
     org.apache.sis.xml.ValueConverterTest.class,
-    org.apache.sis.xml.OGCNamespacePrefixMapperTest.class,
     org.apache.sis.xml.MarshallerPoolTest.class,
     org.apache.sis.xml.TransformingNamespacesTest.class,
     org.apache.sis.xml.TransformerTest.class,

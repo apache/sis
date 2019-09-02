@@ -86,8 +86,9 @@
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GCO, xmlns = {
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "gcx", namespaceURI = Namespaces.GCX)
+    @XmlNs(prefix = "gco",   namespaceURI = Namespaces.GCO),
+    @XmlNs(prefix = "gcx",   namespaceURI = Namespaces.GCX),
+    @XmlNs(prefix = "xlink", namespaceURI = Namespaces.XLINK)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 /*

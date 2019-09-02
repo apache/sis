@@ -112,12 +112,25 @@
 
 
   <!-- ===========================================================
-           Sub-modules included in the build in dependency order
+           Sub-modules included in the build in dependency order.
+           JavaFX module is built only if PATH_TO_FX environment
+           variable is set.
        =========================================================== -->
   <modules>
     <module>sis-console</module>
-    <module>sis-javafx</module>
     <module>sis-webapp</module>
     <module>sis-openoffice</module>
   </modules>
+  <profiles>
+    <profile>
+      <activation>
+        <property>
+          <name>env.PATH_TO_FX</name>
+        </property>
+      </activation>
+      <modules>
+        <module>sis-javafx</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>
