@@ -188,7 +188,7 @@ public class MarshallerPool {
          * properties which are handled especially by this constructor.
          */
         template = new PooledTemplate(properties, implementation);
-        final Object rootNamespace = template.remove(XML.DEFAULT_NAMESPACE, "");
+        final Object rootNamespace = template.remove(XML.DEFAULT_NAMESPACE, null);
         if (rootNamespace != null) {
             Logging.getLogger(Loggers.XML).warning(XML.DEFAULT_NAMESPACE + " property is no longer supported.");
         }
