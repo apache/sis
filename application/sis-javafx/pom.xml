@@ -40,6 +40,8 @@
   <name>Apache SIS application for JavaFX</name>
   <description>
     Client application for JavaFX.
+    This module require the JavaFX environment to be pre-installed.
+    See https://openjfx.io/openjfx-docs/#install-javafx for details.
   </description>
 
 
@@ -72,7 +74,8 @@
         <configuration>
           <release>9</release>
           <compilerArgs>
-            <arg>--add-modules</arg> <arg>java.xml.bind,java.xml.ws.annotation,javafx.graphics</arg>
+            <arg>--module-path</arg> <arg>${env.PATH_TO_FX}</arg>
+            <arg>--add-modules</arg> <arg>javafx.graphics,javafx.controls,javafx.fxml,javafx.swing</arg>
           </compilerArgs>
         </configuration>
       </plugin>

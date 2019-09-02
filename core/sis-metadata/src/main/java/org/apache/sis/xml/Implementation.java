@@ -24,7 +24,7 @@ import javax.xml.bind.JAXBContext;
  * This enumeration allows to set vendor-specific marshaller properties.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.8
  * @module
  */
@@ -32,21 +32,17 @@ enum Implementation {
     /**
      * JAXB implementation bundled in the JDK.
      */
-    INTERNAL("com.sun.xml.internal.bind.indentString",
-             "com.sun.xml.internal.bind.namespacePrefixMapper",
-             "org.apache.sis.xml.OGCNamespacePrefixMapper"),
+    INTERNAL("com.sun.xml.internal.bind.indentString"),
 
     /**
      * JAXB implementation provided in a separated JAR, used for instance by Glassfish.
      */
-    ENDORSED("com.sun.xml.bind.indentString",
-             "com.sun.xml.bind.namespacePrefixMapper",
-             "org.apache.sis.xml.OGCNamespacePrefixMapper_Endorsed"),
+    ENDORSED("com.sun.xml.bind.indentString"),
 
     /**
      * Unrecognized implementation.
      */
-    OTHER(null, null, null);
+    OTHER(null);
 
     /**
      * The prefix of property names which are provided in external (endorsed) implementation of JAXB.
@@ -67,22 +63,10 @@ enum Implementation {
     final String indentKey;
 
     /**
-     * The JAXB property for setting the namespace prefix mapper, or {@code null} if none.
-     */
-    final String mapperKey;
-
-    /**
-     * The JAXB property for setting the namespace prefix mapper, or {@code null} if none.
-     */
-    final String mapper;
-
-    /**
      * Creates a new enumeration value for a JAXB implementation.
      */
-    private Implementation(final String indentKey, final String mapperKey, final String mapper) {
+    private Implementation(final String indentKey) {
         this.indentKey = indentKey;
-        this.mapperKey = mapperKey;
-        this.mapper    = mapper;
     }
 
     /**
@@ -116,15 +100,15 @@ enum Implementation {
      *
      * <p>This method excludes the {@code "com.sun.xml.bind.*"} properties if the implementation
      * is not {@link #ENDORSED} or {@link #INTERNAL}. We do not distinguish between the endorsed
-     * and internal namespaces since Apache SIS use only the endorsed namespace and let
+     * and internal namespaces since Apache SIS uses only the endorsed namespace and lets
      * {@code org.apache.sis.xml.Pooled} do the conversion to internal namespace if needed.</p>
      *
      * @param  key  the property key to test.
      * @return {@code false} if the given property should be silently ignored.
      */
     boolean filterProperty(final String key) {
-        // We user 'mapper' as a sentinel value for identifying INTERNAL and ENDORSED cases.
-        return (mapper != null) || !key.startsWith(ENDORSED_PREFIX);
+        // We user 'indentKey' as a sentinel value for identifying INTERNAL and ENDORSED cases.
+        return (indentKey != null) || !key.startsWith(ENDORSED_PREFIX);
     }
 
     /**
