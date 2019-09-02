@@ -18,7 +18,7 @@ package org.apache.sis.internal.gui;
 
 import java.net.URL;
 import java.util.MissingResourceException;
-import javax.annotation.Generated;
+import javax.annotation.processing.Generated;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
