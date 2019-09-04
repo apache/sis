@@ -21,18 +21,19 @@ import org.apache.sis.storage.Resource;
 
 
 /**
- * Parent class of all events related to a change in the metadata, content or structure of a resource.
+ * Parent class of events happening in a data store resource.
+ * The event may be a warning or a change in the metadata, content or structure of a resource.
  * Those events are created by {@link Resource} implementations and sent to all registered listeners.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  *
- * @see ChangeListener
+ * @see StoreListener
  *
  * @since 1.0
  * @module
  */
-public abstract class ChangeEvent extends EventObject {
+public abstract class StoreEvent extends EventObject {
     /**
      * For cross-version compatibility.
      */
@@ -44,7 +45,7 @@ public abstract class ChangeEvent extends EventObject {
      * @param  source  the resource on which the event initially occurred.
      * @throws IllegalArgumentException  if the given source is null.
      */
-    public ChangeEvent(Resource source) {
+    public StoreEvent(Resource source) {
         super(source);
     }
 

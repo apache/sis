@@ -31,8 +31,8 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.storage.event.StoreEvent;
+import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.setup.OptionKey;
 
@@ -178,7 +178,7 @@ public class LandsatStore extends DataStore {
      * @param  eventType  {@inheritDoc}
      */
     @Override
-    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    public <T extends StoreEvent> void addListener(StoreListener<? super T> listener, Class<T> eventType) {
     }
 
     /**
@@ -189,7 +189,7 @@ public class LandsatStore extends DataStore {
      * @param  eventType  {@inheritDoc}
      */
     @Override
-    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    public <T extends StoreEvent> void removeListener(StoreListener<? super T> listener, Class<T> eventType) {
     }
 
     /**

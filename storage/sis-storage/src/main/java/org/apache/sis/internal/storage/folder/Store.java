@@ -55,8 +55,8 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.storage.event.StoreEvent;
+import org.apache.sis.storage.event.StoreListener;
 
 
 /**
@@ -410,7 +410,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
      * @param  eventType  {@inheritDoc}
      */
     @Override
-    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    public <T extends StoreEvent> void addListener(StoreListener<? super T> listener, Class<T> eventType) {
     }
 
     /**
@@ -421,7 +421,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
      * @param  eventType  {@inheritDoc}
      */
     @Override
-    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    public <T extends StoreEvent> void removeListener(StoreListener<? super T> listener, Class<T> eventType) {
     }
 
     /**

@@ -26,8 +26,8 @@ import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.storage.event.StoreEvent;
+import org.apache.sis.storage.event.StoreListener;
 
 
 /**
@@ -177,7 +177,7 @@ public abstract class AbstractResource implements Resource, Localized {
      * @param  eventType  {@inheritDoc}
      */
     @Override
-    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    public <T extends StoreEvent> void addListener(StoreListener<? super T> listener, Class<T> eventType) {
     }
 
     /**
@@ -188,6 +188,6 @@ public abstract class AbstractResource implements Resource, Localized {
      * @param  eventType  {@inheritDoc}
      */
     @Override
-    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    public <T extends StoreEvent> void removeListener(StoreListener<? super T> listener, Class<T> eventType) {
     }
 }

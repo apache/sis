@@ -42,7 +42,7 @@ import java.util.logging.LogRecord;
  *
  * @see WarningListeners
  * @see org.apache.sis.storage.DataStore#addWarningListener(WarningListener)
- * @see org.apache.sis.storage.event.ChangeListener
+ * @see org.apache.sis.storage.event.StoreListener
  *
  * @since 0.3
  * @module

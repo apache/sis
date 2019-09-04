@@ -18,12 +18,9 @@
 
 /**
  * Provides interfaces and classes for dealing with different types of events fired by resources.
- * The different types of events are differentiated by the {@link ChangeEvent} subclasses.
- * There is different subclasses for structural changes or changes in resource content.
+ * The different types of events are differentiated by the {@link StoreEvent} subclasses.
+ * There is different subclasses for warnings, structural changes or changes in resource content.
  * It is possible to register a listener for only some specific types of events.
- *
- * <p>Note that warnings that may occur during exploitation of a resource are handled by an interface
- * defined in another package, {@link org.apache.sis.util.logging.WarningListener}.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @since   1.0
