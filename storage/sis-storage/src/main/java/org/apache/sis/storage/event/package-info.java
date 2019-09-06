@@ -18,9 +18,20 @@
 
 /**
  * Provides interfaces and classes for dealing with different types of events fired by resources.
- * The different types of events are differentiated by the {@link StoreEvent} subclasses.
- * There is different subclasses for warnings, structural changes or changes in resource content.
- * It is possible to register a listener for only some specific types of events.
+ * The different types of events are specified by the {@link StoreEvent} subclasses.
+ * For example if a warning occurred while reading data from a file,
+ * then the {@link org.apache.sis.storage.DataStore} implementation should fire a {@link WarningEvent}.
+ *
+ * <p>Events may occur in the following situations:</p>
+ * <ul>
+ *   <li>When a warning occurred.</li>
+ *   <li>When the data store content changed (e.g. new feature instance added or removed).</li>
+ *   <li>When the data store structure changed (e.g. a column is added in tabular data).</li>
+ *   <li>Any other change at implementation choice.</li>
+ * </ul>
+ *
+ * Users can {@linkplain org.apache.sis.storage.Resource#addListener declare their interest
+ * to a specific kind of event}.
  *
  * @author  Johann Sorel (Geomatys)
  * @since   1.0

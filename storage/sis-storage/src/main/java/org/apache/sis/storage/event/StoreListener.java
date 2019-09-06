@@ -16,23 +16,21 @@
  */
 package org.apache.sis.storage.event;
 
+import java.util.EventListener;
 import org.apache.sis.storage.Resource;
 
 
 /**
- * Defines an object which listens for events in resources (changes or warnings).
- * The events in resources are described by {@link StoreEvent} instances.
- * {@link Resource} implementations are responsible for instantiating the most specific {@code StoreEvent} subclass
- * for the type of event, for example:
+ * An object which listens for events (typically changes or warnings) occurring in a resource
+ * or one of its children. The kind of event is defined by the subclass of the {@link StoreEvent}
+ * instance given to the {@link #eventOccured(StoreEvent)} method. For example if a warning occurred
+ * while reading data from a file, then the event will be an instance of {@link WarningEvent}.
  *
- * <ul>
- *   <li>When a warning occurred.</li>
- *   <li>When the data store content changed (e.g. new feature instance added or removed).</li>
- *   <li>When the data store structure changed (e.g. a column is added in tabular data).</li>
- *   <li>Any other change at implementation choice.</li>
- * </ul>
- *
- * Then, all {@code StoreListener}s that declared an interest in {@code StoreEvent}s of that kind are notified.
+ * <p>{@link Resource} implementations are responsible for instantiating the most specific
+ * {@code StoreEvent} subclass for the type of events. Then, all {@code StoreListener}s that
+ * {@linkplain Resource#addListener(StoreListener, Class) declared an interest} for
+ * {@code StoreEvent}s of that kind are notified, including listeners in parent resources.
+ * Each listener is notified only once per event even if the listener is registered twice.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
@@ -40,13 +38,17 @@ import org.apache.sis.storage.Resource;
  * @param  <T>  the type of events of interest to this listener.
  *
  * @see StoreEvent
+ * @see Resource#addListener(StoreListener, Class)
  *
  * @since 1.0
  * @module
  */
-public interface StoreListener<T extends StoreEvent> {
+public interface StoreListener<T extends StoreEvent> extends EventListener {
     /**
      * Invoked <em>after</em> a warning or a change occurred in a resource.
+     * The {@link StoreEvent#getSource()} method gives the resource where the event occurred.
+     * It is not necessarily the {@linkplain Resource#addListener resource in which this
+     * listener has been registered}; it may be one of the resource children.
      *
      * @param  event  description of the change or warning that occurred in a resource. Shall not be {@code null}.
      */

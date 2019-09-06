@@ -16,8 +16,12 @@
  */
 package org.apache.sis.storage.event;
 
+import java.util.Locale;
 import java.util.EventObject;
+import org.apache.sis.util.Localized;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.internal.storage.StoreResource;
 
 
 /**
@@ -33,7 +37,7 @@ import org.apache.sis.storage.Resource;
  * @since 1.0
  * @module
  */
-public abstract class StoreEvent extends EventObject {
+public abstract class StoreEvent extends EventObject implements Localized {
     /**
      * For cross-version compatibility.
      */
@@ -42,20 +46,52 @@ public abstract class StoreEvent extends EventObject {
     /**
      * Constructs an event that occurred in the given resource.
      *
-     * @param  source  the resource on which the event initially occurred.
-     * @throws IllegalArgumentException  if the given source is null.
+     * @param  source  the resource where the event occurred.
+     * @throws IllegalArgumentException if the given source is null.
      */
-    public StoreEvent(Resource source) {
+    protected StoreEvent(Resource source) {
         super(source);
     }
 
     /**
-     * Returns the resource on which the event initially occurred.
+     * Returns the resource where the event occurred. It is not necessarily the {@linkplain Resource#addListener
+     * resource in which listeners have been registered}; it may be one of the resource children.
      *
-     * @return the resource on which the Event initially occurred.
+     * @return the resource where the event occurred.
      */
     @Override
     public Resource getSource() {
-        return (Resource) source;
+        return (Resource) super.getSource();
+    }
+
+    /**
+     * Returns the locale associated to this event, or {@code null} if unspecified.
+     * That locale may be used for formatting messages related to this event.
+     * The event locale is typically inherited from the {@link DataStore} locale.
+     *
+     * @return the locale associated to this event (typically specified by the data store),
+     *         or {@code null} if unknown.
+     *
+     * @see DataStore#getLocale()
+     */
+    @Override
+    public Locale getLocale() {
+        return getLocale(source);
+    }
+
+    /**
+     * {@link #getLocale()} implementation shared with {@link StoreListeners#getLocale()}.
+     */
+    static Locale getLocale(final Object source) {
+        if (source instanceof Localized) {
+            return ((Localized) source).getLocale();
+        }
+        if (source instanceof StoreResource) {
+            final DataStore ds = ((StoreResource) source).getOriginator();
+            if (ds != null) {
+                return ds.getLocale();
+            }
+        }
+        return null;
     }
 }

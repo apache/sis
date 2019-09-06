@@ -67,7 +67,10 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  *
  * @since 0.3
  * @module
+ *
+ * @deprecated Replaced by {@link org.apache.sis.storage.event.StoreListeners}.
  */
+@Deprecated
 public class WarningListeners<S> implements Localized {
     /**
      * The declared source of warnings. This is not necessarily the real source,
@@ -176,12 +179,12 @@ public class WarningListeners<S> implements Localized {
      * @param record  the warning as a log record.
      */
     public void warning(final LogRecord record) {
-        final WarningListener<?>[] current;
+        final WarningListener<? super S>[] current;
         synchronized (this) {
             current = listeners;
         }
         if (current != null) {
-            for (final WarningListener<? super S> listener : listeners) {
+            for (final WarningListener<? super S> listener : current) {
                 listener.warningOccured(source, record);
             }
         } else {

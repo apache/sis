@@ -225,6 +225,8 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * only – it has no effect on the data to be read or written from/to the data store.
      *
      * <p>The default value is the {@linkplain Locale#getDefault() system default locale}.</p>
+     *
+     * @see org.apache.sis.storage.event.StoreEvent#getLocale()
      */
     @Override
     public synchronized Locale getLocale() {
@@ -444,7 +446,10 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      *
      * @param  listener  the listener to add.
      * @throws IllegalArgumentException if the given listener is already registered in this data store.
+     *
+     * @deprecated Replaced by {@code addListener(listener, WarningEvent.class)}.
      */
+    @Deprecated
     public void addWarningListener(final WarningListener<? super DataStore> listener)
             throws IllegalArgumentException
     {
@@ -456,7 +461,10 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      *
      * @param  listener  the listener to remove.
      * @throws NoSuchElementException if the given listener is not registered in this data store.
+     *
+     * @deprecated Replaced by {@code removeListener(listener, WarningEvent.class)}.
      */
+    @Deprecated
     public void removeWarningListener(final WarningListener<? super DataStore> listener)
             throws NoSuchElementException
     {
