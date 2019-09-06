@@ -52,6 +52,7 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.storage.CodeType;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.internal.util.X364;
@@ -649,6 +650,6 @@ final class TransformCommand extends FormattedOutputCommand {
      * considered as an indication that the point is outside the domain of validity.
      */
     private static void warning(final Exception e) {
-        Logging.recoverableException(Logging.getLogger("org.apache.sis.console"), TransformCommand.class, "run", e);
+        Logging.recoverableException(Logging.getLogger(Modules.CONSOLE), TransformCommand.class, "run", e);
     }
 }
