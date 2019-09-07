@@ -38,10 +38,9 @@ import org.apache.sis.internal.metadata.sql.Dialect;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.storage.sql.SQLStore;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
-import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.resources.ResourceInternationalString;
 
 
@@ -116,7 +115,7 @@ final class Analyzer {
     /**
      * Where to send warnings after we finished to collect them, or when reading the feature instances.
      */
-    final WarningListeners<DataStore> listeners;
+    final StoreListeners listeners;
 
     /**
      * The locale for warning messages.
@@ -142,7 +141,7 @@ final class Analyzer {
      * @param  listeners  Value of {@code SQLStore.listeners}.
      * @param  locale     Value of {@code SQLStore.getLocale()}.
      */
-    Analyzer(final DataSource source, final DatabaseMetaData metadata, final WarningListeners<DataStore> listeners,
+    Analyzer(final DataSource source, final DatabaseMetaData metadata, final StoreListeners listeners,
              final Locale locale) throws SQLException
     {
         this.source      = source;

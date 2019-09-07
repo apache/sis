@@ -93,6 +93,11 @@ public final class Modules {
     public static final String SQL = "org.apache.sis.sql";
 
     /**
+     * The {@value} module name.
+     */
+    public static final String CONSOLE = "org.apache.sis.console";
+
+    /**
      * The major version number of all Apache SIS modules.
      *
      * @see org.apache.sis.util.Version

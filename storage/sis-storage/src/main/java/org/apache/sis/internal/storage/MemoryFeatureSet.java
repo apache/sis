@@ -19,9 +19,8 @@ package org.apache.sis.internal.storage;
 import java.util.Collection;
 import java.util.OptionalLong;
 import java.util.stream.Stream;
-import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.logging.WarningListeners;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
@@ -55,14 +54,14 @@ public class MemoryFeatureSet extends AbstractFeatureSet {
      * <code>{@linkplain AbstractFeature#getType()} == type</code> for all elements in the given collection
      * (this is not verified).
      *
-     * @param listeners  the set of registered warning listeners for the data store, or {@code null} if none.
+     * @param parent     listeners of the parent resource, or {@code null} if none.
      * @param type       the type of all features in the given collection.
      * @param features   collection of stored features. This collection will not be copied.
      */
-    public MemoryFeatureSet(final WarningListeners<DataStore> listeners,
+    public MemoryFeatureSet(final StoreListeners parent,
                             final DefaultFeatureType type, final Collection<AbstractFeature> features)
-    {
-        super(listeners);
+{
+        super(parent);
         ArgumentChecks.ensureNonNull("type",     type);
         ArgumentChecks.ensureNonNull("features", features);
         this.type     = type;

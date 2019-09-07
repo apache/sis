@@ -33,6 +33,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  * @module
  */
+@Deprecated
 public final strictfp class WarningListenersTest extends TestCase implements WarningListener<String> {
     /**
      * The object to be tested. Its source will be set to the string {@code "source"}.

@@ -35,13 +35,12 @@ import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
@@ -139,7 +138,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     /**
      * Where to send the warnings.
      */
-    public final WarningListeners<DataStore> listeners;
+    public final StoreListeners listeners;
 
     /**
      * Sets to {@code true} for canceling a reading process.
@@ -153,7 +152,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      * @param  geomlib    the library for geometric objects, or {@code null} for the default.
      * @param  listeners  where to send the warnings.
      */
-    protected Decoder(final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners) {
+    protected Decoder(final GeometryLibrary geomlib, final StoreListeners listeners) {
         Objects.requireNonNull(listeners);
         this.geomlib      = geomlib;
         this.listeners    = listeners;

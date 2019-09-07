@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.logging;
+package org.apache.sis.storage.event;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -24,22 +24,19 @@ import java.util.logging.LogRecord;
  * A log record to be logged without stack trace, unless the user specified it explicitly.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
- *
- * @deprecated Moved to {@link org.apache.sis.storage.event.QuietLogRecord}.
  */
-@Deprecated
 final class QuietLogRecord extends LogRecord {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -8225936118310305206L;
+    private static final long serialVersionUID = 5652099235767670922L;
 
     /**
-     * {@code true} if the user invoked {@link #setThrown(Throwable)}.
-     * In such case, {@link #clearThrown()} will not reset the throwable to null.
+     * {@code true} if the user invoked {@link #setThrown(Throwable)} explicitly.
+     * In such case, {@link #clearImplicitThrown()} will not reset the throwable to null.
      */
     private boolean explicitThrown;
 
@@ -62,10 +59,10 @@ final class QuietLogRecord extends LogRecord {
     }
 
     /**
-     * Clears the throwable if it has not been explicit set by the user.
+     * Clears the throwable if it has not been explicitly set by the user.
      * Otherwise do nothing.
      */
-    void clearThrown() {
+    void clearImplicitThrown() {
         if (!explicitThrown) {
             super.setThrown(null);
         }

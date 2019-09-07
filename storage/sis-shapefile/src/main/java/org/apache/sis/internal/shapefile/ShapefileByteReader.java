@@ -320,7 +320,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
 
         // Handle multiple polygon parts.
         if (numParts > 1) {
-            Logger log = Logging.getLogger(ShapefileByteReader.class.getName());
+            Logger log = Logging.getLogger(ShapefileByteReader.class);
 
             if (log.isLoggable(Level.FINER)) {
                 String format = "Polygon with multiple linear rings encountered at position {0,number} with {1,number} parts.";

@@ -22,11 +22,9 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.logging.EmptyWarningListeners;
+import org.apache.sis.internal.storage.AbstractResource;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.setup.GeometryLibrary;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.NetcdfFile;
@@ -47,11 +45,6 @@ import static org.junit.Assert.*;
  * @module
  */
 public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
-    /**
-     * A dummy list of listeners which can be given to the {@link Decoder} constructor.
-     */
-    protected static EmptyWarningListeners<DataStore> LISTENERS = new EmptyWarningListeners<>(null, Modules.NETCDF);
-
     /**
      * The {@code searchPath} argument value to be given to the {@link Decoder#setSearchPath(String[])}
      * method when the decoder shall search only in global attributes.
@@ -116,7 +109,7 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     protected Decoder createDecoder(final TestData file) throws IOException, DataStoreException {
-        return new DecoderWrapper(new NetcdfDataset(createUCAR(file)), GeometryLibrary.JAVA2D, LISTENERS);
+        return new DecoderWrapper(new NetcdfDataset(createUCAR(file)), GeometryLibrary.JAVA2D, new AbstractResource(null));
     }
 
     /**

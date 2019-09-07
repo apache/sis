@@ -25,7 +25,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.Geometries;
@@ -33,7 +32,7 @@ import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -57,7 +56,7 @@ public final class StoreFormat extends WKTFormat {
     /**
      * Where to send warnings.
      */
-    private final WarningListeners<DataStore> listeners;
+    private final StoreListeners listeners;
 
     /**
      * Creates a new WKT parser and encoder.
@@ -65,7 +64,7 @@ public final class StoreFormat extends WKTFormat {
      * @param  library    the geometry library, or {@code null} for the default.
      * @param  listeners  where to send warnings.
      */
-    public StoreFormat(final GeometryLibrary library, final WarningListeners<DataStore> listeners) {
+    public StoreFormat(final GeometryLibrary library, final StoreListeners listeners) {
         super(null, null);
         this.library   = library;
         this.listeners = listeners;
@@ -144,7 +143,7 @@ public final class StoreFormat extends WKTFormat {
                 if (warning != null) log(warning);
             }
         } catch (FactoryException e) {
-            listeners.warning(null, e);
+            listeners.warning(e);
         }
     }
 
@@ -152,10 +151,9 @@ public final class StoreFormat extends WKTFormat {
      * Reports a warning for a WKT that can not be read. This method should be invoked only when the CRS
      * can not be created at all; it should not be invoked if the CRS has been created with some warnings.
      */
-    final void log(final Exception e) {
-        final DataStore store = listeners.getSource();
-        listeners.warning(Resources.forLocale(store.getLocale())
-                .getString(Resources.Keys.CanNotReadCRS_WKT_1, store.getDisplayName()), e);
+    private void log(final Exception e) {
+        listeners.warning(Resources.forLocale(listeners.getLocale())
+                .getString(Resources.Keys.CanNotReadCRS_WKT_1, listeners.getSourceName()), e);
     }
 
     /**

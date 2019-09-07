@@ -50,9 +50,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.util.logging.WarningListeners;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.identification.*;
@@ -197,17 +196,17 @@ final class MetadataReader extends MetadataBuilder {
      * or logs the record otherwise.
      */
     private void warning(final Exception e) {
-        decoder.listeners.warning(null, e);
+        decoder.listeners.warning(e);
     }
 
     /**
      * Logs a warning using the localized error resource bundle for the locale given by
-     * {@link WarningListeners#getLocale()}.
+     * {@link StoreListeners#getLocale()}.
      *
      * @param  key  one of {@link Errors.Keys} values.
      */
     private void warning(final short key, final Object p1, final Object p2, final Exception e) {
-        final WarningListeners<DataStore> listeners = decoder.listeners;
+        final StoreListeners listeners = decoder.listeners;
         listeners.warning(Errors.getResources(listeners.getLocale()).getString(key, p1, p2), e);
     }
 

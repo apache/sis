@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Collections;
+import java.util.logging.Filter;
 import java.util.logging.LogRecord;             // For javadoc
 import java.net.URL;
 import java.io.File;
@@ -361,6 +362,18 @@ public final class XML extends Static {
 
     /**
      * Specifies a listener to be notified when a non-fatal error occurred during the (un)marshalling.
+     * The value for this property shall be an instance of {@link Filter}.
+     *
+     * <p>By default, warnings that occur during the (un)marshalling process are logged. However if a
+     * property is set for this key, then the {@link Filter#isLoggable(LogRecord)} method will be invoked.
+     * If that method returns {@code false}, then the warning will not be logged by the (un)marshaller.</p>
+     *
+     * @since 1.0
+     */
+    public static final String WARNING_FILTER = "org.apache.sis.xml.warningFilter";
+
+    /**
+     * Specifies a listener to be notified when a non-fatal error occurred during the (un)marshalling.
      * The value for this property shall be an instance of {@code WarningListener<Object>}.
      *
      * <p>By default, warnings that occur during the (un)marshalling process are logged. However if a
@@ -368,7 +381,10 @@ public final class XML extends Static {
      * method will be invoked and the warning will <em>not</em> be logged by the (un)marshaller.</p>
      *
      * @see WarningListener
+     *
+     * @deprecated Replaced by {@link #WARNING_FILTER}.
      */
+    @Deprecated
     public static final String WARNING_LISTENER = "org.apache.sis.xml.warningListener";
 
     /**

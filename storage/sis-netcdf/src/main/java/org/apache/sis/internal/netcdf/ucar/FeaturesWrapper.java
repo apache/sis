@@ -17,10 +17,9 @@
 package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.stream.Stream;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
-import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.storage.event.StoreListeners;
 import ucar.nc2.ft.FeatureCollection;
 
 // Branch-dependent imports
@@ -49,7 +48,7 @@ final class FeaturesWrapper extends DiscreteSampling {
      * @param  listeners  the set of registered warning listeners for the data store.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    FeaturesWrapper(final FeatureCollection features, final GeometryLibrary factory, final WarningListeners<DataStore> listeners) {
+    FeaturesWrapper(final FeatureCollection features, final GeometryLibrary factory, final StoreListeners listeners) {
         super(factory, listeners);
         this.features = features;
     }

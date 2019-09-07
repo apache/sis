@@ -18,11 +18,11 @@ package org.apache.sis.metadata.iso.citation;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
-import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
  * @since   0.5
  * @module
  */
-public final strictfp class DefaultContactTest extends TestCase implements WarningListener<Object> {
+public final strictfp class DefaultContactTest extends TestCase implements Filter {
     /**
      * The resource key for the message of the warning that occurred, or {@code null} if none.
      */
@@ -52,29 +52,19 @@ public final strictfp class DefaultContactTest extends TestCase implements Warni
     private Object[] parameters;
 
     /**
-     * For internal {@code DefaultContact} usage.
-     *
-     * @return {@code Object.class}.
-     */
-    @Override
-    public Class<Object> getSourceClass() {
-        return Object.class;
-    }
-
-    /**
      * Invoked when a warning occurred while unmarshalling a test XML fragment. This method ensures that no other
      * warning occurred before this method call (i.e. each test is allowed to cause at most one warning), then
      * remember the warning parameters for verification by the test method.
      *
-     * @param source   ignored.
-     * @param warning  the warning.
+     * @param  warning  the warning.
      */
     @Override
-    public void warningOccured(final Object source, final LogRecord warning) {
+    public boolean isLoggable(final LogRecord warning) {
         assertNull(resourceKey);
         assertNull(parameters);
         assertNotNull(resourceKey = warning.getMessage());
         assertNotNull(parameters  = warning.getParameters());
+        return false;
     }
 
     /**

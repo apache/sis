@@ -19,6 +19,7 @@ package org.apache.sis.util.logging;
 import java.util.EventListener;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Filter;
 
 
 /**
@@ -36,17 +37,20 @@ import java.util.logging.LogRecord;
  * in addition to the log record.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.0
  *
  * @param <S>  the base type of objects that emit warnings (the <cite>source</cite>).
  *
  * @see WarningListeners
  * @see org.apache.sis.storage.DataStore#addWarningListener(WarningListener)
- * @see org.apache.sis.storage.event.ChangeListener
+ * @see org.apache.sis.storage.event.StoreListener
  *
  * @since 0.3
  * @module
+ *
+ * @deprecated Replaced by {@link java.util.logging.Filter}.
  */
+@Deprecated
 public interface WarningListener<S> extends EventListener {
     /**
      * Returns the type of objects that emit warnings of interest for this listener.
@@ -75,4 +79,15 @@ public interface WarningListener<S> extends EventListener {
      * @param warning  the warning message together with programmatic information.
      */
     void warningOccured(S source, LogRecord warning);
+
+    /**
+     * Wraps this listener in a {@code java.util.logging.Filter} for transitioning
+     * to the replacement of this interface.
+     */
+    default Filter asFilter() {
+        return (LogRecord warning) -> {
+            warningOccured(null, warning);
+            return false;
+        };
+    }
 }

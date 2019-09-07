@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Filter;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +53,6 @@ import org.apache.sis.storage.ConcurrentWriteException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.ForwardOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
-import org.apache.sis.util.logging.WarningListener;
 
 
 /**
@@ -125,7 +125,7 @@ public abstract class StaxDataStore extends URIDataStore {
      * instead than creating new streams for re-reading the data.  If we can not reset the stream but can
      * create a new one, then this field will become a reference to the new stream. This change should be
      * done only in last resort, when there is no way to reuse the existing stream. This is because the
-     * streams created by {@link ChannelFactory#inputStream(String, WarningListeners)} are not of the same
+     * streams created by {@link ChannelFactory#inputStream(String, StoreListeners)} are not of the same
      * kind than the streams created by {@link StorageConnector}.</p>
      *
      * @see #close()
@@ -279,7 +279,7 @@ public abstract class StaxDataStore extends URIDataStore {
                 return true;
             }
         } catch (InvalidSeekException e) {
-            listeners.warning(null, e);
+            listeners.warning(e);
         }
         return false;
     }
@@ -288,7 +288,7 @@ public abstract class StaxDataStore extends URIDataStore {
      * Holds information that can be used for (un)marshallers configuration, and opportunistically
      * implement various listeners used by JAXB (actually the SIS wrappers) or StAX.
      */
-    private final class Config extends AbstractMap<String,Object> implements XMLReporter, WarningListener<Object> {
+    private final class Config extends AbstractMap<String,Object> implements XMLReporter, Filter {
         /**
          * Fetches configuration information from the given object.
          */
@@ -306,9 +306,9 @@ public abstract class StaxDataStore extends URIDataStore {
         public Object get(final Object key) {
             if (key instanceof String) {
                 switch ((String) key) {
-                    case XML.LOCALE:           return locale;
-                    case XML.TIMEZONE:         return timezone;
-                    case XML.WARNING_LISTENER: return this;
+                    case XML.LOCALE:         return locale;
+                    case XML.TIMEZONE:       return timezone;
+                    case XML.WARNING_FILTER: return this;
                 }
             }
             return null;
@@ -319,7 +319,7 @@ public abstract class StaxDataStore extends URIDataStore {
          */
         @Override
         protected EntryIterator<String, Object> entryIterator() {
-            return new KeyIterator(XML.LOCALE, XML.TIMEZONE, XML.WARNING_LISTENER);
+            return new KeyIterator(XML.LOCALE, XML.TIMEZONE, XML.WARNING_FILTER);
         }
 
         /**
@@ -342,22 +342,13 @@ public abstract class StaxDataStore extends URIDataStore {
         /**
          * Reports a warning represented by the given log record.
          *
-         * @param source   ignored (typically a JAXB object being unmarshalled). Can be {@code null}.
          * @param warning  the warning as a log record.
          */
         @Override
-        public void warningOccured(final Object source, final LogRecord warning) {
+        public boolean isLoggable(final LogRecord warning) {
             warning.setLoggerName(null);        // For allowing 'listeners' to select a logger name.
             listeners.warning(warning);
-        }
-
-        /**
-         * Returns the type of objects that emit warnings of interest for this listener.
-         * Fixed to {@code Object.class} as required by {@link org.apache.sis.xml.XML#WARNING_LISTENER} documentation.
-         */
-        @Override
-        public final Class<Object> getSourceClass() {
-            return Object.class;
+            return false;
         }
 
         /**

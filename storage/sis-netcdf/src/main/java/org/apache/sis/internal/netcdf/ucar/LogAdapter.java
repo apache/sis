@@ -16,15 +16,14 @@
  */
 package org.apache.sis.internal.netcdf.ucar;
 
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.storage.event.StoreListeners;
 
 
 /**
  * Forwards netCDF logging to the Apache SIS warning listeners.
  * NetCDF sends message to a user-specified {@link java.util.Formatter} with one message per line.
- * This class intercepts the characters and send them to the {@link WarningListeners} every time
+ * This class intercepts the characters and send them to the {@link StoreListeners} every time
  * that a complete line has been received.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -41,12 +40,12 @@ final class LogAdapter implements Appendable {
     /**
      * Where to sends the warning messages.
      */
-    private final WarningListeners<DataStore> listeners;
+    private final StoreListeners listeners;
 
     /**
      * Creates a new adapter which will send lines to the given listeners.
      */
-    LogAdapter(final WarningListeners<DataStore> listeners) {
+    LogAdapter(final StoreListeners listeners) {
         this.listeners = listeners;
     }
 
@@ -118,7 +117,7 @@ final class LogAdapter implements Appendable {
     private void warning(CharSequence message) {
         message = CharSequences.trimWhitespaces(message);
         if (message.length() != 0) {
-            listeners.warning(message.toString(), null);
+            listeners.warning(message.toString());
         }
     }
 }

@@ -44,7 +44,7 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ProbeResult;
-import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Version;
 
@@ -265,7 +265,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * @throws IOException if an error occurred while opening the netCDF file.
      * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
-    static Decoder decoder(final WarningListeners<DataStore> listeners, final StorageConnector connector)
+    static Decoder decoder(final StoreListeners listeners, final StorageConnector connector)
             throws IOException, DataStoreException
     {
         final GeometryLibrary geomlib = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
@@ -311,7 +311,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
     private static Decoder createByReflection(final Object input, final boolean isUCAR,
-            final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners)
+            final GeometryLibrary geomlib, final StoreListeners listeners)
             throws IOException, DataStoreException
     {
         ensureInitialized(true);
@@ -371,7 +371,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                          */
                         final Class<? extends Decoder> wrapper =
                                 Class.forName("org.apache.sis.internal.netcdf.ucar.DecoderWrapper").asSubclass(Decoder.class);
-                        final Class<?>[] parameterTypes = new Class<?>[] {netcdfFileClass, GeometryLibrary.class, WarningListeners.class};
+                        final Class<?>[] parameterTypes = new Class<?>[] {netcdfFileClass, GeometryLibrary.class, StoreListeners.class};
                         createFromUCAR = wrapper.getConstructor(parameterTypes);
                         parameterTypes[0] = String.class;
                         createFromPath = wrapper.getConstructor(parameterTypes);

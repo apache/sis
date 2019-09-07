@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage;
 
+import java.util.logging.Logger;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.metadata.distribution.Format;
@@ -24,6 +25,7 @@ import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.measure.Range;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
 
@@ -321,5 +323,25 @@ public abstract class DataStoreProvider {
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         ArgumentChecks.ensureNonNull("parameter", parameters);
         return open(URIDataStore.Provider.connector(this, parameters));
+    }
+
+    /**
+     * Returns the logger where to report warnings. This logger is used only if no
+     * {@link org.apache.sis.storage.event.StoreListener} has been registered for
+     * {@link org.apache.sis.storage.event.WarningEvent}.
+     *
+     * <p>The default implementation returns a logger with the same name as the package name
+     * of the subclass of this {@code DataStoreProvider} instance. Subclasses should override
+     * this method if they can provide a more specific logger.</p>
+     *
+     * @return the logger to use as a fallback (when there is no listeners) for warning messages.
+     *
+     * @since 1.0
+     */
+    public Logger getLogger() {
+        String name = getClass().getName();
+        final int separator = name.lastIndexOf('.');
+        name = (separator >= 1) ? name.substring(0, separator) : "";
+        return Logging.getLogger(name);
     }
 }

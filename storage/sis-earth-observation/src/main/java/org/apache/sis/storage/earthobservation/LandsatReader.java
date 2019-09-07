@@ -51,14 +51,13 @@ import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
@@ -213,7 +212,7 @@ final class LandsatReader extends MetadataBuilder {
     /**
      * Where to send the warnings.
      */
-    private final WarningListeners<DataStore> listeners;
+    private final StoreListeners listeners;
 
     /**
      * Group in process of being parsed, or {@code null} if none.
@@ -294,7 +293,7 @@ final class LandsatReader extends MetadataBuilder {
      * @param  filename   an identifier of the file being read, or {@code null} if unknown.
      * @param  listeners  where to sent warnings that may occur during the parsing process.
      */
-    LandsatReader(final String filename, final WarningListeners<DataStore> listeners) {
+    LandsatReader(final String filename, final StoreListeners listeners) {
         this.filename  = filename;
         this.listeners = listeners;
         this.factories = new ReferencingFactoryContainer();
@@ -373,7 +372,7 @@ final class LandsatReader extends MetadataBuilder {
                 }
             }
         }
-        listeners.warning(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, getFilename()), null);
+        listeners.warning(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, getFilename()));
     }
 
     /**
@@ -805,7 +804,7 @@ final class LandsatReader extends MetadataBuilder {
      */
     private DefaultBand band(final String key, int index) {
         if (index < 1 || index > BAND_NAMES.length) {
-            listeners.warning(errors().getString(Errors.Keys.UnexpectedValueInElement_2, key + index, index), null);
+            listeners.warning(errors().getString(Errors.Keys.UnexpectedValueInElement_2, key + index, index));
             return null;
         }
         DefaultBand band = bands[--index];
@@ -831,7 +830,7 @@ final class LandsatReader extends MetadataBuilder {
         if (projection != null) {
             projection.parameter(name).setValue(Double.parseDouble(value), isLinear ? Units.METRE : Units.DEGREE);
         } else {
-            listeners.warning(errors().getString(Errors.Keys.UnexpectedProperty_2, filename, key), null);
+            listeners.warning(errors().getString(Errors.Keys.UnexpectedProperty_2, filename, key));
         }
     }
 
