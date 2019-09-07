@@ -40,7 +40,6 @@ import ucar.nc2.ft.FeatureDatasetPoint;
 import ucar.nc2.ft.FeatureDatasetFactoryManager;
 import ucar.nc2.ft.FeatureCollection;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
@@ -48,8 +47,8 @@ import org.apache.sis.internal.netcdf.Node;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.DiscreteSampling;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.event.StoreListeners;
 
 
 /**
@@ -108,7 +107,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @param file       the netCDF file from which to read data.
      * @param listeners  where to send the warnings.
      */
-    public DecoderWrapper(final NetcdfFile file, final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners) {
+    public DecoderWrapper(final NetcdfFile file, final GeometryLibrary geomlib, final StoreListeners listeners) {
         super(geomlib, listeners);
         this.file = file;
         groups = new Group[1];
@@ -124,7 +123,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @throws IOException if an error occurred while opening the netCDF file.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    public DecoderWrapper(final String filename, final GeometryLibrary geomlib, final WarningListeners<DataStore> listeners)
+    public DecoderWrapper(final String filename, final GeometryLibrary geomlib, final StoreListeners listeners)
             throws IOException
     {
         super(geomlib, listeners);

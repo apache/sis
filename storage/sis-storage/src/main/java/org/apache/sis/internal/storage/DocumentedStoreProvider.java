@@ -21,9 +21,8 @@ import java.util.logging.LogRecord;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.sql.MetadataStoreException;
-import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.system.Modules;
 
 
@@ -89,7 +88,7 @@ public abstract class DocumentedStoreProvider extends URIDataStore.Provider {
      * @param  listeners  where to report the warning in case of error, or {@code null} if none.
      * @return a description of the data format.
      */
-    public final Format getFormat(final WarningListeners<DataStore> listeners) {
+    public final Format getFormat(final StoreListeners listeners) {
         /*
          * Note: this method does not cache the format because such caching is already done by MetadataSource.
          */

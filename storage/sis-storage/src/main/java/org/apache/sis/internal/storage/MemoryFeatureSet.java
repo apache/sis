@@ -19,9 +19,8 @@ package org.apache.sis.internal.storage;
 import java.util.Collection;
 import java.util.OptionalLong;
 import java.util.stream.Stream;
-import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.logging.WarningListeners;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -55,14 +54,12 @@ public class MemoryFeatureSet extends AbstractFeatureSet {
      * <code>{@linkplain Feature#getType()} == type</code> for all elements in the given collection
      * (this is not verified).
      *
-     * @param listeners  the set of registered warning listeners for the data store, or {@code null} if none.
+     * @param parent     listeners of the parent resource, or {@code null} if none.
      * @param type       the type of all features in the given collection.
      * @param features   collection of stored features. This collection will not be copied.
      */
-    public MemoryFeatureSet(final WarningListeners<DataStore> listeners,
-                            final FeatureType type, final Collection<Feature> features)
-    {
-        super(listeners);
+    public MemoryFeatureSet(final StoreListeners parent, final FeatureType type, final Collection<Feature> features) {
+        super(parent);
         ArgumentChecks.ensureNonNull("type",     type);
         ArgumentChecks.ensureNonNull("features", features);
         this.type     = type;

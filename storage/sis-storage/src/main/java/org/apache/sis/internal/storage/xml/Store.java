@@ -33,6 +33,7 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
@@ -121,7 +122,7 @@ final class Store extends URIDataStore {
      * Returns the properties to give to the (un)marshaller.
      */
     private Map<String,?> properties() {
-        if (listeners.hasListeners()) {
+        if (listeners.hasListeners(WarningEvent.class)) {
             return Collections.singletonMap(XML.WARNING_LISTENER, new WarningListener<Object>() {
                 /** Returns the type of objects that emit warnings of interest for this listener. */
                 @Override public Class<Object> getSourceClass() {

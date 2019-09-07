@@ -101,7 +101,6 @@ public class WarningListeners<S> implements Localized {
      *                but this is the source that the implementer wants to declare as public API.
      */
     public WarningListeners(final S source) {
-        ArgumentChecks.ensureNonNull("source", source);
         this.source = source;
     }
 

@@ -30,13 +30,12 @@ import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAssociationRole;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.storage.query.SimpleQuery;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.logging.WarningListeners;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -198,7 +197,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
      *   <li>{@code "identifierSuffix"} — string to insert at the end of join identifiers (optional).</li>
      * </ul>
      *
-     * @param  listeners    the set of registered warning listeners for the data store, or {@code null} if none.
+     * @param  parent       listeners of the parent resource, or {@code null} if none.
      * @param  left         the first source of features. This is often (but not necessarily) the largest set.
      * @param  leftAlias    name of the associations to the {@code left} features, or {@code null} for a default name.
      * @param  right        the second source of features. Should be the set in which iterations are cheapest.
@@ -208,14 +207,14 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
      * @param  featureInfo  information about the {@link FeatureType} of this
      * @throws DataStoreException if an error occurred while creating the feature set.
      */
-    public JoinFeatureSet(final WarningListeners<DataStore> listeners,
+    public JoinFeatureSet(final StoreListeners parent,
                           final FeatureSet left,  String leftAlias,
                           final FeatureSet right, String rightAlias,
                           final Type joinType, final PropertyIsEqualTo condition,
                           Map<String,?> featureInfo)
             throws DataStoreException
     {
-        super(listeners);
+        super(parent);
         final FeatureType leftType  = left.getType();
         final FeatureType rightType = right.getType();
         final GenericName leftName  = leftType.getName();

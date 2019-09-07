@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Method;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Exceptions;
@@ -75,7 +76,7 @@ import org.apache.sis.storage.Resource;
  * @since   1.0
  * @module
  */
-public class StoreListeners extends org.apache.sis.util.logging.WarningListeners<Resource> implements Localized {
+public class StoreListeners extends org.apache.sis.util.logging.WarningListeners implements Localized {
     /**
      * Parent manager to notify in addition to this manager.
      */
@@ -208,9 +209,18 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
      * @param parent  the manager to notify in addition to this manager, or {@code null} if none.
      * @param source  the source of events. Can not be null.
      */
-    public StoreListeners(final StoreListeners parent, final Resource source) {
+    public StoreListeners(final StoreListeners parent, Resource source) {
         super(source);
-        ArgumentChecks.ensureNonNull("source", source);
+        /*
+         * Undocumented feature for allowing subclass to specify `this` as the source resource.
+         * This is used as a convenience by AbstractResource internal class. We need this hack
+         * because subclasses can not reference `this` before super-class constructor completed.
+         */
+        if (source == null && this instanceof Resource) {
+            source = (Resource) this;
+        } else {
+            ArgumentChecks.ensureNonNull("source", source);
+        }
         this.source = source;
         this.parent = parent;
     }
@@ -244,6 +254,35 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
     }
 
     /**
+     * Returns a short name or label for the source. It may be the name of the file opened by a data store.
+     * The returned name can be useful in warning messages for identifying the problematic source.
+     *
+     * <p>The default implementation {@linkplain DataStore#getDisplayName() fetches that name from the data store},
+     * or returns an arbitrary name if it can get it otherwise.</p>
+     *
+     * @return a short name of label for the source (never {@code null}).
+     *
+     * @see DataStore#getDisplayName()
+     */
+    public String getSourceName() {
+        final DataStore ds = getDataStore(this);
+        if (ds != null) {
+            String name = ds.getDisplayName();
+            if (name != null) {
+                return name;
+            }
+            final DataStoreProvider provider = ds.getProvider();
+            if (provider != null) {
+                name = provider.getShortName();
+                if (name != null) {
+                    return name;
+                }
+            }
+        }
+        return Classes.getShortClassName(source);
+    }
+
+    /**
      * Returns the locale used by this manager, or {@code null} if unspecified.
      * That locale is typically inherited from the {@link DataStore} locale
      * and can be used for formatting messages.
@@ -255,7 +294,16 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
      */
     @Override
     public Locale getLocale() {
-        return StoreEvent.getLocale(source);
+        StoreListeners m = this;
+        do {
+            final Resource src = m.source;
+            if (src != this && src != m && src instanceof Localized) {
+                final Locale locale = ((Localized) src).getLocale();
+                if (locale != null) return locale;
+            }
+            m = m.parent;
+        } while (m != null);
+        return null;
     }
 
     /**
@@ -507,6 +555,7 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
         }
         if (ce == null) {
             ce = new ForType<>(eventType, listeners);
+            listeners = ce;
         }
         ce.add(listener);
     }
@@ -546,16 +595,22 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
     }
 
     /**
-     * Returns {@code true} if this object contains at least one listener.
+     * Returns {@code true} if this object or its parent contains at least one listener for the given type of event.
      *
-     * @return {@code true} if this object contains at least one listener, {@code false} otherwise.
+     * @param  eventType  the type of event for which to check listener presence.
+     * @return {@code true} if this object contains at least one listener for given event type, {@code false} otherwise.
      */
-    @Override
-    public boolean hasListeners() {
+    public boolean hasListeners(final Class<? extends StoreEvent> eventType) {
+        ArgumentChecks.ensureNonNull("eventType", eventType);
         StoreListeners m = this;
         do {
-            if (listeners != null && listeners.hasListeners()) {
-                return true;
+            for (ForType<?> e = m.listeners; e != null; e = e.next) {
+                if (eventType.isAssignableFrom(e.type)) {
+                    if (e.hasListeners()) {
+                        return true;
+                    }
+                    break;
+                }
             }
             m = m.parent;
         } while (m != null);
@@ -563,11 +618,22 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
     }
 
     /**
+     * Returns {@code true} if this object contains at least one listener.
+     *
+     * @return {@code true} if this object contains at least one listener, {@code false} otherwise.
+     */
+    @Override
+    @Deprecated
+    public boolean hasListeners() {
+        return hasListeners(StoreEvent.class);
+    }
+
+    /**
      * @deprecated Replaced by {@code addListener(listener, WarningEvent.class)}.
      */
     @Override
     @Deprecated
-    public void addWarningListener(final WarningListener<? super Resource> listener) {
+    public void addWarningListener(final WarningListener listener) {
         addListener(new Legacy(listener), WarningEvent.class);
     }
 
@@ -576,7 +642,7 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
      */
     @Override
     @Deprecated
-    public void removeWarningListener(final WarningListener<? super Resource> listener) {
+    public void removeWarningListener(final WarningListener listener) {
         for (ForType<?> e = listeners; e != null; e = e.next) {
             if (e.type.equals(WarningEvent.class)) {
                 StoreListener<?>[] list = e.listeners;

@@ -18,8 +18,7 @@ package org.apache.sis.storage;
 
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.storage.event.StoreEvent;
-import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.storage.event.StoreListeners;
 
 
 /**
@@ -30,7 +29,7 @@ import org.apache.sis.storage.event.StoreListener;
  * @since   0.8
  * @module
  */
-final strictfp class DataStoreMock extends DataStore {
+public final strictfp class DataStoreMock extends DataStore {
     /**
      * The display name.
      */
@@ -38,8 +37,10 @@ final strictfp class DataStoreMock extends DataStore {
 
     /**
      * Creates a new data store mock with the given display name.
+     *
+     * @param  name  data store display name.
      */
-    DataStoreMock(final String name) {
+    public DataStoreMock(final String name) {
         this.name = name;
     }
 
@@ -51,25 +52,46 @@ final strictfp class DataStoreMock extends DataStore {
         return name;
     }
 
+    /**
+     * Returns {@code null} since there is no open parameters.
+     */
     @Override
     public ParameterValueGroup getOpenParameters() {
         return null;
     }
 
+    /**
+     * Returns {@code null} since there is no metadata.
+     */
     @Override
     public Metadata getMetadata() {
         return null;
     }
 
-    @Override
-    public <T extends StoreEvent> void addListener(StoreListener<? super T> listener, Class<T> eventType) {
-    }
-
-    @Override
-    public <T extends StoreEvent> void removeListener(StoreListener<? super T> listener, Class<T> eventType) {
-    }
-
+    /**
+     * Do nothing.
+     */
     @Override
     public void close() {
+    }
+
+    /**
+     * Opens access to the data store listeners.
+     *
+     * @return the data store listeners.
+     */
+    public StoreListeners listeners() {
+        return listeners;
+    }
+
+    /**
+     * Sends a pseudo-warning message for testing purpose. This method is defined in this class
+     * for allowing {@link StoreListeners} to detect that the warning come from a data store by
+     * inspecting the stack frame.
+     *
+     * @param  message  the message to send.
+     */
+    public void simulateWarning(String message) {
+        listeners.warning(message);
     }
 }

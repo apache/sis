@@ -76,15 +76,9 @@ public abstract class StoreEvent extends EventObject implements Localized {
      */
     @Override
     public Locale getLocale() {
-        return getLocale(source);
-    }
-
-    /**
-     * {@link #getLocale()} implementation shared with {@link StoreListeners#getLocale()}.
-     */
-    static Locale getLocale(final Object source) {
         if (source instanceof Localized) {
-            return ((Localized) source).getLocale();
+            final Locale locale = ((Localized) source).getLocale();
+            if (locale != null) return locale;
         }
         if (source instanceof StoreResource) {
             final DataStore ds = ((StoreResource) source).getOriginator();

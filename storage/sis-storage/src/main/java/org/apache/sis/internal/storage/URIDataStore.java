@@ -33,6 +33,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalOpenParameterException;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.internal.storage.io.IOUtilities;
 
 
@@ -268,26 +269,14 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     }
 
     /**
-     * Ignored in current implementation, on the assumption that most data stores
-     * (at least the read-only ones) produce no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
+     * Registers only listeners for {@link WarningEvent}s on the assumption that most data stores
+     * (at least the read-only ones) produce no change events.
      */
     @Override
     public <T extends StoreEvent> void addListener(StoreListener<? super T> listener, Class<T> eventType) {
-    }
-
-    /**
-     * Ignored in current implementation, on the assumption that most data stores
-     * (at least the read-only ones) produce no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
-     */
-    @Override
-    public <T extends StoreEvent> void removeListener(StoreListener<? super T> listener, Class<T> eventType) {
+        // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
+        if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
+            super.addListener(listener, eventType);
+        }
     }
 }

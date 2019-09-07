@@ -23,15 +23,14 @@ import java.util.OptionalLong;
 import java.util.stream.Stream;
 import org.apache.sis.feature.Features;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.Query;
 
 // Branch-dependent imports
@@ -68,10 +67,10 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
     private final FeatureType commonType;
 
     /**
-     * Creates a new concatenated feature set with the same listeners and types than the given feature set,
+     * Creates a new concatenated feature set with the same types than the given feature set,
      * but different sources.
      */
-    private ConcatenatedFeatureSet(final ConcatenatedFeatureSet original, final FeatureSet[] sources) {
+    private ConcatenatedFeatureSet(final FeatureSet[] sources, final ConcatenatedFeatureSet original) {
         super(original);
         this.sources = UnmodifiableArrayList.wrap(sources);
         commonType = original.commonType;
@@ -83,13 +82,13 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
      * this verification must be done by the caller. This constructor retains the given {@code sources} array
      * by direct reference; clone, if desired, shall be done by the caller.
      *
-     * @param  listeners  the set of registered warning listeners for the data store, or {@code null} if none.
-     * @param  sources    the sequence of feature sets to expose in a single set.
-     *                    Must neither be null, empty nor contain a single element only.
+     * @param  parent   listeners of the parent resource, or {@code null} if none.
+     * @param  sources  the sequence of feature sets to expose in a single set.
+     *                  Must neither be null, empty nor contain a single element only.
      * @throws DataStoreException if given feature sets does not share any common type.
      */
-    protected ConcatenatedFeatureSet(final WarningListeners<DataStore> listeners, final FeatureSet[] sources) throws DataStoreException {
-        super(listeners);
+    protected ConcatenatedFeatureSet(final StoreListeners parent, final FeatureSet[] sources) throws DataStoreException {
+        super(parent);
         for (int i=0; i<sources.length; i++) {
             ArgumentChecks.ensureNonNullElement("sources", i, sources[i]);
         }
@@ -120,7 +119,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
             ArgumentChecks.ensureNonNullElement("sources", 0, fs);
             return fs;
         } else {
-            return new ConcatenatedFeatureSet((WarningListeners<DataStore>) null, sources.clone());
+            return new ConcatenatedFeatureSet(null, sources.clone());
         }
     }
 
@@ -143,7 +142,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
                 return fs;
             }
             default: {
-                return new ConcatenatedFeatureSet((WarningListeners<DataStore>) null, sources.toArray(new FeatureSet[size]));
+                return new ConcatenatedFeatureSet(null, sources.toArray(new FeatureSet[size]));
             }
         }
     }
@@ -236,6 +235,6 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
             subsets[i] = source.subset(query);
             modified |= subsets[i] != source;
         }
-        return modified ? new ConcatenatedFeatureSet(this, subsets) : this;
+        return modified ? new ConcatenatedFeatureSet(subsets, this) : this;
     }
 }

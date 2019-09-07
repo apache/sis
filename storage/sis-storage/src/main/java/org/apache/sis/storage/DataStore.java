@@ -31,11 +31,13 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.storage.event.StoreEvent;
+import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.storage.event.StoreListeners;
 
 
 /**
@@ -100,9 +102,9 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     private Locale locale;
 
     /**
-     * The set of registered {@link WarningListener}s for this data store.
+     * The set of registered {@link StoreListener}s for this data store.
      */
-    protected final WarningListeners<DataStore> listeners;
+    protected final StoreListeners listeners;
 
     /**
      * Creates a new instance with no provider and initially no listener.
@@ -111,7 +113,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
         provider  = null;
         name      = null;
         locale    = Locale.getDefault(Locale.Category.DISPLAY);
-        listeners = new WarningListeners<>(this);
+        listeners = new StoreListeners(null, this);
     }
 
     /**
@@ -130,7 +132,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
         this.provider  = provider;
         this.name      = connector.getStorageName();
         this.locale    = Locale.getDefault(Locale.Category.DISPLAY);
-        this.listeners = new WarningListeners<>(this);
+        this.listeners = new StoreListeners(null, this);
         /*
          * Above locale is NOT OptionKey.LOCALE because we are not talking about the same locale.
          * The one in this DataStore is for warning and exception messages, not for parsing data.
@@ -140,8 +142,8 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     /**
      * Creates a new instance as a child of another data store instance.
      * The new instance inherits the parent {@linkplain #getProvider() provider}.
-     * The parent and the child share the same listeners: adding or removing a listener to a parent
-     * adds or removes the same listeners to all children, and conversely.
+     * Events created by this {@code DataStore} are forwarded to listeners registered
+     * into the parent data store too.
      *
      * @param  parent     the parent data store, or {@code null} if none.
      * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
@@ -151,15 +153,17 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      */
     protected DataStore(final DataStore parent, final StorageConnector connector) throws DataStoreException {
         ArgumentChecks.ensureNonNull("connector", connector);
+        final StoreListeners forwardTo;
         if (parent != null) {
+            forwardTo = parent.listeners;
             provider  = parent.provider;
             locale    = parent.locale;
-            listeners = parent.listeners;
         } else {
+            forwardTo = null;
             provider  = null;
             locale    = Locale.getDefault(Locale.Category.DISPLAY);
-            listeners = new WarningListeners<>(this);
         }
+        listeners = new StoreListeners(forwardTo, this);
         name = connector.getStorageName();
     }
 
@@ -419,6 +423,66 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
             }
         }
         return null;
+    }
+
+    /**
+     * Registers a listener to notify when the specified kind of event occurs in this data store or in a resource.
+     * The data store will call the {@link StoreListener#eventOccured(StoreEvent)} method when new events matching
+     * the {@code eventType} occur. An event may be a change in data store content or structure, or a warning that
+     * occurred during a read or write operation.
+     *
+     * <p>Registering a listener for a given {@code eventType} also register the listener for all event sub-types.
+     * The same listener can be registered many times, but its {@link StoreListener#eventOccured(StoreEvent)}
+     * method will be invoked only once per event. This filtering applies even if the listener is registered
+     * on individual resources of this data store.</p>
+     *
+     * <p>If this data store may produce events of the given type, then the given listener is kept by strong reference;
+     * it will not be garbage collected unless {@linkplain #removeListener(StoreListener, Class) explicitly removed}
+     * or unless this {@code DataStore} is itself garbage collected. However if the given type of events can never
+     * happen with this data store, then this method is not required to keep a reference to the given listener.</p>
+     *
+     * <div class="section">Warning events</div>
+     * If {@code eventType} is assignable from <code>{@linkplain org.apache.sis.storage.event.WarningEvent}.class</code>,
+     * then registering that listener turns off logging of warning messages for this data store.
+     * This side-effect is applied on the assumption that the registered listener will handle
+     * warnings in its own way, for example by showing warnings in a widget.
+     *
+     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  listener   listener to notify about events.
+     * @param  eventType  type of {@link StoreEvent} to listen (can not be {@code null}).
+     *
+     * @since 1.0
+     */
+    @Override
+    public <T extends StoreEvent> void addListener(StoreListener<? super T> listener, Class<T> eventType) {
+        listeners.addListener(listener, eventType);
+    }
+
+    /**
+     * Unregisters a listener previously added to this data store for the given type of events.
+     * The {@code eventType} must be the exact same class than the one given to the {@code addListener(…)} method;
+     * this method does not remove listeners registered for subclasses and does not remove listeners registered in
+     * children resources.
+     *
+     * <p>If the same listener has been registered many times for the same even type, then this method removes only
+     * the most recent registration. In other words if {@code addListener(ls, type)} has been invoked twice, then
+     * {@code removeListener(ls, type)} needs to be invoked twice in order to remove all instances of that listener.
+     * If the given listener is not found, then this method does nothing (no exception is thrown).</p>
+     *
+     * <div class="section">Warning events</div>
+     * If {@code eventType} is <code>{@linkplain org.apache.sis.storage.event.WarningEvent}.class</code>
+     * and if, after this method invocation, there is no remaining listener for warning events,
+     * then this {@code DataStore} will send future warnings to the loggers.
+     *
+     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  listener   listener to stop notifying about events.
+     * @param  eventType  type of {@link StoreEvent} which were listened (can not be {@code null}).
+     *
+     * @since 1.0
+     */
+    @Override
+    public <T extends StoreEvent> void removeListener(StoreListener<? super T> listener, Class<T> eventType) {
+        listeners.removeListener(listener, eventType);
     }
 
     /**

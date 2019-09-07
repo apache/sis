@@ -41,6 +41,7 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
 import ucar.nc2.constants.ACDD;
@@ -215,25 +216,16 @@ public class NetcdfStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Ignored in current implementation, since this resource produces no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
+     * Registers a listener to notify when the specified kind of event occurs in this data store.
+     * The current implementation of this data store can emit only {@link WarningEvent}s;
+     * any listener specified for another kind of events will be ignored.
      */
     @Override
     public <T extends StoreEvent> void addListener(StoreListener<? super T> listener, Class<T> eventType) {
-    }
-
-    /**
-     * Ignored in current implementation, since this resource produces no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
-     */
-    @Override
-    public <T extends StoreEvent> void removeListener(StoreListener<? super T> listener, Class<T> eventType) {
+        // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
+        if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
+            super.addListener(listener, eventType);
+        }
     }
 
     /**

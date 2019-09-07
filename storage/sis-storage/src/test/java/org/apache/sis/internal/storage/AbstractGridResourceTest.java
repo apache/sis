@@ -17,8 +17,6 @@
 package org.apache.sis.internal.storage;
 
 import java.util.List;
-import java.util.Optional;
-import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -42,7 +40,6 @@ public final strictfp class AbstractGridResourceTest  extends TestCase {
      * A resource performing no operation.
      */
     private final AbstractGridResource resource = new AbstractGridResource((AbstractGridResource) null) {
-        @Override public Optional<GenericName> getIdentifier()       {return Optional.empty();}
         @Override public GridGeometry          getGridGeometry()     {throw new UnsupportedOperationException();}
         @Override public List<SampleDimension> getSampleDimensions() {throw new UnsupportedOperationException();}
         @Override public GridCoverage read(GridGeometry d, int... r) {throw new UnsupportedOperationException();}
