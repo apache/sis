@@ -143,7 +143,7 @@ public final class StoreFormat extends WKTFormat {
                 if (warning != null) log(warning);
             }
         } catch (FactoryException e) {
-            listeners.warning(null, e);
+            listeners.warning(e);
         }
     }
 

@@ -164,7 +164,7 @@ final class Store extends URIDataStore {
                 log(v.warning(false));
             }
         } catch (FactoryException e) {
-            listeners.warning(null, e);
+            listeners.warning(e);
         }
     }
 

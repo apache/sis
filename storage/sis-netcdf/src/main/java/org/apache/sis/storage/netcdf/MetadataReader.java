@@ -197,7 +197,7 @@ final class MetadataReader extends MetadataBuilder {
      * or logs the record otherwise.
      */
     private void warning(final Exception e) {
-        decoder.listeners.warning(null, e);
+        decoder.listeners.warning(e);
     }
 
     /**

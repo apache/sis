@@ -372,7 +372,7 @@ final class LandsatReader extends MetadataBuilder {
                 }
             }
         }
-        listeners.warning(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, getFilename()), null);
+        listeners.warning(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, getFilename()));
     }
 
     /**
@@ -804,7 +804,7 @@ final class LandsatReader extends MetadataBuilder {
      */
     private DefaultBand band(final String key, int index) {
         if (index < 1 || index > BAND_NAMES.length) {
-            listeners.warning(errors().getString(Errors.Keys.UnexpectedValueInElement_2, key + index, index), null);
+            listeners.warning(errors().getString(Errors.Keys.UnexpectedValueInElement_2, key + index, index));
             return null;
         }
         DefaultBand band = bands[--index];
@@ -830,7 +830,7 @@ final class LandsatReader extends MetadataBuilder {
         if (projection != null) {
             projection.parameter(name).setValue(Double.parseDouble(value), isLinear ? Units.METRE : Units.DEGREE);
         } else {
-            listeners.warning(errors().getString(Errors.Keys.UnexpectedProperty_2, filename, key), null);
+            listeners.warning(errors().getString(Errors.Keys.UnexpectedProperty_2, filename, key));
         }
     }
 

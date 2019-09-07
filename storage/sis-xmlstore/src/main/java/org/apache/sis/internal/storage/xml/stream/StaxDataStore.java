@@ -279,7 +279,7 @@ public abstract class StaxDataStore extends URIDataStore {
                 return true;
             }
         } catch (InvalidSeekException e) {
-            listeners.warning(null, e);
+            listeners.warning(e);
         }
         return false;
     }

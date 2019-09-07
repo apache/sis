@@ -96,7 +96,7 @@ public abstract class DocumentedStoreProvider extends URIDataStore.Provider {
             return MetadataSource.getProvided().lookup(Format.class, name);
         } catch (MetadataStoreException e) {
             if (listeners != null) {
-                listeners.warning(null, e);
+                listeners.warning(e);
             } else {
                 final Level level;
                 if (!logged) {

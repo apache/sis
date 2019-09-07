@@ -383,7 +383,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
     private void sharedRepository(final Path candidate) {
         if (!sharedRepositoryReported) {
             sharedRepositoryReported = true;
-            listeners.warning(message(Resources.Keys.SharedDirectory_1, candidate), null);
+            listeners.warning(message(Resources.Keys.SharedDirectory_1, candidate));
         }
     }
 

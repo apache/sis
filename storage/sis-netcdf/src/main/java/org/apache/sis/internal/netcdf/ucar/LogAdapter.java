@@ -117,7 +117,7 @@ final class LogAdapter implements Appendable {
     private void warning(CharSequence message) {
         message = CharSequences.trimWhitespaces(message);
         if (message.length() != 0) {
-            listeners.warning(message.toString(), null);
+            listeners.warning(message.toString());
         }
     }
 }

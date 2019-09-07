@@ -198,7 +198,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
                 builder.setFormat(Constants.GEOTIFF);
             } catch (MetadataStoreException e) {
                 builder.addFormatName(Constants.GEOTIFF);
-                warning(null, e);
+                listeners.warning(e);
             }
             builder.addEncoding(encoding, MetadataBuilder.Scope.METADATA);
             builder.addResourceScope(ScopeCode.COVERAGE, null);
