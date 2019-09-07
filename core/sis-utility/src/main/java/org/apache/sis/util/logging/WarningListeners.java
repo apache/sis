@@ -67,7 +67,10 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  *
  * @since 0.3
  * @module
+ *
+ * @deprecated Replaced by {@link org.apache.sis.storage.event.StoreListeners}.
  */
+@Deprecated
 public class WarningListeners<S> implements Localized {
     /**
      * The declared source of warnings. This is not necessarily the real source,
@@ -82,14 +85,6 @@ public class WarningListeners<S> implements Localized {
     private WarningListener<? super S>[] listeners;
 
     /**
-     * Creates a new instance without source. This constructor is for {@code EmptyWarningListeners}
-     * usage only, because it requires some method to be overloaded.
-     */
-    WarningListeners() {
-        source = null;
-    }
-
-    /**
      * Creates a new instance with initially no listener.
      * Warnings will be logger to the destination given by {@link #getLogger()},
      * unless at least one listener is {@linkplain #addWarningListener registered}.
@@ -98,7 +93,6 @@ public class WarningListeners<S> implements Localized {
      *                but this is the source that the implementer wants to declare as public API.
      */
     public WarningListeners(final S source) {
-        ArgumentChecks.ensureNonNull("source", source);
         this.source = source;
     }
 
@@ -176,12 +170,12 @@ public class WarningListeners<S> implements Localized {
      * @param record  the warning as a log record.
      */
     public void warning(final LogRecord record) {
-        final WarningListener<?>[] current;
+        final WarningListener<? super S>[] current;
         synchronized (this) {
             current = listeners;
         }
         if (current != null) {
-            for (final WarningListener<? super S> listener : listeners) {
+            for (final WarningListener<? super S> listener : current) {
                 listener.warningOccured(source, record);
             }
         } else {

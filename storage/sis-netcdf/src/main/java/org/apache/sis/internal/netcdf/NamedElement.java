@@ -21,9 +21,9 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
 
@@ -101,7 +101,7 @@ public abstract class NamedElement {
      * @param  key        one or {@link Resources.Keys} constants.
      * @param  arguments  values to be formatted in the {@link java.text.MessageFormat} pattern.
      */
-    static void warning(final WarningListeners<?> listeners, final Class<?> caller, final String method,
+    static void warning(final StoreListeners listeners, final Class<?> caller, final String method,
             final Exception exception, IndexedResourceBundle resources, final short key, final Object... arguments)
     {
         if (resources == null) {

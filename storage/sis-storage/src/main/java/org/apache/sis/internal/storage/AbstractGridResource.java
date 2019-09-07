@@ -19,18 +19,16 @@ package org.apache.sis.internal.storage;
 import java.util.Arrays;
 import java.util.Optional;
 import org.opengis.geometry.Envelope;
-import org.apache.sis.storage.DataStore;
+import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.storage.Resource;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.opengis.metadata.spatial.DimensionNameType;
 
 
 /**
@@ -45,20 +43,10 @@ public abstract class AbstractGridResource extends AbstractResource implements G
     /**
      * Creates a new resource.
      *
-     * @param listeners  the set of registered warning listeners for the data store, or {@code null} if none.
+     * @param  parent  listeners of the parent resource, or {@code null} if none.
      */
-    protected AbstractGridResource(final WarningListeners<DataStore> listeners) {
-        super(listeners);
-    }
-
-    /**
-     * Creates a new resource with the same warning listeners than the given resource,
-     * or {@code null} if the listeners are unknown.
-     *
-     * @param resource  the resources from which to get the listeners, or {@code null} if none.
-     */
-    protected AbstractGridResource(final Resource resource) {
-        super(resource);
+    protected AbstractGridResource(final StoreListeners parent) {
+        super(parent);
     }
 
     /**

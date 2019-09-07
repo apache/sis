@@ -16,18 +16,17 @@
  */
 package org.apache.sis.internal.storage;
 
-import java.util.Locale;
 import java.util.Optional;
+import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.util.Localized;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.storage.event.StoreEvent;
+import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.event.WarningEvent;
 
 
 /**
@@ -40,7 +39,10 @@ import org.apache.sis.storage.event.ChangeListener;
  *   <li>{@link #createMetadata(MetadataBuilder)} (optional)</li>
  * </ul>
  *
- * {@section Thread safety}
+ * This class extends {@link StoreListeners} for convenience reasons.
+ * This implementation details may change in any future SIS version.
+ *
+ * <div class="section">Thread safety</div>
  * Default methods of this abstract class are thread-safe.
  * Synchronization, when needed, uses {@code this} lock.
  *
@@ -49,7 +51,7 @@ import org.apache.sis.storage.event.ChangeListener;
  * @since   0.8
  * @module
  */
-public abstract class AbstractResource implements Resource, Localized {
+public class AbstractResource extends StoreListeners implements Resource {
     /**
      * A description of this resource as an unmodifiable metadata, or {@code null} if not yet computed.
      * If non-null, this metadata shall contain at least the resource {@linkplain #getIdentifier() identifier}.
@@ -58,50 +60,22 @@ public abstract class AbstractResource implements Resource, Localized {
     private Metadata metadata;
 
     /**
-     * The set of registered warning listeners for the data store, or {@code null} if none.
-     */
-    private final WarningListeners<DataStore> listeners;
-
-    /**
      * Creates a new resource.
      *
-     * @param listeners  the set of registered warning listeners for the data store, or {@code null} if none.
+     * @param  parent  listeners of the parent resource, or {@code null} if none.
      */
-    protected AbstractResource(final WarningListeners<DataStore> listeners) {
-        this.listeners = listeners;
+    public AbstractResource(final StoreListeners parent) {
+        super(parent, null);
     }
 
     /**
-     * Creates a new resource with the same warning listeners than the given resource,
-     * or with {@code null} listeners if they are unknown.
-     *
-     * @param resource  the resources from which to get the listeners, or {@code null} if none.
-     */
-    protected AbstractResource(final Resource resource) {
-        listeners = (resource instanceof AbstractResource) ? ((AbstractResource) resource).listeners : null;
-    }
-
-    /**
-     * Returns the locale for error messages or warnings.
-     * Returns {@code null} if no locale is explicitly defined.
-     *
-     * @return the locale, or {@code null} if not explicitly defined.
+     * Returns the resource persistent identifier if available.
+     * The default implementation returns an empty value.
+     * Subclasses are strongly encouraged to override if they can provide a value.
      */
     @Override
-    public final Locale getLocale() {
-        return (listeners != null) ? listeners.getLocale() : null;
-    }
-
-    /**
-     * Returns the display name of the data store, or {@code null} if none.
-     * This is a convenience method for formatting error messages in subclasses.
-     *
-     * @return the data store display name, or {@code null}.
-     *
-     * @see DataStore#getDisplayName()
-     */
-    protected final String getStoreName() {
-        return (listeners != null) ? listeners.getSource().getDisplayName() : null;
+    public Optional<GenericName> getIdentifier() throws DataStoreException {
+        return Optional.empty();
     }
 
     /**
@@ -153,15 +127,6 @@ public abstract class AbstractResource implements Resource, Localized {
     }
 
     /**
-     * Invoked when a non-fatal exception occurred.
-     *
-     * @param  e  the non-fatal exception to report.
-     */
-    protected final void warning(final Exception e) {
-        listeners.warning(null, e);
-    }
-
-    /**
      * Clears any cache in this resource, forcing the data to be recomputed when needed again.
      * This method should be invoked if the data in underlying data store changed.
      */
@@ -170,24 +135,14 @@ public abstract class AbstractResource implements Resource, Localized {
     }
 
     /**
-     * Ignored in current implementation, on the assumption that most resources produce no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
+     * Registers only listeners for {@link WarningEvent}s on the assumption that most resources
+     * (at least the read-only ones) produce no change events.
      */
     @Override
-    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
-    }
-
-    /**
-     * Ignored in current implementation, on the assumption that most resources produce no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
-     */
-    @Override
-    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    public <T extends StoreEvent> void addListener(StoreListener<? super T> listener, Class<T> eventType) {
+        // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
+        if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
+            super.addListener(listener, eventType);
+        }
     }
 }

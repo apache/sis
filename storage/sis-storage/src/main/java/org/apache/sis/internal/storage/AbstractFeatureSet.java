@@ -18,11 +18,11 @@ package org.apache.sis.internal.storage;
 
 import java.util.Optional;
 import java.util.OptionalLong;
+import org.opengis.util.GenericName;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.util.logging.WarningListeners;
-import org.opengis.util.GenericName;
+import org.apache.sis.storage.event.StoreListeners;
 
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;
@@ -40,7 +40,7 @@ import org.opengis.feature.FeatureType;
  *   <li>{@link #features(boolean parallel)} (mandatory)</li>
  * </ul>
  *
- * {@section Thread safety}
+ * <div class="section">Thread safety</div>
  * Default methods of this abstract class are thread-safe.
  * Synchronization, when needed, uses {@code this} lock.
  *
@@ -54,20 +54,10 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
     /**
      * Creates a new resource.
      *
-     * @param listeners  the set of registered warning listeners for the data store, or {@code null} if none.
+     * @param  parent  listeners of the parent resource, or {@code null} if none.
      */
-    protected AbstractFeatureSet(final WarningListeners<DataStore> listeners) {
-        super(listeners);
-    }
-
-    /**
-     * Creates a new feature set with the same warning listeners than the given resource,
-     * or with {@code null} listeners if they are unknown.
-     *
-     * @param resource  the resources from which to get the listeners, or {@code null} if none.
-     */
-    protected AbstractFeatureSet(final FeatureSet resource) {
-        super(resource);
+    protected AbstractFeatureSet(final StoreListeners parent) {
+        super(parent);
     }
 
     /**

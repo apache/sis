@@ -16,11 +16,10 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
-import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -48,7 +47,7 @@ public abstract class DiscreteSampling extends AbstractFeatureSet {
      * @param  listeners  the set of registered warning listeners for the data store.
      * @throws IllegalArgumentException if the given library is non-null but not available.
      */
-    protected DiscreteSampling(final GeometryLibrary library, final WarningListeners<DataStore> listeners) {
+    protected DiscreteSampling(final GeometryLibrary library, final StoreListeners listeners) {
         super(listeners);
         factory = Geometries.implementation(library);
     }
@@ -59,6 +58,6 @@ public abstract class DiscreteSampling extends AbstractFeatureSet {
      * @return default error message to use in exceptions.
      */
     protected final String canNotReadFile() {
-        return Errors.getResources(getLocale()).getString(Errors.Keys.CanNotRead_1, getStoreName());
+        return Errors.getResources(getLocale()).getString(Errors.Keys.CanNotRead_1, getSourceName());
     }
 }

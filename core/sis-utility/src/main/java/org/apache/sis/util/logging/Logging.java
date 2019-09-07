@@ -153,6 +153,7 @@ public final class Logging extends Static {
      * @return a logger for the specified name.
      */
     public static Logger getLogger(final String name) {
+        ArgumentChecks.ensureNonNull("name", name);
         final LoggerFactory<?> factory = Logging.factory;
         if (factory != null) {
             final Logger logger = factory.getLogger(name);
@@ -164,18 +165,21 @@ public final class Logging extends Static {
     }
 
     /**
-     * Returns a logger for the specified class. This convenience method invokes
-     * {@link #getLogger(String)} with the package name as the logger name.
+     * Returns a logger for the package of the specified class. This convenience method invokes
+     * {@link #getLogger(String)} with the package name of the given class taken as the logger name.
      *
-     * @param  classe  the class for which to obtain a logger.
+     * @param  source  the class which will emit a logging message.
      * @return a logger for the specified class.
+     *
+     * @since 1.0
      */
-    static Logger getLogger(Class<?> classe) {
+    public static Logger getLogger(Class<?> source) {
+        ArgumentChecks.ensureNonNull("source", source);
         Class<?> outer;
-        while ((outer = classe.getEnclosingClass()) != null) {
-            classe = outer;
+        while ((outer = source.getEnclosingClass()) != null) {
+            source = outer;
         }
-        String name = classe.getName();
+        String name = source.getName();
         final int separator = name.lastIndexOf('.');
         name = (separator >= 1) ? name.substring(0, separator) : "";
         if (name.startsWith(Modules.INTERNAL_CLASSNAME_PREFIX)) {

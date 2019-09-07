@@ -20,16 +20,14 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
-import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.storage.event.StoreListeners;
 
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;
@@ -64,24 +62,10 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
     /**
      * Creates a new aggregated feature set.
      *
-     * @param  listeners  the set of registered warning listeners for the data store, or {@code null} if none.
+     * @param  parent  listeners of the parent resource, or {@code null} if none.
      */
-    protected AggregatedFeatureSet(final WarningListeners<DataStore> listeners) {
-        super(listeners);
-        /*
-         * TODO: we should add listeners on source feature sets. By doing this,
-         *       we could be notified of changes and invoke clearCache().
-         */
-    }
-
-    /**
-     * Creates a new feature set with the same warning listeners than the given resource,
-     * or with {@code null} listeners if they are unknown.
-     *
-     * @param resource  the resources from which to get the listeners, or {@code null} if none.
-     */
-    protected AggregatedFeatureSet(final FeatureSet resource) {
-        super(resource);
+    protected AggregatedFeatureSet(final StoreListeners parent) {
+        super(parent);
     }
 
     /**
@@ -91,14 +75,6 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
      * @return all feature sets in this aggregation.
      */
     abstract Collection<FeatureSet> dependencies();
-
-    /**
-     * Returns an empty value since this resource is a computation result.
-     */
-    @Override
-    public Optional<GenericName> getIdentifier() {
-        return Optional.empty();
-    }
 
     /**
      * Adds the envelopes of the aggregated feature sets in the given list. If some of the feature sets

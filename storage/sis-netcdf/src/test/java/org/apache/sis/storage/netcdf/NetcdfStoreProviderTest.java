@@ -23,6 +23,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
+import org.apache.sis.internal.storage.AbstractResource;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -82,7 +83,7 @@ public final strictfp class NetcdfStoreProviderTest extends TestCase {
     }
 
     /**
-     * Tests {@link NetcdfStoreProvider#decoder(WarningListeners, StorageConnector)} for an input stream which
+     * Tests {@link NetcdfStoreProvider#decoder(StoreListeners, StorageConnector)} for an input stream which
      * shall be recognized as a classic netCDF file. The provider shall instantiate a {@link ChannelDecoder}.
      *
      * @throws IOException if an error occurred while opening the netCDF file.
@@ -91,13 +92,13 @@ public final strictfp class NetcdfStoreProviderTest extends TestCase {
     @Test
     public void testDecoderFromStream() throws IOException, DataStoreException {
         final StorageConnector c = new StorageConnector(TestData.NETCDF_2D_GEOGRAPHIC.open());
-        try (Decoder decoder = NetcdfStoreProvider.decoder(LISTENERS, c)) {
+        try (Decoder decoder = NetcdfStoreProvider.decoder(new AbstractResource(null), c)) {
             assertInstanceOf("decoder", ChannelDecoder.class, decoder);
         }
     }
 
     /**
-     * Tests {@link NetcdfStoreProvider#decoder(WarningListeners, StorageConnector)} for a UCAR
+     * Tests {@link NetcdfStoreProvider#decoder(StoreListeners, StorageConnector)} for a UCAR
      * {@link NetcdfFile} object. The provider shall instantiate a {@link DecoderWrapper}.
      *
      * @throws IOException if an error occurred while opening the netCDF file.
@@ -106,7 +107,7 @@ public final strictfp class NetcdfStoreProviderTest extends TestCase {
     @Test
     public void testDecoderFromUCAR() throws IOException, DataStoreException {
         final StorageConnector c = new StorageConnector(createUCAR(TestData.NETCDF_2D_GEOGRAPHIC));
-        try (Decoder decoder = NetcdfStoreProvider.decoder(LISTENERS, c)) {
+        try (Decoder decoder = NetcdfStoreProvider.decoder(new AbstractResource(null), c)) {
             assertInstanceOf("decoder", DecoderWrapper.class, decoder);
         }
     }

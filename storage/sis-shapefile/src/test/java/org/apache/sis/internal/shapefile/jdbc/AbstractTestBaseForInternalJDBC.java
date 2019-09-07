@@ -39,7 +39,7 @@ import org.junit.Before;
  */
 public abstract class AbstractTestBaseForInternalJDBC extends TestCase {
     /** Logger. */
-    protected Logger log = Logging.getLogger(getClass().getName());
+    protected Logger log = Logging.getLogger(getClass());
 
     /** The database file to use for testing purpose.  */
     protected File dbfFile;

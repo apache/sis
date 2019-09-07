@@ -53,7 +53,7 @@ import org.opengis.feature.Feature;
  */
 public class InputFeatureStream extends InputStream {
     /** Logger. */
-    private static Logger LOGGER = Logging.getLogger(InputFeatureStream.class.getSimpleName());
+    private static Logger LOGGER = Logging.getLogger(InputFeatureStream.class);
 
     /** Resource bundle. */
     private ResourceBundle rsc = ResourceBundle.getBundle(InputFeatureStream.class.getName());

@@ -34,7 +34,7 @@ import org.apache.sis.util.logging.Logging;
  */
 public abstract class AutoChecker {
     /** Logger. */
-    private static Logger LOGGER = Logging.getLogger(AutoChecker.class.getSimpleName());
+    private static Logger LOGGER = Logging.getLogger(AutoChecker.class);
 
     /**
      * Format a resource bundle message.
@@ -124,7 +124,7 @@ public abstract class AutoChecker {
     protected boolean isLoggable(Level level) {
         return LOGGER.isLoggable(level);
     }
-    
+
     /**
      * Logs (and take the time to format an entry log) only if the logger accepts the message.
      * @param logLevel Log level.

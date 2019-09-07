@@ -18,12 +18,12 @@ package org.apache.sis.metadata.iso.identification;
 
 import java.net.URI;
 import java.io.StringReader;
+import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.stream.StreamSource;
 import org.opengis.metadata.identification.BrowseGraphic;
-import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Version;
 import org.apache.sis.xml.MarshallerPool;
@@ -287,26 +287,18 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
     /**
      * A warning listener to be registered by {@link #testWarnings()}.
      */
-    private static final class Warning implements WarningListener<Object> {
+    private static final class Warning implements Filter {
         /**
          * {@code true} if a warning has been sent by the XML unmarshaller.
          */
         boolean receivedWarning;
 
         /**
-         * Fixed to {@code Object.class} as required by {@link XML#WARNING_LISTENER} contract.
-         */
-        @Override
-        public Class<Object> getSourceClass() {
-            return Object.class;
-        }
-
-        /**
          * Invoked when a warning occurred. Ensures that no warning were previously sent,
          * then ensure that the warning content the expected message.
          */
         @Override
-        public void warningOccured(final Object source, final LogRecord warning) {
+        public boolean isLoggable(final LogRecord warning) {
             assertFalse("No other warning were expected.", receivedWarning);
             if (VERBOSE) {
                 /*
@@ -318,6 +310,7 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
             assertArrayEquals("FileName shall have precedence over CharacterString.",
                     new Object[] {"CharacterString", "FileName"}, warning.getParameters());
             receivedWarning = true;
+            return false;
         }
 
         /**
@@ -325,7 +318,7 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
          */
         public DefaultBrowseGraphic unmarshal(final String xml) throws JAXBException {
             return (DefaultBrowseGraphic) XML.unmarshal(new StreamSource(new StringReader(xml)),
-                    singletonMap(XML.WARNING_LISTENER, this));
+                    singletonMap(XML.WARNING_FILTER, this));
         }
     }
 }

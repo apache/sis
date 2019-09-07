@@ -364,7 +364,7 @@ final class ImageFileDirectory extends AbstractGridResource {
      * @param index   the image index as a sequence number starting with 0 for the first image.
      */
     ImageFileDirectory(final Reader reader, final int index) {
-        super(reader.owner);
+        super(reader.owner.listeners());
         this.reader = reader;
         identifier = reader.nameFactory.createLocalName(reader.owner.identifier, String.valueOf(index + 1));
     }

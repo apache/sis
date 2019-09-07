@@ -543,7 +543,6 @@
     <dependency>   <!-- To be removed after https://issues.apache.org/jira/browse/SIS-469 is done. -->
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
-      <version>${jaxb.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

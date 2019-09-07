@@ -24,6 +24,7 @@ import java.util.IllformedLocaleException;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.function.UnaryOperator;
+import java.util.logging.Filter;
 import javax.xml.validation.Schema;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
@@ -153,7 +154,7 @@ abstract class Pooled {
     /**
      * The object to inform about warnings, or {@code null} if none.
      */
-    private WarningListener<?> warningListener;
+    private Filter warningListener;
 
     /**
      * The {@link System#nanoTime()} value of the last call to {@link #reset(Pooled)}.
@@ -378,8 +379,12 @@ abstract class Pooled {
                     }
                     return;
                 }
+                case XML.WARNING_FILTER: {
+                    warningListener = (Filter) value;
+                    return;
+                }
                 case XML.WARNING_LISTENER: {
-                    warningListener = (WarningListener<?>) value;
+                    warningListener = ((WarningListener<?>) value).asFilter();
                     return;
                 }
                 case TypeRegistration.ROOT_ADAPTERS: {
@@ -420,7 +425,8 @@ abstract class Pooled {
             case XML.METADATA_VERSION:  return versionMetadata;
             case XML.RESOLVER:          return resolver;
             case XML.CONVERTER:         return converter;
-            case XML.WARNING_LISTENER:  return warningListener;
+            case XML.WARNING_FILTER:    return warningListener;
+            case XML.WARNING_LISTENER:  return null;
             case XML.LENIENT_UNMARSHAL: return (bitMasks & Context.LENIENT_UNMARSHAL) != 0;
             case XML.STRING_SUBSTITUTES: {
                 int n = 0;
