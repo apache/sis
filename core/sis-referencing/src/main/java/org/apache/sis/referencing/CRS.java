@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
@@ -392,39 +393,53 @@ public final class CRS extends Static {
      *   <li>Otherwise this method silently returns the given CRS as-is.</li>
      * </ul>
      *
-     * <b>Note:</b> the warnings emitted by this method are redundant with the warnings emitted by
-     * {@link #fromWKT(String)} and {@link #fromXML(String)}, so the {@code warnings} argument should be {@code null}
-     * when {@code fromAuthority(…)} is invoked for the CRS parsed by one of above-mentioned methods.
-     * A non-null {@code warnings} argument is more useful for CRS parsed by {@link org.apache.sis.io.wkt.WKTFormat}
-     * or {@link org.apache.sis.xml.XML#unmarshal(String)} for instance.
+     * <div class="section">Avoiding warning redundancies</div>
+     * The warnings logged by this method are redundant with warnings logged by other methods in this class,
+     * in particular {@link #fromWKT(String)} and {@link #fromXML(String)} methods. For avoiding this annoyance,
+     * a {@code null} value for the {@code warningFilter} argument means to shut off those redundant loggings.
+     * A non-null {@code warningFilter} argument is more useful for CRS parsed by methods outside this class,
+     * for example {@link org.apache.sis.io.wkt.WKTFormat} or {@link org.apache.sis.xml.XML#unmarshal(String)}.
      *
-     * @param  crs       the CRS to replace by an authoritative CRS, or {@code null}.
-     * @param  factory   the factory where to search for authoritative definitions, or {@code null} for the default.
-     * @param  listener  where to send warnings, or {@code null} for ignoring warnings.
+     * @param  crs            the CRS to replace by an authoritative CRS, or {@code null}.
+     * @param  factory        the factory where to search for authoritative definitions, or {@code null} for the default.
+     * @param  warningFilter  whether to log warnings, or {@code null} for the default behavior (which is to filter out
+     *                        the warnings that are redundant with warnings emitted by other methods in this class).
      * @return the suggested CRS to use (may be the {@code crs} argument itself), or {@code null} if the given CRS was null.
      * @throws FactoryException if an error occurred while querying the authority factory.
      *
-     * @since 0.8
+     * @since 1.0
      */
     public static CoordinateReferenceSystem fromAuthority(CoordinateReferenceSystem crs,
-            final CRSAuthorityFactory factory, final WarningListener<?> listener) throws FactoryException
+            final CRSAuthorityFactory factory, final Filter warningFilter) throws FactoryException
     {
         if (crs != null) {
             final DefinitionVerifier verification = DefinitionVerifier.withAuthority(crs, factory, true);
             if (verification != null) {
                 crs = verification.authoritative;
-                if (listener != null) {
+                if (warningFilter != null) {
                     final LogRecord record = verification.warning(false);
                     if (record != null) {
                         record.setLoggerName(Modules.REFERENCING);
                         record.setSourceClassName(CRS.class.getName());
                         record.setSourceMethodName("fromAuthority");
-                        listener.warningOccured(null, record);
+                        if (warningFilter.isLoggable(record)) {
+                            Logging.getLogger(Modules.REFERENCING).log(record);
+                        }
                     }
                 }
             }
         }
         return crs;
+    }
+
+    /**
+     * @deprecated {@code WarningListener} argument replaced by {@code java.util.logging.Filter}.
+     */
+    @Deprecated
+    public static CoordinateReferenceSystem fromAuthority(CoordinateReferenceSystem crs,
+            final CRSAuthorityFactory factory, final WarningListener<?> listener) throws FactoryException
+    {
+        return fromAuthority(crs, factory, (listener != null) ? listener.asFilter() : null);
     }
 
     /**

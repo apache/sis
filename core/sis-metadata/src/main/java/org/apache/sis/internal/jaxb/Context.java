@@ -26,10 +26,10 @@ import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
+import java.util.logging.Filter;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.IndexedResourceBundle;
@@ -181,7 +181,7 @@ public final class Context extends MarshalContext {
     /**
      * The object to inform about warnings, or {@code null} if none.
      */
-    private final WarningListener<?> warningListener;
+    private final Filter warningListener;
 
     /**
      * The {@code <gml:*PropertyType>} which is wrapping the {@code <gml:*Type>} object to (un)marshal, or
@@ -233,7 +233,7 @@ public final class Context extends MarshalContext {
                    final Version            versionMetadata,
                    final ReferenceResolver  resolver,
                    final ValueConverter     converter,
-                   final WarningListener<?> warningListener)
+                   final Filter             warningListener)
     {
         if (versionMetadata != null && versionMetadata.compareTo(LegacyNamespaces.VERSION_2014) < 0) {
             bitMasks |= LEGACY_METADATA;
@@ -621,11 +621,12 @@ public final class Context extends MarshalContext {
         record.setSourceMethodName(method);
         record.setLoggerName(Loggers.XML);
         if (context != null) {
-            final WarningListener<?> warningListener = context.warningListener;
+            final Filter warningListener = context.warningListener;
             if (warningListener != null) {
                 record.setThrown(exception);
-                warningListener.warningOccured(null, record);
-                return;
+                if (!warningListener.isLoggable(record)) {
+                    return;
+                }
             }
         }
         /*

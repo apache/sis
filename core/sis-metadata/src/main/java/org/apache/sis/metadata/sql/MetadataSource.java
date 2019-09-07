@@ -1100,7 +1100,10 @@ public class MetadataSource implements AutoCloseable {
      *
      * @param  listener  the listener to add.
      * @throws IllegalArgumentException if the given listener is already registered in this metadata source.
+     *
+     * @deprecated {@code WarningListener} to be replaced by {@link java.util.logging.Filter}.
      */
+    @Deprecated
     public void addWarningListener(final WarningListener<? super MetadataSource> listener)
             throws IllegalArgumentException
     {
@@ -1112,7 +1115,10 @@ public class MetadataSource implements AutoCloseable {
      *
      * @param  listener  the listener to remove.
      * @throws NoSuchElementException if the given listener is not registered in this metadata source.
+     *
+     * @deprecated {@code WarningListener} to be replaced by {@link java.util.logging.Filter}.
      */
+    @Deprecated
     public void removeWarningListener(final WarningListener<? super MetadataSource> listener)
             throws NoSuchElementException
     {

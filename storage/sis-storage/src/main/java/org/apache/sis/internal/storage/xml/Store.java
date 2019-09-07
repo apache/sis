@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage.xml;
 
 import java.util.Map;
 import java.util.Collections;
+import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.io.Closeable;
 import java.io.Reader;
@@ -35,7 +36,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.storage.URIDataStore;
@@ -57,11 +57,11 @@ import org.apache.sis.setup.OptionKey;
  * The above list may be extended in any future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.4
  * @module
  */
-final class Store extends URIDataStore {
+final class Store extends URIDataStore implements Filter {
     /**
      * The input stream or reader, set by the constructor and cleared when no longer needed.
      */
@@ -123,20 +123,24 @@ final class Store extends URIDataStore {
      */
     private Map<String,?> properties() {
         if (listeners.hasListeners(WarningEvent.class)) {
-            return Collections.singletonMap(XML.WARNING_LISTENER, new WarningListener<Object>() {
-                /** Returns the type of objects that emit warnings of interest for this listener. */
-                @Override public Class<Object> getSourceClass() {
-                    return Object.class;
-                }
-
-                /** Reports the occurrence of a non-fatal error during XML unmarshalling. */
-                @Override public void warningOccured(final Object source, final LogRecord warning) {
-                    warning.setLoggerName(Loggers.XML);
-                    listeners.warning(warning);
-                }
-            });
+            return Collections.singletonMap(XML.WARNING_FILTER, this);
         }
         return null;
+    }
+
+    /**
+     * Intercepts warnings produced during the (un)marshalling process and redirect them to the listeners.
+     * This method is public as an implementation convenience for {@link #properties()} method;
+     * it should not be invoked directly.
+     *
+     * @param  warning  the warning that occurred during (un)marshalling.
+     * @return always {@code false} since logging will be handled by {@code listeners}.
+     */
+    @Override
+    public boolean isLoggable(final LogRecord warning) {
+        warning.setLoggerName(Loggers.XML);
+        listeners.warning(warning);
+        return false;
     }
 
     /**
