@@ -122,6 +122,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ClosedReader_1 = 4;
 
         /**
+         * This storage connector is closed.
+         */
+        public static final short ClosedStorageConnector = 56;
+
+        /**
          * This {0} writer is closed.
          */
         public static final short ClosedWriter_1 = 5;
