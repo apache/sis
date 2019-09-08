@@ -60,7 +60,8 @@ import org.apache.sis.setup.OptionKey;
  * @since   0.8
  * @module
  */
-@StoreMetadata(formatName=FolderStoreProvider.NAME, capabilities={Capability.READ, Capability.WRITE})
+@StoreMetadata(formatName   = FolderStoreProvider.NAME,
+               capabilities = {Capability.READ, Capability.WRITE})
 public final class FolderStoreProvider extends DataStoreProvider {
     /**
      * A short name or abbreviation for the data format.
