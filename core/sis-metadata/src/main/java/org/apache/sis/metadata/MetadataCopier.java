@@ -76,13 +76,6 @@ public class MetadataCopier extends MetadataVisitor<Object> {
     private Object target;
 
     /**
-     * Creates a new {@code MetadataCopier} instance.
-     */
-    private MetadataCopier() {
-        standard = null;
-    }
-
-    /**
      * Creates a new metadata copier.
      *
      * @param standard  the default metadata standard to use for object that are not {@link AbstractMetadata} instances,
@@ -90,6 +83,17 @@ public class MetadataCopier extends MetadataVisitor<Object> {
      */
     public MetadataCopier(final MetadataStandard standard) {
         this.standard = standard;
+    }
+
+    /**
+     * Returns the metadata standard to use for the given metadata object, or {@code null} if unknown.
+     */
+    private MetadataStandard getStandard(final Object metadata) {
+        if (metadata instanceof AbstractMetadata) {
+            final MetadataStandard std = ((AbstractMetadata) metadata).getStandard();
+            if (std != null) return std;
+        }
+        return standard;
     }
 
     /**
@@ -134,6 +138,9 @@ public class MetadataCopier extends MetadataVisitor<Object> {
     /**
      * Performs a potentially deep copy of the given metadata object.
      * This method is preferred to {@link #copy(Object)} when the type is known.
+     * The specified type should be an interface, not an implementation
+     * (for example {@link org.opengis.metadata.Metadata}, not
+     * {@link org.apache.sis.metadata.iso.DefaultMetadata}).
      *
      * @param  <T>       compile-time value of the {@code type} argument.
      * @param  type      the interface of the metadata object to copy.
@@ -144,7 +151,19 @@ public class MetadataCopier extends MetadataVisitor<Object> {
      */
     public <T> T copy(final Class<T> type, final T metadata) {
         ArgumentChecks.ensureNonNull("type", type);
-        return type.cast(copyRecursively(type, metadata));
+        Class<?> interfaceType = type;
+        if (interfaceType != null) {
+            final MetadataStandard std = getStandard(metadata);
+            if (std != null) {
+                /*
+                 * In case the user specified an implementation despite the documentation warning.
+                 * It will work most of the time, but may also result in a ClassCastException thrown
+                 * at the end of this method. But the user has bee warned.
+                 */
+                interfaceType = std.getInterface(type);
+            }
+        }
+        return type.cast(copyRecursively(interfaceType, metadata));
     }
 
     /**
@@ -163,10 +182,7 @@ public class MetadataCopier extends MetadataVisitor<Object> {
      */
     protected Object copyRecursively(final Class<?> type, final Object metadata) {
         if (metadata != null) {
-            MetadataStandard std = standard;
-            if (metadata instanceof AbstractMetadata) {
-                std = ((AbstractMetadata) metadata).getStandard();
-            }
+            final MetadataStandard std = getStandard(metadata);
             if (std != null) {
                 final Object result = walk(std, type, metadata, false);
                 if (result != null) {
