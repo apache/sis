@@ -142,10 +142,11 @@ public abstract class WritablePixelIterator extends PixelIterator implements Clo
     }
 
     /**
-     * Returns {@code true} if this iterator can write pixel values.
-     * This method should be used instead than {@code instanceof} check because, for some implementations, being an
-     * instance of {@code WritablePixelIterator} is not a sufficient condition. However this method is guaranteed to
-     * return {@code true} for any iterator created by {@code WritablePixelIterator.create(…)} methods.
+     * Returns {@code true} if this iterator can write pixel values. For some implementations, being an
+     * instance of {@code WritablePixelIterator} is not sufficient for being able to write pixel values.
+     *
+     * <p><b>Note:</b> all instances created by {@code WritablePixelIterator.create(…)} methods are
+     * guaranteed to {@code true}.</p>
      *
      * @return {@code true} if this iterator can be used for writing pixel values.
      */
