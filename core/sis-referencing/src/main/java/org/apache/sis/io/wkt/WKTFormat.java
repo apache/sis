@@ -837,24 +837,31 @@ public class WKTFormat extends CompoundFormat<Object> {
             updateFormatter(formatter);
             this.formatter = formatter;
         }
-        final boolean valid;
-        try {
-            formatter.setBuffer(buffer);
-            valid = formatter.appendElement(object) || formatter.appendValue(object);
-        } finally {
-            warnings = formatter.getWarnings();     // Must be saved before formatter.clear() is invoked.
-            formatter.setBuffer(null);
-            formatter.clear();
-        }
-        if (warnings != null) {
-            warnings.setRoot(object);
-        }
-        if (!valid) {
-            throw new ClassCastException(Errors.getResources(getLocale()).getString(
-                    Errors.Keys.IllegalArgumentClass_2, "object", object.getClass()));
-        }
-        if (buffer != toAppendTo) {
-            toAppendTo.append(buffer);
+        /*
+         * Since each operation on `buffer` is synchronized, this synchronization block allow the lock
+         * to be obtained only one time instead than many times for each `StringBuffer` method invoked.
+         * As a bonus, it ensures a consistent result if the given `StringBuffer` is used concurrently.
+         */
+        synchronized (buffer) {
+            final boolean valid;
+            try {
+                formatter.setBuffer(buffer);
+                valid = formatter.appendElement(object) || formatter.appendValue(object);
+            } finally {
+                warnings = formatter.getWarnings();     // Must be saved before formatter.clear() is invoked.
+                formatter.setBuffer(null);
+                formatter.clear();
+            }
+            if (warnings != null) {
+                warnings.setRoot(object);
+            }
+            if (!valid) {
+                throw new ClassCastException(Errors.getResources(getLocale()).getString(
+                        Errors.Keys.IllegalArgumentClass_2, "object", object.getClass()));
+            }
+            if (buffer != toAppendTo) {
+                toAppendTo.append(buffer);
+            }
         }
     }
 
