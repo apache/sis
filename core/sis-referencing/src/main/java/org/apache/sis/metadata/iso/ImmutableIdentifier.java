@@ -18,7 +18,6 @@ package org.apache.sis.metadata.iso;
 
 import java.util.Map;
 import java.util.Locale;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
@@ -43,7 +42,7 @@ public class ImmutableIdentifier extends org.apache.sis.referencing.ImmutableIde
      *
      * @param identifier  the identifier to copy.
      *
-     * @see #castOrCopy(Identifier)
+     * @see #castOrCopy(ReferenceIdentifier)
      */
     public ImmutableIdentifier(final ReferenceIdentifier identifier) {
         super(identifier);
@@ -97,22 +96,22 @@ public class ImmutableIdentifier extends org.apache.sis.referencing.ImmutableIde
      *     <td>{@link #getCode()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.metadata.Identifier#CODESPACE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceIdentifier#CODESPACE_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link #getCodeSpace()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.metadata.Identifier#AUTHORITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceIdentifier#AUTHORITY_KEY}</td>
      *     <td>{@link String} or {@link Citation}</td>
      *     <td>{@link #getAuthority()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.metadata.Identifier#VERSION_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceIdentifier#VERSION_KEY}</td>
      *     <td>{@link String}</td>
      *     <td>{@link #getVersion()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.metadata.Identifier#DESCRIPTION_KEY}</td>
+     *     <td>{@value #DESCRIPTION_KEY}</td>
      *     <td>{@link String} or {@link InternationalString}</td>
      *     <td>{@link #getDescription()}</td>
      *   </tr>
@@ -149,7 +148,7 @@ public class ImmutableIdentifier extends org.apache.sis.referencing.ImmutableIde
      *   <li>Otherwise if the given object is already an instance of
      *       {@code ImmutableIdentifier}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code ImmutableIdentifier} instance is created using the
-     *       {@linkplain #ImmutableIdentifier(Identifier) copy constructor} and returned.
+     *       {@linkplain #ImmutableIdentifier(ReferenceIdentifier) copy constructor} and returned.
      *       Note that this is a <cite>shallow</cite> copy operation, since the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
