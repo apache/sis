@@ -24,7 +24,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.MeasurementRange;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.io.wkt.Convention;

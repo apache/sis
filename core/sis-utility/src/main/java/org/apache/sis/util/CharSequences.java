@@ -1532,7 +1532,7 @@ cmp:    while (ia < lga) {
      * ‘{@code !}’, ‘{@code #}’, ‘{@code *}’, ‘{@code /}’, ‘{@code ?}’ and most other punctuation characters are not.
      *
      * <div class="section">Usage in Apache SIS</div>
-     * In its handling of {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier identifiers}, Apache SIS favors
+     * In its handling of {@linkplain org.apache.sis.referencing.ImmutableIdentifier identifiers}, Apache SIS favors
      * Unicode identifiers without {@linkplain Character#isIdentifierIgnorable(int) ignorable} characters since those
      * identifiers are legal XML identifiers except for the above-cited rarely used characters. As a side effect,
      * this policy excludes ‘{@code :}’, ‘{@code -}’ and ‘{@code .}’ which would normally be legal XML identifiers.
@@ -1543,7 +1543,7 @@ cmp:    while (ia < lga) {
      * @param  identifier  the character sequence to test, or {@code null}.
      * @return {@code true} if the given character sequence is a legal Unicode identifier.
      *
-     * @see org.apache.sis.metadata.iso.ImmutableIdentifier
+     * @see org.apache.sis.referencing.ImmutableIdentifier
      * @see org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)
      * @see org.apache.sis.referencing.IdentifiedObjects#getSimpleNameOrIdentifier(IdentifiedObject)
      */

@@ -55,6 +55,8 @@ import org.apache.sis.metadata.iso.distribution.*;
 import org.apache.sis.metadata.iso.extent.*;
 import org.apache.sis.metadata.iso.identification.*;
 import org.apache.sis.metadata.iso.spatial.*;
+import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
@@ -63,7 +65,6 @@ import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gcx.Anchor;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.Namespaces;
@@ -77,6 +78,7 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 
 // Test dependencies
+
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.xml.DocumentComparator;

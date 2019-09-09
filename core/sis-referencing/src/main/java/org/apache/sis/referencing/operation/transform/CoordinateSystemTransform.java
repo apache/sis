@@ -33,11 +33,11 @@ import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.ImmutableIdentifier;
 
 
 /**

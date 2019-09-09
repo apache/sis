@@ -110,6 +110,16 @@ public abstract class DataStoreProvider {
     public static final String CREATE = "create";
 
     /**
+     * The logger where to reports warnings or change events. Created when first needed and kept
+     * by strong reference for avoiding configuration lost if the logger if garbage collected.
+     * This strategy assumes that {@code URIDataStore.Provider} instances are kept alive for
+     * the duration of JVM lifetime, which is the case with {@link DataStoreRegistry}.
+     *
+     * @see #getLogger()
+     */
+    private volatile Logger logger;
+
+    /**
      * Creates a new provider.
      */
     protected DataStoreProvider() {
@@ -339,9 +349,10 @@ public abstract class DataStoreProvider {
      * @since 1.0
      */
     public Logger getLogger() {
-        String name = getClass().getName();
-        final int separator = name.lastIndexOf('.');
-        name = (separator >= 1) ? name.substring(0, separator) : "";
-        return Logging.getLogger(name);
+        Logger lg = logger;
+        if (lg == null) {
+            logger = lg = Logging.getLogger(getClass());
+        }
+        return lg;
     }
 }

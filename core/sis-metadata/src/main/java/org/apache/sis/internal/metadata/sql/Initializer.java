@@ -247,6 +247,8 @@ public abstract class Initializer {
      *             This supplier may return {@code null}, in which case it will be ignored.
      * @return whether the given data source supplier has been successfully set.
      *
+     * @see org.apache.sis.setup.Configuration#setDatabase(Supplier)
+     *
      * @since 1.0
      */
     @Configuration
@@ -263,15 +265,17 @@ public abstract class Initializer {
      * Returns the data source for the SIS-wide "SpatialMetadata" database.
      * This method returns the first of the following steps that succeed:
      *
-     * <ol>
-     *   <li>If a JNDI context exists, the data source registered under the {@code jdbc/SpatialMetadata} name.</li>
+     * <ol class="verbose">
+     *   <li>If a JNDI context exists, use the data source registered under the {@code "jdbc/SpatialMetadata"} name.</li>
      *   <li>Otherwise if a default data source {@linkplain #setDefault has been supplied}, use that data source.</li>
-     *   <li>Otherwise if the {@code non-free:sis-embedded-data} module is present on the classpath and there is no
-     *       database already installed in the {@code SIS_DATA} directory, use the embedded database.</li>
-     *   <li>If the {@code SIS_DATA} environment variable is defined, {@code jdbc:derby:$SIS_DATA/Databases/SpatialMetadata}.
-     *       This database will be created if it does not exist. Note that this is the only case where we allow database
-     *       creation since we are in the directory managed by SIS.</li>
-     *   <li>If the {@code derby.system.home} property is defined, the data source for {@code jdbc:derby:SpatialMetadata}.
+     *   <li>Otherwise if the {@code SIS_DATA} environment variable is defined,
+     *       use the data source for {@code "jdbc:derby:$SIS_DATA/Databases/SpatialMetadata"}.
+     *       That database will be created if it does not exist. Note that this is the only case where
+     *       Apache SIS may create the database since it is located in the directory managed by Apache SIS.</li>
+     *   <li>Otherwise if the {@code non-free:sis-embedded-data} module is present on the classpath,
+     *       use the embedded database.</li>
+     *   <li>Otherwise if the {@code "derby.system.home"} property is defined,
+     *       use the data source for {@code "jdbc:derby:SpatialMetadata"}.
      *       This database will <strong>not</strong> be created if it does not exist.</li>
      *   <li>Otherwise (no JNDI, no environment variable, no Derby property set), {@code null}.</li>
      * </ol>
@@ -286,6 +290,8 @@ public abstract class Initializer {
      * @throws java.lang.reflect.InvocationTargetException if an error occurred while setting a data source bean property.
      * @throws Exception for any other kind of errors. This include {@link RuntimeException} not documented above like
      *         {@link IllegalArgumentException}, {@link ClassCastException}, {@link SecurityException}, <i>etc.</i>
+     *
+     * @see org.apache.sis.setup.Configuration#getDatabase()
      */
     public static synchronized DataSource getDataSource() throws Exception {
         if (source == null) {

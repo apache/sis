@@ -21,6 +21,9 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
+import java.util.function.Supplier;
+import javax.sql.DataSource;
+import java.sql.SQLException;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.system.Modules;
@@ -174,6 +177,28 @@ public class MetadataServices extends OptionalDependency {
      * @return a {@link org.apache.sis.geometry.CoordinateFormat}.
      */
     public Format createCoordinateFormat(final Locale locale, final TimeZone timezone) {
+        throw moduleNotFound();
+    }
+
+    /**
+     * Returns the data source for the SIS-wide "SpatialMetadata" database.
+     *
+     * @return the data source for the {@code $SIS_DATA/Databases/SpatialMetadata} or equivalent database, or {@code null} if none.
+     * @throws SQLException if an error occurred while fetching the database source.
+     */
+    public DataSource getDataSource() throws SQLException {
+        throw moduleNotFound();
+    }
+
+    /**
+     * Specifies the data source to use if there is no JNDI environment or if no data source is binded
+     * to {@code jdbc/SpatialMetadata}.
+     *
+     * @param  ds  supplier of data source to set, or {@code null} for removing previous supplier.
+     *             This supplier may return {@code null}, in which case it will be ignored.
+     * @throws IllegalStateException if {@link DataSource} has already be obtained before this method call.
+     */
+    public void setDataSource(final Supplier<DataSource> ds) {
         throw moduleNotFound();
     }
 }

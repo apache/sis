@@ -516,13 +516,12 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Returns a narrative explanation of the role of this object.
      *
      * <div class="section">Default value</div>
-     * The default implementation returns the
-     * {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getDescription() description}
+     * The default implementation returns the {@linkplain ImmutableIdentifier#getDescription() description}
      * provided by this object's {@linkplain #getName() name}.
      *
      * @return a narrative explanation of the role of this object, or {@code null} if none.
      *
-     * @see org.apache.sis.metadata.iso.ImmutableIdentifier#getDescription()
+     * @see ImmutableIdentifier#getDescription()
      *
      * @since 0.6
      */

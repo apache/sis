@@ -65,7 +65,7 @@ import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.Legacy;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
