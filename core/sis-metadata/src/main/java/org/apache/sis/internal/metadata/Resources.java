@@ -66,6 +66,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short BoxCrossesAntiMeridian = 3;
 
         /**
+         * Connection to “{0}” database is already initialized.
+         */
+        public static final short ConnectionAlreadyInitialized_1 = 6;
+
+        /**
          * This metadata element is already initialized with value “{0}”.
          */
         public static final short ElementAlreadyInitialized_1 = 2;

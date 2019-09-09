@@ -27,9 +27,15 @@ import java.lang.annotation.RetentionPolicy;
  * Annotates methods having a system-wide impact on the configuration of the Apache SIS library.
  * See <cite>"Use"</cite> javadoc link for a list of annotated methods.
  *
+ * <p><b>Do not use.</b> This annotation is for documentation purpose only
+ * and will be replaced by the {@link org.apache.sis.setup.Configuration} class.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
- * @since   0.3
+ *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-86">SIS-86</a>
+ *
+ * @since 0.3
  * @module
  */
 @Documented
