@@ -106,7 +106,6 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * @see MetadataStandard#getInterface(Class)
      */
     public Class<?> getInterface() {
-        // No need to sychronize, since this method does not depend on property values.
         return getStandard().getInterface(getClass());
     }
 
