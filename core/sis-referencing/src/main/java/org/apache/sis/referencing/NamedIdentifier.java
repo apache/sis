@@ -37,7 +37,6 @@ import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.ArgumentChecks;
 
 

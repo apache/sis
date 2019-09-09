@@ -20,6 +20,8 @@ import java.text.Format;
 import java.util.Locale;
 import java.util.TimeZone;
 import javax.sql.DataSource;
+import java.sql.SQLException;
+import java.util.function.Supplier;
 import org.opengis.util.CodeList;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.MetadataServices;
@@ -30,7 +32,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
-
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -141,5 +143,30 @@ public final class ServicesForUtility extends MetadataServices {
     @Override
     public Format createCoordinateFormat(final Locale locale, final TimeZone timezone) {
         return ReferencingServices.getInstance().createCoordinateFormat(locale, timezone);
+    }
+
+    /**
+     * Returns the data source for the SIS-wide "SpatialMetadata" database.
+     */
+    @Override
+    public DataSource getDataSource() throws SQLException {
+        try {
+            return Initializer.getDataSource();
+        } catch (SQLException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new SQLException(Errors.format(Errors.Keys.CanNotConnectTo_1, Initializer.DATABASE), e);
+        }
+    }
+
+    /**
+     * Specifies the data source to use if there is no JNDI environment or if no data source is binded
+     * to {@code jdbc/SpatialMetadata}.
+     */
+    @Override
+    public void setDataSource(final Supplier<DataSource> ds) {
+        if (!Initializer.setDefault(ds)) {
+            throw new IllegalStateException(Resources.format(Resources.Keys.ConnectionAlreadyInitialized_1, Initializer.DATABASE));
+        }
     }
 }

@@ -28,7 +28,6 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.simple.SimpleIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;

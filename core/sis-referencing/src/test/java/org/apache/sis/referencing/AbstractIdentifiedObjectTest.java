@@ -24,7 +24,6 @@ import java.util.Locale;
 import java.util.Collections;
 import org.opengis.test.Validators;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.jaxb.Context;
@@ -236,8 +235,8 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @DependsOnMethod("testWithoutIdentifier")
     public void testSerialization() {
         final Set<ReferenceIdentifier> identifiers = Collections.emptySet();
-        final AbstractIdentifiedObject object      = new AbstractIdentifiedObject(properties(identifiers));
-        final AbstractIdentifiedObject actual      = assertSerializedEquals(object);
+        final AbstractIdentifiedObject object = new AbstractIdentifiedObject(properties(identifiers));
+        final AbstractIdentifiedObject actual = assertSerializedEquals(object);
         assertNotSame(object, actual);
         assertNull("gmlId", validate(actual, identifiers, "GRS1980"));
     }

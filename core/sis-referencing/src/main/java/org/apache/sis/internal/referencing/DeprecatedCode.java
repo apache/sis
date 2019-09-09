@@ -18,7 +18,7 @@ package org.apache.sis.internal.referencing;
 
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.util.Deprecable;
 
 

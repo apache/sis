@@ -76,7 +76,7 @@ public class ReferenceResolver {
      * @param  context      context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  type         the type of object to be unmarshalled, often as a GeoAPI interface.
      * @param  identifiers  an arbitrary amount of identifiers. For each identifier,
-     *         the {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority() authority}
+     *         the {@linkplain org.apache.sis.referencing.ImmutableIdentifier#getAuthority() authority}
      *         is typically (but not necessarily) one of the constants defined in {@link IdentifierSpace}.
      * @return an object of the given type for the given identifiers, or {@code null} if none.
      */

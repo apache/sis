@@ -30,6 +30,8 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.sql.feature.Resources;
+import org.apache.sis.internal.storage.Capability;
+import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
@@ -53,11 +55,13 @@ import static org.apache.sis.internal.sql.feature.Database.WILDCARD;
  * @since   1.0
  * @module
  */
+@StoreMetadata(formatName   = SQLStoreProvider.NAME,
+               capabilities = Capability.READ)
 public class SQLStoreProvider extends DataStoreProvider {
     /**
      * The format name.
      */
-    private static final String NAME = "SQL";
+    static final String NAME = "SQL";
 
     /**
      * Name of the parameter for the list of qualified table names.

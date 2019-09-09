@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.iso;
+package org.apache.sis.referencing;
 
 import java.util.Map;
 import java.util.HashMap;

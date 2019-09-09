@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.HashMap;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;

@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Collections;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.measure.Units;

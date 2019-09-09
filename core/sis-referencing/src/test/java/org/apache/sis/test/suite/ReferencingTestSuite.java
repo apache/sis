@@ -50,9 +50,9 @@ import org.junit.BeforeClass;
     org.apache.sis.io.wkt.ColorsTest.class,
     org.apache.sis.io.wkt.FormatterTest.class,
     org.apache.sis.io.wkt.ElementTest.class,
-    org.apache.sis.metadata.iso.ImmutableIdentifierTest.class,
 
     // Identification of objects, needed by large parts of sis-referencing.
+    org.apache.sis.referencing.ImmutableIdentifierTest.class,
     org.apache.sis.referencing.NamedIdentifierTest.class,
     org.apache.sis.referencing.IdentifiedObjectsTest.class,
     org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,

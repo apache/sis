@@ -56,8 +56,9 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis coordinate system axis},
  * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum},
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} and more
- * rather use the {@link ImmutableIdentifier} implementation, which is a class unrelated to the usual
- * {@code org.apache.metadata} hierarchy because of the immutable nature of referencing objects.</p>
+ * rather use the {@link org.apache.sis.referencing.ImmutableIdentifier} implementation,
+ * which is a class unrelated to the usual {@code org.apache.metadata} hierarchy
+ * because of the immutable nature of referencing objects.</p>
  *
  * <div class="section">Text, URN and XML representations</div>
  * The XML representation of {@link DefaultIdentifier} is as the following example:
@@ -92,7 +93,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  *
- * @see ImmutableIdentifier
+ * @see org.apache.sis.referencing.ImmutableIdentifier
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
  *
  * @since 0.3

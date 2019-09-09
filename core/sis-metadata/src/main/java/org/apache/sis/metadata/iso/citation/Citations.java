@@ -67,7 +67,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonEmptyIterator;
  * The constants defined in this class are typically values returned by:
  * <ul>
  *   <li>{@link DefaultCitation#getIdentifiers()} for the {@link #ISBN} and {@link #ISSN} constants.</li>
- *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()} for other {@code IdentifierSpace} constants.</li>
+ *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()} for other {@code IdentifierSpace} constants.</li>
  *   <li>{@link org.apache.sis.metadata.iso.DefaultMetadata#getMetadataStandards()} for other {@code Citation} constants.</li>
  * </ul>
  *
@@ -185,7 +185,7 @@ public final class Citations extends Static {
      * <div class="section">Main usage</div>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      *   <li>{@link org.apache.sis.referencing.factory.sql.EPSGFactory#getAuthority()}
      *       with the addition of version information.</li>
      * </ul>
@@ -254,7 +254,7 @@ public final class Citations extends Static {
      * <div class="section">Main usage</div>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
      * @see #EPSG
@@ -287,7 +287,7 @@ public final class Citations extends Static {
      * <div class="section">Main usage</div>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
      * @see #OGC
@@ -322,7 +322,7 @@ public final class Citations extends Static {
      * <div class="section">Main usage</div>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
      * @since 0.4
@@ -337,7 +337,7 @@ public final class Citations extends Static {
      * <div class="section">Main usage</div>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
      * @since 0.4
@@ -350,7 +350,7 @@ public final class Citations extends Static {
      * <div class="section">Main usage</div>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
      * @since 0.4
@@ -363,7 +363,7 @@ public final class Citations extends Static {
      * <div class="section">Main usage</div>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
      * @since 0.6
@@ -377,7 +377,7 @@ public final class Citations extends Static {
      * <div class="section">Main usage</div>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
      * @since 0.6
@@ -818,7 +818,7 @@ public final class Citations extends Static {
      * @return a non-empty Unicode identifier for the given citation without leading or trailing whitespaces,
      *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
      *
-     * @see org.apache.sis.metadata.iso.ImmutableIdentifier
+     * @see org.apache.sis.referencing.ImmutableIdentifier
      * @see org.apache.sis.referencing.IdentifiedObjects#getSimpleNameOrIdentifier(IdentifiedObject)
      * @see org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence)
      *

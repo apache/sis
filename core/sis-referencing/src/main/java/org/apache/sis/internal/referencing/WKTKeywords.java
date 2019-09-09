@@ -52,7 +52,7 @@ public final class WKTKeywords extends Static {
 
     /**
      * Related to {@link org.apache.sis.referencing.AbstractIdentifiedObject}
-     * (including {@link org.apache.sis.metadata.iso.ImmutableIdentifier}).
+     * (including {@link org.apache.sis.referencing.ImmutableIdentifier}).
      */
     public static final String
             Id        = "Id",

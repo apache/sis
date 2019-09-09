@@ -25,7 +25,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
