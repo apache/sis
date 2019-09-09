@@ -85,7 +85,7 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.math.Vector;
 

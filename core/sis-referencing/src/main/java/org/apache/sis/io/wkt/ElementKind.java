@@ -106,7 +106,7 @@ public enum ElementKind {
     EXTENT,
 
     /**
-     * Citation (typically for the {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()
+     * Citation (typically for the {@linkplain org.apache.sis.referencing.ImmutableIdentifier#getAuthority()
      * authority}), often represented by {@code CITATION[…]} elements.
      */
     CITATION,

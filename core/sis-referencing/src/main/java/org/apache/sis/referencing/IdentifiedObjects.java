@@ -344,7 +344,7 @@ public final class IdentifiedObjects extends Static {
      * @param  object  the identified object, or {@code null}.
      * @return the first name, alias or identifier which is a valid Unicode identifier, or {@code null} if none.
      *
-     * @see org.apache.sis.metadata.iso.ImmutableIdentifier
+     * @see ImmutableIdentifier
      * @see Citations#getUnicodeIdentifier(Citation)
      * @see CharSequences#isUnicodeIdentifier(CharSequence)
      *
@@ -759,7 +759,7 @@ public final class IdentifiedObjects extends Static {
      * @param  identifier  the identifier, or {@code null}.
      * @return a string representation of the given identifier, or {@code null}.
      *
-     * @see org.apache.sis.metadata.iso.ImmutableIdentifier#toString()
+     * @see ImmutableIdentifier#toString()
      * @see NamedIdentifier#toString()
      */
     public static String toString(final Identifier identifier) {

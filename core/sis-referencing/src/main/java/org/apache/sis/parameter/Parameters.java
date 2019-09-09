@@ -76,7 +76,7 @@ import org.apache.sis.util.Debug;
  * instead than a {@code String} argument. Those descriptors provide additional information like the various
  * {@linkplain DefaultParameterDescriptor#getAlias() aliases} under which the same parameter may be known.
  * By using this information, {@code Parameters} can choose the most appropriate parameter name or alias
- * (by searching for a common {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority() authority})
+ * (by searching for a common {@linkplain org.apache.sis.referencing.ImmutableIdentifier#getAuthority() authority})
  * when it delegates its work to the {@code parameter(String)} method.
  *
  * <div class="note"><b>Example:</b>
@@ -467,7 +467,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      *       in this {@code ParameterValueGroup}, chosen as below:
      *     <ul>
      *       <li>a name or alias defined by the same
-     *           {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority() authority}, if any;</li>
+     *           {@linkplain org.apache.sis.referencing.ImmutableIdentifier#getAuthority() authority}, if any;</li>
      *       <li>an arbitrary name or alias otherwise.</li>
      *     </ul>
      *   </li>

@@ -49,7 +49,7 @@ import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
