@@ -31,19 +31,8 @@ import org.opengis.metadata.citation.*;
 import org.opengis.metadata.constraint.*;
 import org.opengis.metadata.identification.*;
 import org.opengis.metadata.maintenance.*;
-import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.metadata.extent.VerticalExtent;
 import org.opengis.metadata.spatial.GeometricObjectType;
-import org.opengis.metadata.spatial.SpatialRepresentation;
-import org.opengis.metadata.spatial.VectorSpatialRepresentation;
-import org.opengis.metadata.identification.DataIdentification;
-import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.cs.VerticalCS;
-import org.opengis.referencing.crs.VerticalCRS;
-import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 
 import org.apache.sis.measure.Units;
@@ -70,7 +59,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.XML;
 
@@ -78,7 +66,6 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 
 // Test dependencies
-
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.xml.DocumentComparator;
@@ -89,7 +76,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -106,14 +92,13 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @module
  */
 @DependsOn({
-    org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class
+    MetadataVerticalTest.class
 })
-public strictfp class MetadataTest extends TestCase {
+public final strictfp class MetadataTest extends TestCase {
     /**
-     * The resource file which contains an XML representation
-     * of a {@link Metadata} object with a {@link VerticalCRS}.
+     * The resource file which contains an XML representation of a {@link Metadata} object.
      */
-    private static final String VERTICAL_CRS_XML = "Metadata with vertical CRS.xml";
+    private static final String XML_FILE = "Metadata.xml";
 
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
@@ -127,6 +112,7 @@ public strictfp class MetadataTest extends TestCase {
      */
     @After
     public void assertNoUnexpectedLog() {
+        loggings.skipNextLogIfContains("sis-temporal");
         loggings.assertNoUnexpectedLog();
     }
 
@@ -148,13 +134,13 @@ public strictfp class MetadataTest extends TestCase {
     /**
      * Programmatically creates the metadata to marshall, or to compare against the unmarshalled metadata.
      *
-     * @return the hard-coded representation of {@code "Metadata.xml"} content.
+     * @return the hard-coded representation of {@value #XML_FILE} content.
      */
     private DefaultMetadata createHardCoded() {
         final DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setMetadataIdentifier(new DefaultIdentifier("Apache SIS/Metadata test"));
+        metadata.setMetadataIdentifier(new DefaultIdentifier("test/Metadata.xml"));
         metadata.setLocalesAndCharsets(singletonMap(Locale.ENGLISH, StandardCharsets.UTF_8));
-        metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET, "Common Data Index record")));
+        metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET, "Pseudo Common Data Index record")));
         metadata.setDateInfo(singleton(new DefaultCitationDate(TestUtilities.date("2009-01-01 04:00:00"), DateType.CREATION)));
         /*
          * Contact information for the author. The same party will be used for custodian and distributor,
@@ -180,15 +166,15 @@ public strictfp class MetadataTest extends TestCase {
             address.setCountry(country);
             address.setElectronicMailAddresses(singleton("xx@xx.fr"));
             contact.setAddresses(singleton(address));
-            author.setParties(singleton(new DefaultOrganisation("Marine institutes", null, null, contact)));
+            author.setParties(singleton(new DefaultOrganisation("Some marine institute", null, null, contact)));
             metadata.setContacts(singleton(author));
         }
         /*
          * Data indentification.
          */
         {
-            final DefaultCitation citation = new DefaultCitation("90008411.ctd");
-            citation.setAlternateTitles(singleton(new SimpleInternationalString("42292_5p_19900609195600")));
+            final DefaultCitation citation = new DefaultCitation("Some set of points");
+            citation.setAlternateTitles(singleton(new SimpleInternationalString("Code XYZ")));
             citation.setDates(Arrays.asList(
                     new DefaultCitationDate(TestUtilities.date("1990-06-04 22:00:00"), DateType.REVISION),
                     new DefaultCitationDate(TestUtilities.date("1979-08-02 22:00:00"), DateType.CREATION)));
@@ -212,10 +198,10 @@ public strictfp class MetadataTest extends TestCase {
                 citation.setCitedResponsibleParties(singleton(originator));
             }
             final DefaultDataIdentification identification = new DefaultDataIdentification(
-                    citation,                   // Citation
-                    "CTD NEDIPROD VI 120",      // Abstract
-                    Locale.ENGLISH,             // Language,
-                    TopicCategory.OCEANS);      // Topic category
+                    citation,                                                   // Citation
+                    "Description of pseudo data for testing purpose only.",     // Abstract
+                    Locale.ENGLISH,                                             // Language,
+                    TopicCategory.OCEANS);                                      // Topic category
             {
                 @SuppressWarnings("deprecation")
                 final DefaultResponsibility custodian = new DefaultResponsibleParty(author);
@@ -259,8 +245,8 @@ public strictfp class MetadataTest extends TestCase {
             {
                 @SuppressWarnings("deprecation")
                 final DefaultAssociatedResource aggregateInfo = new DefaultAggregateInformation();
-                final DefaultCitation name = new DefaultCitation("MEDIPROD VI");
-                name.setAlternateTitles(singleton(new SimpleInternationalString("90008411")));
+                final DefaultCitation name = new DefaultCitation("Some oceanographic campaign");
+                name.setAlternateTitles(singleton(new SimpleInternationalString("Pseudo group of data")));
                 name.setDates(singleton(new DefaultCitationDate(TestUtilities.date("1990-06-04 22:00:00"), DateType.REVISION)));
                 aggregateInfo.setName(name);
                 aggregateInfo.setInitiativeType(InitiativeType.CAMPAIGN);
@@ -291,8 +277,8 @@ public strictfp class MetadataTest extends TestCase {
                 setTemporalBounds(temporal, "1990-06-05", "1990-07-02");
                 identification.setExtents(singleton(new DefaultExtent(
                         null,
-                        new DefaultGeographicBoundingBox(1.1667, 1.1667, 36.6, 36.6),
-                        new DefaultVerticalExtent(Double.NaN, Double.NaN, vcrs),
+                        new DefaultGeographicBoundingBox(1.1666, 1.1667, 36.4, 36.6),
+                        new DefaultVerticalExtent(10, 25, vcrs),
                         temporal)));
             }
             /*
@@ -317,12 +303,12 @@ public strictfp class MetadataTest extends TestCase {
          * Information about Coordinate Reference System.
          */
         {
-            final DefaultCitation citation = new DefaultCitation("A geographic coordinate reference frames");
+            final DefaultCitation citation = new DefaultCitation("World Geodetic System 84");
             citation.setAlternateTitles(singleton(new SimpleInternationalString("L101")));
-            citation.setIdentifiers(singleton(new ImmutableIdentifier(null, null, "http://www.seadatanet.org/urnurl/")));
+            citation.setIdentifiers(singleton(new ImmutableIdentifier(null, null, "SDN:L101:2:4326")));
             citation.setEdition(new Anchor(URI.create("SDN:C371:1:2"), "2"));
             metadata.setReferenceSystemInfo(singleton(
-                    new ReferenceSystemMetadata(new ImmutableIdentifier(citation, "L101", "EPSG:4326"))));
+                    new ReferenceSystemMetadata(new ImmutableIdentifier(citation, "L101", "4326"))));
         }
         /*
          * Information about content.
@@ -338,13 +324,13 @@ public strictfp class MetadataTest extends TestCase {
         {
             final DefaultMetadataExtensionInformation extensionInfo = new DefaultMetadataExtensionInformation();
             extensionInfo.setExtendedElementInformation(singleton(new DefaultExtendedElementInformation(
-                    "SDN:EDMO::",                           // Name
-                    "http://www.seadatanet.org/urnurl/",    // Definition
-                    null,                                   // Condition
-                    Datatype.CODE_LIST,                     // Data type
-                    "SeaDataNet",                           // Parent entity
-                    null,                                   // Rule
-                    null)));                                // Source
+                    "SDN:EDMO",                                                     // Name
+                    "European Directory of Marine Organisations",                   // Definition
+                    null,                                                           // Condition
+                    Datatype.CODE_LIST,                                             // Data type
+                    "SeaDataNet",                                                   // Parent entity
+                    "For testing only",                                             // Rule
+                    NilReason.MISSING.createNilObject(Responsibility.class))));     // Source
             metadata.setMetadataExtensionInfo(singleton(extensionInfo));
         }
         /*
@@ -366,10 +352,10 @@ public strictfp class MetadataTest extends TestCase {
 
             final DefaultDigitalTransferOptions transfer = new DefaultDigitalTransferOptions();
             transfer.setTransferSize(2.431640625);
-            final DefaultOnlineResource onlines = new DefaultOnlineResource(URI.create("http://www.ifremer.fr/data/something"));
-            onlines.setDescription(new SimpleInternationalString("CTDF02"));
+            final DefaultOnlineResource onlines = new DefaultOnlineResource(URI.create("ftp://www.ifremer.fr/data/something"));
+            onlines.setDescription(new SimpleInternationalString("Dummy download link"));
             onlines.setFunction(OnLineFunction.DOWNLOAD);
-            onlines.setProtocol("http");
+            onlines.setProtocol("ftp");
             transfer.setOnLines(singleton(onlines));
             distributionInfo.setTransferOptions(singleton(transfer));
             metadata.setDistributionInfo(singleton(distributionInfo));
@@ -378,12 +364,12 @@ public strictfp class MetadataTest extends TestCase {
     }
 
     /**
-     * Returns the URL to the {@code "Metadata.xml"} file to use for this test.
+     * Returns the URL to the {@value #XML_FILE} file to use for this test.
      *
-     * @return the URL to {@code "Metadata.xml"} test file.
+     * @return the URL to {@value #XML_FILE} test file.
      */
     private URL getResource() {
-        return MetadataTest.class.getResource("Metadata.xml");
+        return MetadataTest.class.getResource(XML_FILE);
     }
 
     /**
@@ -402,14 +388,14 @@ public strictfp class MetadataTest extends TestCase {
         /*
          * Apache SIS can marshal CharSequence as Anchor only if the property type is InternationalString.
          * But the 'Metadata.hierarchyLevelName' and 'Identifier.code' properties are String, which we can
-         * not subclass. Concequently SIS currently marshals them as plain string. Replace those strings
+         * not subclass. Consequently SIS currently marshals them as plain string. Replace those strings
          * by the anchor version so we can compare the XML with the "Metadata.xml" file content.
          */
         final StringBuffer xml = writer.getBuffer();
-        replace(xml, "<gcol:CharacterString>Common Data Index record</gcol:CharacterString>",
-                     "<gmx:Anchor xlink:href=\"SDN:L231:3:CDI\">Common Data Index record</gmx:Anchor>");
-        replace(xml, "<gcol:CharacterString>EPSG:4326</gcol:CharacterString>",
-                     "<gmx:Anchor xlink:href=\"SDN:L101:2:4326\">EPSG:4326</gmx:Anchor>");
+        replace(xml, "<gcol:CharacterString>Pseudo Common Data Index record</gcol:CharacterString>",
+                     "<gmx:Anchor xlink:href=\"SDN:L231:3:CDI\">Pseudo Common Data Index record</gmx:Anchor>");
+        replace(xml, "<gcol:CharacterString>4326</gcol:CharacterString>",
+                     "<gmx:Anchor xlink:href=\"SDN:L101:2:4326\">4326</gmx:Anchor>");
         /*
          * The <gmd:EX_TemporalExtent> block can not be marshalled yet, since it requires the sis-temporal module.
          * We need to instruct the XML comparator to ignore this block during the comparison. We also ignore for
@@ -447,7 +433,7 @@ public strictfp class MetadataTest extends TestCase {
     public void testUnmarshalling() throws JAXBException {
         /*
          * Note: if this MetadataTest class is made final, then all following lines
-         * until pool.recycle(…) can be replaced by a call to unmarshallFile("Metadata.xml").
+         * until pool.recycle(…) can be replaced by a call to unmarshallFile(XML_FILE).
          */
         final MarshallerPool pool = getMarshallerPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
@@ -455,125 +441,5 @@ public strictfp class MetadataTest extends TestCase {
         pool.recycle(unmarshaller);
         final DefaultMetadata expected = createHardCoded();
         assertTrue(metadata.equals(expected, ComparisonMode.DEBUG));
-        loggings.skipNextLogIfContains("sis-temporal");
-    }
-
-    /**
-     * Tests the (un)marshalling of a metadata with a vertical CRS.
-     *
-     * @throws JAXBException if the (un)marshalling process fails.
-     */
-    @Test
-    public void testMetadataWithVerticalCRS() throws JAXBException {
-        final Metadata metadata = unmarshalFile(Metadata.class, VERTICAL_CRS_XML);
-        assertEquals("fileIdentifier", "20090901",                     metadata.getMetadataIdentifier().getCode());
-        assertEquals("language",       Locale.ENGLISH,                 getSingleton(metadata.getLocalesAndCharsets().keySet()));
-        assertEquals("characterSet",   StandardCharsets.UTF_8,         getSingleton(metadata.getLocalesAndCharsets().values()));
-        assertEquals("dateStamp",      xmlDate("2014-01-04 00:00:00"), getSingleton(metadata.getDateInfo()).getDate());
-        /*
-         * <gmd:contact>
-         *   <gmd:CI_ResponsibleParty>
-         *     …
-         *   </gmd:CI_ResponsibleParty>
-         * </gmd:contact>
-         */
-        final Responsibility contact        = getSingleton(metadata   .getContacts());
-        final Party          party          = getSingleton(contact    .getParties());
-        final Contact        contactInfo    = getSingleton(party      .getContactInfo());
-        final OnlineResource onlineResource = getSingleton(contactInfo.getOnlineResources());
-        assertInstanceOf("party", Organisation.class, party);
-        assertNotNull("onlineResource", onlineResource);
-        assertEquals("organisationName", "Apache SIS", party.getName().toString());
-        assertEquals("linkage", URI.create("http://sis.apache.org"), onlineResource.getLinkage());
-        assertEquals("function", OnLineFunction.INFORMATION, onlineResource.getFunction());
-        assertEquals("role", Role.PRINCIPAL_INVESTIGATOR, contact.getRole());
-        /*
-         * <gmd:spatialRepresentationInfo>
-         *   <gmd:MD_VectorSpatialRepresentation>
-         *     …
-         *   </gmd:MD_VectorSpatialRepresentation>
-         * </gmd:spatialRepresentationInfo>
-         */
-        final SpatialRepresentation spatial = getSingleton(metadata.getSpatialRepresentationInfo());
-        assertInstanceOf("spatialRepresentationInfo", VectorSpatialRepresentation.class, spatial);
-        assertEquals("geometricObjectType", GeometricObjectType.POINT, getSingleton(
-                ((VectorSpatialRepresentation) spatial).getGeometricObjects()).getGeometricObjectType());
-        /*
-         * <gmd:referenceSystemInfo>
-         *   <gmd:MD_ReferenceSystem>
-         *     …
-         *   </gmd:MD_ReferenceSystem>
-         * </gmd:referenceSystemInfo>
-         */
-        assertIdentifierEquals("referenceSystemInfo", null, "EPSG", null, "World Geodetic System 84",
-                getSingleton(metadata.getReferenceSystemInfo()).getName());
-        /*
-         * <gmd:identificationInfo>
-         *   <gmd:MD_DataIdentification>
-         *     …
-         */
-        final DataIdentification identification = (DataIdentification) getSingleton(metadata.getIdentificationInfo());
-        final Citation citation = identification.getCitation();
-        assertInstanceOf("citation", NilObject.class, citation);
-        assertEquals("nilReason", NilReason.MISSING, ((NilObject) citation).getNilReason());
-        assertEquals("abstract", "SIS test", identification.getAbstract().toString());
-        assertEquals("language", Locale.ENGLISH, getSingleton(identification.getLanguages()));
-        /*
-         * <gmd:geographicElement>
-         *   <gmd:EX_GeographicBoundingBox>
-         *     …
-         *   </gmd:EX_GeographicBoundingBox>
-         * </gmd:geographicElement>
-         */
-        final Extent extent = getSingleton(identification.getExtents());
-        final GeographicBoundingBox bbox = (GeographicBoundingBox) getSingleton(extent.getGeographicElements());
-        assertEquals("extentTypeCode", Boolean.TRUE, bbox.getInclusion());
-        assertEquals("westBoundLongitude",  4.55, bbox.getWestBoundLongitude(), STRICT);
-        assertEquals("eastBoundLongitude",  4.55, bbox.getEastBoundLongitude(), STRICT);
-        assertEquals("southBoundLatitude", 44.22, bbox.getSouthBoundLatitude(), STRICT);
-        assertEquals("northBoundLatitude", 44.22, bbox.getNorthBoundLatitude(), STRICT);
-        /*
-         * <gmd:verticalElement>
-         *   <gmd:EX_VerticalExtent>
-         *     …
-         *   </gmd:EX_VerticalExtent>
-         * </gmd:verticalElement>
-         */
-        final VerticalExtent ve = getSingleton(extent.getVerticalElements());
-        assertEquals("minimumValue",   0.1, ve.getMinimumValue(), STRICT);
-        assertEquals("maximumValue", 10000, ve.getMaximumValue(), STRICT);
-        final VerticalCRS crs = ve.getVerticalCRS();
-        verifyIdentifiers("test1", crs);
-        assertEquals("scope", "World", crs.getScope().toString());
-        final VerticalDatum datum = crs.getDatum();
-        verifyIdentifiers("test2", datum);
-        assertEquals("scope", "World", datum.getScope().toString());
-        assertEquals("vertDatumType", VerticalDatumType.DEPTH, datum.getVerticalDatumType()); // Inferred from the name.
-        final VerticalCS cs = crs.getCoordinateSystem();
-        verifyIdentifiers("test3", cs);
-        final CoordinateSystemAxis axis = cs.getAxis(0);
-        verifyIdentifiers("test4", axis);
-        assertEquals("axisAbbrev", "d", axis.getAbbreviation());
-        assertEquals("axisDirection", AxisDirection.DOWN, axis.getDirection());
-        /*
-         *     …
-         *   </gmd:MD_DataIdentification>
-         * </gmd:identificationInfo>
-         *
-         * Now marshal the object and compare with the original file.
-         */
-        assertMarshalEqualsFile(VERTICAL_CRS_XML, metadata, VERSION_2007, "xmlns:*", "xsi:schemaLocation");
-    }
-
-    /**
-     * Verifies the name and identifier for the given object.
-     *
-     * @param  code    the expected identifier code.
-     * @param  object  the object to verify.
-     */
-    private static void verifyIdentifiers(final String code, final IdentifiedObject object) {
-        assertIdentifierEquals("identifier", "Apache Spatial Information System", "SIS",
-                null, code, getSingleton(object.getIdentifiers()));
-        assertIdentifierEquals("name", null, null, null, "Depth", object.getName());
     }
 }

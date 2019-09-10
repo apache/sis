@@ -29,7 +29,7 @@
                           http://www.isotc211.org/2005/gmx http://schemas.opengis.net/iso/19139/20070417/gmx/gmx.xsd">
 
   <gmd:fileIdentifier>
-    <gco:CharacterString>Apache SIS/Metadata test</gco:CharacterString>
+    <gco:CharacterString>test/Metadata.xml</gco:CharacterString>
   </gmd:fileIdentifier>
   <gmd:language>
     <gmd:LanguageCode codeListValue="eng" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode">English</gmd:LanguageCode>
@@ -41,13 +41,16 @@
     <gmd:MD_ScopeCode codeSpace="eng" codeListValue="dataset" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_ScopeCode">Dataset</gmd:MD_ScopeCode>
   </gmd:hierarchyLevel>
   <gmd:hierarchyLevelName>
-    <gmx:Anchor xlink:href="SDN:L231:3:CDI">Common Data Index record</gmx:Anchor>
+    <gmx:Anchor xlink:href="SDN:L231:3:CDI">Pseudo Common Data Index record</gmx:Anchor>
   </gmd:hierarchyLevelName>
   <gmd:contact>
     <gmd:CI_ResponsibleParty>
       <gmd:organisationName>
-        <gco:CharacterString>Marine institutes</gco:CharacterString>
+        <gco:CharacterString>Some marine institute</gco:CharacterString>
       </gmd:organisationName>
+
+      <!-- The following contact information is referenced later in this file.
+           We use this for testing SIS capabilities to follow references. -->
       <gmd:contactInfo>
         <gmd:CI_Contact id="IFREMER">
           <gmd:phone>
@@ -91,6 +94,8 @@
           </gmd:onlineResource>
         </gmd:CI_Contact>
       </gmd:contactInfo>
+      <!-- End of section to be referenced later. -->
+
       <gmd:role>
         <gmd:CI_RoleCode codeListValue="author" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode">Author</gmd:CI_RoleCode>
       </gmd:role>
@@ -117,7 +122,7 @@
           <gmd:authority>
             <gmd:CI_Citation>
               <gmd:title>
-                <gco:CharacterString>A geographic coordinate reference frames</gco:CharacterString>
+                <gco:CharacterString>World Geodetic System 84</gco:CharacterString>
               </gmd:title>
               <gmd:alternateTitle>
                 <gco:CharacterString>L101</gco:CharacterString>
@@ -128,14 +133,14 @@
               <gmd:identifier>
                 <gmd:MD_Identifier>
                   <gmd:code>
-                    <gco:CharacterString>http://www.seadatanet.org/urnurl/</gco:CharacterString>
+                    <gco:CharacterString>SDN:L101:2:4326</gco:CharacterString>
                   </gmd:code>
                 </gmd:MD_Identifier>
               </gmd:identifier>
             </gmd:CI_Citation>
           </gmd:authority>
           <gmd:code>
-            <gmx:Anchor xlink:href="SDN:L101:2:4326">EPSG:4326</gmx:Anchor>
+            <gmx:Anchor xlink:href="SDN:L101:2:4326">4326</gmx:Anchor>
           </gmd:code>
           <gmd:codeSpace>
             <gco:CharacterString>L101</gco:CharacterString>
@@ -149,10 +154,10 @@
       <gmd:extendedElementInformation>
         <gmd:MD_ExtendedElementInformation>
           <gmd:name>
-            <gco:CharacterString>SDN:EDMO::</gco:CharacterString>
+            <gco:CharacterString>SDN:EDMO</gco:CharacterString>
           </gmd:name>
           <gmd:definition>
-            <gco:CharacterString>http://www.seadatanet.org/urnurl/</gco:CharacterString>
+            <gco:CharacterString>European Directory of Marine Organisations</gco:CharacterString>
           </gmd:definition>
           <gmd:dataType>
             <gmd:MD_DatatypeCode codeListValue="codelist" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode">Codelist</gmd:MD_DatatypeCode>
@@ -160,6 +165,10 @@
           <gmd:parentEntity>
             <gco:CharacterString>SeaDataNet</gco:CharacterString>
           </gmd:parentEntity>
+          <gmd:rule>
+            <gco:CharacterString>For testing only</gco:CharacterString>
+          </gmd:rule>
+          <gmd:source gco:nilReason="missing"/>
         </gmd:MD_ExtendedElementInformation>
       </gmd:extendedElementInformation>
     </gmd:MD_MetadataExtensionInformation>
@@ -169,10 +178,10 @@
       <gmd:citation>
         <gmd:CI_Citation>
           <gmd:title>
-            <gco:CharacterString>90008411.ctd</gco:CharacterString>
+            <gco:CharacterString>Some set of points</gco:CharacterString>
           </gmd:title>
           <gmd:alternateTitle>
-            <gco:CharacterString>42292_5p_19900609195600</gco:CharacterString>
+            <gco:CharacterString>Code XYZ</gco:CharacterString>
           </gmd:alternateTitle>
           <gmd:date>
             <gmd:CI_Date>
@@ -247,12 +256,12 @@
         </gmd:CI_Citation>
       </gmd:citation>
       <gmd:abstract>
-        <gco:CharacterString>CTD NEDIPROD VI 120</gco:CharacterString>
+        <gco:CharacterString>Description of pseudo data for testing purpose only.</gco:CharacterString>
       </gmd:abstract>
       <gmd:pointOfContact>
         <gmd:CI_ResponsibleParty>
           <gmd:organisationName>
-            <gco:CharacterString>Marine institutes</gco:CharacterString>
+            <gco:CharacterString>Some marine institute</gco:CharacterString>
           </gmd:organisationName>
           <gmd:contactInfo xlink:href="#IFREMER"/>
           <gmd:role>
@@ -322,10 +331,10 @@
           <gmd:aggregateDataSetName>
             <gmd:CI_Citation>
               <gmd:title>
-                <gco:CharacterString>MEDIPROD VI</gco:CharacterString>
+                <gco:CharacterString>Some oceanographic campaign</gco:CharacterString>
               </gmd:title>
               <gmd:alternateTitle>
-                <gco:CharacterString>90008411</gco:CharacterString>
+                <gco:CharacterString>Pseudo group of data</gco:CharacterString>
               </gmd:alternateTitle>
               <gmd:date>
                 <gmd:CI_Date>
@@ -364,13 +373,13 @@
                 <gco:Boolean>true</gco:Boolean>
               </gmd:extentTypeCode>
               <gmd:westBoundLongitude>
-                <gco:Decimal>1.1667</gco:Decimal>
+                <gco:Decimal>1.1666</gco:Decimal>
               </gmd:westBoundLongitude>
               <gmd:eastBoundLongitude>
                 <gco:Decimal>1.1667</gco:Decimal>
               </gmd:eastBoundLongitude>
               <gmd:southBoundLatitude>
-                <gco:Decimal>36.6</gco:Decimal>
+                <gco:Decimal>36.4</gco:Decimal>
               </gmd:southBoundLatitude>
               <gmd:northBoundLatitude>
                 <gco:Decimal>36.6</gco:Decimal>
@@ -389,6 +398,8 @@
           </gmd:temporalElement>
           <gmd:verticalElement>
             <gmd:EX_VerticalExtent>
+              <gmd:minimumValue> <gco:Real>10</gco:Real> </gmd:minimumValue>
+              <gmd:maximumValue> <gco:Real>25</gco:Real> </gmd:maximumValue>
               <gmd:verticalCRS>
                 <gml:VerticalCRS gml:id="depth_D28">
                   <gml:name>Depth below D28</gml:name>
@@ -444,7 +455,7 @@
           <gmd:distributorContact>
             <gmd:CI_ResponsibleParty>
               <gmd:organisationName>
-                <gco:CharacterString>Marine institutes</gco:CharacterString>
+                <gco:CharacterString>Some marine institute</gco:CharacterString>
               </gmd:organisationName>
               <gmd:contactInfo xlink:href="#IFREMER"/>
               <gmd:role>
@@ -462,13 +473,13 @@
           <gmd:onLine>
             <gmd:CI_OnlineResource>
               <gmd:linkage>
-                <gmd:URL>http://www.ifremer.fr/data/something</gmd:URL>
+                <gmd:URL>ftp://www.ifremer.fr/data/something</gmd:URL>
               </gmd:linkage>
               <gmd:protocol>
-                <gco:CharacterString>http</gco:CharacterString>
+                <gco:CharacterString>ftp</gco:CharacterString>
               </gmd:protocol>
               <gmd:description>
-                <gco:CharacterString>CTDF02</gco:CharacterString>
+                <gco:CharacterString>Dummy download link</gco:CharacterString>
               </gmd:description>
               <gmd:function>
                 <gmd:CI_OnLineFunctionCode codeSpace="eng" codeListValue="download" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode">Download</gmd:CI_OnLineFunctionCode>
