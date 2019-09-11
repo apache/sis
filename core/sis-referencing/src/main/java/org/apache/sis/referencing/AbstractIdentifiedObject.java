@@ -627,7 +627,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The strictness level is controlled by the second argument,
      * from stricter to more permissive values:
      *
-     * <table class="compact" summary="Description of comparison modes.">
+     * <table class="sis">
+     *   <caption>Description of comparison modes</caption>
+     *   <tr><th>Mode</th><th>Description</th></tr>
      *   <tr><td>{@link ComparisonMode#STRICT STRICT}:</td>
      *        <td>Verifies if the two objects are of the same {@linkplain #getClass() class}
      *            and compares all public properties, including SIS-specific (non standard) properties.</td></tr>
@@ -837,23 +839,21 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * For example if this formattable element is for a {@code GeodeticCRS[…]} element,
      * then subclasses shall write the content starting at the insertion point shown below:
      *
-     * <table class="compact" summary="WKT and Java code example.">
-     * <tr>
-     *   <th>WKT example</th>
-     *   <th>Java code example</th>
-     * </tr><tr><td>
+     * <div class="horizontal-flow">
+     * <div><p><b>WKT example</b></p>
      * {@preformat text
      *   GeodeticCRS["WGS 84", ID["EPSG", 4326]]
      *                       ↑
      *               (insertion point)
      * }
-     * </td><td>
+     * </div><div>
+     * <p><b>Java code example</b></p>
      * {@preformat java
      *     super.formatTo(formatter);
      *     // ... write the elements at the insertion point ...
      *     return "GeodeticCRS";
      * }
-     * </td></tr></table>
+     * </div></div>
      *
      * <div class="section">Formatting non-standard WKT</div>
      * If the implementation can not represent this object without violating some WKT constraints,

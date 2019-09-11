@@ -257,7 +257,8 @@ public interface TreeTable {
          * and an instrument containing a reference to the platform on which the instrument is installed. In this example,
          * nodes 2 and 4 contain a reference to the same {@code Platform} instance, so we have a cyclic graph:
          *
-         * <table class="compact" summary="Metadata tree example">
+         * <table class="compact">
+         * <caption>Metadata tree example</caption>
          * <tr><th>Node 1:</th><td>{@code  }{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}</td></tr>
          * <tr><th>Node 2:</th><td>{@code   └─}{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform Platform}</td></tr>
          * <tr><th>Node 3:</th><td>{@code      └─}{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument Instrument}</td></tr>

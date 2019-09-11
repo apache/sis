@@ -52,7 +52,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * this formatter uses only one line per message instead of two. For example messages formatted by
  * {@code MonolineFormatter} may look like:
  *
- * <blockquote><table style="color:white; background:black" class="compact" summary="Logging example.">
+ * <blockquote><table style="color:white; background:black" class="compact">
+ * <caption style="color:black">Logging example</caption>
  * <tr><td><code>00:01</code></td><td style="background:blue"><code>CONFIG</code></td>
  *     <td><code><b>[MyApplication]</b> Read configuration from “my-application/setup.xml”.</code></td></tr>
  * <tr><td><code>00:03</code></td><td style="background:green"><code>INFO</code></td>

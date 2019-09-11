@@ -193,16 +193,16 @@ public final class Names extends Static {
      *
      * <div class="note"><b>Example:</b>
      * for a name created by {@code createLocalName("http://www.opengis.net/gml/srs/epsg.xml", "#", "4326")}:
-     * <blockquote><table class="compact" summary="Examples of return values for a name built by this method.">
-     *   <tr><td>• <code>name.{@linkplain DefaultLocalName#toString() toString()}</code></td>
-     *       <td>returns the {@code "4326"} string.</td></tr>
-     *   <tr><td>• <code>name.{@linkplain DefaultLocalName#scope() scope()}</code></td>
-     *       <td>returns the {@code "http://www.opengis.net/gml/srs/epsg.xml"} namespace.</td></tr>
-     *   <tr><td>• <code>name.{@linkplain DefaultLocalName#toFullyQualifiedName() toFullyQualifiedName()}</code></td>
-     *       <td>returns the {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"} name.
-     *   <tr><td>• <code>{@linkplain #toExpandedString(GenericName) toExpandedString}(name)</code></td>
-     *       <td>returns the {@code "{http://www.opengis.net/gml/srs/epsg.xml}4326"} string.</td></tr>
-     * </table></blockquote></div>
+     * <ul>
+     *   <li><code>name.{@linkplain DefaultLocalName#toString() toString()}</code>
+     *       returns the {@code "4326"} string.</li>
+     *   <li><code>name.{@linkplain DefaultLocalName#scope() scope()}</code>
+     *       returns the {@code "http://www.opengis.net/gml/srs/epsg.xml"} namespace.</li>
+     *   <li><code>name.{@linkplain DefaultLocalName#toFullyQualifiedName() toFullyQualifiedName()}</code>
+     *       returns the {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"} name.</li>
+     *   <li><code>{@linkplain #toExpandedString(GenericName) toExpandedString}(name)</code>
+     *       returns the {@code "{http://www.opengis.net/gml/srs/epsg.xml}4326"} string.</li>
+     * </ul></div>
      *
      * <div class="note"><b>Performance note:</b> this method is okay for <em>casual</em> use. If many names need
      * to be created in the same namespace, then {@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}

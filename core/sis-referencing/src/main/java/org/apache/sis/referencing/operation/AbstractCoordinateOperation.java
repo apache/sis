@@ -780,7 +780,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * sometime the target dimensions returned by this method can be mapped directly to wraparound axes in source CRS,
      * but this is not always the case. For example consider the following operation chain:
      *
-     * <center>source projected CRS ⟶ base CRS ⟶ target geographic CRS</center>
+     * <div style="text-align:center">source projected CRS ⟶ base CRS ⟶ target geographic CRS</div>
      *
      * In this example, a wraparound axis in the target CRS (the longitude) can be mapped to a wraparound axis in
      * the {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS#getBaseCRS() base CRS}. But there is no

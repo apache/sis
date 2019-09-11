@@ -63,8 +63,8 @@ import java.util.Objects;
  * while the <cite>legacy</cite> column lists the identifiers used in the legacy OGC 01-009 specification
  * (still used in some <cite>Well Known Texts</cite>).
  *
- * <table summary="Parameters and formula"><tr><td>
- * <table class="sis">
+ * <div class="horizontal-flow">
+ * <div><table class="sis">
  *   <caption>Parameters defined by EPSG</caption>
  *   <tr><th>Code</th> <th>Name</th>               <th>Abbr.</th>       <th>Legacy</th></tr>
  *   <tr><td>8605</td> <td>X-axis translation</td> <td>{@link #tX}</td> <td>{@code dx}</td></tr>
@@ -74,16 +74,14 @@ import java.util.Objects;
  *   <tr><td>8609</td> <td>Y-axis rotation</td>    <td>{@link #rY}</td> <td>{@code ey}</td></tr>
  *   <tr><td>8610</td> <td>Z-axis rotation</td>    <td>{@link #rZ}</td> <td>{@code ez}</td></tr>
  *   <tr><td>8611</td> <td>Scale difference</td>   <td>{@link #dS}</td> <td>{@code ppm}</td></tr>
- * </table>
- *
- * </td><td style="padding-left: 40pt; white-space: nowrap">
- * <center><b>Geocentric coordinates transformation</b></center>
- * <center>from (<var>X</var><sub>s</sub>, <var>Y</var><sub>s</sub>, <var>Z</var><sub>s</sub>)
- *           to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)
- * <br><span style="font-size:small">(ignoring unit conversions)</span></center>
+ * </table></div>
+ * <div><p><b>Geocentric coordinates transformation</b></p>
+ * <p>from (<var>X</var><sub>s</sub>, <var>Y</var><sub>s</sub>, <var>Z</var><sub>s</sub>)
+ *      to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)
+ * <br><span style="font-size:small">(ignoring unit conversions)</span></p>
  *
  * <p>{@include formulas.html#Bursa-Wolf}</p>
- * </td></tr></table>
+ * </div></div>
  *
  * The numerical fields in this {@code BursaWolfParameters} class use the EPSG abbreviations
  * with 4 additional constraints compared to the EPSG definitions:
