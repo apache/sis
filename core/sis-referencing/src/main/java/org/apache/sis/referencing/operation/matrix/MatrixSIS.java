@@ -456,7 +456,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * If this matrix was an instance of Java2D {@link AffineTransform}, then invoking this method would
      * be equivalent to invoke the following {@code AffineTransform} methods in the order shown below:
      *
-     * <table class="sis" summary="Equivalence between this method and AffineTransform methods">
+     * <table class="sis">
+     * <caption>Equivalence between this method and AffineTransform methods</caption>
      *   <tr>
      *     <th>{@code MatrixSIS} method</th>
      *     <th class="sep">{@code AffineTransform} methods</th>

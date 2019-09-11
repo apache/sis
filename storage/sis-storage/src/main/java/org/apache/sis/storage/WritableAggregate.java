@@ -19,7 +19,7 @@ package org.apache.sis.storage;
 
 /**
  * An {@link Aggregate} with writing capabilities. {@code WritableAggregate} inherits the reading capabilities from its
- * parent and adds the capabilities to {@linkplain #add(Resource) add} or {@linplain #remove(Resource) remove} resources.
+ * parent and adds the capabilities to {@linkplain #add(Resource) add} or {@linkplain #remove(Resource) remove} resources.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0

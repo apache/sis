@@ -50,7 +50,7 @@ import org.apache.sis.util.resources.Errors;
  *     <ul>
  *       <li>As a {@link CoordinateReferenceSystem} instance.</li>
  *       <li>As a {@link String} instance of the form {@code "EPSG:xxxx"}, a URL or a URN.</li>
- *       <li>As an {@linl Integer} instance specifying an EPSG code.</li>
+ *       <li>As an {@link Integer} instance specifying an EPSG code.</li>
  *     </ul>
  *   </li>
  * </ol>

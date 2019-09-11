@@ -1310,7 +1310,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for coordinate reference systems are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Type</th>          <th>Description</th></tr>
      *   <tr><td>4326</td> <td>Geographic</td>    <td>World Geodetic System 1984</td></tr>
      *   <tr><td>4979</td> <td>Geographic 3D</td> <td>World Geodetic System 1984</td></tr>
@@ -1591,7 +1592,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for datums are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Type</th>        <th>Description</th></tr>
      *   <tr><td>6326</td> <td>Geodetic</td>    <td>World Geodetic System 1984</td></tr>
      *   <tr><td>6322</td> <td>Geodetic</td>    <td>World Geodetic System 1972</td></tr>
@@ -1871,7 +1873,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for ellipsoids are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>7030</td> <td>WGS 84</td></tr>
      *   <tr><td>7034</td> <td>Clarke 1880</td></tr>
@@ -1959,7 +1962,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for prime meridians are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>8901</td> <td>Greenwich</td></tr>
      *   <tr><td>8903</td> <td>Paris</td></tr>
@@ -2019,7 +2023,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for extents are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>1262</td> <td>World</td></tr>
      *   <tr><td>3391</td> <td>World - between 80°S and 84°N</td></tr>
@@ -2093,7 +2098,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for coordinate systems are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Type</th>              <th>Axes</th>                                    <th>Orientations</th> <th>Unit</th></tr>
      *   <tr><td>4406</td> <td>Cartesian 2D CS</td>   <td>easting, northing (E,N)</td>                 <td>east, north</td>     <td>kilometre</td></tr>
      *   <tr><td>4496</td> <td>Cartesian 2D CS</td>   <td>easting, northing (E,N)</td>                 <td>east, north</td>     <td>metre</td></tr>
@@ -2298,7 +2304,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for axes are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th>   <th>Unit</th></tr>
      *   <tr><td>106</td>  <td>Latitude (φ)</td>  <td>degree</td></tr>
      *   <tr><td>107</td>  <td>Longitude (λ)</td> <td>degree</td></tr>
@@ -2400,7 +2407,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for units are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>9002</td> <td>decimal degree</td></tr>
      *   <tr><td>9001</td> <td>metre</td></tr>
@@ -2471,7 +2479,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for parameters are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>8801</td> <td>Latitude of natural origin</td></tr>
      *   <tr><td>8802</td> <td>Longitude of natural origin</td></tr>
@@ -2710,7 +2719,8 @@ next:               while (r.next()) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for operation methods are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>9804</td> <td>Mercator (variant A)</td></tr>
      *   <tr><td>9802</td> <td>Lambert Conic Conformal (2SP)</td></tr>
@@ -2766,7 +2776,8 @@ next:               while (r.next()) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for coordinate transformations are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>1133</td> <td>ED50 to WGS 84 (1)</td></tr>
      *   <tr><td>1241</td> <td>NAD27 to NAD83 (1)</td></tr>

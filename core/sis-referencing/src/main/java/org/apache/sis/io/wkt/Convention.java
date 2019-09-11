@@ -122,7 +122,8 @@ public enum Convention {
      * For more uniform handling of CRS objects in client code, SIS parser replaces some WKT 1 conventions by
      * the ISO ones when possible.
      *
-     * <table class="compact" summary="Differences between current and legacy specifications"><tr><td>
+     * <div class="horizontal-flow">
+     * <div>
      * <table class="sis">
      *   <caption>Geocentric axis directions</caption>
      *   <tr><th>ISO 19111</th>    <th>OGC 01-009</th> <th>Description</th></tr>
@@ -130,7 +131,7 @@ public enum Convention {
      *   <tr><td>Geocentric Y</td> <td>Easting</td>    <td>Toward 90°E longitude</td></tr>
      *   <tr><td>Geocentric Z</td> <td>Northing</td>   <td>Toward north pole</td></tr>
      * </table>
-     * </td><td>
+     * </div><div>
      * <table class="sis">
      *   <caption>Coordinate system axis names</caption>
      *   <tr><th>CRS type</th>   <th>WKT1 names</th>                               <th>ISO abbreviations</th></tr>
@@ -139,7 +140,7 @@ public enum Convention {
      *   <tr><td>Projected</td>  <td><var>X</var>, <var>Y</var></td>               <td><var>E</var>, <var>N</var></td></tr>
      *   <tr><td>Geocentric</td> <td><var>X</var>, <var>Y</var>, <var>Z</var></td> <td><var>X</var>, <var>Y</var>, <var>Z</var></td></tr>
      * </table>
-     * </td></tr></table>
+     * </div></div>
      *
      * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */

@@ -78,9 +78,10 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * envelopes crossing the anti-meridian, like the red box below (the green box is the usual case).
  * The default implementation of methods listed in the right column can handle such cases.
  *
- * <center><table class="compact" summary="Anti-meridian spanning support."><tr><td>
+ * <div class="horizontal-flow">
+ * <div>
  *   <img style="vertical-align: middle" src="doc-files/AntiMeridian.png" alt="Envelope spannning the anti-meridian">
- * </td><td style="vertical-align: middle">
+ * </div><div>
  * Supported methods:
  * <ul>
  *   <li>{@link #getMinimum(int)}</li>
@@ -92,7 +93,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  *   <li>{@link #contains(Envelope)}</li>
  *   <li>{@link #intersects(Envelope)}</li>
  * </ul>
- * </td></tr></table></center>
+ * </div></div>
  *
  * <div class="section">Choosing the range of longitude values</div>
  * Geographic CRS typically have longitude values in the [-180 … +180]° range, but the [0 … 360]°

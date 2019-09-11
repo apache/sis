@@ -78,17 +78,13 @@ import org.apache.sis.util.ArgumentChecks;
  * (ignoring {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes changes of axis order})
  * is a chain of 3 transforms as shown below:
  *
- * <center>
- *   <table class="compact" style="td {vertical-align: middle}" summary="Decomposition of a map projection">
- *     <tr>
- *       <td>{@include formulas.html#NormalizeGeographic}</td>
- *       <td>→</td>
- *       <td>Map projection on a normalized ellipsoid</td>
- *       <td>→</td>
- *       <td>{@include formulas.html#DenormalizeCartesian}</td>
- *     </tr>
- *   </table>
- * </center>
+ * <div class="horizontal-flow" style="align-items:center">
+ *   <div>{@include formulas.html#NormalizeGeographic}</div>
+ *   <div>→</div>
+ *   <div>Map projection on a normalized ellipsoid</div>
+ *   <div>→</div>
+ *   <div>{@include formulas.html#DenormalizeCartesian}</div>
+ * </div>
  *
  * {@code ContextualParameters} is typically created and used as below:
  *
@@ -152,7 +148,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * before to apply a non-linear operation. For example in a map projection, this matrix is
          * typically (but not necessarily) as below:
          *
-         * <center>{@include formulas.html#NormalizeGeographic}</center>
+         * <div style="text-align:center">{@include formulas.html#NormalizeGeographic}</div>
          */
         NORMALIZATION,
 
@@ -160,7 +156,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * Inverse of the {@link #NORMALIZATION} matrix.
          * For example in a map projection, this matrix is typically (but not necessarily) as below:
          *
-         * <center>{@include formulas.html#DenormalizeGeographic}</center>
+         * <div style="text-align:center">{@include formulas.html#DenormalizeGeographic}</div>
          */
         INVERSE_NORMALIZATION,
 
@@ -169,7 +165,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * after execution of a non-linear operation. For example in a map projection, this matrix is typically
          * (but not necessarily) as below:
          *
-         * <center>{@include formulas.html#DenormalizeCartesian}</center>
+         * <div style="text-align:center">{@include formulas.html#DenormalizeCartesian}</div>
          */
         DENORMALIZATION,
 
@@ -437,7 +433,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * the normalization matrix with the following matrix. This will have the effect of applying the conversion
      * described above before any other operation:</p>
      *
-     * <center>{@include formulas.html#NormalizeGeographic}</center>
+     * <div style="text-align:center">{@include formulas.html#NormalizeGeographic}</div>
      *
      * @param  λ0  longitude of the central meridian, in degrees.
      * @return the normalization affine transform as a matrix.
@@ -471,7 +467,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * the denormalization matrix with the following matrix. This will have the effect of applying the conversion
      * described above after the non-linear kernel operation:</p>
      *
-     * <center>{@include formulas.html#DenormalizeGeographic}</center>
+     * <div style="text-align:center">{@include formulas.html#DenormalizeGeographic}</div>
      *
      * @param  λ0  longitude of the central meridian, in degrees.
      * @return the denormalization affine transform as a matrix.

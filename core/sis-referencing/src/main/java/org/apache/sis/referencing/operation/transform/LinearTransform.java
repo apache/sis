@@ -43,9 +43,9 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  * except in the last column, which contains 1. For example a conversion from projected coordinates (metres)
  * to display coordinates (pixel) can be done as below:
  *
- * <center>
+ * <div style="text-align:center">
  * <img src="../matrix/doc-files/AffineTransform.png" alt="Matrix representation of an affine transform">
- * </center>
+ * </div>
  *
  * <div class="section">Projective transform</div>
  * If the last matrix row does not met the above constraints, then the transform is not affine.
@@ -55,7 +55,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  * For example a square matrix of size 4×4 is used for transforming three-dimensional coordinates.
  * The transformed points {@code (x',y',z')} are computed as below:
  *
- * <center>{@include formulas.html#ProjectiveTransform}</center>
+ * <div style="text-align:center">{@include formulas.html#ProjectiveTransform}</div>
  *
  * <div class="section">Instantiation</div>
  * The easiest way to instantiate a {@code LinearTransform} is to use the {@link MathTransforms#linear(Matrix)}

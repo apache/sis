@@ -306,7 +306,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
 
     /**
      * Sets the {@code nilReason} attribute value. This method does nothing if a
-     * non-null {@linkplaih #reference} exists, since in such case the object can
+     * non-null {@linkplain #reference} exists, since in such case the object can
      * not be nil.
      *
      * @param nilReason the new attribute value.
