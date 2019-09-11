@@ -71,7 +71,8 @@
  *       {@linkplain org.apache.sis.util.iso.AbstractName#getParsedNames() list of parsed names}.</li>
  * </ul>
  *
- * <table class="compact" style="border-spacing:21pt 0; white-space: nowrap" summary="Anatomy of a name">
+ * <table class="compact" style="border-spacing:21pt 0; white-space: nowrap">
+ *   <caption>Components in scope, head, tail, path and tip</caption>
  *   <tr>
  *     <th>{@linkplain org.apache.sis.util.iso.AbstractName#scope() scope}.name</th>
  *     <th>{@linkplain org.apache.sis.util.iso.AbstractName#head() head}.{@linkplain org.apache.sis.util.iso.DefaultScopedName#tail() tail}</th>

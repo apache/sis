@@ -163,6 +163,9 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
     /**
      * Returns the singleton instance on deserialization, if any. If no instance already exist
      * in the virtual machine, we do not cache the instance (for now) for security reasons.
+     *
+     * @return the object to use after deserialization.
+     * @throws ObjectStreamException if the serialized object defines an unknown data type.
      */
     protected final Object readResolve() throws ObjectStreamException {
         return unique();

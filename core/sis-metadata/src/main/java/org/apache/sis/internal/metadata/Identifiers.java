@@ -35,8 +35,8 @@ import org.apache.sis.util.Static;
  * Methods working on {@link Identifier} instances.
  *
  * @author Martin Desruisseaux (Geomatys)
- * @since  1.0
- * @versio 1.0
+ * @since   1.0
+ * @version 1.0
  * @module
  */
 public final class Identifiers extends Static {

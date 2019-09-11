@@ -863,7 +863,9 @@
           <keywords>true</keywords>                             <!-- Adds HTML meta keyword tags to the generated files. -->
           <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
           <validateLinks>true</validateLinks>                   <!-- Validates content of package-list resources. -->
+          <detectJavaApiLink>false</detectJavaApiLink>          <!-- Let us declare link to Java API. -->
           <links>
+            <link>https://docs.oracle.com/javase/8/docs/api</link>
             <link>http://unitsofmeasurement.github.io/unit-api/site/apidocs</link>
             <link>http://www.geoapi.org/3.0/javadoc</link>
             <link>http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/javadoc</link>
@@ -914,7 +916,7 @@
           </groups>
 
           <!-- Internal packages to hide from javadoc. -->
-          <excludePackageNames>org.apache.sis.internal:org.apache.sis.util.resources:org.apache.sis.referencing.operation.provider:com:org.opengis</excludePackageNames>
+          <excludePackageNames>org.apache.sis.internal.*:org.apache.sis.util.resources:org.apache.sis.referencing.operation.provider</excludePackageNames>
 
           <!-- Custom taglets, some of them implemented in Java. -->
           <tags>

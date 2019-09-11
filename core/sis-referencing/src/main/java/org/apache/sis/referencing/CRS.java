@@ -1234,21 +1234,23 @@ public final class CRS extends Static {
      * Apache SIS allows 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
      * coordinate reference system to be built in two different ways as shown below:
      *
-     * <table class="compact" summary="Illustration of a compound CRS.">
-     * <tr><th>Hierarchical structure</th><th>Flat list</th></tr>
-     * <tr><td><blockquote>
+     * <div class="horizontal-flow">
+     * <div><p><b>Hierarchical structure</b></p>
+     * <blockquote>
      *   <code>CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)<br>
      *   <code>  ├─CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>)<br>
      *   <code>  │   ├─ProjectedCRS</code> — (<var>x</var>, <var>y</var>)<br>
      *   <code>  │   └─VerticalCRS</code> — (<var>z</var>)<br>
      *   <code>  └─TemporalCRS</code> — (<var>t</var>)
-     * </blockquote></td><td><blockquote>
+     * </blockquote></div>
+     * <div><p><b>Flat list</b></p>
+     * <blockquote>
      *   <code>CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)<br>
      *   <code>  ├─ProjectedCRS</code> — (<var>x</var>, <var>y</var>)<br>
      *   <code>  ├─VerticalCRS</code> — (<var>z</var>)<br>
      *   <code>  └─TemporalCRS</code> — (<var>t</var>)
      * </blockquote>
-     * </td></tr></table>
+     * </div></div>
      *
      * This method guaranteed that the returned list is a flat one as shown on the right side.
      * Note that such flat lists are the only one allowed by ISO/OGC standards for compound CRS.

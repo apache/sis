@@ -80,6 +80,9 @@ public final class SignReversalComment extends AbstractInternationalString imple
 
     /**
      * Invokes on deserialization for returning the canonical constant.
+     *
+     * @return the object to use after deserialization.
+     * @throws ObjectStreamException if the serialized object defines an unknown data type.
      */
     private Object readResolve() throws ObjectStreamException {
         return opposite ? OPPOSITE : SAME;

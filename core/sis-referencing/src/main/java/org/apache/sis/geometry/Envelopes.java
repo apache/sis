@@ -66,7 +66,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  * rectangle, projecting the four corners of the geographic envelope is not sufficient since we would miss
  * the southerner part.
  *
- * <center><table class="sis">
+ * <table class="sis">
  *   <caption>Example of curvature induced by a map projection</caption>
  *   <tr>
  *     <th>Envelope before map projection</th>
@@ -75,7 +75,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *     <td><img src="doc-files/GeographicArea.png" alt="Envelope in a geographic CRS"></td>
  *     <td><img src="doc-files/ConicArea.png" alt="Shape of the envelope transformed in a conic projection"></td>
  *   </tr>
- * </table></center>
+ * </table>
  *
  * Apache SIS tries to detect the curvature by transforming intermediate points in addition to the corners.
  * While optional, it is strongly recommended that all {@code MathTransform} implementations involved in the

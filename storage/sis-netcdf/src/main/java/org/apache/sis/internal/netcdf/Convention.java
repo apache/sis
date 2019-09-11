@@ -267,7 +267,7 @@ public class Convention {
      * <div class="note"><b>Example:</b>
      * consider the following netCDF file (simplified):
      *
-     * {@preformat netcdf
+     * {@preformat text
      *   dimensions:
      *     grid_y =  161 ;
      *     grid_x =  126 ;

@@ -62,21 +62,23 @@ import org.apache.sis.io.wkt.Convention;
  * This class is often used for defining 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
  * coordinate reference systems as an aggregation of simpler CRS. Below is two examples of such aggregations:
  *
- * <table class="compact" summary="Illustration of a compound CRS.">
- * <tr><th>Flat list</th><th>Hierarchical structure</th></tr>
- * <tr><td><blockquote>
+ * <div class="horizontal-flow">
+ * <div><p><b>Flat list</b></p>
+ * <blockquote>
  *   <code>CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)<br>
  *   <code>  ├─ProjectedCRS</code> — (<var>x</var>, <var>y</var>)<br>
  *   <code>  ├─VerticalCRS</code> — (<var>z</var>)<br>
  *   <code>  └─TemporalCRS</code> — (<var>t</var>)
- * </blockquote></td><td><blockquote>
+ * </blockquote></div>
+ * <div><p><b>Hierarchical structure</b></p>
+ * <blockquote>
  *   <code>CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)<br>
  *   <code>  ├─CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>)<br>
  *   <code>  │   ├─ProjectedCRS</code> — (<var>x</var>, <var>y</var>)<br>
  *   <code>  │   └─VerticalCRS</code> — (<var>z</var>)<br>
  *   <code>  └─TemporalCRS</code> — (<var>t</var>)
- * </blockquote></td></tr>
- * </table>
+ * </blockquote></div>
+ * </div>
  *
  * Strictly speaking, only the flat list on the left side is allowed by OGC/ISO specifications.
  * However Apache SIS relaxes this rule by allowing hierarchies as shown on the right side. This

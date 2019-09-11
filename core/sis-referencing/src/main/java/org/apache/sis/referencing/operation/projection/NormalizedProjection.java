@@ -91,19 +91,15 @@ import org.opengis.referencing.ReferenceIdentifier;
  * sides of {@code NormalizedProjection} respectively. Those matrices show only the basic parameters common to most projections.
  * Some projections will put more elements in those matrices.
  *
- * <center>
- *   <table class="compact" style="td {vertical-align: middle}" summary="Decomposition of a map projection">
- *     <tr>
- *       <td>{@include ../transform/formulas.html#SwapAxes}</td>
- *       <td>→</td>
- *       <td>{@include ../transform/formulas.html#NormalizeGeographic}</td>
- *       <td>→</td>
- *       <td>{@code NormalizedProjection}</td>
- *       <td>→</td>
- *       <td>{@include ../transform/formulas.html#DenormalizeCartesian}</td>
- *     </tr>
- *   </table>
- * </center>
+ * <div class="horizontal-flow" style="align-items:center">
+ *   <div>{@include ../transform/formulas.html#SwapAxes}</div>
+ *   <div>→</div>
+ *   <div>{@include ../transform/formulas.html#NormalizeGeographic}</div>
+ *   <div>→</div>
+ *   <div>{@code NormalizedProjection}</div>
+ *   <div>→</div>
+ *   <div>{@include ../transform/formulas.html#DenormalizeCartesian}</div>
+ * </div>
  *
  * <div class="note"><b>Note:</b>
  * The first matrix on the left side is for {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes
@@ -277,7 +273,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          * sphere at latitude φ will be used instead than the semi-major axis length in the denormalisation matrix.
          * In other words, if provided then <var>a</var> is replaced by <var>R</var><sub>c</sub> below:
          *
-         * <center>{@include ../transform/formulas.html#DenormalizeCartesian}</center>
+         * <div style="text-align:center">{@include ../transform/formulas.html#DenormalizeCartesian}</div>
          *
          * <p>This enumeration shall be used <strong>only</strong> when the user requested explicitly spherical
          * formulas, for example the <cite>"Mercator (Spherical)"</cite> projection (EPSG:1026), but the figure

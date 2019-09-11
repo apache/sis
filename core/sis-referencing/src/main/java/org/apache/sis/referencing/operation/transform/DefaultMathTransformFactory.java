@@ -132,7 +132,7 @@ import org.apache.sis.util.resources.Errors;
  * files for example, which often use spherical models instead than ellipsoidal ones.</p>
  *
  *
- * <div class="section"><a name="Obligation">Mandatory and optional parameters</a></div>
+ * <div class="section"><a id="Obligation">Mandatory and optional parameters</a></div>
  * Parameters are flagged as either <cite>mandatory</cite> or <cite>optional</cite>.
  * A parameter may be mandatory and still have a default value. In the context of this package, "mandatory"
  * means that the parameter is an essential part of the projection defined by standards.

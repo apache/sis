@@ -68,9 +68,10 @@ import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
  * {@linkplain #height height} field values. The default implementation of methods listed in the
  * right column can handle such cases.
  *
- * <center><table class="compact" summary="Anti-meridian spanning support."><tr><td>
+ * <div class="horizontal-flow">
+ * <div>
  *   <img style="vertical-align: middle" src="doc-files/AntiMeridian.png" alt="Envelope spannning the anti-meridian">
- * </td><td style="vertical-align: middle">
+ * </div><div>
  * Supported methods:
  * <ul>
  *   <li>{@link #getMinimum(int)}</li>
@@ -87,7 +88,7 @@ import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
  *   <li>{@link #add(Rectangle2D)}</li>
  *   <li>{@link #add(double,double)}</li>
  * </ul>
- * </td></tr></table></center>
+ * </div></div>
  *
  * The {@link #getMinX()}, {@link #getMinY()}, {@link #getMaxX()}, {@link #getMaxY()},
  * {@link #getCenterX()}, {@link #getCenterY()}, {@link #getWidth()} and {@link #getHeight()}
