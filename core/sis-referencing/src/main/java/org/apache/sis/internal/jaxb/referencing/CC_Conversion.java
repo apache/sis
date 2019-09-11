@@ -72,7 +72,7 @@ public final class CC_Conversion extends PropertyType<CC_Conversion, Conversion>
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:Conversion>} XML element.
      *
-     * @param  conversion  the element to marshall.
+     * @param  conversion  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

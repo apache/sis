@@ -135,7 +135,7 @@ public final strictfp class MetadataTest extends TestCase {
     }
 
     /**
-     * Programmatically creates the metadata to marshall, or to compare against the unmarshalled metadata.
+     * Programmatically creates the metadata to marshal, or to compare against the unmarshalled metadata.
      *
      * @return the hard-coded representation of {@value #XML_FILE} content.
      */

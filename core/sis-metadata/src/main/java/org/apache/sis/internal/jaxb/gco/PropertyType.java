@@ -184,7 +184,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
             }
         }
         /*
-         * Verifies if the object to marshall can be replaced by a xlink or uuidref.
+         * Verifies if the object to marshal can be replaced by a xlink or uuidref.
          * First, check if we can use a xlink:href="#foo" reference to a gml:id="foo".
          * Only if no gml:id was found, check for user-defined xlink or uuidref.
          */

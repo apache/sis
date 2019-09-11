@@ -82,7 +82,7 @@ public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, Referen
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gmd:RS_ReferenceSystem>} XML element.
      *
-     * @param  metadata  the metadata element to marshall.
+     * @param  metadata  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override

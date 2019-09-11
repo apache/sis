@@ -24,7 +24,7 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
 
 /**
  * JAXB adapter for XML {@code <GO_CharacterString>} element mapped to {@link InternationalString}.
- * This adapter is similar to {@link StringAdapter}, except that the {@code unmarshall} method does
+ * This adapter is similar to {@link StringAdapter}, except that the {@code unmarshal} method does
  * not need to localize {@code InternationalString} instances for the locale specified in the current
  * marshaller context.
  *

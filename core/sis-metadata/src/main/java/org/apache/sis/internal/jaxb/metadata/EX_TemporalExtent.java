@@ -62,7 +62,7 @@ public final class EX_TemporalExtent extends PropertyType<EX_TemporalExtent, Tem
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gex:EX_TemporalExtent>} XML element.
      *
-     * @param  metadata  the metadata element to marshall.
+     * @param  metadata  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override

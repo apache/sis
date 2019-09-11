@@ -62,7 +62,7 @@ public final class CD_Ellipsoid extends PropertyType<CD_Ellipsoid, Ellipsoid> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:Ellipsoid>} XML element.
      *
-     * @param  ellipsoid  the element to marshall.
+     * @param  ellipsoid  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

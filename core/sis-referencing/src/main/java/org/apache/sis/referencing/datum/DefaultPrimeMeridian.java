@@ -418,7 +418,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
-     * Invoked by JAXB for obtaining the Greenwich longitude to marshall together with its {@code "uom"} attribute.
+     * Invoked by JAXB for obtaining the Greenwich longitude to marshal together with its {@code "uom"} attribute.
      */
     @XmlElement(name = "greenwichLongitude", required = true)
     private Measure getGreenwichMeasure() {
