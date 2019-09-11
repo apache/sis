@@ -20,6 +20,8 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Map;
+import java.util.HashMap;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import javax.xml.bind.Marshaller;
@@ -66,6 +68,7 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 
 // Test dependencies
+
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.xml.DocumentComparator;
@@ -258,20 +261,16 @@ public final strictfp class MetadataTest extends TestCase {
              */
             {
                 final DefaultCoordinateSystemAxis axis = new DefaultCoordinateSystemAxis(
-                        singletonMap(DefaultCoordinateSystemAxis.NAME_KEY, new NamedIdentifier(null, "Depth")),
-                        "d", AxisDirection.DOWN, Units.METRE);
+                        nameAndIdentifier("depth", "Depth", null), "D", AxisDirection.DOWN, Units.METRE);
 
                 final DefaultVerticalCS cs = new DefaultVerticalCS(
-                        singletonMap(DefaultVerticalCS.NAME_KEY, new NamedIdentifier(null, "Depth")),
-                        axis);
+                        nameAndIdentifier("depth", "Depth", null), axis);
 
                 final DefaultVerticalDatum datum = new DefaultVerticalDatum(
-                        singletonMap(DefaultVerticalDatum.NAME_KEY, new NamedIdentifier(null, "D28")),
-                        VerticalDatumType.OTHER_SURFACE);
+                        nameAndIdentifier("D28", "Depth below D28", "For testing purpose"), VerticalDatumType.OTHER_SURFACE);
 
                 final DefaultVerticalCRS vcrs = new DefaultVerticalCRS(
-                        singletonMap(DefaultVerticalCRS.NAME_KEY, new NamedIdentifier(null, "Depth below D28")),
-                        datum, cs);
+                        nameAndIdentifier("D28", "Depth below D28", "CRS for testing purpose"), datum, cs);
 
                 final DefaultTemporalExtent temporal = new DefaultTemporalExtent();
                 setTemporalBounds(temporal, "1990-06-05", "1990-07-02");
@@ -361,6 +360,19 @@ public final strictfp class MetadataTest extends TestCase {
             metadata.setDistributionInfo(singleton(distributionInfo));
         }
         return metadata;
+    }
+
+    /**
+     * Returns a property map with a name and identifier. This is used for creating CRS components.
+     */
+    private static Map<String,?> nameAndIdentifier(final String identifier, final String name, final String scope) {
+        final Map<String,Object> properties = new HashMap<>(4);
+        properties.put(DefaultVerticalDatum.NAME_KEY, new NamedIdentifier(null, name));
+        properties.put(DefaultVerticalDatum.IDENTIFIERS_KEY, new NamedIdentifier(null, "test", identifier, null, null));
+        if (scope != null) {
+            properties.put(DefaultVerticalDatum.SCOPE_KEY, scope);
+        }
+        return properties;
     }
 
     /**

@@ -402,14 +402,18 @@
               <gmd:maximumValue> <gco:Real>25</gco:Real> </gmd:maximumValue>
               <gmd:verticalCRS>
                 <gml:VerticalCRS gml:id="depth_D28">
+                  <gml:identifier codeSpace="test">D28</gml:identifier>
                   <gml:name>Depth below D28</gml:name>
+                  <gml:scope>CRS for testing purpose</gml:scope>
                   <gml:verticalCS>
                     <gml:VerticalCS gml:id="depth">
+                      <gml:identifier codeSpace="test">depth</gml:identifier>
                       <gml:name>Depth</gml:name>
                       <gml:axis>
-                        <gml:CoordinateSystemAxis uom="urn:ogc:def:uom:EPSG::9001" gml:id="d">
+                        <gml:CoordinateSystemAxis uom="urn:ogc:def:uom:EPSG::9001" gml:id="depth-axis">
+                          <gml:identifier codeSpace="test">depth</gml:identifier>
                           <gml:name>Depth</gml:name>
-                          <gml:axisAbbrev>d</gml:axisAbbrev>
+                          <gml:axisAbbrev>D</gml:axisAbbrev>
                           <gml:axisDirection codeSpace="EPSG">down</gml:axisDirection>
                         </gml:CoordinateSystemAxis>
                       </gml:axis>
@@ -417,7 +421,9 @@
                   </gml:verticalCS>
                   <gml:verticalDatum>
                     <gml:VerticalDatum gml:id="D28">
-                      <gml:name>D28</gml:name>
+                      <gml:identifier codeSpace="test">D28</gml:identifier>
+                      <gml:name>Depth below D28</gml:name>
+                      <gml:scope>For testing purpose</gml:scope>
                     </gml:VerticalDatum>
                   </gml:verticalDatum>
                 </gml:VerticalCRS>
