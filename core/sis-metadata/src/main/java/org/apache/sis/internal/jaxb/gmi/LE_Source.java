@@ -62,7 +62,7 @@ public class LE_Source extends DefaultSource {
      * using the {@code "gmi"} namespace if necessary.
      *
      * @param  original  the original metadata provided by the user.
-     * @return the metadata to marshall.
+     * @return the metadata to marshal.
      */
     public static DefaultSource castOrCopy(final Source original) {
         if (original != null && !(original instanceof LE_Source)) {

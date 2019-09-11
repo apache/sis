@@ -62,7 +62,7 @@ public final class MI_Operation extends PropertyType<MI_Operation, Operation> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mac:MI_Operation>} XML element.
      *
-     * @param  metadata  the metadata element to marshall.
+     * @param  metadata  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override

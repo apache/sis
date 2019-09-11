@@ -64,7 +64,7 @@ public final class MI_AcquisitionInformation extends
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mac:MI_AcquisitionInformation>} XML element.
      *
-     * @param  metadata  the metadata element to marshall.
+     * @param  metadata  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override

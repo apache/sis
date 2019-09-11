@@ -62,7 +62,7 @@ public final class CD_PrimeMeridian extends PropertyType<CD_PrimeMeridian, Prime
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:PrimeMeridian>} XML element.
      *
-     * @param  datum  the element to marshall.
+     * @param  datum  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

@@ -66,7 +66,7 @@ public final class CC_GeneralParameterValue extends PropertyType<CC_GeneralParam
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:ParameterValue>} or {@code <gml:ParameterValueGroup>} XML element.
      *
-     * @param  parameter  the element to marshall.
+     * @param  parameter  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

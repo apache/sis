@@ -62,7 +62,7 @@ public final class CI_Address extends PropertyType<CI_Address, Address> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <cit:CI_Address>} XML element.
      *
-     * @param  metadata  the metadata element to marshall.
+     * @param  metadata  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override

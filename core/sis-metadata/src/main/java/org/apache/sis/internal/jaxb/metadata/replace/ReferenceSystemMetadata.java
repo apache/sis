@@ -33,7 +33,16 @@ import org.apache.sis.xml.Namespaces;
  * An implementation of {@link ReferenceSystem} marshalled as specified in ISO 19115.
  * This is different than the {@code ReferenceSystem} implementation provided in the
  * referencing module, since the later marshals the CRS as specified in GML (close
- * to ISO 19111 model).
+ * to ISO 19111 model). This class contains only CRS identification as below:
+ *
+ * {@preformat text
+ *   mrs:MD_ReferenceSystem
+ *   ├─mrs:referenceSystemIdentifier  :  mcc:MD_Identifier
+ *   └─mrs:referenceSystemType        :  mrs:MD_ReferenceSystemTypeCode
+ * }
+ *
+ * The {@code referenceSystemType} attribute is currently missing.
+ * See <a href="https://issues.apache.org/jira/browse/SIS-470">SIS-470</a>.
  *
  * <p>Note that this implementation is very simple and serves no other purpose than being
  * a container for XML parsing or formatting. For real referencing service, consider using
@@ -45,6 +54,7 @@ import org.apache.sis.xml.Namespaces;
  * @version 1.0
  *
  * @see org.apache.sis.referencing.AbstractReferenceSystem
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-431">SIS-431</a>
  *
  * @since 0.3
  * @module

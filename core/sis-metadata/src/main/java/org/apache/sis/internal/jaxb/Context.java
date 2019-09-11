@@ -330,7 +330,7 @@ public final class Context extends MarshalContext {
     /**
      * Sets the locale to the given value. The old locales are remembered and will
      * be restored by the next call to {@link #pull()}. This method can be invoked
-     * when marshalling object that need to marshall their children in a different
+     * when marshalling object that need to marshal their children in a different
      * locale, like below:
      *
      * {@preformat java

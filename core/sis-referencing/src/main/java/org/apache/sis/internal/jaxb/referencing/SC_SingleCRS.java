@@ -63,7 +63,7 @@ public final class SC_SingleCRS extends PropertyType<SC_SingleCRS, SingleCRS> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:AbstractSingleCRS>} XML element.
      *
-     * @param  crs  the element to marshall.
+     * @param  crs  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

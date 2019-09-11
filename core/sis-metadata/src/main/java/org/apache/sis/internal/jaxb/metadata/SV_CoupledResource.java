@@ -61,7 +61,7 @@ public final class SV_CoupledResource extends PropertyType<SV_CoupledResource, C
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <srv:SV_CoupledResource>} XML element.
      *
-     * @param  metadata  the metadata element to marshall.
+     * @param  metadata  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override

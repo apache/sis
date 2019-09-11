@@ -62,7 +62,7 @@ public class MD_Medium extends PropertyType<MD_Medium, Medium> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrd:MD_Medium>} XML element.
      *
-     * @param  metadata  the metadata element to marshall.
+     * @param  metadata  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override

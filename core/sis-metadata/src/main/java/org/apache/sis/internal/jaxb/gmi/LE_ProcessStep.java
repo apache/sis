@@ -64,7 +64,7 @@ public class LE_ProcessStep extends DefaultProcessStep {
      * using the {@code "gmi"} namespace if necessary.
      *
      * @param  original  the original metadata provided by the user.
-     * @return the metadata to marshall.
+     * @return the metadata to marshal.
      */
     public static DefaultProcessStep castOrCopy(final ProcessStep original) {
         if (original != null && !(original instanceof LE_ProcessStep)) {

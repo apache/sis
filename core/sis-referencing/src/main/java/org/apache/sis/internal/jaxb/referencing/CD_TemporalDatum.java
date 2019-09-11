@@ -62,7 +62,7 @@ public final class CD_TemporalDatum extends PropertyType<CD_TemporalDatum, Tempo
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:TemporalDatum>} XML element.
      *
-     * @param  datum  the element to marshall.
+     * @param  datum  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

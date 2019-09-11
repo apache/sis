@@ -61,7 +61,7 @@ public final class MD_AttributeGroup extends PropertyType<MD_AttributeGroup, Att
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrc:MD_AttributeGroup>} XML element.
      *
-     * @param  metadata  the metadata element to marshall.
+     * @param  metadata  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override

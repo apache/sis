@@ -68,7 +68,7 @@ public final strictfp class EnumMarshallingTest extends TestCase {
         final String xml = marshal(id, VERSION_2014);
         assertXmlEquals(expected, xml, "xmlns:*");
         /*
-         * Unmarshall the above XML and verify that we find all the topic categories.
+         * Unmarshal the above XML and verify that we find all the topic categories.
          */
         final Collection<TopicCategory> unmarshalled = unmarshal(DefaultDataIdentification.class, expected).getTopicCategories();
         assertSetEquals(topics, unmarshalled);

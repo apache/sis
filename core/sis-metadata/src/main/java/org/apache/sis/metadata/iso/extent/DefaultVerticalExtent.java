@@ -117,7 +117,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
     {
         if (!Double.isNaN(minimumValue)) this.minimumValue = minimumValue;
         if (!Double.isNaN(maximumValue)) this.maximumValue = maximumValue;
-        this.verticalCRS  = verticalCRS;
+        this.verticalCRS = verticalCRS;
     }
 
     /**

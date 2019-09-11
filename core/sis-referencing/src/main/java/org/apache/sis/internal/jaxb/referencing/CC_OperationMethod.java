@@ -82,7 +82,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:OperationMethod>} XML element.
      *
-     * @param  method The element to marshall.
+     * @param  method  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

@@ -230,7 +230,7 @@ public final strictfp class DefaultEllipsoidTest extends TestCase {
         assertEquals("inverseFlattening", 293.46630765562986, ellipsoid.getInverseFlattening(), 1E-12);
         assertEquals("axisUnit",          Units.FOOT,         ellipsoid.getAxisUnit());
         /*
-         * Marshall and compare to the original file.
+         * Marshal and compare to the original file.
          */
         assertMarshalEqualsFile(ELLIPSOID_FILE, ellipsoid, "xmlns:*", "xsi:schemaLocation");
     }
@@ -256,7 +256,7 @@ public final strictfp class DefaultEllipsoidTest extends TestCase {
         assertEquals("inverseFlattening", Double.POSITIVE_INFINITY, ellipsoid.getInverseFlattening(), STRICT);
         assertEquals("axisUnit",          Units.METRE,              ellipsoid.getAxisUnit());
         /*
-         * Marshall and compare to the original file.
+         * Marshal and compare to the original file.
          */
         assertMarshalEqualsFile(SPHERE_FILE, ellipsoid, "xmlns:*", "xsi:schemaLocation");
     }

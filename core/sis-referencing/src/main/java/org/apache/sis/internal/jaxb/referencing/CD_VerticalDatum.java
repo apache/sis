@@ -62,7 +62,7 @@ public final class CD_VerticalDatum extends PropertyType<CD_VerticalDatum, Verti
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:VerticalDatum>} XML element.
      *
-     * @param  datum  the element to marshall.
+     * @param  datum  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

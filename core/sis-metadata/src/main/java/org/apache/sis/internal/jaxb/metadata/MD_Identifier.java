@@ -64,7 +64,7 @@ public class MD_Identifier extends PropertyType<MD_Identifier, Identifier> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mcc:MD_Identifier>} XML element.
      *
-     * @param  metadata  the metadata element to marshall.
+     * @param  metadata  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
