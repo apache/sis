@@ -62,7 +62,7 @@ public final class MD_ScopeDescription extends PropertyType<MD_ScopeDescription,
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mcc:MD_ScopeDescription>} XML element.
      *
-     * @param  metadata  the metadata element to marshall.
+     * @param  metadata  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override

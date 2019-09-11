@@ -62,7 +62,7 @@ public final class CS_CoordinateSystemAxis extends PropertyType<CS_CoordinateSys
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:CoordinateSystemAxis>} XML element.
      *
-     * @param  axis  the element to marshall.
+     * @param  axis  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

@@ -64,7 +64,7 @@ final class SC_GeographicCRS extends PropertyType<SC_GeographicCRS, GeographicCR
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:GeodeticCRS>} XML element.
      *
-     * @param  cs  the element to marshall.
+     * @param  cs  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

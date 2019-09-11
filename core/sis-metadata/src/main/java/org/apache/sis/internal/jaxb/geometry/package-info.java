@@ -21,7 +21,7 @@
  * implementation. We must use adapters since JAXB can not annotate interfaces.
  * Consequently the purpose of these adapters is to replace interfaces.
  *
- * <p>Every time JAXB tries to marshall or unmarshall an interface, the adapter
+ * <p>Every time JAXB tries to marshal or unmarshal an interface, the adapter
  * will be substituted to that interface.</p>
  *
  * @author  Guilhem Legal (Geomatys)

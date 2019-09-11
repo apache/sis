@@ -61,7 +61,7 @@ public final class MD_FeatureTypeInfo extends PropertyType<MD_FeatureTypeInfo, D
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrc:MD_FeatureTypeInfo>} XML element.
      *
-     * @param  metadata  the metadata element to marshall.
+     * @param  metadata  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override

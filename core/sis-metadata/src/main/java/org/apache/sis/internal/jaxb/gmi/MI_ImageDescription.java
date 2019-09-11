@@ -64,7 +64,7 @@ public class MI_ImageDescription extends DefaultImageDescription {
      * using the {@code "gmi"} namespace if necessary.
      *
      * @param  original  the original metadata provided by the user.
-     * @return the metadata to marshall.
+     * @return the metadata to marshal.
      */
     public static DefaultImageDescription castOrCopy(final ImageDescription original) {
         if (original != null && !(original instanceof MI_ImageDescription)) {

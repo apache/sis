@@ -78,7 +78,7 @@ public final strictfp class CustomMetadataTest extends TestCase {
                     new Class<?>[] { Citation.class }, handler);
         /*
          * Wrap the metadata in a DefaultMetadata, and ensure
-         * we can marshall it without an exception being throw.
+         * we can marshal it without an exception being throw.
          */
         data = new DefaultCitation(data);
         final String xml = XML.marshal(data);

@@ -64,7 +64,7 @@ public class MI_Metadata extends DefaultMetadata {
      * using the {@code "gmi"} namespace if necessary.
      *
      * @param  original  the original metadata provided by the user.
-     * @return the metadata to marshall.
+     * @return the metadata to marshal.
      */
     public static DefaultMetadata castOrCopy(final Metadata original) {
         if (original != null && !(original instanceof MI_Metadata)) {

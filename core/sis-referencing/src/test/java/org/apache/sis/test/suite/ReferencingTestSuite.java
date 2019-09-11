@@ -265,6 +265,7 @@ import org.junit.BeforeClass;
     org.apache.sis.test.integration.CoordinateReferenceSystemTest.class,
     org.apache.sis.test.integration.CoordinateOperationTest.class,
     org.apache.sis.test.integration.DatumShiftTest.class,
+    org.apache.sis.test.integration.MetadataVerticalTest.class,
     org.apache.sis.test.integration.MetadataTest.class,
     org.apache.sis.test.integration.ConsistencyTest.class
 })

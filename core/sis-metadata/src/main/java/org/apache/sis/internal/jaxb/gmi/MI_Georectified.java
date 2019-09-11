@@ -64,7 +64,7 @@ public class MI_Georectified extends DefaultGeorectified {
      * using the {@code "gmi"} namespace if necessary.
      *
      * @param  original  the original metadata provided by the user.
-     * @return the metadata to marshall.
+     * @return the metadata to marshal.
      */
     public static DefaultGeorectified castOrCopy(final Georectified original) {
         if (original != null && !(original instanceof MI_Georectified)) {

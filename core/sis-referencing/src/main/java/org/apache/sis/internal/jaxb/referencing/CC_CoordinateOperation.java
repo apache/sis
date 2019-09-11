@@ -63,7 +63,7 @@ public final class CC_CoordinateOperation extends PropertyType<CC_CoordinateOper
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:CoordinateOperation>} XML element.
      *
-     * @param  conversion  the element to marshall.
+     * @param  conversion  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

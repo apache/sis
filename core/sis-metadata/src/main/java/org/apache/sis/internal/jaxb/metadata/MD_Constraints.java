@@ -62,7 +62,7 @@ public final class MD_Constraints extends PropertyType<MD_Constraints, Constrain
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mco:MD_Constraints>} XML element.
      *
-     * @param  metadata  the metadata element to marshall.
+     * @param  metadata  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
