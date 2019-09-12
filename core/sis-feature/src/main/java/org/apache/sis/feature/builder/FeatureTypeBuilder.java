@@ -551,15 +551,6 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * @deprecated Renamed {@link #setDefaultMultiplicity(int, int)}. A cardinality is the actual number of elements
-     * in a set, while multiplicity is the range of cardinality that a set can have.
-     */
-    @Deprecated
-    public FeatureTypeBuilder setDefaultCardinality(final int minimumOccurs, final int maximumOccurs) {
-        return setDefaultMultiplicity(minimumOccurs, maximumOccurs);
-    }
-
-    /**
      * Sets the default minimum and maximum number of next attributes and associations to add.
      * Those defaults will applied to newly created attributes or associations,
      * for example in next calls to {@link #addAttribute(Class)}.

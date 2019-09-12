@@ -363,14 +363,4 @@ public class WarningListeners<S> implements Localized {
         return (current != null) ? UnmodifiableArrayList.wrap(current) : Collections.emptyList();
     }
 
-    /**
-     * Returns {@code true} if this object contains at least one listener.
-     *
-     * @return {@code true} if this object contains at least one listener, {@code false} otherwise.
-     *
-     * @since 0.4
-     */
-    public synchronized boolean hasListeners() {
-        return listeners != null;
-    }
 }

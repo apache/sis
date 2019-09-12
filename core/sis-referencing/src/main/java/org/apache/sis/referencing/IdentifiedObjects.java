@@ -384,14 +384,6 @@ public final class IdentifiedObjects extends Static {
     }
 
     /**
-     * @deprecated Renamed {@link #getSimpleNameOrIdentifier(IdentifiedObject)}.
-     */
-    @Deprecated
-    public static String getUnicodeIdentifier(final IdentifiedObject object) {
-        return getSimpleNameOrIdentifier(object);
-    }
-
-    /**
      * Looks up a URN, such as {@code "urn:ogc:def:crs:EPSG:9.1:4326"}, of the specified object.
      * This method searches in all {@linkplain org.apache.sis.referencing.factory.GeodeticAuthorityFactory geodetic
      * authority factories} known to SIS for an object {@linkplain org.apache.sis.util.ComparisonMode#APPROXIMATE

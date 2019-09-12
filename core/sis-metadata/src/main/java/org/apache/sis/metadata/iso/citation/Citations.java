@@ -880,17 +880,6 @@ public final class Citations extends Static {
     }
 
     /**
-     * @deprecated Renamed as {@link #toCodeSpace(Citation)}. The previous name was confusing because this
-     * method does not return the namespace of the given citation, but instead represents it as a namespace.
-     *
-     * @since 0.8
-     */
-    @Deprecated
-    public static String getCodeSpace(final Citation citation) {
-        return toCodeSpace(citation);
-    }
-
-    /**
      * Removes characters that are ignorable according Unicode specification.
      *
      * @param  identifier  the character sequence from which to remove ignorable characters, or {@code null}.

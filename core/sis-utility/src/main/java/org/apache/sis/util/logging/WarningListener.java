@@ -42,7 +42,6 @@ import java.util.logging.Filter;
  * @param <S>  the base type of objects that emit warnings (the <cite>source</cite>).
  *
  * @see WarningListeners
- * @see org.apache.sis.storage.DataStore#addWarningListener(WarningListener)
  * @see org.apache.sis.storage.event.StoreListener
  *
  * @since 0.3

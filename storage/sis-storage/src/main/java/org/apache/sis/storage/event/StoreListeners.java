@@ -617,16 +617,6 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
         return false;
     }
 
-    /**
-     * Returns {@code true} if this object contains at least one listener.
-     *
-     * @return {@code true} if this object contains at least one listener, {@code false} otherwise.
-     */
-    @Override
-    @Deprecated
-    public boolean hasListeners() {
-        return hasListeners(StoreEvent.class);
-    }
 
     /**
      * @deprecated Replaced by {@code addListener(listener, WarningEvent.class)}.

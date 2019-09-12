@@ -149,19 +149,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @param  subTransform           the sub-transform to apply on modified coordinates.
      * @param  numTrailingCoordinates   number of trailing coordinates to pass through.
      * @return a pass-through transform, not necessarily a {@code PassThroughTransform} instance.
-     *
-     * @deprecated Moved to {@link MathTransforms#passThrough(int, MathTransform, int)}.
      */
-    @Deprecated
-    public static MathTransform create(final int firstAffectedCoordinate,
-                                       final MathTransform subTransform,
-                                       final int numTrailingCoordinates)
-    {
-        return MathTransforms.passThrough(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
-    }
-
-    /** TODO: rename create(…) and recycle above javadoc. */
-    static MathTransform create0(final int firstAffectedCoordinate, final MathTransform subTransform, final int numTrailingCoordinates) {
+    static MathTransform create(final int firstAffectedCoordinate, final MathTransform subTransform, final int numTrailingCoordinates) {
         Matrix matrix = MathTransforms.getMatrix(subTransform);
         if (matrix != null) {
             return newInstance(firstAffectedCoordinate, matrix, numTrailingCoordinates);
