@@ -109,7 +109,7 @@ public final class Modules {
      *
      * @see org.apache.sis.util.Version
      */
-    public static final int MINOR_VERSION = 0;
+    public static final int MINOR_VERSION = 1;
 
     /**
      * The prefix of all classnames in Apache SIS, including a trailing dot.
