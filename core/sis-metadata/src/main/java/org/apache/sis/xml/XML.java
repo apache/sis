@@ -75,7 +75,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <tr><td>{@link #LOCALE}</td>             <td>{@link Locale}</td>            <td>for specifying the locale to use for international strings and code lists.</td></tr>
  *   <tr><td>{@link #TIMEZONE}</td>           <td>{@link TimeZone}</td>          <td>for specifying the timezone to use for dates and times.</td></tr>
  *   <tr><td>{@link #SCHEMAS}</td>            <td>{@link Map}</td>               <td>for specifying the root URL of metadata schemas to use.</td></tr>
- *   <tr><td>{@link #DEFAULT_NAMESPACE}</td>  <td>{@link String}</td>            <td>for specifying the default namespace of the XML document to write.</td></tr>
  *   <tr><td>{@link #GML_VERSION}</td>        <td>{@link Version}</td>           <td>for specifying the GML version of the document to be (un)marshalled.</td></tr>
  *   <tr><td>{@link #METADATA_VERSION}</td>   <td>{@link Version}</td>           <td>for specifying the metadata version of the document to be (un)marshalled.</td></tr>
  *   <tr><td>{@link #RESOLVER}</td>           <td>{@link ReferenceResolver}</td> <td>for replacing {@code xlink} or {@code uuidref} attributes by the actual object to use.</td></tr>
@@ -174,16 +173,6 @@ public final class XML extends Static {
      */
     public static final String SCHEMAS = "org.apache.sis.xml.schemas";
     // If more keys are documented, update the Pooled.SCHEMAS_KEY array.
-
-    /**
-     * Specifies the default namespace of the XML document to write.
-     * An example of value for this key is {@code "http://www.isotc211.org/2005/gmd"}.
-     *
-     * @deprecated This property is no longer honored by Apache SIS 1.0.
-     *             Use {@link javax.xml.bind.annotation.XmlSchema} instead.
-     */
-    @Deprecated
-    public static final String DEFAULT_NAMESPACE = "org.apache.sis.xml.defaultNamespace";
 
     /**
      * Specifies the GML version of the document to be marshalled or unmarshalled.

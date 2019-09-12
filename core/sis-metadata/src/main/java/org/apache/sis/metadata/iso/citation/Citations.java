@@ -25,7 +25,6 @@ import java.util.Locale;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.referencing.IdentifiedObject;                // For javadoc
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
@@ -78,7 +77,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonEmptyIterator;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -807,27 +806,6 @@ public final class Citations extends Static {
      */
     public static String getIdentifier(final Citation citation) {
         return Identifiers.getIdentifier(citation, false);
-    }
-
-    /**
-     * Infers a valid Unicode identifier from the given citation, or returns {@code null} if none.
-     *
-     * @param  citation  the citation for which to get the Unicode identifier, or {@code null}.
-     * @return a non-empty Unicode identifier for the given citation without leading or trailing whitespaces,
-     *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
-     *
-     * @see org.apache.sis.referencing.ImmutableIdentifier
-     * @see org.apache.sis.referencing.IdentifiedObjects#getSimpleNameOrIdentifier(IdentifiedObject)
-     * @see org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence)
-     *
-     * @since 0.6
-     *
-     * @deprecated Replaced by {@link #toCodeSpace(Citation)} in order to reduce the risk of inconsistent
-     *             behavior if those two methods are mixed.
-     */
-    @Deprecated
-    public static String getUnicodeIdentifier(final Citation citation) {
-        return removeIgnorableCharacters(Identifiers.getIdentifier(citation, true));
     }
 
     /**

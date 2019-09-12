@@ -19,16 +19,11 @@ package org.apache.sis.referencing.datum;
 import java.util.Random;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.measure.Units;
-import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
-import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
-import static java.lang.StrictMath.*;
 import static org.apache.sis.test.ReferencingAssert.*;
 
 
@@ -111,82 +106,6 @@ public final strictfp class DefaultEllipsoidTest extends TestCase {
         final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
         assertEquals("flatteningDifference", 0.0,         e.flatteningDifference(GeodeticDatumMock.WGS84.getEllipsoid()), STRICT);
         assertEquals("flatteningDifference", 1.41927E-05, e.flatteningDifference(GeodeticDatumMock.ED50 .getEllipsoid()), 1E-10);
-    }
-
-    /**
-     * Tests the orthodromic distances computed by {@link DefaultEllipsoid}. There is actually two algorithms:
-     * one for the ellipsoidal model, and a simpler one for spherical model. This method tests the ellipsoidal
-     * model using known values of nautical mile at different latitude.
-     *
-     * <p>This method performs the test on the Clark 1866 ellipsoid, which was the basis for the Imperial and
-     * U.S. definitions prior the First International Extraordinary Hydrographic Conference in Monaco (1929).</p>
-     */
-    @Test
-    public void testOrthodromicDistance() {
-        final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.NAD27.getEllipsoid()); // Clark 1866
-        assertEquals("Nautical mile at equator",    1842.78, e.orthodromicDistance(0,    -HM,   0,    +HM), 0.01);
-        assertEquals("Nautical mile at North pole", 1861.67, e.orthodromicDistance(0,  90-HM*2, 0,  90   ), 0.02);
-        assertEquals("Nautical mile at South pole", 1861.67, e.orthodromicDistance(0, -90+HM*2, 0, -90   ), 0.02);
-        assertEquals("International nautical mile", 1852.00, e.orthodromicDistance(0,  45-HM,   0,  45+HM), 0.20);
-        /*
-         * Test parallel segments of increasing length at random positions on the equator.
-         */
-        final Random random = TestUtilities.createRandomNumberGenerator();
-        final double semiMajor = e.getSemiMajorAxis();
-        for (double length = 0; length <= Longitude.MAX_VALUE; length += 0.5) {
-            final double λ = nextLongitude(random);
-            assertEquals(semiMajor * toRadians(length), e.orthodromicDistance(λ, 0, λ+length, 0), 0.2);
-        }
-    }
-
-    /**
-     * Tests the orthodromic distances computed by {@link DefaultEllipsoid} on a sphere,
-     * and compares them with the distances computed by {@link Sphere}.
-     */
-    @Test
-    @DependsOnMethod("testOrthodromicDistance")
-    public void testOrthodromicDistanceOnSphere() {
-        /*
-         * Creates instance of DefaultEllipsoid and Sphere with the same properties.
-         * Those instances will use different formulas for orthodromic distances, which we will compare.
-         */
-        final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.SPHERE.getEllipsoid());
-        final double radius = e.getSemiMajorAxis();
-        final Sphere s = new Sphere(IdentifiedObjects.getProperties(e), radius, false, e.getAxisUnit());
-        assertTrue(e.isSphere());
-        assertTrue(s.isSphere());
-        /*
-         * Test parallel segments of increasing length at random positions on the equator.
-         */
-        final Random random = TestUtilities.createRandomNumberGenerator();
-        for (double length = 0; length <= Longitude.MAX_VALUE; length += 0.5) {
-            final double λ = nextLongitude(random);
-            final double distance = radius * toRadians(length);
-            assertEquals(distance, s.orthodromicDistance(λ, 0, λ+length, 0), SPHERICAL_TOLERANCE);
-            assertEquals(distance, e.orthodromicDistance(λ, 0, λ+length, 0), SPHERICAL_TOLERANCE);
-        }
-        /*
-         * Test meridian segments from equator to increasing latitudes.
-         */
-        for (double φ = Latitude.MIN_VALUE; φ <= Latitude.MAX_VALUE; φ += 0.5) {
-            final double λ = nextLongitude(random);
-            final double distance = radius * toRadians(abs(φ));
-            assertEquals(distance, s.orthodromicDistance(λ, 0, λ, φ), SPHERICAL_TOLERANCE);
-            assertEquals(distance, e.orthodromicDistance(λ, 0, λ, φ), SPHERICAL_TOLERANCE);
-        }
-        /*
-         * Tests random segments.
-         */
-        final double circumference = (radius * (1 + 1E-8)) * (2*PI);
-        for (int i=0; i<100; i++) {
-            final double φ1 =  -90 + 180*random.nextDouble();
-            final double φ2 =  -90 + 180*random.nextDouble();
-            final double λ1 = -180 + 360*random.nextDouble();
-            final double λ2 = -180 + 360*random.nextDouble();
-            final double distance = s.orthodromicDistance(λ1, φ1, λ2, φ2);
-            assertTrue(distance >= 0 && distance <= circumference);
-            assertEquals(distance, e.orthodromicDistance(λ1, φ1, λ2, φ2), SPHERICAL_TOLERANCE);
-        }
     }
 
     /**

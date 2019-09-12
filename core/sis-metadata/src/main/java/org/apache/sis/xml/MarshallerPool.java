@@ -59,7 +59,7 @@ import org.apache.sis.util.CharSequences;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see XML
  * @see <a href="http://jaxb.java.net/guide/Performance_and_thread_safety.html">JAXB Performance and thread-safety</a>
@@ -187,11 +187,7 @@ public class MarshallerPool {
          * Prepares a copy of the property map (if any), then removes the
          * properties which are handled especially by this constructor.
          */
-        template = new PooledTemplate(properties, implementation);
-        final Object rootNamespace = template.remove(XML.DEFAULT_NAMESPACE, null);
-        if (rootNamespace != null) {
-            Logging.getLogger(Loggers.XML).warning(XML.DEFAULT_NAMESPACE + " property is no longer supported.");
-        }
+        template           = new PooledTemplate(properties, implementation);
         marshallers        = new ConcurrentLinkedDeque<>();
         unmarshallers      = new ConcurrentLinkedDeque<>();
         isRemovalScheduled = new AtomicBoolean();
