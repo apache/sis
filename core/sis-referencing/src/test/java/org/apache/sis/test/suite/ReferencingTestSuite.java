@@ -259,9 +259,6 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
     org.apache.sis.internal.referencing.EllipsoidalHeightCombinerTest.class,
     org.apache.sis.geometry.CoordinateFormatTest.class,
-
-    org.apache.sis.distance.LatLonPointRadiusTest.class,        // Pending refactoring in a geometry package.
-
     org.apache.sis.test.integration.CoordinateReferenceSystemTest.class,
     org.apache.sis.test.integration.CoordinateOperationTest.class,
     org.apache.sis.test.integration.DatumShiftTest.class,

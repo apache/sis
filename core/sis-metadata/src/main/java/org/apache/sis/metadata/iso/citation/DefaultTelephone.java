@@ -267,8 +267,8 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *
      * <p>This field references the same collection than {@link DefaultContact#phones} when possible.
      * Note that the link between this collection and {@code DefaultContact.phones} is broken when
-     * {@link DefaultContact#freeze()} is invoked, since the {@code Cloner.clone(Object)} method
-     * creates a new (unmodifiable) collection.</p>
+     * {@link DefaultContact} is copied by {@link org.apache.sis.metadata.MetadataCopier}, since the
+     * {@code Cloner.clone(Object)} method creates a new (unmodifiable) collection.</p>
      *
      * @deprecated This field will be removed after we removed the deprecated public methods.
      */

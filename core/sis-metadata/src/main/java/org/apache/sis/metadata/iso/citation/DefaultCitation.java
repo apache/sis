@@ -503,7 +503,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param newValue Other citations details, or {@code null} if none.
      */
     public void setOtherCitationDetails(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(otherCitationDetails);
         otherCitationDetails = newValue;
     }
 

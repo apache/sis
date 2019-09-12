@@ -19,7 +19,6 @@ package org.apache.sis.storage;
 import java.util.Locale;
 import java.util.Map;
 import java.util.IdentityHashMap;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
@@ -30,7 +29,6 @@ import org.opengis.metadata.identification.Identification;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.util.Strings;
@@ -486,56 +484,6 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     @Override
     public <T extends StoreEvent> void removeListener(StoreListener<? super T> listener, Class<T> eventType) {
         listeners.removeListener(listener, eventType);
-    }
-
-    /**
-     * Adds a listener to be notified when a warning occurred while reading from or writing to the storage.
-     * When a warning occurs, there is a choice:
-     *
-     * <ul>
-     *   <li>If this data store has no warning listener, then the warning is logged at
-     *       {@link java.util.logging.Level#WARNING}.</li>
-     *   <li>If this data store has at least one warning listener, then all listeners are notified
-     *       and the warning is <strong>not</strong> logged by this data store instance.</li>
-     * </ul>
-     *
-     * Consider invoking this method in a {@code try} … {@code finally} block if the {@code DataStore}
-     * lifetime is longer than the listener lifetime, as below:
-     *
-     * {@preformat java
-     *     datastore.addWarningListener(listener);
-     *     try {
-     *         // Do some work...
-     *     } finally {
-     *         datastore.removeWarningListener(listener);
-     *     }
-     * }
-     *
-     * @param  listener  the listener to add.
-     * @throws IllegalArgumentException if the given listener is already registered in this data store.
-     *
-     * @deprecated Replaced by {@code addListener(listener, WarningEvent.class)}.
-     */
-    @Deprecated
-    public void addWarningListener(final WarningListener<? super DataStore> listener)
-            throws IllegalArgumentException
-    {
-        listeners.addWarningListener(listener);
-    }
-
-    /**
-     * Removes a previously registered listener.
-     *
-     * @param  listener  the listener to remove.
-     * @throws NoSuchElementException if the given listener is not registered in this data store.
-     *
-     * @deprecated Replaced by {@code removeListener(listener, WarningEvent.class)}.
-     */
-    @Deprecated
-    public void removeWarningListener(final WarningListener<? super DataStore> listener)
-            throws NoSuchElementException
-    {
-        listeners.removeWarningListener(listener);
     }
 
     /**

@@ -531,7 +531,7 @@ public final class Axis extends NamedElement {
          */
         final String alt = coordinates.getAttributeAsString(CDM.LONG_NAME);
         if (alt != null && !similar(alt, name)) {
-            properties.put(org.apache.sis.metadata.iso.ImmutableIdentifier.DESCRIPTION_KEY, alt);   // Description associated to primary name.
+            properties.put(org.apache.sis.referencing.ImmutableIdentifier.DESCRIPTION_KEY, alt);   // Description associated to primary name.
             if (!similar(alt, standardName)) {
                 aliases.add(new NamedIdentifier(null, alt));                        // Additional alias.
             }

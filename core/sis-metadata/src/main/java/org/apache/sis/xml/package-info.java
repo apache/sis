@@ -59,7 +59,7 @@
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */

@@ -355,7 +355,7 @@ public final class MathTransforms extends Static {
                 return IdentityTransform.create(firstAffectedCoordinate + dimension + numTrailingCoordinates);
             }
         }
-        return PassThroughTransform.create0(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
+        return PassThroughTransform.create(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
     }
 
     /**

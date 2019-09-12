@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.HashSet;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Completeness;
+import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -56,7 +57,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -131,6 +132,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
         assertEquals("getInterface(Citation)",               Citation.class,         getInterface(Citation.class));
         assertEquals("getInterface(DefaultCitation)",        Citation.class,         getInterface(DefaultCitation.class));
         assertEquals("getInterface(AbstractCompleteness)",   Completeness.class,     getInterface(AbstractCompleteness.class));
+        assertEquals("getInterface(GeographicExtent)",       GeographicExtent.class, getInterface(GeographicExtent.class));
 
         standard = MetadataStandard.ISO_19111;
         assertEquals("getInterface(Citation)",               Citation.class,         getInterface(Citation.class));

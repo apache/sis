@@ -92,10 +92,10 @@ public final class Identifiers extends Static {
      * <ul>
      *   <li>For information purpose (e.g. some {@code toString()} methods), use {@code getIdentifier(…, false)}.</li>
      *   <li>For WKT formatting, use {@code getIdentifier(…, true)} in order to preserve formatting characters.</li>
-     *   <li>For assigning a value to a {@code codeSpace} field, use {@link Citations#getUnicodeIdentifier(Citation)}.</li>
+     *   <li>For assigning a value to a {@code codeSpace} field, use {@link Citations#toCodeSpace(Citation)}.</li>
      * </ul>
      *
-     * Use {@code getUnicodeIdentifier(…)} method when assigning values to be returned by methods like
+     * Use {@code toCodeSpace(…)} method when assigning values to be returned by methods like
      * {@link ReferenceIdentifier#getCodeSpace()}, since those values are likely to be compared without special
      * care about ignorable identifier characters. But if the intent is to format a more complex string
      * like WKT or {@code toString()}, then we suggest to use {@code getIdentifier(citation, true)} instead,

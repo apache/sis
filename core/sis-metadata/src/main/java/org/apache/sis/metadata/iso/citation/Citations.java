@@ -25,7 +25,6 @@ import java.util.Locale;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.referencing.IdentifiedObject;                // For javadoc
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Characters;
@@ -79,7 +78,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonEmptyIterator;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -812,27 +811,6 @@ public final class Citations extends Static {
     }
 
     /**
-     * Infers a valid Unicode identifier from the given citation, or returns {@code null} if none.
-     *
-     * @param  citation  the citation for which to get the Unicode identifier, or {@code null}.
-     * @return a non-empty Unicode identifier for the given citation without leading or trailing whitespaces,
-     *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
-     *
-     * @see org.apache.sis.referencing.ImmutableIdentifier
-     * @see org.apache.sis.referencing.IdentifiedObjects#getSimpleNameOrIdentifier(IdentifiedObject)
-     * @see org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence)
-     *
-     * @since 0.6
-     *
-     * @deprecated Replaced by {@link #toCodeSpace(Citation)} in order to reduce the risk of inconsistent
-     *             behavior if those two methods are mixed.
-     */
-    @Deprecated
-    public static String getUnicodeIdentifier(final Citation citation) {
-        return removeIgnorableCharacters(Identifiers.getIdentifier(citation, true));
-    }
-
-    /**
      * Infers a code space from the given citation, or returns {@code null} if none.
      * This method is useful for extracting a short designation of an authority (e.g. {@code "EPSG"})
      * for processing purpose. This method performs the following actions:
@@ -879,17 +857,6 @@ public final class Citations extends Static {
         } else {
             return removeIgnorableCharacters(Identifiers.getIdentifier(citation, true));
         }
-    }
-
-    /**
-     * @deprecated Renamed as {@link #toCodeSpace(Citation)}. The previous name was confusing because this
-     * method does not return the namespace of the given citation, but instead represents it as a namespace.
-     *
-     * @since 0.8
-     */
-    @Deprecated
-    public static String getCodeSpace(final Citation citation) {
-        return toCodeSpace(citation);
     }
 
     /**

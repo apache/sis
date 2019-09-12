@@ -34,7 +34,7 @@
  * to a specific kind of event}.
  *
  * @author  Johann Sorel (Geomatys)
- * @since   1.0
+ * @since   1.1
  * @version 1.0
  * @module
  */

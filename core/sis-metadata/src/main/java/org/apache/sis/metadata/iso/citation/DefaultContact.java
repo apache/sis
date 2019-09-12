@@ -436,7 +436,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * @param  newValue  the new hours of service.
      */
     public void setHoursOfService(final InternationalString newValue) {
-        checkWritePermission();
+        checkWritePermission(hoursOfService);
         hoursOfService = newValue;
     }
 

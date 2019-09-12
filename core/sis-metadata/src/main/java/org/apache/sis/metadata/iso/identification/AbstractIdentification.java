@@ -813,7 +813,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Deprecated
     public void setAggregationInfo(final Collection<? extends AggregateInformation> newValues) {
-        checkWritePermission();
+        checkWritePermission(associatedResources);
         /*
          * We can not invoke getAggregationInfo().setValues(newValues) because this method
          * is invoked by the constructor, which is itself invoked at JAXB marshalling time,

@@ -162,23 +162,6 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
     }
 
     /**
-     * Tests {@link DefaultCitation#unmodifiable()}.
-     *
-     * @deprecated To be removed after we removed {@link DefaultCitation#unmodifiable()}.
-     */
-    @Test
-    @Deprecated
-    public void testUnmodifiable() {
-        final DefaultCitation original = create();
-        final DefaultCitation clone = (DefaultCitation) original.unmodifiable();    // This will invoke 'freeze()'.
-        assertSame("original.unmodifiable", clone, original.unmodifiable());
-        assertSame("clone.unmodifiable",    clone, clone.unmodifiable());
-        assertEquals("original.state", DefaultCitation.State.EDITABLE, original.state());
-        assertEquals("clone.state",    DefaultCitation.State.FINAL,    clone.state());
-        assertCopy(original, clone);
-    }
-
-    /**
      * Verifies that {@code clone} is a copy of {@code original}, sharing same instance of values when possible.
      */
     private static void assertCopy(final DefaultCitation original, final DefaultCitation clone) {

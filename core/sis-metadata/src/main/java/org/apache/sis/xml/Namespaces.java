@@ -453,28 +453,6 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL.
-     * The usual prefix for this namespace is {@code "gmi"}.
-     *
-     * @category ISO
-     *
-     * @deprecated as of ISO 19115-4, splitted in many different namespaces.
-     */
-    @Deprecated
-    public static final String GMI = LegacyNamespaces.GMI;
-
-    /**
-     * The <code>{@value}</code> URL.
-     * The usual prefix for this namespace is {@code "gmx"}.
-     *
-     * @category ISO
-     *
-     * @deprecated as of ISO 19115-3, splitted in many different namespaces.
-     */
-    @Deprecated
-    public static final String GMX = LegacyNamespaces.GMX;
-
-    /**
-     * The <code>{@value}</code> URL.
      * The usual prefix for this namespace is {@code "gts"}.
      *
      * @category ISO

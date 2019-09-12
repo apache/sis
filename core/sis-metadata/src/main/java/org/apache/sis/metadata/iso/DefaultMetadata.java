@@ -1463,7 +1463,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param  newValue  the new distribution info.
      */
     public void setDistributionInfo(final Distribution newValue) {
-        checkWritePermission();
+        checkWritePermission(distributionInfo);
         distributionInfo = newValue;
     }
 

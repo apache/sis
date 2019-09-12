@@ -174,14 +174,6 @@ public enum ComparisonMode {
     DEBUG;
 
     /**
-     * @deprecated Renamed {@link #APPROXIMATE}.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-440">SIS-440</a>
-     */
-    @Deprecated
-    public static final ComparisonMode APPROXIMATIVE = APPROXIMATE;
-
-    /**
      * Returns {@code true} if this comparison ignores metadata.
      * This method currently returns {@code true} for {@code IGNORE_METADATA}, {@code APPROXIMATE}
      * or {@code DEBUG} only, but this list may be extended in future SIS versions.
@@ -205,16 +197,6 @@ public enum ComparisonMode {
      */
     public boolean isApproximate() {
         return ordinal() >= APPROXIMATE.ordinal();
-    }
-
-    /**
-     * @deprecated Renamed {@link #isApproximate()}.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-440">SIS-440</a>
-     */
-    @Deprecated
-    public boolean isApproximative() {
-        return isApproximate();
     }
 
     /**

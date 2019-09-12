@@ -181,7 +181,7 @@ public final class Context extends MarshalContext {
     /**
      * The object to inform about warnings, or {@code null} if none.
      */
-    private final Filter warningListener;
+    private final Filter logFilter;
 
     /**
      * The {@code <gml:*PropertyType>} which is wrapping the {@code <gml:*Type>} object to (un)marshal, or
@@ -222,7 +222,7 @@ public final class Context extends MarshalContext {
      * @param  versionMetadata  the metadata version, or {@code null}.
      * @param  resolver         the resolver in use.
      * @param  converter        the converter in use.
-     * @param  warningListener  the object to inform about warnings.
+     * @param  logFilter        the object to inform about warnings.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     public Context(int                      bitMasks,
@@ -233,7 +233,7 @@ public final class Context extends MarshalContext {
                    final Version            versionMetadata,
                    final ReferenceResolver  resolver,
                    final ValueConverter     converter,
-                   final Filter             warningListener)
+                   final Filter             logFilter)
     {
         if (versionMetadata != null && versionMetadata.compareTo(LegacyNamespaces.VERSION_2014) < 0) {
             bitMasks |= LEGACY_METADATA;
@@ -244,7 +244,7 @@ public final class Context extends MarshalContext {
         this.versionGML        = versionGML;
         this.resolver          = resolver;
         this.converter         = converter;
-        this.warningListener   = warningListener;
+        this.logFilter         = logFilter;
         this.identifiers       = new HashMap<>();
         this.identifiedObjects = new IdentityHashMap<>();
         if (locale != null) {
@@ -621,10 +621,10 @@ public final class Context extends MarshalContext {
         record.setSourceMethodName(method);
         record.setLoggerName(Loggers.XML);
         if (context != null) {
-            final Filter warningListener = context.warningListener;
-            if (warningListener != null) {
+            final Filter logFilter = context.logFilter;
+            if (logFilter != null) {
                 record.setThrown(exception);
-                if (!warningListener.isLoggable(record)) {
+                if (!logFilter.isLoggable(record)) {
                     return;
                 }
             }

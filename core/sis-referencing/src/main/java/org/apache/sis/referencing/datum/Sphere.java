@@ -26,8 +26,7 @@ import static java.lang.Math.*;
 
 
 /**
- * A ellipsoid which is spherical. This ellipsoid implements a faster
- * {@link #orthodromicDistance(double, double, double, double)} method.
+ * A ellipsoid which is spherical.
  *
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
@@ -35,7 +34,7 @@ import static java.lang.Math.*;
  * all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -98,27 +97,4 @@ final class Sphere extends DefaultEllipsoid {
         return 1 / other.getInverseFlattening();
     }
 
-    /**
-     * Returns the orthodromic distance between two geographic coordinates.
-     * The orthodromic distance is the shortest distance between two points
-     * on a sphere's surface. The orthodromic path is always on a great circle.
-     *
-     * @param  λ1  longitude of first point (in decimal degrees).
-     * @param  φ1  latitude of first point (in decimal degrees).
-     * @param  λ2  longitude of second point (in decimal degrees).
-     * @param  φ2  latitude of second point (in decimal degrees).
-     * @return the orthodromic distance (in the units of this ellipsoid's axis).
-     */
-    @Override
-    @Deprecated
-    public double orthodromicDistance(double λ1, double φ1, double λ2, double φ2) {
-        φ1 = toRadians(φ1);
-        φ2 = toRadians(φ2);
-        final double dx = toRadians(abs(λ2-λ1) % 360);
-        double rho = sin(φ1)*sin(φ2) + cos(φ1)*cos(φ2)*cos(dx);
-        assert abs(rho) < 1.0000001 : rho;
-        if (rho > +1) rho = +1;                         // Catch rounding error.
-        if (rho < -1) rho = -1;                         // Catch rounding error.
-        return acos(rho) * getSemiMajorAxis();
-    }
 }

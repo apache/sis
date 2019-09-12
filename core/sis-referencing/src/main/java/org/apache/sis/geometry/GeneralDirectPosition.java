@@ -80,14 +80,6 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     public final double[] coordinates;
 
     /**
-     * @deprecated Renamed {@link #coordinates}.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-461">SIS-461</a>
-     */
-    @Deprecated
-    public transient double[] ordinates;
-
-    /**
      * The coordinate reference system for this position, or {@code null}.
      */
     private CoordinateReferenceSystem crs;
@@ -111,7 +103,6 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      */
     public GeneralDirectPosition(final int dimension) throws NegativeArraySizeException {
         coordinates = new double[dimension];
-        ordinates = coordinates;
     }
 
     /**
@@ -134,7 +125,6 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      */
     public GeneralDirectPosition(final double... coordinates) {
         this.coordinates = coordinates;
-        ordinates = coordinates;
     }
 
     /**
@@ -147,7 +137,6 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
         coordinates = point.getCoordinate();                            // Should already be cloned.
         crs = point.getCoordinateReferenceSystem();
         ensureDimensionMatches("crs", coordinates.length, crs);
-        ordinates = coordinates;
     }
 
     /**
@@ -172,7 +161,6 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.UnparsableStringForClass_2, "POINT", wkt));
         }
-        ordinates = coordinates;
     }
 
     /**
@@ -325,7 +313,6 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
             }
             GeneralDirectPosition e = (GeneralDirectPosition) super.clone();
             field.set(e, coordinates.clone());
-            e.ordinates = e.coordinates;
             return e;
         } catch (ReflectiveOperationException | CloneNotSupportedException exception) {
             /*
@@ -335,11 +322,6 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
              */
             throw new AssertionError(exception);
         }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        ordinates = coordinates;
     }
 
     /**

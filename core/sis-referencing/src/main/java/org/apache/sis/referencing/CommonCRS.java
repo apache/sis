@@ -286,9 +286,7 @@ public enum CommonCRS {
             (short) 0, (short) 0, (short) 0, (short) 0, (byte) 0, (byte) 0),                 // UPS and UTM info
 
     /**
-     * Unspecified datum based upon the GRS 1980 Authalic Sphere. Spheres use a simpler algorithm for
-     * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#orthodromicDistance
-     * orthodromic distance computation}, which may be faster and more robust.
+     * Unspecified datum based upon the GRS 1980 Authalic Sphere.
      *
      * <blockquote><table class="compact">
      * <caption>Sphere properties</caption>

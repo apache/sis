@@ -113,16 +113,6 @@ public final class Utilities extends Static {
     }
 
     /**
-     * @deprecated Renamed {@link #equalsApproximately(Object, Object)}.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-440">SIS-440</a>
-     */
-    @Deprecated
-    public static boolean equalsApproximatively(final Object object1, final Object object2) {
-        return equalsApproximately(object1, object2);
-    }
-
-    /**
      * Convenience method for testing two objects for equality using the given level of strictness.
      * If at least one of the given objects implement the {@link LenientComparable} interface, then
      * the comparison is performed using the {@link LenientComparable#equals(Object, ComparisonMode)}

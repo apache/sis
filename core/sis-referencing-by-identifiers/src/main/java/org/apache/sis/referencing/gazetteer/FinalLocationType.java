@@ -26,6 +26,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.metadata.ModifiableMetadata;
+import org.apache.sis.metadata.MetadataCopier;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
@@ -38,7 +39,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * system than the original location type.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -194,13 +195,16 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
 
     /**
      * Returns an unmodifiable copy of the given metadata, if necessary and possible.
+     *
+     * @param  metadata  the metadata object to eventually copy, or {@code null}.
+     * @return an unmodifiable copy of the given metadata object, or {@code null} if the given argument is {@code null}.
      */
-    private static Object unmodifiable(final Object metadata) {
+    private static Object unmodifiable(Object metadata) {
         if (metadata instanceof ModifiableMetadata) {
-            return ((ModifiableMetadata) metadata).unmodifiable();
-        } else {
-            return metadata;
+            metadata = MetadataCopier.forModifiable(((ModifiableMetadata) metadata).getStandard()).copy(metadata);
+            ((ModifiableMetadata) metadata).transition(ModifiableMetadata.State.FINAL);
         }
+        return metadata;
     }
 
     /**
