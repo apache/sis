@@ -29,7 +29,6 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.storage.DataStoreProvider;
@@ -72,11 +71,11 @@ import org.apache.sis.storage.Resource;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
-public class StoreListeners extends org.apache.sis.util.logging.WarningListeners implements Localized {
+public class StoreListeners implements Localized {
     /**
      * Parent manager to notify in addition to this manager.
      */
@@ -210,7 +209,6 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
      * @param source  the source of events. Can not be null.
      */
     public StoreListeners(final StoreListeners parent, Resource source) {
-        super(source);
         /*
          * Undocumented feature for allowing subclass to specify `this` as the source resource.
          * This is used as a convenience by AbstractResource internal class. We need this hack
@@ -230,7 +228,6 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
      *
      * @return the source of events.
      */
-    @Override
     public Resource getSource() {
         return source;
     }
@@ -319,7 +316,7 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
      *
      * @return the logger where to send the warnings when there is no other destination.
      */
-    private Logger logger() {
+    private Logger getLogger() {
         Resource src = source;
         final DataStore ds = getDataStore(this);
         if (ds != null) {
@@ -378,7 +375,6 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
      * @param  message    the warning message to report, or {@code null} if none.
      * @param  exception  the exception to report, or {@code null} if none.
      */
-    @Override
     public void warning(String message, Exception exception) {
         warning(Level.WARNING, message, exception);
     }
@@ -404,7 +400,6 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
      * @param  message    the message to log, or {@code null} if none.
      * @param  exception  the exception to log, or {@code null} if none.
      */
-    @Override
     public void warning(final Level level, String message, final Exception exception) {
         ArgumentChecks.ensureNonNull("level", level);
         final LogRecord record;
@@ -476,7 +471,6 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
      *
      * @param  description  warning details provided as a log record.
      */
-    @Override
     @SuppressWarnings("unchecked")
     public void warning(final LogRecord description) {
         if (!fire(new WarningEvent(source, description), WarningEvent.class)) {
@@ -485,7 +479,7 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
             if (name != null) {
                 logger = Logging.getLogger(name);
             } else {
-                logger = logger();
+                logger = getLogger();
                 description.setLoggerName(logger.getName());
             }
             if (description instanceof QuietLogRecord) {
@@ -615,59 +609,5 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
             m = m.parent;
         } while (m != null);
         return false;
-    }
-
-    /**
-     * Returns {@code true} if this object contains at least one listener.
-     *
-     * @return {@code true} if this object contains at least one listener, {@code false} otherwise.
-     */
-    @Override
-    @Deprecated
-    public boolean hasListeners() {
-        return hasListeners(StoreEvent.class);
-    }
-
-    /**
-     * @deprecated Replaced by {@code addListener(listener, WarningEvent.class)}.
-     */
-    @Override
-    @Deprecated
-    public void addWarningListener(final WarningListener listener) {
-        addListener(new Legacy(listener), WarningEvent.class);
-    }
-
-    /**
-     * @deprecated Replaced by {@code removeListener(listener, WarningEvent.class)}.
-     */
-    @Override
-    @Deprecated
-    public void removeWarningListener(final WarningListener listener) {
-        for (ForType<?> e = listeners; e != null; e = e.next) {
-            if (e.type.equals(WarningEvent.class)) {
-                StoreListener<?>[] list = e.listeners;
-                if (list != null) {
-                    for (final StoreListener<?> c : list) {
-                        if (c instanceof Legacy && ((Legacy) c).delegate == listener) {
-                            removeListener((StoreListener<WarningEvent>) c, WarningEvent.class);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    @Deprecated
-    private static final class Legacy implements StoreListener<WarningEvent> {
-        final WarningListener<? super Resource> delegate;
-
-        Legacy(final WarningListener<? super Resource> delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override public void eventOccured(WarningEvent event) {
-            delegate.warningOccured(event.getSource(), event.getDescription());
-        }
     }
 }

@@ -133,16 +133,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     private transient byte state;
 
     /**
-     * An unmodifiable copy of this metadata, created only when first needed.
-     * If {@code null}, then no unmodifiable entity is available.
-     * If {@code this}, then this entity is itself unmodifiable.
-     *
-     * @deprecated to be deleted after the removal of {@link #unmodifiable()}.
-     */
-    @Deprecated
-    private transient ModifiableMetadata unmodifiable;
-
-    /**
      * Constructs an initially empty metadata.
      * The initial state is {@link State#EDITABLE}.
      */
@@ -297,112 +287,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     }
 
     /**
-     * Returns {@code true} if this metadata is modifiable. This method returns
-     * {@code false} if {@link #freeze()} has been invoked on this object.
-     *
-     * @return {@code true} if this metadata is modifiable.
-     *
-     * @see #freeze()
-     * @see #checkWritePermission()
-     *
-     * @deprecated Replaced by <code>{@linkplain #state()} != State.FINAL</code>.
-     *             See <a href="https://issues.apache.org/jira/browse/SIS-81">SIS-81</a>.
-     */
-    @Deprecated
-    public final boolean isModifiable() {
-        return state <= STAGED;
-    }
-
-    /**
-     * Returns an unmodifiable copy of this metadata. Any attempt to modify a property of the
-     * returned object will throw an {@link UnmodifiableMetadataException}. The state of this
-     * object is not modified.
-     *
-     * <p>This method is useful for reusing the same metadata object as a template.
-     * For example:</p>
-     *
-     * {@preformat java
-     *     DefaultCitation myCitation = new DefaultCitation();
-     *     myCitation.setTitle(new SimpleInternationalString("The title of my book"));
-     *     myCitation.setEdition(new SimpleInternationalString("First edition"));
-     *     final Citation firstEdition = (Citation) myCitation.unmodifiable();
-     *
-     *     myCitation.setEdition(new SimpleInternationalString("Second edition"));
-     *     final Citation secondEdition = (Citation) myCitation.unmodifiable();
-     *     // The title of the second edition is unchanged compared to the first edition.
-     * }
-     *
-     * The default implementation makes the following choice:
-     *
-     * <ul>
-     *   <li>If this metadata is itself unmodifiable, then this method returns {@code this} unchanged.</li>
-     *   <li>Otherwise this method {@linkplain #clone() clone} this metadata and
-     *       {@linkplain #freeze() freeze} the clone before to return it.</li>
-     * </ul>
-     *
-     * @return an unmodifiable copy of this metadata.
-     *
-     * @see MetadataCopier
-     *
-     * @deprecated Replaced by {@code MetadataCopier.forModifiable(getStandard()).copy(this).transition(State.FINAL)}.
-     */
-    @Deprecated
-    public AbstractMetadata unmodifiable() {
-        if (!isModifiable()) {
-            unmodifiable = this;
-        }
-        /*
-         * The 'unmodifiable' field is reset to null by checkWritePermission().
-         * However this is not sufficient since the setter method of some child
-         * could have been invoked without invoking any setter method on 'this'.
-         * So we also need to perform an equality check.
-         */
-        if (unmodifiable == null || !equals(unmodifiable)) {
-            final ModifiableMetadata candidate = (ModifiableMetadata) MetadataCopier.forModifiable(getStandard()).copy(this);
-            candidate.freeze();
-            /*
-             * Set the field only after success. The 'unmodifiable' field must
-             * stay null if an exception occurred during clone() or freeze().
-             */
-            unmodifiable = candidate;
-        }
-        assert !unmodifiable.isModifiable();
-        return unmodifiable;
-    }
-
-    /**
-     * Declares this metadata and all its properties as unmodifiable. Any attempt to modify a
-     * property after this method call will throw an {@link UnmodifiableMetadataException}.
-     * If this metadata is already unmodifiable, then this method does nothing.
-     *
-     * <p>Subclasses usually do not need to override this method since the default implementation
-     * performs its work using Java reflection.</p>
-     *
-     * @see #state()
-     * @see #checkWritePermission()
-     *
-     * @deprecated Replaced by {@code transition(State.FINAL)}.
-     */
-    @Deprecated
-    public void freeze() {
-        transition(State.FINAL);
-    }
-
-    /**
-     * @deprecated Replaced by {@link #checkWritePermission(Object)}.
-     *
-     * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
-     */
-    @Deprecated
-    protected void checkWritePermission() throws UnmodifiableMetadataException {
-        if (state == FINAL) {
-            throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.UnmodifiableMetadata));
-        } else {
-            unmodifiable = null;                    // Discard since this metadata is going to change.
-        }
-    }
-
-    /**
      * Checks if changes in the metadata are allowed. All {@code setFoo(…)} methods in subclasses
      * shall invoke this method (directly or indirectly) before to apply any change.
      * The current property value should be specified in argument.
@@ -416,7 +300,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      */
     protected void checkWritePermission(Object current) throws UnmodifiableMetadataException {
         if (state != COMPLETABLE) {
-            checkWritePermission();
+            if (state == FINAL) {
+                throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.UnmodifiableMetadata));
+            }
         } else if (current != null) {
             final MetadataStandard standard;
             if (current instanceof AbstractMetadata) {

@@ -1544,7 +1544,7 @@ cmp:    while (ia < lga) {
      * @return {@code true} if the given character sequence is a legal Unicode identifier.
      *
      * @see org.apache.sis.referencing.ImmutableIdentifier
-     * @see org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)
+     * @see org.apache.sis.metadata.iso.citation.Citations#toCodeSpace(Citation)
      * @see org.apache.sis.referencing.IdentifiedObjects#getSimpleNameOrIdentifier(IdentifiedObject)
      */
     public static boolean isUnicodeIdentifier(final CharSequence identifier) {

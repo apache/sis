@@ -86,7 +86,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
@@ -430,16 +429,6 @@ public final class CRS extends Static {
             }
         }
         return crs;
-    }
-
-    /**
-     * @deprecated {@code WarningListener} argument replaced by {@code java.util.logging.Filter}.
-     */
-    @Deprecated
-    public static CoordinateReferenceSystem fromAuthority(CoordinateReferenceSystem crs,
-            final CRSAuthorityFactory factory, final WarningListener<?> listener) throws FactoryException
-    {
-        return fromAuthority(crs, factory, (listener != null) ? listener.asFilter() : null);
     }
 
     /**

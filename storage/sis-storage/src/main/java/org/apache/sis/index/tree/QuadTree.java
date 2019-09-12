@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.distance.LatLonPointRadius;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.GeodeticCalculator;
 

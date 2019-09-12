@@ -291,7 +291,7 @@ public abstract class ChannelFactory {
      * it is caller's responsibility to wrap the stream in a {@link java.io.BufferedInputStream} if desired.
      *
      * @param  filename  data store name to report in case of failure.
-     * @param  listeners set of registered {@code WarningListener}s for the data store, or {@code null} if none.
+     * @param  listeners set of registered {@code StoreListener}s for the data store, or {@code null} if none.
      * @return the input stream.
      * @throws DataStoreException if the channel is read-once.
      * @throws IOException if the input stream or its underlying byte channel can not be created.
@@ -307,7 +307,7 @@ public abstract class ChannelFactory {
      * it is caller's responsibility to wrap the stream in a {@link java.io.BufferedOutputStream} if desired.
      *
      * @param  filename  data store name to report in case of failure.
-     * @param  listeners set of registered {@code WarningListener}s for the data store, or {@code null} if none.
+     * @param  listeners set of registered {@code StoreListener}s for the data store, or {@code null} if none.
      * @return the output stream.
      * @throws DataStoreException if the channel is write-once.
      * @throws IOException if the output stream or its underlying byte channel can not be created.
@@ -324,7 +324,7 @@ public abstract class ChannelFactory {
      * this method throws an exception.
      *
      * @param  filename  data store name to report in case of failure.
-     * @param  listeners set of registered {@code WarningListener}s for the data store, or {@code null} if none.
+     * @param  listeners set of registered {@code StoreListener}s for the data store, or {@code null} if none.
      * @return the channel for the given input.
      * @throws DataStoreException if the channel is read-once.
      * @throws IOException if an error occurred while opening the channel.
@@ -338,7 +338,7 @@ public abstract class ChannelFactory {
      * this method throws an exception.
      *
      * @param  filename  data store name to report in case of failure.
-     * @param  listeners set of registered {@code WarningListener}s for the data store, or {@code null} if none.
+     * @param  listeners set of registered {@code StoreListener}s for the data store, or {@code null} if none.
      * @return the channel for the given output.
      * @throws DataStoreException if the channel is write-once.
      * @throws IOException if an error occurred while opening the channel.

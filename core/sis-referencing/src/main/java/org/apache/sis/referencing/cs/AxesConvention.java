@@ -282,13 +282,4 @@ public enum AxesConvention implements AxisFilter {
      * @see org.opengis.referencing.cs.RangeMeaning#WRAPAROUND
      */
     POSITIVE_RANGE;
-
-    /**
-     * @deprecated Renamed {@link #DISPLAY_ORIENTED} since "conventional" is too vague.
-     *             For example the (latitude, longitude) axis order is also conventional.
-     *
-     * @since 0.5
-     */
-    @Deprecated
-    public static final AxesConvention CONVENTIONALLY_ORIENTED = DISPLAY_ORIENTED;
 }

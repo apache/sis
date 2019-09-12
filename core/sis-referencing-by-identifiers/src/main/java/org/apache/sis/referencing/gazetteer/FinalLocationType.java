@@ -26,6 +26,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.metadata.ModifiableMetadata;
+import org.apache.sis.metadata.MetadataCopier;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
@@ -40,7 +41,7 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * system than the original location type.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -134,8 +135,8 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
         theme           = source.getTheme();
         identifications = snapshot(source.getIdentifications());
         definition      = source.getDefinition();
-        territoryOfUse  = (GeographicExtent) unmodifiable(source.getTerritoryOfUse());
-        owner           = (Party) unmodifiable(source.getOwner());
+        territoryOfUse  = unmodifiable(GeographicExtent.class, source.getTerritoryOfUse());
+        owner           = unmodifiable(Party.class, source.getOwner());
         parents         = snapshot(source.getParents(),  rs, existing);
         children        = snapshot(source.getChildren(), rs, existing);
         referenceSystem = rs;
@@ -196,13 +197,18 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
 
     /**
      * Returns an unmodifiable copy of the given metadata, if necessary and possible.
+     *
+     * @param  <T>       compile-time value of the {@code type} argument.
+     * @param  type      the interface of the metadata object to eventually copy.
+     * @param  metadata  the metadata object to eventually copy, or {@code null}.
+     * @return an unmodifiable copy of the given metadata object, or {@code null} if the given argument is {@code null}.
      */
-    private static Object unmodifiable(final Object metadata) {
+    private static <T> T unmodifiable(final Class<T> type, T metadata) {
         if (metadata instanceof ModifiableMetadata) {
-            return ((ModifiableMetadata) metadata).unmodifiable();
-        } else {
-            return metadata;
+            metadata = MetadataCopier.forModifiable(((ModifiableMetadata) metadata).getStandard()).copy(type, metadata);
+            ((ModifiableMetadata) metadata).transition(ModifiableMetadata.State.FINAL);
         }
+        return metadata;
     }
 
     /**

@@ -196,7 +196,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * @param authority  the the person or party responsible for maintenance of the namespace, or {@code null} if none.
      * @param code       the alphanumeric value identifying an instance in the namespace, or {@code null} if none.
      *
-     * @see org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)
+     * @see org.apache.sis.metadata.iso.citation.Citations#toCodeSpace(Citation)
      */
     public DefaultIdentifier(final Citation authority, final String code) {
         this.authority = authority;

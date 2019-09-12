@@ -56,7 +56,7 @@ import static org.apache.sis.internal.util.CollectionsExt.iterator;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see CRS
  * @see org.apache.sis.geometry.Envelopes
@@ -345,7 +345,7 @@ public final class IdentifiedObjects extends Static {
      * @return the first name, alias or identifier which is a valid Unicode identifier, or {@code null} if none.
      *
      * @see ImmutableIdentifier
-     * @see Citations#getUnicodeIdentifier(Citation)
+     * @see Citations#toCodeSpace(Citation)
      * @see CharSequences#isUnicodeIdentifier(CharSequence)
      *
      * @since 1.0
@@ -381,14 +381,6 @@ public final class IdentifiedObjects extends Static {
             }
         }
         return null;
-    }
-
-    /**
-     * @deprecated Renamed {@link #getSimpleNameOrIdentifier(IdentifiedObject)}.
-     */
-    @Deprecated
-    public static String getUnicodeIdentifier(final IdentifiedObject object) {
-        return getSimpleNameOrIdentifier(object);
     }
 
     /**

@@ -298,7 +298,7 @@ public abstract class StaxDataStore extends URIDataStore {
         /**
          * Returns configuration associated to the given key, or {@code null} if none.
          *
-         * @param  key  one of {@link XML#LOCALE}, {@link XML#TIMEZONE} or {@link XML#WARNING_LISTENER}.
+         * @param  key  one of {@link XML#LOCALE}, {@link XML#TIMEZONE} or {@link XML#WARNING_FILTER}.
          * @return the configuration for the given key, or {@code null} if none or if the given key is invalid.
          */
         @Override

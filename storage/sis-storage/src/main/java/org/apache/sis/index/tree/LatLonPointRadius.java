@@ -15,18 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.sis.distance;
+package org.apache.sis.index.tree;
 
-//JDK imports
 import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
-
-// GeoAPI import
 import org.opengis.geometry.DirectPosition;
-
-//SIS imports
-import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.GeodeticCalculator;
@@ -34,11 +28,9 @@ import org.apache.sis.referencing.GeodeticCalculator;
 /**
  * Represents a 2D point associated with a radius to enable great circle
  * estimation on earth surface.
- *
- * @deprecated Replaced by {@link org.apache.sis.referencing.GeodeticCalculator#createGeodesicCircle2D(double)}.
  */
-@Deprecated
-public class LatLonPointRadius {
+final class LatLonPointRadius {
+  private static final double HALF_EARTH_CIRCUMFERENCE = 20037.58; // in km
 
   private final DirectPosition center;
   private final double radius;
@@ -51,50 +43,9 @@ public class LatLonPointRadius {
    * @param radius
    *          the radius of the search region
    */
-  public LatLonPointRadius(DirectPosition center, double radius) {
+  LatLonPointRadius(DirectPosition center, double radius) {
     this.center = center;
     this.radius = radius;
-  }
-
-  /**
-   * Gets the circular region approximation on the earth surface using haversine
-   * formula.
-   *
-   * @param numberOfPoints
-   *          the number of points used to estimate the circular region
-   * @return an array of DirectPosition2D representing the points that estimate the
-   *         circular region
-   */
-  public DirectPosition2D[] getCircularRegionApproximation(int numberOfPoints) {
-    if (radius >= DistanceUtils.HALF_EARTH_CIRCUMFERENCE) {
-      DirectPosition2D[] points = new DirectPosition2D[5];
-      points[0] = new DirectPosition2D(-180.0, -90.0);
-      points[1] = new DirectPosition2D(-180.0, 90.0);
-      points[2] = new DirectPosition2D(180.0, 90.0);
-      points[3] = new DirectPosition2D(180.0, -90.0);
-      points[4] = points[0];
-      return points;
-    }
-    // plus one to add closing point
-    DirectPosition2D[] points = new DirectPosition2D[numberOfPoints + 1];
-
-    double bearingIncrement = 0;
-    if (numberOfPoints > 0) { bearingIncrement = 360/numberOfPoints; }
-
-    final GeodeticCalculator calculator = GeodeticCalculator.create(CommonCRS.SPHERE.geographic());
-    calculator.setStartGeographicPoint(center.getOrdinate(1), center.getOrdinate(0));
-    calculator.setGeodesicDistance(radius);
-
-    for (int i = 0; i < numberOfPoints; i++)
-    {
-      calculator.setStartingAzimuth(i * bearingIncrement);
-      DirectPosition p = calculator.getEndPoint();
-      points[i] = new DirectPosition2D(p.getOrdinate(1), p.getOrdinate(0));
-    }
-
-    points[numberOfPoints] = points[0];
-
-    return points;
   }
 
   /**
@@ -104,8 +55,8 @@ public class LatLonPointRadius {
    *          the number of points used to estimate the circular search region
    * @return Java Rectangle2D object that bounds the circlar search region
    */
-  public Rectangle2D getRectangularRegionApproximation(int numberOfPoints) {
-    if (radius >= DistanceUtils.HALF_EARTH_CIRCUMFERENCE) {
+  Rectangle2D getRectangularRegionApproximation(int numberOfPoints) {
+    if (radius >= HALF_EARTH_CIRCUMFERENCE) {
       return new Rectangle2D.Double(0.0, 0.0, 360.0, 180.0);
     }
     int numberOfCrossOvers = 0;

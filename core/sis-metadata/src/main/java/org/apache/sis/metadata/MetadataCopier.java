@@ -155,7 +155,7 @@ public class MetadataCopier extends MetadataVisitor<Object> {
         ArgumentChecks.ensureNonNull("type", type);
         if (metadata instanceof AbstractMetadata) {
             final Class<?> interfaceType = ((AbstractMetadata) metadata).getInterface();
-            if (type != interfaceType) {
+            if (!type.isAssignableFrom(interfaceType)) {
                 /*
                  * In case the user specified an implementation despite the documentation warning.
                  * We could replace `type` by `interfaceType` and it would work most of the time,
