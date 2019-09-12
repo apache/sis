@@ -28,8 +28,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.NoSuchElementException;
 import java.util.logging.Level;
+import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -65,8 +65,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.util.logging.WarningListeners;
-import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -110,7 +108,7 @@ import org.apache.sis.util.iso.Types;
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -262,11 +260,11 @@ public class MetadataSource implements AutoCloseable {
     private final ThreadLocal<LookupInfo> lastUsed;
 
     /**
-     * Where to report the warnings. This is not necessarily a logger, since users can register listeners.
+     * Where to report the warnings before to eventually log them.
      *
      * @see #readColumn(LookupInfo, Method, Dispatcher)
      */
-    private final WarningListeners<MetadataSource> listeners;
+    private volatile Filter logFilter;
 
     /**
      * Whether at least one {@link CloseTask} is scheduled for execution.
@@ -391,7 +389,6 @@ public class MetadataSource implements AutoCloseable {
         this.statements   = new CachedStatement[maxStatements - 1];
         this.tableColumns = new HashMap<>();
         this.pool         = new WeakValueHashMap<>(CacheKey.class);
-        this.listeners    = new WarningListeners<>(this);
         this.lastUsed     = ThreadLocal.withInitial(LookupInfo::new);
     }
 
@@ -401,9 +398,8 @@ public class MetadataSource implements AutoCloseable {
      * but will use their own {@link Connection}.
      * This constructor is useful when concurrency is desired.
      *
-     * <p>The new {@code MetadataSource} initially contains all {@linkplain #addWarningListener warning listeners}
-     * declared in the given {@code source}. But listeners added or removed in a {@code MetadataSource} after the
-     * construction will not impact the other {@code MetadataSource} instance.</p>
+     * <p>The new {@code MetadataSource} initially contains the {@linkplain #setWarningFilter warning filter}
+     * declared in the given {@code source}.</p>
      *
      * @param  source  the source from which to copy the configuration.
      */
@@ -419,7 +415,7 @@ public class MetadataSource implements AutoCloseable {
         classloader  = source.classloader;
         pool         = source.pool;
         lastUsed     = source.lastUsed;
-        listeners    = new WarningListeners<>(this, source.listeners);
+        logFilter    = source.logFilter;
     }
 
     /**
@@ -434,7 +430,6 @@ public class MetadataSource implements AutoCloseable {
         classloader  = getClass().getClassLoader();
         pool         = null;
         lastUsed     = null;
-        listeners    = null;
     }
 
     /**
@@ -940,7 +935,7 @@ public class MetadataSource implements AutoCloseable {
                     final String query = helper.clear().append("SELECT * FROM ")
                             .appendIdentifier(schema, tableName).append(" WHERE ")
                             .appendIdentifier(ID_COLUMN).append("=?").toString();
-                    result = new CachedStatement(type, connection().prepareStatement(query), listeners);
+                    result = new CachedStatement(type, connection().prepareStatement(query), logFilter);
                 }
                 value = result.getValue(toSearch.identifier, columnName);
                 isArray = (value instanceof java.sql.Array);
@@ -1073,56 +1068,44 @@ public class MetadataSource implements AutoCloseable {
         record.setSourceClassName(source.getCanonicalName());
         record.setSourceMethodName(method);
         record.setLoggerName(Loggers.SQL);
-        listeners.warning(record);
+        final Filter filter = logFilter;
+        if (filter == null || filter.isLoggable(record)) {
+            CachedStatement.LOGGER.log(record);
+        }
     }
 
     /**
-     * Adds a listener to be notified when a warning occurred while reading from or writing metadata.
+     * Sets a filter to be notified when a warning occurred while reading from or writing metadata.
      * When a warning occurs, there is a choice:
      *
      * <ul>
-     *   <li>If this metadata source has no warning listener, then the warning is logged at {@link Level#WARNING}.</li>
-     *   <li>If this metadata source has at least one warning listener, then all listeners are notified
-     *       and the warning is <strong>not</strong> logged by this metadata source instance.</li>
+     *   <li>If this metadata source has no warning filter, or if the filter returns {@code true},
+     *       then the warning is logged at {@link Level#WARNING}.</li>
+     *   <li>Otherwise the warning is not logged by this metadata source instance.
+     *       The filter implementation is free to keep a reference to the given record,
+     *       for example in order to display it in a graphical user interface.</li>
      * </ul>
      *
-     * Consider invoking this method in a {@code try} … {@code finally} block if the {@code MetadataSource}
-     * lifetime is longer than the listener lifetime, as below:
+     * @param  filter  the filter to set, or {@code null} for removing the filter.
+     * @return the previous filter, or {@code null} if none.
      *
-     * {@preformat java
-     *     source.addWarningListener(listener);
-     *     try {
-     *         // Do some work...
-     *     } finally {
-     *         source.removeWarningListener(listener);
-     *     }
-     * }
-     *
-     * @param  listener  the listener to add.
-     * @throws IllegalArgumentException if the given listener is already registered in this metadata source.
-     *
-     * @deprecated {@code WarningListener} to be replaced by {@link java.util.logging.Filter}.
+     * @since 1.1
      */
-    @Deprecated
-    public void addWarningListener(final WarningListener<? super MetadataSource> listener)
-            throws IllegalArgumentException
-    {
-        listeners.addWarningListener(listener);
+    public Filter setWarningFilter(final Filter filter) {
+        Filter p = logFilter;
+        logFilter = filter;
+        return p;
     }
 
     /**
-     * Removes a previously registered listener.
+     * Returns the current warning filter.
      *
-     * @param  listener  the listener to remove.
-     * @throws NoSuchElementException if the given listener is not registered in this metadata source.
+     * @return the current filter, or {@code null} if none.
      *
-     * @deprecated {@code WarningListener} to be replaced by {@link java.util.logging.Filter}.
+     * @since 1.1
      */
-    @Deprecated
-    public void removeWarningListener(final WarningListener<? super MetadataSource> listener)
-            throws NoSuchElementException
-    {
-        listeners.removeWarningListener(listener);
+    public Filter getWarningFilter() {
+        return logFilter;
     }
 
     /**

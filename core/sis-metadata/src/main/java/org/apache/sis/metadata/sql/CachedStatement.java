@@ -18,13 +18,15 @@ package org.apache.sis.metadata.sql;
 
 import java.util.Locale;
 import java.util.logging.Level;
+import java.util.logging.Filter;
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.system.Loggers;
 
 
@@ -50,6 +52,11 @@ import org.apache.sis.internal.system.Loggers;
  * @module
  */
 final class CachedStatement implements AutoCloseable {
+    /**
+     * Where to log warnings.
+     */
+    static final Logger LOGGER = Logging.getLogger(Loggers.SQL);
+
     /**
      * The interface for which the prepared statement has been created.
      */
@@ -81,23 +88,21 @@ final class CachedStatement implements AutoCloseable {
     long expireTime;
 
     /**
-     * Where to report the warnings. This is not necessarily a logger, since users can register listeners.
+     * Where to report the warnings before to eventually log them.
      */
-    private final WarningListeners<MetadataSource> listeners;
+    private final Filter logFilter;
 
     /**
      * Constructs a metadata result from the specified connection.
      *
      * @param type       the GeoAPI interface to implement.
      * @param statement  the prepared statement.
-     * @param listeners  where to report the warnings.
+     * @param logFilter  where to report the warnings.
      */
-    CachedStatement(final Class<?> type, final PreparedStatement statement,
-            final WarningListeners<MetadataSource> listeners)
-    {
+    CachedStatement(final Class<?> type, final PreparedStatement statement, final Filter logFilter) {
         this.type      = type;
         this.statement = statement;
-        this.listeners = listeners;
+        this.logFilter = logFilter;
     }
 
     /**
@@ -183,6 +188,8 @@ final class CachedStatement implements AutoCloseable {
         record.setSourceClassName(source.getCanonicalName());
         record.setSourceMethodName(method);
         record.setLoggerName(Loggers.SQL);
-        listeners.warning(record);
+        if (logFilter == null || logFilter.isLoggable(record)) {
+            LOGGER.log(record);
+        }
     }
 }

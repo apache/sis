@@ -48,7 +48,7 @@ import org.apache.sis.internal.system.Modules;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -261,7 +261,7 @@ public final class Logging extends Static {
                 if (!classname.equals(classe)) {
                     continue;
                 }
-            } else if (!WarningListeners.isPublic(element)) {
+            } else if (!isPublic(element)) {
                 continue;
             }
             /*
@@ -301,6 +301,30 @@ public final class Logging extends Static {
             record.setSourceMethodName(method);
         }
         return logger;
+    }
+
+    /**
+     * Returns {@code true} if the given stack trace element describes a method considered part of public API.
+     * This method is invoked in order to infer the class and method names to declare in a {@link LogRecord}.
+     * We do not document this feature in public Javadoc because it is based on heuristic rules that may change.
+     *
+     * <p>The current implementation compares the class name against a hard-coded list of classes to hide.
+     * This implementation may change in any future SIS version.</p>
+     *
+     * @param  e  a stack trace element.
+     * @return {@code true} if the class and method specified by the given element can be considered public API.
+     */
+    private static boolean isPublic(final StackTraceElement e) {
+        final String classname = e.getClassName();
+        if (classname.startsWith("java") || classname.startsWith(Modules.INTERNAL_CLASSNAME_PREFIX) ||
+            classname.indexOf('$') >= 0 || e.getMethodName().indexOf('$') >= 0)
+        {
+            return false;
+        }
+        if (classname.startsWith(Modules.CLASSNAME_PREFIX + "util.logging.")) {
+            return classname.endsWith("Test");      // Consider JUnit tests as public.
+        }
+        return true;    // TODO: with StackWalker on JDK9, check if the class is public.
     }
 
     /**
