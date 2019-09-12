@@ -81,7 +81,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ElementsOmitted_1 = 4;
 
         /**
-         * `{1}` is an implementation class. Specify the `{0}` interface instead.
+         * Illegal class `{1}`. Specify the `{0}` interface instead.
          */
         public static final short ExpectedInterface_2 = 5;
 
