@@ -71,10 +71,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>{@linkplain #getEccentricity() eccentricity}</li>
  * </ul>
  *
- * <div class="section">Distance calculations</div>
- * This class contains an {@link #orthodromicDistance(double, double, double, double)} convenience method
- * for calculating distances on great circles.
- *
  * <div class="section">Creating new ellipsoid instances</div>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).

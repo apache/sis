@@ -346,7 +346,7 @@ public final class IdentifiedObjects extends Static {
      * @return the first name, alias or identifier which is a valid Unicode identifier, or {@code null} if none.
      *
      * @see ImmutableIdentifier
-     * @see Citations#getUnicodeIdentifier(Citation)
+     * @see Citations#toCodeSpace(Citation)
      * @see CharSequences#isUnicodeIdentifier(CharSequence)
      *
      * @since 1.0
