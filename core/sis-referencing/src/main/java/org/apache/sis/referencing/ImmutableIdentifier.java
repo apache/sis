@@ -50,8 +50,8 @@ import static org.apache.sis.util.collection.Containers.property;
  * <div class="section">Immutability and thread safety</div>
  * This class is immutable and thus inherently thread-safe if the {@link Citation} and {@link InternationalString}
  * arguments given to the constructor are also immutable. It is caller's responsibility to ensure that those
- * conditions hold, for example by invoking {@link org.apache.sis.metadata.iso.citation.DefaultCitation#transition
- * DefaultCitation.transition(DefaultCitation.State.FINAL)} before passing the arguments to the constructor.
+ * conditions hold, for example by invoking {@link org.apache.sis.metadata.iso.citation.DefaultCitation#transitionTo
+ * DefaultCitation.transitionTo(DefaultCitation.State.FINAL)} before passing the arguments to the constructor.
  * Subclasses shall make sure that any overridden methods remain safe to call from multiple threads and do not change
  * any public {@code ImmutableIdentifier} state.
  *

@@ -3039,7 +3039,7 @@ parse:      for (int i = 0; i < length;) {
                 md.setMetadataStandards(c);
             }
             if (freeze) {
-                md.transition(DefaultMetadata.State.FINAL);
+                md.transitionTo(DefaultMetadata.State.FINAL);
             }
         }
         return md;

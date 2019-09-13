@@ -68,7 +68,6 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 
 // Test dependencies
-
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.xml.DocumentComparator;

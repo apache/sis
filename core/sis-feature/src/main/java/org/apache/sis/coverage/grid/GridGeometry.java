@@ -849,7 +849,7 @@ public class GridGeometry implements Serializable {
             if (getCoordinateReferenceSystem(envelope) != null && !envelope.isAllNaN()) {
                 try {
                     final DefaultGeographicBoundingBox db = ReferencingServices.getInstance().setBounds(envelope, null, null);
-                    db.transition(DefaultGeographicBoundingBox.State.EDITABLE);
+                    db.transitionTo(DefaultGeographicBoundingBox.State.EDITABLE);
                     bbox = db;
                 } catch (TransformException e) {
                     bbox = NilReason.INAPPLICABLE.createNilObject(GeographicBoundingBox.class);
