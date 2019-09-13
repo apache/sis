@@ -28,7 +28,7 @@ import org.apache.sis.storage.Resource;
  *
  * <p>{@link Resource} implementations are responsible for instantiating the most specific
  * {@code StoreEvent} subclass for the type of events. Then, all {@code StoreListener}s that
- * {@linkplain Resource#addListener(StoreListener, Class) declared an interest} for
+ * {@linkplain Resource#addListener(Class, StoreListener) declared an interest} for
  * {@code StoreEvent}s of that kind are notified, including listeners in parent resources.
  * Each listener is notified only once per event even if the listener is registered twice.</p>
  *
@@ -38,7 +38,7 @@ import org.apache.sis.storage.Resource;
  * @param  <T>  the type of events of interest to this listener.
  *
  * @see StoreEvent
- * @see Resource#addListener(StoreListener, Class)
+ * @see Resource#addListener(Class, StoreListener)
  *
  * @since 1.0
  * @module
