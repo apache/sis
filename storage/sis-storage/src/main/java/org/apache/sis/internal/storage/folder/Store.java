@@ -210,7 +210,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
      * Returns the parameters used to open this data store.
      */
     @Override
-    public ParameterValueGroup getOpenParameters() {
+    public Optional<ParameterValueGroup> getOpenParameters() {
         final String format = StoreUtilities.getFormatName(componentProvider);
         final ParameterValueGroup pg = (provider != null ? provider.getOpenParameters() : FolderStoreProvider.PARAMETERS).createValue();
         pg.parameter(DataStoreProvider.LOCATION).setValue(location);
@@ -218,7 +218,7 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
         if (timezone != null) pg.parameter("timezone").setValue(timezone);
         if (encoding != null) pg.parameter("encoding").setValue(encoding);
         if (format   != null) pg.parameter("format"  ).setValue(format);
-        return pg;
+        return Optional.of(pg);
     }
 
     /**

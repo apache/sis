@@ -135,14 +135,14 @@ public class SQLStore extends DataStore implements Aggregate {
      * @return parameters used for opening this data store.
      */
     @Override
-    public ParameterValueGroup getOpenParameters() {
+    public Optional<ParameterValueGroup> getOpenParameters() {
         if (provider == null) {
-            return null;
+            return Optional.empty();
         }
         final ParameterValueGroup pg = provider.getOpenParameters().createValue();
         pg.parameter(SQLStoreProvider.LOCATION).setValue(source);
         pg.parameter(SQLStoreProvider.TABLES).setValue(tableNames);
-        return pg;
+        return Optional.of(pg);
     }
 
     /**

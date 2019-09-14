@@ -154,16 +154,16 @@ public class GeoTiffStore extends DataStore implements Aggregate {
 
     /**
      * Returns the parameters used to open this GeoTIFF data store.
-     * If non-null, the parameters are described by {@link GeoTiffStoreProvider#getOpenParameters()} and contains at
-     * least a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
-     * This method may return {@code null} if the storage input can not be described by a URI
+     * The parameters are described by {@link GeoTiffStoreProvider#getOpenParameters()} and contains at least
+     * a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
+     * The return value may be empty if the storage input can not be described by a URI
      * (for example a GeoTIFF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *
-     * @return parameters used for opening this data store, or {@code null} if not available.
+     * @return parameters used for opening this data store.
      */
     @Override
-    public ParameterValueGroup getOpenParameters() {
-        return URIDataStore.parameters(provider, location);
+    public Optional<ParameterValueGroup> getOpenParameters() {
+        return Optional.ofNullable(URIDataStore.parameters(provider, location));
     }
 
     /**
