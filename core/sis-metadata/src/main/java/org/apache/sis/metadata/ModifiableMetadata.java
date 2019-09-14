@@ -104,7 +104,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     private static final byte STAGED = 1;
 
     /**
-     * A value for {@link #state} meaning that execution of {@code transition(…)} is in progress.
+     * A value for {@link #state} meaning that execution of {@code transitionTo(…)} is in progress.
      * Must be greater than all other values except {@link #COMPLETABLE} and {@link #FINAL}.
      */
     private static final byte FREEZING = 2;
@@ -117,7 +117,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     private static final byte COMPLETABLE = 3;
 
     /**
-     * A value for {@link #state} meaning that {@code transition(State.FINAL)} has been invoked.
+     * A value for {@link #state} meaning that {@code transitionTo(State.FINAL)} has been invoked.
      * Must be greater than all other values.
      */
     private static final byte FINAL = 4;
@@ -152,7 +152,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     /**
      * Whether the metadata is still editable or has been made final.
      * New {@link ModifiableMetadata} instances are initially {@link #EDITABLE}
-     * and can be made {@link #FINAL} after construction by a call to {@link ModifiableMetadata#transition(State)}.
+     * and can be made {@link #FINAL} after construction by a call to {@link ModifiableMetadata#transitionTo(State)}.
      *
      * <div class="note"><b>Note:</b>
      * more states may be added in future Apache SIS versions. On possible candidate is {@code STAGED}.
@@ -218,7 +218,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     /**
      * Tells whether this instance of metadata is editable.
      * This is initially {@link State#EDITABLE} for new {@code ModifiableMetadata} instances,
-     * but can be changed by a call to {@link #transition(State)}.
+     * but can be changed by a call to {@link #transitionTo(State)}.
      *
      * <p>{@link State#FINAL} implies that all properties are also final.
      * This recursivity does not necessarily apply to other states. For example {@link State#EDITABLE}
@@ -278,7 +278,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * @since 1.0
      */
-    public boolean transition(final State target) {
+    public boolean transitionTo(final State target) {
         if (target.code < state) {
             throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.UnmodifiableMetadata));
         }
@@ -385,7 +385,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      */
     @Deprecated
     public void freeze() {
-        transition(State.FINAL);
+        transitionTo(State.FINAL);
     }
 
     /**
@@ -541,7 +541,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
         if (source != target) {
             if (state == FREEZING) {
                 /*
-                 * transition(State.FINAL) is under progress. The source collection is already
+                 * transitionTo(State.FINAL) is under progress. The source collection is already
                  * an unmodifiable instance created by StateChanger.
                  */
                 assert (useSet != null) || collectionType(elementType).isInstance(source) : elementType;

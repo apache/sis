@@ -79,7 +79,7 @@ public final class TransformationAccuracy extends Static {
                     new DefaultAbsoluteExternalPositionalAccuracy(result);
             element.setNamesOfMeasure(Collections.singleton(TRANSFORMATION_ACCURACY));
             element.setEvaluationMethodType(EvaluationMethodType.DIRECT_EXTERNAL);
-            element.transition(DefaultAbsoluteExternalPositionalAccuracy.State.FINAL);
+            element.transitionTo(DefaultAbsoluteExternalPositionalAccuracy.State.FINAL);
 
             p = CACHE.putIfAbsent(accuracy, element);
             if (p == null) {
