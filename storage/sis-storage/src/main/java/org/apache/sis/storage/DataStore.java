@@ -121,7 +121,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
 
     /**
      * Creates a new instance for the given storage (typically file or database).
-     * The {@code provider} argument is an optional information.
+     * The {@code provider} argument is an optional but recommended information.
      * The {@code connector} argument is mandatory.
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
@@ -175,6 +175,10 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * The provider gives additional information on this {@code DataStore} such as a format description
      * and a list of parameters that can be used for opening data stores of the same class.
      *
+     * <p>The return value should never be null if this {@code DataStore} has been created by
+     * {@link DataStores#open(Object)} or by a {@link DataStoreProvider} {@code open(…)} method.
+     * However it may be null if this object has been instantiated by a direct call to its constructor.</p>
+     *
      * @return the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      *
      * @see #provider
@@ -198,15 +202,15 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      *
      * <p>In some cases, for stores reading in-memory data or other inputs that can not fit with
      * {@code ParameterDescriptorGroup} requirements (for example an {@link java.io.InputStream}
-     * connected to unknown or no {@link java.net.URL}), this method may return null.</p>
+     * connected to unknown or no {@link java.net.URL}), this method may return an empty value.</p>
      *
-     * @return parameters used for opening this {@code DataStore}, or {@code null} if not available.
+     * @return parameters used for opening this {@code DataStore}.
      *
      * @see DataStoreProvider#getOpenParameters()
      *
      * @since 0.8
      */
-    public abstract ParameterValueGroup getOpenParameters();
+    public abstract Optional<ParameterValueGroup> getOpenParameters();
 
     /**
      * Sets the locale to use for formatting warnings and other messages.
@@ -351,7 +355,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * contact information about the creator or distributor, data quality, update frequency, usage constraints,
      * file format and more.
      *
-     * @return information about resources in the data store, or {@code null} if none.
+     * @return information about resources in the data store. Should not be {@code null}.
      * @throws DataStoreException if an error occurred while reading the data.
      *
      * @see #getIdentifier()

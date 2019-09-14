@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Optional;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.event.StoreListeners;
@@ -53,11 +54,11 @@ public final strictfp class DataStoreMock extends DataStore {
     }
 
     /**
-     * Returns {@code null} since there is no open parameters.
+     * Returns empty optional since there is no open parameters.
      */
     @Override
-    public ParameterValueGroup getOpenParameters() {
-        return null;
+    public Optional<ParameterValueGroup> getOpenParameters() {
+        return Optional.empty();
     }
 
     /**

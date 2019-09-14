@@ -17,6 +17,7 @@
 package org.apache.sis.internal.storage;
 
 import java.net.URI;
+import java.util.Optional;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.FileSystemNotFoundException;
@@ -103,11 +104,11 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     /**
      * Returns the parameters used to open this data store.
      *
-     * @return parameters used for opening this {@code DataStore}, or {@code null} if not available.
+     * @return parameters used for opening this {@code DataStore}.
      */
     @Override
-    public ParameterValueGroup getOpenParameters() {
-        return parameters(provider, location);
+    public Optional<ParameterValueGroup> getOpenParameters() {
+        return Optional.ofNullable(parameters(provider, location));
     }
 
     /**
