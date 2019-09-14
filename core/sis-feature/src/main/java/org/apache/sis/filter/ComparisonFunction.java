@@ -164,11 +164,9 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
                  * All values in the collection may be compared to the other value until match condition is met.
                  * Null elements in the collection are ignored.
                  */
-                boolean found  = false;
-                boolean hasOne = false;
+                boolean match = false;
                 for (final Object element : collection) {
                     if (element != null) {
-                        found = true;
                         final boolean pass;
                         if (collectionFirst) {
                             pass = evaluate(element, right);
@@ -176,19 +174,26 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
                             pass = evaluate(left, element);
                         }
                         switch (matchAction) {
-                            default:  return false;                            // Unknown enumeration.
-                            case ALL: if (!pass) return false; else break;
-                            case ANY: if ( pass) return true;  else break;
+                            default: return false;              // Unknown enumeration.
+                            case ALL: {
+                                if (!pass) return false;
+                                match = true;                   // Remember that we have at least 1 value.
+                                break;
+                            }
+                            case ANY: {
+                                if (pass) return true;
+                                break;                          // `match` still false since no match.
+                            }
                             case ONE: {
                                 if (pass) {
-                                    if (hasOne) return false;
-                                    hasOne = true;
+                                    if (match) return false;    // If a value has been found previously.
+                                    match = true;               // Remember that we have exactly one value.
                                 }
                             }
                         }
                     }
                 }
-                return found;
+                return match;
             }
         }
         return false;

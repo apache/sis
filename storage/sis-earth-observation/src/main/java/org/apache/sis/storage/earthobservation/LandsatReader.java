@@ -974,7 +974,7 @@ final class LandsatReader extends MetadataBuilder {
                     }
                 }
             }
-            result.transition(DefaultMetadata.State.FINAL);
+            result.transitionTo(DefaultMetadata.State.FINAL);
         }
         return result;
     }

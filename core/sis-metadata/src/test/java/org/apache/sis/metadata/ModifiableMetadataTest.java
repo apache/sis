@@ -85,7 +85,7 @@ public final strictfp class ModifiableMetadataTest extends TestCase {
      */
     @Test
     public void testStateEditable() {
-        assertFalse("transition", md.transition(ModifiableMetadata.State.EDITABLE));        // Shall be a no-op.
+        assertFalse("transitionTo", md.transitionTo(ModifiableMetadata.State.EDITABLE));        // Shall be a no-op.
         assertEquals("state", ModifiableMetadata.State.EDITABLE, md.state());
         assertEquals("identifier.state", ModifiableMetadata.State.EDITABLE, identifierState());
         /*
@@ -105,11 +105,11 @@ public final strictfp class ModifiableMetadataTest extends TestCase {
      */
     @Test
     public void testStateCompletable() {
-        assertTrue("transition", md.transition(ModifiableMetadata.State.COMPLETABLE));
+        assertTrue("transitionTo", md.transitionTo(ModifiableMetadata.State.COMPLETABLE));
         assertEquals("state", ModifiableMetadata.State.COMPLETABLE, md.state());
         assertEquals("identifier.state", ModifiableMetadata.State.COMPLETABLE, identifierState());
         try {
-            md.transition(ModifiableMetadata.State.EDITABLE);
+            md.transitionTo(ModifiableMetadata.State.EDITABLE);
             fail("Shall not be allowed to transition back to editable state.");
         } catch (UnmodifiableMetadataException e) {
             verifyUnmodifiableException(e);
@@ -147,11 +147,11 @@ public final strictfp class ModifiableMetadataTest extends TestCase {
      */
     @Test
     public void testStateFinal() {
-        assertTrue("transition", md.transition(ModifiableMetadata.State.FINAL));
+        assertTrue("transitionTo", md.transitionTo(ModifiableMetadata.State.FINAL));
         assertEquals("state", ModifiableMetadata.State.FINAL, md.state());
         assertEquals("identifier.state", ModifiableMetadata.State.FINAL, identifierState());
         try {
-            md.transition(ModifiableMetadata.State.EDITABLE);
+            md.transitionTo(ModifiableMetadata.State.EDITABLE);
             fail("Shall not be allowed to transition back to editable state.");
         } catch (UnmodifiableMetadataException e) {
             verifyUnmodifiableException(e);

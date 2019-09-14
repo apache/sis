@@ -66,18 +66,18 @@ public final strictfp class StoreListenersTest extends TestCase implements Store
     }
 
     /**
-     * Tests {@link StoreListeners#addListener(StoreListener, Class)} followed by
-     * {@link StoreListeners#removeListener(StoreListener, Class)}.
+     * Tests {@link StoreListeners#addListener(Class, StoreListener)} followed by
+     * {@link StoreListeners#removeListener(Class, StoreListener)}.
      */
     @Test
     public void testAddAndRemoveStoreListener() {
         final StoreListeners listeners = store.listeners();
         assertFalse("hasListeners()", listeners.hasListeners(WarningEvent.class));
-        listeners.addListener(this, WarningEvent.class);
+        listeners.addListener(WarningEvent.class, this);
         assertTrue("hasListeners()", listeners.hasListeners(WarningEvent.class));
-        listeners.removeListener(this, WarningEvent.class);
+        listeners.removeListener(WarningEvent.class, this);
         assertFalse("hasListeners()", listeners.hasListeners(WarningEvent.class));
-        listeners.removeListener(this, WarningEvent.class);         // Should be no-op.
+        listeners.removeListener(WarningEvent.class, this);         // Should be no-op.
     }
 
     /**
@@ -87,7 +87,7 @@ public final strictfp class StoreListenersTest extends TestCase implements Store
     @DependsOnMethod("testAddAndRemoveStoreListener")
     public void testWarning() {
         final LogRecord record = new LogRecord(Level.WARNING, "The message");
-        store.addListener(this, WarningEvent.class);
+        store.addListener(WarningEvent.class, this);
         store.listeners().warning(record);
         assertSame(record, warning);
     }
@@ -99,7 +99,7 @@ public final strictfp class StoreListenersTest extends TestCase implements Store
     @Test
     @DependsOnMethod("testWarning")
     public void testWarningWithAutoSource() {
-        store.addListener(this, WarningEvent.class);
+        store.addListener(WarningEvent.class, this);
         store.simulateWarning("The message");
         assertNotNull("Listener has not been notified.", warning);
         assertEquals(DataStoreMock.class.getName(), warning.getSourceClassName());

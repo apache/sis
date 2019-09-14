@@ -283,7 +283,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Makes this representative fraction unmodifiable. After invocation to this method,
      * any call to a setter method will throw an {@link UnmodifiableMetadataException}.
      *
-     * @see ModifiableMetadata#transition(ModifiableMetadata.State)
+     * @see ModifiableMetadata#transitionTo(ModifiableMetadata.State)
      *
      * @since 0.7
      */

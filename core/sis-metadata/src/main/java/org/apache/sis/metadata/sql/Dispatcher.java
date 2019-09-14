@@ -239,7 +239,7 @@ final class Dispatcher implements InvocationHandler {
                             }
                             cache = impl.newInstance();
                             if (cache instanceof ModifiableMetadata) {
-                                ((ModifiableMetadata) cache).transition(ModifiableMetadata.State.COMPLETABLE);
+                                ((ModifiableMetadata) cache).transitionTo(ModifiableMetadata.State.COMPLETABLE);
                             }
                             /*
                              * We do not use AtomicReference because it is okay if the cache is instantiated twice.

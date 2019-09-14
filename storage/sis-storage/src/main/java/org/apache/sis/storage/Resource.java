@@ -145,7 +145,7 @@ public interface Resource {
      * on different resources in the same tree, for example a parent and its children.</p>
      *
      * <p>If this resource may produce events of the given type, then the given listener is kept by strong reference;
-     * it will not be garbage collected unless {@linkplain #removeListener(StoreListener, Class) explicitly removed}
+     * it will not be garbage collected unless {@linkplain #removeListener(Class, StoreListener) explicitly removed}
      * or unless this {@code Resource} is itself garbage collected. However if the given type of events can never
      * happen with this resource, then this method is not required to keep a reference to the given listener.</p>
      *
@@ -159,7 +159,7 @@ public interface Resource {
      * @param  listener   listener to notify about events.
      * @param  eventType  type of {@link StoreEvent} to listen (can not be {@code null}).
      */
-    <T extends StoreEvent> void addListener(StoreListener<? super T> listener, Class<T> eventType);
+    <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener);
 
     /**
      * Unregisters a listener previously added to this resource for the given type of events.
@@ -168,8 +168,8 @@ public interface Resource {
      * parent resources.
      *
      * <p>If the same listener has been registered many times for the same even type, then this method removes only
-     * the most recent registration. In other words if {@code addListener(ls, type)} has been invoked twice, then
-     * {@code removeListener(ls, type)} needs to be invoked twice in order to remove all instances of that listener.
+     * the most recent registration. In other words if {@code addListener(type, ls)} has been invoked twice, then
+     * {@code removeListener(type, ls)} needs to be invoked twice in order to remove all instances of that listener.
      * If the given listener is not found, then this method does nothing (no exception is thrown).</p>
      *
      * <div class="section">Warning events</div>
@@ -181,5 +181,5 @@ public interface Resource {
      * @param  listener   listener to stop notifying about events.
      * @param  eventType  type of {@link StoreEvent} which were listened (can not be {@code null}).
      */
-    <T extends StoreEvent> void removeListener(StoreListener<? super T> listener, Class<T> eventType);
+    <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener);
 }

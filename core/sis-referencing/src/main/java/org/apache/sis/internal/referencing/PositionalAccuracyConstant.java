@@ -112,7 +112,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
         setMeasureDescription(measureDescription);
         setEvaluationMethodDescription(evaluationMethodDescription);
         setEvaluationMethodType(EvaluationMethodType.DIRECT_INTERNAL);
-        transition(State.FINAL);
+        transitionTo(State.FINAL);
     }
 
     /**
