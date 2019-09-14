@@ -1068,7 +1068,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         decoder.setSearchPath(searchPath);
         final DefaultMetadata metadata = build(false);
         addCompleteMetadata(createURI(stringValue(METADATA_LINK)));
-        metadata.transition(DefaultMetadata.State.FINAL);
+        metadata.transitionTo(DefaultMetadata.State.FINAL);
         return metadata;
     }
 }

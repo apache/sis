@@ -202,7 +202,7 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
     private static Object unmodifiable(Object metadata) {
         if (metadata instanceof ModifiableMetadata) {
             metadata = MetadataCopier.forModifiable(((ModifiableMetadata) metadata).getStandard()).copy(metadata);
-            ((ModifiableMetadata) metadata).transition(ModifiableMetadata.State.FINAL);
+            ((ModifiableMetadata) metadata).transitionTo(ModifiableMetadata.State.FINAL);
         }
         return metadata;
     }

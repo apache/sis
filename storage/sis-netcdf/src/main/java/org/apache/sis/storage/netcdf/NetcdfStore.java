@@ -129,13 +129,13 @@ public class NetcdfStore extends DataStore implements Aggregate {
      * This method may return {@code null} if the storage input can not be described by a URI
      * (for example a netCDF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *
-     * @return parameters used for opening this data store, or {@code null} if not available.
+     * @return parameters used for opening this data store.
      *
      * @since 0.8
      */
     @Override
-    public ParameterValueGroup getOpenParameters() {
-        return URIDataStore.parameters(provider, location);
+    public Optional<ParameterValueGroup> getOpenParameters() {
+        return Optional.ofNullable(URIDataStore.parameters(provider, location));
     }
 
     /**
@@ -221,10 +221,10 @@ public class NetcdfStore extends DataStore implements Aggregate {
      * any listener specified for another kind of events will be ignored.
      */
     @Override
-    public <T extends StoreEvent> void addListener(StoreListener<? super T> listener, Class<T> eventType) {
+    public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
         // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
         if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
-            super.addListener(listener, eventType);
+            super.addListener(eventType, listener);
         }
     }
 

@@ -199,7 +199,7 @@ public abstract class DataStoreProvider {
      * <p>Implementers are responsible for declaring all parameters and whether they are mandatory or optional.
      * It is recommended to define at least a parameter named {@value #LOCATION}, completed by {@value #CREATE}
      * if the data store supports write operations.
-     * That parameter will be recognized by the default {@code DataStoreProvider} methods and used whenever a
+     * Those parameters will be recognized by the default {@code DataStoreProvider} methods and used whenever a
      * {@link StorageConnector} is required.</p>
      *
      * <div class="note"><b>Alternative:</b>
