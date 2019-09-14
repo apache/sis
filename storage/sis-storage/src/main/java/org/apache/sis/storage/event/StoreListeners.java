@@ -537,13 +537,13 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
      * warnings in its own way, for example by showing warnings in a widget.
      *
      * @param  <T>        compile-time value of the {@code eventType} argument.
-     * @param  listener   listener to notify about events.
      * @param  eventType  type of {@link StoreEvent} to listen (can not be {@code null}).
+     * @param  listener   listener to notify about events.
      *
-     * @see Resource#addListener(StoreListener, Class)
+     * @see Resource#addListener(Class, StoreListener)
      */
     @SuppressWarnings("unchecked")
-    public synchronized <T extends StoreEvent> void addListener(final StoreListener<? super T> listener, final Class<T> eventType) {
+    public synchronized <T extends StoreEvent> void addListener(final Class<T> eventType, final StoreListener<? super T> listener) {
         ArgumentChecks.ensureNonNull("listener",  listener);
         ArgumentChecks.ensureNonNull("eventType", eventType);
         ForType<T> ce = null;
@@ -567,8 +567,8 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
      * parent manager.
      *
      * <p>If the same listener has been registered many times for the same even type, then this method removes only
-     * the most recent registration. In other words if {@code addListener(ls, type)} has been invoked twice, then
-     * {@code removeListener(ls, type)} needs to be invoked twice in order to remove all instances of that listener.
+     * the most recent registration. In other words if {@code addListener(type, ls)} has been invoked twice, then
+     * {@code removeListener(type, ls)} needs to be invoked twice in order to remove all instances of that listener.
      * If the given listener is not found, then this method does nothing (no exception is thrown).</p>
      *
      * <div class="section">Warning events</div>
@@ -577,13 +577,13 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
      * to the loggers.
      *
      * @param  <T>        compile-time value of the {@code eventType} argument.
-     * @param  listener   listener to stop notifying about events.
      * @param  eventType  type of {@link StoreEvent} which were listened (can not be {@code null}).
+     * @param  listener   listener to stop notifying about events.
      *
-     * @see Resource#removeListener(StoreListener, Class)
+     * @see Resource#removeListener(Class, StoreListener)
      */
     @SuppressWarnings("unchecked")
-    public synchronized <T extends StoreEvent> void removeListener(StoreListener<? super T> listener, Class<T> eventType) {
+    public synchronized <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {
         ArgumentChecks.ensureNonNull("listener",  listener);
         ArgumentChecks.ensureNonNull("eventType", eventType);
         for (ForType<?> e = listeners; e != null; e = e.next) {
@@ -634,7 +634,7 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
     @Override
     @Deprecated
     public void addWarningListener(final WarningListener listener) {
-        addListener(new Legacy(listener), WarningEvent.class);
+        addListener(WarningEvent.class, new Legacy(listener));
     }
 
     /**
@@ -649,7 +649,7 @@ public class StoreListeners extends org.apache.sis.util.logging.WarningListeners
                 if (list != null) {
                     for (final StoreListener<?> c : list) {
                         if (c instanceof Legacy && ((Legacy) c).delegate == listener) {
-                            removeListener((StoreListener<WarningEvent>) c, WarningEvent.class);
+                            removeListener(WarningEvent.class, (StoreListener<WarningEvent>) c);
                             break;
                         }
                     }

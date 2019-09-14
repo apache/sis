@@ -139,10 +139,10 @@ public class AbstractResource extends StoreListeners implements Resource {
      * (at least the read-only ones) produce no change events.
      */
     @Override
-    public <T extends StoreEvent> void addListener(StoreListener<? super T> listener, Class<T> eventType) {
+    public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
         // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
         if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
-            super.addListener(listener, eventType);
+            super.addListener(eventType, listener);
         }
     }
 }
