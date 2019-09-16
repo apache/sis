@@ -31,8 +31,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public final strictfp class TemporalFunctionTest extends TestCase {

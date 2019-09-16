@@ -34,8 +34,8 @@ import org.apache.sis.util.ArgumentChecks;
  * @todo Implement all SQL/MM specification functions.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 final class SQLMM implements FunctionRegister {

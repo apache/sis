@@ -37,8 +37,8 @@ import org.opengis.filter.expression.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 abstract class BinaryFunction extends Node {

@@ -26,8 +26,8 @@ import org.apache.sis.coverage.grid.GridGeometry;
  * be controlled by options, which may be {@link DataStore}-specific.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public interface WritableGridCoverageResource extends GridCoverageResource {
