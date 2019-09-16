@@ -25,11 +25,13 @@ import javax.tools.Diagnostic;
 import javax.lang.model.element.Element;
 import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.Reporter;
+import jdk.javadoc.doclet.Doclet;
 import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.TextTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
+import java.util.function.Supplier;
 
 
 /**
@@ -70,24 +72,9 @@ abstract class Taglet implements jdk.javadoc.doclet.Taglet {
      * @param doclet  the doclet that instantiated this taglet.
      */
     @Override
-    public void init(final DocletEnvironment env, final jdk.javadoc.doclet.Doclet doclet) {
-        if (doclet instanceof Doclet) {
-            reporter = ((Doclet) doclet).reporter;
-            trees    = ((Doclet) doclet).trees;
-        } else {
-            // Temporary workaround for https://bugs.openjdk.java.net/browse/JDK-8201817
-            StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk(stream ->
-                stream.filter(frame -> frame.getClassName().equals("org.apache.sis.internal.doclet.Doclet"))
-                      .map(frame -> frame.getDeclaringClass()).findFirst()).ifPresent(docletClass -> {
-                          try {
-                              Object instance = docletClass.getDeclaredField("workaround8201817").get(null);
-                              reporter = (Reporter) docletClass.getDeclaredField("reporter").get(instance);
-                              trees    = (DocTrees) docletClass.getDeclaredField("trees").get(instance);
-                          } catch (ReflectiveOperationException e) {
-                              printError("Unsupported doclet implementation. Caused by: " + e);
-                          }
-                      });
-        }
+    public void init(final DocletEnvironment env, final Doclet doclet) {
+        reporter = (Reporter) ((Supplier<?>) doclet).get();
+        trees = env.getDocTrees();
     }
 
     /**

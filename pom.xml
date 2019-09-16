@@ -23,7 +23,7 @@
      Maven 2 project configuration file
      http://maven.apache.org/maven2/
 
-     Apache SIS build requires Java 10 or higher, but compiled files can be executed on Java 8.
+     Apache SIS build requires Java 11 or higher, but compiled files can be executed on Java 8.
      Setting the SIS_DATA environment variable before build is optional but recommended.
 
      Build development snapshot:    mvn clean install
@@ -624,7 +624,7 @@
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <version>10</version>
+                  <version>11</version>
                 </requireJavaVersion>
               </rules>
             </configuration>
@@ -920,8 +920,6 @@
 
           <!-- Custom taglets, some of them implemented in Java. -->
           <tags>
-            <tag><placement>t</placement> <name>goal</name>     <head>Maven goal:</head></tag>
-            <tag><placement>t</placement> <name>phase</name>    <head>Maven phase:</head></tag>
             <tag><placement>X</placement> <name>category</name> <head>Category:</head></tag>
             <tag><placement>a</placement> <name>todo</name>     <head>TODO:</head></tag>
           </tags>
