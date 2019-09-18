@@ -869,10 +869,12 @@
             <link>http://unitsofmeasurement.github.io/unit-api/site/apidocs</link>
             <link>http://www.geoapi.org/3.0/javadoc</link>
             <link>http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/javadoc</link>
+            <link>http://sis.apache.org/apidocs</link>
           </links>
 
           <additionalOptions>
             <additionalOption>--add-stylesheet "${maven.multiModuleProjectDirectory}/src/main/javadoc/sis.css"</additionalOption>
+            <additionalOption>-Xdoclint:all,-reference</additionalOption>
           </additionalOptions>
 
           <!-- Separates packages on the overview page into the groups specified. -->
