@@ -16,31 +16,38 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Objects;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.sql.DataSource;
-import java.sql.SQLException;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import org.opengis.util.NameSpace;
-import org.opengis.util.NameFactory;
+
+import org.opengis.feature.Feature;
+import org.opengis.feature.PropertyType;
 import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
+import org.opengis.util.NameSpace;
+
+import org.apache.sis.feature.builder.AssociationRoleBuilder;
+import org.apache.sis.feature.builder.AttributeRole;
+import org.apache.sis.feature.builder.AttributeTypeBuilder;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.metadata.sql.Dialect;
+import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
+import org.apache.sis.internal.sql.feature.FeatureAdapter.PropertyMapper;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
+import org.apache.sis.storage.sql.SQLStore;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.ResourceInternationalString;
 
@@ -296,6 +303,10 @@ final class Analyzer {
         warnings.add(Resources.formatInternational(key, argument));
     }
 
+    private PropertyAdapter analyze(SQLColumn target) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Invoked after we finished to create all tables. This method flush the warnings
      * (omitting duplicated warnings), then returns all tables including dependencies.
@@ -312,4 +323,300 @@ final class Analyzer {
         }
         return tables.values();
     }
+
+    public SQLTypeSpecification create(final TableReference table, final TableReference importedBy) throws SQLException {
+        return new TableMetadata(table, importedBy);
+    }
+
+    public SQLTypeSpecification create(final PreparedStatement target, final String sourceQuery, final GenericName optName) throws SQLException {
+        return new QuerySpecification(target, sourceQuery, optName);
+    }
+
+    public FeatureAdapter buildAdapter(final SQLTypeSpecification spec) throws SQLException {
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder(nameFactory, functions.library, locale);
+        builder.setName(spec.getName() == null ? Names.createGenericName("sis", ":", UUID.randomUUID().toString()) : spec.getName());
+        builder.setDefinition(spec.getDefinition());
+        final String geomCol = spec.getPrimaryGeometryColumn().orElse("");
+        final List pkCols = spec.getPK().map(PrimaryKey::getColumns).orElse(Collections.EMPTY_LIST);
+        List<PropertyMapper> attributes = new ArrayList<>();
+        // JDBC column indices are 1 based.
+        int i = 0;
+        for (SQLColumn col : spec.getColumns()) {
+            i++;
+            final SpatialFunctions.ColumnAdapter<?> colAdapter = functions.toJavaType(col.getType(), col.getTypeName());
+            Class<?> type = colAdapter.javaType;
+            final String colName = col.getName().getColumnName();
+            final String attrName = col.getName().getAttributeName();
+            if (type == null) {
+                warning(Resources.Keys.UnknownType_1, colName);
+                type = Object.class;
+            }
+
+            final AttributeTypeBuilder<?> attribute = builder
+                    .addAttribute(type)
+                    .setName(attrName);
+            if (col.isNullable()) attribute.setMinimumOccurs(0);
+            final int precision = col.getPrecision();
+            /* TODO: we should check column type. Precision for numbers or blobs is meaningfull, but the convention
+             * exposed by SIS does not allow to distinguish such cases.
+             */
+            if (precision > 0) attribute.setMaximalLength(precision);
+
+            col.getCrs().ifPresent(attribute::setCRS);
+            if (geomCol.equals(attrName)) attribute.addRole(AttributeRole.DEFAULT_GEOMETRY);
+
+            if (pkCols.contains(colName)) attribute.addRole(AttributeRole.IDENTIFIER_COMPONENT);
+            attributes.add(new PropertyMapper(attrName, i, colAdapter));
+        }
+
+        addImports(spec, builder);
+
+        addExports(spec, builder);
+
+        return new FeatureAdapter(builder.build(), attributes);
+    }
+
+    private void addExports(SQLTypeSpecification spec, FeatureTypeBuilder builder) throws SQLException {
+        final List<Relation> exports;
+        try {
+            exports = spec.getExports();
+        } catch (DataStoreContentException e) {
+            throw new BackingStoreException(e);
+        }
+
+        for (final Relation r : exports) {
+            try {
+                final GenericName foreignTypeName = r.getName(Analyzer.this);
+                final Table foreignTable = table(r, foreignTypeName, null); // 'null' because exported, not imported.
+                final AssociationRoleBuilder association;
+                if (foreignTable != null) {
+                    r.setSearchTable(Analyzer.this, foreignTable, spec.getPK().map(PrimaryKey::getColumns).map(l -> l.toArray(new String[0])).orElse(null), Relation.Direction.EXPORT);
+                    association = builder.addAssociation(foreignTable.featureType);
+                } else {
+                    association = builder.addAssociation(foreignTypeName);     // May happen in case of cyclic dependency.
+                }
+                association.setName(r.propertyName)
+                        .setMinimumOccurs(0)
+                        .setMaximumOccurs(Integer.MAX_VALUE);
+            } catch (DataStoreException e) {
+                throw new BackingStoreException(e);
+            }
+        }
+    }
+
+    private void addImports(SQLTypeSpecification spec, FeatureTypeBuilder target) throws SQLException {
+        final List<Relation> imports = spec.getImports();
+        // TODO: add an abstraction here, so we can specify source table when origin is one.
+        for (Relation r : imports) {
+            final GenericName foreignTypeName = r.getName(Analyzer.this);
+            final Table foreignTable;
+            try {
+                foreignTable = table(r, foreignTypeName, null);
+            } catch (DataStoreException e) {
+                throw new BackingStoreException(e);
+            }
+            final AssociationRoleBuilder association = foreignTable == null?
+                    target.addAssociation(foreignTypeName) : target.addAssociation(foreignTable.featureType);
+            association.setName(r.propertyName);
+        }
+    }
+
+    private interface PropertyAdapter {
+        PropertyType getType();
+        void fill(ResultSet source, final Feature target);
+    }
+
+    private class TableMetadata implements SQLTypeSpecification {
+        final TableReference id;
+        private final String tableEsc;
+        private final String schemaEsc;
+
+        private final Optional<PrimaryKey> pk;
+
+        private final TableReference importedBy;
+
+        private final List<SQLColumn> columns;
+
+        private TableMetadata(TableReference source, TableReference importedBy) throws SQLException {
+            this.id = source;
+            this.importedBy = importedBy;
+            tableEsc = escape(source.table);
+            schemaEsc = escape(source.schema);
+
+            try (ResultSet reflect = metadata.getPrimaryKeys(id.catalog, id.schema, id.table)) {
+                final List<String> cols = new ArrayList<>();
+                while (reflect.next()) {
+                    cols.add(getUniqueString(reflect, Reflection.COLUMN_NAME));
+                    // The actual Boolean value will be fetched in the loop on columns later.
+                }
+                pk = PrimaryKey.create(cols);
+            }
+
+            try (ResultSet reflect = metadata.getColumns(source.catalog, schemaEsc, tableEsc, null)) {
+
+                final ArrayList<SQLColumn> tmpList = new ArrayList<>();
+                while (reflect.next()) {
+                    final int type = reflect.getInt(Reflection.DATA_TYPE);
+                    final String typeName = reflect.getString(Reflection.TYPE_NAME);
+                    final boolean isNullable = Boolean.TRUE.equals(SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_NULLABLE)));
+                    final ColumnRef name = new ColumnRef(getUniqueString(reflect, Reflection.COLUMN_NAME));
+                    final int precision = reflect.getInt(Reflection.COLUMN_SIZE);
+                    final SQLColumn col = new SQLColumn(type, typeName, isNullable, name, precision);
+                    tmpList.add(col);
+                }
+
+                columns = Collections.unmodifiableList(tmpList);
+            }
+        }
+
+        @Override
+        public GenericName getName() {
+            return id.getName(Analyzer.this);
+        }
+
+        /**
+         * The remarks are opportunistically stored in id.freeText if known by the caller.
+         */
+        @Override
+        public String getDefinition() throws SQLException {
+            String remarks = id.freeText;
+            if (id instanceof Relation) {
+                try (ResultSet reflect = metadata.getTables(id.catalog, schemaEsc, tableEsc, null)) {
+                    while (reflect.next()) {
+                        remarks = getUniqueString(reflect, Reflection.REMARKS);
+                        if (remarks != null) {
+                            remarks = remarks.trim();
+                            if (remarks.isEmpty()) {
+                                remarks = null;
+                            } else break;
+                        }
+                    }
+                }
+            }
+            return remarks;
+        }
+
+        @Override
+        public Optional<PrimaryKey> getPK() throws SQLException {
+            return pk;
+        }
+
+        @Override
+        public List<SQLColumn> getColumns() {
+            return columns;
+        }
+
+        @Override
+        public List<Relation> getImports() throws SQLException {
+            try (ResultSet reflect = metadata.getImportedKeys(id.catalog, id.schema, id.table)) {
+                if (!reflect.next()) return Collections.EMPTY_LIST;
+                final List<Relation> imports = new ArrayList<>(2);
+                do {
+                    Relation r = new Relation(Analyzer.this, Relation.Direction.IMPORT, reflect);
+                    final GenericName foreignTypeName = r.getName(Analyzer.this);
+                    final Collection<String> fks = r.getForeignerKeys();
+                    /* If the link is composed of a single foreign key, we'll name it after that name. Otherwise,
+                     * we'll use constraint title if present. As a fallback, we take referenced table name, as it will
+                     * surely be more explicit than a concatenation of column names.
+                     * In all cases, we set "sis" name space, as we are making arbitrary choices specific to this
+                     * framework.
+                     */
+                    if (fks.size() == 1) r.propertyName = Names.createGenericName(null, ":", "sis", fks.iterator().next());
+                    else if (r.freeText != null && !r.freeText.isEmpty()) r.propertyName = Names.createGenericName(null,":","sis", r.freeText);
+                    else r.propertyName = Names.createGenericName(null, ":", "sis", foreignTypeName.tip().toString());
+                    imports.add(r);
+                } while (!reflect.isClosed());
+                return imports;
+            } catch (DataStoreContentException e) {
+                throw new BackingStoreException(e);
+            }
+        }
+
+        @Override
+        public List<Relation> getExports() throws SQLException, DataStoreContentException {
+            try (ResultSet reflect = metadata.getExportedKeys(id.catalog, id.schema, id.table)) {
+                if (!reflect.next()) return Collections.EMPTY_LIST;
+                final List<Relation> exports = new ArrayList<>(2);
+                do {
+                    final Relation export = new Relation(Analyzer.this, Relation.Direction.EXPORT, reflect);
+                    final GenericName foreignTypeName = export.getName(Analyzer.this);
+                    final String propertyName = foreignTypeName.tip().toString();
+                    export.propertyName = Names.createGenericName(null, ":", "sis", propertyName);
+                    if (!export.equals(importedBy)) {
+                        exports.add(export);
+                    }
+                } while (!reflect.isClosed());
+                return exports;
+            }
+        }
+
+        @Override
+        public Optional<String> getPrimaryGeometryColumn() {
+            return Optional.empty();
+            //throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 20/09/2019
+        }
+    }
+
+    private class QuerySpecification implements SQLTypeSpecification {
+
+        final int total;
+        final PreparedStatement source;
+        private final ResultSetMetaData meta;
+        private final String query;
+        private final GenericName name;
+
+        private final List<SQLColumn> columns;
+
+        public QuerySpecification(PreparedStatement source, String sourceQuery, GenericName optName) throws SQLException {
+            this.source = source;
+            meta = source.getMetaData();
+            total = meta.getColumnCount();
+            query = sourceQuery;
+            name = optName;
+
+            final ArrayList<SQLColumn> tmpCols = new ArrayList<>(total);
+            for (int i = 1 ; i <= total ; i++) {
+                tmpCols.add(new SQLColumn(
+                        meta.getColumnType(i),
+                        meta.getColumnTypeName(i),
+                        meta.isNullable(i) == ResultSetMetaData.columnNullable,
+                        new ColumnRef(meta.getColumnName(i)).as(meta.getColumnLabel(i)),
+                        meta.getPrecision(i)
+                ));
+            }
+
+            columns = Collections.unmodifiableList(tmpCols);
+        }
+
+        @Override
+        public GenericName getName() throws SQLException {
+            return name;
+        }
+
+        @Override
+        public String getDefinition() throws SQLException {
+            return query;
+        }
+
+        @Override
+        public Optional<PrimaryKey> getPK() throws SQLException {
+            return Optional.empty();
+        }
+
+        @Override
+        public List<SQLColumn> getColumns() {
+            return columns;
+        }
+
+        @Override
+        public List<Relation> getImports() throws SQLException {
+            return Collections.EMPTY_LIST;
+        }
+
+        @Override
+        public List<Relation> getExports() throws SQLException, DataStoreContentException {
+            return Collections.EMPTY_LIST;
+        }
+    }
+
 }

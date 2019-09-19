@@ -16,27 +16,29 @@
  */
 package org.apache.sis.storage.sql;
 
-import java.util.Optional;
-import java.util.Collection;
-import javax.sql.DataSource;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.lang.reflect.Method;
-import org.opengis.util.GenericName;
+import java.util.Collection;
+import java.util.Optional;
+import javax.sql.DataSource;
+
 import org.opengis.metadata.Metadata;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
-import org.apache.sis.storage.Resource;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.util.GenericName;
+
+import org.apache.sis.internal.sql.feature.Database;
+import org.apache.sis.internal.sql.feature.Resources;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalNameException;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
-import org.apache.sis.internal.sql.feature.Database;
-import org.apache.sis.internal.sql.feature.Resources;
-import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Exceptions;
 

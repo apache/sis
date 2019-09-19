@@ -20,6 +20,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
+
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyType;
+import org.opengis.filter.Filter;
+import org.opengis.filter.expression.Expression;
+import org.opengis.filter.sort.SortBy;
+import org.opengis.util.GenericName;
+
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -29,14 +39,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.resources.Errors;
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.FeatureAssociationRole;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
-import org.opengis.filter.Filter;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.sort.SortBy;
-import org.opengis.util.GenericName;
 
 
 /**
@@ -54,7 +56,7 @@ public class SimpleQuery extends Query {
      * Sentinel limit value for queries of unlimited length.
      * This value can be given to {@link #setLimit(long)} or retrieved from {@link #getLimit()}.
      */
-    private static final long UNLIMITED = -1;
+    public static final long UNLIMITED = -1;
 
     /**
      * The columns to retrieve, or {@code null} if all columns shall be included in the query.

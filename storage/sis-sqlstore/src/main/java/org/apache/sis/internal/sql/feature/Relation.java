@@ -27,12 +27,16 @@ import java.util.Objects;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
+
+import org.opengis.util.GenericName;
+
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
@@ -58,7 +62,7 @@ import org.apache.sis.util.Debug;
  * @since   1.0
  * @module
  */
-final class Relation extends TableReference {
+public final class Relation extends TableReference {
     /**
      * Whether another table is <em>using</em> or is <em>used by</em> the table containing the {@link Relation}.
      */
@@ -152,7 +156,7 @@ final class Relation extends TableReference {
      * The name of the feature property where the association to {@link #searchTable} table will be stored.
      * Shall be set exactly once.
      */
-    String propertyName;
+    GenericName propertyName;
 
     /**
      * Whether the {@link #columns} map include all primary key columns. This field is set to {@code false}
@@ -216,10 +220,10 @@ final class Relation extends TableReference {
      */
     final void setPropertyName(final String column, final int count) {
         if (columns.size() > 1) {
-            propertyName = freeText;        // Foreigner key name (may be null).
+            propertyName = Names.createGenericName(null, ":", "sis", freeText);        // Foreigner key name (may be null).
         }
         if (propertyName == null) {
-            propertyName = (count == 0) ? column : column + '-' + count;
+            propertyName = Names.createGenericName(null, ":", "sis", (count == 0) ? column : column + '-' + count);
         }
     }
 

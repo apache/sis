@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,9 +33,14 @@ import java.util.Map;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.filter.Filter;
+import org.opengis.filter.sort.SortBy;
+import org.opengis.util.GenericName;
 
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.storage.DataStoreException;
@@ -45,9 +51,6 @@ import org.apache.sis.util.collection.WeakValueHashMap;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonEmpty;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Branch-dependent imports
-
 
 /**
  * Iterator over feature instances.
@@ -81,13 +84,13 @@ final class Features implements Spliterator<Feature> {
      * Imported or exported features read by {@code dependencies[i]} will be stored in
      * the association named {@code associationNames[i]}.
      */
-    private final String[] associationNames;
+    private final GenericName[] associationNames;
 
     /**
      * Name of the property where to store the association that we can not handle with other {@link #dependencies}.
      * This deferred association may exist because of circular dependency.
      */
-    private final String deferredAssociation;
+    private final GenericName deferredAssociation;
 
     /**
      * The feature sets referenced through foreigner keys, or {@link #EMPTY} if none.
@@ -159,7 +162,7 @@ final class Features implements Spliterator<Feature> {
      * @param following         the relations that we are following. Used for avoiding never ending loop.
      * @param noFollow          relation to not follow, or {@code null} if none.
      * @param distinct          True if we should return only distinct result, false otherwise.
-     * @param offset            An offset (nuber of rows to skip) in underlying SQL query. A negative or zeero value
+     * @param offset            An offset (number of rows to skip) in underlying SQL query. A negative or zero value
      *                          means no offset will be set.
      * @param limit             Maximum number of rows to return. Corresponds to a LIMIT statement in underlying SQL
      *                          query. A negative or 0 value means no limit will be set.
@@ -174,7 +177,7 @@ final class Features implements Spliterator<Feature> {
         attributeNames = new String[attributeColumns.length];
         int i = 0;
         for (ColumnRef column : columns) {
-            attributeColumns[i] = column.name;
+            attributeColumns[i] = column.getColumnName();
             attributeNames[i++] = column.getAttributeName();
         }
         this.featureType = table.featureType;
@@ -183,7 +186,7 @@ final class Features implements Spliterator<Feature> {
         /*
          * Create a SELECT clause with all columns that are ordinary attributes. Order matter, since 'Features'
          * iterator will map the columns to the attributes listed in the 'attributeNames' array in that order.
-         * Moreover, we optionaly add a "distinct" clause on user request.
+         * Moreover, we optionally add a "distinct" clause on user request.
          */
         final SQLBuilder sql = new SQLBuilder(metadata, true).append("SELECT");
         if (distinct) sql.append(" DISTINCT");
@@ -211,9 +214,9 @@ final class Features implements Spliterator<Feature> {
             foreignerKeyIndices = null;
             deferredAssociation = null;
         } else {
-            String deferredAssociation = null;
+            GenericName deferredAssociation = null;
             final Features[]     dependencies = new Features[totalCount];
-            final String[]   associationNames = new String  [totalCount];
+            final GenericName[]  associationNames = new GenericName[totalCount];
             final int[][] foreignerKeyIndices = new int     [totalCount][];
             /*
              * For each foreigner key to another table, append all columns of that foreigner key
@@ -303,13 +306,16 @@ final class Features implements Spliterator<Feature> {
 
     /**
      * If a limit or an offset is appended, a space will be added beforehand to the given builder.
+     *
+     * @implNote We use ANSI notation to get best possible compatibility with possible drivers.
+     *
      * @param toEdit The builder to add offset and limit to.
      * @param offset The offset to use. If  zero or negative, it will be ignored.
      * @param limit the value for limit parameter. If  zero or negative, it will be ignored.
      */
-    private static void addOffsetLimit(final SQLBuilder toEdit, final long offset, final long limit) {
-        if (limit > 0) toEdit.append(" LIMIT ").append(limit);
-        if (offset > 0) toEdit.append(" OFFSET ").append(offset);
+    static void addOffsetLimit(final SQLBuilder toEdit, final long offset, final long limit) {
+        if (offset > 0) toEdit.append(" OFFSET ").append(offset).append(" ROWS");
+        if (limit > 0) toEdit.append(" FETCH NEXT ").append(limit).append(" ROWS ONLY");
     }
 
     /**
@@ -452,7 +458,7 @@ final class Features implements Spliterator<Feature> {
                     }
                     value = dependency.fetchReferenced(null, feature);
                 }
-                feature.setPropertyValue(associationNames[i], value);
+                feature.setPropertyValue(associationNames[i].toString(), value);
             }
             action.accept(feature);
             if (!all) return true;
@@ -485,7 +491,7 @@ final class Features implements Spliterator<Feature> {
         }
         if (owner != null && deferredAssociation != null) {
             for (final Feature feature : features) {
-                feature.setPropertyValue(deferredAssociation, owner);
+                feature.setPropertyValue(deferredAssociation.toString(), owner);
             }
         }
         Object feature;
@@ -530,18 +536,9 @@ final class Features implements Spliterator<Feature> {
         }
     }
 
-    /**
-     * Useful to customiez value retrieval on result sets. Example:
-     * {@code
-     * SQLBiFunction<ResultSet, Integer, Integer> get = ResultSet::getInt;
-     * }
-     * @param <T>
-     * @param <U>
-     * @param <R>
-     */
     @FunctionalInterface
-    interface SQLBiFunction<T, U, R> {
-        R apply(T t, U u) throws SQLException;
+    interface SQLFunction<T, R> {
+        R apply(T t) throws SQLException;
 
         /**
          * Returns a composed function that first applies this function to
@@ -556,20 +553,80 @@ final class Features implements Spliterator<Feature> {
          * applies the {@code after} function
          * @throws NullPointerException if after is null
          */
-        default <V> SQLBiFunction<T, U, V> andThen(Function<? super R, ? extends V> after) {
+        default <V> SQLFunction<T, V> andThen(Function<? super R, ? extends V> after) {
             ensureNonNull("After function", after);
-            return (T t, U u) -> after.apply(apply(t, u));
+            return t -> after.apply(apply(t));
         }
     }
 
-    static class Builder {
+    static class Builder implements QueryBuilder {
 
         final Table parent;
         long limit, offset;
+        SortBy[] sort;
+
         boolean distinct;
 
         Builder(Table parent) {
             this.parent = parent;
+        }
+
+        Builder where(final Filter filter) {
+            throw new UnsupportedOperationException("TODO");
+        }
+
+        Builder sortBy(final SortBy...sorting) {
+            if (sorting == null || sorting.length < 1) this.sort = null;
+            else this.sort = Arrays.copyOf(sorting, sorting.length);
+            return this;
+        }
+
+        @Override
+        public QueryBuilder limit(long limit) {
+            this.limit = limit;
+            return this;
+        }
+
+        @Override
+        public QueryBuilder offset(long offset) {
+            this.offset = offset;
+            return this;
+        }
+
+        @Override
+        public QueryBuilder distinct(boolean activate) {
+            this.distinct = activate;
+            return this;
+        }
+
+        @Override
+        public Connector select(ColumnRef... columns) {
+            return new TableConnector(this, columns);
+        }
+    }
+
+    static final class TableConnector implements Connector {
+        final Builder source;
+
+        final boolean distinct;
+        final ColumnRef[] columns;
+
+        final SortBy[] sort;
+
+        TableConnector(Builder source, ColumnRef[] columns) {
+            this.source = source;
+            this.distinct = source.distinct;
+            this.columns = columns;
+            this.sort = source.sort == null ? null : Arrays.copyOf(source.sort, source.sort.length);
+        }
+
+        public Stream<Feature> connect(final Connection conn) throws SQLException, DataStoreException {
+            final Features features = new Features(
+                    source.parent, conn,
+                    columns == null || columns.length < 1 ? source.parent.attributes : Arrays.asList(columns),
+                    new ArrayList<>(), null, distinct, source.offset, source.limit
+            );
+            return StreamSupport.stream(features, false);
         }
 
         /**
@@ -578,29 +635,38 @@ final class Features implements Spliterator<Feature> {
          * @return A text representing (roughly) the SQL query which will be posted.
          * @throws SQLException If we cannot initialize an sql statement builder.
          */
-        String getSnapshot(final boolean count) throws SQLException {
-            final SQLBuilder sql = new SQLBuilder(parent.dbMeta, true).append("SELECT ");
+        public String estimateStatement(final boolean count) {
+            final SQLBuilder sql = source.parent.createStatement().append("SELECT ");
             if (count) sql.append("COUNT(");
             if (distinct) sql.append("DISTINCT ");
             // If we want a count and no distinct clause is specified, we can query it for a single column.
-            if (count && !distinct) sql.appendIdentifier(parent.attributes.get(0).name);
+            if (count && !distinct) source.parent.attributes.get(0).append(sql);
             else {
-                final Iterator<ColumnRef> it = parent.attributes.iterator();
-                sql.appendIdentifier(it.next().name);
+                final Iterator<ColumnRef> it = source.parent.attributes.iterator();
+                it.next().append(sql);
                 while (it.hasNext()) {
-                    sql.append(',').appendIdentifier(it.next().name);
+                    it.next().append(sql.append(", "));
                 }
             }
 
             if (count) sql.append(')');
-            sql.append(" FROM ").appendIdentifier(parent.name.catalog, parent.name.schema, parent.name.table);
-            addOffsetLimit(sql, offset, limit);
+            sql.append(" FROM ").appendIdentifier(source.parent.name.catalog, source.parent.name.schema, source.parent.name.table);
+
+            if (!count && sort != null && sort.length > 0) {
+                sql.append(" ORDER BY ");
+                append(sql, sort[0]);
+                for (int i = 1 ; i < sort.length ; i++)
+                    append(sql.append(", "), sort[i]);
+            }
+
+            addOffsetLimit(sql, source.offset, source.limit);
 
             return sql.toString();
         }
+    }
 
-        Features build(final Connection conn) throws SQLException, DataStoreException {
-            return new Features(parent, conn, parent.attributes, new ArrayList<>(), null, distinct, offset, limit);
-        }
+    private static void append(SQLBuilder target, SortBy toAppend) {
+        target.appendIdentifier(toAppend.getPropertyName().getPropertyName()).append(" ");
+        if (toAppend.getSortOrder() != null) target.append(toAppend.getSortOrder().toSQL());
     }
 }

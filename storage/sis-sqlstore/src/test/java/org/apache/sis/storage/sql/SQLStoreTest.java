@@ -16,20 +16,31 @@
  */
 package org.apache.sis.storage.sql;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
 
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
+import org.opengis.util.GenericName;
 
+import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.metadata.sql.SQLBuilder;
+import org.apache.sis.internal.sql.feature.QueryFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.StorageConnector;
@@ -45,6 +56,8 @@ import static org.apache.sis.test.Assert.assertNotNull;
 import static org.apache.sis.test.Assert.assertSame;
 import static org.apache.sis.test.Assert.assertTrue;
 import static org.apache.sis.test.Assert.fail;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertFalse;
 
 // Branch-dependent imports
 
@@ -134,16 +147,16 @@ public final strictfp class SQLStoreTest extends TestCase {
             {
                 final FeatureSet cities = (FeatureSet) store.findResource("Cities");
                 verifyFeatureType(cities.getType(),
-                        new String[] {"sis:identifier", "pk:country", "country",   "native_name", "english_name", "population",  "parks"},
-                        new Object[] {null,             String.class, "Countries", String.class,  String.class,   Integer.class, "Parks"});
+                        new String[] {"sis:identifier", "country",   "native_name", "english_name", "population", "sis:country", "sis:Parks"},
+                        new Object[] {null,             String.class, String.class,  String.class,   Integer.class, "Countries", "Parks"});
 
                 verifyFeatureType(((FeatureSet) store.findResource("Countries")).getType(),
-                        new String[] {"sis:identifier", "code",       "native_name"},
-                        new Object[] {null,             String.class, String.class});
+                        new String[] {"sis:identifier", "code",       "native_name",  "sis:Cities"},
+                        new Object[] {null,             String.class, String.class, "Cities"});
 
                 verifyFeatureType(((FeatureSet) store.findResource("Parks")).getType(),
-                        new String[] {"sis:identifier", "pk:country", "FK_City", "city",       "native_name", "english_name"},
-                        new Object[] {null,             String.class, "Cities",  String.class, String.class,  String.class});
+                        new String[] {"sis:identifier", "country", "city",       "native_name", "english_name", "sis:FK_City"},
+                        new Object[] {null,             String.class,  String.class, String.class,  String.class, "Cities"});
 
                 try (Stream<Feature> features = cities.features(false)) {
                     features.forEach((f) -> verifyContent(f));
@@ -152,6 +165,7 @@ public final strictfp class SQLStoreTest extends TestCase {
                 // Now, we'll check that overloaded stream operations are functionally stable, even stacked.
                 verifyStreamOperations(cities);
 
+                verifyQueries(tmp.source);
             }
         }
         assertEquals(Integer.valueOf(2), countryCount.remove("CAN"));
@@ -160,18 +174,177 @@ public final strictfp class SQLStoreTest extends TestCase {
         assertTrue  (countryCount.isEmpty());
     }
 
+    private void verifyQueries(DataSource source) throws Exception {
+        verifyFetchCityTableAsQuery(source);
+        verifyLimitOffsetAndColumnSelectionFromQuery(source);
+        verifyDistinctQuery(source);
+    }
+
+    private void verifyFetchCityTableAsQuery(DataSource source) throws Exception {
+        final QueryFeatureSet allCities;
+        final QueryFeatureSet canadaCities;
+        try (Connection conn = source.getConnection()) {
+            final SQLBuilder builder = new SQLBuilder(conn.getMetaData(), false)
+                    .append("SELECT * FROM ").appendIdentifier("features", "Cities");
+            allCities = new QueryFeatureSet(builder, source, conn);
+            /* By re-using the same builder, we ensure a defensive copy is done at feature set creation, avoiding
+             * potential concurrent or security issue due to afterward modification of the query.
+             */
+            builder.append(" WHERE ").appendIdentifier("country").append("='CAN'");
+            canadaCities = new QueryFeatureSet(builder, source, conn);
+        }
+
+        final HashMap<String, Class> expectedAttrs = new HashMap<>();
+        expectedAttrs.put("country",      String.class);
+        expectedAttrs.put("native_name",  String.class);
+        expectedAttrs.put("english_name", String.class);
+        expectedAttrs.put("population",   Integer.class);
+
+        checkQueryType(expectedAttrs, allCities.getType());
+        checkQueryType(expectedAttrs, canadaCities.getType());
+
+        Set<Map<String, Object>> expectedResults = new HashSet<>();
+        expectedResults.add(city("CAN", "Montréal", "Montreal", 1704694));
+        expectedResults.add(city("CAN", "Québec", "Quebec", 531902));
+
+        Set<Map<String, Object>> result = canadaCities.features(false)
+                .map(SQLStoreTest::asMap)
+                .collect(Collectors.toSet());
+        assertEquals("Query result is not consistent with expected one", expectedResults, result);
+
+        expectedResults.add(city("FRA", "Paris",    "Paris",    2206488));
+        expectedResults.add(city("JPN", "東京",     "Tōkyō",   13622267));
+
+        result = allCities.features(false)
+                .map(SQLStoreTest::asMap)
+                .collect(Collectors.toSet());
+        assertEquals("Query result is not consistent with expected one", expectedResults, result);
+    }
+
+    private static Map<String, Object> city(String country, String nativeName, String enName, int population) {
+        final Map<String, Object> result = new HashMap<>();
+        result.put("country", country);
+        result.put("native_name", nativeName);
+        result.put("english_name", enName);
+        result.put("population", population);
+        return result;
+    }
+    
     /**
-     * Checks that operations stacked on feature stream are well executed. This test focus on mapping and peeking
-     * actions overloaded by sql streams. We'd like to test skip and limit operations too, but ignore it for now,
-     * because ordering of results matters for such a test.
-     *
-     * @implNote Most of stream operations used here are meaningless. We just want to ensure that the pipeline does not
-     * skip any operation.
-     *
-     * @param cities The feature set to read from. We expect a feature set containing all cities defined for the test
-     *               class.
-     * @throws DataStoreException Let's propagate any error raised by input feature set.
+     * Differs from {@link #verifyFeatureType(FeatureType, String[], Object[])} because
+     * @param expectedAttrs
+     * @param target
      */
+    private static void checkQueryType(final Map<String, Class> expectedAttrs, final FeatureType target) {
+        final Collection<? extends PropertyType> props = target.getProperties(true);
+        assertEquals("Number of attributes", expectedAttrs.size(), props.size());
+        for (PropertyType p : props) {
+            assertTrue("Query type should contain only attributes", p instanceof AttributeType);
+            final String pName = p.getName().toString();
+            final Class expectedClass = expectedAttrs.get(pName);
+            assertNotNull("Unexpected property: "+pName, expectedClass);
+            assertEquals("Unepected type for property: "+pName, expectedClass, ((AttributeType)p).getValueClass());
+        }
+    }
+
+    private static Map<String, Object> asMap(final Feature source) {
+        return source.getType().getProperties(true).stream()
+                .map(PropertyType::getName)
+                .map(GenericName::toString)
+                .collect(Collectors.toMap(n->n, source::getPropertyValue));
+    }
+
+    /**
+     * Test limit and offset. The logic is: if user provided an offset, stream {@link Stream#skip(long) skip operator}
+     * does NOT override it, but stack on it (which is logic: the feature set provide user defined result, and the
+     * stream navigate through it).
+     *
+     * Moreover, we also check filtering of columns and label usage.
+     *
+     * @param source Database connection provider.
+     */
+    private void verifyLimitOffsetAndColumnSelectionFromQuery(final DataSource source) throws Exception {
+        // Ensure multiline text is accepted
+        final String query = "SELECT \"english_name\" as \"title\" \n\r" +
+                "FROM features.\"Parks\" \n" +
+                "ORDER BY \"english_name\" ASC \n" +
+                "OFFSET 2 ROWS FETCH NEXT 3 ROWS ONLY";
+        final QueryFeatureSet qfs;
+        try (Connection conn = source.getConnection()) {
+            qfs = new QueryFeatureSet(query, source, conn);
+        }
+
+        final FeatureType type = qfs.getType();
+        final Iterator<? extends PropertyType> props = type.getProperties(true).iterator();
+        assertTrue("Built feature set has at least one property", props.hasNext());
+        final AttributeType attr = (AttributeType) props.next();
+        assertEquals("Property name should be label defined in query", "title", attr.getName().toString());
+        assertEquals("Attribute should be a string", String.class, attr.getValueClass());
+        assertTrue("Column should be nullable.", attr.getMinimumOccurs() == 0);
+        final Object precision = attr.characteristics().get(AttributeConvention.MAXIMAL_LENGTH_CHARACTERISTIC.toString());
+        assertNotNull("Length constraint should be visible from feature type", precision);
+        assertEquals("Column length constraint should be visible from attribute type.", 20, ((AttributeType)precision).getDefaultValue());
+        assertFalse("Built feature type should have exactly one attribute.", props.hasNext());
+
+        Function<Stream<Feature>, String[]> getNames = in -> in
+                .map(f -> f.getPropertyValue("title").toString())
+                .toArray(size -> new String[size]);
+
+        String[] parkNames = getNames.apply(
+                qfs.features(false)
+                        // Get third row in the table, as query starts on second one, and we want to skip one entry from there
+                        .skip(1)
+                        // Tries to increase limit. The test will ensure it's not possible.
+                        .limit(4)
+        );
+
+        assertArrayEquals(
+                "Should get fourth and fifth park names from ascending order",
+                new String[]{"Tuileries Garden", "Yoyogi-kōen"},
+                parkNames
+        );
+
+        parkNames = getNames.apply(qfs.features(false)
+                .skip(0)
+                .limit(1)
+        );
+
+        assertArrayEquals("Only second third name should be returned", new String[]{"Shinjuku Gyoen"}, parkNames);
+    }
+
+    /**
+     * Check that a {@link Stream#distinct()} gives coherent results. For now, no optimisation is done to delegate it to
+     * database, but this test allows for non-regression test, so when an optimisation is done, we'll immediately test
+     * its validity.
+     */
+    private void verifyDistinctQuery(DataSource source) throws SQLException {
+        // Ensure multiline text is accepted
+        final String query = "SELECT \"country\" FROM features.\"Parks\" ORDER BY \"country\"";
+        final QueryFeatureSet qfs;
+        try (Connection conn = source.getConnection()) {
+            qfs = new QueryFeatureSet(query, source, conn);
+        }
+
+        final Object[] expected = qfs.features(false)
+                .distinct() 
+                .map(f -> f.getPropertyValue("country"))
+                .toArray();
+
+        assertArrayEquals("Distinct country names, sorted in ascending order", new String[]{"CAN", "FRA", "JPN"}, expected);
+    }
+
+    /**
+    * Checks that operations stacked on feature stream are well executed. This test focus on mapping and peeking
+    * actions overloaded by sql streams. We'd like to test skip and limit operations too, but ignore it for now,
+    * because ordering of results matters for such a test.
+    *
+    * @implNote Most of stream operations used here are meaningless. We just want to ensure that the pipeline does not
+    * skip any operation.
+    *
+    * @param cities The feature set to read from. We expect a feature set containing all cities defined for the test
+    *               class.
+    * @throws DataStoreException Let's propagate any error raised by input feature set.
+    */
     private static void verifyStreamOperations(final FeatureSet cities) throws DataStoreException {
         try (Stream<Feature> features = cities.features(false)) {
             final AtomicInteger peekCount = new AtomicInteger();
@@ -213,6 +386,7 @@ public final strictfp class SQLStoreTest extends TestCase {
     private static void verifyFeatureType(final FeatureType type, final String[] expectedNames, final Object[] expectedTypes) {
         int i = 0;
         for (PropertyType pt : type.getProperties(false)) {
+            if (i >= expectedNames.length) fail("Returned feature-type contains more properties than expected. Example: "+pt.getName());
             assertEquals("name", expectedNames[i], pt.getName().toString());
             final Object expectedType = expectedTypes[i];
             if (expectedType != null) {
@@ -285,7 +459,7 @@ public final strictfp class SQLStoreTest extends TestCase {
         /*
          * Verify attributes. They are the easiest properties to read.
          */
-        assertEquals("pk:country",     country,              feature.getPropertyValue("pk:country"));
+        assertEquals("country",        country,              feature.getPropertyValue("country"));
         assertEquals("sis:identifier", country + ':' + city, feature.getPropertyValue("sis:identifier"));
         assertEquals("english_name",   englishName,          feature.getPropertyValue("english_name"));
         assertEquals("population",     population,           feature.getPropertyValue("population"));
@@ -293,9 +467,9 @@ public final strictfp class SQLStoreTest extends TestCase {
          * Associations using Relation.Direction.IMPORT.
          * Those associations should be cached; we verify with "Canada" case.
          */
-        assertEquals("country", countryName, getIndirectPropertyValue(feature, "country", "native_name"));
+        assertEquals("country", countryName, getIndirectPropertyValue(feature, "sis:country", "native_name"));
         if (isCanada) {
-            final Feature f = (Feature) feature.getPropertyValue("country");
+            final Feature f = (Feature) feature.getPropertyValue("sis:country");
             if (canada == null) {
                 canada = f;
             } else {
@@ -307,7 +481,7 @@ public final strictfp class SQLStoreTest extends TestCase {
          * Associations using Relation.Direction.EXPORT.
          * Contrarily to the IMPORT case, those associations can contain many values.
          */
-        final Collection<?> actualParks = (Collection<?>) feature.getPropertyValue("parks");
+        final Collection<?> actualParks = (Collection<?>) feature.getPropertyValue("sis:Parks");
         assertNotNull("parks", actualParks);
         assertEquals("parks.length", parks.length, actualParks.size());
         final Collection<String> expectedParks = new HashSet<>(Arrays.asList(parks));
@@ -323,7 +497,7 @@ public final strictfp class SQLStoreTest extends TestCase {
              * Verify the reverse association form Parks to Cities.
              * This create a cyclic graph, but SQLStore is capable to handle it.
              */
-            assertSame("City → Park → City", feature, pf.getPropertyValue("FK_City"));
+            assertSame("City → Park → City", feature, pf.getPropertyValue("sis:FK_City"));
         }
     }
 

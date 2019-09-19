@@ -20,15 +20,12 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 
@@ -36,26 +33,19 @@ import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.FeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.feature.PropertyType;
 import org.opengis.util.GenericName;
 
-import org.apache.sis.feature.builder.AssociationRoleBuilder;
-import org.apache.sis.feature.builder.AttributeRole;
-import org.apache.sis.feature.builder.AttributeTypeBuilder;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
-import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
-import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.InternalDataStoreException;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Classes;
+import org.apache.sis.storage.Query;
+import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.WeakValueHashMap;
 
@@ -123,6 +113,8 @@ final class Table extends AbstractFeatureSet {
      */
     final Class<?> primaryKeyClass;
 
+    private final SQLTypeSpecification specification;
+
     /**
      * Feature instances already created for given primary keys. This map is used only when requesting feature
      * instances by identifiers (not for iterating over all features) and those identifiers are primary keys.
@@ -145,6 +137,14 @@ final class Table extends AbstractFeatureSet {
     final DatabaseMetaData dbMeta;
 
     /**
+     * An SQL builder whose sole purpose is to allow creation of new builders without metadata analysis. It allows to
+     * reduce error eventuality, and re-use already  computed information.
+     */
+    private final SQLBuilder sqlTemplate;
+
+    private final FeatureAdapter adapter;
+
+    /**
      * Creates a description of the table of the given name.
      * The table is identified by {@code id}, which contains a (catalog, schema, name) tuple.
      * The catalog and schema parts are optional and can be null, but the table is mandatory.
@@ -159,29 +159,9 @@ final class Table extends AbstractFeatureSet {
     {
         super(analyzer.listeners);
         this.dbMeta = analyzer.metadata;
+        this.sqlTemplate = new SQLBuilder(this.dbMeta, true);
         this.source = analyzer.source;
         this.name   = id;
-        final String tableEsc  = analyzer.escape(id.table);
-        final String schemaEsc = analyzer.escape(id.schema);
-        /*
-         * Get a list of primary keys. We need to know them before to create the attributes,
-         * in order to detect which attributes are used as components of Feature identifiers.
-         * In the 'primaryKeys' map, the boolean tells whether the column uses auto-increment,
-         * with null value meaning that we don't know.
-         *
-         * Note: when a table contains no primary keys, we could still look for index columns
-         * with unique constraint using metadata.getIndexInfo(catalog, schema, table, true).
-         * We don't do that for now because of uncertainties (which index to use if there is
-         * many? If they are suitable as identifiers why they are not primary keys?).
-         */
-        final Map<String,Boolean> primaryKeys = new LinkedHashMap<>();
-        try (ResultSet reflect = analyzer.metadata.getPrimaryKeys(id.catalog, id.schema, id.table)) {
-            while (reflect.next()) {
-                primaryKeys.put(analyzer.getUniqueString(reflect, Reflection.COLUMN_NAME), null);
-                // The actual Boolean value will be fetched in the loop on columns later.
-            }
-        }
-        this.primaryKeys = primaryKeys.isEmpty() ? null : primaryKeys.keySet().toArray(new String[primaryKeys.size()]);
         /*
          * Creates a list of associations between the table read by this method and other tables.
          * The associations are defined by the foreigner keys referencing primary keys. Note that
@@ -193,229 +173,53 @@ final class Table extends AbstractFeatureSet {
          * navigability because the database designer's choice may be driven by the need to support
          * multi-occurrences.
          */
-        final List<Relation> importedKeys = new ArrayList<>();
-        final Map<String, List<Relation>> foreignerKeys = new HashMap<>();
-        try (ResultSet reflect = analyzer.metadata.getImportedKeys(id.catalog, id.schema, id.table)) {
-            if (reflect.next()) do {
-                Relation relation = new Relation(analyzer, Relation.Direction.IMPORT, reflect);
-                importedKeys.add(relation);
-                for (final String column : relation.getForeignerKeys()) {
-                    CollectionsExt.addToMultiValuesMap(foreignerKeys, column, relation);
-                    relation = null;     // Only the first column will be associated.
-                }
-            } while (!reflect.isClosed());
-        }
-        final List<Relation> exportedKeys = new ArrayList<>();
-        try (ResultSet reflect = analyzer.metadata.getExportedKeys(id.catalog, id.schema, id.table)) {
-            if (reflect.next()) do {
-                final Relation export = new Relation(analyzer, Relation.Direction.EXPORT, reflect);
-                if (!export.equals(importedBy)) {
-                    exportedKeys.add(export);
-                }
-            } while (!reflect.isClosed());
-        }
         /*
          * For each column in the table that is not a foreigner key, create an AttributeType of the same name.
          * The Java type is inferred from the SQL type, and the attribute multiplicity in inferred from the SQL
          * nullability. Attribute names are added in the 'attributeNames' and 'attributeColumns' list. Those
          * names are usually the same, except when a column is used both as a primary key and as foreigner key.
          */
-        Class<?> primaryKeyClass   = null;
-        boolean  primaryKeyNonNull = true;
-        boolean  hasGeometry       = false;
-        int startWithLowerCase     = 0;
-        final List<ColumnRef> attributes = new ArrayList<>();
-        final FeatureTypeBuilder feature = new FeatureTypeBuilder(analyzer.nameFactory, analyzer.functions.library, analyzer.locale);
-        try (ResultSet reflect = analyzer.metadata.getColumns(id.catalog, schemaEsc, tableEsc, null)) {
-            while (reflect.next()) {
-                final String         column       = analyzer.getUniqueString(reflect, Reflection.COLUMN_NAME);
-                final boolean        mandatory    = Boolean.FALSE.equals(SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_NULLABLE)));
-                final boolean        isPrimaryKey = primaryKeys.containsKey(column);
-                final List<Relation> dependencies = foreignerKeys.get(column);
-                /*
-                 * Heuristic rule for determining if the column names starts with lower case or upper case.
-                 * Words that are all upper-case are ignored on the assumption that they are acronyms.
-                 */
-                if (!column.isEmpty()) {
-                    final int firstLetter = column.codePointAt(0);
-                    if (Character.isLowerCase(firstLetter)) {
-                        startWithLowerCase++;
-                    } else if (Character.isUpperCase(firstLetter) && !CharSequences.isUpperCase(column)) {
-                        startWithLowerCase--;
-                    }
-                }
 
-                ColumnRef colRef = new ColumnRef(column);
-                /*
-                 * Add the column as an attribute. Foreign keys are excluded (they will be replaced by associations),
-                 * except if the column is also a primary key. In the later case we need to keep that column because
-                 * it is needed for building the feature identifier.
-                 */
-                AttributeTypeBuilder<?> attribute = null;
-                if (isPrimaryKey || dependencies == null) {
-                    final String typeName = reflect.getString(Reflection.TYPE_NAME);
-                    Class<?> type = analyzer.functions.toJavaType(reflect.getInt(Reflection.DATA_TYPE), typeName);
-                    if (type == null) {
-                        analyzer.warning(Resources.Keys.UnknownType_1, typeName);
-                        type = Object.class;
-                    }
-                    attribute = feature.addAttribute(type).setName(column);
-                    if (CharSequence.class.isAssignableFrom(type)) {
-                        final int size = reflect.getInt(Reflection.COLUMN_SIZE);
-                        if (!reflect.wasNull()) {
-                            attribute.setMaximalLength(size);
-                        }
-                    }
-                    if (!mandatory) {
-                        attribute.setMinimumOccurs(0);
-                    }
-                    /*
-                     * Some columns have special purposes: components of primary keys will be used for creating
-                     * identifiers, some columns may contain a geometric object. Adding a role on those columns
-                     * may create synthetic columns, for example "sis:identifier".
-                     */
-                    if (isPrimaryKey) {
-                        attribute.addRole(AttributeRole.IDENTIFIER_COMPONENT);
-                        primaryKeyNonNull &= mandatory;
-                        primaryKeyClass = Classes.findCommonClass(primaryKeyClass, type);
-                        if (primaryKeys.put(column, SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_AUTOINCREMENT))) != null) {
-                            throw new DataStoreContentException(Resources.forLocale(analyzer.locale)
-                                    .getString(Resources.Keys.DuplicatedColumn_1, column));
-                        }
-                    }
-                    if (Geometries.isKnownType(type)) {
-                        final CoordinateReferenceSystem crs = analyzer.functions.createGeometryCRS(reflect);
-                        if (crs != null) {
-                            attribute.setCRS(crs);
-                        }
-                        if (!hasGeometry) {
-                            hasGeometry = true;
-                            attribute.addRole(AttributeRole.DEFAULT_GEOMETRY);
-                        }
-                    }
-                }
-                /*
-                 * If the column is a foreigner key, insert an association to another feature instead.
-                 * If the foreigner key uses more than one column, only one of those columns will become
-                 * an association and other columns will be omitted from the FeatureType (but there will
-                 * still be used in SQL queries). Note that columns may be used by more than one relation.
-                 */
-                if (dependencies != null) {
-                    int count = 0;
-                    for (final Relation dependency : dependencies) {
-                        if (dependency != null) {
-                            final GenericName typeName = dependency.getName(analyzer);
-                            final Table table = analyzer.table(dependency, typeName, id);
-                            /*
-                             * Use the column name as the association name, provided that the foreigner key
-                             * use only that column. If the foreigner key use more than one column, then we
-                             * do not know which column describes better the association (often there is none).
-                             * In such case we use the foreigner key name as a fallback.
-                             */
-                            dependency.setPropertyName(column, count++);
-                            final AssociationRoleBuilder association;
-                            if (table != null) {
-                                dependency.setSearchTable(analyzer, table, table.primaryKeys, Relation.Direction.IMPORT);
-                                association = feature.addAssociation(table.featureType);
-                            } else {
-                                association = feature.addAssociation(typeName);     // May happen in case of cyclic dependency.
-                            }
-                            association.setName(dependency.propertyName);
-                            if (!mandatory) {
-                                association.setMinimumOccurs(0);
-                            }
-                            /*
-                             * If the column is also used in the primary key, then we have a name clash.
-                             * Rename the primary key column with the addition of a "pk:" scope. We rename
-                             * the primary key column instead than this association because the primary key
-                             * column should rarely be used directly.
-                             */
-                            if (attribute != null) {
-                                attribute.setName(analyzer.nameFactory.createGenericName(null, "pk", column));
-                                colRef = colRef.as(attribute.getName().toString());
-                                attribute = null;
-                            }
-                        }
-                    }
-                }
-
-                attributes.add(colRef);
-            }
-        }
-        /*
-         * Add the associations created by other tables having foreigner keys to this table.
-         * We infer the column name from the target type. We may have a name clash with other
-         * columns, in which case an arbitrary name change is applied.
-         */
-        int count = 0;
-        for (final Relation dependency : exportedKeys) {
-            if (dependency != null) {
-                final GenericName typeName = dependency.getName(analyzer);
-                String propertyName = typeName.tip().toString();
-                if (startWithLowerCase > 0) {
-                    final CharSequence words = CharSequences.camelCaseToWords(propertyName, true);
-                    final int first = Character.codePointAt(words, 0);
-                    propertyName = new StringBuilder(words.length())
-                            .appendCodePoint(Character.toLowerCase(first))
-                            .append(words, Character.charCount(first), words.length())
-                            .toString();
-                }
-                final String base = propertyName;
-                while (feature.isNameUsed(propertyName)) {
-                    propertyName = base + '-' + ++count;
-                }
-                dependency.propertyName = propertyName;
-                final Table table = analyzer.table(dependency, typeName, null);   // 'null' because exported, not imported.
-                final AssociationRoleBuilder association;
-                if (table != null) {
-                    dependency.setSearchTable(analyzer, table, this.primaryKeys, Relation.Direction.EXPORT);
-                    association = feature.addAssociation(table.featureType);
-                } else {
-                    association = feature.addAssociation(typeName);     // May happen in case of cyclic dependency.
-                }
-                association.setName(propertyName)
-                           .setMinimumOccurs(0)
-                           .setMaximumOccurs(Integer.MAX_VALUE);
-            }
-        }
         /*
          * If the primary keys uses more than one column, we will need an array to store it.
          * If all columns are non-null numbers, use primitive arrays instead than array of wrappers.
          */
-        if (primaryKeys.size() > 1) {
-            if (primaryKeyNonNull) {
-                primaryKeyClass = Numbers.wrapperToPrimitive(primaryKeyClass);
-            }
-            primaryKeyClass = Classes.changeArrayDimension(primaryKeyClass, 1);
-        }
-        /*
-         * Global information on the feature type (name, remarks).
-         * The remarks are opportunistically stored in id.freeText if known by the caller.
+        this.specification = analyzer.create(id, importedBy);
+        primaryKeys = (String[]) specification.getPK()
+                .map(PrimaryKey::getColumns)
+                .orElse(Collections.EMPTY_LIST)
+                .toArray(new String[0]);
+        this.adapter          = analyzer.buildAdapter(specification);
+        this.featureType      = adapter.type;
+        this.importedKeys     = toArray(specification.getImports());
+        this.exportedKeys     = toArray(specification.getExports());
+        this.primaryKeyClass  = primaryKeys.length < 2? Object.class : Object[].class;
+        this.hasGeometry      = specification.getPrimaryGeometryColumn().isPresent();
+        this.attributes       = Collections.unmodifiableList(
+                specification.getColumns().stream()
+                        .map(SQLColumn::getName)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    @Override
+    public FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
+        if (!(query instanceof SimpleQuery)) return super.subset(query);
+        boolean remainingQuery = true;
+        final SimpleQuery q = (SimpleQuery) query;
+        FeatureSet subset = this;
+        final List<SimpleQuery.Column> cols = q.getColumns();
+
+        /**
+         * Once filter has been taken care of, we will be able to check columns to filter. Note that all filters
+         * managed by database engine can use non-returned columns, but it is not the case of remaining ones, which
+         * are applied after feature creation, therefore with only filtered columns accessible.
          */
-        feature.setName(id.getName(analyzer));
-        String remarks = id.freeText;
-        if (id instanceof Relation) {
-            try (ResultSet reflect = analyzer.metadata.getTables(id.catalog, schemaEsc, tableEsc, null)) {
-                while (reflect.next()) {
-                    remarks = analyzer.getUniqueString(reflect, Reflection.REMARKS);
-                    if (remarks != null) {
-                        remarks = remarks.trim();
-                        if (remarks.isEmpty()) {
-                            remarks = null;
-                        } else break;
-                    }
-                }
-            }
+        if (cols != null && !cols.isEmpty()) {
+
         }
-        if (remarks != null) {
-            feature.setDefinition(remarks);
-        }
-        this.featureType      = feature.build();
-        this.importedKeys     = toArray(importedKeys);
-        this.exportedKeys     = toArray(exportedKeys);
-        this.primaryKeyClass  = primaryKeyClass;
-        this.hasGeometry      = hasGeometry;
-        this.attributes = Collections.unmodifiableList(attributes);
+
+        return remainingQuery? subset.subset(q) : subset;
     }
 
     /**
@@ -445,7 +249,14 @@ final class Table extends AbstractFeatureSet {
                 for (final Relation relation : relations) {
                     if (!relation.isSearchTableDefined()) {
                         // A ClassCastException below would be a bug since 'relation.propertyName' shall be for an association.
-                        FeatureAssociationRole association = (FeatureAssociationRole) featureType.getProperty(relation.propertyName);
+                        final PropertyType property = featureType.getProperty(relation.propertyName.toString());
+                        if (!(property instanceof FeatureAssociationRole)) {
+                            throw new IllegalStateException(String.format(
+                                    "We expect a feature association for %s relation %s. Duplicate key ?",
+                                    direction.name(), relation.propertyName
+                            ));
+                        }
+                        FeatureAssociationRole association = (FeatureAssociationRole) property;
                         final Table table = tables.get(association.getValueType().getName());
                         if (table == null) {
                             throw new InternalDataStoreException(association.toString());
@@ -594,6 +405,10 @@ final class Table extends AbstractFeatureSet {
         return count;
     }
 
+    public SQLBuilder createStatement() {
+        return new SQLBuilder(sqlTemplate);
+    }
+
     /**
      * Returns a stream of all features contained in this dataset.
      *
@@ -604,18 +419,6 @@ final class Table extends AbstractFeatureSet {
     @Override
     public Stream<Feature> features(final boolean parallel) throws DataStoreException {
         return new StreamSQL(this);
-    }
-
-    void closeRef(final AtomicReference<Connection> ref, boolean forceRollback) {
-        final Connection conn = ref.get();
-        if (conn != null) {
-            try {
-                if (forceRollback) conn.rollback();
-                conn.close();
-            } catch (SQLException e) {
-                warning(e);
-            }
-        }
     }
 
     /**

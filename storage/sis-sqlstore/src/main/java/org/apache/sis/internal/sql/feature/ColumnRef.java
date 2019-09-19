@@ -10,12 +10,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * A column reference. Specify name of the column, and optionally an alias to use for public visibility.
  * By default, column has no alias. To create a column with an alias, use {@code ColumnRef myCol = new ColumnRef("colName).as("myAlias");}
  */
-public final class ColumnRef {
-    final String name;
-    final String alias;
-    final String attrName;
+final class ColumnRef {
+    private final String name;
+    private final String alias;
+    private final String attrName;
 
-    public ColumnRef(String name) {
+    ColumnRef(String name) {
         ensureNonNull("Column name", name);
         this.name = this.attrName = name;
         alias = null;
@@ -27,11 +27,13 @@ public final class ColumnRef {
         this.alias = this.attrName = alias;
     }
 
-    ColumnRef as(final String alias) {
+    public ColumnRef as(final String alias) {
+        if (Objects.equals(alias, this.alias)) return this;
+        else if (alias == null || alias.equals(name)) return new ColumnRef(name);
         return new ColumnRef(name, alias);
     }
 
-    SQLBuilder append(final SQLBuilder target) {
+    public SQLBuilder append(final SQLBuilder target) {
         target.appendIdentifier(name);
         if (alias != null) {
             target.append(" AS ").appendIdentifier(alias);
@@ -40,6 +42,7 @@ public final class ColumnRef {
         return target;
     }
 
+    public String getColumnName() { return name; }
     public String getAttributeName() {
         return attrName;
     }

@@ -32,12 +32,12 @@ import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
+import java.util.logging.Level;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
 import javax.sql.DataSource;
 
 import org.opengis.feature.Feature;
@@ -46,8 +46,10 @@ import org.apache.sis.internal.util.DoubleStreamDecoration;
 import org.apache.sis.internal.util.StreamDecoration;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.logging.Logging;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.util.ArgumentChecks.ensurePositive;
 
 /**
  * Manages query lifecycle and optimizations. Operations like {@link #count()}, {@link #distinct()}, {@link #skip(long)}
@@ -64,17 +66,29 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  */
 class StreamSQL extends StreamDecoration<Feature> {
 
-    final Features.Builder queryBuilder;
+    private final QueryBuilder queryAdapter;
+
+    private final DataSource source;
+
     boolean parallel;
 
     private Consumer<? super Feature> peekAction;
 
+    private long limit = 0, offset = 0;
+
+    private Consumer<SQLException> warningConsumer = e -> Logging.getLogger("sis.sql").log(Level.FINE, "Cannot properly close a connection", e);
+
     StreamSQL(final Table source) {
-        this(new Features.Builder(source));
+        this(new Features.Builder(source), source.source);
     }
 
-    StreamSQL(Features.Builder builder) {
-        this.queryBuilder = builder;
+    StreamSQL(QueryBuilder queryAdapter, DataSource source) {
+        this.queryAdapter = queryAdapter;
+        this.source = source;
+    }
+
+    public void setWarningConsumer(Consumer<SQLException> warningConsumer) {
+        this.warningConsumer = warningConsumer;
     }
 
     @Override
@@ -111,8 +125,13 @@ class StreamSQL extends StreamDecoration<Feature> {
 
     @Override
     public Stream<Feature> distinct() {
-        queryBuilder.distinct = true;
-        return this;
+        try {
+            queryAdapter.distinct();
+            return this;
+        } catch (UnsupportedOperationException e) {
+            // TODO: emit warning
+            return super.distinct();
+        }
     }
 
     @Override
@@ -130,27 +149,30 @@ class StreamSQL extends StreamDecoration<Feature> {
 
     @Override
     public Stream<Feature> limit(long maxSize) {
-        if (queryBuilder.limit < 1) queryBuilder.limit = maxSize;
-        else queryBuilder.limit = Math.min(queryBuilder.limit, maxSize);
+        ensurePositive("Limit", maxSize);
+        if (limit < 1) limit = maxSize;
+        else limit = Math.min(limit, maxSize);
         return this;
     }
 
     @Override
     public Stream<Feature> skip(long n) {
-        queryBuilder.offset += n;
+        ensurePositive("Offset", n);
+        offset += n;
         return this;
+    }
+
+    private Connector select() {
+        queryAdapter.offset(offset);
+        queryAdapter.limit(limit);
+        return queryAdapter.select();
     }
 
     @Override
     public long count() {
         // Avoid opening a connection if sql text cannot be evaluated.
-        final String sql;
-        try {
-            sql = queryBuilder.getSnapshot(true);
-        } catch (SQLException e) {
-            throw new BackingStoreException("Cannot create SQL COUNT query", e);
-        }
-        try (Connection conn = queryBuilder.parent.source.getConnection()) {
+        final String sql = select().estimateStatement(true);
+        try (Connection conn = source.getConnection()) {
             try (Statement st = conn.createStatement();
                  ResultSet rs = st.executeQuery(sql)) {
                 if (rs.next()) {
@@ -165,33 +187,19 @@ class StreamSQL extends StreamDecoration<Feature> {
     @Override
     protected synchronized Stream<Feature> createDecoratedStream() {
         final AtomicReference<Connection> connectionRef = new AtomicReference<>();
-        Stream<Feature> featureStream = Stream.of(uncheck(this::connectNoAuto))
+        Stream<Feature> featureStream = Stream.of(uncheck(() -> QueryFeatureSet.connectReadOnly(source)))
                 .map(Supplier::get)
                 .peek(connectionRef::set)
                 .flatMap(conn -> {
                     try {
-                        final Features iter = queryBuilder.build(conn);
-                        return StreamSupport.stream(iter, parallel);
+                        return select().connect(conn);
                     } catch (SQLException | DataStoreException e) {
                         throw new BackingStoreException(e);
                     }
                 })
-                .onClose(() -> queryBuilder.parent.closeRef(connectionRef, true));
+                .onClose(() -> closeRef(connectionRef, true));
         if (peekAction != null) featureStream = featureStream.peek(peekAction);
-        return featureStream;
-    }
-
-    /**
-     * Acquire a connection over {@link Table parent table} database, forcing
-     * {@link Connection#setAutoCommit(boolean) auto-commit} to false.
-     *
-     * @return A new connection to {@link Table parent table} database, with deactivated auto-commit.
-     * @throws SQLException If we cannot create a new connection. See {@link DataSource#getConnection()} for details.
-     */
-    private Connection connectNoAuto() throws SQLException {
-        final Connection conn = queryBuilder.parent.source.getConnection();
-        conn.setAutoCommit(false);
-        return conn;
+        return parallel? featureStream : featureStream.parallel();
     }
 
     /**
@@ -232,12 +240,6 @@ class StreamSQL extends StreamDecoration<Feature> {
         @Override
         public Stream<O> peek(Consumer<? super O> action) {
             mapper = concatenate(mapper, action);
-            return this;
-        }
-
-        @Override
-        public Stream<O> distinct() {
-            source = source.distinct();
             return this;
         }
 
@@ -332,12 +334,6 @@ class StreamSQL extends StreamDecoration<Feature> {
         }
 
         @Override
-        public DoubleStream distinct() {
-            source = source.distinct();
-            return this;
-        }
-
-        @Override
         public DoubleStream limit(long maxSize) {
             source = source.limit(maxSize);
             return this;
@@ -391,5 +387,17 @@ class StreamSQL extends StreamDecoration<Feature> {
             consumer.accept(o);
             return o;
         };
+    }
+
+    void closeRef(final AtomicReference<Connection> ref, boolean forceRollback) {
+        final Connection conn = ref.get();
+        if (conn != null) {
+            try {
+                if (forceRollback) conn.rollback();
+                conn.close();
+            } catch (SQLException e) {
+                if (warningConsumer != null) warningConsumer.accept(e);
+            }
+        }
     }
 }
