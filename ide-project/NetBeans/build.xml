@@ -94,10 +94,6 @@
       <fileset dir="${project.root}/storage/sis-xmlstore/src/main/resources">
         <include name="**/*.properties"/>
       </fileset>
-      <fileset dir="${project.root}/storage/sis-gdal/src/main/resources">
-        <include name="**/*.dll"/>
-        <include name="**/*.so"/>
-      </fileset>
       <fileset dir="${project.root}/application/sis-console/src/main/resources">
         <include name="**/*.properties"/>
       </fileset>

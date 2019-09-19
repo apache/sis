@@ -38,8 +38,6 @@
                 <root id="src.utility.dir" name="Utility"/>
                 <root id="src.fra-profile.dir" name="French profile"/>
                 <root id="src.jpn-profile.dir" name="Japanese profile"/>
-                <root id="src.gdal.dir" name="GDAL/Proj4"/>
-                <root id="src.c.gdal.dir" name="GDAL/Proj4 JNI"/>
             </source-roots>
             <test-roots>
                 <root id="test.console.dir" name="Test Console"/>
@@ -56,7 +54,6 @@
                 <root id="test.utility.dir" name="Test Utility"/>
                 <root id="test.fra-profile.dir" name="Test French profile"/>
                 <root id="test.jpn-profile.dir" name="Test Japanese profile"/>
-                <root id="test.gdal.dir" name="Test GDAL/Proj4"/>
             </test-roots>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
