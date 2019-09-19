@@ -43,7 +43,7 @@ public final strictfp class LinearConverterTest extends TestCase {
      * @param  denominator  the expected denominator in the conversion factor.
      * @param  converter    the converter to verify.
      */
-    static void assertScale(final int numerator, final int denominator, final LinearConverter converter) {
+    static void assertScale(final int numerator, final int denominator, final AbstractConverter converter) {
         final double derivative = numerator / (double) denominator;
         final Number[] coefficients = converter.coefficients();
         assertEquals("coefficients.length", 2, coefficients.length);
@@ -88,7 +88,7 @@ public final strictfp class LinearConverterTest extends TestCase {
      */
     @Test
     public void testIsIdentityAndLinear() {
-        LinearConverter c = LinearConverter.IDENTITY;
+        AbstractConverter c = IdentityConverter.INSTANCE;
         assertTrue(c.isIdentity());
         assertTrue(c.isLinear());
         assertEquals("coefficients.length", 0, c.coefficients().length);
@@ -185,15 +185,15 @@ public final strictfp class LinearConverterTest extends TestCase {
      */
     @Test
     public void testConcatenate() {
-        LinearConverter c = LinearConverter.scale(254, 100);                        // inches to centimetres
+        AbstractConverter c = LinearConverter.scale(254, 100);                      // inches to centimetres
         assertScale(254, 100, c);
-        c = (LinearConverter) c.concatenate(LinearConverter.scale(10, 1));          // centimetres to millimetres
+        c = (AbstractConverter) c.concatenate(LinearConverter.scale(10, 1));        // centimetres to millimetres
         assertScale(254, 10, c);
-        c = (LinearConverter) c.concatenate(LinearConverter.scale(1, 1000));        // millimetres to metres
+        c = (AbstractConverter) c.concatenate(LinearConverter.scale(1, 1000));      // millimetres to metres
         assertScale(254, 10000, c);
 
         c = LinearConverter.offset(27315, 100);                                     // Celsius to kelvin
-        c = (LinearConverter) c.concatenate(LinearConverter.offset(-54630, 200));
+        c = (AbstractConverter) c.concatenate(LinearConverter.offset(-54630, 200));
         assertTrue(c.isIdentity());
     }
 
@@ -228,7 +228,7 @@ public final strictfp class LinearConverterTest extends TestCase {
      */
     @Test
     public void testToString() {
-        assertEquals("y = x",                   LinearConverter.IDENTITY          .toString());
+        assertEquals("y = x",                   IdentityConverter.INSTANCE        .toString());
         assertEquals("y = 100⋅x",               LinearConverter.scale (  100,   1).toString());
         assertEquals("y = x∕100",               LinearConverter.scale (    1, 100).toString());
         assertEquals("y = 254⋅x∕100",           LinearConverter.scale (  254, 100).toString());

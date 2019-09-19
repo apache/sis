@@ -359,7 +359,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
             throw new UnconvertibleException(incompatible(unit));
         }
         if (step == unit) {
-            return LinearConverter.IDENTITY;
+            return IdentityConverter.INSTANCE;
         }
         /*
          * At this point we know that the given units is not a system unit. Ask the conversion
@@ -389,7 +389,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
             throw new IncommensurableException(incompatible(unit));
         }
         if (step == unit) {
-            return LinearConverter.IDENTITY;
+            return IdentityConverter.INSTANCE;
         }
         // Same remark than in getConverterTo(Unit).
         return unit.getConverterToAny(step).inverse();

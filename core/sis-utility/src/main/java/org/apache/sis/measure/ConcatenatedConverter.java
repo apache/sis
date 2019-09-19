@@ -126,7 +126,7 @@ final class ConcatenatedConverter extends AbstractConverter implements LenientCo
     public UnitConverter concatenate(final UnitConverter converter) {
         ArgumentChecks.ensureNonNull("converter", converter);
         if (equals(converter.inverse())) {
-            return LinearConverter.IDENTITY;
+            return IdentityConverter.INSTANCE;
         }
         // Delegate to c1 and c2 because they may provide more intelligent 'concatenate' implementations.
         return c2.concatenate(c1.concatenate(converter));
