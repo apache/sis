@@ -21,8 +21,11 @@ package org.apache.sis.image;
  * Placeholder for {@code org.opengis.coverage.grid.SequenceType}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ *
+ * @see <a href="http://docs.opengeospatial.org/is/09-026r2/09-026r2.html">OGC® Filter Encoding 2.0 Encoding Standard</a>
+ *
+ * @since 1.1
  * @module
  */
 enum SequenceType {

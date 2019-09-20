@@ -1329,7 +1329,7 @@ public final class Units extends Static {
      * This method shall be invoked in a single thread by the {@code Units} class initializer only.
      *
      * <p>The {@code target} argument should be an instance of {@link SystemUnit}.
-     * The only exception is for creating the {@link DECIBEL} unit base on the bel conventional unit.</p>
+     * The only exception is for creating the {@link #DECIBEL} unit base on the bel conventional unit.</p>
      *
      * <p>If the {@code target} unit holds a list of {@linkplain SystemUnit#related() related units}
      * (i.e. conventional units that can not be computed easily by appending a SI prefix), then the new

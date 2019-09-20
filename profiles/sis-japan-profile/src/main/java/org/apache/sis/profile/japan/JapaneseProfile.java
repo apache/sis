@@ -14,16 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.profile.japan;
+
+import org.apache.sis.util.Static;
+
 
 /**
- * Generates some HTML reports for the Apache SIS library. The classes in this package iterate
- * over some kind of services declared by theSIS library (for example the list of map projections)
- * and produce HTML reports to be copied on the web server.
- * The reports are for example the list of all supported EPSG codes.
+ * Provides implementations of Japanese extensions.
+ * There is not yet public methods provided in this class.
+ * Just having this module presents on the classpath is sufficient for enabling the reading of following data:
+ *
+ * <ul>
+ *   <li>Global Change Observation Mission - Climate (GCOM-C), a.k.a. "Shikisai".</li>
+ *   <li>Global Change Observation Mission - Water (GCOM-W), a.k.a. "Shizuku".</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   0.7
+ * @since   1.0
  * @module
  */
-package org.apache.sis.referencing.report;
+public final class JapaneseProfile extends Static {
+    /**
+     * Do not allow instantiation of this class.
+     */
+    private JapaneseProfile() {
+    }
+}
