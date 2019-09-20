@@ -35,8 +35,8 @@ import org.apache.sis.test.TestUtilities;
  * This is used for testing purpose only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 @SuppressWarnings("serial")

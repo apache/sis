@@ -33,8 +33,8 @@ import org.opengis.filter.identity.GmlObjectId;
  *             See <a href="https://github.com/opengeospatial/geoapi/issues/32">GeoAPI issue #32</a>.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 @Deprecated

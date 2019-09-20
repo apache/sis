@@ -48,8 +48,8 @@ import org.apache.sis.internal.feature.Resources;
  * See <a href="https://github.com/opengeospatial/geoapi/issues/32">GeoAPI issue #32</a>.</div>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public class DefaultFilterFactory implements FilterFactory2 {

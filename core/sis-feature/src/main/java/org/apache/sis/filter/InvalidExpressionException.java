@@ -28,8 +28,8 @@ import org.apache.sis.util.Workaround;
  * or a query {@link org.apache.sis.storage.Query}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public class InvalidExpressionException extends RuntimeException {

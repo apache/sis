@@ -28,8 +28,8 @@ import org.opengis.filter.expression.PropertyName;
  * Defines a sort order based on a property and ascending/descending order.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 final class DefaultSortBy implements SortBy, Serializable {

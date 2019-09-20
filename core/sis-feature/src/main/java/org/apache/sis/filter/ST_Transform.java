@@ -57,8 +57,8 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 final class ST_Transform extends NamedFunction implements FeatureExpression {
