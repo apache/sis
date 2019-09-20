@@ -873,6 +873,7 @@
 
           <additionalOptions>
             <additionalOption>--add-stylesheet "${maven.multiModuleProjectDirectory}/src/main/javadoc/sis.css"</additionalOption>
+            <additionalOption>--no-module-directories</additionalOption> <!-- https://bugs.openjdk.java.net/browse/JDK-8215291 -->
           </additionalOptions>
 
           <!-- Separates packages on the overview page into the groups specified. -->

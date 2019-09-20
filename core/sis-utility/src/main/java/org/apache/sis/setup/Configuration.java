@@ -86,14 +86,32 @@ public final class Configuration {
     /**
      * Specifies the data source to use if no {@code "jdbc/SpatialMetadata"} source is binded to a JNDI environment.
      * Data source specified by JNDI has precedence over data source specified by this method in order to let users
-     * control their data source.
+     * control their data source. The following example shows how to setup a connection to a PostgreSQL database:
      *
-     * <p>This method can be invoked only before the first attempt to {@linkplain #getDatabase() get the database}.
-     * If the {@link DataSource} has already be obtained, then this method throws {@link IllegalStateException}.</p>
+     * {@preformat java
+     *     import org.postgresql.ds.PGSimpleDataSource;
+     *
+     *     // Class and method declarations omitted for brevity.
+     *     PGSimpleDataSource ds = new PGSimpleDataSource();
+     *     ds.setServerName("localhost");
+     *     ds.setDatabaseName("SpatialMetadata");
+     *
+     *     // Registration assuming that a JNDI implementation is available
+     *     Context env = (Context) InitialContext.doLookup("java:comp/env");
+     *     env.bind("jdbc/SpatialMetadata", ds);
+     *
+     *     // Registration without JNDI.
+     *     Configuration.current().setDatabase(() -> ds);
+     * }
+     *
+     * This method can be invoked only before the first attempt to {@linkplain #getDatabase() get the database}.
+     * If the {@link DataSource} has already be obtained, then this method throws {@link IllegalStateException}.
      *
      * @param  source  supplier of data source to set.
      *         The supplier may return {@code null}, in which case it will be ignored.
      * @throws IllegalStateException if {@link DataSource} has already be obtained before this method call.
+     *
+     * @see <a href="http://sis.apache.org/epsg.html#jndi">How to use EPSG geodetic dataset</a>
      */
     public void setDatabase(final Supplier<DataSource> source) {
         ArgumentChecks.ensureNonNull("source", source);

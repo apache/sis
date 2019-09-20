@@ -1049,7 +1049,7 @@ public final class Matrices extends Static {
             case IGNORE_METADATA: return equals(m1, m2, 0, false);
             case DEBUG:           // Fall through
             case ALLOW_VARIANT:   // Fall through
-            case APPROXIMATE:   return equals(m1, m2, Numerics.COMPARISON_THRESHOLD, true);
+            case APPROXIMATE:     return equals(m1, m2, Numerics.COMPARISON_THRESHOLD, true);
             default: throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.UnknownEnumValue_2, ComparisonMode.class, mode));
         }

@@ -145,20 +145,24 @@ java org.apache.sis.referencing.factory.sql.epsg.DataScriptFormatter $EPSG_SCRIP
 
        <pre>mvn install -Dorg.apache.sis.test.extensive=true</pre></li>
 
-      <li><p>Upgrade the <code>FACTORY.VERSION</code> value defined in the
-          <code>org.apache.sis.referencing.report.CoordinateReferenceSystems</code> class, then execute that class.
-          It can be executed from the IDE since the <code>main</code> method takes no argument.
-          This class will write a <code>CoordinateReferenceSystems.html</code> file in current directory
-          (the full path will be printed in the standard output).
-          That file should be moved to the <code>site/content/tables/</code> directory,
-          where <code>site</code> is the directory containing a local checkout of
-          <a href="http://svn.apache.org/repos/asf/sis/site/trunk">http://svn.apache.org/repos/asf/sis/site/trunk</a>.</p></li>
+      <li><p>Regenerate the HTML pages listing available CRS and coordinate operation methods.
+          Those pages will be copied into the
+          <code><a href="http://svn.apache.org/repos/asf/sis/site/trunk/content/tables/">site/content/tables/</a></code>
+          directory during the <a href="http://sis.apache.org/release-management.html#update-crs-list">release process</a>,
+          but for now the purpose is only to check if there is errors:</p>
+        <ul>
+          <li><p>Upgrade the <code>FACTORY.VERSION</code> value defined in the
+              <code>org.apache.sis.referencing.report.CoordinateReferenceSystems</code> class, then execute that class.
+              It can be executed from the IDE since the <code>main</code> method takes no argument.
+              This class will write a <code>CoordinateReferenceSystems.html</code> file in current directory
+              (the full path will be printed in the standard output).</p></li>
 
-      <li><p>Execute the <code>org.apache.sis.referencing.report.CoordinateOperationMethods</code> class.
-          It can be executed from the IDE since the <code>main</code> method takes no argument.
-          This class will write a <code>CoordinateOperationMethods.html</code> file in current directory.
-          That file should be moved to the <code>site/content/tables/</code> directory,
-          where <code>site</code> is the directory than above.</p></li>
+          <li><p>Execute the <code>org.apache.sis.referencing.report.CoordinateOperationMethods</code> class.
+              It can be executed from the IDE since the <code>main</code> method takes no argument.
+              This class will write a <code>CoordinateOperationMethods.html</code> file in current directory.</p></li>
+        </ul>
+        <p>Open those generated HTML files in a web browser and verify the result.</p>
+      </li>
     </ol>
   </body>
 </html>
