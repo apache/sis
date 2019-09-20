@@ -875,6 +875,7 @@
           <additionalOptions>
             <additionalOption>--add-stylesheet "${maven.multiModuleProjectDirectory}/src/main/javadoc/sis.css"</additionalOption>
             <additionalOption>-Xdoclint:all,-reference</additionalOption>
+            <additionalOption>--no-module-directories</additionalOption>
           </additionalOptions>
 
           <!-- Separates packages on the overview page into the groups specified. -->
