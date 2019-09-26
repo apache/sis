@@ -415,7 +415,7 @@ final class Analyzer {
             } catch (DataStoreException e) {
                 throw new BackingStoreException(e);
             }
-            final AssociationRoleBuilder association = foreignTable == null?
+            final AssociationRoleBuilder association = foreignTable == null ?
                     target.addAssociation(foreignTypeName) : target.addAssociation(foreignTable.featureType);
             association.setName(r.propertyName);
         }
@@ -426,7 +426,7 @@ final class Analyzer {
         void fill(ResultSet source, final Feature target);
     }
 
-    private class TableMetadata implements SQLTypeSpecification {
+    private final class TableMetadata implements SQLTypeSpecification {
         final TableReference id;
         private final String tableEsc;
         private final String schemaEsc;
@@ -557,7 +557,7 @@ final class Analyzer {
         }
     }
 
-    private class QuerySpecification implements SQLTypeSpecification {
+    private final class QuerySpecification implements SQLTypeSpecification {
 
         final int total;
         final PreparedStatement source;

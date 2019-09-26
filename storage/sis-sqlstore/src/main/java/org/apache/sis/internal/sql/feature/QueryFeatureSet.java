@@ -171,7 +171,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         } catch (SQLException e) {
             try {
                 c.close();
-            } catch (RuntimeException|SQLException bis) {
+            } catch (RuntimeException | SQLException bis) {
                 e.addSuppressed(bis);
             }
             throw e;
@@ -189,7 +189,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         return new StreamSQL(new QueryAdapter(queryBuilder), source);
     }
 
-    private class QueryAdapter implements QueryBuilder {
+    private final class QueryAdapter implements QueryBuilder {
 
         private final SQLBuilder source;
 
@@ -242,7 +242,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         }
     }
 
-    private class PreparedQueryConnector implements Connector {
+    private final class PreparedQueryConnector implements Connector {
 
         final String sql;
         private long additionalOffset, additionalLimit;
@@ -264,8 +264,8 @@ public class QueryFeatureSet extends AbstractFeatureSet {
 
             return stream.onClose(() -> {
                 try (
-                        final AutoCloseable rc = result::close;
-                        final AutoCloseable sc = statement::close;
+                        AutoCloseable rc = result::close;
+                        AutoCloseable sc = statement::close;
                 ) {
                     // No-op. Using try with resource allows to manage closing of second resource even if first one throws an error.
                 } catch (Exception e) {
@@ -280,19 +280,19 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         }
     }
 
-    private class ResultSpliterator implements Spliterator<Feature> {
+    private final class ResultSpliterator implements Spliterator<Feature> {
 
-        final ResultContext result;
+        final ResultSet result;
 
         private ResultSpliterator(ResultSet result) {
-            this.result = new ResultContext(result);
+            this.result = result;
         }
 
         @Override
         public boolean tryAdvance(Consumer<? super Feature> action) {
             try {
-                if (result.source.next()) {
-                    final Feature f = adapter.read(result.source);
+                if (result.next()) {
+                    final Feature f = adapter.read(result);
                     action.accept(f);
                     return true;
                 } else return false;
@@ -310,7 +310,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         public long estimateSize() {
             // TODO: economic size estimation ? A count query seems overkill for the aim of this API. Howver, we could
             // analyze user query in search for a limit value.
-            return originLimit > 0? originLimit : Long.MAX_VALUE;
+            return originLimit > 0 ? originLimit : Long.MAX_VALUE;
         }
 
         @Override

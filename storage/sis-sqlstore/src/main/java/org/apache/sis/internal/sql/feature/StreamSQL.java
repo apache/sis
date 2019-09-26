@@ -74,7 +74,7 @@ class StreamSQL extends StreamDecoration<Feature> {
 
     private Consumer<? super Feature> peekAction;
 
-    private long limit = 0, offset = 0;
+    private long limit, offset;
 
     private Consumer<SQLException> warningConsumer = e -> Logging.getLogger("sis.sql").log(Level.FINE, "Cannot properly close a connection", e);
 
@@ -199,7 +199,7 @@ class StreamSQL extends StreamDecoration<Feature> {
                 })
                 .onClose(() -> closeRef(connectionRef, true));
         if (peekAction != null) featureStream = featureStream.peek(peekAction);
-        return parallel? featureStream : featureStream.parallel();
+        return parallel ? featureStream : featureStream.parallel();
     }
 
     /**

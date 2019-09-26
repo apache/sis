@@ -193,7 +193,7 @@ final class Table extends AbstractFeatureSet {
         this.featureType      = adapter.type;
         this.importedKeys     = toArray(specification.getImports());
         this.exportedKeys     = toArray(specification.getExports());
-        this.primaryKeyClass  = primaryKeys.length < 2? Object.class : Object[].class;
+        this.primaryKeyClass  = primaryKeys.length < 2 ? Object.class : Object[].class;
         this.hasGeometry      = specification.getPrimaryGeometryColumn().isPresent();
         this.attributes       = Collections.unmodifiableList(
                 specification.getColumns().stream()
@@ -219,7 +219,7 @@ final class Table extends AbstractFeatureSet {
 
         }
 
-        return remainingQuery? subset.subset(q) : subset;
+        return remainingQuery ? subset.subset(q) : subset;
     }
 
     /**
