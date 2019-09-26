@@ -10,6 +10,9 @@ import org.apache.sis.util.ArgumentChecks;
 /**
  * Represents SQL primary key constraint. Main information is columns composing the key.
  *
+ * @implNote For now, only list of columns composing the key are returned. However, in the future it would be possible
+ * to add other information, as a value type to describe how to expose primary key value.
+ *
  * @author "Alexis Manin (Geomatys)"
  */
 interface PrimaryKey {
@@ -20,13 +23,16 @@ interface PrimaryKey {
         return Optional.of(new Composite(cols));
     }
 
-    //Class<T> getViewType();
+    /**
+     *
+     * @return List of column names composing the key. Should neither be null nor empty.
+     */
     List<String> getColumns();
 
     class Simple implements PrimaryKey {
         final String column;
 
-        public Simple(String column) {
+        Simple(String column) {
             this.column = column;
         }
 
@@ -40,7 +46,7 @@ interface PrimaryKey {
          */
         private final List<String> columns;
 
-        public Composite(List<String> columns) {
+        Composite(List<String> columns) {
             ArgumentChecks.ensureNonEmpty("Primary key column names", columns);
             this.columns = Collections.unmodifiableList(new ArrayList<>(columns));
         }

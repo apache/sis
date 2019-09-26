@@ -25,8 +25,13 @@
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
  *
+ * @implNote Feature type analysis is done through {@link org.apache.sis.internal.sql.feature.Analyzer} class.
+ * It relies on internal {@link org.apache.sis.internal.sql.feature.SQLTypeSpecification} API to fetch SQL schema
+ * information, and build {@link org.apache.sis.internal.sql.feature.FeatureAdapter an adapter to feature model from it}.
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module

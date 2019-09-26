@@ -418,7 +418,7 @@ final class Table extends AbstractFeatureSet {
      */
     @Override
     public Stream<Feature> features(final boolean parallel) throws DataStoreException {
-        return new StreamSQL(this);
+        return new StreamSQL(this, parallel);
     }
 
     /**

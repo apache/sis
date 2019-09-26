@@ -78,13 +78,14 @@ class StreamSQL extends StreamDecoration<Feature> {
 
     private Consumer<SQLException> warningConsumer = e -> Logging.getLogger("sis.sql").log(Level.FINE, "Cannot properly close a connection", e);
 
-    StreamSQL(final Table source) {
-        this(new Features.Builder(source), source.source);
+    StreamSQL(final Table source, boolean parallel) {
+        this(new Features.Builder(source), source.source, parallel);
     }
 
-    StreamSQL(QueryBuilder queryAdapter, DataSource source) {
+    StreamSQL(QueryBuilder queryAdapter, DataSource source, boolean parallel) {
         this.queryAdapter = queryAdapter;
         this.source = source;
+        this.parallel = parallel;
     }
 
     public void setWarningConsumer(Consumer<SQLException> warningConsumer) {
@@ -171,8 +172,14 @@ class StreamSQL extends StreamDecoration<Feature> {
     @Override
     public long count() {
         // Avoid opening a connection if sql text cannot be evaluated.
-        final String sql = select().estimateStatement(true);
-        try (Connection conn = source.getConnection()) {
+        final String sql;
+        try {
+            sql = select().estimateStatement(true);
+        } catch (UnsupportedOperationException e) {
+            // If underlying connector does not support query estimation, we will fallback on brut-force counting.
+            return super.count();
+        }
+        try (Connection conn = QueryFeatureSet.connectReadOnly(source)) {
             try (Statement st = conn.createStatement();
                  ResultSet rs = st.executeQuery(sql)) {
                 if (rs.next()) {
@@ -199,7 +206,7 @@ class StreamSQL extends StreamDecoration<Feature> {
                 })
                 .onClose(() -> closeRef(connectionRef, true));
         if (peekAction != null) featureStream = featureStream.peek(peekAction);
-        return parallel ? featureStream : featureStream.parallel();
+        return parallel ? featureStream.parallel() : featureStream;
     }
 
     /**

@@ -57,7 +57,7 @@ class FeatureAdapter {
         return features;
     }
 
-    static class PropertyMapper {
+    static final class PropertyMapper {
         // TODO: by using a indexed implementation of Feature, we could avoid the name mapping. However, a JMH benchmark
         // would be required in order to be sure it's impacting performance positively.
         final String propertyName;

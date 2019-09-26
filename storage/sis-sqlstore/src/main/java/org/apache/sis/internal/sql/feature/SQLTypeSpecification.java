@@ -1,35 +1,87 @@
 package org.apache.sis.internal.sql.feature;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
 import org.opengis.util.GenericName;
 
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.storage.DataStoreContentException;
 
+/**
+ * Defines an application schema inferred from an SQL database (query, table, etc.). Implementations will be used by
+ * {@link Analyzer} to create an {@link FeatureAdapter adaptation layer to the feature model}. Default implementations
+ * can be retrieved for tables and queries respectively through {@link Analyzer#create(TableReference, TableReference)}
+ * and {@link Analyzer#create(PreparedStatement, String, GenericName)} methods.
+ */
 interface SQLTypeSpecification {
     /**
+     * Identifying name for the application schema. It is strongly recommended to be present, for SIS engine to be
+     * capable to create insightful models. However, in corner cases where no proper names could be provided, an empty
+     * value is allowed.
      *
-     * @return Name for the feature type to build. Nullable.
+     * @implNote SIS {@link FeatureTypeBuilder feature type builder} <em>requires</em> a name, and current
+     * {@link Analyzer#buildAdapter(SQLTypeSpecification) analysis implementation} will create a random UUID if
+     * necessary.
+     *
+     * @return Name for the feature type to build.
      * @throws SQLException If an error occurs while retrieving information from database.
      */
-    GenericName getName() throws SQLException;
+    Optional<GenericName> getName() throws SQLException;
+
+    /**
+     * Gives an optional description of the application schema.This information is not necessary for any kind of
+     * computation, but allows to give end-user global information about the schema (s)he's manipulating.
+     *
+     * @return A brief description of the data source.
+     * @throws SQLException If an error occurs while retrieving information from database.
+     */
+    Optional<String> getDefinition() throws SQLException;
+
+    /**
+     * Primary key definition of source schema. Can be empty if no primary key is defined (Example: query definition).
+     *
+     * @return Primary key definition if any, otherwise an empty shell.
+     * @throws SQLException If an error occurs while exchanging information with underlying database.
+     */
+    Optional<PrimaryKey> getPK() throws SQLException;
 
     /**
      *
-     * @return A succint description of the data source. Nullable.
-     * @throws SQLException If an error occurs while retrieving information from database.
+     * @return Ordered list of columns in application schema. Order is important, and will be relied upon to retrieve
+     *  {@link ResultSet#getObject(int) result values by index}.
      */
-    String getDefinition() throws SQLException;
-
-    Optional<PrimaryKey> getPK() throws SQLException;
-
     List<SQLColumn> getColumns();
 
+    /**
+     *
+     * @return All identified relations based on a foreign key in <em>current</em> application schema (1..1 or n..1).
+     * Corresponds to {@link Relation.Direction#IMPORT}. Can be empty but not null.
+     *
+     * @throws SQLException If an error occurs while exchanging information with underlying database.
+     */
     List<Relation> getImports() throws SQLException;
 
+    /**
+     *
+     * @return All identified relations based on foreign key located in <em>another</em> application schema (1..n).
+     * Corresponds to {@link Relation.Direction#EXPORT}. Can be empty but not null.
+     * @throws SQLException If an error occurs while exchanging information with underlying database.
+     * @throws DataStoreContentException If a schema problem is encountered.
+     */
     List<Relation> getExports() throws SQLException, DataStoreContentException;
 
-    default Optional<String> getPrimaryGeometryColumn() {return Optional.empty();}
+    /**
+     * In case target schema contains geographic information, this serves to identify without ambiguity which column
+     * contains what could be considered main geolocation (as stated by {@link AttributeConvention#GEOMETRY_PROPERTY}).
+     * This is a very important information in case application schema contains multiple geometric fields.
+     *
+     * @return The name of the column/attribute to be considered as main geometry information, or an empty shell if
+     * unknown.
+     */
+    default Optional<ColumnRef> getPrimaryGeometryColumn() {return Optional.empty();}
 }

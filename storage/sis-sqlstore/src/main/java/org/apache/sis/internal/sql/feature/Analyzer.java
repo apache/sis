@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.sql.DataSource;
@@ -140,6 +141,7 @@ final class Analyzer {
      * The namespace created with {@link #catalog} and {@link #schema}.
      */
     private transient NameSpace namespace;
+    public static final Supplier<GenericName> RANDOME_NAME = () -> Names.createGenericName("sis", ":", UUID.randomUUID().toString());
 
     /**
      * Creates a new analyzer for the database described by given metadata.
@@ -334,9 +336,9 @@ final class Analyzer {
 
     public FeatureAdapter buildAdapter(final SQLTypeSpecification spec) throws SQLException {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder(nameFactory, functions.library, locale);
-        builder.setName(spec.getName() == null ? Names.createGenericName("sis", ":", UUID.randomUUID().toString()) : spec.getName());
-        builder.setDefinition(spec.getDefinition());
-        final String geomCol = spec.getPrimaryGeometryColumn().orElse("");
+        builder.setName(spec.getName().orElseGet(RANDOME_NAME));
+        spec.getDefinition().ifPresent(builder::setDefinition);
+        final String geomCol = spec.getPrimaryGeometryColumn().map(ColumnRef::getAttributeName).orElse("");
         final List pkCols = spec.getPK().map(PrimaryKey::getColumns).orElse(Collections.EMPTY_LIST);
         List<PropertyMapper> attributes = new ArrayList<>();
         // JDBC column indices are 1 based.
@@ -470,15 +472,15 @@ final class Analyzer {
         }
 
         @Override
-        public GenericName getName() {
-            return id.getName(Analyzer.this);
+        public Optional<GenericName> getName() {
+            return Optional.of(id.getName(Analyzer.this));
         }
 
         /**
          * The remarks are opportunistically stored in id.freeText if known by the caller.
          */
         @Override
-        public String getDefinition() throws SQLException {
+        public Optional<String> getDefinition() throws SQLException {
             String remarks = id.freeText;
             if (id instanceof Relation) {
                 try (ResultSet reflect = metadata.getTables(id.catalog, schemaEsc, tableEsc, null)) {
@@ -493,7 +495,7 @@ final class Analyzer {
                     }
                 }
             }
-            return remarks;
+            return Optional.ofNullable(remarks);
         }
 
         @Override
@@ -551,7 +553,7 @@ final class Analyzer {
         }
 
         @Override
-        public Optional<String> getPrimaryGeometryColumn() {
+        public Optional<ColumnRef> getPrimaryGeometryColumn() {
             return Optional.empty();
             //throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 20/09/2019
         }
@@ -589,13 +591,13 @@ final class Analyzer {
         }
 
         @Override
-        public GenericName getName() throws SQLException {
-            return name;
+        public Optional<GenericName> getName() throws SQLException {
+            return Optional.of(name);
         }
 
         @Override
-        public String getDefinition() throws SQLException {
-            return query;
+        public Optional<String> getDefinition() throws SQLException {
+            return Optional.of(query);
         }
 
         @Override

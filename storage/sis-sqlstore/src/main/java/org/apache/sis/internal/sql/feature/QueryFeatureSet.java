@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -76,6 +77,21 @@ public class QueryFeatureSet extends AbstractFeatureSet {
      * A flag indicating that we've safely identified a {@literal DISTINCT} keyword in the user query.
      */
     private final boolean distinct;
+
+    /**
+     * Debug flag to activate (use {@link PrefetchSpliterator}) or de-activate (use {@link ResultSpliterator})
+     * batch loading of results.
+     */
+    boolean allowBatchLoading = true;
+    /**
+     * Profiling variable. Define the fraction (0 none, 1 all) of a single fetch (as defined by {@link ResultSet#getFetchSize()}
+     * that {@link PrefetchSpliterator} will load in one go.
+     */
+    float fetchRatio = 0.5f;
+    /**
+     * Profiling variable, serves to define {{@link PreparedStatement#setFetchSize(int)} SQL result fetch size}.
+     */
+    int fetchSize = 100;
 
     /**
      * Same as {@link #QueryFeatureSet(SQLBuilder, DataSource, Connection)}, except query is provided by a fixed text
@@ -186,19 +202,21 @@ public class QueryFeatureSet extends AbstractFeatureSet {
 
     @Override
     public Stream<Feature> features(boolean parallel) {
-        return new StreamSQL(new QueryAdapter(queryBuilder), source);
+        return new StreamSQL(new QueryAdapter(queryBuilder, parallel), source, parallel);
     }
 
     private final class QueryAdapter implements QueryBuilder {
 
         private final SQLBuilder source;
+        private final boolean parallel;
 
         private long additionalOffset, additionalLimit;
 
-        QueryAdapter(SQLBuilder source) {
+        QueryAdapter(SQLBuilder source, boolean parallel) {
             // defensive copy
             this.source = new SQLBuilder(source);
             this.source.append(source.toString());
+            this.parallel = parallel;
         }
 
         @Override
@@ -236,7 +254,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
                 }
 
                 Features.addOffsetLimit(source, nativeOffset, nativeLimit);
-                return new PreparedQueryConnector(source.toString(), javaOffset, javaLimit);
+                return new PreparedQueryConnector(source.toString(), javaOffset, javaLimit, parallel);
             }
             throw new UnsupportedOperationException("Not supported yet: modifying user query"); // "Alexis Manin (Geomatys)" on 24/09/2019
         }
@@ -246,19 +264,25 @@ public class QueryFeatureSet extends AbstractFeatureSet {
 
         final String sql;
         private long additionalOffset, additionalLimit;
+        private final boolean parallel;
 
-        private PreparedQueryConnector(String sql, long additionalOffset, long additionalLimit) {
+        private PreparedQueryConnector(String sql, long additionalOffset, long additionalLimit, boolean parallel) {
             this.sql = sql;
             this.additionalOffset = additionalOffset;
             this.additionalLimit = additionalLimit;
+            this.parallel = parallel;
         }
 
         @Override
         public Stream<Feature> connect(Connection connection) throws SQLException, DataStoreException {
             final PreparedStatement statement = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            statement.setFetchSize(fetchSize);
             final ResultSet result = statement.executeQuery();
-
-            Stream<Feature> stream = StreamSupport.stream(new ResultSpliterator(result), false);
+            final int fetchSize = result.getFetchSize();
+            final boolean withPrefetch = !allowBatchLoading || (fetchSize < 1 || fetchSize >= Integer.MAX_VALUE);
+            final Spliterator<Feature> spliterator = withPrefetch ?
+                    new ResultSpliterator(result) : new PrefetchSpliterator(result, fetchRatio);
+            Stream<Feature> stream = StreamSupport.stream(spliterator, parallel && withPrefetch);
             if (additionalLimit > 0) stream = stream.limit(additionalLimit);
             if (additionalOffset > 0) stream = stream.skip(additionalOffset);
 
@@ -276,16 +300,46 @@ public class QueryFeatureSet extends AbstractFeatureSet {
 
         @Override
         public String estimateStatement(boolean count) {
+            // Require analysis. Things could get complicated if original user query is already a count.
             throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 24/09/2019
         }
     }
 
-    private final class ResultSpliterator implements Spliterator<Feature> {
+    /**
+     * Base class for loading SQL query result loading through {@link Spliterator} API. Concrete implementations comes
+     * in two experimental flavors :
+     * <ul>
+     *     <li>Sequential streaming: {@link ResultSpliterator}</li>
+     *     <li>Parallelizable batch  streaming: {@link PrefetchSpliterator}</li>
+     * </ul>
+     *
+     * {@link QuerySpliteratorsBench A benchmark is available} to compare both implementations, which could be useful in
+     * the future to determine which implementation to priorize. For now results does not show much difference.
+     */
+    private abstract class QuerySpliterator  implements java.util.Spliterator<Feature> {
 
         final ResultSet result;
 
-        private ResultSpliterator(ResultSet result) {
+        private QuerySpliterator(ResultSet result) {
             this.result = result;
+        }
+
+        @Override
+        public long estimateSize() {
+            return originLimit > 0 ? originLimit : Long.MAX_VALUE;
+        }
+
+        @Override
+        public int characteristics() {
+            // TODO: determine if it's order by analysing user query. SIZED is not possible, as limit is an upper threshold.
+            return Spliterator.IMMUTABLE | Spliterator.NONNULL | (distinct ? Spliterator.DISTINCT : 0);
+        }
+    }
+
+    private final class ResultSpliterator extends QuerySpliterator {
+
+        private ResultSpliterator(ResultSet result) {
+            super(result);
         }
 
         @Override
@@ -305,23 +359,84 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         public Spliterator<Feature> trySplit() {
             return null;
         }
-
-        @Override
-        public long estimateSize() {
-            // TODO: economic size estimation ? A count query seems overkill for the aim of this API. Howver, we could
-            // analyze user query in search for a limit value.
-            return originLimit > 0 ? originLimit : Long.MAX_VALUE;
-        }
-
-        @Override
-        public int characteristics() {
-            // TODO: determine if it's sorted by analysing user query. SIZED is not possible, as limit is an upper threshold.
-            return Spliterator.IMMUTABLE | Spliterator.NONNULL;
-        }
     }
 
     private static SQLBuilder fromQuery(final String query, final Connection conn) throws SQLException {
         return new SQLBuilder(conn.getMetaData(), true)
                 .append(query);
+    }
+
+    /**
+     * An attempt to optimize feature loading through batching and potential parallelization. For now, it looks like
+     * there's not much improvement regarding to naive streaming approach. IMHO, two improvements would really impact
+     * performance positively if done:
+     * <ul>
+     *     <li>Optimisation of batch loading through {@link FeatureAdapter#prefetch(int, ResultSet)}</li>
+     *     <li>Better splitting balance, as stated by {@link Spliterator#trySplit()}</li>
+     * </ul>
+     */
+    private final class PrefetchSpliterator extends QuerySpliterator {
+
+        final int fetchSize;
+
+        int idx;
+        List<Feature> chunk;
+        /**
+         * According to {@link Spliterator#trySplit()} documentation, the original size estimation must be reduced after
+         * split to remain consistent.
+         */
+        long splittedAmount = 0;
+
+        private PrefetchSpliterator(ResultSet result) throws SQLException {
+            this(result, 0.5f);
+        }
+
+        private PrefetchSpliterator(ResultSet result, float fetchRatio) throws SQLException {
+            super(result);
+            this.fetchSize = Math.max((int) (result.getFetchSize()*fetchRatio), 1);
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super Feature> action) {
+            if (ensureChunkAvailable()) {
+                action.accept(chunk.get(idx++));
+                return true;
+            }
+            return false;
+        }
+
+        public Spliterator<Feature> trySplit() {
+            if (!ensureChunkAvailable()) return null;
+            final List<Feature> remainingChunk = chunk.subList(idx, chunk.size());
+            splittedAmount += remainingChunk.size();
+            final Spliterator<Feature> chunkSpliterator = idx == 0 ?
+                    chunk.spliterator() : remainingChunk.spliterator();
+            chunk = null;
+            idx = 0;
+            return chunkSpliterator;
+        }
+
+        @Override
+        public long estimateSize() {
+            return super.estimateSize() - splittedAmount;
+        }
+
+        @Override
+        public int characteristics() {
+            return super.characteristics() | Spliterator.CONCURRENT;
+        }
+
+        private boolean ensureChunkAvailable() {
+            if (chunk == null || idx >= chunk.size()) {
+                idx = 0;
+                try {
+                    chunk = adapter.prefetch(fetchSize, result);
+                } catch (SQLException e) {
+                    throw new BackingStoreException(e);
+                }
+                return chunk != null && !chunk.isEmpty();
+            }
+            return true;
+        }
     }
 }

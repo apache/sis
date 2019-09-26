@@ -2,6 +2,7 @@ package org.apache.sis.internal.sql.feature;
 
 /**
  * API to allow overrided SQL Stream to delegate a set of intermediate operations to native driver.
+ * TODO: move as inner interface of {@link StreamSQL} ?
  */
 interface QueryBuilder {
 
