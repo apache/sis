@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 
+import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureAssociationRole;
@@ -39,6 +40,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
+import org.apache.sis.internal.storage.SubsetAdapter;
 import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
@@ -85,7 +87,8 @@ final class Table extends AbstractFeatureSet {
     /**
      * Name of all columns to fetch from database, optionally amended with an alias. Alias is used for feature type
      * attributes which have been renamed to avoid name collisions. In any case, a call to {@link ColumnRef#getAttributeName()}}
-     * will return the name available in target feature type.
+     * will return the name available in target feature type. This list contains only {@link Attribute} names, not any
+     * relation one.
      */
     final List<ColumnRef> attributes;
 
@@ -204,22 +207,12 @@ final class Table extends AbstractFeatureSet {
 
     @Override
     public FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
-        if (!(query instanceof SimpleQuery)) return super.subset(query);
-        boolean remainingQuery = true;
-        final SimpleQuery q = (SimpleQuery) query;
-        FeatureSet subset = this;
-        final List<SimpleQuery.Column> cols = q.getColumns();
-
-        /**
-         * Once filter has been taken care of, we will be able to check columns to filter. Note that all filters
-         * managed by database engine can use non-returned columns, but it is not the case of remaining ones, which
-         * are applied after feature creation, therefore with only filtered columns accessible.
-         */
-        if (cols != null && !cols.isEmpty()) {
-
+        if (query instanceof SimpleQuery) {
+            final SubsetAdapter subsetAdapter = new SubsetAdapter(fs -> new SQLQueryAdapter(this));
+            return subsetAdapter.subset(this, (SimpleQuery) query);
         }
 
-        return remainingQuery ? subset.subset(q) : subset;
+        return super.subset(query);
     }
 
     /**
@@ -431,6 +424,6 @@ final class Table extends AbstractFeatureSet {
     final Features features(final Connection connection, final List<Relation> following, final Relation noFollow)
             throws SQLException, InternalDataStoreException
     {
-        return new Features(this, connection, attributes, following, noFollow, false, -1, -1);
+        return new Features(this, connection, attributes, following, noFollow, false, -1, -1, null);
     }
 }

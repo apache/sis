@@ -592,7 +592,7 @@ final class Analyzer {
 
         @Override
         public Optional<GenericName> getName() throws SQLException {
-            return Optional.of(name);
+            return Optional.ofNullable(name);
         }
 
         @Override

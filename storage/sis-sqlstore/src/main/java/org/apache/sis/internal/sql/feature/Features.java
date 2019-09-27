@@ -33,12 +33,12 @@ import java.util.Map;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
-import org.opengis.filter.Filter;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.util.GenericName;
 
@@ -65,6 +65,7 @@ final class Features implements Spliterator<Feature> {
      * An empty array of iterators, used when there is no dependency.
      */
     private static final Features[] EMPTY = new Features[0];
+    public static final Pattern WHERE_REGEX = Pattern.compile("^\\s*WHERE\\s+", Pattern.CASE_INSENSITIVE);
 
     /**
      * The type of features to create.
@@ -152,8 +153,6 @@ final class Features implements Spliterator<Feature> {
 
     /**
      * Creates a new iterator over the feature instances.
-     * TODO: This object is far too complicated. A builder of some sort should be used. We should even consider a
-     * third-party tool like JOOQ, which is a great abstraction for SQL query building.
      *
      * @param table             the table for which we are creating an iterator.
      * @param connection        connection to the database.
@@ -169,7 +168,7 @@ final class Features implements Spliterator<Feature> {
      */
     Features(final Table table, final Connection connection, final Collection<ColumnRef> columns,
              final List<Relation> following, final Relation noFollow,
-             boolean distinct, final long offset, final long limit)
+             boolean distinct, final long offset, final long limit, CharSequence where)
              throws SQLException, InternalDataStoreException
     {
         ensureNonEmpty("Columns to fetch", columns);
@@ -269,6 +268,7 @@ final class Features implements Spliterator<Feature> {
          * a possibility that many rows reference the same feature instance.
          */
         sql.append(" FROM ").appendIdentifier(table.name.catalog, table.name.schema, table.name.table);
+        appendWhere(sql, where);
         if (following.isEmpty()) {
             statement = null;
             instances = null;       // A future SIS version could use the map opportunistically if it exists.
@@ -559,20 +559,25 @@ final class Features implements Spliterator<Feature> {
         }
     }
 
-    static class Builder implements QueryBuilder {
+    static class Builder implements StreamSQL.QueryBuilder {
 
         final Table parent;
         long limit, offset;
         SortBy[] sort;
 
+        ColumnRef[] columns;
+
         boolean distinct;
+
+        CharSequence whereClause;
 
         Builder(Table parent) {
             this.parent = parent;
         }
 
-        Builder where(final Filter filter) {
-            throw new UnsupportedOperationException("TODO");
+        Builder where(final CharSequence whereClause) {
+            this.whereClause = whereClause;
+            return this;
         }
 
         Builder sortBy(final SortBy...sorting) {
@@ -581,27 +586,33 @@ final class Features implements Spliterator<Feature> {
             return this;
         }
 
+        Builder setColumns(final ColumnRef... columns) {
+            if (columns == null || columns.length < 1) this.columns = null;
+            else this.columns = Arrays.copyOf(columns, columns.length);
+            return this;
+        }
+
         @Override
-        public QueryBuilder limit(long limit) {
+        public StreamSQL.QueryBuilder limit(long limit) {
             this.limit = limit;
             return this;
         }
 
         @Override
-        public QueryBuilder offset(long offset) {
+        public StreamSQL.QueryBuilder offset(long offset) {
             this.offset = offset;
             return this;
         }
 
         @Override
-        public QueryBuilder distinct(boolean activate) {
+        public StreamSQL.QueryBuilder distinct(boolean activate) {
             this.distinct = activate;
             return this;
         }
 
         @Override
         public Connector select(ColumnRef... columns) {
-            return new TableConnector(this, columns);
+            return new TableConnector(this, columns == null || columns.length < 1 ? this.columns : columns);
         }
     }
 
@@ -613,18 +624,21 @@ final class Features implements Spliterator<Feature> {
 
         final SortBy[] sort;
 
+        final CharSequence where;
+
         TableConnector(Builder source, ColumnRef[] columns) {
             this.source = source;
             this.distinct = source.distinct;
             this.columns = columns;
             this.sort = source.sort == null ? null : Arrays.copyOf(source.sort, source.sort.length);
+            this.where = source.whereClause;
         }
 
         public Stream<Feature> connect(final Connection conn) throws SQLException, DataStoreException {
             final Features features = new Features(
                     source.parent, conn,
                     columns == null || columns.length < 1 ? source.parent.attributes : Arrays.asList(columns),
-                    new ArrayList<>(), null, distinct, source.offset, source.limit
+                    new ArrayList<>(), null, distinct, source.offset, source.limit, where
             );
             return StreamSupport.stream(features, false);
         }
@@ -652,6 +666,7 @@ final class Features implements Spliterator<Feature> {
             if (count) sql.append(')');
             sql.append(" FROM ").appendIdentifier(source.parent.name.catalog, source.parent.name.schema, source.parent.name.table);
 
+            appendWhere(sql, where);
             if (!count && sort != null && sort.length > 0) {
                 sql.append(" ORDER BY ");
                 append(sql, sort[0]);
@@ -662,6 +677,17 @@ final class Features implements Spliterator<Feature> {
             addOffsetLimit(sql, source.offset, source.limit);
 
             return sql.toString();
+        }
+    }
+
+    private static void appendWhere(SQLBuilder sql, CharSequence whereClause) {
+        if (whereClause != null) {
+            final String whereStr = whereClause.toString();
+            if (!whereStr.isEmpty()) {
+                sql.append(" ");
+                if (!WHERE_REGEX.matcher(whereStr).find()) sql.append("WHERE ");
+                sql.append(whereStr);
+            }
         }
     }
 

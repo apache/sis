@@ -33,14 +33,20 @@ public final class SubsetAdapter {
         final long limit = query.getLimit();
         if (limit != UNLIMITED) remaining.setLimit(driver.limit(limit));
 
-        if (filteringRequired(query)) remaining.setFilter(driver.filter(query.getFilter()));
+        if (filteringRequired(query)) {
+            final Filter baseFilter = query.getFilter();
+            try {
+                final Filter remainingFilter = driver.filter(baseFilter);
+                remaining.setFilter(remainingFilter);
+            } catch (UnsupportedOperationException e) {
+                remaining.setFilter(baseFilter);
+            }
+        }
 
         if (sortRequired(query) && !driver.sort(query.getSortBy())) remaining.setSortBy(query.getSortBy());
 
-        if (!allColumnsIncluded(query)) {
-            final SimpleQuery.Column[] remainingCols = driver.select(query.getColumns());
-            if (remainingCols != null && remainingCols.length > 0)
-                remaining.setColumns(remainingCols);
+        if (!allColumnsIncluded(query) && !driver.select(query.getColumns())) {
+            remaining.setColumns(query.getColumns().toArray(new SimpleQuery.Column[0]));
         }
 
         final FeatureSet driverSubset = driver.build().orElse(source);
@@ -103,6 +109,17 @@ public final class SubsetAdapter {
          */
         long limit(long limit);
 
+        /**
+         *
+         * @param filter User entity selection criteria.
+         * @return According to driver possibility, one of the following result:
+         * <ul>
+         *     <li>no optimisation is applicable, give back filter received as input.</li>
+         *     <li>All expressed operators can be handled internally, return {@link Filter#INCLUDE}</li>
+         *     <li>If a part of input filter is manageable, give back a new filter completing driver intern filtering
+         *     to get result matching source filter.</li>
+         * </ul>
+         */
         Filter filter(final Filter filter);
 
         /**
@@ -116,10 +133,12 @@ public final class SubsetAdapter {
 
         /**
          * Specify a subset of columns to return to the driver.
-         * @param columns The columns
-         * @return
+         * @param columns The columns to fetch in result set. Neither null nor empty list accepted.
+         * @return True if underlying driver can entirely manage column selection. False otherwise, meaning that column
+         * selection won't be done, or only partially, and a fallback filter must be applied over driver feature set to
+         * ensure proper selection.
          */
-        SimpleQuery.Column[] select(List<SimpleQuery.Column> columns);
+        boolean select(List<SimpleQuery.Column> columns);
 
         /**
          * Take a snapshot of all parameters given to query adaptation.

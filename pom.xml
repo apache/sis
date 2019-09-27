@@ -745,6 +745,8 @@
               <skip>${skipTests}</skip> <!-- When skipping tests, skip also checkstyle verification. -->
               <encoding>${project.build.sourceEncoding}</encoding>
               <consoleOutput>true</consoleOutput>
+              <!-- This flag asks to ignore generated source packages, like JMH compilation artifacts -->
+              <excludes>**/generated/**/*</excludes>
               <checkstyleRules>
                 <module name="Checker">
                   <!--

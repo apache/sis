@@ -23,18 +23,39 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
-import org.apache.sis.internal.feature.FunctionRegister;
+
 import org.opengis.filter.*;
 import org.opengis.filter.capability.*;
-import org.opengis.filter.capability.SpatialOperator;
-import org.opengis.filter.expression.*;
-import org.opengis.filter.identity.*;
-import org.opengis.filter.sort.*;
-import org.opengis.filter.spatial.*;
+import org.opengis.filter.expression.Add;
+import org.opengis.filter.expression.Divide;
+import org.opengis.filter.expression.Expression;
+import org.opengis.filter.expression.Function;
+import org.opengis.filter.expression.Literal;
+import org.opengis.filter.expression.Multiply;
+import org.opengis.filter.expression.PropertyName;
+import org.opengis.filter.expression.Subtract;
+import org.opengis.filter.identity.FeatureId;
+import org.opengis.filter.identity.GmlObjectId;
+import org.opengis.filter.identity.Identifier;
+import org.opengis.filter.sort.SortBy;
+import org.opengis.filter.sort.SortOrder;
+import org.opengis.filter.spatial.BBOX;
+import org.opengis.filter.spatial.Beyond;
+import org.opengis.filter.spatial.Contains;
+import org.opengis.filter.spatial.Crosses;
+import org.opengis.filter.spatial.DWithin;
+import org.opengis.filter.spatial.Disjoint;
+import org.opengis.filter.spatial.Equals;
+import org.opengis.filter.spatial.Intersects;
+import org.opengis.filter.spatial.Overlaps;
+import org.opengis.filter.spatial.Touches;
+import org.opengis.filter.spatial.Within;
 import org.opengis.filter.temporal.*;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
 import org.opengis.util.GenericName;
+
+import org.apache.sis.internal.feature.FunctionRegister;
 
 
 /**
@@ -65,6 +86,12 @@ public class DefaultFilterFactory implements FilterFactory2 {
         }
     }
 
+    /**
+     * According to OGC Filter encoding v2.0, comparison operators should default to cas sensitive comparison. We'll
+     * use this constant to model it, so it will be easier to change default value is the standard evolves.
+     * Doc reference : OGC 09-026r1 and ISO 19143:2010(E), section 7.7.3.2
+     */
+    private static final boolean DEFAULT_MATCH_CASE = true;
 
     /**
      * Creates a new factory.
@@ -409,7 +436,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyIsEqualTo equals(final Expression expression1, final Expression expression2) {
-        return equal(expression1, expression2, true, MatchAction.ANY);
+        return equal(expression1, expression2, DEFAULT_MATCH_CASE, MatchAction.ANY);
     }
 
     /**
@@ -427,7 +454,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyIsNotEqualTo notEqual(final Expression expression1, final Expression expression2) {
-        return notEqual(expression1, expression2, true, MatchAction.ANY);
+        return notEqual(expression1, expression2, DEFAULT_MATCH_CASE, MatchAction.ANY);
     }
 
     /**
@@ -445,7 +472,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyIsGreaterThan greater(final Expression expression1, final Expression expression2) {
-        return greater(expression1,expression2,false, MatchAction.ANY);
+        return greater(expression1,expression2,DEFAULT_MATCH_CASE, MatchAction.ANY);
     }
 
     /**
@@ -463,7 +490,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyIsGreaterThanOrEqualTo greaterOrEqual(final Expression expression1, final Expression expression2) {
-        return greaterOrEqual(expression1, expression2,false, MatchAction.ANY);
+        return greaterOrEqual(expression1, expression2,DEFAULT_MATCH_CASE, MatchAction.ANY);
     }
 
     /**
@@ -481,7 +508,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyIsLessThan less(final Expression expression1, final Expression expression2) {
-        return less(expression1, expression2, false, MatchAction.ANY);
+        return less(expression1, expression2, DEFAULT_MATCH_CASE, MatchAction.ANY);
     }
 
     /**
@@ -499,7 +526,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyIsLessThanOrEqualTo lessOrEqual(final Expression expression1, final Expression expression2) {
-        return lessOrEqual(expression1, expression2, false, MatchAction.ANY);
+        return lessOrEqual(expression1, expression2, DEFAULT_MATCH_CASE, MatchAction.ANY);
     }
 
     /**
@@ -527,7 +554,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     public PropertyIsLike like(final Expression expression, final String pattern,
             final String wildcard, final String singleChar, final String escape)
     {
-        return like(expression,pattern,wildcard,singleChar,escape,false);
+        return like(expression,pattern,wildcard,singleChar,escape,DEFAULT_MATCH_CASE);
     }
 
     /**

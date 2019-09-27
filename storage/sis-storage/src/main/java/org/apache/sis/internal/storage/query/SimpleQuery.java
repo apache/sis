@@ -119,11 +119,15 @@ public class SimpleQuery extends Query {
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     public void setColumns(Column... columns) {
-        columns = columns.clone();
-        for (int i=0; i<columns.length; i++) {
-            ArgumentChecks.ensureNonNullElement("columns", i, columns[i]);
+        if (columns == null || columns.length < 1) {
+            this.columns = null;
+        } else {
+            columns = columns.clone();
+            for (int i = 0; i < columns.length; i++) {
+                ArgumentChecks.ensureNonNullElement("columns", i, columns[i]);
+            }
+            this.columns = columns;
         }
-        this.columns = columns;
     }
 
     /**

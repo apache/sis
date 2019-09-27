@@ -36,17 +36,21 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
+import org.opengis.filter.sort.SortOrder;
 import org.opengis.util.GenericName;
 
+import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.sql.feature.QueryFeatureSet;
+import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.sql.TestDatabase;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.assertEquals;
@@ -82,6 +86,8 @@ public final strictfp class SQLStoreTest extends TestCase {
             1704694,   // Montréal, 2016.
             531902     // Québec,   2016.
     };
+
+    private static final DefaultFilterFactory FF = new DefaultFilterFactory();
 
     /**
      * Number of time that the each country has been seen while iterating over the cities.
@@ -165,7 +171,9 @@ public final strictfp class SQLStoreTest extends TestCase {
                 // Now, we'll check that overloaded stream operations are functionally stable, even stacked.
                 verifyStreamOperations(cities);
 
-                verifyQueries(tmp.source);
+                verifySimpleQueries(store);
+
+                verifySQLQueries(tmp.source);
             }
         }
         assertEquals(Integer.valueOf(2), countryCount.remove("CAN"));
@@ -174,7 +182,55 @@ public final strictfp class SQLStoreTest extends TestCase {
         assertTrue  (countryCount.isEmpty());
     }
 
-    private void verifyQueries(DataSource source) throws Exception {
+    private void verifySimpleQueries(SQLStore dataset) throws Exception {
+        verifySimpleQuerySorting(dataset);
+        verifySimpleWhere(dataset);
+    }
+
+    private void verifySimpleQuerySorting(SQLStore dataset) throws DataStoreException {
+        final FeatureSet parks = (FeatureSet) dataset.findResource("Parks");
+        final SimpleQuery query = new SimpleQuery();
+        query.setColumns(new SimpleQuery.Column(FF.property("english_name")));
+        query.setSortBy(
+                FF.sort("country", SortOrder.DESCENDING),
+                FF.sort("english_name", SortOrder.ASCENDING)
+        );
+        final FeatureSet subset = parks.subset(query);
+        String[] expectedPNames = {"english_name"};
+        try (Stream<Feature> features = subset.features(false)) {
+            final Object[] values = features.map(f -> {
+                final String[] names = f.getType().getProperties(true).stream()
+                        .map(PropertyType::getName)
+                        .map(GenericName::toString)
+                        .toArray(size -> new String[size]);
+                assertArrayEquals(expectedPNames, names);
+                return f.getPropertyValue(expectedPNames[0]);
+            })
+                    .toArray();
+            String[] expectedValues = {"Shinjuku Gyoen", "Yoyogi-kōen", "Luxembourg Garden", "Tuileries Garden", "Mount Royal"};
+            assertArrayEquals("Read values are not sorted as expected.", expectedValues, values);
+        }
+    }
+
+    private void verifySimpleWhere(SQLStore dataset) throws Exception {
+        final SimpleQuery q = new SimpleQuery();
+        q.setSortBy(FF.sort("native_name", SortOrder.ASCENDING));
+        q.setFilter(FF.equals(FF.property("country"), FF.literal("CAN")));
+        final FeatureSet cities = (FeatureSet) dataset.findResource("Cities");
+        final Object[] names;
+        try (Stream<Feature> features = cities.subset(q).features(false)) {
+            names = features.map(f -> f.getPropertyValue("native_name"))
+                    .toArray();
+        }
+
+        Assert.assertArrayEquals(
+                "Filtered cities should only contains Canadian ones",
+                new String[] {"Montréal", "Québec"},
+                names
+        );
+    }
+
+    private void verifySQLQueries(DataSource source) throws Exception {
         verifyFetchCityTableAsQuery(source);
         verifyLimitOffsetAndColumnSelectionFromQuery(source);
         verifyDistinctQuery(source);
@@ -185,7 +241,7 @@ public final strictfp class SQLStoreTest extends TestCase {
         final QueryFeatureSet canadaCities;
         try (Connection conn = source.getConnection()) {
             final SQLBuilder builder = new SQLBuilder(conn.getMetaData(), false)
-                    .append("SELECT * FROM ").appendIdentifier("features", "Cities");
+                    .append("SELECT * FROM ").appendIdentifier(SCHEMA, "Cities");
             allCities = new QueryFeatureSet(builder, source, conn);
             /* By re-using the same builder, we ensure a defensive copy is done at feature set creation, avoiding
              * potential concurrent or security issue due to afterward modification of the query.
@@ -207,17 +263,22 @@ public final strictfp class SQLStoreTest extends TestCase {
         expectedResults.add(city("CAN", "Montréal", "Montreal", 1704694));
         expectedResults.add(city("CAN", "Québec", "Quebec", 531902));
 
-        Set<Map<String, Object>> result = canadaCities.features(false)
-                .map(SQLStoreTest::asMap)
-                .collect(Collectors.toSet());
+        Set<Map<String, Object>> result;
+        try (Stream<Feature> features = canadaCities.features(false)) {
+            result = features
+                    .map(SQLStoreTest::asMap)
+                    .collect(Collectors.toSet());
+        }
         assertEquals("Query result is not consistent with expected one", expectedResults, result);
 
         expectedResults.add(city("FRA", "Paris",    "Paris",    2206488));
         expectedResults.add(city("JPN", "東京",     "Tōkyō",   13622267));
 
-        result = allCities.features(false)
-                .map(SQLStoreTest::asMap)
-                .collect(Collectors.toSet());
+        try (Stream<Feature> features = allCities.features(false)) {
+            result = features
+                    .map(SQLStoreTest::asMap)
+                    .collect(Collectors.toSet());
+        }
         assertEquals("Query result is not consistent with expected one", expectedResults, result);
     }
 
@@ -266,7 +327,7 @@ public final strictfp class SQLStoreTest extends TestCase {
     private void verifyLimitOffsetAndColumnSelectionFromQuery(final DataSource source) throws Exception {
         // Ensure multiline text is accepted
         final String query = "SELECT \"english_name\" as \"title\" \n\r" +
-                "FROM features.\"Parks\" \n" +
+                "FROM "+SCHEMA+".\"Parks\" \n" +
                 "ORDER BY \"english_name\" ASC \n" +
                 "OFFSET 2 ROWS FETCH NEXT 3 ROWS ONLY";
         final QueryFeatureSet qfs;
@@ -286,9 +347,13 @@ public final strictfp class SQLStoreTest extends TestCase {
         assertEquals("Column length constraint should be visible from attribute type.", 20, ((AttributeType)precision).getDefaultValue());
         assertFalse("Built feature type should have exactly one attribute.", props.hasNext());
 
-        Function<Stream<Feature>, String[]> getNames = in -> in
-                .map(f -> f.getPropertyValue("title").toString())
-                .toArray(size -> new String[size]);
+        Function<Stream<Feature>, String[]> getNames = in -> {
+            try (Stream<Feature> closeable = in) {
+                return in
+                        .map(f -> f.getPropertyValue("title").toString())
+                        .toArray(size -> new String[size]);
+            }
+        };
 
         String[] parkNames = getNames.apply(
                 qfs.features(false)
@@ -319,16 +384,19 @@ public final strictfp class SQLStoreTest extends TestCase {
      */
     private void verifyDistinctQuery(DataSource source) throws SQLException {
         // Ensure multiline text is accepted
-        final String query = "SELECT \"country\" FROM features.\"Parks\" ORDER BY \"country\"";
+        final String query = "SELECT \"country\" FROM "+SCHEMA+".\"Parks\" ORDER BY \"country\"";
         final QueryFeatureSet qfs;
         try (Connection conn = source.getConnection()) {
             qfs = new QueryFeatureSet(query, source, conn);
         }
 
-        final Object[] expected = qfs.features(false)
-                .distinct() 
-                .map(f -> f.getPropertyValue("country"))
-                .toArray();
+        final Object[] expected;
+        try (Stream<Feature> features = qfs.features(false)) {
+            expected = features
+                    .distinct()
+                    .map(f -> f.getPropertyValue("country"))
+                    .toArray();
+        }
 
         assertArrayEquals("Distinct country names, sorted in ascending order", new String[]{"CAN", "FRA", "JPN"}, expected);
     }

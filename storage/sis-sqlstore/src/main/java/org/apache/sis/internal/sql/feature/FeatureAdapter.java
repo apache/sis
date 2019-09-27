@@ -1,5 +1,6 @@
 package org.apache.sis.internal.sql.feature;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ class FeatureAdapter {
         this.attributeMappers = Collections.unmodifiableList(new ArrayList<>(attributeMappers));
     }
 
-    Feature read(final ResultSet cursor) throws SQLException {
+    Feature read(final ResultSet cursor, final Connection origin) throws SQLException {
         final Feature result = readAttributes(cursor);
         addImports(result, cursor);
         addExports(result);
@@ -47,11 +48,11 @@ class FeatureAdapter {
         return result;
     }
 
-    List<Feature> prefetch(final int size, final ResultSet cursor) throws SQLException {
+    List<Feature> prefetch(final int size, final ResultSet cursor, final Connection origin) throws SQLException {
         // TODO: optimize by resolving import associations by  batch import fetching.
         final ArrayList<Feature> features = new ArrayList<>(size);
         for (int i = 0 ; i < size && cursor.next() ; i++) {
-            features.add(read(cursor));
+            features.add(read(cursor, origin));
         }
 
         return features;

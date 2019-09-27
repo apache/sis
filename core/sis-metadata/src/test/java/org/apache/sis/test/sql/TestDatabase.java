@@ -17,23 +17,27 @@
 package org.apache.sis.test.sql;
 
 import java.io.IOException;
-import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.Statement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.SQLDataException;
-import org.postgresql.PGProperty;
-import org.postgresql.ds.PGSimpleDataSource;
-import org.hsqldb.jdbc.JDBCDataSource;
-import org.hsqldb.jdbc.JDBCPool;
-import org.apache.derby.jdbc.EmbeddedDataSource;
+import java.sql.SQLException;
+import java.sql.Statement;
+import javax.sql.DataSource;
+
 import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.Debug;
 
-import static org.junit.Assume.*;
+import org.apache.derby.jdbc.EmbeddedDataSource;
+
+import org.hsqldb.jdbc.JDBCDataSource;
+import org.hsqldb.jdbc.JDBCPool;
+import org.postgresql.PGProperty;
+import org.postgresql.ds.PGSimpleDataSource;
+
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 
 /**
@@ -203,29 +207,32 @@ public strictfp class TestDatabase implements AutoCloseable {
          * Current version does not use pooling on the assumption
          * that connections to local host are fast enough.
          */
-        try (Connection c = ds.getConnection()) {
-            try (ResultSet reflect = c.getMetaData().getSchemas(null, schema)) {
-                if (reflect.next()) {
-                    throw new SQLDataException("Schema \"" + schema + "\" already exists in \"" + NAME + "\".");
+        if (create) {
+            try (Connection c = ds.getConnection()) {
+                try (ResultSet reflect = c.getMetaData().getSchemas(null, schema)) {
+                    if (reflect.next()) {
+                        throw new SQLDataException("Schema \"" + schema + "\" already exists in \"" + NAME + "\".");
+                    }
                 }
-            }
-            if (create) {
                 try (Statement s = c.createStatement()) {
                     s.execute("CREATE SCHEMA \"" + schema + '"');
                 }
+
+            } catch (SQLException e) {
+                final String state = e.getSQLState();
+                assumeFalse("This test needs a PostgreSQL server running on the local host.", "08001".equals(state));
+                assumeFalse("This test needs a PostgreSQL database named \"" + NAME + "\".", "3D000".equals(state));
+                throw e;
             }
-        } catch (SQLException e) {
-            final String state = e.getSQLState();
-            assumeFalse("This test needs a PostgreSQL server running on the local host.", "08001".equals(state));
-            assumeFalse("This test needs a PostgreSQL database named \"" + NAME + "\".",  "3D000".equals(state));
-            throw e;
         }
         return new TestDatabase(ds) {
             @Override public void close() throws SQLException {
                 final PGSimpleDataSource ds = (PGSimpleDataSource) source;
                 try (Connection c = ds.getConnection()) {
                     try (Statement s = c.createStatement()) {
-                        s.execute("DROP SCHEMA \"" + ds.getCurrentSchema() + "\" CASCADE");
+                        // Prevents test to hang indefinitely if connections are not properly released in test cases.
+                        s.setQueryTimeout(10);
+                        s.execute("DROP SCHEMA \"" + ds.getCurrentSchema() + "\" CASCADE;");
                     }
                 }
             }

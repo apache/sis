@@ -20,6 +20,7 @@ import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.logging.WarningListeners;
 
 /**
  * Stores SQL query given at built time, and execute it when calling {@link #features(boolean) data stream}. Note that
@@ -126,20 +127,20 @@ public class QueryFeatureSet extends AbstractFeatureSet {
      *                 can use {@link #QueryFeatureSet(SQLBuilder, DataSource, Connection) another constructor}.
      */
     QueryFeatureSet(SQLBuilder queryBuilder, Analyzer analyzer, DataSource source, Connection conn) throws SQLException {
-        super(analyzer.listeners);
-        this.source = source;
+        this(queryBuilder, createAdapter(queryBuilder, analyzer, conn), analyzer.listeners, source, conn);
+    }
 
-        String sql = queryBuilder.toString();
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
-            final SQLTypeSpecification spec = analyzer.create(statement, sql, null);
-            adapter = analyzer.buildAdapter(spec);
-        }
+    QueryFeatureSet(SQLBuilder queryBuilder, FeatureAdapter adapter, WarningListeners listeners, DataSource source, Connection conn) throws SQLException {
+        super(listeners);
+        this.source = source;
+        this.adapter = adapter;
 
         /* We will now try to parse offset and limit from input query. If we encounter unsupported/ambiguous case,
          * we will fallback to pure java management of additional limit and offset.
          * If we successfully retrieve offset and limit, we'll modify user query to take account of additional
          * parameters given later.
          */
+        String sql = queryBuilder.toString();
         long tmpOffset = 0, tmpLimit = 0;
         try {
             Matcher matcher = OFFSET_PATTERN.matcher(sql);
@@ -205,7 +206,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         return new StreamSQL(new QueryAdapter(queryBuilder, parallel), source, parallel);
     }
 
-    private final class QueryAdapter implements QueryBuilder {
+    private final class QueryAdapter implements StreamSQL.QueryBuilder {
 
         private final SQLBuilder source;
         private final boolean parallel;
@@ -220,19 +221,19 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         }
 
         @Override
-        public QueryBuilder limit(long limit) {
+        public StreamSQL.QueryBuilder limit(long limit) {
             additionalLimit = limit;
             return this;
         }
 
         @Override
-        public QueryBuilder offset(long offset) {
+        public StreamSQL.QueryBuilder offset(long offset) {
             additionalOffset = offset;
             return this;
         }
 
         @Override
-        public QueryBuilder distinct(boolean activate) {
+        public StreamSQL.QueryBuilder distinct(boolean activate) {
             if (distinct == activate) return this;
             throw new UnsupportedOperationException("Not supported yet: modifying user query"); // "Alexis Manin (Geomatys)" on 24/09/2019
         }
@@ -260,9 +261,21 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         }
     }
 
+    private static FeatureAdapter createAdapter(SQLBuilder queryBuilder, Analyzer analyzer, Connection conn) throws SQLException {
+        String sql = queryBuilder.toString();
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            final SQLTypeSpecification spec = analyzer.create(statement, sql, null);
+            return analyzer.buildAdapter(spec);
+        }
+    }
+
     private final class PreparedQueryConnector implements Connector {
 
         final String sql;
+        /**
+         * In some cases, detection/modification of SQL offset and limit parameters can fail. In such cases, we amend
+         * result stream with pure java {@link Stream#skip(long) offset} and {@link Stream#limit(long) limit}.
+         */
         private long additionalOffset, additionalLimit;
         private final boolean parallel;
 
@@ -281,7 +294,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
             final int fetchSize = result.getFetchSize();
             final boolean withPrefetch = !allowBatchLoading || (fetchSize < 1 || fetchSize >= Integer.MAX_VALUE);
             final Spliterator<Feature> spliterator = withPrefetch ?
-                    new ResultSpliterator(result) : new PrefetchSpliterator(result, fetchRatio);
+                    new ResultSpliterator(result, connection) : new PrefetchSpliterator(result, connection, fetchRatio);
             Stream<Feature> stream = StreamSupport.stream(spliterator, parallel && withPrefetch);
             if (additionalLimit > 0) stream = stream.limit(additionalLimit);
             if (additionalOffset > 0) stream = stream.skip(additionalOffset);
@@ -300,8 +313,12 @@ public class QueryFeatureSet extends AbstractFeatureSet {
 
         @Override
         public String estimateStatement(boolean count) {
-            // Require analysis. Things could get complicated if original user query is already a count.
-            throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 24/09/2019
+            if (count) {
+                // We should check if user query is already a count operation, in which case we would return "select 1"
+                throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 24/09/2019
+            } else {
+                return sql;
+            }
         }
     }
 
@@ -319,9 +336,11 @@ public class QueryFeatureSet extends AbstractFeatureSet {
     private abstract class QuerySpliterator  implements java.util.Spliterator<Feature> {
 
         final ResultSet result;
+        final Connection origin;
 
-        private QuerySpliterator(ResultSet result) {
+        private QuerySpliterator(ResultSet result, Connection origin) {
             this.result = result;
+            this.origin = origin;
         }
 
         @Override
@@ -338,15 +357,15 @@ public class QueryFeatureSet extends AbstractFeatureSet {
 
     private final class ResultSpliterator extends QuerySpliterator {
 
-        private ResultSpliterator(ResultSet result) {
-            super(result);
+        private ResultSpliterator(ResultSet result, Connection origin) {
+            super(result, origin);
         }
 
         @Override
         public boolean tryAdvance(Consumer<? super Feature> action) {
             try {
                 if (result.next()) {
-                    final Feature f = adapter.read(result);
+                    final Feature f = adapter.read(result, origin);
                     action.accept(f);
                     return true;
                 } else return false;
@@ -371,7 +390,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
      * there's not much improvement regarding to naive streaming approach. IMHO, two improvements would really impact
      * performance positively if done:
      * <ul>
-     *     <li>Optimisation of batch loading through {@link FeatureAdapter#prefetch(int, ResultSet)}</li>
+     *     <li>Optimisation of batch loading through {@link FeatureAdapter#prefetch(int, ResultSet, Connection)}</li>
      *     <li>Better splitting balance, as stated by {@link Spliterator#trySplit()}</li>
      * </ul>
      */
@@ -385,14 +404,14 @@ public class QueryFeatureSet extends AbstractFeatureSet {
          * According to {@link Spliterator#trySplit()} documentation, the original size estimation must be reduced after
          * split to remain consistent.
          */
-        long splittedAmount = 0;
+        long splittedAmount;
 
-        private PrefetchSpliterator(ResultSet result) throws SQLException {
-            this(result, 0.5f);
+        private PrefetchSpliterator(ResultSet result, Connection origin) throws SQLException {
+            this(result, origin, 0.5f);
         }
 
-        private PrefetchSpliterator(ResultSet result, float fetchRatio) throws SQLException {
-            super(result);
+        private PrefetchSpliterator(ResultSet result, Connection origin, float fetchRatio) throws SQLException {
+            super(result, origin);
             this.fetchSize = Math.max((int) (result.getFetchSize()*fetchRatio), 1);
         }
 
@@ -430,7 +449,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
             if (chunk == null || idx >= chunk.size()) {
                 idx = 0;
                 try {
-                    chunk = adapter.prefetch(fetchSize, result);
+                    chunk = adapter.prefetch(fetchSize, result, origin);
                 } catch (SQLException e) {
                     throw new BackingStoreException(e);
                 }
