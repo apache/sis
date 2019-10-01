@@ -1,85 +1,47 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.referencing.operation.Matrix;
-
-import org.apache.sis.parameter.Parameters;
 import org.opengis.referencing.operation.OperationMethod;
-
-import static java.lang.Math.*;
-import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 
+import static java.lang.Math.*;
+
+
 /**
- * <cite>Cylindrical Satellite-Tracking projections</cite>.
+ * Special case of <cite>Satellite-Tracking</cite> projection when the standard parallels are opposite.
  *
- * <cite>
- * - All groundtracks
- * for satellites orbiting the Earth with the same orbital parameters are shown
- * as straight lines on the map.
- *
- * - Cylindrical {@link CylindricalSatelliteTracking}
- * or conical {@link ConicSatelliteTracking} form available.
- *
- * - Neither conformal nor equal-area.
- *
- * - All meridians are equally spaced straight lines, parallel on cylindrical
- * form and converging to a common point on conical form.
- *
- * - All parallels are straight and parallel on cylindrical form and are
- * concentric circular arcs on conical form. Parallels are unequally spaced.
- *
- * - Conformality occurs along two chosen parallels. Scale is correct along one
- * of these parameters on the conical form and along both on the cylindrical
- * form.
- *
- * Developed 1977 by Snyder
- * </cite>
- *
- * <cite> These formulas are confined to circular orbits and the SPHERICAL
- * Earth.</cite>
- *
- * <cite>The ascending and descending groundtracks meet at the northern an
- * southern tracking limits, lats. 80.9°N and S for landsat 1, 2 and 3. The map
- * Projection does not extend closer to the poles.</cite>
- *
- * This projection method has no associated EPSG code.
- *
- * Earth radius is normalized. Its value is 1 and is'nt an input parameter.
- *
- * =============================================================================
- * REMARK : The parameters associated with the satellite (and its orbit) could
- * be aggregate in class of the kind : Satellite or SatelliteOrbit.
- * =============================================================================
- *
- * @see <cite>Map Projections - A Working Manual</cite> By John P. Snyder
- * @author Matthieu Bastianelli (Geomatys)
- * @version 1.0
+ * @author  Matthieu Bastianelli (Geomatys)
+ * @version 1.1
+ * @since   1.1
+ * @module
  */
 public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -5972958777067525602L;
 
     /**
-     * Create a Cylindrical Satellite Tracking Projection from the given
-     * parameters.
+     * Create a Cylindrical Satellite Tracking Projection from the given parameters.
      *
      * The parameters are described in <cite>Map Projections - A Working
      * Manual</cite> By John P. Snyder.
@@ -126,12 +88,6 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
         final double λ = srcPts[srcOff];
         final double φ = srcPts[srcOff + 1];
 
-        // TODO : check the condition and the thrown exception.
-            // if (abs(φ) > PI / 2 - abs(PI - i)) {  // Exceed tracking limit
-        if (φ > PI - i) {  // Exceed tracking limit
-            throw new ProjectionException(Resources.format(Resources.Keys.CanNotTransformCoordinates_2));
-        }
-
         // compute an double array with {L} or {L, dL/dφ} if derivate recquired.
         final double[] vector_L = computeLanddLdφForDirectTransform(φ, derivate);
 
@@ -163,8 +119,6 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
 
         return new Matrix2(dx_dλ, dx_dφ,
                            dy_dλ, dy_dφ);
-
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     /**
@@ -184,5 +138,4 @@ public class CylindricalSatelliteTracking extends ConicSatelliteTracking {
         dstPts[dstOff  ] =  x;
         dstPts[dstOff+1] = latitudeFromNewtonMethod(y); //φ
     }
-
 }

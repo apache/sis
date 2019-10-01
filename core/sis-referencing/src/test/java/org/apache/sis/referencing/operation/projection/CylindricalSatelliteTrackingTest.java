@@ -1,44 +1,41 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.sis.referencing.operation.projection;
 
-import static java.lang.Double.NaN;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.test.DependsOnMethod;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
+
+import static java.lang.Double.NaN;
+import static org.junit.Assert.assertTrue;
+
 
 /**
- * Tests coordiantes computed by applying a cylindrical satellite-tracking projection
+ * Tests coordinates computed by applying a cylindrical satellite-tracking projection
  * with {@link CylindricalSatelliteTracking}.
  *
- * @author Matthieu Bastianelli (Geomatys)
- * @version 1.0
- * @since 1.0
+ * @author  Matthieu Bastianelli (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
-public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest {
-
-
-
+public final strictfp class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest {
     /**
      * Creates a new instance of {@link ConicSatelliteTracking} concatenated
      * with the (de)normalization matrices. The new instance is stored in the
@@ -51,16 +48,14 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
      * precessed ascending node.
      * @param λ0 : central meridian.
      * @param φ1 : first parallel of conformality, with true scale.
-     * @param φ2 : second parallel of conformality, without true scale.
-     * @param φ0 : latitude_of_origin : latitude Crossing the central meridian
      * at the desired origin of rectangular coordinates (null or NaN for
      * cylindrical satellite tracking projection.)
-     * @return
      */
     private void createProjection(final double i,
             final double orbitalT, final double ascendingNodeT,
             final double λ0,       final double φ1)
-            throws FactoryException {
+            throws FactoryException
+    {
         super.createProjection(i, orbitalT, ascendingNodeT, λ0, φ1, NaN, NaN);
     }
 
@@ -70,8 +65,7 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
      * Test based on the numerical example given by Snyder p. 360 to 363 of
      * <cite> Map Projections - A working Manual</cite>
      *
-     * @throws FactoryException if an error occurred while creating the map
-     * projection.
+     * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
@@ -102,8 +96,7 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
      * Satellite-Tracking Projections shown in table 38 from
      * <cite> Map Projections - A working Manual</cite>
      *
-     * @throws FactoryException if an error occurred while creating the map
-     * projection.
+     * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
@@ -214,8 +207,8 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testInverseDerivative")
     @Override
+    @DependsOnMethod("testInverseDerivative")
     public void testDerivativeOnSphere() throws FactoryException, TransformException {
         createProjection(
                 99.092,  //satellite_orbit_inclination
@@ -232,6 +225,4 @@ public class CylindricalSatelliteTrackingTest extends ConicSatelliteTrackingTest
         verifyDerivative( -56, 50);
         verifyDerivative( -20, 47);
     }
-
-
 }

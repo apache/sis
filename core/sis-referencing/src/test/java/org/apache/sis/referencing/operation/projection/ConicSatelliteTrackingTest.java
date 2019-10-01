@@ -1,52 +1,49 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.sis.referencing.operation.projection;
 
-import static java.lang.Math.sin;
 import java.util.Collections;
+import org.opengis.util.FactoryException;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.provider.SatelliteTracking;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
-import org.apache.sis.test.DependsOn;
-import org.junit.Test;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
-
-import static java.lang.StrictMath.toRadians;
 import org.apache.sis.test.DependsOnMethod;
+import org.junit.Test;
+
+import static java.lang.StrictMath.sin;
+import static java.lang.StrictMath.toRadians;
 import static org.junit.Assert.assertTrue;
 
+
 /**
- * Tests coordiantes computed by applying a conic satellite-tracking projection
+ * Tests coordinates computed by applying a conic satellite-tracking projection
  * with {@link ConicSatelliteTracking}.
  *
- * @author Matthieu Bastianelli (Geomatys)
- * @version 1.0
- * @since 1.0
+ * @author  Matthieu Bastianelli (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
-public class ConicSatelliteTrackingTest extends MapProjectionTestCase {
-
+public strictfp class ConicSatelliteTrackingTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link ConicSatelliteTracking} concatenated
      * with the (de)normalization matrices. The new instance is stored in the
@@ -63,7 +60,6 @@ public class ConicSatelliteTrackingTest extends MapProjectionTestCase {
      * @param φ0 : latitude_of_origin : latitude Crossing the central meridian
      * at the desired origin of rectangular coordinates (null or NaN for
      * cylindrical satellite tracking projection.)
-     * @return
      */
     void createProjection(final double i,
             final double orbitalT, final double ascendingNodeT,
@@ -80,8 +76,8 @@ public class ConicSatelliteTrackingTest extends MapProjectionTestCase {
         values.parameter("semi_major").setValue(sphere.getSemiMajorAxis());
         values.parameter("semi_minor").setValue(sphere.getSemiMinorAxis());
         values.parameter("satellite_orbit_inclination").setValue(i);
-        values.parameter("satellite_orbital_period").setValue(orbitalT);
-        values.parameter("ascending_node_period").setValue(ascendingNodeT);
+        values.parameter("satellite_orbital_period").setValue(orbitalT, Units.MINUTE);
+        values.parameter("ascending_node_period").setValue(ascendingNodeT, Units.MINUTE);
         values.parameter("central_meridian").setValue(λ0);
         values.parameter("standard_parallel_1").setValue(φ1);
 
@@ -104,8 +100,7 @@ public class ConicSatelliteTrackingTest extends MapProjectionTestCase {
      * Test based on the numerical example given by Snyder p. 360 to 363 of
      * <cite> Map Projections - A working Manual</cite>
      *
-     * @throws FactoryException if an error occurred while creating the map
-     * projection.
+     * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
@@ -142,8 +137,7 @@ public class ConicSatelliteTrackingTest extends MapProjectionTestCase {
      * extracting the computed results of the projection. Thus this method
      * should be used as a non-regression test.
      *
-     * @throws FactoryException if an error occurred while creating the map
-     * projection.
+     * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
@@ -244,7 +238,6 @@ public class ConicSatelliteTrackingTest extends MapProjectionTestCase {
                     0.21642 * sin(n * (toRadians(-120 - -90))), 2.46908 //Tracking limit
                 });
     }
-
 
     /**
      * Tests the derivatives at a few points on a sphere. This method compares the derivatives computed

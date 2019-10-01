@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * Tests {@link Providers} and some consistency rules of all providers defined in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -104,6 +104,7 @@ public final strictfp class ProvidersTest extends TestCase {
             ObliqueMercatorTwoPoints.class,
             ObliqueMercatorTwoPointsCenter.class,
             ZonedTransverseMercator.class,
+            SatelliteTracking.class,
             Sinusoidal.class,
             Polyconic.class,
             Mollweide.class,
@@ -247,5 +248,15 @@ public final strictfp class ProvidersTest extends TestCase {
                 assertTrue(message, message.contains(method.getName().getCode()));
             }
         }
+    }
+
+    /**
+     * Tests the description provided in some parameters.
+     */
+    @Test
+    public void testDescription() {
+        assertFalse(SatelliteTracking.SATELLITE_ORBIT_INCLINATION.getDescription().length() == 0);
+        assertFalse(SatelliteTracking.SATELLITE_ORBITAL_PERIOD   .getDescription().length() == 0);
+        assertFalse(SatelliteTracking.ASCENDING_NODE_PERIOD      .getDescription().length() == 0);
     }
 }

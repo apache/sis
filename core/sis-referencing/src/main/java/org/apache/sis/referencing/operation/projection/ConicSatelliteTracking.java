@@ -1,101 +1,94 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.sis.referencing.operation.projection;
 
-import static java.lang.Double.NaN;
 import java.util.EnumMap;
-import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.Workaround;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
-
-import static java.lang.Math.*;
-import java.util.Map;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.internal.referencing.Resources;
-import static org.apache.sis.internal.referencing.provider.SatelliteTracking.*;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
+import org.apache.sis.parameter.Parameters;
+
+import static java.lang.Math.*;
+import static java.lang.Double.NaN;
+import static org.apache.sis.internal.referencing.provider.SatelliteTracking.*;
+
 
 /**
- * <cite>Cylindrical Satellite-Tracking projections</cite>.
+ * <cite>Satellite-Tracking</cite> projection.
+ * This projection has been developed in 1977 by Snyder and has no associated EPSG code.
+ * This projection is neither conformal or equal-area, but has the property that ground tracks
+ * for satellites orbiting the Earth with the same orbital parameters are shown as straight lines
+ * on the map. Other properties are (Snyder 1987):
  *
- * <cite>
- * - All groundtracks for satellites orbiting the Earth with the same orbital
- * parameters are shown as straight lines on the map.
+ * <ul>
+ *   <li>All meridians are equally spaced straight lines.
+ *       They are parallel on cylindrical form and converging to a common point on conical form.</li>
+ *   <li>All parallels are straight but unequally spaced.
+ *       They are parallel on cylindrical form and are concentric circular arcs on conical form.</li>
+ *   <li>Conformality occurs along two chosen parallels. Scale is correct along one of these parameters
+ *       on the conical form and along both on the cylindrical form.</li>
+ * </ul>
  *
- * - Cylindrical {@link CylindricalSatelliteTracking}
- * or conical {@link ConicSatelliteTracking} form available.
+ * <div class="section">Limitations</div>
+ * This map projection supports only circular orbits. The Earth is assumed spherical.
+ * Areas close to poles can not be mapped.
  *
- * - Neither conformal nor equal-area.
+ * <div class="section">References</div>
+ * John P. Snyder., 1987. <u>Map Projections - A Working Manual</u>
+ * chapter 28: <cite>Satellite-tracking projections</cite>.
  *
- * - All meridians are equally spaced straight lines, parallel on cylindrical
- * form and converging to a common point on conical form.
- *
- * - All parallels are straight and parallel on cylindrical form and are
- * concentric circular arcs on conical form. Parallels are unequally spaced.
- *
- * - Conformality occurs along two chosen parallels. Scale is correct along one
- * of these parameters on the conical form and along both on the cylindrical
- * form.
- *
- * Developed 1977 by Snyder
- * </cite>
- *
- * <cite> These formulas are confined to circular orbits and the SPHERICAL
- * Earth.</cite>
- *
- * <cite>The ascending and descending groundtracks meet at the northern an
- * southern tracking limits, lats. 80.9°N and S for landsat 1, 2 and 3. The map
- * Projection does not extend closer to the poles.</cite>
- *
- * This projection method has no associated EPSG code.
- *
- * Earth radius is normalized. Its value is 1 and is'nt an input parameter.
- *
- * =============================================================================
- * REMARK : The parameters associated with the satellite (and its orbit) could
- * be aggregate in class of the kind : Satellite or SatelliteOrbit.
- * =============================================================================
- *
- * @see <cite>Map Projections - A Working Manual</cite> By John P. Snyder
- * @author Matthieu Bastianelli (Geomatys)
- * @version 1.0
+ * @author  Matthieu Bastianelli (Geomatys)
+ * @version 1.1
+ * @since   1.1
+ * @module
  */
-public class ConicSatelliteTracking extends NormalizedProjection{
+public class ConicSatelliteTracking extends NormalizedProjection {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 859940667477896653L;
 
     /**
-     * {@code SATELLITE_ORBIT_INCLINATION}
+     * Sines and cosines of inclination between the plane of the Earth's Equator and the plane
+     * of the satellite orbit. The angle variable name is <var>i</var> in Snyder's book.
+     *
+     * @see org.apache.sis.internal.referencing.provider.SatelliteTracking#SATELLITE_ORBIT_INCLINATION
      */
-    final double i;
+    final double cos_i, sin_i, cos2_i;
 
     /**
-     * Coefficients for both cylindrical and conic Satellite-Tracking Projection.
+     * Cosine of first standard parallel.
+     *
+     * @see org.apache.sis.internal.referencing.provider.SatelliteTracking#STANDARD_PARALLEL_1
      */
-    final double cos_i, sin_i, cos2_i, cos_φ1, p2_on_p1;
+    final double cos_φ1;
 
-//    /**
-//     * Radius of the circle radius of the circle to which groundtracks
-//     * are tangent on the map.
-//     */
-//    private final double ρs;
+    /**
+     * Ratio of satellite orbital period (P2) over ascending node period (P1).
+     *
+     * @see org.apache.sis.internal.referencing.provider.SatelliteTracking#SATELLITE_ORBITAL_PERIOD
+     * @see org.apache.sis.internal.referencing.provider.SatelliteTracking#ASCENDING_NODE_PERIOD
+     */
+    final double p2_on_p1;
 
     /**
      * Projection Cone's constant.
@@ -103,23 +96,17 @@ public class ConicSatelliteTracking extends NormalizedProjection{
     private final double n;
 
     /**
-     * Approximation of the Minimum latitude at infinite radius.
-     *
-     * Limiting latitude to which the {@code L coefficient}
-     * is associated with a particular case {@code L equals -s0/n}.
-     * In such a situation the coefficent ρ computed for transformations
-     * is infinite.
+     * Approximation of the minimum latitude at infinite radius.
+     * This is the limiting latitude at which the {@code L} coefficient takes the {@code -s0/n} value.
+     * In such a situation the coefficient ρ computed for transformations is infinite.
      */
     private final double latitudeLimit;
-    /**
-     * Boolean attribute indicating if the projection cone's constant is positive.
-     */
-    private final boolean positiveN;
+
     /**
      * Coefficients for the Conic Satellite-Tracking Projection.
-     * cosφ1xsinF1_n = cos(φ1)*sin(F1)/n
+     * {@code cosφ1_sinF1_n} = cos(φ₁) × sin(F₁) / n.
      */
-    private final double cosφ1xsinF1_n, s0, ρ0;
+    private final double cosφ1_sinF1_n, s0;
 
     /**
      * Work around for RFE #4093999 in Sun's bug database ("Relax constraint on
@@ -133,26 +120,18 @@ public class ConicSatelliteTracking extends NormalizedProjection{
     }
 
     /**
-     * Create a Cylindrical Satellite Tracking Projection from the given
-     * parameters.
+     * Creates a Satellite Tracking projection from the given parameters.
      *
-     * The parameters are described in <cite>Map Projections - A Working
-     * Manual</cite> By John P. Snyder.
-     *
-     * @param method : description of the projection parameters.
-     * @param parameters : the parameter values of the projection to create.
+     * @param method      description of the projection parameters.
+     * @param parameters  the parameter values of the projection to create.
      */
     public ConicSatelliteTracking(final OperationMethod method, final Parameters parameters) {
         this(initializer(method, parameters));
     }
 
     /**
-     * Constructor for ConicSatelliteTracking.
-     *
-     * Calculation are based on <cite>28 .SATTELITE-TRACKING PROJECTIONS </cite>
-     * in <cite> Map Projections - A Working Manual</cite> By John P. Snyder.
-     *
-     * @param initializer
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
      */
     ConicSatelliteTracking(final Initializer initializer) {
         super(initializer);
@@ -160,7 +139,7 @@ public class ConicSatelliteTracking extends NormalizedProjection{
         //======================================================================
         // Common for both cylindrical and conic sattelite tracking projections :
         //======================================================================
-        i        = toRadians(initializer.getAndStore(SATELLITE_ORBIT_INCLINATION));
+        final double i = toRadians(initializer.getAndStore(SATELLITE_ORBIT_INCLINATION));
         cos_i    = cos(i);
         sin_i    = sin(i);
         cos2_i   = cos_i * cos_i;
@@ -224,16 +203,14 @@ public class ConicSatelliteTracking extends NormalizedProjection{
             } else {
                 n = sin_φ1 * (p2_on_p1 * (2 * cos2_i - cos2_φ1) - cos_i) / (p2_on_p1 * cos2_φ1 - cos_i); //eq. 28-17 in Snyder
             }
-
-            cosφ1xsinF1_n = cos_φ1 * sin(F1)/n;
+            cosφ1_sinF1_n = cos_φ1 * sin(F1)/n;
             s0 = F1 - n * L1;
-            ρ0 = cosφ1xsinF1_n / sin(n * L0 + s0); // *R in eq.28-12 in Snyder
+            final double ρ0 = cosφ1_sinF1_n / sin(n * L0 + s0); // *R in eq.28-12 in Snyder
 
             //======================== Unsure ======================================
             // Aim to assess the limit latitude associated with -s0/n L-value.
             //
             latitudeLimit = latitudeFromNewtonMethod(-s0 / n);
-            positiveN = (n >= 0);
             //======================================================================
 
 //            //Additionally we can compute the radius of the circle to which groundtracks
@@ -250,8 +227,7 @@ public class ConicSatelliteTracking extends NormalizedProjection{
             final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
             denormalize.convertBefore(1, 1, ρ0);  //For conic tracking
         } else {
-            n = latitudeLimit = cosφ1xsinF1_n = s0 = ρ0 = NaN;
-            positiveN = false;
+            n = latitudeLimit = cosφ1_sinF1_n = s0 = NaN;
         }
     }
 
@@ -273,15 +249,14 @@ public class ConicSatelliteTracking extends NormalizedProjection{
     @Override
     public Matrix transform(double[] srcPts, int srcOff,
                             double[] dstPts, int dstOff,
-                            boolean derivate) throws ProjectionException {
-
-        final double λ      = srcPts[srcOff];
-        final double φ      = srcPts[srcOff + 1];
-
+                            boolean derivate) throws ProjectionException
+    {
+        final double λ = srcPts[srcOff];
+        final double φ = srcPts[srcOff + 1];
         /*
          * According to the Snyder (page 236) in those cases cannot or should not be plotted.
          */
-        if ( ((positiveN) && (φ<=latitudeLimit)) || ((!positiveN) && (φ>=latitudeLimit)) ){
+        if ( ((n >= 0) && (φ<=latitudeLimit)) || ((!(n >= 0)) && (φ>=latitudeLimit)) ){
             throw new ProjectionException(Resources.format(Resources.Keys.CanNotTransformCoordinates_2));
         }
 
@@ -291,7 +266,7 @@ public class ConicSatelliteTracking extends NormalizedProjection{
         /*
          * As {@code latitudeLimit} is an approximation we repeat the test here.
          */
-        if ( ((positiveN) && (L<=-s0/n)) || ((!positiveN) && (L>=-s0/n)) ){
+        if ( ((n >= 0) && (L<=-s0/n)) || ((!(n >= 0)) && (L>=-s0/n)) ){
             //TODO if usefull, could we add :
             // latitudeLimit = φ;
             throw new ProjectionException(Resources.format(Resources.Keys.CanNotTransformCoordinates_2));
@@ -299,7 +274,7 @@ public class ConicSatelliteTracking extends NormalizedProjection{
 
         final double nLandS0     = n*L+s0;
         final double sin_nLandS0 = sin(nLandS0);
-        final double ρ           = cosφ1xsinF1_n/sin_nLandS0;
+        final double ρ           = cosφ1_sinF1_n/sin_nLandS0;
 
         final double sinλ = sin(λ);
         final double cosλ = cos(λ);
@@ -313,7 +288,7 @@ public class ConicSatelliteTracking extends NormalizedProjection{
         }
 
         //=========================To check the resolution =====================
-        final double dρ_dφ = cosφ1xsinF1_n  * (-1 / (sin_nLandS0*sin_nLandS0)) *cos(nLandS0)  * n
+        final double dρ_dφ = cosφ1_sinF1_n  * (-1 / (sin_nLandS0*sin_nLandS0)) *cos(nLandS0)  * n
                 * vector_L[1]; // dL/dφ
 
         final double dx_dλ = ρ*cosλ;
@@ -353,10 +328,9 @@ public class ConicSatelliteTracking extends NormalizedProjection{
             //TODO : which values does it imply?
             throw new UnsupportedOperationException("Not supported yet for those coordinates."); //To change body of generated methods, choose Tools | Templates.
         }
-
-        final double ρ = positiveN ? hypot(x,y) : -hypot(x,y);
+        final double ρ = copySign(hypot(x,y), n);
         final double θ = atan(x/(-y) ); //undefined if x=y=0
-        final double L = (asin(cosφ1xsinF1_n/ρ) -s0)/n; //undefined if x=y=0  //eq.28-26 in Snyder with R=1
+        final double L = (asin(cosφ1_sinF1_n/ρ) -s0)/n; //undefined if x=y=0  //eq.28-26 in Snyder with R=1
 
         dstPts[dstOff  ] =  θ ;//λ
         dstPts[dstOff+1] = latitudeFromNewtonMethod(L); //φ
@@ -399,11 +373,6 @@ public class ConicSatelliteTracking extends NormalizedProjection{
         }
         final double sin_dλ = sin(dλ);
         return -asin(sin_dλ * sin_i);
-    }
-
-
-    public double getLatitudeLimit(){
-        return latitudeLimit;
     }
 
     /**
@@ -456,7 +425,6 @@ public class ConicSatelliteTracking extends NormalizedProjection{
      *          resulting array.
      */
     double[] computeLanddLdφForDirectTransform(final double φ, final boolean derivate){
-
         final double sinφ_sini = sin(φ) / sin_i;
         final double dλ        = -asin(sinφ_sini);
         final double tan_dλ    = tan(dλ);
@@ -471,5 +439,4 @@ public class ConicSatelliteTracking extends NormalizedProjection{
             return new double[] {L};
         }
     }
-
 }
