@@ -23,8 +23,6 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.operation.projection.ConicSatelliteTracking;
-import org.apache.sis.referencing.operation.projection.CylindricalSatelliteTracking;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 import org.apache.sis.util.iso.ResourceInternationalString;
 import org.apache.sis.internal.util.Constants;
@@ -33,7 +31,9 @@ import org.apache.sis.measure.Units;
 
 /**
  * The provider for <cite>"Satellite-Tracking"</cite> projections.
- * More details about this projection are documented in the {@link ConicSatelliteTracking} class.
+ * We are not aware of authoritative source for parameter definitions, except the Snyder book.
+ * See {@link org.apache.sis.referencing.operation.projection.SatelliteTracking here for more
+ * details}.
  *
  * @author  Matthieu Bastianelli (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -140,10 +140,6 @@ public class SatelliteTracking extends MapProjection {
      */
     @Override
     protected NormalizedProjection createProjection(final Parameters parameters) throws ParameterNotFoundException {
-        if (parameters.getValue(STANDARD_PARALLEL_2) == -parameters.getValue(STANDARD_PARALLEL_1)) {
-            return new CylindricalSatelliteTracking(this, parameters);
-        } else {
-            return new ConicSatelliteTracking(this, parameters);
-        }
+        return new org.apache.sis.referencing.operation.projection.SatelliteTracking(this, parameters);
     }
 }
