@@ -17,22 +17,26 @@
 package org.apache.sis.internal.feature;
 
 import java.util.Iterator;
-import com.esri.core.geometry.Geometry;
+
+import org.opengis.geometry.Envelope;
+
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.math.Vector;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.util.Classes;
+
 import com.esri.core.geometry.Envelope2D;
+import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.MultiPath;
-import com.esri.core.geometry.Polyline;
-import com.esri.core.geometry.Polygon;
+import com.esri.core.geometry.OperatorExportToWkt;
+import com.esri.core.geometry.OperatorImportFromWkt;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Point2D;
 import com.esri.core.geometry.Point3D;
-import com.esri.core.geometry.WktImportFlags;
+import com.esri.core.geometry.Polygon;
+import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.WktExportFlags;
-import com.esri.core.geometry.OperatorImportFromWkt;
-import com.esri.core.geometry.OperatorExportToWkt;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.math.Vector;
-import org.apache.sis.util.Classes;
+import com.esri.core.geometry.WktImportFlags;
 
 
 /**
@@ -82,6 +86,11 @@ final class ESRI extends Geometries<Geometry> {
             }
         }
         return null;
+    }
+
+    @Override
+    Object tryConvertToGeometry(Envelope env) {
+        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 03/10/2019
     }
 
     /**

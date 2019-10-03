@@ -16,24 +16,26 @@
  */
 package org.apache.sis.internal.feature;
 
-import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.math.Vector;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.util.Classes;
+
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.math.Vector;
-import org.apache.sis.util.Classes;
+import org.locationtech.jts.io.WKTReader;
 
 
 /**
@@ -109,6 +111,13 @@ final class JTS extends Geometries<Geometry> {
             }
         }
         return null;
+    }
+
+    @Override
+    Geometry tryConvertToGeometry(org.opengis.geometry.Envelope env, final WrapResolution resolution) {
+        final int dim = env.getDimension();
+        if (dim > 2) throw new UnsupportedOperationException("Cannot manage more than 2 dimensions, but input envelope has "+dim);
+        throw new UnsupportedOperationException("Not yet");
     }
 
     /**

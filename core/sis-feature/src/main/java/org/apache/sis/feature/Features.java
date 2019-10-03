@@ -16,29 +16,32 @@
  */
 package org.apache.sis.feature;
 
-import org.opengis.util.GenericName;
-import org.opengis.util.NameFactory;
-import org.opengis.util.InternationalString;
+import java.util.Optional;
+
+import org.opengis.feature.Attribute;
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.IdentifiedType;
+import org.opengis.feature.InvalidPropertyValueException;
+import org.opengis.feature.Operation;
+import org.opengis.feature.PropertyType;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.Result;
+import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
+import org.opengis.util.NameFactory;
+
+import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.feature.Resources;
 
 // Branch-dependent imports
-import org.opengis.feature.Attribute;
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.FeatureAssociationRole;
-import org.opengis.feature.IdentifiedType;
-import org.opengis.feature.InvalidPropertyValueException;
-import org.opengis.feature.Operation;
-import org.opengis.feature.PropertyType;
 
 
 /**
@@ -223,5 +226,27 @@ public final class Features extends Static {
                 }
             }
         }
+    }
+
+
+    /**
+     * Test if given property type is an attribute as defined by {@link AttributeType}, or if it produces one as an
+     * {@link Operation#getResult() operation result}. It it is, we return the found attribute.
+     *
+     * @param input the data type to unravel the attribute from.
+     * @return The found attribute or an empty shell if we cannot find any.
+     */
+    public static Optional<AttributeType<?>> castOrUnwrap(IdentifiedType input) {
+        // In case an operation also implements attribute type, we check it first.
+        // TODO : cycle detection ?
+        while (!(input instanceof AttributeType) && input instanceof Operation) {
+            input = ((Operation)input).getResult();
+        }
+
+        if (input instanceof AttributeType) {
+            return Optional.of((AttributeType)input);
+        }
+
+        return Optional.empty();
     }
 }

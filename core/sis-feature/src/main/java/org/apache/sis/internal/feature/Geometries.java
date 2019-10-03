@@ -17,13 +17,20 @@
 package org.apache.sis.internal.feature;
 
 import java.util.Iterator;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Loggers;
+
+import org.opengis.geometry.Envelope;
+import org.opengis.geometry.Geometry;
+
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.math.Vector;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -144,6 +151,13 @@ public abstract class Geometries<G> {
         return false;
     }
 
+    public static Optional<Geometry> toGeometry(final Envelope env, WrapResolution wraparound) {
+        return findStrategy(g -> g.tryConvertToGeometry(env, wraparound))
+                .map(result -> new GeometryWrapper(result, env));
+    }
+
+    abstract Object tryConvertToGeometry(final Envelope env, WrapResolution wraparound);
+
     /**
      * If the given point is an implementation of this library, returns its coordinate.
      * Otherwise returns {@code null}.
@@ -163,11 +177,7 @@ public abstract class Geometries<G> {
      * @see #createPoint(double, double)
      */
     public static double[] getCoordinate(final Object point) {
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-            double[] coord = g.tryGetCoordinate(point);
-            if (coord != null) return coord;
-        }
-        return null;
+        return findStrategy(g -> g.tryGetCoordinate(point)).orElse(null);
     }
 
     /**
@@ -186,11 +196,7 @@ public abstract class Geometries<G> {
      *         is not a recognized geometry or its envelope is empty.
      */
     public static GeneralEnvelope getEnvelope(final Object geometry) {
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-            GeneralEnvelope env = g.tryGetEnvelope(geometry);
-            if (env != null) return env;
-        }
-        return null;
+        return findStrategy(g -> g.tryGetEnvelope(geometry)).orElse(null);
     }
 
     /**
@@ -208,18 +214,19 @@ public abstract class Geometries<G> {
      *         object is not a recognized geometry.
      */
     public static String toString(final Object geometry) {
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-            String s = g.tryGetLabel(geometry);
-            if (s != null) {
-                GeneralEnvelope env = g.tryGetEnvelope(geometry);
-                if (env != null) {
-                    final String bbox = env.toString();
-                    s += bbox.substring(bbox.indexOf('('));
-                }
-                return s;
+        return findStrategy(g -> g.tryToString(geometry)).orElse(null);
+    }
+
+    private String tryToString(Object geometry) {
+        String s = tryGetLabel(geometry);
+        if (s != null) {
+            GeneralEnvelope env = tryGetEnvelope(geometry);
+            if (env != null) {
+                final String bbox = env.toString();
+                s += bbox.substring(bbox.indexOf('('));
             }
         }
-        return null;
+        return s;
     }
 
     /**
@@ -233,11 +240,18 @@ public abstract class Geometries<G> {
      * @return the Well Known Text for the given geometry, or {@code null} if the given object is unrecognized.
      */
     public static String formatWKT(Object geometry, double flatness) {
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-            String wkt = g.tryFormatWKT(geometry, flatness);
-            if (wkt != null) return wkt;
-        }
-        return null;
+        return findStrategy(g -> g.tryFormatWKT(geometry, flatness))
+                .orElse(null);
+    }
+
+    public static Optional<?> fromWkt(String wkt) {
+        return findStrategy(g -> {
+            try {
+                return g.parseWKT(wkt);
+            } catch (Exception e) {
+                throw new BackingStoreException(e);
+            }
+        });
     }
 
     /**
@@ -304,13 +318,8 @@ public abstract class Geometries<G> {
         while (paths.hasNext()) {
             final Object first = paths.next();
             if (first != null) {
-                for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-                    final Object merged = g.tryMergePolylines(first, paths);
-                    if (merged != null) {
-                        return merged;
-                    }
-                }
-                throw unsupported(2);
+                return findStrategy(g -> g.tryMergePolylines(first, paths))
+                        .orElseThrow(() -> unsupported(2));
             }
         }
         return null;
@@ -323,5 +332,71 @@ public abstract class Geometries<G> {
      */
     static UnsupportedOperationException unsupported(final int dimension) {
         return new UnsupportedOperationException(Resources.format(Resources.Keys.UnsupportedGeometryObject_1, dimension));
+    }
+
+    private static <T> Optional<T> findStrategy(final Function<Geometries<?>, T> op) {
+        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+            final T result = op.apply(g);
+            if (result != null) return Optional.of(result);
+        }
+
+        return Optional.empty();
+    }
+
+    private Object envelope2Polygon(final Envelope env, WrapResolution resolution) {
+        double[] ordinates;
+        double[] secondEnvelopeIfSplit = null;
+        if (WrapResolution.NONE.equals(resolution)) {
+            ordinates = new double[] {
+                    env.getMinimum(0),
+                    env.getMinimum(1),
+                    env.getMaximum(0),
+                    env.getMaximum(1)
+            };
+        } else {
+            final boolean xWrap = env.getMinimum(0) > env.getMaximum(0);
+            final boolean yWrap = env.getMinimum(1) > env.getMaximum(1);
+
+            //TODO
+            switch (resolution) {
+                case EXPAND:
+                case SPLIT:
+                case CONTIGUOUS:
+                default: throw new IllegalArgumentException("Unknown or unset wrap resolution: "+resolution);
+            }
+
+        }
+
+
+        double minX = ordinates[0];
+        double minY = ordinates[1];
+        double maxX = ordinates[2];
+        double maxY = ordinates[3];
+        Vector[] points = {
+                Vector.create(new double[]{minX, minY}),
+                Vector.create(new double[]{minX, maxY}),
+                Vector.create(new double[]{maxX, maxY}),
+                Vector.create(new double[]{maxX, minY}),
+                Vector.create(new double[]{minX, minY})
+        };
+
+        final G mainRect = createPolyline(2, points);
+        if (secondEnvelopeIfSplit != null) {
+            minX = secondEnvelopeIfSplit[0];
+            minY = secondEnvelopeIfSplit[1];
+            maxX = secondEnvelopeIfSplit[2];
+            maxY = secondEnvelopeIfSplit[3];
+            Vector[] points2 = {
+                    Vector.create(new double[]{minX, minY}),
+                    Vector.create(new double[]{minX, maxY}),
+                    Vector.create(new double[]{maxX, maxY}),
+                    Vector.create(new double[]{maxX, minY}),
+                    Vector.create(new double[]{minX, minY})
+            };
+            final G secondRect = createPolyline(2, points2);
+            // TODO: merge then send back
+        }
+
+        return mainRect;
     }
 }

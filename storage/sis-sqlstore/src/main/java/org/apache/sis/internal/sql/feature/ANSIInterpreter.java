@@ -1,9 +1,12 @@
 package org.apache.sis.internal.sql.feature;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.opengis.filter.*;
 import org.opengis.filter.expression.Add;
@@ -19,6 +22,7 @@ import org.opengis.filter.expression.PropertyName;
 import org.opengis.filter.expression.Subtract;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.filter.spatial.Beyond;
+import org.opengis.filter.spatial.BinarySpatialOperator;
 import org.opengis.filter.spatial.Contains;
 import org.opengis.filter.spatial.Crosses;
 import org.opengis.filter.spatial.DWithin;
@@ -29,9 +33,15 @@ import org.opengis.filter.spatial.Overlaps;
 import org.opengis.filter.spatial.Touches;
 import org.opengis.filter.spatial.Within;
 import org.opengis.filter.temporal.*;
+import org.opengis.geometry.Envelope;
+import org.opengis.geometry.Geometry;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.util.GenericName;
 import org.opengis.util.LocalName;
 
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.WrapResolution;
 import org.apache.sis.util.iso.Names;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -107,7 +117,15 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
 
     @Override
     public Object visit(PropertyIsBetween filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
+        final CharSequence propertyExp = evaluateMandatory(filter.getExpression(), extraData);
+        final CharSequence lowerExp = evaluateMandatory(filter.getLowerBoundary(), extraData);
+        final CharSequence upperExp = evaluateMandatory(filter.getUpperBoundary(), extraData);
+
+        return new StringBuilder(propertyExp)
+                .append(" BETWEEN ")
+                .append(lowerExp)
+                .append(" AND ")
+                .append(upperExp);
     }
 
     @Override
@@ -158,60 +176,91 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
         return evaluateMandatory(filter.getExpression(), extraData) + " = NULL";
     }
 
+    /*
+     * SPATIAL FILTERS
+     */
+
     @Override
     public Object visit(BBOX filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
+        final CharSequence left = evaluateMandatory(filter.getExpression1(), extraData);
+        final CharSequence right = evaluateMandatory(filter.getExpression2(), extraData);
+
+        // TODO: In case source expression is already an envelope, we do not need to force envelope conversion. It would
+        // only be micro-optimisation however.
+        boolean leftToEnvelope = true;
+        boolean rightToEnvelope = true;
+
+        final StringBuilder sb = new StringBuilder("ST_Intersects(");
+        if (leftToEnvelope) {
+            sb.append("ST_Envelope(").append(left).append(')');
+        } else sb.append(left);
+
+        sb.append(", ");
+
+        if (rightToEnvelope) {
+            sb.append("ST_Envelope(").append(right).append(')');
+        } else sb.append(right);
+
+        return sb.append(')');
     }
 
     @Override
     public Object visit(Beyond filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
+        // TODO: ISO SQL specifies that unit of distance could be specified. However, PostGIS documentation does not
+        // talk about it. For now, we'll fallback on Java implementation until we're sure how to perform native
+        // operation properly.
+        throw new UnsupportedOperationException("Not yet: unit management ambiguous");
     }
 
     @Override
     public Object visit(Contains filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
+        return function("ST_Contains", filter, extraData);
     }
 
     @Override
     public Object visit(Crosses filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
+        return function("ST_Crosses", filter, extraData);
     }
 
     @Override
     public Object visit(Disjoint filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
+        return function("ST_Disjoint", filter, extraData);
     }
 
     @Override
     public Object visit(DWithin filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
+        // TODO: as for beyond, unit determination is a bit complicated.
+        throw new UnsupportedOperationException("Not yet: unit management to handle properly");
     }
 
     @Override
     public Object visit(Equals filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
+        return function("ST_Equals", filter, extraData);
     }
 
     @Override
     public Object visit(Intersects filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
+        return function("ST_Intersects", filter, extraData);
     }
 
     @Override
     public Object visit(Overlaps filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
+        return function("ST_Overlaps", filter, extraData);
     }
 
     @Override
     public Object visit(Touches filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
+        return function("ST_Touches", filter, extraData);
     }
 
     @Override
     public Object visit(Within filter, Object extraData) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 30/09/2019
+        return function("ST_Within", filter, extraData);
     }
+
+    /*
+     * TEMPORAL OPERATORS
+     */
 
     @Override
     public Object visit(After filter, Object extraData) {
@@ -333,12 +382,25 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
      */
 
     protected static CharSequence format(Literal candidate) {
-        final Object value = candidate == null ? null : candidate.getValue();
+        Object value = candidate == null ? null : candidate.getValue();
         if (value == null) return "NULL";
         else if (value instanceof CharSequence) {
             final String asStr = value.toString();
             asStr.replace("'", "''");
             return "'"+asStr+"'";
+        } else if (value instanceof Number || value instanceof Boolean) {
+            return value.toString();
+        }
+
+        // geometric special cases
+        if (value instanceof GeographicBoundingBox) {
+            value = new GeneralEnvelope((GeographicBoundingBox)value);
+        }
+        if (value instanceof Envelope) {
+            value = asGeometry((Envelope)value);
+        }
+        if (value instanceof Geometry) {
+            return format((Geometry)value);
         }
 
         throw new UnsupportedOperationException("Not supported yet: Literal value of type "+value.getClass());
@@ -392,20 +454,40 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
                 + ")";
     }
 
+    protected CharSequence function(Object extraData, final String fnName, Supplier<Expression>... parameters) {
+        return Arrays.stream(parameters)
+                .map(Supplier::get)
+                .map(exp -> evaluateMandatory(exp, extraData))
+                .collect(Collectors.joining(", ", fnName+'(', ")"));
+    }
+
+    private CharSequence function(String fnName, BinarySpatialOperator filter, Object extraData) {
+        return function(extraData, fnName, filter::getExpression1, filter::getExpression2);
+    }
+
     protected CharSequence evaluateMandatory(final Filter candidate, Object extraData) {
         final Object exp = candidate == null ? null : candidate.accept(this, extraData);
-        if (isNonEmptyText(exp)) return (CharSequence) exp;
-        else throw new IllegalArgumentException("Filter evaluate to an empty text: "+candidate);
+        return asNonEmptyText(exp)
+                .orElseThrow(() -> new IllegalArgumentException("Filter evaluate to an empty text: "+candidate));
     }
 
     protected CharSequence evaluateMandatory(final Expression candidate, Object extraData) {
         final Object exp = candidate == null ? null : candidate.accept(this, extraData);
-        if (isNonEmptyText(exp)) return (CharSequence) exp;
-        else throw new IllegalArgumentException("Expression evaluate to an empty text: "+candidate);
+        return asNonEmptyText(exp)
+                .orElseThrow(() -> new IllegalArgumentException("Expression evaluate to an empty text: "+candidate));
+    }
+
+    protected static Optional<CharSequence> asNonEmptyText(final Object toCheck) {
+        if (toCheck instanceof CharSequence) {
+            final CharSequence asCS = (CharSequence) toCheck;
+            if (asCS.length() > 0) return Optional.of(asCS);
+        }
+
+        return Optional.empty();
     }
 
     protected static boolean isNonEmptyText(final Object toCheck) {
-        return toCheck instanceof CharSequence && ((CharSequence) toCheck).length() > 0;
+        return asNonEmptyText(toCheck).isPresent();
     }
 
     private static void ensureMatchCase(BinaryComparisonOperator filter) {
@@ -419,5 +501,43 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
     protected static CharSequence append(CharSequence toAdd, Object extraData) {
         if (extraData instanceof StringBuilder) return ((StringBuilder) extraData).append(toAdd);
         return toAdd;
+    }
+
+    protected static Geometry asGeometry(final Envelope source) {
+        final double[] lower = source.getLowerCorner().getCoordinate();
+        final double[] upper = source.getLowerCorner().getCoordinate();
+        for (int i = 0 ; i < lower.length ; i++) {
+            if (Double.isNaN(lower[i]) || Double.isNaN(upper[i])) {
+                throw new IllegalArgumentException("Cannot use envelope containing NaN for filter");
+            }
+            lower[i] = clampInfinity(lower[i]);
+            upper[i] = clampInfinity(upper[i]);
+        }
+        final GeneralEnvelope env = new GeneralEnvelope(lower, upper);
+        env.setCoordinateReferenceSystem(source.getCoordinateReferenceSystem());
+        return Geometries.toGeometry(env, WrapResolution.SPLIT)
+                .orElseThrow(() -> new UnsupportedOperationException("No geometry implementation available"));
+    }
+
+    protected static CharSequence format(final Geometry source) {
+        // TODO: find a better approximation of desired "flatness"
+        final Envelope env = source.getEnvelope();
+        final double flatness = 0.05 * IntStream.range(0, env.getDimension())
+                .mapToDouble(env::getSpan)
+                .average()
+                .orElseThrow(() -> new IllegalArgumentException("Given geometry envelope dimension is 0"));
+        return new StringBuilder("ST_GeomFromText(")
+                .append(Geometries.formatWKT(source, flatness))
+                .append(')');
+    }
+
+    protected static double clampInfinity(final double candidate) {
+        if (candidate == Double.NEGATIVE_INFINITY) {
+            return -Double.MAX_VALUE;
+        } else if (candidate == Double.POSITIVE_INFINITY) {
+            return Double.MAX_VALUE;
+        }
+
+        return candidate;
     }
 }
