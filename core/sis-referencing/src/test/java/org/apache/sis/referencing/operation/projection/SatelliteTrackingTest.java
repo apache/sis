@@ -20,7 +20,6 @@ import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.provider.SatelliteTracking;
 import org.apache.sis.measure.Units;
@@ -68,7 +67,7 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
     {
         final SatelliteTracking provider = new SatelliteTracking();
         final ParameterValueGroup values = provider.getParameters().createValue();
-        final DefaultEllipsoid sphere = DefaultEllipsoid.createEllipsoid(
+        final DefaultEllipsoid    sphere = DefaultEllipsoid.createEllipsoid(
                 Collections.singletonMap(DefaultEllipsoid.NAME_KEY, NilReferencingObject.UNNAMED), 1, 1, Units.METRE);
 
         values.parameter("semi_major")                 .setValue(sphere.getSemiMajorAxis());
@@ -82,13 +81,28 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
         values.parameter("ascending_node_period")      .setValue(1440.0,   Units.MINUTE);
         transform = new MathTransformFactoryMock(provider).createParameterizedTransform(values);
         validate();
+        /*
+         * Assuming that tolerance has been set to the number of fraction digits published in Snyder tables,
+         * relax the tolerance during inverse transforms for taking in account the increase in magnitude of
+         * coordinate values. The transform results are between 0 and 1, while the inverse transform results
+         * are between -90° and 90°, which is an increase in magnitude close to ×100.
+         */
+        toleranceModifier = (tolerance, coordinate, mode) -> {
+            switch (mode) {
+                case INVERSE_TRANSFORM: {
+                    for (int i=0; i<tolerance.length; i++) {
+                        tolerance[i] *= 50;
+                    }
+                    break;
+                }
+            }
+        };
     }
 
     /**
-     * Tests the projection of a few points on a sphere.
-     *
-     * Test based on the numerical example given by Snyder p. 360 to 363 of
-     * <cite> Map Projections - A working Manual</cite>
+     * Tests the projection of a few points using spherical formulas.
+     * Test based on the numerical example given by Snyder pages 360 to 363
+     * of <cite>Map Projections - A working Manual</cite>.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a point.
@@ -96,7 +110,6 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
     @Test
     public void testCylindricalTransform() throws FactoryException, TransformException {
         tolerance = 1E-7;   // Number of digits in the output values provided by Snyder.
-        tolerance = 1E-5;   // TODO
         createForLandsat(-90, 0, 30, -30);
         assertTrue(isInverseTransformSupported);
         verifyTransform(
@@ -109,9 +122,9 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
     }
 
     /**
-     * Tests the projection of a few points on a sphere.
-     * Test based on the numerical example given by Snyder pages 360 to 363 of
-     * <cite>Map Projections - A working Manual</cite>.
+     * Tests the projection of a few points using conic formulas.
+     * Test based on the numerical example given by Snyder pages 360 to 363
+     * of <cite>Map Projections - A working Manual</cite>.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a point.
@@ -119,7 +132,6 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
     @Test
     public void testConicTransform() throws FactoryException, TransformException {
         tolerance = 1E-7;   // Number of digits in the output values provided by Snyder.
-        tolerance = 1E-5;   // TODO
         createForLandsat(-90, 30, 45, 70);
         assertTrue(isInverseTransformSupported);
         verifyTransform(
@@ -140,9 +152,9 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
 
     /**
      * Compares the projection of a few points against expected values computed from intermediate values
-     * published by Snyder. As Snyder tables in chapter 28 introduce only the values for <var>n</var>,
-     * <var>F₁</var> and <var>ρ</var> coefficients, the test was realized by checking these coefficients
-     * in debugger and by extracting the computed results of the projection.
+     * published by Snyder. Snyder tables in chapter 28 do not give directly the (x,y) values. Instead
+     * the tables give some intermediate values like <var>F₁</var>, which are verified in debugger.
+     * This method converts intermediate values to final coordinate values to compare.
      *
      * @param  xScale       scale to apply on <var>x</var> values.
      * @param  coordinates  the points to transform.
@@ -160,9 +172,9 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
 
     /**
      * Compares the projection of a few points against expected values computed from intermediate values
-     * published by Snyder. As Snyder tables in chapter 28 introduce only the values for <var>n</var>,
-     * <var>F₁</var> and <var>ρ</var> coefficients, the test was realized by checking these coefficients
-     * in debugger and by extracting the computed results of the projection.
+     * published by Snyder. Snyder tables in chapter 28 do not give directly the (x,y) values. Instead
+     * the tables give some intermediate values like <var>F₁</var> and <var>n</var>, which are verified
+     * in debugger. This method converts intermediate values to final coordinate values to compare.
      *
      * @param  λ0           central meridian.
      * @param  n            cone factor <var>n</var>.
@@ -180,7 +192,7 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
     }
 
     /**
-     * Tests the projection of a few points on a sphere.
+     * Tests the projection of a few points using cylindrical formulas.
      * Test based on the sample coordinates for several of the Satellite-Tracking projections
      * shown in table 38 of <cite>Map Projections - A working Manual</cite>.
      *
@@ -189,41 +201,52 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
      */
     @Test
     public void testCylindricalInternal() throws FactoryException, TransformException {
-        tolerance = NormalizedProjection.ANGULAR_TOLERANCE;
-        tolerance = Formulas.LINEAR_TOLERANCE;                  // TODO
         /*
-         * φ₁ = 0°
+         * First group of 3 columns in Snyder table 38, for φ₁ = 0°.
+         * Snyder gives the following values, which can be verified in a debugger:
+         *
+         *     F₁  =  13.09724°         can be verified with toDegrees(atan(1/cotF))
+         *     x   =  0.017453⋅λ°       can be verified with toRadians(cosφ1)
+         *
+         * Accuracy is set to the number of fraction digits published by Snyder (5 digits)
+         * with tolerance relaxed on the last digit. The verifyCylindricInternal(…) first
+         * argument is the factor in above x equation, with additional digits obtained by
+         * inspecting the value in a debugging session.
          */
+        tolerance = 4E-5;
         createForLandsat(0, 0, 0, 0);
-        verifyCylindricInternal(0.017453,
-                new double[] {                  // (λ,φ) coordinates in degrees to project.
+        verifyCylindricInternal(0.017453292519943295,   // See x in above comment.
+                new double[] {                          // (λ,φ) coordinates in degrees to project.
                        0,   0,
                       10,   0,
                      -10,  10,
                       60,  40,
                       80,  70,
-                    -120,  80.908               // Tracking limit.
+                    -120,  80.908                       // Tracking limit.
                 },
-                new double[] {                  // Expected (x,y) results on a unit sphere.
+                new double[] {                          // Expected (x,y) results on a unit sphere.
                        0,   0,
                       10,   0,
                      -10,   0.17579,
                       60,   0.79741,
                       80,   2.34465,
-                    -120,   7.23571             // Projection of tracking limit.
+                    -120,   7.23571                     // Projection of tracking limit.
                 });
         /*
-         * φ₁ = -30°
+         * Second group of 3 columns for φ₁ = -30°.
+         *
+         *     F₁  =  13.96868°
+         *     x   =  0.015115⋅λ°
          */
         createForLandsat(0, 0, -30, 30);
-        verifyCylindricInternal(0.015115,
+        verifyCylindricInternal(0.015114994701951816,   // See x in above comment.
                 new double[] {
                        0,   0,
                       10,   0,
                      -10,  10,
                       60,  40,
                       80,  70,
-                    -120,  80.908
+                    -120,  80.908                       // Tracking limit.
                 },
                 new double[] {
                        0,  0,
@@ -234,17 +257,20 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
                     -120,  5.86095
                 });
         /*
-         * φ₁ = 45°
+         * Third group of 3 columns for φ₁ = 45°
+         *
+         *     F₁  =  15.71115°
+         *     x   =  0.012341⋅λ°
          */
         createForLandsat(0, 0, 45, -45);
-        verifyCylindricInternal(0.012341,
+        verifyCylindricInternal(0.012341341494884351,   // See x in above comment.
                 new double[] {
                        0,   0,
                       10,   0,
                      -10,  10,
                       60,  40,
                       80,  70,
-                    -120,  80.908
+                    -120,  80.908                       // Tracking limit.
                 },
                 new double[] {
                        0, 0,
@@ -257,7 +283,7 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
     }
 
     /**
-     * Tests the projection of a few points on a sphere.
+     * Tests the projection of a few points using conic formulas.
      * Test based on the sample coordinates for several of the Satellite-Tracking projections
      * shown in table 39 of <cite>Map Projections - A working Manual</cite>, page 238.
      *
@@ -266,57 +292,71 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
      */
     @Test
     public void testConicInternal() throws FactoryException, TransformException {
-        tolerance = NormalizedProjection.ANGULAR_TOLERANCE;
-        tolerance = Formulas.LINEAR_TOLERANCE;                  // TODO
         /*
-         * φ₁ = 30° ; φ₂ = 60°
+         * First group of 3 columns in Snyder table 38, for φ₁ = 30° and φ₂ = 60°.
+         * Snyder gives the following values, which can be verified in a debugger:
+         *
+         *     F₁  =  13.96868°         can be verified with toDegrees(F1)
+         *     n   =   0.49073
+         *
+         * Accuracy is set to the number of fraction digits published by Snyder (5 digits)
+         * with tolerance relaxed on the last digit. The verifyCylindricInternal(…) first
+         * argument is the factor in above x equation, with additional digits obtained by
+         * inspecting the value in a debugging session.
          */
+        tolerance = 3E-5;
         createForLandsat(-90, 0, 30, 60);
-        verifyConicInternal(-90, 0.49073,
-                new double[] {                  // (λ,φ) coordinates in degrees to project.
+        verifyConicInternal(-90, 0.4907267554554259,    // See n in above comment.
+                new double[] {                          // (λ,φ) coordinates in degrees to project.
                        0, -10,
                        0,   0,
                        0,  10,
                        0,  70,
-                    -120,  80.908               // Tracking limit.
+                    -120,  80.908                       // Tracking limit.
                 },
-                new double[] {                  // Expected (x,y) results on a unit sphere.
+                new double[] {                          // Expected (x,y) results on a unit sphere.
                     2.67991,  0.46093,
                     2.38332,  0.67369,
                     2.14662,  0.84348,
                     0.98470,  1.67697,
-                    0.50439,  1.89549           // Projection of tracking limit.
+                    0.50439,  1.89549                   // Projection of tracking limit.
                 });
         /*
-         * φ₁ = 45° ; φ₂ = 70°
+         * Second group of 3 columns for φ₁ = 45° and φ₂ = 70°.
+         *
+         *     F₁  =  15.71115°
+         *     n   =  0.69478
          */
         createForLandsat(-90, 0, 45, 70);
-        verifyConicInternal(-90, 0.69478,
+        verifyConicInternal(-90, 0.6947829166657693,    // See n in above comment.
                 new double[] {
                     0, -10,
                     0,   0,
                     0,  10,
                     0,  70,
-                 -120,  80.908                  // Tracking limit.
+                 -120,  80.908                          // Tracking limit.
                 },
                 new double[] {
                     2.92503,  0.90110,
                     2.25035,  1.21232,
                     1.82978,  1.40632,
                     0.57297,  1.98605,
-                    0.28663,  1.982485          // Projection of tracking limit.
+                    0.28663,  1.982485
                 });
         /*
-         * φ₁ = 45° ; φ₂ = 80.908° (the tracking limit).
+         * Second group of 3 columns for φ₁ = 45° and φ₂ = 80.908° (the tracking limit).
+         *
+         *     F₁  =  15.71115°
+         *     n   =  0.88475
          */
         createForLandsat(-90, 0, 45, 80.908);
-        verifyConicInternal(-90, 0.88475,
+        verifyConicInternal(-90, 0.8847514352390218,    // See n in above comment.
                 new double[] {
                        0, -10,
                        0,   0,
                        0,  10,
                        0,  70,
-                    -120,  80.908
+                    -120,  80.908                       // Tracking limit.
                 },
                 new double[] {
                     4.79153,  1.80001,
@@ -339,8 +379,7 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
         createForLandsat(-90, 0, 30, -30);
         final double delta = (1.0 / 60) / 1852;                 // Approximately 1 metre.
         derivativeDeltas = new double[] {delta, delta};
-        tolerance = NormalizedProjection.ANGULAR_TOLERANCE;
-        tolerance = Formulas.LINEAR_TOLERANCE / 100;            // TODO
+        tolerance = 1E-4;
         verifyDerivative( -75, 40);
         verifyDerivative(-100,  3);
         verifyDerivative( -56, 50);
@@ -359,8 +398,7 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
         createForLandsat(-90, 30, 45, 70);
         final double delta = (1.0 / 60) / 1852;                 // Approximately 1 metre.
         derivativeDeltas = new double[] {delta, delta};
-        tolerance = NormalizedProjection.ANGULAR_TOLERANCE;
-        tolerance = Formulas.LINEAR_TOLERANCE/100 ;             // TODO
+        tolerance = 1E-4;
         verifyDerivative( -75, 40);
         verifyDerivative(-100,  3);
         verifyDerivative( -56, 50);
