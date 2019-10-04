@@ -267,7 +267,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
         StringBuffer buffer = new StringBuffer();
         double m = Math.abs(θ);
         final boolean isSmall = m <= (1 / 3600E+3);                     // 1E-3 arc-second.
-        if (isSmall || m > maximum()) {
+        if ((isSmall || m > maximum()) && m != 0) {
             final char h = hemisphere(isNegative(θ));
             if (h == 0) {
                 m = θ;                                                  // Restore the sign.

@@ -226,7 +226,7 @@ public class Polyconic extends MeridianArcBased {
         final double x = srcPts[srcOff  ];
         final double y = srcPts[srcOff+1];
         double φ = y;                           // A = (M₀ + (N-FE)/a)      — Snyder 18-18 with M₀=0, FE=0 and a=1.
-        final double B = y*y + x*x;             // B = A² + ((E-FE)²/a²)    — Synder 18-19 with FE=0 and a=1.
+        final double B = y*y + x*x;             // B = A² + ((E-FE)²/a²)    — Snyder 18-19 with FE=0 and a=1.
         int i = MAXIMUM_ITERATIONS;
         double dφ;
         do {
