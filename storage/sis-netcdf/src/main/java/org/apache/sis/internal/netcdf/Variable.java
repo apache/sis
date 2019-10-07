@@ -30,6 +30,7 @@ import javax.measure.Unit;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -51,7 +52,7 @@ import ucar.nc2.constants.CF;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -1038,6 +1039,17 @@ public abstract class Variable extends Node {
             }
         }
         return false;
+    }
+
+    /**
+     * Constructs the exception to thrown when the variable position can not be computed.
+     *
+     * @param  cause  the reason why we can not compute the position, or {@code null}.
+     * @return the exception to thrown.
+     */
+    protected final DataStoreContentException canNotComputePosition(final ArithmeticException cause) {
+        return new DataStoreContentException(resources().getString(
+                Resources.Keys.CanNotComputeVariablePosition_2, getFilename(), getName()), cause);
     }
 
     /**
