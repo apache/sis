@@ -22,12 +22,18 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.math.Vector;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.logging.Logging;
@@ -151,12 +157,18 @@ public abstract class Geometries<G> {
         return false;
     }
 
+    /**
+     * Transforms an envelope to a polygon whose start point is lower corner, and points composing result are the
+     * envelope corners in clockwise order.
+     * @param env The envelope to convert.
+     * @param wraparound How to resolve wrap-around ambiguities on the envelope.
+     * @return If any geometric implementation is installed, return a polygon (or two polygons in case of
+     * {@link WrapResolution#SPLIT split handling of wrap-around}.
+     */
     public static Optional<Geometry> toGeometry(final Envelope env, WrapResolution wraparound) {
         return findStrategy(g -> g.tryConvertToGeometry(env, wraparound))
                 .map(result -> new GeometryWrapper(result, env));
     }
-
-    abstract Object tryConvertToGeometry(final Envelope env, WrapResolution wraparound);
 
     /**
      * If the given point is an implementation of this library, returns its coordinate.
@@ -343,60 +355,132 @@ public abstract class Geometries<G> {
         return Optional.empty();
     }
 
-    private Object envelope2Polygon(final Envelope env, WrapResolution resolution) {
-        double[] ordinates;
-        double[] secondEnvelopeIfSplit = null;
-        if (WrapResolution.NONE.equals(resolution)) {
-            ordinates = new double[] {
-                    env.getMinimum(0),
-                    env.getMinimum(1),
-                    env.getMaximum(0),
-                    env.getMaximum(1)
-            };
+    /**
+     * See {@link Geometries#toGeometry(Envelope, WrapResolution)}.
+     */
+    Object tryConvertToGeometry(final Envelope env, WrapResolution resolution) {
+        // Ensure that we can isolate an horizontal part in the given envelope.
+        final int x;
+        if (env.getDimension() == 2) {
+            x = 0;
         } else {
-            final boolean xWrap = env.getMinimum(0) > env.getMaximum(0);
-            final boolean yWrap = env.getMinimum(1) > env.getMaximum(1);
-
-            //TODO
-            switch (resolution) {
-                case EXPAND:
-                case SPLIT:
-                case CONTIGUOUS:
-                default: throw new IllegalArgumentException("Unknown or unset wrap resolution: "+resolution);
-            }
-
+            final CoordinateReferenceSystem crs = env.getCoordinateReferenceSystem();
+            if (crs == null) throw new IllegalArgumentException("Envelope with more than 2 dimensions, but without CRS: cannot isolate horizontal part.");
+            final SingleCRS hCrs = CRS.getHorizontalComponent(crs);
+            if (hCrs == null) throw new IllegalArgumentException("Cannot find an horizontal part in given CRS");
+            x = AxisDirections.indexOfColinear(crs.getCoordinateSystem(), hCrs.getCoordinateSystem());
         }
 
+        final int y = x+1;
 
-        double minX = ordinates[0];
-        double minY = ordinates[1];
-        double maxX = ordinates[2];
-        double maxY = ordinates[3];
-        Vector[] points = {
+        final DirectPosition lc = env.getLowerCorner();
+        final DirectPosition uc = env.getUpperCorner();
+        double minX = lc.getOrdinate(x);
+        double minY = lc.getOrdinate(y);
+        double maxX = uc.getOrdinate(x);
+        double maxY = uc.getOrdinate(y);
+        double[] splittedLeft = null;
+        // We start by short-circuiting simplest case for minor simplicity/performance reason.
+        if (!WrapResolution.NONE.equals(resolution)) {
+            // ensure the envelope is correctly defined, by forcing non-authorized wrapped axes to take entire crs span.
+            final GeneralEnvelope fixedEnv = new GeneralEnvelope(env);
+            fixedEnv.normalize();
+            int wrapAxis = -1;
+            for (int i = x ; i <= y && wrapAxis < x ; i++) {
+                if (fixedEnv.getLower(i) > fixedEnv.getUpper(i)) wrapAxis = i;
+            }
+            if (wrapAxis >= x) {
+                final CoordinateReferenceSystem crs = env.getCoordinateReferenceSystem();
+                if (crs == null) throw new IllegalArgumentException("Cannot resolve wrap-around for an envelope without any system defined");
+                final CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(wrapAxis);
+                final double wrapRange = axis.getMaximumValue() - axis.getMinimumValue();
+                switch (resolution) {
+                    case EXPAND:
+                        // simpler and more performant than a call to GeneralEnvelope.simplify()
+                        if (wrapAxis == x) {
+                            minX = axis.getMinimumValue();
+                            maxX = axis.getMaximumValue();
+                        } else {
+                            minY = axis.getMinimumValue();
+                            maxY = axis.getMaximumValue();
+                        }
+                        break;
+                    case SPLIT:
+                        if (wrapAxis == x) {
+                            splittedLeft = new double[]{axis.getMinimumValue(), minY, maxX, maxY};
+                            maxX = axis.getMaximumValue();
+                        }
+                        else {
+                            splittedLeft = new double[] {minX, axis.getMinimumValue(), maxX, maxY};
+                            maxY = axis.getMaximumValue();
+                        }
+                        break;
+                    case CONTIGUOUS:
+                        if (wrapAxis == x) maxX += wrapRange;
+                        else maxY += wrapRange;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unknown or unset wrap resolution: " + resolution);
+                }
+            }
+        }
+
+        Vector[] points = clockwiseRing(minX, minY, maxX, maxY);
+
+        final G mainRect = createPolyline(2, points);
+        if (splittedLeft != null) {
+            minX = splittedLeft[0];
+            minY = splittedLeft[1];
+            maxX = splittedLeft[2];
+            maxY = splittedLeft[3];
+            Vector[] points2 = clockwiseRing(minX, minY, maxX, maxY);
+            final G secondRect = createPolyline(2, points2);
+            return createMultiPolygonImpl(mainRect, secondRect);
+        }
+
+        /* Geotk original method had an option to insert a median point on wrappped around axis, but we have not ported
+         * it, because in an orthonormal space, I don't see any case where it could be useful. However, in case it
+         * have to be added, we can do it here by amending created ring(s).
+         */
+        return mainRect;
+    }
+
+    /**
+     * Create a sequence of points describing a rectangle whose start point is the lower left one. The sequence of
+     * points describe each corner, going in clockwise order and repeating starting point to properly close the ring.
+     *
+     * @param minX Lower coordinate of first axis.
+     * @param minY Lower coordinate of second axis.
+     * @param maxX Upper coordinate of first axis.
+     * @param maxY Upper coordinate of second axis.
+     *
+     * @return A set of 5 points describing given rectangle.
+     */
+    private static Vector[] clockwiseRing(final double minX, final double minY, final double maxX, final double maxY) {
+        return new Vector[]{
                 Vector.create(new double[]{minX, minY}),
                 Vector.create(new double[]{minX, maxY}),
                 Vector.create(new double[]{maxX, maxY}),
                 Vector.create(new double[]{maxX, minY}),
                 Vector.create(new double[]{minX, minY})
         };
+    }
 
-        final G mainRect = createPolyline(2, points);
-        if (secondEnvelopeIfSplit != null) {
-            minX = secondEnvelopeIfSplit[0];
-            minY = secondEnvelopeIfSplit[1];
-            maxX = secondEnvelopeIfSplit[2];
-            maxY = secondEnvelopeIfSplit[3];
-            Vector[] points2 = {
-                    Vector.create(new double[]{minX, minY}),
-                    Vector.create(new double[]{minX, maxY}),
-                    Vector.create(new double[]{maxX, maxY}),
-                    Vector.create(new double[]{maxX, minY}),
-                    Vector.create(new double[]{minX, minY})
-            };
-            final G secondRect = createPolyline(2, points2);
-            // TODO: merge then send back
-        }
+    /**
+     * Extract all points from input geometry, and return them as a contiguous set of ordinates.
+     * For rings, point order (clockwise/counter-clockwise) is implementation dependant.
+     *
+     * @param geometry The geometry to extract point from.
+     */
+    public static Optional<double[]> getOrdinates(Geometry geometry) {
+        return findStrategy(g -> g.getPoints(geometry));
+    }
 
-        return mainRect;
+    abstract double[] getPoints(Object geometry);
+
+    abstract Object createMultiPolygonImpl(final Object... polygonsOrLinearRings);
+
+    public static Object createMultiPolygon(final Object... polygonsOrLinearRings) {
+        return findStrategy(g -> g.createMultiPolygonImpl(polygonsOrLinearRings));
     }
 }

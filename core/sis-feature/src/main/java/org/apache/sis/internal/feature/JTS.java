@@ -31,6 +31,7 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
@@ -111,13 +112,6 @@ final class JTS extends Geometries<Geometry> {
             }
         }
         return null;
-    }
-
-    @Override
-    Geometry tryConvertToGeometry(org.opengis.geometry.Envelope env, final WrapResolution resolution) {
-        final int dim = env.getDimension();
-        if (dim > 2) throw new UnsupportedOperationException("Cannot manage more than 2 dimensions, but input envelope has "+dim);
-        throw new UnsupportedOperationException("Not yet");
     }
 
     /**
@@ -272,5 +266,41 @@ add:    for (;;) {
         }
         toLineString(coordinates, lines);
         return toGeometry(lines);
+    }
+
+    @Override
+    double[] getPoints(Object geometry) {
+        if (geometry instanceof GeometryWrapper) {
+            geometry = ((GeometryWrapper) geometry).geometry;
+        }
+
+        if (geometry instanceof Geometry) {
+            Geometry geom = (Geometry) geometry;
+            final int nbPts = geom.getNumPoints();
+            final Coordinate[] coords = geom.getCoordinates();
+            double[] ordinates = new double[nbPts * 2];
+            for (int i = 0, j=0; i < nbPts ; i++) {
+                final Coordinate coord = coords[i];
+                ordinates[j++] = coord.x;
+                ordinates[j++] = coord.y;
+            }
+            return ordinates;
+        }
+
+        return null;
+    }
+
+    @Override
+    Object createMultiPolygonImpl(Object... polygonsOrLinearRings) {
+        final Polygon[] polys = new Polygon[polygonsOrLinearRings.length];
+        for (int i = 0 ; i < polys.length ; i++) {
+            Object o = polygonsOrLinearRings[i];
+            if (o instanceof GeometryWrapper) o = ((GeometryWrapper) o).geometry;
+
+            if (o instanceof Polygon) polys[i] = (Polygon) o;
+            else if (o instanceof LinearRing) polys[i] = factory.createPolygon((LinearRing) o);
+        }
+
+        return factory.createMultiPolygon(polys);
     }
 }

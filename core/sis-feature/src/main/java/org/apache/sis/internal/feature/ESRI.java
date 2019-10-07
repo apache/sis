@@ -18,25 +18,14 @@ package org.apache.sis.internal.feature;
 
 import java.util.Iterator;
 
-import org.opengis.geometry.Envelope;
-
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.Classes;
 
-import com.esri.core.geometry.Envelope2D;
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.MultiPath;
-import com.esri.core.geometry.OperatorExportToWkt;
-import com.esri.core.geometry.OperatorImportFromWkt;
-import com.esri.core.geometry.Point;
-import com.esri.core.geometry.Point2D;
-import com.esri.core.geometry.Point3D;
-import com.esri.core.geometry.Polygon;
-import com.esri.core.geometry.Polyline;
-import com.esri.core.geometry.WktExportFlags;
-import com.esri.core.geometry.WktImportFlags;
+import com.esri.core.geometry.*;
+
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -86,11 +75,6 @@ final class ESRI extends Geometries<Geometry> {
             }
         }
         return null;
-    }
-
-    @Override
-    Object tryConvertToGeometry(Envelope env) {
-        throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 03/10/2019
     }
 
     /**
@@ -201,6 +185,36 @@ add:    for (;;) {
             while ((next = polylines.next()) == null);
         }
         return path;
+    }
+
+    @Override
+    double[] getPoints(Object geometry) {
+        if (geometry instanceof GeometryWrapper) geometry = ((GeometryWrapper) geometry).geometry;
+        ensureNonNull("Geometry", geometry);
+        if (geometry instanceof MultiVertexGeometry) {
+            MultiVertexGeometry vertices = (MultiVertexGeometry) geometry;
+            final Point2D[] coords = vertices.getCoordinates2D();
+            final double[] ordinates = new double[coords.length*2];
+            int idx = 0;
+            for (Point2D coord : coords) {
+                ordinates[idx++] = coord.x;
+                ordinates[idx++] = coord.y;
+            }
+            return ordinates;
+        }
+        throw new UnsupportedOperationException("Unsupported geometry type: "+geometry.getClass().getCanonicalName());
+    }
+
+    @Override
+    Object createMultiPolygonImpl(Object... polygonsOrLinearRings) {
+        final Polygon poly = new Polygon();
+        for (final Object polr : polygonsOrLinearRings) {
+            if (polr instanceof MultiPath) {
+                poly.add((MultiPath) polr, false);
+            } else throw new UnsupportedOperationException("Unsupported geometry type: "+polr == null? "null" : polr.getClass().getCanonicalName());
+        }
+
+        return poly;
     }
 
     /**

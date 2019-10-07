@@ -16,19 +16,29 @@
  */
 package org.apache.sis.internal.feature;
 
-import java.util.Iterator;
 import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.stream.DoubleStream;
+import java.util.stream.StreamSupport;
+
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.j2d.ShapeProperties;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.math.Vector;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
+
+import static org.apache.sis.util.ArgumentChecks.ensureNonEmpty;
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -219,6 +229,29 @@ add:    for (;;) {
         return ShapeUtilities.toPrimitive(path);
     }
 
+    @Override
+    double[] getPoints(Object geometry) {
+        if (geometry instanceof GeometryWrapper) geometry = ((GeometryWrapper) geometry).geometry;
+        ensureNonNull("Geometry", geometry);
+        if (geometry instanceof Point2D) return getCoordinate(geometry);
+        if (geometry instanceof Shape) {
+            final PathIterator it = ((Shape) geometry).getPathIterator(null);
+            return StreamSupport.stream(new PathSpliterator(it), false)
+                    .flatMapToDouble(Segment::ordinates)
+                    .toArray();
+        }
+
+        throw new UnsupportedOperationException("Unsupported geometry type: "+geometry.getClass().getCanonicalName());
+    }
+
+    @Override
+    Object createMultiPolygonImpl(Object... polygonsOrLinearRings) {
+        ensureNonEmpty("Polygons or linear rings to merge", polygonsOrLinearRings);
+        if (polygonsOrLinearRings.length == 1) return polygonsOrLinearRings[0];
+        final Iterator<Object> it = Arrays.asList(polygonsOrLinearRings).iterator();
+        return tryMergePolylines(it.next(), it);
+    }
+
     /**
      * If the given object is a Java2D shape, builds its WKT representation.
      * Current implementation assumes that all closed shapes are polygons and that polygons have no hole
@@ -237,5 +270,79 @@ add:    for (;;) {
     @Override
     public Object parseWKT(final String wkt) {
         throw unsupported(2);
+    }
+
+    /**
+     * An abstraction over {@link PathIterator} to use it in a streaming context.
+     */
+    private static class PathSpliterator implements Spliterator<Segment> {
+
+        private final PathIterator source;
+
+        private PathSpliterator(PathIterator source) {
+            this.source = source;
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super Segment> action) {
+            if (source.isDone()) return false;
+            final double[] coords = new double[6];
+            final int segmentType = source.currentSegment(coords);
+            action.accept(new Segment(segmentType, coords));
+            source.next();
+            return true;
+        }
+
+        @Override
+        public Spliterator<Segment> trySplit() {
+            return null;
+        }
+
+        @Override
+        public long estimateSize() {
+            return Long.MAX_VALUE;
+        }
+
+        @Override
+        public int characteristics() {
+            return Spliterator.NONNULL | Spliterator.ORDERED | Spliterator.IMMUTABLE;
+        }
+    }
+
+    /**
+     * Describe a path segment as described by {@link PathIterator#currentSegment(double[]) AWT path iteration API}.
+     * Basically, the awt abstraction is really poor, so we made a wrapper around it to describe segments.
+     */
+    private static class Segment {
+        /**
+         * This segment type ({@link PathIterator#SEG_CLOSE}, etc.).
+         */
+        final int type;
+        /**
+         * Brut points composing the segment, as returned by {@link PathIterator#currentSegment(double[])}.
+         */
+        private final double[] points;
+
+        Segment(int type, double[] points) {
+            this.type = type;
+            this.points = points;
+        }
+
+        /**
+         *
+         * @return points composing this segment, as a contiguous set of ordinates. Points are all 2D, so every two
+         * elements in backed stream describe a point. Can be empty in case of {@link PathIterator#SEG_CLOSE closing segment}.
+         */
+        DoubleStream ordinates() {
+            switch (type) {
+                case PathIterator.SEG_CLOSE: return DoubleStream.empty();
+                case PathIterator.SEG_QUADTO: return Arrays.stream(points, 0, 4);
+                case PathIterator.SEG_CUBICTO: return Arrays.stream(points);
+                case PathIterator.SEG_LINETO:
+                case PathIterator.SEG_MOVETO:
+                        return Arrays.stream(points, 0, 2);
+                default: throw new IllegalStateException("Unknown segment type: "+type);
+            }
+        }
     }
 }
