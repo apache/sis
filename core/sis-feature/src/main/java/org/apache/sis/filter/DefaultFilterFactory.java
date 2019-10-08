@@ -53,9 +53,16 @@ import org.opengis.filter.spatial.Within;
 import org.opengis.filter.temporal.*;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
 
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.internal.feature.FunctionRegister;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
@@ -130,7 +137,35 @@ public class DefaultFilterFactory implements FilterFactory2 {
     public BBOX bbox(final Expression e, final double minx, final double miny,
             final double maxx, final double maxy, final String srs)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final CoordinateReferenceSystem crs = readCrs(srs);
+        final GeneralEnvelope env = new GeneralEnvelope(2);
+        env.setEnvelope(minx, miny, maxx, maxy);
+        if (crs != null) env.setCoordinateReferenceSystem(crs);
+        return bbox(e, new ImmutableEnvelope(env));
+    }
+
+    /**
+     * Try to decode a full {@link CoordinateReferenceSystem} from given text. First, we try to interpret it as a code,
+     * and if it fails, we try to read it as a WKT.
+     *
+     * @param srs The text describing the system. If null or blank, a null value is returned.
+     * @return Possible null value if input text is empty.
+     * @throws BackingStoreException If an error occurs while decoding the text.
+     */
+    private static CoordinateReferenceSystem readCrs(String srs) {
+        if (srs == null || (srs = srs.trim()).isEmpty()) return null;
+        try {
+            return CRS.forCode(srs);
+        } catch (NoSuchAuthorityCodeException e) {
+            try {
+                return CRS.fromWKT(srs);
+            } catch (FactoryException bis) {
+                e.addSuppressed(bis);
+            }
+            throw new BackingStoreException(e);
+        } catch (FactoryException e) {
+            throw new BackingStoreException(e);
+        }
     }
 
     /**
@@ -138,7 +173,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public BBOX bbox(final Expression e, final Envelope bounds) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultBBOX(e, literal(bounds));
     }
 
     /**

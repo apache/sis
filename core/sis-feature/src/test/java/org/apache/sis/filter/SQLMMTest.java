@@ -16,19 +16,24 @@
  */
 package org.apache.sis.filter;
 
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.filter.FilterFactory2;
+import org.opengis.filter.expression.Expression;
+import org.opengis.filter.expression.Function;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.TestCase;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.expression.Function;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -91,7 +96,23 @@ public class SQLMMTest extends TestCase {
             Assert.assertEquals(30.0, trs.getX(), 0.0);
             Assert.assertEquals(10.0, trs.getY(), 0.0);
         }
-
     }
 
+    public void ST_Envelope() {
+        try {
+            new ST_Envelope(new Expression[2]);
+            fail("ST_Envelope operator should accept a single parameter");
+        } catch (IllegalArgumentException e) {
+            // expected behavior
+        }
+
+        try {
+            new ST_Envelope(null);
+            fail("ST_Envelope operator should accept a single parameter");
+        } catch (IllegalArgumentException e) {
+            // expected behavior
+        }
+
+        // TODO: update SIS version then add test cases.
+    }
 }

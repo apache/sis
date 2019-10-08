@@ -25,7 +25,8 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-sqlstore} module, in rough dependency order.
  */
 @Suite.SuiteClasses({
-    org.apache.sis.storage.sql.SQLStoreTest.class
+    org.apache.sis.storage.sql.SQLStoreTest.class,
+    org.apache.sis.internal.sql.feature.FilterInterpreterTest.class
 })
 public final strictfp class SQLTestSuite extends TestSuite {
     /**

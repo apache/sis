@@ -7,10 +7,11 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.test.Assert;
+import org.apache.sis.test.TestCase;
 
 import org.junit.Test;
 
-public class FilterInterpreterTest {
+public class FilterInterpreterTest extends TestCase {
     private static final FilterFactory2 FF = new DefaultFilterFactory();
 
     @Test
