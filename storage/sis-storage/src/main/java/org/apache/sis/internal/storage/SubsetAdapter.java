@@ -51,10 +51,10 @@ public final class SubsetAdapter {
 
         final FeatureSet driverSubset = driver.build().orElse(source);
 
-        return isNoOp(remaining)? driverSubset : remaining.execute(driverSubset);
+        return isNoOp(remaining) ? driverSubset : remaining.execute(driverSubset);
     }
 
-    protected final static boolean isNoOp(final SimpleQuery in) {
+    protected static final boolean isNoOp(final SimpleQuery in) {
         return in.getOffset() <= 0
                 && in.getLimit() == UNLIMITED
                 && allColumnsIncluded(in)
@@ -62,17 +62,17 @@ public final class SubsetAdapter {
                 && !sortRequired(in);
     }
 
-    protected final static boolean sortRequired(final SimpleQuery in) {
+    protected static final boolean sortRequired(final SimpleQuery in) {
         final SortBy[] sortBy = in.getSortBy();
         return sortBy != null && sortBy.length > 0 && Arrays.stream(sortBy).anyMatch(Objects::nonNull);
     }
 
-    protected final static boolean allColumnsIncluded(final SimpleQuery in) {
+    protected static final boolean allColumnsIncluded(final SimpleQuery in) {
         final List<SimpleQuery.Column> cols = in.getColumns();
         return cols == null || cols.isEmpty();
     }
 
-    protected final static boolean filteringRequired(SimpleQuery in) {
+    protected static final boolean filteringRequired(SimpleQuery in) {
         final Filter filter = in.getFilter();
         return filter != Filter.INCLUDE;
     }

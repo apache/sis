@@ -269,7 +269,7 @@ add:    for (;;) {
     }
 
     @Override
-    double[] getPoints(Object geometry) {
+    public double[] getPoints(Object geometry) {
         if (geometry instanceof GeometryWrapper) {
             geometry = ((GeometryWrapper) geometry).geometry;
         }

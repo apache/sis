@@ -73,8 +73,8 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
             java.util.function.Function<Literal, CharSequence> valueFormatter,
             java.util.function.Function<PropertyName, CharSequence> nameFormatter
     ) {
-        ensureNonNull("Literal value formmatter", valueFormatter);
-        ensureNonNull("Property name formmatter", nameFormatter);
+        ensureNonNull("Literal value formatter", valueFormatter);
+        ensureNonNull("Property name formatter", nameFormatter);
         this.valueFormatter = valueFormatter;
         this.nameFormatter = nameFormatter;
     }
@@ -168,12 +168,12 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
 
     @Override
     public Object visit(PropertyIsNull filter, Object extraData) {
-        return evaluateMandatory(filter.getExpression(), extraData) + " = NULL";
+        return evaluateMandatory(filter.getExpression(), extraData) + " IS NULL";
     }
 
     @Override
     public Object visit(PropertyIsNil filter, Object extraData) {
-        return evaluateMandatory(filter.getExpression(), extraData) + " = NULL";
+        return evaluateMandatory(filter.getExpression(), extraData) + " IS NULL";
     }
 
     /*
@@ -394,13 +394,13 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
 
         // geometric special cases
         if (value instanceof GeographicBoundingBox) {
-            value = new GeneralEnvelope((GeographicBoundingBox)value);
+            value = new GeneralEnvelope((GeographicBoundingBox) value);
         }
         if (value instanceof Envelope) {
-            value = asGeometry((Envelope)value);
+            value = asGeometry((Envelope) value);
         }
         if (value instanceof Geometry) {
-            return format((Geometry)value);
+            return format((Geometry) value);
         }
 
         throw new UnsupportedOperationException("Not supported yet: Literal value of type "+value.getClass());
@@ -505,7 +505,7 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
 
     protected static Geometry asGeometry(final Envelope source) {
         final double[] lower = source.getLowerCorner().getCoordinate();
-        final double[] upper = source.getLowerCorner().getCoordinate();
+        final double[] upper = source.getUpperCorner().getCoordinate();
         for (int i = 0 ; i < lower.length ; i++) {
             if (Double.isNaN(lower[i]) || Double.isNaN(upper[i])) {
                 throw new IllegalArgumentException("Cannot use envelope containing NaN for filter");

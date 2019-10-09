@@ -165,21 +165,34 @@ final class Java2D extends Geometries<Shape> {
         final Path2D path = isFloat ? new Path2D.Float (Path2D.WIND_NON_ZERO, length)
                                     : new Path2D.Double(Path2D.WIND_NON_ZERO, length);
         boolean lineTo = false;
+        double startX = Double.NaN, startY = Double.NaN;
+        double lastX = Double.NaN, lastY = Double.NaN;
         for (final Vector v : coordinates) {
             final int size = v.size();
             for (int i=0; i<size;) {
                 final double x = v.doubleValue(i++);
                 final double y = v.doubleValue(i++);
+                if (Double.isNaN(startX)) {
+                    startX = x;
+                    startY = y;
+                }
                 if (Double.isNaN(x) || Double.isNaN(y)) {
+                    if (lastX == startX && lastY == startY) path.closePath();
+                    startX = Double.NaN;
                     lineTo = false;
+                    startX = startY = Double.NaN;
                 } else if (lineTo) {
                     path.lineTo(x, y);
                 } else {
                     path.moveTo(x, y);
                     lineTo = true;
                 }
+                lastX = x; lastY = y;
             }
         }
+
+        if (lastX == startX && lastY == startY) path.closePath();
+
         return ShapeUtilities.toPrimitive(path);
     }
 
@@ -230,7 +243,7 @@ add:    for (;;) {
     }
 
     @Override
-    double[] getPoints(Object geometry) {
+    public double[] getPoints(Object geometry) {
         if (geometry instanceof GeometryWrapper) geometry = ((GeometryWrapper) geometry).geometry;
         ensureNonNull("Geometry", geometry);
         if (geometry instanceof Point2D) return getCoordinate(geometry);
@@ -275,7 +288,7 @@ add:    for (;;) {
     /**
      * An abstraction over {@link PathIterator} to use it in a streaming context.
      */
-    private static class PathSpliterator implements Spliterator<Segment> {
+    private static final class PathSpliterator implements Spliterator<Segment> {
 
         private final PathIterator source;
 

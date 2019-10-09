@@ -37,7 +37,7 @@ public class ST_Envelope extends AbstractFunction implements FeatureExpression {
         if (parameters == null || parameters.length != 1) throw new MismatchedDimensionException(
                 String.format(
                     "Single parameter expected for %s operation: source Geometry. However, %d arguments were provided",
-                    NAME, parameters == null? 0 : parameters.length
+                    NAME, parameters == null ? 0 : parameters.length
                 )
         );
 
@@ -68,7 +68,7 @@ public class ST_Envelope extends AbstractFunction implements FeatureExpression {
         final AttributeType resultType;
 
         public LiteralEnvelope(Literal source) {
-            Object value = source == null? null : source.getValue();
+            Object value = source == null ? null : source.getValue();
             ensureNonNull("Source value", value);
             final Envelope tmpResult = tryGet(value);
 
@@ -91,7 +91,7 @@ public class ST_Envelope extends AbstractFunction implements FeatureExpression {
         }
     }
 
-    private class FeatureEnvelope implements Worker {
+    private final class FeatureEnvelope implements Worker {
 
         final FeatureExpression source;
         final Function evaluator;
@@ -118,7 +118,7 @@ public class ST_Envelope extends AbstractFunction implements FeatureExpression {
 
             final int minOccurs = attr.getMinimumOccurs();
             final AttributeType<?> crsCharacteristic = attr.characteristics().get(AttributeConvention.CRS_CHARACTERISTIC);
-            AttributeType[] crsParam = crsCharacteristic == null? null : new AttributeType[]{crsCharacteristic};
+            AttributeType[] crsParam = crsCharacteristic == null ? null : new AttributeType[]{crsCharacteristic};
             return new DefaultAttributeType<>(null, Envelope.class, Math.min(1, minOccurs), 1, null, crsParam);
         }
 
@@ -145,7 +145,7 @@ public class ST_Envelope extends AbstractFunction implements FeatureExpression {
         if (value == null) return null;
 
         if (value instanceof GeographicBoundingBox) {
-            return new GeneralEnvelope((GeographicBoundingBox)value);
+            return new GeneralEnvelope((GeographicBoundingBox) value);
         } else if (value instanceof Envelope) {
             return (Envelope) value;
         } else if (value instanceof CharSequence) {

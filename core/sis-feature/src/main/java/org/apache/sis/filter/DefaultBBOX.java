@@ -51,9 +51,9 @@ final class DefaultBBOX implements BBOX {
         this.right = right;
 
         if (left instanceof Literal) {
-            intersects = asOptimizedTest((Literal)left, right);
+            intersects = asOptimizedTest((Literal) left, right);
         } else if (right instanceof Literal) {
-            intersects = asOptimizedTest((Literal)right, left);
+            intersects = asOptimizedTest((Literal) right, left);
         } else intersects = this::nonOptimizedIntersect;
     }
 
@@ -78,8 +78,8 @@ final class DefaultBBOX implements BBOX {
     }
 
     private boolean nonOptimizedIntersect(Object candidate) {
-        Envelope leftEval = left == null? null : asEnvelope(left, candidate);
-        Envelope rightEval = left == null? null : asEnvelope(right, candidate);
+        Envelope leftEval = left == null ? null : asEnvelope(left, candidate);
+        Envelope rightEval = left == null ? null : asEnvelope(right, candidate);
         if (left == null) {
             return multiIntersect(candidate, rightEval);
         } else if (right == null) {
@@ -137,7 +137,7 @@ final class DefaultBBOX implements BBOX {
         } else {
             final Envelope env = Geometries.getEnvelope(candidate);
             if (env == null) throw new UnsupportedOperationException(
-                    "Candidate type unsupported: "+candidate == null? "null" : candidate.getClass().getCanonicalName()
+                    "Candidate type unsupported: "+candidate == null ? "null" : candidate.getClass().getCanonicalName()
             );
             return constEnv.intersects(env);
         }
@@ -161,7 +161,7 @@ final class DefaultBBOX implements BBOX {
 
     private static Predicate asOptimizedTest(Literal constant, Expression other) {
         final ImmutableEnvelope constEnv = new ImmutableEnvelope(asEnvelope(constant, null));
-        return other == null? it -> multiIntersect(it, constEnv) : it -> intersect(it, other, constEnv);
+        return other == null ? it -> multiIntersect(it, constEnv) : it -> intersect(it, other, constEnv);
     }
 
     /*

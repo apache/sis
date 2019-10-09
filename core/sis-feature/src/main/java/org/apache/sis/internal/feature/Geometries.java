@@ -252,7 +252,9 @@ public abstract class Geometries<G> {
      * @return the Well Known Text for the given geometry, or {@code null} if the given object is unrecognized.
      */
     public static String formatWKT(Object geometry, double flatness) {
-        return findStrategy(g -> g.tryFormatWKT(geometry, flatness))
+        if (geometry instanceof GeometryWrapper) geometry = ((GeometryWrapper) geometry).geometry;
+        final Object fGeom = geometry;
+        return findStrategy(g -> g.tryFormatWKT(fGeom, flatness))
                 .orElse(null);
     }
 
@@ -476,7 +478,7 @@ public abstract class Geometries<G> {
         return findStrategy(g -> g.getPoints(geometry));
     }
 
-    abstract double[] getPoints(Object geometry);
+    public abstract double[] getPoints(Object geometry);
 
     abstract Object createMultiPolygonImpl(final Object... polygonsOrLinearRings);
 

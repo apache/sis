@@ -240,11 +240,11 @@ public final class Features extends Static {
         // In case an operation also implements attribute type, we check it first.
         // TODO : cycle detection ?
         while (!(input instanceof AttributeType) && input instanceof Operation) {
-            input = ((Operation)input).getResult();
+            input = ((Operation) input).getResult();
         }
 
         if (input instanceof AttributeType) {
-            return Optional.of((AttributeType)input);
+            return Optional.of((AttributeType) input);
         }
 
         return Optional.empty();

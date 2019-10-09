@@ -188,7 +188,7 @@ add:    for (;;) {
     }
 
     @Override
-    double[] getPoints(Object geometry) {
+    public double[] getPoints(Object geometry) {
         if (geometry instanceof GeometryWrapper) geometry = ((GeometryWrapper) geometry).geometry;
         ensureNonNull("Geometry", geometry);
         if (geometry instanceof MultiVertexGeometry) {
@@ -211,7 +211,7 @@ add:    for (;;) {
         for (final Object polr : polygonsOrLinearRings) {
             if (polr instanceof MultiPath) {
                 poly.add((MultiPath) polr, false);
-            } else throw new UnsupportedOperationException("Unsupported geometry type: "+polr == null? "null" : polr.getClass().getCanonicalName());
+            } else throw new UnsupportedOperationException("Unsupported geometry type: "+polr == null ? "null" : polr.getClass().getCanonicalName());
         }
 
         return poly;
