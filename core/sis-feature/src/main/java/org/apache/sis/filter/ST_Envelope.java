@@ -1,5 +1,6 @@
 package org.apache.sis.filter;
 
+import java.util.Collections;
 import java.util.function.Function;
 
 import org.opengis.feature.AttributeType;
@@ -8,6 +9,7 @@ import org.opengis.feature.PropertyType;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.Literal;
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.Geometry;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 
@@ -77,7 +79,7 @@ public class ST_Envelope extends AbstractFunction implements FeatureExpression {
             }
 
             result = new ImmutableEnvelope(tmpResult);
-            resultType = new DefaultAttributeType(null, Envelope.class, 1, 1, null);
+            resultType = new DefaultAttributeType(Collections.singletonMap("name", "ST_Envelope"), Envelope.class, 1, 1, null);
         }
 
         @Override
@@ -152,6 +154,12 @@ public class ST_Envelope extends AbstractFunction implements FeatureExpression {
             // Maybe it's a WKT format, so we will try to read it
             value = Geometries.fromWkt(value.toString())
                     .orElseThrow(() -> new IllegalArgumentException("No geometry provider found to read WKT"));
+        }
+
+        // First, we check if the envelope is already available. If not, we try to compute it.
+        if (value instanceof Geometry) {
+            final Envelope env = ((Geometry) value).getEnvelope();
+            if (env != null) return env;
         }
 
         return Geometries.getEnvelope(value);

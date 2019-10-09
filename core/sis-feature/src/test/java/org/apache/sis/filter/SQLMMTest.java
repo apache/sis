@@ -21,18 +21,27 @@ import org.opengis.feature.FeatureType;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.Function;
+import org.opengis.filter.expression.Literal;
+import org.opengis.filter.expression.PropertyName;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.util.NullArgumentException;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Point;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -40,6 +49,9 @@ import static org.junit.Assert.fail;
  * @author Johann Sorel (Geomatys)
  */
 public class SQLMMTest extends TestCase {
+
+    private static final String P_NAME = "geom";
+
     /**
      * The factory to use for creating the objects to test.
      */
@@ -78,7 +90,7 @@ public class SQLMMTest extends TestCase {
 
             //check result
             final Object newGeom = fct.evaluate(feature);
-            Assert.assertTrue(newGeom instanceof Point);
+            assertTrue(newGeom instanceof Point);
             final Point trs = (Point) newGeom;
             Assert.assertEquals(outCrs, trs.getUserData());
             Assert.assertEquals(30.0, trs.getX(), 0.0);
@@ -90,7 +102,7 @@ public class SQLMMTest extends TestCase {
 
             //check result
             final Object newGeom = fct.evaluate(feature);
-            Assert.assertTrue(newGeom instanceof Point);
+            assertTrue(newGeom instanceof Point);
             final Point trs = (Point) newGeom;
             Assert.assertEquals(outCrs, trs.getUserData());
             Assert.assertEquals(30.0, trs.getX(), 0.0);
@@ -98,6 +110,7 @@ public class SQLMMTest extends TestCase {
         }
     }
 
+    @Test
     public void ST_Envelope() {
         try {
             new ST_Envelope(new Expression[2]);
@@ -113,6 +126,76 @@ public class SQLMMTest extends TestCase {
             // expected behavior
         }
 
-        // TODO: update SIS version then add test cases.
+        final LineString pt = gf.createLineString(new Coordinate[]{
+                new Coordinate(12, 3.3),
+                new Coordinate(13.1, 4.4),
+                new Coordinate(12.02, 5.7)
+        });
+        ST_Envelope operator = new ST_Envelope(new Expression[]{factory.literal(pt)});
+        final GeneralEnvelope expectedEnv = new GeneralEnvelope(2);
+        expectedEnv.setEnvelope(12, 3.3, 13.1, 5.7);
+        Envelope evaluated = (Envelope) operator.evaluate(null);
+        assertTrue(String.format("Bad result:%nExpected: %s%nBut got: %s", expectedEnv.toString(), evaluated.toString()), expectedEnv.equals(evaluated, 1e-10, false));
+        evaluated = (Envelope) operator.evaluate(null);
+        assertTrue(String.format("Bad result:%nExpected: %s%nBut got: %s", expectedEnv.toString(), evaluated.toString()), expectedEnv.equals(evaluated, 1e-10, false));
+
+        // After testing literal data, we'll now try to extract data from a feature.
+        final Feature f = mock();
+        f.setPropertyValue(P_NAME, pt);
+        operator = new ST_Envelope(new Expression[]{factory.property(P_NAME)});
+        evaluated = (Envelope) operator.evaluate(f);
+        assertTrue(String.format("Bad result:%nExpected: %s%nBut got: %s", expectedEnv.toString(), evaluated.toString()), expectedEnv.equals(evaluated, 1e-10, false));
+    }
+
+    @Test
+    public void ST_Intersects() {
+        try {
+            new ST_Intersects(null);
+            fail("ST_Intersects operator should accept exactly 2 parameters");
+        } catch (NullArgumentException e) {
+            // expected behavior
+        }
+
+        try {
+            new ST_Intersects(new Expression[3]);
+            fail("ST_Intersects operator should accept exactly 2 parameters");
+        } catch (IllegalArgumentException e) {
+            // expected behavior
+        }
+
+        final Coordinate start = new Coordinate(0, 0.1);
+        final Coordinate second = new Coordinate(1.2, 0.2);
+        final LinearRing ring = gf.createLinearRing(new Coordinate[]{
+                start, second, new Coordinate(0.7, 0.8), start
+        });
+
+        final Literal lring = factory.literal(ring);
+        ST_Intersects st = new ST_Intersects(new Expression[]{factory.literal(gf.createPoint(new Coordinate(2, 4))), lring});
+        // Ensure argument nullity does not modify behavior
+        assertFalse("Unexpected intersection", st.evaluate(null));
+        assertFalse("Unexpected intersection", st.evaluate(new Object()));
+
+        // Border should intersect
+        final Feature f = mock();
+        f.setPropertyValue(P_NAME, gf.createPoint(second));
+        final PropertyName geomName = factory.property(P_NAME);
+        st = new ST_Intersects(new Expression[]{geomName, lring});
+        assertTrue("Border point should intersect triangle", st.evaluate(f));
+        // Ensure inverting expression does not modify behavior.
+        st = new ST_Intersects(new Expression[]{lring, geomName});
+        assertTrue("Border point should intersect triangle", st.evaluate(f));
+
+        // TODO: add CRS checking tests.
+    }
+
+    /**
+     *
+     * @return A feature with a single property of {@link Object any} type named after
+     */
+    private static Feature mock() {
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName("mock");
+        ftb.addAttribute(Object.class).setName(P_NAME);
+        final FeatureType mockType = ftb.build();
+        return mockType.newInstance();
     }
 }
