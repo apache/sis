@@ -980,9 +980,9 @@ public class SampleDimension implements Serializable {
         public SampleDimension build() {
             GenericName name = dimensionName;
 defName:    if (name == null) {
-                for (final Category category : categories) {
-                    if (category.isQuantitative()) {
-                        name = createLocalName(category.name);
+                for (int i = 0; i < count; i++) {
+                    if (categories[i].isQuantitative()) {
+                        name = createLocalName(categories[i].name);
                         break defName;
                     }
                 }
