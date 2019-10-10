@@ -435,7 +435,7 @@ public final class CRS extends Static {
      * Suggests a coordinate reference system which could be a common target for coordinate operations having the
      * given sources. This method compares the {@linkplain #getGeographicBoundingBox(CoordinateReferenceSystem)
      * domain of validity} of all given CRSs. If a CRS has a domain of validity that contains the domain of all other
-     * CRS, than that CRS is returned. Otherwise this method verifies if a {@linkplain GeneralDerivedCRS#getBaseCRS()
+     * CRS, then that CRS is returned. Otherwise this method verifies if a {@linkplain GeneralDerivedCRS#getBaseCRS()
      * base CRS} (usually a {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} instance)
      * would be suitable. If no suitable CRS is found, then this method returns {@code null}.
      *
@@ -478,7 +478,7 @@ public final class CRS extends Static {
                  * on some knowledge about what the CRS is, abandon.
                  */
                 if (!(crs instanceof GeodeticCRS)) {
-                    return null;
+                    continue;
                 }
                 /*
                  * Geodetic CRS (geographic or geocentric) can generally be presumed valid in a worldwide area.
@@ -561,7 +561,7 @@ public final class CRS extends Static {
              * but using base CRS instead. For example if the list of source CRS had some projected CRS, we
              * will try with the geographic CRS on which those projected CRS are based.
              */
-            if (maxInsideArea < roiArea) {
+            if (Double.isNaN(roiArea) || maxInsideArea < roiArea) {
                 if (tryDerivedCRS) break;                                               // Do not try twice.
                 final SingleCRS[] derivedCRS = new SingleCRS[sourceCRS.length];
                 for (int i=0; i < derivedCRS.length; i++) {

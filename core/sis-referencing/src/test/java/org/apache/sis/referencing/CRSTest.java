@@ -212,6 +212,20 @@ public final strictfp class CRSTest extends TestCase {
          */
         assertSame("Expected best fit for [1.9 … 3.1]°N", crs[1],
                    CRS.suggestCommonTarget(regionOfInterest, crs));
+
+        final ProjectedCRS utm13N = CommonCRS.WGS84.universal(20, 13);
+        final ProjectedCRS utm42S = CommonCRS.WGS84.universal(-2, 42);
+        assertSame("CRS suggestion should fallback on common base geographic system when possible.",
+                CommonCRS.WGS84.geographic(), CRS.suggestCommonTarget(null, utm13N, utm42S));
+
+        assertNotNull(
+                "Disjoint systems should return a geographic suggestion when possible",
+                CRS.suggestCommonTarget(null,
+                        CommonCRS.WGS84.universal(-7, 19),
+                        CommonCRS.NAD27.universal(20, -101),
+                        CommonCRS.NAD27.universal(18, -20)
+                )
+        );
     }
 
     /**
