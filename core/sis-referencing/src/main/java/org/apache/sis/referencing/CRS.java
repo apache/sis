@@ -16,82 +16,84 @@
  */
 package org.apache.sis.referencing;
 
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.LogRecord;
-import org.opengis.util.FactoryException;
+
 import org.opengis.geometry.Envelope;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.geometry.Geometry;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.extent.BoundingPolygon;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.cs.EllipsoidalCS;
-import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CRSFactory;
-import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.CRSAuthorityFactory;
+import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
-import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
-import org.opengis.referencing.operation.OperationNotFoundException;
-import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.BoundingPolygon;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.measure.Units;
+import org.opengis.util.FactoryException;
+
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.referencing.CoordinateOperations;
+import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.internal.referencing.EllipsoidalHeightCombiner;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
-import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.referencing.DefinitionVerifier;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.referencing.cs.AxisFilter;
-import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.cs.DefaultVerticalCS;
+import org.apache.sis.measure.Units;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.referencing.crs.DefaultCompoundCRS;
+import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
-import org.apache.sis.referencing.crs.DefaultCompoundCRS;
-import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
-import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
-import org.apache.sis.referencing.operation.CoordinateOperationContext;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
-import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.cs.AxisFilter;
+import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.metadata.iso.extent.Extents;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
+import org.apache.sis.referencing.operation.CoordinateOperationContext;
+import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Static;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.WarningListener;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Utilities;
-import org.apache.sis.util.Static;
+import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
-import org.opengis.geometry.Geometry;
 
 
 /**
@@ -431,7 +433,7 @@ public final class CRS extends Static {
      * Suggests a coordinate reference system which could be a common target for coordinate operations having the
      * given sources. This method compares the {@linkplain #getGeographicBoundingBox(CoordinateReferenceSystem)
      * domain of validity} of all given CRSs. If a CRS has a domain of validity that contains the domain of all other
-     * CRS, than that CRS is returned. Otherwise this method verifies if a {@linkplain GeneralDerivedCRS#getBaseCRS()
+     * CRS, then that CRS is returned. Otherwise this method verifies if a {@linkplain GeneralDerivedCRS#getBaseCRS()
      * base CRS} (usually a {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} instance)
      * would be suitable. If no suitable CRS is found, then this method returns {@code null}.
      *

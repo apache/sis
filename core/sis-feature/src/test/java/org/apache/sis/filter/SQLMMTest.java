@@ -25,6 +25,7 @@ import org.opengis.filter.expression.Literal;
 import org.opengis.filter.expression.PropertyName;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.ProjectedCRS;
 
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -40,6 +41,7 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Point;
 
+import static org.apache.sis.internal.feature.GeometriesTestCase.expectFailFast;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -170,22 +172,53 @@ public class SQLMMTest extends TestCase {
         });
 
         final Literal lring = factory.literal(ring);
-        ST_Intersects st = new ST_Intersects(new Expression[]{factory.literal(gf.createPoint(new Coordinate(2, 4))), lring});
+        ST_Intersects st = intersects(factory.literal(gf.createPoint(new Coordinate(2, 4))), lring);
         // Ensure argument nullity does not modify behavior
         assertFalse("Unexpected intersection", st.evaluate(null));
         assertFalse("Unexpected intersection", st.evaluate(new Object()));
 
         // Border should intersect
         final Feature f = mock();
-        f.setPropertyValue(P_NAME, gf.createPoint(second));
+        final Point point = gf.createPoint(second);
+        f.setPropertyValue(P_NAME, point);
         final PropertyName geomName = factory.property(P_NAME);
-        st = new ST_Intersects(new Expression[]{geomName, lring});
+        st = intersects(geomName, lring);
         assertTrue("Border point should intersect triangle", st.evaluate(f));
         // Ensure inverting expression does not modify behavior.
-        st = new ST_Intersects(new Expression[]{lring, geomName});
+        st = intersects(lring, geomName);
         assertTrue("Border point should intersect triangle", st.evaluate(f));
 
-        // TODO: add CRS checking tests.
+        // Ensure CRS conversion works as expected (see package-info).
+        // Missing
+        point.setUserData(CommonCRS.defaultGeographic());
+        expectFailFast(() -> intersects(geomName, lring).evaluate(f), IllegalArgumentException.class);
+        final Literal lPoint = factory.literal(point);
+        expectFailFast(() -> intersects(lPoint, lring).evaluate(null), IllegalArgumentException.class);
+
+        // Disjoint
+        final ProjectedCRS nadUtm = CommonCRS.NAD27.universal(32, 37);
+        final ProjectedCRS wgsUtm = CommonCRS.WGS84.universal(-2, 4);
+
+        point.setUserData(nadUtm);
+        ring.setUserData(wgsUtm);
+        expectFailFast(() -> intersects(geomName, lring).evaluate(f), IllegalArgumentException.class);
+        expectFailFast(() -> intersects(lPoint, lring).evaluate(null), IllegalArgumentException.class);
+
+        // TODO: activate back after fixing CRS.suggestCommonTarget
+        // utm domain contained in CRS:84
+//        ring.setUserData(CommonCRS.defaultGeographic());
+//        assertTrue("Intersection should be found when CRS are compatible", intersects(geomName, lring).evaluate(f));
+//        assertTrue("Intersection should be found when CRS are compatible", intersects(lPoint, lring).evaluate(null));
+
+        // Common base CRS
+//        ring.setUserData(CommonCRS.WGS84.universal(0, 0));
+//        point.setUserData(CommonCRS.WGS84.universal(7, 8));
+//        assertTrue("Intersection should be found when CRS are compatible", intersects(geomName, lring).evaluate(f));
+//        assertTrue("Intersection should be found when CRS are compatible", intersects(lPoint, lring).evaluate(null));
+    }
+
+    private static ST_Intersects intersects(final Expression left, Expression right) {
+        return new ST_Intersects(new Expression[]{left, right});
     }
 
     /**

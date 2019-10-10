@@ -194,7 +194,7 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
         expectFailFast(() -> factory.tryConvertToGeometry(wrapped3d, NONE), IllegalArgumentException.class);
     }
 
-    private static void expectFailFast(Callable whichMustFail, Class<? extends Exception>... expectedErrorTypes) {
+    public static void expectFailFast(Callable whichMustFail, Class<? extends Exception>... expectedErrorTypes) {
         try {
             final Object result = whichMustFail.call();
             fail("Fail fast expected, but successfully returned "+result);
