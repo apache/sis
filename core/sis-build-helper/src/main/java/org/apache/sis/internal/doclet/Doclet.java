@@ -42,16 +42,8 @@ import jdk.javadoc.doclet.StandardDoclet;
  * The post-javadoc actions are:
  *
  * <ul>
- *   <li>Rename {@code "stylesheet.css"} as {@code "standarc.css"}.</li>
- *   <li>Copy {@code "src/main/javadoc/stylesheet.css"} (from the project root) to {@code "stylesheet.css"}.</li>
  *   <li>Copy additional resources.</li>
  * </ul>
- *
- * We do not use the standard {@code "-stylesheet"} Javadoc option because it replaces the standard
- * CSS by the specified one. Instead, we want to keep both the standard CSS and our customized one.
- * Our customized CSS shall contain an import statement for the standard stylesheet.
- *
- * <p>This class presumes that all CSS files are encoded in UTF-8.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
