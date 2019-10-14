@@ -880,9 +880,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Formats the name of identifier of this object using the provider formatter.
+     * Formats the name or identifier of this object using the provider formatter.
      * This method is invoked when an {@code IdentifiedObject} object is formatted
-     * using the {@code "%s"} conversion specifier of {@link Formatter}.
+     * using the {@code "%s"} conversion specifier of {@link java.util.Formatter}.
      * Users don't need to invoke this method explicitly.
      *
      * <p>If the alternate flags is present (as in {@code "%#s"}), then this method
