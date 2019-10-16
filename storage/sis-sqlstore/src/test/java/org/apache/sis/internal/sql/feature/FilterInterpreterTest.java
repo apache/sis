@@ -18,15 +18,12 @@ public class FilterInterpreterTest extends TestCase {
 
     @Test
     public void testGeometricFilter() {
-        final ANSIInterpreter interpreter = new ANSIInterpreter();
         final BBOX filter = FF.bbox(FF.property("Toto"), new GeneralEnvelope(new DefaultGeographicBoundingBox(-12.3, 2.1, 43.3, 51.7)));
         assertConversion(filter,
                 "ST_Intersects(" +
-                            "ST_Envelope(\"Toto\"), " +
-                            "ST_Envelope(" +
-                                "ST_GeomFromText(" +
-                                    "POLYGON ((-12.3 43.3, -12.3 51.7, 2.1 51.7, 2.1 43.3, -12.3 43.3))" +
-                                ")" +
+                            "\"Toto\", " +
+                            "ST_GeomFromText(" +
+                                "'POLYGON ((-12.3 43.3, -12.3 51.7, 2.1 51.7, 2.1 43.3, -12.3 43.3))'" +
                             ")" +
                         ")"
         );

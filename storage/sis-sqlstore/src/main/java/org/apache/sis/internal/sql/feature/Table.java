@@ -145,7 +145,7 @@ final class Table extends AbstractFeatureSet {
      */
     private final SQLBuilder sqlTemplate;
 
-    private final FeatureAdapter adapter;
+    protected final FeatureAdapter adapter;
 
     /**
      * Creates a description of the table of the given name.
@@ -208,7 +208,7 @@ final class Table extends AbstractFeatureSet {
     @Override
     public FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
         if (query instanceof SimpleQuery) {
-            final SubsetAdapter subsetAdapter = new SubsetAdapter(fs -> new SQLQueryAdapter(this));
+            final SubsetAdapter subsetAdapter = new SubsetAdapter(fs -> new SQLQueryAdapter.Table(this));
             return subsetAdapter.subset(this, (SimpleQuery) query);
         }
 
@@ -230,7 +230,7 @@ final class Table extends AbstractFeatureSet {
      *
      * @param  tables  all tables created.
      */
-    final void setDeferredSearchTables(final Analyzer analyzer, final Map<GenericName,Table> tables) throws DataStoreException {
+    final void setDeferredSearchTables(final Analyzer analyzer, final Map<GenericName, Table> tables) throws DataStoreException {
         for (final Relation.Direction direction : Relation.Direction.values()) {
             final Relation[] relations;
             switch (direction) {

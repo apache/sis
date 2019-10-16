@@ -178,7 +178,6 @@ final class Java2D extends Geometries<Shape> {
                 }
                 if (Double.isNaN(x) || Double.isNaN(y)) {
                     if (lastX == startX && lastY == startY) path.closePath();
-                    startX = Double.NaN;
                     lineTo = false;
                     startX = startY = Double.NaN;
                 } else if (lineTo) {
@@ -258,11 +257,18 @@ add:    for (;;) {
     }
 
     @Override
-    Object createMultiPolygonImpl(Object... polygonsOrLinearRings) {
+    Shape createMultiPolygonImpl(Object... polygonsOrLinearRings) {
         ensureNonEmpty("Polygons or linear rings to merge", polygonsOrLinearRings);
-        if (polygonsOrLinearRings.length == 1) return polygonsOrLinearRings[0];
+        if (polygonsOrLinearRings.length == 1 && polygonsOrLinearRings[0] instanceof Shape)
+            return (Shape) polygonsOrLinearRings[0];
         final Iterator<Object> it = Arrays.asList(polygonsOrLinearRings).iterator();
         return tryMergePolylines(it.next(), it);
+    }
+
+    @Override
+    public Shape toPolygon(Shape polyline) throws IllegalArgumentException {
+        // TODO: check that path ends with close.
+        return polyline;
     }
 
     /**

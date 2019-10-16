@@ -21,10 +21,14 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.FactoryException;
+
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.collection.BackingStoreException;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -33,6 +37,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
@@ -191,6 +196,32 @@ final class JTS extends Geometries<Geometry> {
         return toGeometry(lines);
     }
 
+    @Override
+    public Geometry toPolygon(Geometry polyline) throws IllegalArgumentException {
+        if (polyline instanceof Polygon) return polyline;
+
+        Polygon result = null;
+        if (polyline instanceof LinearRing) {
+            result = factory.createPolygon((LinearRing) polyline);
+        } else if (polyline instanceof LineString) {
+            final LineString myLine = (LineString) polyline;
+            if (myLine.getEndPoint().equals(myLine.getStartPoint())) {
+                result = factory.createPolygon(myLine.getCoordinateSequence());
+            }
+        }
+
+        if (result == null) throw new IllegalArgumentException("Input is not a closed line.");
+
+        try {
+            final CoordinateReferenceSystem crs = org.apache.sis.internal.feature.jts.JTS.getCoordinateReferenceSystem(polyline);
+            org.apache.sis.internal.feature.jts.JTS.setCoordinateReferenceSystem(result, crs);
+        } catch (FactoryException e) {
+            throw new BackingStoreException("Cannot extract CRS from geometry", e);
+        }
+
+        return result;
+    }
+
     /**
      * Makes a line string or linear ring from the given coordinates, and add the line string to the given list.
      * If the given coordinates array is empty, then this method does nothing.
@@ -291,7 +322,7 @@ add:    for (;;) {
     }
 
     @Override
-    Object createMultiPolygonImpl(Object... polygonsOrLinearRings) {
+    MultiPolygon createMultiPolygonImpl(Object... polygonsOrLinearRings) {
         final Polygon[] polys = new Polygon[polygonsOrLinearRings.length];
         for (int i = 0 ; i < polys.length ; i++) {
             Object o = polygonsOrLinearRings[i];

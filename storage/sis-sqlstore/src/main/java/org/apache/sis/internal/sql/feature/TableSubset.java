@@ -12,9 +12,14 @@ import org.opengis.util.GenericName;
 
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.Query;
 import org.apache.sis.storage.event.ChangeEvent;
 import org.apache.sis.storage.event.ChangeListener;
 
+/**
+ * A {@link Table} feature set on which a query has been applied.
+ * TODO: Override {@link #subset(Query)} method to allow stacking of SQL filter and sorting.
+ */
 public class TableSubset implements FeatureSet {
 
     final Table parent;

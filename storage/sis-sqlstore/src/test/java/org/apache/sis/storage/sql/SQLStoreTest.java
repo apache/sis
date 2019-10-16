@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -157,8 +158,8 @@ public final strictfp class SQLStoreTest extends TestCase {
                         new Object[] {null,             String.class, String.class,  String.class,   Integer.class, "Countries", "Parks"});
 
                 verifyFeatureType(((FeatureSet) store.findResource("Countries")).getType(),
-                        new String[] {"sis:identifier", "code",       "native_name",  "sis:Cities"},
-                        new Object[] {null,             String.class, String.class, "Cities"});
+                        new String[] {"sis:identifier", "code",       "native_name"},
+                        new Object[] {null,             String.class, String.class});
 
                 verifyFeatureType(((FeatureSet) store.findResource("Parks")).getType(),
                         new String[] {"sis:identifier", "country", "city",       "native_name", "english_name", "sis:FK_City"},
@@ -234,6 +235,26 @@ public final strictfp class SQLStoreTest extends TestCase {
         verifyFetchCityTableAsQuery(source);
         verifyLimitOffsetAndColumnSelectionFromQuery(source);
         verifyDistinctQuery(source);
+        verifyNestedSQLQuery(source);
+    }
+
+    private void verifyNestedSQLQuery(DataSource source) throws Exception {
+        final QueryFeatureSet qfs;
+        try (Connection c = source.getConnection()) {
+            qfs = new QueryFeatureSet("SELECT * FROM features.\"Parks\"", source, c);
+        }
+
+        final SimpleQuery sq = new SimpleQuery();
+        sq.setSortBy(FF.sort("native_name", SortOrder.DESCENDING));
+        sq.setFilter(FF.equals(FF.property("country"), FF.literal("FRA")));
+        sq.setColumns(new SimpleQuery.Column(FF.property("native_name")));
+        final FeatureSet frenchParks = qfs.subset(sq);
+        checkQueryType(Collections.singletonMap("native_name", String.class), frenchParks.getType());
+        try (Stream<Feature> fs = frenchParks.features(false)) {
+            final Object[] queryResult = fs.map(f -> f.getPropertyValue("native_name"))
+                    .toArray(size -> new Object[size]);
+            assertArrayEquals(new String[]{"Jardin du Luxembourg", "Jardin des Tuileries"}, queryResult);
+        }
     }
 
     private void verifyFetchCityTableAsQuery(DataSource source) throws Exception {
@@ -304,7 +325,7 @@ public final strictfp class SQLStoreTest extends TestCase {
             final String pName = p.getName().toString();
             final Class expectedClass = expectedAttrs.get(pName);
             assertNotNull("Unexpected property: "+pName, expectedClass);
-            assertEquals("Unepected type for property: "+pName, expectedClass, ((AttributeType)p).getValueClass());
+            assertEquals("Unexpected type for property: "+pName, expectedClass, ((AttributeType)p).getValueClass());
         }
     }
 

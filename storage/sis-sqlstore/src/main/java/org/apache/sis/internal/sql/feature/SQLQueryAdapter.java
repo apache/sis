@@ -11,18 +11,12 @@ import org.apache.sis.internal.storage.SubsetAdapter;
 import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.FeatureSet;
 
-public class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
-
-    final Table parent;
+abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
 
     private ColumnRef[] columns;
     private SortBy[] sorting;
 
     private CharSequence where;
-
-    public SQLQueryAdapter(Table parent) {
-        this.parent = parent;
-    }
 
     /**
      * No-op implementation. SQL optimisation is dynamically applied through {@link StreamSQL}.
@@ -45,7 +39,7 @@ public class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
     }
 
     @Override
-    public Filter filter(Filter filter) {
+    public final Filter filter(Filter filter) {
         try {
             final Object result = filter.accept(new ANSIInterpreter(), null);
             if (ANSIInterpreter.isNonEmptyText(result)) {
@@ -78,14 +72,31 @@ public class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
     }
 
     @Override
-    public Optional<FeatureSet> build() {
+    public final Optional<FeatureSet> build() {
         if (isNoOp()) return Optional.empty();
-        return Optional.of(new TableSubset(parent, sorting, where));
+        return Optional.of(create(where, sorting, columns));
     }
+
+    protected abstract FeatureSet create(final CharSequence where, final SortBy[] sorting, final ColumnRef[] columns);
 
     private boolean isNoOp() {
         return (sorting == null || sorting.length < 1)
                 && (columns == null || columns.length < 1)
                 && (where == null || where.length() < 1);
     }
+
+    static class Table extends SQLQueryAdapter {
+        final org.apache.sis.internal.sql.feature.Table parent;
+        public Table(org.apache.sis.internal.sql.feature.Table parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        protected FeatureSet create(CharSequence where, SortBy[] sorting, ColumnRef[] columns) {
+            // TODO: column information is lost for now. What should be done is factorize/sanitize feature set
+            // implementations from this package to better handle SQL filtering.
+            return new TableSubset(parent, sorting, where);
+        }
+    }
+
 }

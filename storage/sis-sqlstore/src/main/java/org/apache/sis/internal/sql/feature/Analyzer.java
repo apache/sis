@@ -408,12 +408,11 @@ final class Analyzer {
 
     private void addImports(SQLTypeSpecification spec, FeatureTypeBuilder target) throws SQLException {
         final List<Relation> imports = spec.getImports();
-        // TODO: add an abstraction here, so we can specify source table when origin is one.
         for (Relation r : imports) {
             final GenericName foreignTypeName = r.getName(Analyzer.this);
             final Table foreignTable;
             try {
-                foreignTable = table(r, foreignTypeName, null);
+                foreignTable = table(r, foreignTypeName, spec instanceof TableMetadata ? ((TableMetadata) spec).id : null);
             } catch (DataStoreException e) {
                 throw new BackingStoreException(e);
             }

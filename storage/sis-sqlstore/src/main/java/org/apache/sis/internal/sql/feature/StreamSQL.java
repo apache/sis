@@ -55,9 +55,9 @@ import static org.apache.sis.util.ArgumentChecks.ensurePositive;
  * Manages query lifecycle and optimizations. Operations like {@link #count()}, {@link #distinct()}, {@link #skip(long)}
  * and {@link #limit(long)} are delegated to underlying SQL database. This class consistently propagate optimisation
  * strategies through streams obtained using {@link #map(Function)}, {@link #mapToDouble(ToDoubleFunction)} and
- * {@link #peek(Consumer)} operations. However, for result consistency, no optimization is stacked once either
- * {@link #filter(Predicate)} or {@link #flatMap(Function)} operations are called, as they modify browing flow (the
- * count of stream elements is not bound 1 to 1 to query result rows).
+ * {@link #peek(Consumer)} operations. However, for result consistency, no optimization is stacked anymore after either
+ * {@link #filter(Predicate)} or {@link #flatMap(Function)} operations are called, as they modify volumetry (the count
+ * of stream elements is not bound 1 to 1 to query result rows).
  *
  * @since 1.0
  *

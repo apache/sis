@@ -146,6 +146,12 @@ final class ESRI extends Geometries<Geometry> {
         return path;
     }
 
+    @Override
+    public Geometry toPolygon(Geometry polyline) throws IllegalArgumentException {
+        if (polyline instanceof Polygon) return polyline;
+        return createMultiPolygonImpl(polyline);
+    }
+
     /**
      * Merges a sequence of points or paths if the first instance is an implementation of this library.
      *
@@ -206,7 +212,7 @@ add:    for (;;) {
     }
 
     @Override
-    Object createMultiPolygonImpl(Object... polygonsOrLinearRings) {
+    Polygon createMultiPolygonImpl(Object... polygonsOrLinearRings) {
         final Polygon poly = new Polygon();
         for (final Object polr : polygonsOrLinearRings) {
             if (polr instanceof MultiPath) {

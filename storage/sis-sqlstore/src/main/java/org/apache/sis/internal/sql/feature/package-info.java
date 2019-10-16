@@ -29,6 +29,16 @@
  * It relies on internal {@link org.apache.sis.internal.sql.feature.SQLTypeSpecification} API to fetch SQL schema
  * information, and build {@link org.apache.sis.internal.sql.feature.FeatureAdapter an adapter to feature model from it}.
  *
+ * This package provides two main {@link org.apache.sis.storage.FeatureSet feature set} implementations:
+ * <ul>
+ *     <li>{@link org.apache.sis.internal.sql.feature.QueryFeatureSet}: execute a prepared SQL query, then interpret its result as Simple Feature collection.</li>
+ *     <li>{@link org.apache.sis.internal.sql.feature.Table}: Analysis of SQL Table to provide a complex feature type modeling associations.</li>
+ * </ul>
+ *
+ * TODO: a lot of code could be factorized to reduce splitting of code base for both use cases above. Notably, all
+ * association management is done specifically in table implementation, but should be deported in {@link org.apache.sis.internal.sql.feature.FeatureAdapter}.
+ * With that, we could reduce feature set implementations to only QueryFeatureSet, and delegating model analysis upstream.
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)

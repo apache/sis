@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Spliterator;
+import java.util.StringJoiner;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,10 +16,15 @@ import javax.sql.DataSource;
 
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.filter.sort.SortBy;
 
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
+import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.Query;
+import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.logging.WarningListeners;
 
@@ -30,6 +36,8 @@ import org.apache.sis.util.logging.WarningListeners;
  *
  * Note that this component models query result as close as possible, so built data type will be simple feature type (no
  * association).
+ *
+ * TODO: move query analysis in a dedicated class.
  */
 public class QueryFeatureSet extends AbstractFeatureSet {
 
@@ -127,10 +135,10 @@ public class QueryFeatureSet extends AbstractFeatureSet {
      *                 can use {@link #QueryFeatureSet(SQLBuilder, DataSource, Connection) another constructor}.
      */
     QueryFeatureSet(SQLBuilder queryBuilder, Analyzer analyzer, DataSource source, Connection conn) throws SQLException {
-        this(queryBuilder, createAdapter(queryBuilder, analyzer, conn), analyzer.listeners, source, conn);
+        this(queryBuilder, createAdapter(queryBuilder, analyzer, conn), analyzer.listeners, source);
     }
 
-    QueryFeatureSet(SQLBuilder queryBuilder, FeatureAdapter adapter, WarningListeners listeners, DataSource source, Connection conn) throws SQLException {
+    QueryFeatureSet(SQLBuilder queryBuilder, FeatureAdapter adapter, WarningListeners listeners, DataSource source) {
         super(listeners);
         this.source = source;
         this.adapter = adapter;
@@ -168,6 +176,26 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         this.queryBuilder.append(sql);
     }
 
+    @Override
+    public FeatureType getType() {
+        return adapter.type;
+    }
+
+    @Override
+    public Stream<Feature> features(boolean parallel) {
+        return new StreamSQL(new QueryAdapter(queryBuilder, parallel), source, parallel);
+    }
+
+    @Override
+    public FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
+        if (query instanceof SimpleQuery) {
+            final org.apache.sis.internal.storage.SubsetAdapter subsetAdapter = new org.apache.sis.internal.storage.SubsetAdapter(fs -> new SubsetAdapter());
+            return subsetAdapter.subset(this, (SimpleQuery) query);
+        }
+
+        return super.subset(query);
+    }
+
     /**
      * Acquire a connection over parent database, forcing a few parameters to ensure optimal read performance and
      * limiting user rights :
@@ -196,14 +224,27 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         return c;
     }
 
-    @Override
-    public FeatureType getType() {
-        return adapter.type;
+    class SubsetAdapter extends SQLQueryAdapter {
+
+        @Override
+        protected FeatureSet create(CharSequence where, SortBy[] sorting, ColumnRef[] columns) {
+            // TODO: use columns.
+            final SQLBuilder newQuery = amendQuery(where, sorting);
+            return new QueryFeatureSet(newQuery, adapter, null, source);
+        }
     }
 
-    @Override
-    public Stream<Feature> features(boolean parallel) {
-        return new StreamSQL(new QueryAdapter(queryBuilder, parallel), source, parallel);
+    private SQLBuilder amendQuery(CharSequence where, SortBy[] sorting) {
+        // As we do not know user query complexity, what we'll do is make a query wrapper to ensure we won't break the
+        // original query. Note that it will surely be less performant, though.
+        final SQLBuilder newBuilder = new SQLBuilder(queryBuilder);
+        newBuilder.append("SELECT * FROM (")
+                .append(queryBuilder.toString())
+                .append(')')
+                .append(" AS ORIGIN_QUERY");
+        if (where != null && where.length() > 0) newBuilder.append(" WHERE ").append(where.toString());
+        Features.appendOrderBy(newBuilder, sorting);
+        return newBuilder.append(";");
     }
 
     private final class QueryAdapter implements StreamSQL.QueryBuilder {
@@ -248,7 +289,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
                     nativeOffset = originOffset + additionalOffset;
                 }
 
-                if (originLimit < 0) {
+                if (originLimit <= 0) {
                     javaLimit = this.additionalLimit;
                 } else if (originLimit > 0 || additionalLimit > 0) {
                     nativeLimit = Math.min(originLimit, additionalLimit);
@@ -280,7 +321,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         private final boolean parallel;
 
         private PreparedQueryConnector(String sql, long additionalOffset, long additionalLimit, boolean parallel) {
-            this.sql = sql;
+            this.sql = sql.replaceFirst(";\\s*$", "");
             this.additionalOffset = additionalOffset;
             this.additionalLimit = additionalLimit;
             this.parallel = parallel;
@@ -314,8 +355,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         @Override
         public String estimateStatement(boolean count) {
             if (count) {
-                // We should check if user query is already a count operation, in which case we would return "select 1"
-                throw new UnsupportedOperationException("Not supported yet"); // "Alexis Manin (Geomatys)" on 24/09/2019
+                return "SELECT COUNT(*) FROM ("+sql+") AS count_all";
             } else {
                 return sql;
             }
@@ -350,7 +390,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
 
         @Override
         public int characteristics() {
-            // TODO: determine if it's order by analysing user query. SIZED is not possible, as limit is an upper threshold.
+            // TODO: determine if it's ordered by analysing user query. SIZED is not possible, as limit is an upper threshold.
             return Spliterator.IMMUTABLE | Spliterator.NONNULL | (distinct ? Spliterator.DISTINCT : 0);
         }
     }
@@ -400,6 +440,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
 
         int idx;
         List<Feature> chunk;
+
         /**
          * According to {@link Spliterator#trySplit()} documentation, the original size estimation must be reduced after
          * split to remain consistent.

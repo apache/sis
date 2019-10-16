@@ -182,26 +182,9 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
 
     @Override
     public Object visit(BBOX filter, Object extraData) {
-        final CharSequence left = evaluateMandatory(filter.getExpression1(), extraData);
-        final CharSequence right = evaluateMandatory(filter.getExpression2(), extraData);
-
-        // TODO: In case source expression is already an envelope, we do not need to force envelope conversion. It would
-        // only be micro-optimisation however.
-        boolean leftToEnvelope = true;
-        boolean rightToEnvelope = true;
-
-        final StringBuilder sb = new StringBuilder("ST_Intersects(");
-        if (leftToEnvelope) {
-            sb.append("ST_Envelope(").append(left).append(')');
-        } else sb.append(left);
-
-        sb.append(", ");
-
-        if (rightToEnvelope) {
-            sb.append("ST_Envelope(").append(right).append(')');
-        } else sb.append(right);
-
-        return sb.append(')');
+        // TODO: This is a wrong interpretation, but sqlmm has no equivalent of filter encoding bbox, so we'll
+        // fallback on a standard intersection. However, PostGIS, H2, etc. have their own versions of such filters.
+        return function("ST_Intersects(", filter, extraData);
     }
 
     @Override
@@ -442,6 +425,11 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
         return join(candidate::getExpression1, candidate::getExpression2, operator, extraData);
     }
 
+
+    protected CharSequence join(BinarySpatialOperator candidate, String operator, Object extraData) {
+        return join(candidate::getExpression1, candidate::getExpression2, operator, extraData);
+    }
+
     protected CharSequence join(
             Supplier<Expression> leftOperand,
             Supplier<Expression> rightOperand,
@@ -526,9 +514,9 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
                 .mapToDouble(env::getSpan)
                 .average()
                 .orElseThrow(() -> new IllegalArgumentException("Given geometry envelope dimension is 0"));
-        return new StringBuilder("ST_GeomFromText(")
+        return new StringBuilder("ST_GeomFromText('")
                 .append(Geometries.formatWKT(source, flatness))
-                .append(')');
+                .append("')");
     }
 
     protected static double clampInfinity(final double candidate) {

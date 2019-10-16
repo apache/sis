@@ -151,6 +151,8 @@ final class Features implements Spliterator<Feature> {
      */
     private final long estimatedSize;
 
+    private final FeatureAdapter adapter;
+
     /**
      * Creates a new iterator over the feature instances.
      *
@@ -180,6 +182,7 @@ final class Features implements Spliterator<Feature> {
             attributeNames[i++] = column.getAttributeName();
         }
         this.featureType = table.featureType;
+        this.adapter = table.adapter;
         final DatabaseMetaData metadata = connection.getMetaData();
         estimatedSize = following.isEmpty() ? table.countRows(metadata, true) : 0;
         /*
@@ -414,13 +417,8 @@ final class Features implements Spliterator<Feature> {
      */
     private boolean fetch(final Consumer<? super Feature> action, final boolean all) throws SQLException {
         while (result.next()) {
-            final Feature feature = featureType.newInstance();
-            for (int i=0; i < attributeNames.length; i++) {
-                final Object value = result.getObject(i+1);
-                if (!result.wasNull()) {
-                    feature.setPropertyValue(attributeNames[i], value);
-                }
-            }
+            // TODO: give connection to adapter.
+            final Feature feature = adapter.read(result, null);
             for (int i=0; i < dependencies.length; i++) {
                 final Features dependency = dependencies[i];
                 final int[] columnIndices = foreignerKeyIndices[i];
@@ -667,12 +665,7 @@ final class Features implements Spliterator<Feature> {
             sql.append(" FROM ").appendIdentifier(source.parent.name.catalog, source.parent.name.schema, source.parent.name.table);
 
             appendWhere(sql, where);
-            if (!count && sort != null && sort.length > 0) {
-                sql.append(" ORDER BY ");
-                append(sql, sort[0]);
-                for (int i = 1 ; i < sort.length ; i++)
-                    append(sql.append(", "), sort[i]);
-            }
+            if (!count) appendOrderBy(sql, sort);
 
             addOffsetLimit(sql, source.offset, source.limit);
 
@@ -688,6 +681,15 @@ final class Features implements Spliterator<Feature> {
                 if (!WHERE_REGEX.matcher(whereStr).find()) sql.append("WHERE ");
                 sql.append(whereStr);
             }
+        }
+    }
+
+    static void appendOrderBy(SQLBuilder sql, SortBy[] sort) {
+        if (sort != null && sort.length > 0) {
+            sql.append(" ORDER BY ");
+            append(sql, sort[0]);
+            for (int i = 1 ; i < sort.length ; i++)
+                append(sql.append(", "), sort[i]);
         }
     }
 

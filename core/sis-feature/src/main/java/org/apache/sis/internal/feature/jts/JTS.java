@@ -17,22 +17,28 @@
 package org.apache.sis.internal.feature.jts;
 
 import java.util.Map;
-import org.opengis.util.FactoryException;
+import java.util.Optional;
+
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
+
+import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.internal.system.Loggers;
+
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -99,6 +105,30 @@ public final class JTS extends Static {
             }
         }
         return null;
+    }
+
+    public static Optional<CoordinateReferenceSystem> setCoordinateReferenceSystem(final Geometry target, final CoordinateReferenceSystem toSet) {
+        ensureNonNull("Target geometry", target);
+        final Object ud = target.getUserData();
+        if (ud == null) {
+            // By security, we reset SRID in case old CRS was defined this way.
+            target.setSRID(0);
+            target.setUserData(toSet);
+            return Optional.empty();
+        } else if (ud instanceof CoordinateReferenceSystem) {
+            target.setUserData(toSet);
+            return Optional.of((CoordinateReferenceSystem)ud);
+        } else if (ud instanceof Map) {
+            final Map asMap = (Map) ud;
+            // In case user-data contains other useful data, we don't switch from map to CRS. We also reset SRID.
+            final Object oldVal = asMap.put(CRS_KEY, toSet);
+            // By security, we reset SRID in case old CRS was defined this way.
+            if (oldVal == null) {
+                target.setSRID(0);
+            }
+        }
+
+        throw new IllegalArgumentException("Cannot modify input geometry, because user-data does not comply with SIS convention (should be a map or null, but was "+ud.getClass().getCanonicalName()+").");
     }
 
     /**

@@ -79,7 +79,7 @@ final class DefaultBBOX implements BBOX {
 
     private boolean nonOptimizedIntersect(Object candidate) {
         Envelope leftEval = left == null ? null : asEnvelope(left, candidate);
-        Envelope rightEval = left == null ? null : asEnvelope(right, candidate);
+        Envelope rightEval = right == null ? null : asEnvelope(right, candidate);
         if (left == null) {
             return multiIntersect(candidate, rightEval);
         } else if (right == null) {
