@@ -245,8 +245,8 @@ public abstract class DataStoreProvider {
      * {@link java.nio.ByteBuffer#mark()}, {@link java.io.InputStream#mark(int)} and
      * {@link javax.imageio.stream.ImageInputStream#mark()}.</p>
      *
-     * <div class="note"><b>Implementation example</b><br>
-     * Implementations will typically check the first bytes of the stream for a "magic number" associated
+     * <div class="note"><b>Implementation example</b>:
+     * implementations will typically check the first bytes of the stream for a "magic number" associated
      * with the format, as in the following example:
      *
      * {@preformat java

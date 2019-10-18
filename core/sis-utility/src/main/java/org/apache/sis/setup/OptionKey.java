@@ -94,8 +94,8 @@ public class OptionKey<T> implements Serializable {
      * If this option is not provided, then the default value is format specific.
      * That default is often, but not necessarily, the {@linkplain TimeZone#getDefault() platform default}.
      *
-     * <div class="warning"><b>Upcoming API change — Java time API</b><br>
-     * The type may be changed to {@link java.time.ZoneId} when Apache SIS will target Java 8.
+     * <div class="warning"><b>Upcoming API change — Java time API</b>:
+     * the type may be changed to {@link java.time.ZoneId} when Apache SIS will target Java 8.
      * This change may be applied in synchronization with GeoAPI 4.0.
      * </div>
      *

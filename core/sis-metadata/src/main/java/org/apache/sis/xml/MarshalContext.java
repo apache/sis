@@ -68,8 +68,8 @@ public abstract class MarshalContext {
      * A {@code null} value means that the timezone is unspecified. Callers are encouraged
      * to use the UTC timezone as the default value, but some flexibility is allowed.
      *
-     * <div class="warning"><b>Upcoming API change — Java time API</b><br>
-     * Return type may be changed to {@link java.time.ZoneId} when Apache SIS will target Java 8.
+     * <div class="warning"><b>Upcoming API change — Java time API</b>:
+     * return type may be changed to {@link java.time.ZoneId} when Apache SIS will target Java 8.
      * This change may be applied in synchronization with GeoAPI 4.0.
      * </div>
      *

@@ -35,7 +35,7 @@ import org.apache.sis.util.ArraysExt;
  * be any other objects documented in the {@link StorageConnector} class.
  *
  * <div class="note"><b>API note:</b>
- * This class is package-private for now in order to get more experience about what could be a good API.
+ * this class is package-private for now in order to get more experience about what could be a good API.
  * This class may become public in a future SIS version.</div>
  *
  * <div class="section">Thread safety</div>

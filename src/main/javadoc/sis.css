@@ -139,12 +139,21 @@ div.horizontal-flow > div {
  * Note or examples.
  */
 div.note {
-  color:     #353833;
-  font-size:   small;
-  margin-left:  40px;
-  margin-right: 40px;
-  margin-top:    9px;
-  margin-bottom: 9px;
+  color:      #353833;
+  margin-left:   40px;
+  margin-right:  40px;
+  margin-top:     9px;
+  margin-bottom:  9px;
+  text-align: justify;
+}
+
+div.note:before {
+  color:     green;
+  position:  relative;
+  float:     left;
+  left:      -28px;
+  width:     0;
+  content:   "🛈";
 }
 
 

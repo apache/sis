@@ -252,8 +252,8 @@ public interface TreeTable {
          * and for avoiding infinite recursivity when comparing the children.
          * A third reason is given in the <cite>purpose</cite> example below.
          *
-         * <div class="note"><b>Purpose of this method: example with ISO metadata</b><br>
-         * Consider the following tree made of ISO 19115 metadata objects: a platform containing a list of instruments,
+         * <div class="note"><b>Purpose of this method: example with ISO metadata</b>:
+         * consider the following tree made of ISO 19115 metadata objects: a platform containing a list of instruments,
          * and an instrument containing a reference to the platform on which the instrument is installed. In this example,
          * nodes 2 and 4 contain a reference to the same {@code Platform} instance, so we have a cyclic graph:
          *
