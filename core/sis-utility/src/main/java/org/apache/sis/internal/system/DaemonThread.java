@@ -59,6 +59,8 @@ abstract class DaemonThread extends Thread {
 
     /**
      * Creates a new daemon thread. This constructor sets the daemon flag to {@code true}.
+     * The thread will be allocated a small stack size on the assumption that it will execute
+     * only small and quick methods, without deep nesting levels.
      *
      * <p>We need to maintain a list of daemon threads created by each SIS module in order to
      * kill them at shutdown time (not strictly necessary for pure JSEE applications, but
@@ -88,7 +90,7 @@ abstract class DaemonThread extends Thread {
      *                            Each SIS module shall maintain its own chain, if any.
      */
     protected DaemonThread(final String name, final DaemonThread lastCreatedDaemon) {
-        super(Threads.DAEMONS, name);
+        super(Threads.DAEMONS, null, name, 16*1024);    // Small (16 kb) stack size.
         previous = lastCreatedDaemon;
         setDaemon(true);
     }
