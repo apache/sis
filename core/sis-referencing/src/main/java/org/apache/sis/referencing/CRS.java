@@ -138,7 +138,8 @@ import org.opengis.geometry.Geometry;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -450,7 +451,7 @@ public final class CRS extends Static {
      * @param  regionOfInterest  the geographic area for which the coordinate operations will be applied,
      *                           or {@code null} if unknown. Will be intersected with CRS domains of validity.
      * @param  sourceCRS         the coordinate reference systems for which a common target CRS is desired.
-     *                           May contain {@code null} elements, in which case this method returns {@code null}.
+     *                           May contain {@code null} elements, which are ignored.
      * @return a CRS that may be used as a common target for all the given source CRS in the given region of interest,
      *         or {@code null} if this method did not find a common target CRS. The returned CRS may be different than
      *         all given CRS.
@@ -463,7 +464,7 @@ public final class CRS extends Static {
         CoordinateReferenceSystem bestCRS = null;
         /*
          * Compute the union of the domain of validity of all CRS. If a CRS does not specify a domain of validity,
-         * then assume that the CRS is valid for the whole world if the CRS is geodetic or return null otherwise.
+         * then assume that the CRS is valid for the whole world if the CRS is geodetic (otherwise ignore that CRS).
          * Opportunistically remember the domain of validity of each CRS in this loop since we will need them later.
          */
         boolean worldwide = false;
@@ -472,22 +473,7 @@ public final class CRS extends Static {
         for (int i=0; i < sourceCRS.length; i++) {
             final CoordinateReferenceSystem crs = sourceCRS[i];
             final GeographicBoundingBox bbox = getGeographicBoundingBox(crs);
-            if (bbox == null) {
-                /*
-                 * If no domain of validity is specified and we can not fallback
-                 * on some knowledge about what the CRS is, abandon.
-                 */
-                if (!(crs instanceof GeodeticCRS)) {
-                    continue;
-                }
-                /*
-                 * Geodetic CRS (geographic or geocentric) can generally be presumed valid in a worldwide area.
-                 * The 'worldwide' flag is a little optimization for remembering that we do not need to compute
-                 * the union anymore, but we still need to continue the loop for fetching all bounding boxes.
-                 */
-                bestCRS = crs;                      // Fallback to be used if we don't find anything better.
-                worldwide = true;
-            } else {
+            if (bbox != null) {
                 domains[i] = bbox;
                 if (!worldwide) {
                     if (domain == null) {
@@ -496,6 +482,14 @@ public final class CRS extends Static {
                         domain.add(bbox);
                     }
                 }
+            } else if (crs instanceof GeodeticCRS) {
+                /*
+                 * Geodetic CRS (geographic or geocentric) can generally be presumed valid in a worldwide area.
+                 * The 'worldwide' flag is a little optimization for remembering that we do not need to compute
+                 * the union anymore, but we still need to continue the loop for fetching all bounding boxes.
+                 */
+                bestCRS = crs;                      // Fallback to be used if we don't find anything better.
+                worldwide = true;
             }
         }
         /*
@@ -521,9 +515,9 @@ public final class CRS extends Static {
          * Example: given two source CRS, a geographic one and a projected one:
          *
          *   - If the projected CRS contains fully the region of interest, then it will be returned.
-         *     The preference is given to the projected CRS because geometric are likely to be more
-         *     accurate in that space. Furthermore forward conversions from geographic to projected
-         *     CRS are usually faster than inverse conversions.
+         *     The preference is given to the projected CRS because geometric operations are likely
+         *     to be more accurate in that space. Furthermore forward conversions from geographic to
+         *     projected CRS are usually faster than inverse conversions.
          *
          *   - Otherwise (i.e. if the region of interest is likely to be wider than the projected CRS
          *     domain of validity), then the geographic CRS will be returned.

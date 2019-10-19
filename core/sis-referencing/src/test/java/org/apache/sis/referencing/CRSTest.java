@@ -49,7 +49,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link CRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -218,10 +219,9 @@ public final strictfp class CRSTest extends TestCase {
         assertSame("CRS suggestion should fallback on common base geographic system when possible.",
                 CommonCRS.WGS84.geographic(), CRS.suggestCommonTarget(null, utm13N, utm42S));
 
-        assertNotNull(
-                "Disjoint systems should return a geographic suggestion when possible",
+        assertNotNull("Disjoint systems should return a geographic suggestion when possible",
                 CRS.suggestCommonTarget(null,
-                        CommonCRS.WGS84.universal(-7, 19),
+                        CommonCRS.WGS84.universal(-7,  19),
                         CommonCRS.NAD27.universal(20, -101),
                         CommonCRS.NAD27.universal(18, -20)
                 )
