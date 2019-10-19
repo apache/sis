@@ -21,7 +21,8 @@
  * discussion of parameters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Matthieu Bastianelli (Geomatys)
+ * @version 1.1
  *
  * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
  *

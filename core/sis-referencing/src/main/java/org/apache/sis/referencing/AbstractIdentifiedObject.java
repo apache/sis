@@ -24,6 +24,8 @@ import java.util.AbstractCollection;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Formattable;
+import java.util.FormattableFlags;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
@@ -44,6 +46,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.UseLegacyMetadata;
 import org.apache.sis.internal.jaxb.referencing.Code;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.referencing.WKTUtilities;
@@ -120,7 +123,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -139,7 +142,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
 })
 @UseLegacyMetadata
 public class AbstractIdentifiedObject extends FormattableObject implements IdentifiedObject,
-        LenientComparable, Deprecable, Serializable
+        Formattable, LenientComparable, Deprecable, Serializable
 {
     /**
      * Serial number for inter-operability with different versions.
@@ -885,6 +888,36 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, ElementKind.forType(getClass()));
         return null;
+    }
+
+    /**
+     * Formats the name or identifier of this object using the provider formatter.
+     * This method is invoked when an {@code IdentifiedObject} object is formatted
+     * using the {@code "%s"} conversion specifier of {@link java.util.Formatter}.
+     * Users don't need to invoke this method explicitly.
+     *
+     * <p>If the alternate flags is present (as in {@code "%#s"}), then this method
+     * will format the identifier (if present) instead than the object name.</p>
+     *
+     * @param  formatter  the formatter in which to format this identified object.
+     * @param  flags      whether to apply left alignment, use upper-case letters and/or use alternate form.
+     * @param  width      minimal number of characters to write, padding with {@code ' '} if necessary.
+     * @param  precision  maximal number of characters to write, or -1 if no limit.
+     *
+     * @see IdentifiedObjects#getName(IdentifiedObject, Citation)
+     * @see IdentifiedObjects#getIdentifierOrName(IdentifiedObject)
+     *
+     * @since 1.1
+     */
+    @Override
+    public void formatTo(final java.util.Formatter formatter, final int flags, final int width, final int precision) {
+        final String value;
+        if ((flags & FormattableFlags.ALTERNATE) != 0) {
+            value = IdentifiedObjects.getIdentifierOrName(this);
+        } else {
+            value = IdentifiedObjects.getName(this, null);
+        }
+        Strings.formatTo(formatter, flags, width, precision, value);
     }
 
 

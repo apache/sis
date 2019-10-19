@@ -196,7 +196,8 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     private Entry[] table;
 
     /**
-     * Number of non-null elements in {@link #table}.
+     * Number of non-null elements in {@link #table}. This is used for determining
+     * when {@link WeakEntry#rehash(WeakEntry[], int, String)} needs to be invoked.
      */
     private int count;
 
@@ -271,6 +272,8 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
      * Invoked by {@link Entry} when an element has been collected by the garbage
      * collector. This method removes the weak reference from the {@link #table}.
+     *
+     * @param  toRemove  the entry to remove from this map.
      */
     @SuppressWarnings("unchecked")
     private synchronized void removeEntry(final Entry toRemove) {
@@ -293,6 +296,8 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
      * Checks if this {@code WeakValueHashMap} is valid. This method counts the number of elements
      * and compares it to {@link #count}. This method is invoked in assertions only.
+     *
+     * @return whether {@link #count} matches the expected value.
      */
     @Debug
     final boolean isValid() {

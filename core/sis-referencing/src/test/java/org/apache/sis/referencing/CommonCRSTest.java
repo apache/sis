@@ -51,7 +51,7 @@ import static org.apache.sis.test.TestUtilities.*;
  * Tests the {@link CommonCRS} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -338,5 +338,17 @@ public final strictfp class CommonCRSTest extends TestCase {
     @Test
     public void testForEpoch() {
         assertSame(CommonCRS.Temporal.UNIX, CommonCRS.Temporal.forEpoch(Instant.ofEpochMilli(0)));        // As specified in Javadoc.
+    }
+
+    /**
+     * Tests formatting in a {@link java.util.Formatter}.
+     *
+     * @since 1.1
+     */
+    @Test
+    public void testFormat() {
+        assertEquals("World Geodetic System 1984", String.format("%s", CommonCRS.WGS84.datum()));
+        assertEquals("WORLD GEODETIC SYSTEM 1984", String.format("%S", CommonCRS.WGS84.datum()));
+        assertTrue(String.format("%#s", CommonCRS.WGS84.datum()).endsWith(":6326"));
     }
 }

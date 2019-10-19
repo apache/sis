@@ -720,7 +720,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     }
 
     /**
-     * Formats this range using the provider formatter. This method is invoked when an
+     * Formats this range using the provider formatter. This method is invoked when a
      * {@code Range} object is formatted using the {@code "%s"} conversion specifier of
      * {@link Formatter}. Users don't need to invoke this method explicitly.
      *
@@ -728,7 +728,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * be formatted using the {@linkplain RangeFormat#isAlternateForm() alternate form}
      * for exclusive bounds.</p>
      *
-     * @param  formatter  the formatter in which to format this angle.
+     * @param  formatter  the formatter in which to format this range.
      * @param  flags      {@link FormattableFlags#LEFT_JUSTIFY} for left alignment, or 0 for right alignment.
      * @param  width      minimal number of characters to write, padding with {@code ' '} if necessary.
      * @param  precision  maximal number of characters to write, or -1 if no limit.

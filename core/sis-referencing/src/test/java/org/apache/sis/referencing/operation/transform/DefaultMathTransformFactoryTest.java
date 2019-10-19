@@ -39,6 +39,7 @@ import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -56,7 +57,7 @@ import static org.apache.sis.test.Assert.*;
  * files found on the classpath.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -229,6 +230,12 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
                     pg.parameter( "Latitude_Of_2nd_Point").setValue(50);
                     pg.parameter("Longitude_Of_1st_Point").setValue(10);
                     pg.parameter("Longitude_Of_2nd_Point").setValue(20);
+                    break;
+                }
+                case "Satellite-Tracking": {
+                    pg.parameter("satellite_orbit_inclination").setValue(  99.092);     // Landsat 1, 2 and 3.
+                    pg.parameter("satellite_orbital_period")   .setValue( 103.267, Units.MINUTE);
+                    pg.parameter("ascending_node_period")      .setValue(1440.0,   Units.MINUTE);
                     break;
                 }
             }

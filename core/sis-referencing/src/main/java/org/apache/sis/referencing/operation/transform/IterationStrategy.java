@@ -77,7 +77,7 @@ package org.apache.sis.referencing.operation.transform;
  * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.5
+ * @version 1.1
  * @since   0.5
  * @module
  */
@@ -145,6 +145,7 @@ public enum IterationStrategy {
      * @param  dstDim  the dimension of output points.
      * @param  numPts  the number of points to transform.
      * @return a strategy for iterating over the points during the transformation process.
+     * @throws ArithmeticException if the given offsets or number of points are too high.
      */
     public static IterationStrategy suggest(final int srcOff, final int srcDim,
                                             final int dstOff, final int dstDim, final int numPts)
@@ -157,7 +158,7 @@ public enum IterationStrategy {
              */
             return ASCENDING;
         }
-        int delta = srcOff - dstOff;
+        int delta = Math.subtractExact(srcOff, dstOff);
         final int d;
         if (delta >= 0) {
             /*
@@ -177,7 +178,7 @@ public enum IterationStrategy {
              * Rearanging gives: (srcOff - dstOff) >= (1-numPts)*(srcDim - dstDim)
              */
             d = srcDim - dstDim;                    // Must be computed in the same way than below.
-            if (d >= 0 || delta >= (1-numPts)*d) {
+            if (d >= 0 || delta >= Math.multiplyExact(1 - numPts, d)) {
                 return ASCENDING;
             }
         } else {
@@ -186,8 +187,8 @@ public enum IterationStrategy {
              * do not overlap, we still can use ASCENDING order (the DESCENDING order would do
              * the job as well, but we try to favor the simpler ascending order).
              */
-            delta = -delta;
-            if (delta >= numPts*srcDim) {
+            delta = Math.negateExact(delta);
+            if (delta >= Math.multiplyExact(numPts, srcDim)) {
                 return ASCENDING;
             }
             /*
@@ -213,8 +214,8 @@ public enum IterationStrategy {
              * if is = (n-1), then the condition (it >= is and it <= n-1) implies that
              * it = (n-1) as well. So (ot - os)  >=  (n-1)*(ds - dt).
              */
-            d = srcDim - dstDim; // Must be computed in the same way than above.
-            if (delta >= (numPts-1)*d) {
+            d = srcDim - dstDim;            // Must be computed in the same way than above.
+            if (delta >= Math.multiplyExact(numPts - 1, d)) {
                 return DESCENDING;
             }
         }

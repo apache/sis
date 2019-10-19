@@ -99,6 +99,7 @@
         <include name="**/*.lst"/>
       </fileset>
       <fileset dir="${project.root}/core/sis-referencing/src/main/resources">
+        <include name="**/*.properties"/>
         <include name="**/*.sql"/>
       </fileset>
       <fileset dir="${project.root}/storage/sis-xmlstore/src/main/resources">
