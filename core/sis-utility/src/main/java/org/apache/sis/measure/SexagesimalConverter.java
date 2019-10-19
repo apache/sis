@@ -36,7 +36,7 @@ import static org.apache.sis.math.MathFunctions.truncate;
  * Sexagesimal angles are considered a string representation issue (handled by {@link AngleFormat}) rather than a
  * unit issue. Unfortunately, this pseudo-unit is extensively used in the EPSG database, so we have to support it.</p>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

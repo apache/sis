@@ -184,7 +184,7 @@ public abstract class GridCoverage {
      * If the {@code slicePoint} CRS is different than this grid coverage CRS (except for the number of dimensions),
      * a coordinate transformation will be applied as needed.</div>
      *
-     * <div class="section">Characteristics of the returned image</div>
+     * <h4>Characteristics of the returned image</h4>
      * Image dimensions <var>x</var> and <var>y</var> map to the first and second dimension respectively of
      * the two-dimensional {@code sliceExtent} {@linkplain GridExtent#getSubspaceDimensions(int) subspace}.
      * The coordinates given by {@link RenderedImage#getMinX()} and {@link RenderedImage#getMinY() getMinY()}

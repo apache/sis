@@ -40,7 +40,7 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
  *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical}.
  * </p>
  *
- * <div class="section">Creating new geocentric CRS instances</div>
+ * <h2>Creating new geocentric CRS instances</h2>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
  * Choice 1 in the following list is the easiest but most restrictive way to get a geocentric CRS.
@@ -63,7 +63,7 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
  *     GeodeticDatum datum = CommonCRS.WGS84.geocentric();
  * }
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
  * the coordinate system and the datum instances given to the constructor are also immutable. Unless otherwise noted
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.

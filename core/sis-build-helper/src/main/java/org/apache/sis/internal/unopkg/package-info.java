@@ -25,7 +25,7 @@
  * but can also be used for other projects. See the Apache SIS add-in module for an example
  * about how a module can be configured in order to use this Maven plugin.</p>
  *
- * <div class="section">Usage</div>
+ * <h2>Usage</h2>
  * Below is an example of {@code pom.xml} build configuration.
  * The following strings need to be replaced:
  *
@@ -37,7 +37,7 @@
  *       The final filename, without the {@code .oxt} extension.</li>
  * </ul>
  *
- * <div class="section">Maven project file</div>
+ * <h2>Maven project file</h2>
  * {@preformat xml
  *   <dependencies>
  *     <!-- Put all your project dependencies here, including transitive dependencies. -->

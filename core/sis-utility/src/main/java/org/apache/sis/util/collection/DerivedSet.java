@@ -36,7 +36,7 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
  *       obtain the storage values using the {@link Invertible#inverse} converter.</li>
  * </ul>
  *
- * <div class="section">Constraints</div>
+ * <h2>Constraints</h2>
  * <ul>
  *   <li>This set does not support {@code null} values, since {@code null} is used as a
  *       sentinel value when no mapping from {@linkplain #storage} to {@code this} exists.</li>
@@ -48,7 +48,7 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
  *       are thread-safe.</li>
  * </ul>
  *
- * <div class="section">Performance considerations</div>
+ * <h2>Performance considerations</h2>
  * This class does not cache any value, since the {@linkplain #storage} set is presumed modifiable.
  * If the storage set is known to be immutable, then sub-classes may consider to cache some values,
  * especially the result of the {@link #size()} method.

@@ -26,7 +26,7 @@ import org.apache.sis.util.Classes;
 /**
  * Used by {@link CompoundFormat} for formatting the name of objects of type {@link Class}.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@link #INSTANCE} can be safely used by many threads without synchronization on the part of the caller.
  * Note that this is specific to {@code ClassFormat} and generally not true for arbitrary {@code Format} classes.
  *

@@ -86,7 +86,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * This representation can be printed to the {@linkplain java.io.Console#writer() console output}
  * (for example) if the stream uses a monospaced font and supports Unicode characters.
  *
- * <div class="section">Customization</div>
+ * <h2>Customization</h2>
  * Some formatting characteristics (indentation width, column where to draw the vertical line
  * below nodes) can be modified by calls to the setter methods defined in this formatter.
  * In particular, the dots joining the node labels to their values can be specified by the
@@ -95,7 +95,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * then insert the {@code "……"} string, repeat the {@code '…'} character as many time as needed
  * (may be zero), and finally insert a space"</cite>.
  *
- * <div class="section">Safety against infinite recursivity</div>
+ * <h2>Safety against infinite recursivity</h2>
  * Some {@code TreeTable} implementations generate the nodes dynamically as wrappers around Java objects.
  * Such Java objects may contain cyclic associations (<var>A</var> contains <var>B</var> contains <var>C</var>
  * contains <var>A</var>), which result in a tree of infinite depth. Some examples can been found in ISO 19115
@@ -386,7 +386,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * This method can parse the trees created by the {@code format(…)} methods
      * defined in this class.
      *
-     * <div class="section">Parsing rules</div>
+     * <h4>Parsing rules</h4>
      * <ul>
      *   <li>Each node shall be represented by a single line made of two parts, in that order:
      *     <ol>
@@ -402,7 +402,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      *   <li>Parsing stops at first empty line (ignoring whitespaces), or at the end of the given text.</li>
      * </ul>
      *
-     * <div class="section">Error index</div>
+     * <h4>Error index</h4>
      * If the given text does not seem to be a tree table, then this method returns {@code null}.
      * Otherwise if parsing started but failed, then:
      *

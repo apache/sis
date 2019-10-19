@@ -48,7 +48,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * See the <a href="http://mathworld.wolfram.com/LambertConformalConicProjection.html">Lambert conformal
  * conic projection on MathWorld</a> for an overview.
  *
- * <div class="section">Description</div>
+ * <h2>Description</h2>
  * Areas and shapes are deformed as one moves away from standard parallels.
  * The angles are true in a limited area.
  * This projection is used for the charts of North America and some European countries.

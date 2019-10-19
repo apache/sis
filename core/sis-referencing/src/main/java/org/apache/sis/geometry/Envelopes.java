@@ -59,7 +59,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 /**
  * Transforms envelopes to new Coordinate Reference Systems, and miscellaneous utilities.
  *
- * <div class="section">Envelope transformations</div>
+ * <h2>Envelope transformations</h2>
  * All {@code transform(…)} methods in this class take in account the curvature of the transformed shape.
  * For example the shape of a geographic envelope (figure below on the left side) is not rectangular in a
  * conic projection (figure below on the right side). In order to get the envelope represented by the red
@@ -303,7 +303,7 @@ public final class Envelopes extends Static {
      * same instance than the given target CRS, then the given envelope is returned unchanged.
      * Otherwise a new transformed envelope is returned.
      *
-     * <div class="section">Performance tip</div>
+     * <h4>Performance tip</h4>
      * If there is many envelopes to transform with the same source and target CRS, then it is more efficient
      * to get the {@link CoordinateOperation} or {@link MathTransform} instance once and invoke one of the
      * others {@code transform(…)} methods.
@@ -349,7 +349,7 @@ public final class Envelopes extends Static {
      * or smaller than required if the bounding box contains a pole.
      * The coordinate reference system of the returned envelope will be null.
      *
-     * <div class="section">Limitation</div>
+     * <h4>Limitation</h4>
      * This method can not handle the case where the envelope contains the North or South pole,
      * or when it crosses the ±180° longitude, because {@link MathTransform} does not carry sufficient information.
      * For a more robust envelope transformation, use {@link #transform(CoordinateOperation, Envelope)} instead.

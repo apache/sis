@@ -42,7 +42,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
 /**
  * Base class of reference systems that describe locations using geographic identifiers instead than coordinates.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
  * conditions. This means that unless otherwise noted in the javadoc, {@code ReferencingByIdentifiers} instances

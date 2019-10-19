@@ -75,21 +75,21 @@ import org.apache.sis.util.resources.Messages;
  * (DAO) after some timeout. This approach allows to establish a connection to a database (for example)
  * and keep it only for a relatively short amount of time.</p>
  *
- * <div class="section">Caching strategy</div>
+ * <h2>Caching strategy</h2>
  * Objects are cached by strong references, up to the amount of objects specified at construction time.
  * If a greater amount of objects are cached, then the oldest ones will be retained through a
  * {@linkplain WeakReference weak reference} instead of a strong one.
  * This means that this caching factory will continue to return those objects as long as they are in use somewhere
  * else in the Java virtual machine, but will be discarded (and recreated on the fly if needed) otherwise.
  *
- * <div class="section">Multi-threading</div>
+ * <h2>Multi-threading</h2>
  * The cache managed by this class is concurrent. However the Data Access Objects (DAO) are assumed non-concurrent.
  * If two or more threads are accessing this factory in same time, then two or more Data Access Object instances
  * may be created. The maximal amount of instances to create is specified at {@code ConcurrentAuthorityFactory}
  * construction time. If more Data Access Object instances are needed, some of the threads will block until an
  * instance become available.
  *
- * <div class="section">Note for subclasses</div>
+ * <h2>Note for subclasses</h2>
  * This abstract class does not implement any of the {@link DatumAuthorityFactory}, {@link CSAuthorityFactory},
  * {@link CRSAuthorityFactory} and {@link CoordinateOperationAuthorityFactory} interfaces.
  * Subclasses should select the interfaces that they choose to implement.
@@ -335,7 +335,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * It may also be invoked again if additional factories are needed in different threads,
      * or if all factories have been closed after the timeout.
      *
-     * <div class="section">Multi-threading</div>
+     * <h4>Multi-threading</h4>
      * This method (but not necessarily the returned factory) needs to be thread-safe;
      * {@code ConcurrentAuthorityFactory} does not hold any lock when invoking this method.
      * Subclasses are responsible to apply their own synchronization if needed,
@@ -1749,7 +1749,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * An implementation of {@link IdentifiedObjectFinder} which delegates
      * the work to the underlying Data Access Object and caches the result.
      *
-     * <div class="section">Synchronization note</div>
+     * <h4>Synchronization note</h4>
      * our public API claims that {@link IdentifiedObjectFinder}s are not thread-safe.
      * Nevertheless we synchronize this particular implementation for safety, because the consequence of misuse
      * are more dangerous than other implementations. Furthermore this is also a way to assert that no code path

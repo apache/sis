@@ -28,7 +28,7 @@ package org.apache.sis.internal.xml;
  *   <li>Constants with the {@code _XSD} suffix are {@code "http://"} URL to a the XSD definition file.</li>
  * </ul>
  *
- * <div class="section">Note on multi-lingual files</div>
+ * <h2>Note on multi-lingual files</h2>
  * Some files are available in two variants: with and without {@code "ML_"} prefix, which stands for "Multi Lingual".
  * Some examples are {@code "[ML_]gmxCodelists.xml"} and {@code "[ML_]gmxUom.xml"}. The following assumptions hold:
  *

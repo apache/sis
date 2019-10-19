@@ -89,7 +89,7 @@ import org.apache.sis.internal.geoapi.evolution.Interim;
  *
  * where {@code id} is the primary key value for the desired record in the {@code Format} table.
  *
- * <div class="section">Properties</div>
+ * <h2>Properties</h2>
  * The constructor expects three Java arguments (the {@linkplain MetadataStandard metadata standard},
  * the {@linkplain DataSource data source} and the database schema) completed by an arbitrary amount
  * of optional arguments given as a map of properties.
@@ -103,7 +103,7 @@ import org.apache.sis.internal.geoapi.evolution.Interim;
  *   <tr><td>{@code "maxStatements"}</td> <td>{@link Integer}</td>     <td>Maximal number of {@link PreparedStatement}s that can be kept simultaneously open.</td></tr>
  * </table>
  *
- * <div class="section">Concurrency</div>
+ * <h2>Concurrency</h2>
  * {@code MetadataSource} is thread-safe but is not concurrent. If concurrency is desired,
  * multiple instances of {@code MetadataSource} can be created for the same {@link DataSource}.
  * The {@link #MetadataSource(MetadataSource)} convenience constructor can be used for this purpose.

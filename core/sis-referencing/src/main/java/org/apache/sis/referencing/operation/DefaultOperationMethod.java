@@ -86,7 +86,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * recommended to provide also {@linkplain #getIdentifiers() identifiers} (e.g. “EPSG:9804” in the above example)
  * since names can sometime be ambiguous or be spelled in different ways.
  *
- * <div class="section">Departure from the ISO 19111 standard</div>
+ * <h2>Departure from the ISO 19111 standard</h2>
  * The following properties are mandatory according ISO 19111,
  * but may be missing under some conditions in Apache SIS:
  * <ul>
@@ -97,7 +97,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *     constructor can not infer them.</li>
  * </ul>
  *
- * <div class="section">Relationship with other classes or interfaces</div>
+ * <h2>Relationship with other classes or interfaces</h2>
  * {@code OperationMethod} describes parameters without providing any value (except sometime default values).
  * When values have been assigned to parameters, the result is a {@link SingleOperation}.
  * Note that there is different kinds of {@code SingleOperation} depending on the nature and accuracy of the
@@ -110,7 +110,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * {@code DefaultOperationMethod} subclasses should implement the
  * {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} interface.</p>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thread-safe if all properties given to the constructor are also immutable and thread-safe.
  * It is strongly recommended for all subclasses to be thread-safe, especially the
  * {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} implementations to be used with

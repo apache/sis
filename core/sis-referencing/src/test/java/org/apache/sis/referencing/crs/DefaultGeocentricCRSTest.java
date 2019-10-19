@@ -133,7 +133,7 @@ public final strictfp class DefaultGeocentricCRSTest extends TestCase {
     /**
      * Tests WKT 2 formatting.
      *
-     * <div class="section">Note on axis names</div>
+     * <h4>Note on axis names</h4>
      * ISO 19162 said: “For geodetic CRSs having a geocentric Cartesian coordinate system,
      * the axis name should be omitted as it is given through the mandatory axis direction,
      * but the axis abbreviation, respectively ‘X’, 'Y' and ‘Z’, shall be given.”

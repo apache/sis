@@ -60,7 +60,7 @@ public final class Utilities extends Static {
      * If a more lenient comparison allowing slight differences in numerical values is wanted,
      * then {@link #equalsApproximately(Object, Object)} can be used instead.
      *
-     * <div class="section">Implementation note</div>
+     * <h4>Implementation note</h4>
      * This is a convenience method for the following method call:
      *
      * {@preformat java
@@ -94,7 +94,7 @@ public final class Utilities extends Static {
      *       will return an operation close to identity.</li>
      * </ul>
      *
-     * <div class="section">Implementation note</div>
+     * <h4>Implementation note</h4>
      * This is a convenience method for the following method call:
      *
      * {@preformat java

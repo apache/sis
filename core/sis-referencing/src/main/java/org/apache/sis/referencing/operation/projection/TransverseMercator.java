@@ -44,7 +44,7 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  * This class implements the "JHS formulas" reproduced in
  * IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015.
  *
- * <div class="section">Description</div>
+ * <h2>Description</h2>
  * This is a cylindrical projection, in which the cylinder has been rotated 90°.
  * Instead of being tangent to the equator (or to an other standard latitude), it is tangent to a central meridian.
  * Deformation are more important as we are going further from the central meridian.

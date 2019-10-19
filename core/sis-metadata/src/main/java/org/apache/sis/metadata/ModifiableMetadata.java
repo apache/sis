@@ -50,7 +50,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
  * The metadata can be populated using the setter methods provided by subclasses, then transition to the
  * {@linkplain State#FINAL final} state for making it safe to share by many consumers.
  *
- * <div class="section">Tip for subclass implementations</div>
+ * <h2>Tip for subclass implementations</h2>
  * Subclasses can follow the pattern below for every {@code get} and {@code set} methods,
  * with a different processing for singleton value or for {@linkplain Collection collections}.
  *
@@ -386,7 +386,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
      *
-     * <div class="section">Choosing a collection type</div>
+     * <h4>Choosing a collection type</h4>
      * Implementations shall invoke {@link #writeList writeList} or {@link #writeSet writeSet} methods
      * instead than this method when the collection type is enforced by ISO specification.
      * When the type is not enforced by the specification, some freedom are allowed at
@@ -698,7 +698,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * Returns the specified collection, or a new one if {@code current} is null.
      * This is a convenience method for implementation of {@code getFoo()} methods.
      *
-     * <div class="section">Choosing a collection type</div>
+     * <h4>Choosing a collection type</h4>
      * Implementations shall invoke {@link #nonNullList nonNullList(…)} or {@link #nonNullSet nonNullSet(…)}
      * instead than this method when the collection type is enforced by ISO specification.
      * When the type is not enforced by the specification, some freedom are allowed at implementer choice.

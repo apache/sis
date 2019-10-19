@@ -179,7 +179,7 @@ public final class Extents extends Static {
      * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getDirection() axis direction}
      * is toward down, then this method reverses the sign of minimum and maximum values.
      *
-     * <div class="section">Multi-occurrences</div>
+     * <h4>Multi-occurrences</h4>
      * If the given {@code Extent} object contains more than one vertical extent, then this method
      * performs a choice based on the vertical datum and the unit of measurement:
      *
@@ -492,7 +492,7 @@ public final class Extents extends Static {
      * <p>This method never modify the given extents, but may return directly one of the given arguments
      * if it already represents the intersection result.</p>
      *
-     * <div class="section">Advantage and inconvenient of this method</div>
+     * <h4>Advantage and inconvenient of this method</h4>
      * This method can not intersect extents defined with different datums because height transformations
      * generally require the geodetic positions (latitudes and longitudes) of the heights to transform.
      * For more general transformations, it is better to convert all extent components into a single envelope,

@@ -300,7 +300,7 @@ public final class IdentifiedObjects extends Static {
      * then this method fallback on <code>object.{@linkplain AbstractIdentifiedObject#getName() getName()}</code>.
      * The first element found is formatted by {@link #toString(Identifier)}.
      *
-     * <div class="section">Recommended alternatives</div>
+     * <h4>Recommended alternatives</h4>
      * <ul>
      *   <li>If the code of a specific authority is wanted (typically EPSG), then consider
      *       using {@link #getIdentifier(IdentifiedObject, Citation)} instead.</li>

@@ -69,7 +69,7 @@ import static java.lang.Math.*;
  *       axes (usually metres).</li>
  * </ul>
  *
- * <div class="section">Comparison of Molodensky and geocentric translation</div>
+ * <h2>Comparison of Molodensky and geocentric translation</h2>
  * Compared to the <cite>"Geocentric translation (geographic domain)"</cite> method,
  * the Molodensky method has errors usually within a few centimetres.
  * The Abridged Molodensky method has more noticeable errors, of a few tenths of centimetres.

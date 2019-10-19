@@ -27,7 +27,7 @@ package org.apache.sis.util;
  * or {@linkplain java.sql.Connection#commit() committed to a database},
  * then a {@code close()} method should be used instead.</p>
  *
- * <div class="section">Relationship with {@code Closeable}</div>
+ * <h2>Relationship with {@code Closeable}</h2>
  * Some classes may implement both the {@code Disposeable} and {@link java.io.Closeable} interfaces.
  * While very similar, those two interfaces serve slightly different purposes. The {@code Closeable}
  * interface closes a stream or a connection, but some classes allow the object to be reused with a

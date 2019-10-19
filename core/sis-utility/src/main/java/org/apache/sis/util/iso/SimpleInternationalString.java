@@ -29,12 +29,12 @@ import org.apache.sis.util.ArgumentChecks;
  * For such a particular case, this implementation is more effective than
  * other implementations provided in this package.
  *
- * <div class="section">Instantiation</div>
+ * <h2>Instantiation</h2>
  * If the characters sequence to wrap is known to be a {@code String} instance, then
  * the {@link #SimpleInternationalString(String)} constructor is okay. Otherwise use
  * the {@link Types#toInternationalString(CharSequence)} method.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus inherently thread-safe.
  * Subclasses may or may not be immutable, at implementation choice. But implementers are
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.

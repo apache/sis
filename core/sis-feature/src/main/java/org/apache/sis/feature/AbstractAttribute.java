@@ -48,7 +48,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * {@code AbstractAttribute} can be instantiated by calls to {@link DefaultAttributeType#newInstance()}.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li><b>Multi-threading:</b> {@code AbstractAttribute} instances are <strong>not</strong> thread-safe.
  *       Synchronization, if needed, shall be done externally by the caller.</li>
@@ -235,7 +235,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
     /**
      * Sets the attribute value. All previous values are replaced by the given singleton.
      *
-     * <div class="section">Validation</div>
+     * <h4>Validation</h4>
      * The amount of validation performed by this method is implementation dependent.
      * Usually, only the most basic constraints are verified. This is so for performance reasons
      * and also because some rules may be temporarily broken while constructing a feature.
@@ -282,7 +282,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      * Consequently, {@code characteristics.isEmpty()} is a convenient way to check that an attribute have
      * all the "standard" characteristics and need no special processing.</div>
      *
-     * <div class="section">Reading a characteristic</div>
+     * <h4>Reading a characteristic</h4>
      * The characteristic values are enumerated in the {@linkplain Map#values() map values}.
      * The {@linkplain Map#keySet() map keys} are the {@code String} representations of characteristics
      * {@linkplain DefaultAttributeType#getName() name}, for more convenient lookups.
@@ -302,7 +302,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
      *     }
      * }
      *
-     * <div class="section">Adding a characteristic</div>
+     * <h4>Adding a characteristic</h4>
      * A new characteristic can be added in the map in three different ways:
      * <ol>
      *   <li>Putting the (<var>name</var>, <var>characteristic</var>) pair explicitly.

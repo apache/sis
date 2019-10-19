@@ -41,13 +41,13 @@ public final class PrimitiveTypeProperties {
      * The map where to store specific instances. Keys are instances of the primitive wrappers considered as nil.
      * Values are the {@code NilReason} why the primitive is missing, or any other property we may want to attach.
      *
-     * <div class="section">Identity comparisons</div>
+     * <h4>Identity comparisons</h4>
      * We really need an identity hash map; using the {@code Object.equals(Object)} method is not allowed here.
      * This is because "nil values" are real values. For example if the type is {@link Integer}, then the nil value
      * is an {@code Integer} instance having the value 0. We don't want to consider every 0 integer value as nil,
      * but only the specific {@code Integer} instance used as sentinel value for nil.
      *
-     * <div class="section">Weak references</div>
+     * <h4>Weak references</h4>
      * We can not use weak value references, because we don't want the {@link NilReason} (the map value) to be lost
      * while the sentinel value (the map key) is still in use. We could use weak references for the keys, but JDK 7
      * does not provides any map implementation which is both an {@code IdentityHashMap} and a {@code WeakHashMap}.
@@ -57,7 +57,7 @@ public final class PrimitiveTypeProperties {
      * {@code NilReason} instance and its sentinel values will never be garbage-collected.
      * We presume that such cases will be rare enough for not being an issue in practice.
      *
-     * <div class="section">Synchronization</div>
+     * <h4>Synchronization</h4>
      * All accesses to this map shall be synchronized on the map object.
      */
     private static final Map<Object,Object> SENTINEL_VALUES = new IdentityHashMap<>();

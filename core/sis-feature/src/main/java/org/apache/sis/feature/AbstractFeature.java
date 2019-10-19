@@ -45,14 +45,14 @@ import org.apache.sis.internal.feature.Resources;
  *
  * {@code AbstractFeature} can be instantiated by calls to {@link DefaultFeatureType#newInstance()}.
  *
- * <div class="section">Simple features</div>
+ * <h2>Simple features</h2>
  * A feature is said “simple” if it complies to the following conditions:
  * <ul>
  *   <li>the feature allows only attributes and operations (no associations),</li>
  *   <li>the cardinality of all attributes is constrained to [1 … 1].</li>
  * </ul>
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li><b>Multi-threading:</b> {@code AbstractFeature} instances are <strong>not</strong> thread-safe.
  *       Synchronization, if needed, shall be done externally by the caller.</li>
@@ -305,7 +305,7 @@ public abstract class AbstractFeature implements Serializable {
      * number of occurrences} and does not depend on the actual number of values. If an attribute allows more than one
      * value, then this method will always return a collection for that attribute even if the collection is empty.</div>
      *
-     * <div class="section">Multi-valued properties and collections</div>
+     * <h4>Multi-valued properties and collections</h4>
      * In the case of multi-valued properties (“max. occurs” &gt; 1), the collection returned by this method may
      * or may not be modifiable, at implementation choice. Generally the caller can not add new elements into the
      * returned collection anyway since {@code Collection<?>} does not allow such operations, and more specific
@@ -328,7 +328,7 @@ public abstract class AbstractFeature implements Serializable {
     /**
      * Sets the value for the property of the given name.
      *
-     * <div class="section">Validation</div>
+     * <h4>Validation</h4>
      * The amount of validation performed by this method is implementation dependent.
      * Usually, only the most basic constraints are verified. This is so for performance reasons
      * and also because some rules may be temporarily broken while constructing a feature.

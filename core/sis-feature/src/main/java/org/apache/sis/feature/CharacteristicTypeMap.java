@@ -33,7 +33,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * Implementation of the map returned by {@link DefaultAttributeType#characteristics()}.
  * Information provided by this implementation are also used by {@link CharacteristicMap}.
  *
- * <div class="section">Comparison with standard hash map</div>
+ * <h2>Comparison with standard hash map</h2>
  * The straightforward approach would be to store the attributes directly as values in a standard {@code HashMap}.
  * But instead of that, we store attributes in an array and the array indices in a {@code HashMap}. This level of
  * indirection is useless if we consider only the {@link DefaultAttributeType#characteristics()} method, since a

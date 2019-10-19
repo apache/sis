@@ -43,7 +43,7 @@ import org.apache.sis.storage.Resource;
  * <p>Observers can {@linkplain #addListener add listeners} for being notified about events,
  * and producers can invoke one of the {@code warning(…)} and other methods for emitting events.
  *
- * <div class="section">Warning events</div>
+ * <h2>Warning events</h2>
  * All warnings are given to the listeners as {@link LogRecord} instances (this allows localizable messages
  * and additional information like {@linkplain LogRecord#getThrown() stack trace}, timestamp, <i>etc.</i>).
  * This {@code StoreListeners} class provides convenience methods like {@link #warning(String, Exception)},
@@ -65,7 +65,7 @@ import org.apache.sis.storage.Resource;
  *   </li>
  * </ul>
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code StoreListeners} instance can be safely used by many threads without synchronization
  * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
  * from multiple threads.
@@ -384,7 +384,7 @@ public class StoreListeners implements Localized {
      * At least one of {@code message} and {@code exception} arguments shall be non-null.
      * If both are non-null, then the exception message will be concatenated after the given message.
      *
-     * <div class="section">Stack trace omission</div>
+     * <h4>Stack trace omission</h4>
      * If there is no registered listener for the {@link WarningEvent} type, then the {@link #warning(LogRecord)}
      * method will send the record to a logger but <em>without</em> the stack trace.
      * This is done that way because stack traces consume lot of space in the logging files, while being considered
@@ -524,7 +524,7 @@ public class StoreListeners implements Localized {
      * method will be invoked only once per event. This filtering applies even if the listener is registered
      * on different resources in the same tree, for example a parent and its children.
      *
-     * <div class="section">Warning events</div>
+     * <h4>Warning events</h4>
      * If {@code eventType} is assignable from <code>{@linkplain WarningEvent}.class</code>,
      * then registering that listener turns off logging of warning messages for this manager.
      * This side-effect is applied on the assumption that the registered listener will handle
@@ -565,7 +565,7 @@ public class StoreListeners implements Localized {
      * {@code removeListener(type, ls)} needs to be invoked twice in order to remove all instances of that listener.
      * If the given listener is not found, then this method does nothing (no exception is thrown).</p>
      *
-     * <div class="section">Warning events</div>
+     * <h4>Warning events</h4>
      * If {@code eventType} is <code>{@linkplain WarningEvent}.class</code> and if, after this method invocation,
      * there is no remaining listener for warning events, then this {@code StoreListeners} will send future warnings
      * to the loggers.

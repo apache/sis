@@ -28,7 +28,7 @@ import static java.lang.Character.*;
  * modify directly the content of the provided {@code StringBuilder} instead than creating
  * new objects.
  *
- * <div class="section">Unicode support</div>
+ * <h2>Unicode support</h2>
  * Every methods defined in this class work on <cite>code points</cite> instead than characters
  * when appropriate. Consequently those methods should behave correctly with characters outside
  * the <cite>Basic Multilingual Plane</cite> (BMP).
@@ -262,7 +262,7 @@ public final class StringBuilders extends Static {
      * method does nothing. This is a <cite>"all or nothing"</cite> method: either the fractional
      * part is completely removed, or either it is left unchanged.</p>
      *
-     * <div class="section">Use case</div>
+     * <h4>Use case</h4>
      * This method is useful after a {@linkplain StringBuilder#append(double) double value has
      * been appended to the buffer}, in order to make it appears like an integer when possible.
      *

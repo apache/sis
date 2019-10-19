@@ -40,7 +40,7 @@ import static org.junit.Assume.*;
  * Utility methods for creating temporary databases for testing purpose.
  * The databases are in-memory when the database engine supports this mode.
  *
- * <div class="section">Inspecting the Derby database content in a debugger</div>
+ * <h2>Inspecting the Derby database content in a debugger</h2>
  * Make sure that the classpath contains the {@code derbynet.jar} file in addition to {@code derby.jar}.
  * Then, specify the following options to the JVM (replace the 1527 port number by something else if needed):
  *

@@ -180,7 +180,7 @@ public class AbstractIdentifiedType implements Deprecable, Serializable {
      *   </tr>
      * </table>
      *
-     * <div class="section">Localization</div>
+     * <h4>Localization</h4>
      * All localizable attributes like {@code "definition"} may have a language and country code suffix.
      * For example the {@code "definition_fr"} property stands for remarks in {@linkplain Locale#FRENCH French} and
      * the {@code "definition_fr_CA"} property stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.

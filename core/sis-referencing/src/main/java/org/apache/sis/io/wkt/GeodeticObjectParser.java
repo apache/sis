@@ -381,7 +381,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *     AUTHORITY["<name>", "<code>"]
      * }
      *
-     * <div class="section">Fallback</div>
+     * <h4>Fallback</h4>
      * The name is a mandatory property, but some invalid WKT with an empty string exist. In such case,
      * we will use the name of the enclosed datum. Indeed, it is not uncommon to have the same name for
      * a geographic CRS and its geodetic datum.
@@ -656,7 +656,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * or be any kind of unit, depending on the context in which this {@code parseCoordinateSystem(…)} method is
      * invoked.</p>
      *
-     * <div class="section">Variants of Cartesian type</div>
+     * <h4>Variants of Cartesian type</h4>
      * The {@link WKTKeywords#Cartesian} type may be used for projected, geocentric or other kinds of CRS.
      * However while all those variants are of the same CS type, their axis names and directions differ.
      * Current implementation uses the following rules:

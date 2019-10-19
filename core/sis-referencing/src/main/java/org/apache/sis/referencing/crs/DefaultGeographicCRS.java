@@ -53,7 +53,7 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  *   {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS Ellipsoidal}.
  * </p>
  *
- * <div class="section">Creating new geographic CRS instances</div>
+ * <h2>Creating new geographic CRS instances</h2>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
  * Choice 1 in the following list is the easiest but most restrictive way to get a geographic CRS.
@@ -78,7 +78,7 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  *     GeodeticDatum datum = CommonCRS.WGS84.geographic();
  * }
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
  * the coordinate system and the datum instances given to the constructor are also immutable. Unless otherwise noted
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
@@ -246,7 +246,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     /**
      * Returns a coordinate reference system of the same type than this CRS but with different axes.
      *
-     * <div class="section">Special case</div>
+     * <h4>Special case</h4>
      * If the first axis is the longitude in the [-180 … +180]° range and the identifier is EPSG:4267,
      * EPSG:4269 or EPSG:4326, then this method magically add the CRS:27, CRS:83 or CRS:84 identifier.
      * Without this special case, the normal behavior would be no identifier. The expected behavior is

@@ -86,7 +86,7 @@ import org.apache.sis.io.wkt.Convention;
  * part (e.g. the EPSG identifier) that would otherwise been lost. Users can obtain the list of their
  * choice by invoking {@link #getSingleComponents()} or {@link #getComponents()} respectively.
  *
- * <div class="section">Component order</div>
+ * <h2>Component order</h2>
  * ISO 19162 restricts compound CRS to the following components in that order:
  * <ul>
  *   <li>A mandatory horizontal CRS (only one of two-dimensional {@code GeographicCRS} or {@code ProjectedCRS} or {@code EngineeringCRS}).</li>
@@ -103,7 +103,7 @@ import org.apache.sis.io.wkt.Convention;
  *
  * However users are encouraged to follow ISO 19162 restriction for better portability.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * and all {@link CoordinateReferenceSystem} instances given to the constructor are also immutable.
  * Unless otherwise noted in the javadoc, this condition holds if all components were created using only
@@ -561,7 +561,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code CompoundCRS[…]} element.
      *
-     * <div class="section">WKT validity</div>
+     * <h4>WKT validity</h4>
      * The WKT version 2 format restricts compound CRS to the following components in that order:
      *
      * <ul>

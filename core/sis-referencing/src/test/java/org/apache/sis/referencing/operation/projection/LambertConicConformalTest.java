@@ -96,7 +96,7 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
      * Tests the WKT formatting of {@link NormalizedProjection}. For the Lambert Conformal projection, we expect
      * the internal {@code n} parameter in addition to the eccentricity.
      *
-     * <div class="section">Note on accuracy</div>
+     * <h4>Note on accuracy</h4>
      * The value of the eccentricity parameter should be fully accurate because it is calculated using only the
      * {@link Math#sqrt(double)} function (ignoring basic algebraic operations) which, according javadoc, must
      * give the result closest to the true mathematical result. But the functions involved in the calculation of

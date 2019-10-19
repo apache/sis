@@ -23,7 +23,7 @@
  * which requires a {@link javax.sql.DataSource} providing connections to an EPSG database.
  *
  *
- * <div class="section">Connection to the database</div>
+ * <h2>Connection to the database</h2>
  * By default Apache SIS uses Apache Derby,
  * but the database can also be PostgreSQL or MS-Access.
  * The database connection is obtained by the first of the following data sources which is found:
@@ -43,7 +43,7 @@
  * With other choices, an Apache Derby driver should be available on the classpath.
  *
  *
- * <div class="section">The EPSG dataset</div>
+ * <h2>The EPSG dataset</h2>
  * A widely-used factory is the <a href="http://www.epsg.org">EPSG geodetic dataset</a>.
  * EPSG codes are numerical identifiers.
  * For example {@code "EPSG:4326"} is the EPSG identifier for the <cite>"WGS 84"</cite> geographic CRS.
@@ -60,7 +60,7 @@
  * For more determinism, the numerical codes are preferred.</div>
  *
  *
- * <div class="section">How deprecated entries are handled</div>
+ * <h2>How deprecated entries are handled</h2>
  * When an error is discovered in a Coordinate Reference System (CRS) definition, the EPSG group does not apply the
  * correction directly on the erroneous object (unless the correction is very minor).
  * Instead, the erroneous object is deprecated and a new one is created.

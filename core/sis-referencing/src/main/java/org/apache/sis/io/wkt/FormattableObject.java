@@ -44,12 +44,12 @@ import org.apache.sis.internal.util.Constants;
  *       it will rather use non-standard representation if necessary.</li>
  * </ul>
  *
- * <div class="section">Syntax coloring</div>
+ * <h2>Syntax coloring</h2>
  * A convenience {@link #print()} method is provided, which is roughly equivalent to
  * {@code System.out.println(this)} except that syntax coloring is automatically applied
  * if the terminal seems to support the ANSI escape codes.
  *
- * <div class="section">Non-standard WKT</div>
+ * <h2>Non-standard WKT</h2>
  * If this object can not be formatted without violating some WKT constraints,
  * then the behavior depends on the method invoked:
  *
@@ -234,7 +234,7 @@ public abstract class FormattableObject {
      *       (insertion point)
      * }
      *
-     * <div class="section">Formatting non-standard WKT</div>
+     * <h4>Formatting non-standard WKT</h4>
      * If the implementation can not represent this object without violating some WKT constraints,
      * it can uses its own (non-standard) keywords but shall declare that it did so by invoking one
      * of the {@link Formatter#setInvalidWKT(IdentifiedObject, Exception) Formatter.setInvalidWKT(…)}

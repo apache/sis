@@ -40,7 +40,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *   <li>{@link #features(boolean parallel)} (mandatory)</li>
  * </ul>
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * Default methods of this abstract class are thread-safe.
  * Synchronization, when needed, uses {@code this} lock.
  *

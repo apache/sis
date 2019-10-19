@@ -41,7 +41,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
  * Alternative, one can also use a {@linkplain DefaultMathTransformFactory math transform factory}</p>
  *
  *
- * <div class="section">How to add custom coordinate operations to Apache SIS</div>
+ * <h2>How to add custom coordinate operations to Apache SIS</h2>
  * {@link DefaultMathTransformFactory} can discover automatically new coordinate operations
  * (including map projections) by scanning the classpath. To define a custom coordinate operation,
  * one needs to define a <strong>thread-safe</strong> class implementing <strong>both</strong> this
@@ -104,7 +104,7 @@ public interface MathTransformProvider {
      * }
      * </div>
      *
-     * <div class="section">Purpose of the factory argument</div>
+     * <h4>Purpose of the factory argument</h4>
      * Some math transforms may actually be implemented as a chain of operation steps, for example a
      * {@linkplain DefaultMathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
      * concatenation} of {@linkplain DefaultMathTransformFactory#createAffineTransform affine transforms}

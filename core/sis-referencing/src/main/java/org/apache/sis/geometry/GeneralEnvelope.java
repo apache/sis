@@ -68,7 +68,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  *       representing a {@code BBOX} or a <cite>Well Known Text</cite> (WKT) format.</li>
  * </ul>
  *
- * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+ * <h2>Spanning the anti-meridian of a Geographic CRS</h2>
  * The <cite>Web Coverage Service</cite> (WCS) specification authorizes (with special treatment)
  * cases where <var>upper</var> &lt; <var>lower</var> at least in the longitude case. They are
  * envelopes crossing the anti-meridian, like the red box below (the green box is the usual case).
@@ -95,7 +95,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * </ul>
  * </div></div>
  *
- * <div class="section">Envelope validation</div>
+ * <h2>Envelope validation</h2>
  * If and only if this envelope is associated to a non-null CRS, then constructors and setter methods
  * in this class perform the following checks:
  *
@@ -531,11 +531,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * with the added point as an argument will return {@code true}, except if one of the point
      * coordinates was {@link Double#NaN} in which case the corresponding coordinate has been ignored.</p>
      *
-     * <div class="section">Pre-conditions</div>
+     * <h4>Pre-conditions</h4>
      * This method assumes that the specified point uses the same CRS than this envelope.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
-     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
      * This method supports envelopes spanning the anti-meridian. In such cases it is possible to
      * move both envelope borders in order to encompass the given point, as illustrated below (the
      * new point is represented by the {@code +} symbol):
@@ -611,17 +611,17 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * Adds an envelope object to this envelope.
      * The resulting envelope is the union of the two {@code Envelope} objects.
      *
-     * <div class="section">Pre-conditions</div>
+     * <h4>Pre-conditions</h4>
      * This method assumes that the specified envelope uses the same CRS than this envelope.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
-     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
      * This method supports envelopes spanning the anti-meridian. If one or both envelopes span
      * the anti-meridian, then the result of the {@code add} operation may be an envelope expanding
      * to infinities. In such case, the coordinate range will be either [−∞…∞] or [0…−0] depending on
      * whatever the original range span the anti-meridian or not.
      *
-     * <div class="section">Handling of NaN values</div>
+     * <h4>Handling of NaN values</h4>
      * {@link Double#NaN} values may be present in any dimension, in the lower coordinate, upper coordinate or both.
      * The behavior of this method in such case depends where the {@code NaN} values appear and whether an envelope
      * spans the anti-meridian:
@@ -767,14 +767,14 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     /**
      * Sets this envelope to the intersection of this envelope with the specified one.
      *
-     * <div class="section">Pre-conditions</div>
+     * <h4>Pre-conditions</h4>
      * This method assumes that the specified envelope uses the same CRS than this envelope.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
-     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
      * This method supports envelopes spanning the anti-meridian.
      *
-     * <div class="section">Handling of NaN values</div>
+     * <h4>Handling of NaN values</h4>
      * {@link Double#NaN} values may be present in any dimension, in the lower coordinate, upper coordinate or both.
      * The behavior of this method in such case depends where the {@code NaN} values appear and whether an envelope
      * spans the anti-meridian:
@@ -959,7 +959,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *       class javadoc for more information about the meaning of such range.</li>
      * </ul>
      *
-     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
      * If the envelope is spanning the anti-meridian, then some {@linkplain #getLower(int) lower}
      * coordinate values may become greater than their {@linkplain #getUpper(int) upper} counterpart
      * as a result of this method call. If such effect is undesirable, then this method may be
@@ -971,13 +971,13 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *     }
      * }
      *
-     * <div class="section">Choosing the range of longitude values</div>
+     * <h4>Choosing the range of longitude values</h4>
      * Geographic CRS typically have longitude values in the [-180 … +180]° range, but the [0 … 360]°
      * range is also occasionally used. Callers need to ensure that this envelope CRS is associated
      * to axes having the desired {@linkplain CoordinateSystemAxis#getMinimumValue() minimum} and
      * {@linkplain CoordinateSystemAxis#getMaximumValue() maximum value}.
      *
-     * <div class="section">Usage</div>
+     * <h4>Usage</h4>
      * This method is sometime useful before to compute the {@linkplain #add(Envelope) union}
      * or {@linkplain #intersect(Envelope) intersection} of envelopes, in order to ensure that
      * both envelopes are defined in the same domain. This method may also be invoked before

@@ -99,13 +99,13 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  *   </li>
  * </ol>
  *
- * <div class="section">Customization</div>
+ * <h2>Customization</h2>
  * Instances of this class are created by {@link DefaultCoordinateOperationFactory}.
  * The only public method is {@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)},
  * which dispatches its work to the {@code createOperationStep(…)} protected methods.
  * Developers can override those protected methods if they want to alter the way some operations are created.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Each instance of this class shall be used only once.</li>
  *   <li>This class is not thread-safe. A new instance shall be created for each coordinate operation to infer.</li>
@@ -1054,7 +1054,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * Concatenates two operation steps.
      * The new concatenated operation gets an automatically generated name.
      *
-     * <div class="section">Special case</div>
+     * <h4>Special case</h4>
      * If one of the given operation steps performs a change of axis order or units,
      * then that change will be merged with the other operation instead of creating an {@link ConcatenatedOperation}.
      *

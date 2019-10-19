@@ -71,7 +71,7 @@ import org.apache.sis.util.ArgumentChecks;
  * only normalized parameters (e.g. a map projection on an ellipsoid having a <cite>semi-major</cite> axis length of 1),
  * Apache SIS needs contextual information for reconstructing the parameters of the complete transforms chain.</p>
  *
- * <div class="section">Usage in map projections</div>
+ * <h2>Usage in map projections</h2>
  * This object is used mostly for Apache SIS implementation of map projections, where the non-linear kernel is a
  * {@linkplain org.apache.sis.referencing.operation.projection.NormalizedProjection normalized projection}.
  * The {@linkplain #completeTransform(MathTransformFactory, MathTransform) complete map projection}
@@ -116,7 +116,7 @@ import org.apache.sis.util.ArgumentChecks;
  *   </li>
  * </ol>
  *
- * <div class="section">Serialization</div>
+ * <h2>Serialization</h2>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *

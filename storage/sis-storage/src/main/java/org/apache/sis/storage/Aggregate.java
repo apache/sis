@@ -43,7 +43,7 @@ import java.util.Collection;
  * a <cite>production series</cite> and a <cite>transfer aggregate</cite>. In Apache SIS implementation,
  * those two kinds of aggregate will usually be implemented by different {@link DataStore} instances.
  *
- * <div class="section">Metadata</div>
+ * <h2>Metadata</h2>
  * Aggregates should have {@link #getMetadata() metadata} /
  * {@link org.apache.sis.metadata.iso.DefaultMetadata#getMetadataScopes() metadataScope} /
  * {@link org.apache.sis.metadata.iso.DefaultMetadataScope#getResourceScope() resourceScope} sets to
@@ -77,7 +77,7 @@ public interface Aggregate extends Resource {
      * {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
      * {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getTitle() title}</blockquote>
      *
-     * <div class="section">Lazy resource instantiation</div>
+     * <h4>Lazy resource instantiation</h4>
      * If the collection instantiates components only when first needed, and if a checked exception occurs
      * during invocation of a {@link Collection} or {@link java.util.Iterator} method, then the collection
      * or the iterator should wrap the exception in a {@link org.apache.sis.util.collection.BackingStoreException}.

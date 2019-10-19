@@ -103,7 +103,7 @@ public final class XML extends Static {
      * such case, the unmarshaller will try to pickup a string in the language specified
      * by this property.</p>
      *
-     * <div class="section">Default behavior</div>
+     * <h4>Default behavior</h4>
      * If this property is never set, then (un)marshalling will try to use "unlocalized" strings -
      * typically some programmatic strings like {@linkplain org.opengis.annotation.UML#identifier()
      * UML identifiers}. While such identifiers often look like English words, they are not
@@ -111,7 +111,7 @@ public final class XML extends Static {
      * The algorithm attempting to find a "unlocalized" string is defined in the
      * {@link org.apache.sis.util.iso.DefaultInternationalString#toString(Locale)} javadoc.
      *
-     * <div class="section">Special case</div>
+     * <h4>Special case</h4>
      * If the object to be marshalled is an instance of
      * {@link org.apache.sis.metadata.iso.DefaultMetadata}, then the value given to its
      * {@link org.apache.sis.metadata.iso.DefaultMetadata#setLanguage(Locale) setLanguage(Locale)}
@@ -128,7 +128,7 @@ public final class XML extends Static {
      * The value for this property shall be an instance of {@link TimeZone}
      * or a {@link CharSequence} recognized by {@link TimeZone#getTimeZone(String)}.
      *
-     * <div class="section">Default behavior</div>
+     * <h4>Default behavior</h4>
      * If this property is never set, then (un)marshalling will use the
      * {@linkplain TimeZone#getDefault() default timezone}.
      *
@@ -153,7 +153,7 @@ public final class XML extends Static {
      * The key to be used depends on the {@linkplain #METADATA_VERSION metadata version} to be marshalled.
      * Additional keys, if any, are ignored. Future SIS versions may recognize more keys.
      *
-     * <div class="section">Valid values</div>
+     * <h4>Valid values</h4>
      * The following table gives some typical URLs.
      * The URL in bold character is the default one.
      *
@@ -186,7 +186,7 @@ public final class XML extends Static {
      * The value can be {@link String} or {@link Version} object.
      * If no version is specified, then the most recent supported GML version is assumed.
      *
-     * <div class="section">Supported GML versions</div>
+     * <h4>Supported GML versions</h4>
      * Apache SIS currently supports GML 3.2.1 by default. SIS can read and write GML 3.2
      * if this property is set to "3.2". It is also possible to set this property to "3.1",
      * but the marshalled XML is not GML 3.1.1 conformant because of the differences between the two schemas.
@@ -205,7 +205,7 @@ public final class XML extends Static {
      * For example the {@code <gml:domainOfValidity>} element inside a coordinate reference system
      * is always marshalled using ISO 19139:2007 if the enclosing element uses GML 3.2 schema.</p>
      *
-     * <div class="section">Supported metadata versions</div>
+     * <h4>Supported metadata versions</h4>
      * Apache SIS currently supports ISO 19115-3:2016 by default. This version can be explicitly
      * set with value "2014" or above (because the abstract model was defined in ISO 19115-1:2014).
      * SIS can write legacy ISO 19139:2007 documents if this property is set to a value less than "2014".

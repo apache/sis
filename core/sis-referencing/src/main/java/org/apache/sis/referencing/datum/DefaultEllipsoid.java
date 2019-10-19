@@ -68,7 +68,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>{@linkplain #getEccentricity() eccentricity}</li>
  * </ul>
  *
- * <div class="section">Creating new ellipsoid instances</div>
+ * <h2>Creating new ellipsoid instances</h2>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
  * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many ellipsoids,
@@ -97,7 +97,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *     Ellipsoid e = CommonCRS.WGS84.ellipsoid();
  * }
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructors are also immutable. Unless otherwise noted in the javadoc, this condition holds if all
  * components were created using only SIS factories and static constants.

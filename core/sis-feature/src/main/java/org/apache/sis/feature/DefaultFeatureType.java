@@ -54,12 +54,12 @@ import org.apache.sis.internal.feature.Resources;
  * When such interface will be available, most references to {@code DefaultFeatureType} in the API
  * will be replaced by references to the {@code FeatureType} interface.</div>
  *
- * <div class="section">Naming</div>
+ * <h2>Naming</h2>
  * The feature type {@linkplain #getName() name} is mandatory and should be unique. Those names are the main
  * criterion used for deciding if a feature type {@linkplain #isAssignableFrom is assignable from} another type.
  * Names can be {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped} for avoiding name collision.
  *
- * <div class="section">Properties and inheritance</div>
+ * <h2>Properties and inheritance</h2>
  * Each feature type can provide descriptions for the following {@linkplain #getProperties(boolean) properties}:
  *
  * <ul>
@@ -78,13 +78,13 @@ import org.apache.sis.internal.feature.Resources;
  * which are implicitly <cite>covariant</cite> (i.e. {@code String[]} can be casted to {@code CharSequence[]}, which
  * is safe for read operations but not for write operations — the later may throw {@link ArrayStoreException}).</div>
  *
- * <div class="section">Instantiation</div>
+ * <h2>Instantiation</h2>
  * {@code DefaultFeatureType} can be instantiated directly by a call to its {@linkplain #DefaultFeatureType constructor}.
  * But a more convenient approach may be to use the {@link org.apache.sis.feature.builder.FeatureTypeBuilder} instead,
  * which provides shortcuts for frequently-used operations like creating various {@link org.opengis.util.GenericName}
  * instances sharing the same namespace.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
  * instances) and all arguments ({@code AttributeType} instances) given to the constructor are also immutable.
  * Such immutable instances can be shared by many objects and passed between threads without synchronization.
@@ -652,7 +652,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * However as a safety, this method also checks that all properties in this feature type is assignable
      * from a property of the same name in the given type.
      *
-     * <div class="section">Constraints:</div>
+     * <h4>Constraints:</h4>
      * <ul>
      *   <li>If <var>A</var> is assignable from <var>B</var> and <var>B</var> is assignable from <var>C</var>,
      *       then <var>A</var> is assignable from <var>C</var>.</li>

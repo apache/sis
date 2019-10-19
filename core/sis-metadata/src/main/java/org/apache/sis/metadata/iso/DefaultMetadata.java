@@ -121,7 +121,7 @@ import org.apache.sis.internal.jaxb.code.MD_CharacterSetCode;
  * {@code       ├─title………………………………………………} Name by which the cited resource is known.
  * {@code       └─date…………………………………………………} Reference date for the cited resource.</div>
  *
- * <div class="section">Localization</div>
+ * <h2>Localization</h2>
  * When this object is marshalled as an ISO 19139 compliant XML document, the value
  * given to the {@link #setLanguage(Locale)} method will be used for the localization
  * of {@link org.opengis.util.InternationalString} and {@link org.opengis.util.CodeList}
@@ -129,7 +129,7 @@ import org.apache.sis.internal.jaxb.code.MD_CharacterSetCode;
  * INSPIRE rules. If no language were specified, then the default locale will be the one
  * defined in the {@link org.apache.sis.xml.XML#LOCALE} marshaller property, if any.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

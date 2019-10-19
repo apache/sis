@@ -68,7 +68,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * However multiple instances of {@code MetadataSource} can be used concurrently with a single
  * {@code MetadataWriter} instance on the same database.</p>
  *
- * <div class="section">Properties</div>
+ * <h2>Properties</h2>
  * The constructor expects three Java arguments (the {@linkplain MetadataStandard metadata standard},
  * the {@linkplain DataSource data source} and the database schema) completed by an arbitrary amount
  * of optional arguments given as a map of properties.

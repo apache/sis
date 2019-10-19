@@ -194,7 +194,7 @@ public final class NADCON extends AbstractProvider {
      * Loaders of NADCON data. Instances of this class exist only at loading time.
      * This class can read both binary and ASCII grid files.
      *
-     * <div class="section">Binary format</div>
+     * <h4>Binary format</h4>
      * NADCON binary files ({@code "*.las"} and {@code "*.los"}) are organized into records
      * with the first record containing the header information, followed by the shift data.
      * The length of each record (including header) depends on the number of columns.

@@ -452,7 +452,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * given dimension. Converting a point with the resulting matrix is equivalent to first convert the point
      * with {@code coordinates[srcDim] = coordinates[srcDim] * scale + offset}, then apply the original matrix.
      *
-     * <div class="section">Equivalence between this method and Java2D {@code AffineTransform} methods</div>
+     * <h4>Equivalence between this method and Java2D {@code AffineTransform} methods</h4>
      * If this matrix was an instance of Java2D {@link AffineTransform}, then invoking this method would
      * be equivalent to invoke the following {@code AffineTransform} methods in the order shown below:
      *
@@ -539,7 +539,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * Returns a new matrix which is the result of multiplying this matrix with the specified one.
      * In other words, returns {@code this} × {@code matrix}.
      *
-     * <div class="section">Relationship with coordinate operations</div>
+     * <h4>Relationship with coordinate operations</h4>
      * In the context of coordinate operations, {@code Matrix.multiply(other)} is equivalent to
      * <code>{@linkplain AffineTransform#concatenate AffineTransform.concatenate}(other)</code>:
      * first transforms by the supplied transform and then transform the result by the original transform.
@@ -563,7 +563,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * equal to the number of columns in this matrix, and the length of the returned vector will be
      * equal to the number of rows in this matrix.
      *
-     * <div class="section">Relationship with coordinate operations</div>
+     * <h4>Relationship with coordinate operations</h4>
      * In the context of coordinate operations, {@code Matrix.multiply(vector)} is related to
      * <code>{@linkplain AffineTransform#transform(double[], int, double[], int, int) AffineTransform.transform}(…)</code>
      * except that the last {@code vector} number is implicitly 1 in {@code AffineTransform} operations.

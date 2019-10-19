@@ -46,7 +46,7 @@ import org.apache.sis.internal.system.Modules;
  * This behavior is a compromise between making constructions easier, and being suitable for
  * use in immutable objects.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * Instances of {@code DefaultInternationalString} are thread-safe. While those instances are not strictly immutable,
  * SIS typically references them as if they were immutable because of their <cite>add-only</cite> behavior.
  *
@@ -250,7 +250,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * was requested but not found, then this method looks for the {@code "fr"} locale.
      * The {@linkplain Locale#ROOT root locale} is tried last.
      *
-     * <div class="section">Handling of {@code Locale.ROOT} argument value</div>
+     * <h4>Handling of {@code Locale.ROOT} argument value</h4>
      * {@link Locale#ROOT} can be given to this method for requesting a "unlocalized" string,
      * typically some programmatic values like enumerations or identifiers.
      * While identifiers often look like English words, {@code Locale.ROOT} is not considered
@@ -271,7 +271,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      *       an arbitrary string.</li>
      * </ul>
      *
-     * <div class="section">Handling of {@code null} argument value</div>
+     * <h4>Handling of {@code null} argument value</h4>
      * In the default implementation, the {@code null} locale is handled as a synonymous of
      * {@code Locale.ROOT}. However subclasses are free to use a different fallback. Client
      * code are encouraged to specify only non-null values for more determinist behavior.

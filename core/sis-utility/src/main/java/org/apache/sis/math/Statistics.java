@@ -58,7 +58,7 @@ import static java.lang.Double.doubleToLongBits;
  * The statistics are updated every time an {@link #accept(double)} method is invoked with a non-NaN
  * value.</p>
  *
- * <div class="section">Examples</div>
+ * <h2>Examples</h2>
  * The following examples assume that a <var>y</var>=<var>f</var>(<var>x</var>) function
  * is defined. A simple usage is:
  *

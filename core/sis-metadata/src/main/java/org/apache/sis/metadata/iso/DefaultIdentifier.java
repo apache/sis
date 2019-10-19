@@ -60,7 +60,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * which is a class unrelated to the usual {@code org.apache.metadata} hierarchy
  * because of the immutable nature of referencing objects.</p>
  *
- * <div class="section">Text, URN and XML representations</div>
+ * <h2>Text, URN and XML representations</h2>
  * The XML representation of {@link DefaultIdentifier} is as the following example:
  *
  * {@preformat xml
@@ -78,7 +78,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *   </mcc:MD_Identifier>
  * }
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

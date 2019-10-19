@@ -56,7 +56,7 @@ import org.apache.sis.internal.jaxb.code.DS_InitiativeTypeCode;
  * {@code AssociatedResource} interface (tentatively in GeoAPI 3.1 or 4.0).
  * </div>
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

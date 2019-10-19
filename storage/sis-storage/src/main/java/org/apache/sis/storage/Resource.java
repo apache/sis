@@ -149,7 +149,7 @@ public interface Resource {
      * or unless this {@code Resource} is itself garbage collected. However if the given type of events can never
      * happen with this resource, then this method is not required to keep a reference to the given listener.</p>
      *
-     * <div class="section">Warning events</div>
+     * <h4>Warning events</h4>
      * If {@code eventType} is assignable from <code>{@linkplain org.apache.sis.storage.event.WarningEvent}.class</code>,
      * then registering that listener turns off logging of warning messages for this resource.
      * This side-effect is applied on the assumption that the registered listener will handle
@@ -172,7 +172,7 @@ public interface Resource {
      * {@code removeListener(type, ls)} needs to be invoked twice in order to remove all instances of that listener.
      * If the given listener is not found, then this method does nothing (no exception is thrown).</p>
      *
-     * <div class="section">Warning events</div>
+     * <h4>Warning events</h4>
      * If {@code eventType} is <code>{@linkplain org.apache.sis.storage.event.WarningEvent}.class</code>
      * and if, after this method invocation, there is no remaining listener for warning events,
      * then this {@code Resource} will send future warnings to the loggers.

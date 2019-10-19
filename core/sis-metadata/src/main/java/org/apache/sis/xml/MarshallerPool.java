@@ -49,11 +49,11 @@ import org.apache.sis.util.CharSequences;
  *     pool.recycle(marshaller);
  * }
  *
- * <div class="section">Configuring (un)marshallers</div>
+ * <h2>Configuring (un)marshallers</h2>
  * The (un)marshallers created by this class can optionally by configured with the SIS-specific
  * properties defined in the {@link XML} class, in addition to JAXB standard properties.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code MarshallerPool} instance can be safely used by many threads without synchronization
  * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
  * from multiple threads.
@@ -354,7 +354,7 @@ public class MarshallerPool {
      * The caller should not use anymore the given marshaller after this method call,
      * since the marshaller may be re-used by another thread at any time after recycle.
      *
-     * <div class="section">Cautions</div>
+     * <h4>Cautions</h4>
      * <ul>
      *   <li>Do not invoke this method if the marshaller threw an exception, since the
      *       marshaller may be in an invalid state. In particular, this method should not
@@ -378,7 +378,7 @@ public class MarshallerPool {
      * The caller should not use anymore the given unmarshaller after this method call,
      * since the unmarshaller may be re-used by another thread at any time after recycle.
      *
-     * <div class="section">Cautions</div>
+     * <h4>Cautions</h4>
      * <ul>
      *   <li>Do not invoke this method if the unmarshaller threw an exception, since the
      *       unmarshaller may be in an invalid state. In particular, this method should not

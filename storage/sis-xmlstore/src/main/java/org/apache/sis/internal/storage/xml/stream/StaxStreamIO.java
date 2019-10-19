@@ -31,7 +31,7 @@ import org.apache.sis.util.resources.Errors;
  * Those {@code DataStore}s will typically manage {@code StaxStreamReader} and {@code StaxStreamWriter}
  * instances on which they delegate their read and write operations.
  *
- * <div class="section">Multi-threading</div>
+ * <h2>Multi-threading</h2>
  * This class and subclasses are not tread-safe. Synchronization shall be done by the {@code DataStore}
  * that contains the {@code StaxStreamIO} instances.
  *

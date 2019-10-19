@@ -50,7 +50,7 @@ import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
  * <div class="preformat">{@code CI_Telephone}
  * {@code   └─number……} Telephone number by which individuals can contact responsible organisation or individual.</div>
  *
- * <div class="section">Differences between versions 2003 and 2014 of ISO 19115</div>
+ * <h2>Differences between versions 2003 and 2014 of ISO 19115</h2>
  * For any contact having more than one telephone number, the way to organize the information
  * changed significantly between the two versions of ISO standard:
  *
@@ -63,7 +63,7 @@ import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
  *       {@link #getNumber()} and {@link #getNumberType()}.</li>
  * </ul>
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

@@ -48,7 +48,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 /**
  * Defines the origin from which longitude values are determined.
  *
- * <div class="section">Creating new prime meridian instances</div>
+ * <h2>Creating new prime meridian instances</h2>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
  * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many prime meridians,
@@ -75,7 +75,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *     PrimeMeridian pm = CommonCRS.WGS84.primeMeridian();
  * }
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
  * all components were created using only SIS factories and static constants.
@@ -339,7 +339,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * Returns {@code true} if {@link #formatTo(Formatter)} should conservatively format the angular unit
      * even if it would be legal to omit it.
      *
-     * <div class="section">Rational</div>
+     * <h4>Rational</h4>
      * According the ISO 19162 standard, it is legal to omit the {@code PrimeMeridian} angular unit when
      * that unit is the same than the unit of the axes of the enclosing {@code GeographicCRS}. However the
      * relationship between the CRS axes and the prime meridian is less obvious in WKT2 than it was in WKT1,

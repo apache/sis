@@ -118,7 +118,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * in radians. This is the opposite of {@link Parameters} where all angles are in CRS-dependent units,
  * typically decimal degrees.</p>
  *
- * <div class="section">Serialization</div>
+ * <h2>Serialization</h2>
  * Serialization of this class is appropriate for short-term storage or RMI use, but may not be compatible
  * with future versions. For long term storage, WKT (Well Know Text) or XML are more appropriate.
  *
@@ -401,7 +401,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *   </tr>
      * </table>
      *
-     * <div class="section">Which parameters are considered</div>
+     * <h4>Which parameters are considered</h4>
      * The {@code roles} map specifies which parameters to look for <cite>central meridian</cite>,
      * <cite>scale factor</cite>, <cite>false easting</cite>, <cite>false northing</cite> and other values.
      * All entries in the {@code roles} map are optional.
@@ -651,7 +651,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * in {@code dstPts} at the given offset. In addition, opportunistically computes the
      * transform derivative if requested.
      *
-     * <div class="section">Normalization</div>
+     * <h4>Normalization</h4>
      * The input coordinates are (<var>λ</var>,<var>φ</var>) (the variable names for <var>longitude</var> and
      * <var>latitude</var> respectively) angles in radians, eventually pre-multiplied by projection-specific factors.
      * Input coordinate shall have the <cite>central meridian</cite> removed from the longitude by the caller
@@ -671,7 +671,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * <div class="note"><b>Note 2:</b> in <a href="https://proj4.org/">Proj.4</a>, the same standardization,
      * described above, is handled by {@code pj_fwd.c}, except for the projection-specific additional factors.</div>
      *
-     * <div class="section">Argument checks</div>
+     * <h4>Argument checks</h4>
      * The input longitude and latitude are usually (but not always) in the range [-π … π] and [-π/2 … π/2] respectively.
      * However values outside those ranges are accepted on the assumption that most implementations use those values
      * only in trigonometric functions like {@linkplain Math#sin(double) sine} and {@linkplain Math#cos(double) cosine}.
@@ -698,7 +698,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * {@code ptDst} at the given offset. The output coordinates are (<var>longitude</var>, <var>latitude</var>)
      * angles in radians, usually (but not necessarily) in the range [-π … π] and [-π/2 … π/2] respectively.
      *
-     * <div class="section">Normalization</div>
+     * <h4>Normalization</h4>
      * Input coordinate shall have the (<cite>false easting</cite>, <cite>false northing</cite>) removed
      * by the caller and the result divided by the global <cite>scale factor</cite> before this method is invoked.
      * After this method is invoked, the caller will need to add the <cite>central meridian</cite> to the longitude

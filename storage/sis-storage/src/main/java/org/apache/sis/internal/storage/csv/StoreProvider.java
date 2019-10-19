@@ -39,7 +39,7 @@ import org.apache.sis.util.ArgumentChecks;
  * The provider of {@link Store} instances. Given a {@link StorageConnector} input,
  * this class tries to instantiate a CSV {@code Store}.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code StoreProvider} instance can be safely used by many threads without synchronization on
  * the part of the caller. However the {@link Store} instances created by this factory are not thread-safe.
  *

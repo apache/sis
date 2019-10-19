@@ -52,7 +52,7 @@
  *   </li>
  * </ul>
  *
- * <div class="section">Anatomy of a name</div>
+ * <h2>Anatomy of a name</h2>
  * Names may be {@linkplain org.apache.sis.util.iso.AbstractName#toFullyQualifiedName() fully qualified}
  * (like {@code "urn:ogc:def:crs:EPSG::4326"}),
  * or they may be relative to a {@linkplain org.apache.sis.util.iso.AbstractName#scope() scope}

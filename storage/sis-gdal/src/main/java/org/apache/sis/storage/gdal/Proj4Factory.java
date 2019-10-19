@@ -530,7 +530,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * Creates a new CRS from the given {@literal Proj.4} definition.
      * The {@code "Proj4:"} prefix (ignoring case), if present, is ignored.
      *
-     * <div class="section">Apache SIS extension</div>
+     * <h4>Apache SIS extension</h4>
      * Proj.4 unconditionally requires 3 letters for the {@code "+axis="} parameter — for example {@code "neu"} for
      * <cite>North</cite>, <cite>East</cite> and <cite>Up</cite> respectively — regardless the number of dimensions
      * in the CRS to create. Apache SIS makes the vertical direction optional:

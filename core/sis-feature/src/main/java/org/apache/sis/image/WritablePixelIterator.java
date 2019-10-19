@@ -45,7 +45,7 @@ import org.apache.sis.internal.feature.Resources;
  *     }
  * }
  *
- * <div class="section">Casting a {@code PixelIterator}</div>
+ * <h2>Casting a {@code PixelIterator}</h2>
  * To check if a {@code PixelIterator} can be used for writing pixels, a {@code … instanceof WritablePixelIterator}
  * check is not sufficient. The {@link PixelIterator#isWritable()} method should be invoked instead.
  *

@@ -24,7 +24,7 @@ import org.opengis.util.FactoryException;
  * The most common case is a NADCON or NTv2 datum shift operation requested while the
  * datum shift grids was not found in the {@code $SIS_DATA/DatumChanges} directory.
  *
- * <div class="section">Relationship with other exceptions</div>
+ * <h2>Relationship with other exceptions</h2>
  * This exception means that the factory failed to create a particular object.
  * However the factory may succeed in creating other objects.
  * By contrast, {@link UnavailableFactoryException} means that the whole factory can not be used at all.

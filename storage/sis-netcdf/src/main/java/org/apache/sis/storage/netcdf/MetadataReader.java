@@ -98,7 +98,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  * {@linkplain AttributeNames#LONGITUDE longitude} and {@linkplain AttributeNames#LATITUDE latitude}
  * resolutions are often more accurate in that group.
  *
- * <div class="section">Known limitations</div>
+ * <h2>Known limitations</h2>
  * <ul>
  *   <li>{@code "degrees_west"} and {@code "degrees_south"} units not correctly handled.</li>
  *   <li>Units of measurement not yet declared in the {@link Band} elements.</li>

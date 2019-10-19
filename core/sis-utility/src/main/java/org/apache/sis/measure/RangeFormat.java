@@ -67,7 +67,7 @@ import org.apache.sis.internal.util.Numerics;
  * If the range to format is an instance of {@link MeasurementRange}, then the
  * {@linkplain Unit unit of measurement} is appended except for empty ranges.
  *
- * <div class="section">Lenient parsing</div>
+ * <h2>Lenient parsing</h2>
  * At parsing time, the above formatting rules are relaxed as below:
  *
  * <ul>
@@ -77,7 +77,7 @@ import org.apache.sis.internal.util.Numerics;
  *       as well as "{@code {value}}".</li>
  * </ul>
  *
- * <div class="section">Range type and type of range elements</div>
+ * <h2>Range type and type of range elements</h2>
  * The kind of ranges created by the {@link #parse(String) parse(…)} methods is determined
  * by the type of range elements:
  *

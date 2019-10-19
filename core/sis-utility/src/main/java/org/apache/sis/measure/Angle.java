@@ -54,13 +54,13 @@ import static org.apache.sis.math.MathFunctions.isNegative;
  *   <li>{@linkplain ElevationAngle Elevation angle} is the angular height from the horizontal plane to an object above the horizon.</li>
  * </ul>
  *
- * <div class="section">Formatting angles</div>
+ * <h2>Formatting angles</h2>
  * The recommended way to format angles is to instantiate an {@link AngleFormat} once, then to
  * reuse it many times. As a convenience, {@code Angle} objects can also be formatted by the
  * {@code "%s"} conversion specifier of {@link Formatter}, but this is less efficient for this
  * class.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class and the {@link Latitude} / {@link Longitude} subclasses are immutable, and thus
  * inherently thread-safe. Other subclasses may or may not be immutable, at implementation choice
  * (see {@link java.lang.Number} for an example of a similar in purpose class having mutable subclasses).

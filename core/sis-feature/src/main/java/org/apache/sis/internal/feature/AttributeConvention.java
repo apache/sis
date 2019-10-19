@@ -53,7 +53,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *       map returned by {@link org.apache.sis.feature.DefaultAttributeType#characteristics()}.</li>
  * </ul>
  *
- * <div class="section">Mixing with other conventions</div>
+ * <h2>Mixing with other conventions</h2>
  * The conventions defined in this class are specific to Apache SIS.
  * Current implementation does not support any other convention than the SIS one,
  * but we may refactor this class in future SIS versions if there is a need to support different conventions.

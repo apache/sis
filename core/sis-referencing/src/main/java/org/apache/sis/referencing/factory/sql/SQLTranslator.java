@@ -93,7 +93,7 @@ import org.apache.sis.internal.metadata.sql.SQLUtilities;
  * the ones used by EPSG in the MS-Access version or the PostgreSQL, MySQL or Oracle version of the database.
  * Consequently it is legal to use the MS-Access table names, which are more readable, in a PostgreSQL database.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * All {@code SQLTranslator} instances given to the {@link EPSGFactory} constructor
  * <strong>shall</strong> be immutable and thread-safe.
  *

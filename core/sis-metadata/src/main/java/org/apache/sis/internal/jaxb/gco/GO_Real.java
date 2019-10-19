@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlType;
  * The JAXB default behavior is to marshal primitive Java types directly, without such wrapper element.
  * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19115-3.
  *
- * <div class="section">Relationship with {@code GO_Decimal}</div>
+ * <h2>Relationship with {@code GO_Decimal}</h2>
  * This adapter is identical to {@link GO_Decimal} except for the element name, which is {@code "Real"}
  * instead than {@code "Decimal"}. This adapter is the most widely used one in IS 19139 XML schema.
  * The few exceptions are documented in {@link GO_Decimal}.

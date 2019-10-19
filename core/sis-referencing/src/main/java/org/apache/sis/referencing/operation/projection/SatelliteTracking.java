@@ -51,11 +51,11 @@ import static org.apache.sis.internal.referencing.provider.SatelliteTracking.*;
  *       on the conical form and along both on the cylindrical form.</li>
  * </ul>
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * This map projection supports only circular orbits. The Earth is assumed spherical.
  * Areas close to poles can not be mapped.
  *
- * <div class="section">References</div>
+ * <h2>References</h2>
  * John P. Snyder., 1987. <u>Map Projections - A Working Manual</u>
  * chapter 28: <cite>Satellite-tracking projections</cite>.
  *

@@ -31,7 +31,7 @@
  *       (ISO 19112), together with the linking from geographic identifiers to coordinates.</li>
  * </ul>
  *
- * <div class="section">Fetching geodetic object instances</div>
+ * <h2>Fetching geodetic object instances</h2>
  * Geodetic objects can be instantiated either
  * {@linkplain org.apache.sis.referencing.factory.GeodeticObjectFactory directly by specifying all information to a factory method or constructor}, or
  * {@linkplain org.apache.sis.referencing.factory.GeodeticAuthorityFactory indirectly by specifying the identifier of an entry in a database}.
@@ -42,7 +42,7 @@
  * {@link org.apache.sis.referencing.CRS#fromWKT(String)} and
  * {@link org.apache.sis.referencing.CRS#fromXML(String)}
  *
- * <div class="section">Usage example</div>
+ * <h2>Usage example</h2>
  * The following example projects a (<var>latitude</var>, <var>longitude</var>) coordinate to
  * a <cite>Universal Transverse Mercator</cite> projection in the zone of the coordinate:
  *
@@ -60,7 +60,7 @@
  *   System.out.println(position);
  * }
  *
- * <div class="section">The EPSG database</div>
+ * <h2>The EPSG database</h2>
  * The EPSG geodetic parameter dataset is a structured database required to:
  *
  * <ul>

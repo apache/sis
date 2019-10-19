@@ -57,19 +57,19 @@ import org.apache.sis.util.logging.Logging;
  * In addition to the symbols of the <cite>Système international</cite> (SI), this class is also capable to handle
  * some symbols found in <cite>Well Known Text</cite> (WKT) definitions or in XML files.
  *
- * <div class="section">Parsing authority codes</div>
+ * <h2>Parsing authority codes</h2>
  * As a special case, if a character sequence given to the {@link #parse(CharSequence)} method is of the
  * {@code "EPSG:####"} or {@code "urn:ogc:def:uom:EPSG::####"} form (ignoring case and whitespaces),
  * then {@code "####"} is parsed as an integer and forwarded to the {@link Units#valueOfEPSG(int)} method.
  *
- * <div class="section">NetCDF unit symbols</div>
+ * <h2>NetCDF unit symbols</h2>
  * The attributes in netCDF files often merge the axis direction with the angular unit,
  * as in {@code "degrees_east"}, {@code "degrees_north"} or {@code "Degrees North"}.
  * This class ignores those suffixes and unconditionally returns {@link Units#DEGREE} for all axis directions.
  * In particular, the units for {@code "degrees_west"} and {@code "degrees_east"} do <strong>not</strong> have
  * opposite sign. It is caller responsibility to handle the direction of axes associated to netCDF units.
  *
- * <div class="section">Multi-threading</div>
+ * <h2>Multi-threading</h2>
  * {@code UnitFormat} is generally not thread-safe. If units need to be parsed or formatted in different threads,
  * each thread should have its own {@code UnitFormat} instance.
  *
@@ -153,7 +153,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          * Format unit symbols using a syntax close to the Unified Code for Units of Measure (UCUM) one.
          * The character set is restricted to ASCII. The multiplication operator is the period (“.”).
          *
-         * <div class="section">Modification to UCUM syntax rules</div>
+         * <h4>Modification to UCUM syntax rules</h4>
          * UCUM does not allow floating point numbers in unit terms, so the use of period as an operator
          * should not be ambiguous. However Apache SIS relaxes this restriction in order to support the
          * scale factors commonly found in angular units (e.g. π/180). The meaning of a period in a string
@@ -387,7 +387,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * depending on the {@linkplain #getStyle() format style}.
      * If the specified label is already associated to another unit, then the previous association is discarded.
      *
-     * <div class="section">Restriction on character set</div>
+     * <h4>Restriction on character set</h4>
      * Current implementation accepts only {@linkplain Character#isLetter(int) letters},
      * {@linkplain Characters#isSubScript(int) subscripts}, {@linkplain Character#isSpaceChar(int) spaces}
      * (including non-breaking spaces but not CR/LF characters),

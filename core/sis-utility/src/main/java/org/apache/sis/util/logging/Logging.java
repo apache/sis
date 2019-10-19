@@ -115,7 +115,7 @@ public final class Logging extends Static {
      * If the given {@code factory} argument is {@code null} (the default),
      * then the standard Logging framework will be used.
      *
-     * <div class="section">Limitation</div>
+     * <h4>Limitation</h4>
      * SIS classes typically declare a logger constant like below:
      *
      * {@preformat java

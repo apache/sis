@@ -96,7 +96,7 @@ import org.apache.sis.feature.AbstractFeature;
  *     }
  * }
  *
- * <div class="section">Multi-threading</div>
+ * <h2>Multi-threading</h2>
  * This class and subclasses are not tread-safe. Synchronization shall be done by the {@code DataStore}
  * that contains the {@code StaxStreamReader} instance.
  *

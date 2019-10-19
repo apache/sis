@@ -40,7 +40,7 @@ import org.apache.sis.util.Characters;
  * axis abbreviations rather than texts. Some mappings may also apply to words instead than characters, when the word
  * come from a controlled vocabulary.
  *
- * <div class="section">Permitted characters in Well Known Text</div>
+ * <h2>Permitted characters in Well Known Text</h2>
  * The ISO 19162 standard restricts <cite>Well Known Text</cite> to the following characters in all
  * {@linkplain Formatter#append(String, ElementKind) quoted texts} except in {@code REMARKS["…"]} elements:
  *
@@ -54,7 +54,7 @@ import org.apache.sis.util.Characters;
  * <p>The {@link #filter(String)} method is responsible for replacing or removing characters outside the above-cited
  * set of permitted characters.</p>
  *
- * <div class="section">Application to mathematical symbols</div>
+ * <h2>Application to mathematical symbols</h2>
  * For Greek letters used as mathematical symbols in
  * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getAbbreviation() coordinate axis abbreviations},
  * the ISO 19162 standard recommends:
@@ -81,7 +81,7 @@ import org.apache.sis.util.Characters;
  * The {@link #toLatinAbbreviation toLatinAbbreviation(…)} and {@link #toUnicodeAbbreviation toUnicodeAbbreviation(…)}
  * methods are responsible for doing the transliteration at formatting and parsing time, respectively.
  *
- * <div class="section">Replacement of names</div>
+ * <h2>Replacement of names</h2>
  * The longitude and latitude axis names are explicitly fixed by ISO 19111:2007 to <cite>"Geodetic longitude"</cite>
  * and <cite>"Geodetic latitude"</cite>. But ISO 19162:2015 §7.5.3(ii) said that the <cite>"Geodetic"</cite> part in
  * those names shall be omitted at WKT formatting time.

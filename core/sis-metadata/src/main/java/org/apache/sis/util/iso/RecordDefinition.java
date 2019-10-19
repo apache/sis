@@ -38,7 +38,7 @@ import org.apache.sis.internal.simple.SimpleAttributeType;
  * Holds a {@code Record} definition in a way more convenient for Apache SIS than
  * what the {@code RecordType} interface provides.
  *
- * <div class="section">Serialization</div>
+ * <h2>Serialization</h2>
  * This base class is intentionally not serializable, and all private fields are marked as transient for making
  * this decision more visible. This is because the internal details of this class are quite arbitrary, so we do
  * not want to expose them in serialization for compatibility reasons. Furthermore some information are redundant,
@@ -58,7 +58,7 @@ abstract class RecordDefinition {                                       // Inten
      * is not an instance of {@link DefaultRecordType}. So this adapter is used only if Apache SIS is mixed
      * with other implementations.
      *
-     * <div class="section">Serialization</div>
+     * <h4>Serialization</h4>
      * This class is serializable if the {@code RecordType} given to the constructor is also serializable.
      */
     static final class Adapter extends RecordDefinition implements Serializable {

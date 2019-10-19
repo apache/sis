@@ -72,7 +72,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  *   </li>
  * </ul>
  *
- * <div class="section">Algorithms and accuracy</div>
+ * <h2>Algorithms and accuracy</h2>
  * {@code GeodeticCalculator} uses two set of formulas, depending if the figure of the Earth
  * {@linkplain Ellipsoid#isSphere() is a sphere} or an ellipsoid.
  * Publications relevant to this class are:
@@ -100,14 +100,14 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  * Apache SIS accuracy does not go as far as GeographicLib because the rest of Apache SIS
  * library (map projections, <i>etc.</i>) aims for an one centimetre accuracy anyway.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * Current implementation can not compute the geodesics in some cases.
  * In particular, calculation may fail for antipodal points on an ellipsoid.
  * Karney's algorithm should cover those cases,
  * but this {@code GeodeticCalculator} implementation may not be sufficiently tuned.
  * See <a href="https://issues.apache.org/jira/browse/SIS-467">SIS-467</a> for more information.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * This class is not thread-safe. If geodetic calculations are needed in a multi-threads environment,
  * then a distinct instance of {@code GeodeticCalculator} needs to be created for each thread.
  *

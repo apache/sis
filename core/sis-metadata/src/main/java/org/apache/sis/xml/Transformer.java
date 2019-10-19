@@ -59,7 +59,7 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  * methods in {@link org.apache.sis.metadata.iso} packages for legacy ISO 19115:2003 properties), and some
  * transformations, in particular namespace changes, are better handled by this {@code Transformer}.
  *
- * <div class="section">Why using {@code Transformer}</div>
+ * <h2>Why using {@code Transformer}</h2>
  * When the XML schemas of an international standard is updated, the URL of the namespace is often modified.
  * For example when GML has been updated from version 3.1 to 3.2, the URL mandated by the international standard
  * changed from {@code "http://www.opengis.net/gml"} to {@code "http://www.opengis.net/gml/3.2"}

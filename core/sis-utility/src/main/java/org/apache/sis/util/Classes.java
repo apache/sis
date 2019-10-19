@@ -380,7 +380,7 @@ public final class Classes extends Static {
      * implements both the {@link Set} and {@link Collection} interfaces, then the returned
      * array contains only the {@code Set} interface.
      *
-     * <div class="section">Example</div>
+     * <h4>Example</h4>
      * {@code getLeafInterfaces(ArrayList.class, Collection.class)} returns an array of length 1
      * containing {@code List.class}.
      *

@@ -23,7 +23,7 @@
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
  *
- * <div class="section">Main content</div>
+ * <h2>Main content</h2>
  * {@link org.apache.sis.internal.jaxb.IdentifierMapAdapter} is our internal implementation of
  * the public {@link org.apache.sis.xml.IdentifierMap} interface. The actual implementation is
  * usually the {@code ModifiableIdentifierMap} subclass.

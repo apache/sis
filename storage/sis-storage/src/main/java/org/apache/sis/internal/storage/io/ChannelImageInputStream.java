@@ -346,7 +346,7 @@ loop:   while ((c = read()) >= 0) {
      * Closes the {@linkplain #channel}.
      * If the channel is backed by an {@link java.io.InputStream}, that stream will be closed too.
      *
-     * <div class="section">Departure from Image I/O standard implementation</div>
+     * <h4>Departure from Image I/O standard implementation</h4>
      * Java Image I/O wrappers around input/output streams do not close the underlying stream (see for example
      * {@link javax.imageio.stream.FileCacheImageInputStream#close()} specification). But Apache SIS needs the
      * underlying stream to be closed because we do not keep reference to the original input stream. Note that

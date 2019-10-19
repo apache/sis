@@ -38,7 +38,7 @@ import org.apache.sis.internal.metadata.sql.SQLBuilder;
  * numbers (i.e. if some old records have been deleted). Generating strictly increasing sequence is not a goal of this
  * class, since it would be too costly.</p>
  *
- * <div class="section">Assumptions</div>
+ * <h2>Assumptions</h2>
  * <ul>
  *   <li>{@code SELECT DISTINCT "ID" FROM "Table" WHERE "ID" LIKE 'proposal%' ORDER BY "ID";} is assumed efficient.
  *       For example in the case of a PostgreSQL database, it requires PostgreSQL 8.0 or above with a {@code btree}

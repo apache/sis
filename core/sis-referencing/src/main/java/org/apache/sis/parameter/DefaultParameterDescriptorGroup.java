@@ -45,7 +45,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * The definition of a group of related parameters used by an operation method.
  * {@code DefaultParameterDescriptorGroup} instances are immutable and thus thread-safe.
  *
- * <div class="section">Instantiation</div>
+ * <h2>Instantiation</h2>
  * Parameter descriptors are usually pre-defined by the SIS library and available through the following methods:
  *
  * <ul>
