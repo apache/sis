@@ -237,7 +237,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      *   <li>distance from Earth center on the Z axis (toward North pole).</li>
      * </ol>
      *
-     * <div class="section">Geographic to geocentric conversions</div>
+     * <h4>Geographic to geocentric conversions</h4>
      * For converting geographic coordinates to geocentric coordinates, {@code EllipsoidToCentricTransform}
      * instances need to be concatenated with the following affine transforms:
      *

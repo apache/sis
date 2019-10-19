@@ -279,7 +279,7 @@ public interface TreeTable {
          * including the list of children, is fully determined by those metadata. An identity comparison
          * (with {@code ==}) is sufficient for the purpose of avoiding infinite recursivity.</p></div>
          *
-         * <div class="section">Flexibility in implementations</div>
+         * <h4>Flexibility in implementations</h4>
          * The above list specifies minimal conditions that must be true when two nodes are considered equal.
          * Implementations should not relax those conditions, but are free to make them more restrictive.
          * In particular, many implementations will require that the two nodes are instances of the same class.

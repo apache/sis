@@ -51,7 +51,7 @@ import org.apache.sis.internal.jaxb.code.DS_InitiativeTypeCode;
  * According ISO 19115, at least one of {@linkplain #getAggregateDataSetName() aggregate dataset name}
  * and {@linkplain #getAggregateDataSetIdentifier() aggregate dataset identifier} shall be provided.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

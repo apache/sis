@@ -413,7 +413,7 @@ public final class Numerics extends Static {
      * for the range of {@code double} exponents. We do not put this method in public API because it
      * does not check the argument validity.
      *
-     * <div class="section">Arithmetic notes</div>
+     * <h4>Arithmetic notes</h4>
      * {@code toExp10(getExponent(10ⁿ))} returns <var>n</var> only for {@code n == 0}, and <var>n</var>-1 in all other
      * cases. This is because 10ⁿ == m × 2<sup>exp2</sup> where the <var>m</var> significand is always greater than 1,
      * which must be compensated by a smaller {@code exp2} value such as {@code toExp10(exp2) < n}. Note that if the

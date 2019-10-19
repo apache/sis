@@ -78,7 +78,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * for the <var>code</var> part.  If a factory is found in the list of factories given at construction time,
  * then the work is delegated to that factory. Otherwise a {@link NoSuchAuthorityFactoryException} is thrown.</p>
  *
- * <div class="section">URI syntax</div>
+ * <h2>URI syntax</h2>
  * This factory can also parse URNs or URLs of the following forms:
  *
  * <ul>
@@ -123,7 +123,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation coordinate operations}
  * for creating a concatenated operation.
  *
- * <div class="section">Multiple versions for the same authority</div>
+ * <h2>Multiple versions for the same authority</h2>
  * {@code MultiAuthoritiesFactory} accepts an arbitrary amount of factories for the same authority, provided that
  * those factories have different version numbers. If a {@code createFoo(String)} method is invoked with a URN
  * containing a version number different than zero, then {@code MultiAuthoritiesFactory} will search for a factory
@@ -140,7 +140,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * then the first EPSG factory in iteration order is used regardless of its version number.
  * </div>
  *
- * <div class="section">Multi-threading</div>
+ * <h2>Multi-threading</h2>
  * This class is thread-safe if all delegate factories are themselves thread-safe.
  * However the factory <em>providers</em>, which are given to the constructor as {@link Iterable} instances,
  * do not need to be thread-safe. See constructor Javadoc for more information.
@@ -209,7 +209,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * Calls to {@code createFoo(String)} methods will scan the supplied factories in their iteration order when first needed.
      * The first factory having the requested {@linkplain GeodeticAuthorityFactory#getCodeSpaces() namespace} will be used.
      *
-     * <div class="section">Requirements</div>
+     * <h4>Requirements</h4>
      * {@code MultiAuthoritiesFactory} may iterate over the same {@code Iterable} more than once.
      * Each iteration <strong>shall</strong> return the same instances than previous iterations,
      * unless {@link #reload()} has been invoked.
@@ -218,12 +218,12 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * {@code MultiAuthoritiesFactory} will use them only in blocks synchronized on the {@code Iterable} instance.
      * For example all usages of {@code crsFactory} will be done inside a {@code synchronized(crsFactory)} block.</p>
      *
-     * <div class="section">Name collision</div>
+     * <h4>Name collision</h4>
      * If an {@code Iterable} contains more than one factory for the same namespace and version,
      * then only the first occurrence will be used. All additional factories for the same namespace
      * and version will be ignored, after a warning has been logged.
      *
-     * <div class="section">Caching</div>
+     * <h4>Caching</h4>
      * {@code MultiAuthoritiesFactory} caches the factories found from the given {@code Iterable}s,
      * but does not cache the objects created by those factories.
      * This constructor assumes that the given factories already do their own caching.

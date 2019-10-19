@@ -51,7 +51,7 @@ import static org.apache.sis.internal.referencing.provider.LambertCylindricalEqu
  *   <tr><td>Balthasart</td>                        <td>50°</td></tr>
  * </table>
  *
- * <div class="section">Description</div>
+ * <h2>Description</h2>
  * The parallels and the meridians are straight lines and cross at right angles.
  * The scale is true along standard parallels, but distortion increase greatly at other locations.
  * Distortions are so great that there is little use of this projection for world mapping purposes.

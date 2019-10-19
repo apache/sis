@@ -159,7 +159,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  *   </tr>
  * </table>
  *
- * <div class="section">Note on codes in CRS namespace</div>
+ * <h2>Note on codes in CRS namespace</h2>
  * The format is usually "{@code CRS:}<var>n</var>" where <var>n</var> is a number like 27, 83 or 84.
  * However this factory is lenient and allows the {@code CRS} part to be repeated as in {@code "CRS:CRS84"}.
  * It also accepts {@code "OGC"} as a synonymous of the {@code "CRS"} namespace.
@@ -167,7 +167,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * <div class="note"><b>Examples:</b>
  * {@code "CRS:27"}, {@code "CRS:83"}, {@code "CRS:84"}, {@code "CRS:CRS84"}, {@code "OGC:CRS84"}.</div>
  *
- * <div class="section">Note on codes in AUTO(2) namespace</div>
+ * <h2>Note on codes in AUTO(2) namespace</h2>
  * The format is usually "{@code AUTO2:}<var>n</var>,<var>factor</var>,<var>λ₀</var>,<var>φ₀</var>"
  * where <var>n</var> is a number between 42001 and 42005 inclusive, <var>factor</var> is a conversion
  * factor from the CRS units to metres (e.g. 0.3048 for a CRS with axes in feet) and (<var>λ₀</var>,<var>φ₀</var>)

@@ -22,7 +22,7 @@ import org.opengis.referencing.operation.TransformException;
 /**
  * Thrown by {@link NormalizedProjection} when a map projection failed.
  *
- * <div class="section">When this exception is thrown</div>
+ * <h2>When this exception is thrown</h2>
  * Apache SIS implementations of map projections return a {@linkplain Double#isFinite(double) finite} number
  * under normal conditions, but may also return an {@linkplain Double#isInfinite(double) infinite} number or
  * {@linkplain Double#isNaN(double) NaN} value, or throw this exception.

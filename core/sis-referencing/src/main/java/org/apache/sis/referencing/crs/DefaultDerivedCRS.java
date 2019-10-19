@@ -88,7 +88,7 @@ import org.opengis.referencing.datum.ParametricDatum;
  * Those specialized subclasses can be inferred automatically by the {@link #create create(…)} static method.
  * Alternatively, users can create their own {@code DefaultDerivedCRS} subclass implementing the desired interface.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
  * conditions. This means that unless otherwise noted in the javadoc, {@code GeneralDerivedCRS} instances created
@@ -190,7 +190,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * values specifically from the {@code baseCRS} to {@code this} CRS (optionally with an interpolation CRS);
      * there is no consideration about <cite>“normalized CRS”</cite> in this constructor.
      *
-     * <div class="section">Conversion properties</div>
+     * <h4>Conversion properties</h4>
      * The {@code properties} map given in argument can contain any entries documented in the
      * {@linkplain #DefaultDerivedCRS(Map, SingleCRS, Conversion, CoordinateSystem) above constructor},
      * together with any entries documented by the {@linkplain DefaultConversion#DefaultConversion(Map,

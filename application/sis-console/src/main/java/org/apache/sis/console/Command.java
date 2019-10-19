@@ -67,7 +67,7 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * to the {@linkplain System#err standard error stream}. The reason is that command output may be targeted to
  * a client, while the error messages are usually for the operator.
  *
- * <div class="section">SIS installation on remote machines</div>
+ * <h2>SIS installation on remote machines</h2>
  * Some sub-commands can operate on SIS installation on remote machines, provided that remote access has been enabled
  * at the Java Virtual Machine startup time. See {@linkplain org.apache.sis.console package javadoc} for more information.
  *

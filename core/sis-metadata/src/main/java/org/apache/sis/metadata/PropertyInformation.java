@@ -51,7 +51,7 @@ import org.apache.sis.util.logging.Logging;
  * instance as the set of all possible values for the property. If the information had a {@code contains(E)} method,
  * it would return {@code true} if the given value is valid for that property.</div>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This final class is immutable and thus thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -65,13 +65,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * However more performance may be gained by overriding the other {@code transform(…)} methods as well.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * All Apache SIS implementations of {@code MathTransform} are immutable and thread-safe.
  * It is highly recommended that third-party implementations be immutable and thread-safe too.
  * This means that unless otherwise noted in the javadoc, {@code MathTransform} instances can
  * be shared by many objects and passed between threads without synchronization.
  *
- * <div class="section">Serialization</div>
+ * <h2>Serialization</h2>
  * {@code MathTransform} may or may not be serializable, at implementation choices.
  * Most Apache SIS implementations are serializable, but the serialized objects are not guaranteed to be compatible
  * with future SIS versions. Serialization should be used only for short term storage or RMI between applications
@@ -175,7 +175,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * This is not necessarily the parameters that the user specified at construction time,
      * since implementations may have applied normalizations.
      *
-     * <div class="section">Normalized and contextual parameters</div>
+     * <h4>Normalized and contextual parameters</h4>
      * Most Apache SIS implementations of map projections perform their calculations on an ellipsoid
      * having a semi-major axis length of 1. In such cases, the group returned by this method contains
      * a {@code "semi_major"} parameter with a value of 1. If the real axis length is desired, we need
@@ -333,7 +333,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *   the same. Computing those two information in a single step can help to reduce redundant calculation.</li>
      * </ul>
      *
-     * <div class="section">Note for implementers</div>
+     * <h4>Note for implementers</h4>
      * The source and destination may overlap. Consequently, implementers must read all source
      * coordinate values before to start writing the transformed coordinates in the destination array.
      *
@@ -1024,7 +1024,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Base class for implementations of inverse math transforms.
      * Subclasses need to implement the {@link #inverse()} method.
      *
-     * <div class="section">Serialization</div>
+     * <h2>Serialization</h2>
      * This object may or may not be serializable, at implementation choices.
      * Most Apache SIS implementations are serializable, but the serialized objects are not guaranteed to be compatible
      * with future SIS versions. Serialization should be used only for short term storage or RMI between applications

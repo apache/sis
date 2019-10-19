@@ -56,7 +56,7 @@ import org.apache.sis.util.ArgumentChecks;
  * {@linkplain AbstractIdentifiedObject#getAlias() aliases} and have those names used in contexts
  * where {@code Identifier} instances are required, like GML marshalling time.
  *
- * <div class="section">Name ↔ Identifier mapping</div>
+ * <h2>Name ↔ Identifier mapping</h2>
  * The {@code GenericName} attributes will be inferred from {@code Identifier} attributes as below:
  *
  * <ul>
@@ -75,7 +75,7 @@ import org.apache.sis.util.ArgumentChecks;
  * Note that the scope does not appear in the string representation of names.</div>
  *
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus inherently thread-safe if the {@link Citation} and {@link InternationalString}
  * arguments given to the constructor are also immutable. It is caller's responsibility to ensure that those
  * conditions hold, for example by invoking {@link org.apache.sis.metadata.iso.citation.DefaultCitation#transitionTo

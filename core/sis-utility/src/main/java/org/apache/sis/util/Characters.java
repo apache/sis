@@ -305,7 +305,7 @@ public final class Characters extends Static {
      * in this class. Then, Unicode characters can be tested for inclusion in the subset by
      * calling the {@link #contains(int)} method.</p>
      *
-     * <div class="section">Relationship with international standards</div>
+     * <h2>Relationship with international standards</h2>
      * ISO 19162:2015 §B.5.2 recommends to ignore spaces, case and the following characters when comparing two
      * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName() identified object names}:
      * “{@code _}” (underscore), “{@code -}” (minus sign), “{@code /}” (solidus),

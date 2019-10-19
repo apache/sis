@@ -93,7 +93,7 @@ import org.apache.sis.util.resources.Errors;
  * or {@link MathTransforms} classes instead.
  *
  *
- * <div class="section">Standard parameters</div>
+ * <h2>Standard parameters</h2>
  * {@code MathTransform} instances are created from {@linkplain DefaultParameterValueGroup parameter values}.
  * The parameters expected by each operation available in a default Apache SIS installation is
  * <a href="http://sis.apache.org/tables/CoordinateOperationMethods.html">listed here</a>.
@@ -111,7 +111,7 @@ import org.apache.sis.util.resources.Errors;
  * by OGC, while EPSG uses various names like <cite>"False easting"</cite> or <cite>"Easting at
  * false origin"</cite>.</p>
  *
- * <div class="section">Dynamic parameters</div>
+ * <h2>Dynamic parameters</h2>
  * A few non-standard parameters are defined for compatibility reasons,
  * but delegates their work to standard parameters. Those dynamic parameters are not listed in the
  * {@linkplain DefaultParameterValueGroup#values() parameter values}.
@@ -132,7 +132,7 @@ import org.apache.sis.util.resources.Errors;
  * files for example, which often use spherical models instead than ellipsoidal ones.</p>
  *
  *
- * <div class="section"><a id="Obligation">Mandatory and optional parameters</a></div>
+ * <h2><a id="Obligation">Mandatory and optional parameters</a></h2>
  * Parameters are flagged as either <cite>mandatory</cite> or <cite>optional</cite>.
  * A parameter may be mandatory and still have a default value. In the context of this package, "mandatory"
  * means that the parameter is an essential part of the projection defined by standards.
@@ -145,7 +145,7 @@ import org.apache.sis.util.resources.Errors;
  * default value.</p>
  *
  *
- * <div class="section">Operation methods discovery</div>
+ * <h2>Operation methods discovery</h2>
  * {@link OperationMethod} describes all the parameters expected for instantiating a particular kind of
  * math transform. The set of operation methods known to this factory can be obtained in two ways:
  *
@@ -158,7 +158,7 @@ import org.apache.sis.util.resources.Errors;
  * custom coordinate operation methods in a default Apache SIS installation.
  *
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * This class is safe for multi-thread usage if all referenced {@code OperationMethod} instances are thread-safe.
  * There is typically only one {@code MathTransformFactory} instance for the whole application.
  *
@@ -1091,7 +1091,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * both of them with ({@linkplain org.opengis.referencing.cs.AxisDirection#EAST East},
      * {@linkplain org.opengis.referencing.cs.AxisDirection#NORTH North}) axis orientations.</div>
      *
-     * <div class="section">Controlling the normalization process</div>
+     * <h4>Controlling the normalization process</h4>
      * Users who need a different normalized space than the default one way find more convenient to
      * override the {@link Context#getMatrix Context.getMatrix(ContextualParameters.MatrixRole)} method.
      *

@@ -38,7 +38,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * but makes some tasks easier by avoiding the need to find a factory, and by creating name and
  * their namespace in a single step.
  *
- * <div class="section">Relationship with Java Content Repository (JCR) names</div>
+ * <h2>Relationship with Java Content Repository (JCR) names</h2>
  * In the Java standard {@link javax.xml.namespace.QName} class and in the Java Content Repository (JCR) specification,
  * a name is an ordered pair of ({@code namespace}, {@code localPart}) strings. A JCR name can take two lexical forms:
  * <cite>expanded form</cite> and <cite>qualified form</cite>. Those names are mapped to generic names as below:

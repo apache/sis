@@ -62,7 +62,7 @@ import org.apache.sis.util.Debug;
  * In this example, sample values in range [10…210] define a quantitative category, while all others categories are qualitative.
  * </div>
  *
- * <div class="section">Relationship with metadata</div>
+ * <h2>Relationship with metadata</h2>
  * This class provides the same information than ISO 19115 {@link org.opengis.metadata.content.SampleDimension},
  * but organized in a different way. The use of the same name may seem a risk, but those two types are typically
  * not used in same time.

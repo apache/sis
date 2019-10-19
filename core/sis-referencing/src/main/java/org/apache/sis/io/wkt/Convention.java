@@ -27,7 +27,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * This enumeration specifies whether to use the <cite>Well Known Text</cite> format defined by ISO 19162
  * (also known as “WKT 2”), or whether to use the format previously defined in OGC 01-009 (referenced as “WKT 1”).
  *
- * <div class="section">WKT 1 variants</div>
+ * <h2>WKT 1 variants</h2>
  * The WKT 2 format should be parsed and formatted consistently by all software products.
  * But the WKT 1 format has been interpreted differently by various implementers.
  * Apache SIS can adapt itself to different WKT variants, sometime automatically. But some aspects can not be guessed.
@@ -114,7 +114,7 @@ public enum Convention {
      * and parameters formatted with this convention will use the {@linkplain Citations#OGC OGC}
      * names when available.</p>
      *
-     * <div class="section">Differences compared to WKT 2</div>
+     * <h4>Differences compared to WKT 2</h4>
      * WKT 1 and WKT 2 differ in their keywords and syntax, but also in more subtle ways regarding axis names,
      * parameter and code list values. For example in  {@link GeocentricCRS}, WKT 1 uses a legacy set of Cartesian axes
      * which were defined in OGC 01-009. Those axes use the <var>Other</var>, <var>Easting</var> and <var>Northing</var>

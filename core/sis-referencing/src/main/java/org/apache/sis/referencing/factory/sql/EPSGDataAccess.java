@@ -126,7 +126,7 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
  * The EPSG database is freely available at <a href="http://www.epsg.org">http://www.epsg.org</a>.
  * Current version of this class requires EPSG database version 6.6 or above.
  *
- * <div class="section">Object identifier (code or name)</div>
+ * <h2>Object identifier (code or name)</h2>
  * EPSG codes are numerical identifiers. For example code 3395 stands for <cite>"WGS 84 / World Mercator"</cite>.
  * Coordinate Reference Objects are normally created from their numerical codes, but this factory accepts also names.
  * For example {@code createProjectedCRS("3395")} and {@code createProjectedCRS("WGS 84 / World Mercator")} both fetch
@@ -135,7 +135,7 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
  * This is the case of <cite>"WGS 84"</cite> for instance.
  * If such an ambiguity is found, an exception will be thrown.
  *
- * <div class="section">Life cycle and caching</div>
+ * <h2>Life cycle and caching</h2>
  * {@code EPSGDataAccess} instances should be short-lived since they may hold a significant amount of JDBC resources.
  * {@code EPSGDataAccess} instances are created on the fly by {@link EPSGFactory} and closed after a relatively short
  * {@linkplain EPSGFactory#getTimeout timeout}.
@@ -144,7 +144,7 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
  * in the common case where only a few EPSG codes are used by an application.
  * {@code EPSGDataAccess.createFoo(String)} methods do not cache by themselves and query the database on every invocation.
  *
- * <div class="section">SQL dialects</div>
+ * <h2>SQL dialects</h2>
  * Because the primary distribution format for the EPSG dataset is MS-Access, this class uses SQL statements formatted
  * for the MS-Access dialect. For usage with other database software products like PostgreSQL or Derby,
  * a {@link SQLTranslator} instance is provided to the constructor.
@@ -505,7 +505,7 @@ addURIs:    for (int i=0; ; i++) {
      * JDBC resources. If the set of codes is needed for a long time, their values should be copied in another
      * collection object.
      *
-     * <div class="section">Handling of deprecated objects</div>
+     * <h4>Handling of deprecated objects</h4>
      * The collection returned by this method gives an enumeration of EPSG codes for valid objects only.
      * The EPSG codes of deprecated objects are not included in iterations, computation of {@code Set.size()} value,
      * {@code Set.toString()} result, <i>etc.</i> with one exception:
@@ -642,7 +642,7 @@ addURIs:    for (int i=0; ; i++) {
      * In such case, an appropriate exception will be thrown in {@code createFoo(String)} methods
      * if the code is not found in the primary key column.</p>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation returns {@code true} if all characters are decimal digits 0 to 9.
      *
      * @param  code  the code the inspect.

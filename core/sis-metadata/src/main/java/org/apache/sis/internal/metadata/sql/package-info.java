@@ -23,7 +23,7 @@
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
  *
- * <div class="section">Declaring the data source in a web container</div>
+ * <h2>Declaring the data source in a web container</h2>
  * The {@link org.apache.sis.internal.metadata.sql.Initializer#getDataSource()} method gets the unique,
  * SIS-wide, data source for JDBC connection to the {@code $SIS_DATA/Databases/SpatialMetadata}.
  * The method Javadoc describes the steps for fetching that data source.

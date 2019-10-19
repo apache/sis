@@ -44,7 +44,7 @@ import org.apache.sis.util.Debug;
  * See {@link DefaultParameterValueGroup} javadoc for a description of the standard way to get and set a particular
  * parameter in a group. The remaining of this javadoc is specific to Apache SIS.
  *
- * <div class="section">Convenience methods</div>
+ * <h2>Convenience methods</h2>
  * This class provides the following convenience static methods:
  * <ul>
  *   <li>{@link #cast(ParameterValue, Class) cast(…, Class)} for type safety with parameterized types.</li>
@@ -70,7 +70,7 @@ import org.apache.sis.util.Debug;
  * </table>
  *
  *
- * <div class="section">Fetching parameter values despite different names, types or units</div>
+ * <h2>Fetching parameter values despite different names, types or units</h2>
  * The common way to get a parameter is to invoke the {@link #parameter(String)} method.
  * This {@code Parameters} class provides alternative ways, using a {@link ParameterDescriptor} argument
  * instead than a {@code String} argument. Those descriptors provide additional information like the various
@@ -91,7 +91,7 @@ import org.apache.sis.util.Debug;
  * (i.e. returned values are converted to the units of measurement specified by the given parameter descriptor).
  *
  *
- * <div class="section">Note for subclass implementers</div>
+ * <h2>Note for subclass implementers</h2>
  * This class does not implement any method from the {@link ParameterValueGroup} interface
  * (this class is not named “{@code AbstractParameterValueGroup}” for that reason).
  * Extending this class or extending {@link Object} make almost no difference for implementers;

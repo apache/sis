@@ -45,7 +45,7 @@ import org.opengis.referencing.cs.AxisDirection;
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric}.
  * If the context is unknown, then geodetic latitude can usually be assumed.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)

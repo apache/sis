@@ -62,7 +62,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
  * The left and right features appear together in an {@code JoinFeatureSet} instance when a value from
  * {@code leftProperty} in the first feature is equal to a value from {@code rightProperty} in the second feature.
  *
- * <div class="section">Implementation note</div>
+ * <h2>Implementation note</h2>
  * If iterations in one feature set is cheaper than iterations in the other feature set, then the "costly" or larger
  * {@code FeatureSet} should be on the left side and the "cheap" {@code FeatureSet} should be on the right side.
  *

@@ -38,7 +38,7 @@ import org.apache.sis.util.ArraysExt;
  * this class is package-private for now in order to get more experience about what could be a good API.
  * This class may become public in a future SIS version.</div>
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code DataStoreRegistry} instance can be safely used by many threads without synchronization
  * on the part of the caller.
  *

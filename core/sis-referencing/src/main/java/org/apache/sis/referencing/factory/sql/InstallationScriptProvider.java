@@ -53,7 +53,7 @@ import org.apache.sis.internal.util.Constants;
  *     META-INF/services/org.apache.sis.setup.InstallationResources
  * }
  *
- * <div class="section">How this class is used</div>
+ * <h2>How this class is used</h2>
  * The first time that an {@link EPSGDataAccess} needs to be instantiated,
  * {@link EPSGFactory} verifies if the EPSG database exists. If it does not, then:
  * <ol>
@@ -178,7 +178,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * or from resources in a JAR file, or from entries in a ZIP file, or any other means at implementer choice.
      * The {@link BufferedReader} instances shall be closed by the caller.
      *
-     * <div class="section">EPSG case</div>
+     * <h4>EPSG case</h4>
      * In the EPSG dataset case, the iterator should return {@code BufferedReader} instances for the following files
      * (replace {@code <version>} by the EPSG version number and {@code <product>} by the target database) in same order.
      * The first and last files are provided by Apache SIS.
@@ -194,7 +194,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      *
      * Implementers are free to return a different set of scripts with equivalent content.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation invokes {@link #openStream(String)} – except for {@link #PREPARE} and {@link #FINISH}
      * in which case an Apache SIS build-in script is used – and wrap the result in a {@link LineNumberReader}.
      * The file encoding is UTF-8 (the encoding used in the scripts distributed by EPSG since version 9.4).

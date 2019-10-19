@@ -76,7 +76,7 @@ import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_D
  * Builders are not thread-safe. Builders can be used only once;
  * points can not be added or modified after {@link #create(MathTransformFactory)} has been invoked.
  *
- * <div class="section">Linearizers</div>
+ * <h2>Linearizers</h2>
  * If the localization grid is not close enough to a linear transform, {@link InterpolatedTransform} may not converge.
  * To improve the speed and reliability of the transform, a non-linear step can be {@linkplain #addLinearizers specified}.
  * Many candidates can be specified in case the exact form of that non-linear step is unknown;

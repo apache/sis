@@ -43,7 +43,7 @@
  *   <li>Report warnings that occurred during parsing or formatting.</li>
  * </ul>
  *
- * <div class="section">Referencing WKT</div>
+ * <h2>Referencing WKT</h2>
  * Referencing WKT is defined using Extended Backus Naur Form (EBNF) in two versions:
  * <ul>
  *   <li>ISO 19162 defines the current format, also known as “WKT 2”. The specification is also made
@@ -60,12 +60,12 @@
  * with the WKT syntax require knowledge of the WKT variant used by that software. This variant can be specified by
  * the {@link org.apache.sis.io.wkt.Convention} enumeration.
  *
- * <div class="section">Geometry WKT</div>
+ * <h2>Geometry WKT</h2>
  * The {@link org.apache.sis.geometry.GeneralEnvelope} and {@link org.apache.sis.geometry.GeneralDirectPosition} classes
  * provide their own, limited, WKT parsing and formatting services for the {@code BOX} and {@code POINT} elements.
  * A description for this WKT format can be found on <a href="http://en.wikipedia.org/wiki/Well-known_text">Wikipedia</a>.
  *
- * <div class="section">Where to find WKT examples</div>
+ * <h2>Where to find WKT examples</h2>
  * An excellent source of well-formed WKT is the online <cite>EPSG Geodetic Parameter Registry</cite>.
  * The WKT of many Coordinate Reference System object can be viewed using the pattern below
  * (replace {@code 3395} by the EPSG code of the desired CRS):

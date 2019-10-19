@@ -72,7 +72,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * The {@code AbstractMetadata} base class usually form the basis of ISO 19115 implementations but
  * can also be used for other standards.
  *
- * <div class="section">Defining new {@code MetadataStandard} instances</div>
+ * <h2>Defining new {@code MetadataStandard} instances</h2>
  * Users should use the pre-defined constants when applicable.
  * However if new instances need to be defined, then there is a choice:
  *
@@ -84,7 +84,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  *       method must be overridden in a {@code MetadataStandard} subclass.</li>
  * </ul>
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code MetadataStandard} instance can be safely used by many threads without synchronization
  * on the part of the caller. Subclasses shall make sure that any overridden methods remain safe to call
  * from multiple threads, because the same {@code MetadataStandard} instances are typically referenced
@@ -820,21 +820,21 @@ public class MetadataStandard implements Serializable {
      * {@code valuePolicy} determines whether entries having a null value or an empty collection
      * shall be included in the map.</p>
      *
-     * <div class="section">Supported operations</div>
+     * <h4>Supported operations</h4>
      * The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
      * remove(…)} operations if the underlying metadata object contains setter methods.
      * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.
      * Note that whether the entry appears as effectively removed from the map or just cleared
      * (i.e. associated to a null value) depends on the {@code valuePolicy} argument.
      *
-     * <div class="section">Keys and values</div>
+     * <h4>Keys and values</h4>
      * The keys are case-insensitive and can be either the JavaBeans property name, the getter method name
      * or the {@linkplain org.opengis.annotation.UML#identifier() UML identifier}. The value given to a call
      * to the {@code put(…)} method shall be an instance of the type expected by the corresponding setter method,
      * or an instance of a type {@linkplain org.apache.sis.util.ObjectConverters#find(Class, Class) convertible}
      * to the expected type.
      *
-     * <div class="section">Multi-values entries</div>
+     * <h4>Multi-values entries</h4>
      * Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
      * property associated to the given key is a {@link java.util.Collection} but the given value is a single
      * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
@@ -843,7 +843,7 @@ public class MetadataStandard implements Serializable {
      * values, then make sure that the given value is a collection when the associated metadata property expects
      * such collection.
      *
-     * <div class="section">Disambiguating instances that implement more than one metadata interface</div>
+     * <h4>Disambiguating instances that implement more than one metadata interface</h4>
      * It is some time convenient to implement more than one interface by the same class.
      * For example an implementation interested only in extents defined by geographic bounding boxes could implement
      * {@link org.opengis.metadata.extent.Extent} and {@link org.opengis.metadata.extent.GeographicBoundingBox}
@@ -914,7 +914,7 @@ public class MetadataStandard implements Serializable {
      *       in a geographic bounding box spanning the anti-meridian.</li>
      * </ul>
      *
-     * <div class="section">Write operations</div>
+     * <h4>Write operations</h4>
      * Only the {@code VALUE} column may be writable, with one exception: newly created children need
      * to have their {@code IDENTIFIER} set before any other operation. For example the following code
      * adds a title to a citation:
@@ -932,7 +932,7 @@ public class MetadataStandard implements Serializable {
      * Note that whether the child appears as effectively removed from the node or just cleared
      * (i.e. associated to a null value) depends on the {@code valuePolicy} argument.
      *
-     * <div class="section">Disambiguating instances that implement more than one metadata interface</div>
+     * <h4>Disambiguating instances that implement more than one metadata interface</h4>
      * If the given {@code metadata} instance implements more than one interface recognized by this
      * {@code MetadataStandard}, then the {@code baseType} argument need to be non-null in order to
      * specify which interface to reflect in the tree.
@@ -964,7 +964,7 @@ public class MetadataStandard implements Serializable {
      * this {@code MetadataStandard}, otherwise an exception will be thrown. However the two
      * arguments do not need to be the same implementation class.
      *
-     * <div class="section">Shallow or deep comparisons</div>
+     * <h4>Shallow or deep comparisons</h4>
      * This method implements a <cite>shallow</cite> comparison in that properties are compared by
      * invoking their {@code properties.equals(…)} method without <em>explicit</em> recursive call
      * to this {@code standard.equals(…)} method for children metadata. However the comparison will

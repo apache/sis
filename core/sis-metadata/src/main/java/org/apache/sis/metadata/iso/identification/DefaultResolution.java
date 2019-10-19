@@ -53,7 +53,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  * See the {@linkplain #DefaultResolution(Resolution) constructor javadoc}
  * for information about which property has precedence on copy operations.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>
@@ -245,7 +245,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Sets the level of detail expressed as the scale of a comparable hardcopy map or chart.
      *
-     * <div class="section">Effect on other properties</div>
+     * <h4>Effect on other properties</h4>
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
@@ -271,7 +271,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Sets the ground sample distance.
      *
-     * <div class="section">Effect on other properties</div>
+     * <h4>Effect on other properties</h4>
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
@@ -302,7 +302,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Sets the vertical sampling distance.
      *
-     * <div class="section">Effect on other properties</div>
+     * <h4>Effect on other properties</h4>
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
@@ -335,7 +335,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Sets the angular sampling measure.
      *
-     * <div class="section">Effect on other properties</div>
+     * <h4>Effect on other properties</h4>
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
@@ -367,7 +367,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Sets the textual description of the spatial resolution of the resource.
      *
-     * <div class="section">Effect on other properties</div>
+     * <h4>Effect on other properties</h4>
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *

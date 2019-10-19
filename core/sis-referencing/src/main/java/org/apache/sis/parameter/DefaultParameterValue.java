@@ -96,14 +96,14 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *     Class<T> valueClass = parameter.getDescriptor().getValueClass();
  * }
  *
- * <div class="section">Instantiation</div>
+ * <h2>Instantiation</h2>
  * A {@linkplain DefaultParameterDescriptor parameter descriptor} must be defined before parameter value can be created.
  * Descriptors are usually pre-defined by map projection or process providers. Given a descriptor, a parameter value can
  * be created by a call to the {@link #DefaultParameterValue(ParameterDescriptor)} constructor or by a call to the
  * {@link ParameterDescriptor#createValue()} method. The later is recommended since it allows descriptors to return
  * specialized implementations.
  *
- * <div class="section">Implementation note for subclasses</div>
+ * <h2>Implementation note for subclasses</h2>
  * All read and write operations (except constructors, {@link #equals(Object)} and {@link #hashCode()})
  * ultimately delegates to the following methods:
  *
@@ -214,7 +214,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * If the parameter value has no unit (for example because it is a {@link String} type),
      * then this method returns {@code null}. Note that "no unit" does not mean "dimensionless".
      *
-     * <div class="section">Implementation note for subclasses</div>
+     * <h4>Implementation note for subclasses</h4>
      * All getter methods which need unit information will invoke this {@code getUnit()} method.
      * Subclasses can override this method if they need to compute the unit dynamically.
      *
@@ -234,7 +234,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * If no value has been set, then this method returns the
      * {@linkplain DefaultParameterDescriptor#getDefaultValue() default value} (which may be null).
      *
-     * <div class="section">Implementation note for subclasses</div>
+     * <h4>Implementation note for subclasses</h4>
      * All getter methods will invoke this {@code getValue()} method.
      * Subclasses can override this method if they need to compute the value dynamically.
      *
@@ -772,7 +772,7 @@ convert:            if (componentType != null) {
      *       {@code double[]} arrays are stored <cite>as-is</cite>.</li>
      * </ul>
      *
-     * <div class="section">Implementation note for subclasses</div>
+     * <h4>Implementation note for subclasses</h4>
      * This method is invoked by all setter methods in this class, thus providing a single point that
      * subclasses can override if they want to perform more processing on the value before its storage,
      * or to be notified about value changes.
@@ -800,13 +800,13 @@ convert:            if (componentType != null) {
      * Invoked by {@link #setValue(Object, Unit)} after the basic verifications have been done and before
      * the value is stored. Subclasses can override this method for performing additional verifications.
      *
-     * <div class="section">Unit of measurement</div>
+     * <h4>Unit of measurement</h4>
      * If the user specified a unit of measurement, then the value given to this method has been converted
      * to the unit specified by the {@linkplain #getDescriptor() descriptor}, for easier comparisons against
      * standardized values. This converted value may be different than the value to be stored in this
      * {@code ParameterValue}, since the later value will be stored in the unit specified by the user.
      *
-     * <div class="section">Standard validations</div>
+     * <h4>Standard validations</h4>
      * The checks for {@linkplain DefaultParameterDescriptor#getValueClass() value class},
      * for {@linkplain DefaultParameterDescriptor#getValueDomain() value domain} and for
      * {@linkplain DefaultParameterDescriptor#getValidValues() valid values} are performed
@@ -912,7 +912,7 @@ convert:            if (componentType != null) {
      * The value is not cloned by this method however; it is caller's responsibility to not modify the value of
      * the given {@code parameter} instance after this method call.
      *
-     * <div class="section">Instances sharing</div>
+     * <h4>Instances sharing</h4>
      * If this method is invoked more than once with equal {@linkplain #getDescriptor() descriptor},
      * {@linkplain #getValue() value} and {@linkplain #getUnit() unit}, then this method will return
      * the same {@code DefaultParameterValue} instance on a <cite>best effort</cite> basis.
@@ -942,7 +942,7 @@ convert:            if (componentType != null) {
      *   Parameter["False easting", 0.0, LengthUnit["metre", 1]]
      * }
      *
-     * <div class="section">Unit of measurement</div>
+     * <h4>Unit of measurement</h4>
      * The units of measurement were never specified in WKT 1 format, and are optional in WKT 2 format.
      * If the units are not specified, then they are inferred from the context.
      * Typically, parameter values that are lengths are given in the unit for the projected CRS axes

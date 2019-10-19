@@ -75,7 +75,7 @@ import org.apache.sis.util.resources.Errors;
  *       {@link org.apache.sis.measure.Units#ensureScale    ensureScale}.</li>
  * </ul>
  *
- * <div class="section">Method Arguments</div>
+ * <h2>Method Arguments</h2>
  * By convention, the value to check is always the last parameter given to every methods
  * in this class. The other parameters may include the programmatic name of the argument
  * being checked. This programmatic name is used for building an error message localized

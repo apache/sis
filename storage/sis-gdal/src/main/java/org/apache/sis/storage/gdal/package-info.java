@@ -51,7 +51,7 @@
  *     PARAMETER["dstdefn", "+proj=…"]]
  * }
  *
- * <div class="section">Note on Proj.4 definition strings</div>
+ * <h2>Note on Proj.4 definition strings</h2>
  * Proj.4 unconditionally requires 3 letters for the {@code "+axis="} parameter — for example {@code "neu"} for
  * <cite>North</cite>, <cite>East</cite> and <cite>Up</cite> respectively — regardless the number of dimensions
  * in the CRS to create. Apache SIS makes the vertical direction optional in order to specify whether the CRS to
@@ -75,7 +75,7 @@
  * syntax are not necessarily compliant with EPSG definitions. In particular, the axis order is often different.
  * Units of measurement may also differ.
  *
- * <div class="section">Installation</div>
+ * <h2>Installation</h2>
  * The Proj.4 library needs to be reachable on a platform-dependent library path.
  * For example the operating system may search in {@code /usr/lib}, {@code /opt/local/lib} and other directories.
  * One of those directories shall contain the {@code proj} or {@code libproj} file with platform-specific suffix

@@ -75,7 +75,7 @@ import org.apache.sis.util.Classes;
  * The transform coefficients are determined using a <cite>least squares</cite> estimation method,
  * with the assumption that source positions are exact and all the uncertainty is in the target positions.</p>
  *
- * <div class="section">Linearizers</div>
+ * <h2>Linearizers</h2>
  * Consider the following situation (commonly found with {@linkplain org.apache.sis.storage.netcdf netCDF files}):
  * the <i>sources</i> coordinates are pixel indices and the <i>targets</i> are (longitude, latitude) coordinates,
  * but we suspect that the <i>sources to targets</i> transform is some undetermined map projection, maybe Mercator.

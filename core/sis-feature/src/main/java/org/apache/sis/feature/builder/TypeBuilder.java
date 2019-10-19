@@ -53,7 +53,7 @@ import org.opengis.feature.PropertyNotFoundException;
  * {@link org.opengis.util.ScopedName}, {@link String} or {@link InternationalString} instance.
  * All other properties are optional.
  *
- * <div class="section">Default namespace</div>
+ * <h2>Default namespace</h2>
  * In many cases, the names of all {@code AttributeType}s and {@code AssociationRole}s to create
  * within a {@code FeatureType} share the same namespace.
  * For making name creations more convenient, the namespace can be

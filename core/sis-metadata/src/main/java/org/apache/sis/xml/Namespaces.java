@@ -74,7 +74,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  *   <tr><td>xlink</td>  <td>Link</td>                                       <td>{@value #XLINK}</td> <td></td></tr>
  * </table>
  *
- * <div class="section">Profiles</div>
+ * <h2>Profiles</h2>
  * Some countries or organizations define profiles of international standards, which may contain
  * country-specific extensions. The namespace of such extensions are usually defined in a separated
  * class dedicated to the profile. Some of them are listed below:

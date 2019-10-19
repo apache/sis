@@ -25,7 +25,7 @@ import org.apache.sis.util.logging.Logging;
  * Their intent is to bring some order in debugger information, by grouping the threads created by SIS together
  * under the same parent tree node.
  *
- * <div class="section">Note on dependencies</div>
+ * <h2>Note on dependencies</h2>
  * This class shall not depend on {@link ReferenceQueueConsumer} or {@link DelayedExecutor},
  * because initialization of those classes create new threads. However it is okay to have
  * dependencies the other way around.

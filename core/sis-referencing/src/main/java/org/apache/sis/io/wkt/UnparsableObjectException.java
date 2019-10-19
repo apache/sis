@@ -26,7 +26,7 @@ import org.apache.sis.util.LocalizedException;
 /**
  * Thrown when a <cite>Well Known Text</cite> (WKT) can not be parsed.
  *
- * <div class="section">Localization</div>
+ * <h2>Localization</h2>
  * This exception may contain the error message in two languages:
  *
  * <ul>

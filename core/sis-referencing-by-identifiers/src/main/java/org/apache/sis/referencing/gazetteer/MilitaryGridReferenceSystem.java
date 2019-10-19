@@ -127,7 +127,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  * }
  * </div>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe.
  * However the {@link Coder Coder} instances performing conversions between references and coordinates
  * are not thread-safe; it is recommended to create a new {@code Coder} instance for each thread.
@@ -349,7 +349,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      *
      * <p>See the {@link MilitaryGridReferenceSystem} enclosing class for usage example.</p>
      *
-     * <div class="section">Immutability and thread safety</div>
+     * <h2>Immutability and thread safety</h2>
      * This class is <strong>not</strong> thread-safe. A new instance must be created for each thread,
      * or synchronization must be applied by the caller.
      *
@@ -1297,7 +1297,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * Each {@code Encoder} instance is configured for one {@code DirectPosition} CRS.
      * If a position is given in another CRS, another {@code Encoder} instance must be created.
      *
-     * <div class="section">Immutability and thread safety</div>
+     * <h4>Immutability and thread safety</h4>
      * This class is <strong>not</strong> thread-safe. A new instance must be created for each thread,
      * or synchronization must be applied by the caller.
      *

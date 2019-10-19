@@ -41,7 +41,7 @@
  *   </cit:CI_Citation>
  * }
  *
- * <div class="section">Customizing the XML</div>
+ * <h2>Customizing the XML</h2>
  * In order to parse and format ISO 19115-3 compliant documents, SIS needs its own
  * {@link javax.xml.bind.Marshaller} and {@link javax.xml.bind.Unmarshaller} instances
  * (which are actually wrappers around standard instances). Those instances are created

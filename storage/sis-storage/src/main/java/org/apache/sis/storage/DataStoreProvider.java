@@ -42,7 +42,7 @@ import org.apache.sis.util.Version;
  *       to open a given {@link StorageConnector}.</li>
  * </ul>
  *
- * <div class="section">Packaging data stores</div>
+ * <h2>Packaging data stores</h2>
  * JAR files that provide implementations of this class shall contain an entry with exactly the following path:
  *
  * {@preformat text
@@ -53,7 +53,7 @@ import org.apache.sis.util.Version;
  * where each line is the fully qualified name of the implementation class.
  * See {@link java.util.ServiceLoader} for more general discussion about this lookup mechanism.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * All {@code DataStoreProvider} implementations shall be thread-safe.
  * However the {@code DataStore} instances created by the providers do not need to be thread-safe.
  *
@@ -288,7 +288,7 @@ public abstract class DataStoreProvider {
      * or when the input is not a type accepted by {@link #open(ParameterValueGroup)}
      * (for example an {@link java.io.InputStream}).
      *
-     * <div class="section">Implementation note</div>
+     * <h4>Implementation note</h4>
      * Implementers shall invoke {@link StorageConnector#closeAllExcept(Object)} after {@code DataStore}
      * creation, keeping open only the needed resource.
      *
@@ -315,7 +315,7 @@ public abstract class DataStoreProvider {
      *     }
      * }
      *
-     * <div class="section">Implementation note</div>
+     * <h4>Implementation note</h4>
      * The default implementation gets the value of a parameter named {@value #LOCATION}.
      * That value (typically a path or URL) is given to {@link StorageConnector} constructor,
      * which is then passed to {@link #open(StorageConnector)}.

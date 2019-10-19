@@ -766,7 +766,7 @@ final class Store extends URIDataStore implements FeatureSet {
     /**
      * Extracts a substring from the given line and replaces double quotes by single quotes.
      *
-     * <div class="section">Departure from Moving Features specification</div>
+     * <h4>Departure from Moving Features specification</h4>
      * The Moving Features specification said:
      *
      *   <blockquote>Some characters may need to be escaped here. {@literal <} (less than), {@literal >}

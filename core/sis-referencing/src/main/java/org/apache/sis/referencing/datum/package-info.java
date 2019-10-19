@@ -39,7 +39,7 @@
  *       DefaultGeodeticDatum.getPositionVectorTransformation(GeodeticDatum, Extent)}</li>
  * </ul>
  *
- * <div class="section">Datum shifts</div>
+ * <h2>Datum shifts</h2>
  * Three classes are provided in support of coordinate transformations between different datums:
  * <ul>
  *   <li>{@link org.apache.sis.referencing.datum.BursaWolfParameters} performs an approximation

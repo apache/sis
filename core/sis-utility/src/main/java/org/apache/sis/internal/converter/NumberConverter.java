@@ -29,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
  * Handles conversions from {@link java.lang.Number} to other kind of numbers.
  * This class supports only the type supported by {@link Numbers}.
  *
- * <div class="section">Performance note</div>
+ * <h2>Performance note</h2>
  * We provide a single class for all supported kinds of {@code Number} and delegate the actual
  * work to the {@code Numbers} static methods. This is not a very efficient way to do the work.
  * For example it may be more efficient to provide specialized subclasses for each target class,
@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Errors;
  * {@code d73a10558dda4b41723d4f5652a792ae9c24f69e} (subversion: 1455255) of this class,
  * which was using one subclass per target type as described above.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)

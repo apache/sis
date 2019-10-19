@@ -201,7 +201,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
      * at arbitrary precision, but formats at the {@linkplain #setHashLength specified precision}.
      * The same {@code Coder} instance can be reused for reading or writing many geohashes.
      *
-     * <div class="section">Immutability and thread safety</div>
+     * <h2>Immutability and thread safety</h2>
      * This class is <strong>not</strong> thread-safe. A new instance must be created for each thread,
      * or synchronization must be applied by the caller.
      *

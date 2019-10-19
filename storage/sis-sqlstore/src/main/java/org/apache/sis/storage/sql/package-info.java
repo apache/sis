@@ -31,7 +31,7 @@
  * be provided by the database (sometime through an extension, for example PostGIS on PostgreSQL databases).
  * This Java package uses those provided types and operations.</p>
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Current implementation does not scan the {@code "GEOMETRY_COLUMNS"} (from Simple Feature Access)
  *       or {@code "gpkg_content"} (from GeoPackage) tables for a default list of feature tables.</li>

@@ -49,13 +49,13 @@
  * {@linkplain org.apache.sis.feature.DefaultFeatureType#getSuperTypes() super-types}, provided
  * that values of the sub-type property are assignable to the super-type property.
  *
- * <div class="section">Naming</div>
+ * <h2>Naming</h2>
  * Each feature type has a {@linkplain org.apache.sis.feature.DefaultFeatureType#getName() name},
  * which should be unique. Those names are the main criterion used for checking if a feature type
  * {@linkplain org.apache.sis.feature.DefaultFeatureType#isAssignableFrom is assignable from} another type.
  * Names can be {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped} for avoiding name collision.
  *
- * <div class="section">Class hierarchy</div>
+ * <h2>Class hierarchy</h2>
  * The class hierarchy for feature <cite>types</cite> is derived from ISO 19109 specification.
  * The class hierarchy for feature <cite>instances</cite> is closely related:
  *
@@ -79,7 +79,7 @@
  * {@code      └─} {@linkplain org.apache.sis.feature.AbstractAssociation Feature association} (<cite>singleton</cite> or <cite>multi-valued</cite>)<br>
  * </td></tr></table>
  *
- * <div class="section">Instantiation</div>
+ * <h2>Instantiation</h2>
  * Classes defined in this package are rarely instantiated directly (by a {@code new} statement).
  * Instead those classes are instantiated indirectly by invoking a method on a parent container,
  * or by using a builder. The starting point is {@code FeatureType}, which may be created by a

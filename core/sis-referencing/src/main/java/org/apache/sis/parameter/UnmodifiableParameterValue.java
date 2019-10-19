@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Errors;
  * The value is not cloned by this method however; it is caller's responsibility to not modify the value of
  * the given {@code parameter} instance after this method call.
  *
- * <div class="section">Instances sharing</div>
+ * <h2>Instances sharing</h2>
  * If the {@link #create(ParameterValue)} method is invoked more than once with equal descriptor, value and unit,
  * then the method will return the same {@code UnmodifiableParameterValue} instance on a <cite>best effort</cite>
  * basis.

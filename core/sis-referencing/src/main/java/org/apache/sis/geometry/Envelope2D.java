@@ -61,7 +61,7 @@ import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
  * This is not specific to this implementation; in Java2D too, the visual axis orientation depend
  * on the {@linkplain java.awt.Graphics2D#getTransform() affine transform in the graphics context}.</p>
  *
- * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+ * <h2>Spanning the anti-meridian of a Geographic CRS</h2>
  * The <cite>Web Coverage Service</cite> (WCS) specification authorizes (with special treatment)
  * cases where <var>upper</var> &lt; <var>lower</var> at least in the longitude case. They are
  * envelopes spanning the anti-meridian, like the red box below (the green box is the usual case).
@@ -691,7 +691,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * of the given coordinate value is {@link java.lang.Double#NaN NaN}, then this method returns
      * {@code false}.
      *
-     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
      * This method supports anti-meridian spanning in the same way than
      * {@link AbstractEnvelope#contains(DirectPosition)}.
      *
@@ -719,7 +719,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * envelope or the given rectangle have at least one {@link java.lang.Double#NaN NaN} value,
      * then this method returns {@code false}.
      *
-     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
      * This method supports anti-meridian spanning in the same way than
      * {@link AbstractEnvelope#contains(Envelope)}.
      *
@@ -741,7 +741,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * envelope or the given rectangle have at least one {@link java.lang.Double#NaN NaN} value,
      * then this method returns {@code false}.
      *
-     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
      * This method supports anti-meridian spanning in the same way than
      * {@link AbstractEnvelope#contains(Envelope)}.
      *
@@ -791,7 +791,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * or the given rectangle have at least one {@link java.lang.Double#NaN NaN} value, then this
      * method returns {@code false}.
      *
-     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
      * This method supports anti-meridian spanning in the same way than
      * {@link AbstractEnvelope#intersects(Envelope)}.
      *
@@ -813,7 +813,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * or the given rectangle have at least one {@link java.lang.Double#NaN NaN} value, then this
      * method returns {@code false}.
      *
-     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
      * This method supports anti-meridian spanning in the same way than
      * {@link AbstractEnvelope#intersects(Envelope)}.
      *
@@ -860,7 +860,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * or the given rectangle have at least one {@link java.lang.Double#NaN NaN} values, then this
      * method returns an {@linkplain #isEmpty() empty} envelope.
      *
-     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
      * This method supports anti-meridian spanning in the same way than
      * {@link GeneralEnvelope#intersect(Envelope)}.
      *
@@ -950,7 +950,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * Adds an other rectangle to this rectangle. The resulting rectangle is the union of the
      * two {@code Rectangle} objects.
      *
-     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
      * This method supports anti-meridian spanning in the same way than
      * {@link GeneralEnvelope#add(Envelope)}, except if the result is a rectangle expanding to
      * infinities. In the later case, the field values are set to {@code NaN} because infinite
@@ -1048,7 +1048,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * as an argument will return {@code true}, except if one of the point coordinates was
      * {@link java.lang.Double#NaN} in which case the corresponding coordinate has been ignored.
      *
-     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
      * This method supports anti-meridian spanning in the same way than
      * {@link GeneralEnvelope#add(DirectPosition)}.
      *
@@ -1088,7 +1088,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * i.e. the {@linkplain #getCoordinateReferenceSystem() coordinate reference system} of this
      * envelope is ignored.
      *
-     * <div class="section">Note on {@code hashCode()}</div>
+     * <h4>Note on {@code hashCode()}</h4>
      * This class does not override the {@link #hashCode()} method for consistency with the
      * {@link Rectangle2D#equals(Object)} method, which compare arbitrary {@code Rectangle2D}
      * implementations.

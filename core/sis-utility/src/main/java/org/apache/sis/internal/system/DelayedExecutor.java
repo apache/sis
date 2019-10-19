@@ -33,7 +33,7 @@ import org.apache.sis.util.logging.Logging;
  *   <li>{@link #schedule(DelayedRunnable)}</li>
  * </ul>
  *
- * <div class="section">Comparison with {@code java.util.concurrent}</div>
+ * <h2>Comparison with {@code java.util.concurrent}</h2>
  * We tried to use {@link java.util.concurrent.ScheduledThreadPoolExecutor} in a previous SIS version,
  * but its "fixed-sized pool" design forces us to use only one thread if we do not want to waste resources
  * (profiling shows that even a single thread has very low activity), which reduces the interest of that class.

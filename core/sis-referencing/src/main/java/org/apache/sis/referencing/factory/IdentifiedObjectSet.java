@@ -58,21 +58,21 @@ import org.apache.sis.util.Classes;
  *
  * <p>Iterations over elements in this collection preserve insertion order.</p>
  *
- * <div class="section">Purpose</div>
+ * <h2>Purpose</h2>
  * {@code IdentifiedObjectSet} can be used as the set returned by implementations of the
  * {@link GeodeticAuthorityFactory#createFromCoordinateReferenceSystemCodes(String, String)} method.
  * Deferred creation can have great performance impact since some set may contain as much as 40 entries
  * (e.g. transformations from <cite>"ED50"</cite> (EPSG:4230) to <cite>"WGS 84"</cite> (EPSG:4326))
  * while some users only want to look for the first entry.
  *
- * <div class="section">Exception handling</div>
+ * <h2>Exception handling</h2>
  * If the underlying factory failed to creates an object because of an unsupported operation method
  * ({@link NoSuchIdentifierException}), the exception is logged at {@link Level#WARNING} and the iteration continue.
  * If the operation creation failed for any other kind of reason ({@link FactoryException}), then the exception is
  * re-thrown as an unchecked {@link BackingStoreException}. This default behavior can be changed by overriding
  * the {@link #isRecoverableFailure(FactoryException)} method.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * This class is thread-safe is the underlying {@linkplain #factory} is also thread-safe.
  * However, implementers are encouraged to wrap in {@linkplain java.util.Collections#unmodifiableSet unmodifiable set}
  * if they intent to cache {@code IdentifiedObjectSet} instances.

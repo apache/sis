@@ -159,7 +159,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     /**
      * Return the value type for reporting a data quality result.
      *
-     * <div class="section">Default value</div>
+     * <h4>Default value</h4>
      * If no type has been set but all {@linkplain #getValues() values} are of the same type,
      * then this method defaults to that type. Otherwise this method returns {@code null}.
      *

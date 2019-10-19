@@ -31,7 +31,7 @@ import org.opengis.referencing.cs.AxisDirection;
  * depends on the context, typically specified through the geodetic datum of a
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.</p>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)

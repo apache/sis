@@ -47,7 +47,7 @@ import static org.apache.sis.util.collection.Containers.property;
  * {@link org.opengis.referencing.crs.CoordinateReferenceSystem} objects.
  *
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus inherently thread-safe if the {@link Citation} and {@link InternationalString}
  * arguments given to the constructor are also immutable. It is caller's responsibility to ensure that those
  * conditions hold, for example by invoking {@link org.apache.sis.metadata.iso.citation.DefaultCitation#transitionTo
@@ -56,7 +56,7 @@ import static org.apache.sis.util.collection.Containers.property;
  * any public {@code ImmutableIdentifier} state.
  *
  *
- * <div class="section">Text, URN and XML representations</div>
+ * <h2>Text, URN and XML representations</h2>
  * Identifiers are represented in various ways depending on the context. In particular identifiers are
  * marshalled differently depending on whether they appear in a metadata object or a referencing object.
  * The following examples show an identifier for a Geographic Coordinate Reference System (CRS)
@@ -250,7 +250,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      *   </tr>
      * </table>
      *
-     * <div class="section">Localization</div>
+     * <h4>Localization</h4>
      * {@code "description"} is a localizable attributes which may have a language and country
      * code suffix. For example the {@code "description_fr"} property stands for description in
      * {@linkplain Locale#FRENCH French} and the {@code "description_fr_CA"} property stands

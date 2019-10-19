@@ -41,7 +41,7 @@ public interface Parameterized {
     /**
      * Returns the parameter values for this parameterized object, or {@code null} if unknown.
      *
-     * <div class="section">Modifying parameter values</div>
+     * <h4>Modifying parameter values</h4>
      * Unless explicitly allowed by the implementation class, callers should not modify the values
      * returned by this method. Implementers are encouraged to protect their internal data by returning
      * an unmodifiable view or a copy of their parameters. If the caller wishes to edit parameter values,

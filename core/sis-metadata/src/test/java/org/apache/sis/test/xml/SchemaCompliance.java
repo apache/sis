@@ -39,7 +39,7 @@ import org.apache.sis.util.StringBuilders;
  * <a href="https://standards.iso.org/iso/19115/-3/">https://standards.iso.org/iso/19115/-3/</a>.
  * All classes in a given directory are scanned.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * Current implementation ignores the XML prefix (e.g. {@code "cit:"} in {@code "cit:CI_Citation"}).
  * We assume that there is no name collision, especially given that {@code "CI_"} prefix in front of
  * most OGC/ISO class names have the effect of a namespace. If a collision nevertheless happen, then

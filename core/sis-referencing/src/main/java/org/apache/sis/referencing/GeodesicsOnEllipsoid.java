@@ -845,7 +845,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      *
      * The results should have only one positive root {@literal (μ > 0)}.
      *
-     * <div class="section">Condition on <var>y</var> value</div>
+     * <h4>Condition on <var>y</var> value</h4>
      * This method is indeterminate when <var>y</var> → 0 (it returns {@link Double#NaN}). For values too close to zero,
      * the result may be non-significative because of rounding errors. For choosing a threshold value for <var>y</var>,
      * {@code GeodesicsOnEllipsoidTest.Calculator} compares the value computed by this method against the value computed

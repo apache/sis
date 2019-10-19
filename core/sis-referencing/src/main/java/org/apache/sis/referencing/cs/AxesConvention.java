@@ -78,7 +78,7 @@ import org.apache.sis.measure.Units;
  *   </tr>
  * </table>
  *
- * <div class="section">Note on axis order</div>
+ * <h2>Note on axis order</h2>
  * The axis order is specified by the authority (typically a national agency) defining the Coordinate Reference System
  * (CRS). The order depends on the CRS type and the country defining the CRS. In the case of geographic CRS, the
  * (<var>latitude</var>, <var>longitude</var>) axis order is widely used by geographers and pilotes for centuries.
@@ -96,7 +96,7 @@ import org.apache.sis.measure.Units;
  * with older OGC specifications or other software products, CRS forced to "longitude first" axis order can be created
  * using the {@link #DISPLAY_ORIENTED} or {@link #NORMALIZED} enumeration value.</p>
  *
- * <div class="section">Note on range of longitude values</div>
+ * <h2>Note on range of longitude values</h2>
  * Most geographic CRS have a longitude axis defined in the [-180 … +180]° range. All map projections in Apache SIS are
  * designed to work in that range. This is also the range of {@link Math} trigonometric functions like {@code atan2(y,x)}.
  * However some data use the [0 … 360]° range instead. A geographic CRS can be shifted to that range of longitude values
@@ -269,7 +269,7 @@ public enum AxesConvention implements AxisFilter {
      * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getMinimumValue() minimum value})
      * are unchanged.
      *
-     * <div class="section">Usage</div>
+     * <h4>Usage</h4>
      * The most frequent usage of this enum is for shifting longitude values from the [-180 … +180]° range
      * to the [0 … 360]° range. However this enum could also be used with climatological calendars if their
      * time axis has a wrapround range meaning.

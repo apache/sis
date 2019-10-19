@@ -255,7 +255,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      * a function closely related to this method has the letter <var>t</var>.</p>
      *
      *
-     * <div class="section">Properties</div>
+     * <h4>Properties</h4>
      * This function is used with φ values in the [-π/2 … π/2] range and has a periodicity of 2π.
      * The result is always a positive number when the φ argument is inside the above-cited range.
      * If, after removal of any 2π periodicity, φ is still outside the [-π/2 … π/2] range, then the
@@ -272,7 +272,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      * </ul>
      *
      *
-     * <div class="section">The π/2 special case</div>
+     * <h4>The π/2 special case</h4>
      * The value at {@code Math.PI/2} is not exactly infinity because there is no exact representation of π/2.
      * However since the conversion of 90° to radians gives {@code Math.PI/2}, we can presume that the user was
      * expecting infinity. The caller should check for the PI/2 special case himself if desired, as this method
@@ -284,7 +284,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      * is not sufficient, the check needs to include at least the {@code nextUp(Math.PI/2)} case.</p>
      *
      *
-     * <div class="section">Relationship with Snyder</div>
+     * <h4>Relationship with Snyder</h4>
      * This function is related to the following functions from Snyder:
      *
      * <ul>

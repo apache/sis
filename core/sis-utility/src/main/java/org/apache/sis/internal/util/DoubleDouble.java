@@ -46,7 +46,7 @@ import org.apache.sis.math.DecimalFunctions;
  *     BigDecimal decimal = new BigDecimal(dd.value).add(new BigDecimal(dd.error));
  * }
  *
- * <div class="section">Impact of availability of FMA instructions</div>
+ * <h2>Impact of availability of FMA instructions</h2>
  * When allowed to use <cite>fused multiply-add</cite> (FMA) instruction added in JDK9
  * (see <a href="https://issues.apache.org/jira/browse/SIS-136">SIS-136</a> on Apache SIS JIRA),
  * then the following methods should be revisited:
@@ -351,7 +351,7 @@ public final class DoubleDouble extends Number {
      * is defined in base 10 (e.g. many unit conversion factors) and tries to compute an error term with
      * {@link DecimalFunctions#deltaForDoubleToDecimal(double)}.
      *
-     * <div class="section">Rational</div>
+     * <h4>Rational</h4>
      * SIS often creates matrices for unit conversions, and most conversion factors are defined precisely in base 10.
      * For example the conversion from feet to metres is defined by a factor of exactly 0.3048, which can not be
      * represented precisely as a {@code double}. Consequently if a value of 0.3048 is given, we can assume that
@@ -609,7 +609,7 @@ public final class DoubleDouble extends Number {
      * Adds an other double-double value to this {@code DoubleDouble}.
      * The result is stored in this instance.
      *
-     * <div class="section">Implementation</div>
+     * <h4>Implementation</h4>
      * If <var>a</var> and <var>b</var> are {@code DoubleDouble} instances, then:
      *
      *   <blockquote>(a + b)</blockquote>
@@ -825,7 +825,7 @@ public final class DoubleDouble extends Number {
      * Multiplies this {@code DoubleDouble} by an other double-double value.
      * The result is stored in this instance.
      *
-     * <div class="section">Implementation</div>
+     * <h4>Implementation</h4>
      * If <var>a</var> and <var>b</var> are {@code DoubleDouble} instances, then:
      *
      *   <blockquote>(a * b)</blockquote>
@@ -1039,7 +1039,7 @@ public final class DoubleDouble extends Number {
      * Divides the given double-double value by this {@code DoubleDouble}.
      * The result is stored in this instance.
      *
-     * <div class="section">Implementation</div>
+     * <h4>Implementation</h4>
      * If <var>a</var> and <var>b</var> are {@code DoubleDouble} instances, then we estimate:
      *
      *   <blockquote>(a / b) = (a.value / b.value) + remainder / b</blockquote>
@@ -1115,7 +1115,7 @@ public final class DoubleDouble extends Number {
     /**
      * Sets this double-double value to its square root.
      *
-     * <div class="section">Implementation</div>
+     * <h4>Implementation</h4>
      * This method searches for a {@code (r + ε)} value where:
      *
      * <blockquote>(r + ε)²  =  {@linkplain #value} + {@linkplain #error}</blockquote>

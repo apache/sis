@@ -35,7 +35,7 @@ import org.apache.sis.internal.util.Constants;
  * The provider of {@link GeoTiffStore} instances. Given a {@link StorageConnector} input,
  * this class tries to instantiate a {@code GeoTiffStore}.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code GeoTiffStoreProvider} instance can be safely used by many threads without synchronization on
  * the part of the caller. However the {@link GeoTiffStore} instances created by this factory are not thread-safe.
  *

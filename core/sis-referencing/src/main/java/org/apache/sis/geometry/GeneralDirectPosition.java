@@ -43,7 +43,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * position is known to be always two-dimensional, then {@link DirectPosition2D} provides
  * a more efficient implementation.
  *
- * <div class="section">Coordinate Reference System (CRS) optionality</div>
+ * <h2>Coordinate Reference System (CRS) optionality</h2>
  * Since {@code DirectPosition}s, as data types, will often be included in larger objects
  * (such as {@link org.opengis.geometry.Geometry}) that have references
  * to {@code CoordinateReferenceSystem}, the {@link #getCoordinateReferenceSystem()} method

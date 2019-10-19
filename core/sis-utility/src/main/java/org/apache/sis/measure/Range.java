@@ -45,7 +45,7 @@ import org.apache.sis.util.Numbers;
  * Numeric ranges where both endpoints are exclusive are called <cite>open intervals</cite>
  * and are represented by parenthesis, for example "{@code (0 … 256)}".</p>
  *
- * <div class="section">Type and value of range elements</div>
+ * <h2>Type and value of range elements</h2>
  * To be a member of a {@code Range}, the {@code <E>} type defining the range must implement the
  * {@link Comparable} interface. All argument values given to the methods of this class shall be
  * or contain instances of that {@code <E>} type. The type is enforced by parameterized type,
@@ -54,7 +54,7 @@ import org.apache.sis.util.Numbers;
  * may throw an {@link IllegalArgumentException} if a given argument does not met some constraint
  * beyond the type.
  *
- * <div class="section">Relationship with ISO 19123 definition of range</div>
+ * <h2>Relationship with ISO 19123 definition of range</h2>
  * The ISO 19123 standard (<cite>Coverage geometry and functions</cite>) defines the range as the set
  * (either finite or {@linkplain org.opengis.geometry.TransfiniteSet transfinite}) of feature attribute
  * values associated by a function (the {@linkplain org.opengis.coverage.Coverage coverage}) with the
@@ -72,7 +72,7 @@ import org.apache.sis.util.Numbers;
  * numeric ranges can be associated to {@linkplain org.opengis.coverage.ContinuousCoverage
  * continuous coverages}.</p>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class and the {@link NumberRange} / {@link MeasurementRange} subclasses are immutable,
  * and thus inherently thread-safe. Other subclasses may or may not be immutable, at implementation choice.
  * But implementers are encouraged to make sure that all subclasses remain immutable for more predictable behavior.
