@@ -57,11 +57,11 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
 
     /**
      * Number of nanoseconds to wait before to rehash the table for reducing its size.
-     * When the garbage collector collects a lot of elements, we will at least this amount of time
-     * before rehashing the tables, in case lot of news elements are going to be added. Without this
-     * field, we noticed many "reduce", "expand", "reduce", "expand", <i>etc.</i> cycles.
+     * When the garbage collector collects a lot of elements, we will wait at least this amount of time
+     * before to rehash the tables, in case lot of news elements are going to be added. We noticed that
+     * in the absence of delay, there is a lot of "reduce", "expand", "reduce", "expand", <i>etc.</i> cycles.
      */
-    static final long REHASH_DELAY = 4000000000L;
+    static final long REHASH_DELAY = 4000_000_000L;                     // 4 seconds.
 
     /**
      * The logger where to logs collection events, if logging at the finest level is enabled.
@@ -70,6 +70,7 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
 
     /**
      * The next entry, or {@code null} if there is none.
+     * This is used when more than one entry has the same hash code value.
      */
     WeakEntry<E> next;
 
@@ -123,7 +124,7 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
                 } else {
                     table[removeAt] = e.next;
                 }
-                // We can't continue the loop pass that point, since 'e' is no longer valid.
+                // We can not continue the loop pass that point, since `e` is no longer valid.
                 return true;
             }
             prev = e;
@@ -165,7 +166,7 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
         for (WeakEntry<E> next : oldTable) {
             while (next != null) {
                 final WeakEntry<E> e = next;
-                next = next.next;                           // We keep 'next' right now because its value will change.
+                next = next.next;                           // Fetch `next` now because its value will change.
                 final int index = e.hash % table.length;
                 e.next = table[index];
                 table[index] = e;

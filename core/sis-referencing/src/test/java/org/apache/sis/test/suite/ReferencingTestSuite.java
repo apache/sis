@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-referencing} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -191,6 +191,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.SinusoidalTest.class,
     org.apache.sis.referencing.operation.projection.PolyconicTest.class,
     org.apache.sis.referencing.operation.projection.MollweideTest.class,
+    org.apache.sis.referencing.operation.projection.SatelliteTrackingTest.class,
 
     // Coordinate operation and derived Coordinate Reference Systems (cyclic dependency).
     org.apache.sis.referencing.operation.DefaultTransformationTest.class,

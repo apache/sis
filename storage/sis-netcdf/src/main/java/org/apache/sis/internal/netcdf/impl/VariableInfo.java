@@ -316,7 +316,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         } else if (count == 1) {
             unlimited[0].offsetToNextRecord = 0;        // Special case cited in method javadoc.
         } else for (int i=0; i<count; i++) {
-            unlimited[i].offsetToNextRecord = recordStride - unlimited[i].offsetToNextRecord;
+            unlimited[i].offsetToNextRecord = Math.subtractExact(recordStride, unlimited[i].offsetToNextRecord);
         }
         /*
          * If some variables have a "coordinates" attribute listing names of variables used as axes,
@@ -630,12 +630,10 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     private void applyUnlimitedDimensionStride(final Region region) throws DataStoreContentException {
         if (isUnlimited()) {
-            final int dataSize = reader.dataSize();
-            if (offsetToNextRecord < 0 || (offsetToNextRecord % dataSize) != 0) {
-                throw new DataStoreContentException(resources()
-                        .getString(Resources.Keys.CanNotComputeVariablePosition_2, getFilename(), name));
+            if (offsetToNextRecord < 0) {
+                throw canNotComputePosition(null);
             }
-            region.increaseStride(dimensions.length - 1, offsetToNextRecord / dataSize);
+            region.setAdditionalByteOffset(dimensions.length - 1, offsetToNextRecord);
         }
     }
 

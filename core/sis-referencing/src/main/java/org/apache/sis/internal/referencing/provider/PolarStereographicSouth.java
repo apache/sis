@@ -48,12 +48,12 @@ public final class PolarStereographicSouth extends AbstractStereographic {
     static {
         final ParameterBuilder builder = builder();
         final ParameterDescriptor<Double> standardParallel =
-                alternativeAuthority(PolarStereographicB.STANDARD_PARALLEL, Citations.ESRI, builder)
+                ESRI.copyNames(builder, PolarStereographicB.STANDARD_PARALLEL)
                 .createBounded(Latitude.MIN_VALUE, 0, Latitude.MIN_VALUE, Units.DEGREE);
 
         final ParameterDescriptor<?>[] parameters = {
             standardParallel,
-            ESRI.asPrimary(PolarStereographicB.LONGITUDE_OF_ORIGIN, builder),
+            ESRI.CENTRAL_MERIDIAN,
             PolarStereographicB.SCALE_FACTOR,                       // Not formally a parameter of this projection.
             ESRI.FALSE_EASTING,
             ESRI.FALSE_NORTHING

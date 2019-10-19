@@ -60,7 +60,7 @@ import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
  * {@linkplain ParameterDescriptorGroup descriptor group} named {@code PARAMETERS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -293,37 +293,19 @@ public abstract class MapProjection extends AbstractProvider {
     static ParameterBuilder renameAlias(final ParameterDescriptor<Double> template, final Citation toRename,
             final ParameterDescriptor<Double> replacement, final ParameterBuilder builder)
     {
-        return copyAliases(template, toRename, sameNameAs(toRename, replacement),
-                (ReferenceIdentifier) IdentifiedObjects.getIdentifier(replacement, toRename),
-                builder.addName(template.getName()));
-    }
-
-    /**
-     * Copies all aliases except the ones for the given authority. If the given replacement is non-null,
-     * then it will be used instead of the first occurrence of the omitted name.
-     *
-     * <p>This method does not copy the primary name. It is caller's responsibility to add it first.</p>
-     *
-     * @param  template     the parameter from which to copy the aliases.
-     * @param  exclude      the authority of the alias to omit. Can not be EPSG.
-     * @param  replacement  the alias to use instead of the omitted one, or {@code null} if none.
-     * @param  newCode      the identifier to use instead of the omitted one, or {@code null} if none.
-     * @param  builder      where to add the aliases.
-     * @return the given {@code builder}, for method call chaining.
-     */
-    private static ParameterBuilder copyAliases(final ParameterDescriptor<Double> template, final Citation exclude,
-            GenericName replacement, ReferenceIdentifier newCode, final ParameterBuilder builder)
-    {
+        builder.addName(template.getName());
+        GenericName newName = sameNameAs(toRename, replacement);
+        ReferenceIdentifier newCode = (ReferenceIdentifier) IdentifiedObjects.getIdentifier(replacement, toRename);
         for (GenericName alias : template.getAlias()) {
-            if (((Identifier) alias).getAuthority() == exclude) {
-                if (replacement == null) continue;
-                alias = replacement;
-                replacement = null;
+            if (((Identifier) alias).getAuthority() == toRename) {
+                if (newName == null) continue;
+                alias = newName;
+                newName = null;
             }
             builder.addName(alias);
         }
         for (ReferenceIdentifier id : template.getIdentifiers()) {
-            if (id.getAuthority() == exclude) {
+            if (id.getAuthority() == toRename) {
                 if (newCode == null) continue;
                 id = newCode;
                 newCode = null;
@@ -331,26 +313,6 @@ public abstract class MapProjection extends AbstractProvider {
             builder.addIdentifier(id);
         }
         return builder;
-    }
-
-    /**
-     * Copies all aliases and all identifiers except EPSG, but using the alias specified by the given authority
-     * as the primary name. The old primary name (usually the EPSG name) is discarded.
-     *
-     * <p>This is a convenience method for defining the parameters of an ESRI-specific (or any other authority)
-     * projection using the EPSG parameters as template.</p>
-     *
-     * @param  template    the parameter from which to copy the names.
-     * @param  authority   the authority to use for the primary name.
-     * @param  builder     an initially clean builder where to add the names.
-     * @return the given {@code builder}, for method call chaining.
-     *
-     * @since 0.8
-     */
-    static ParameterBuilder alternativeAuthority(final ParameterDescriptor<Double> template,
-            final Citation authority, final ParameterBuilder builder)
-    {
-        return copyAliases(template, authority, null, null, builder.addName(sameNameAs(authority, template)));
     }
 
     /**

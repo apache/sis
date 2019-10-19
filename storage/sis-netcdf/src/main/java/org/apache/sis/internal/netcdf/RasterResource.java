@@ -600,9 +600,11 @@ public final class RasterResource extends AbstractGridResource implements Resour
                         bandOffsets[indexInRaster] = i;
                         indexInRaster = 0;                  // Pixels interleaved in one bank: sampleValues.length = 1.
                     }
-                    if (i < numBuffers) {
+                    if (i < numBuffers) try {
                         // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
                         sampleValues[indexInRaster] = variable.read(areaOfInterest, subsamplings).buffer().get();
+                    } catch (ArithmeticException e) {
+                        throw variable.canNotComputePosition(e);
                     }
                 }
             }

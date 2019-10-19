@@ -286,6 +286,13 @@ public class ConverterRegistry {
                      */
                     continue;
                 }
+                if (i.getName().startsWith("java.lang.constant")) {
+                    /*
+                     * The Constable and ConstantDesc interfaces (introduced in Java 12)
+                     * are internal mechanic for handling byte codes.
+                     */
+                    continue;
+                }
                 if (Cloneable.class.isAssignableFrom(i)) {
                     /*
                      * Exclude this special case. If we were accepting it, we would basically

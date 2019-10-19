@@ -277,14 +277,20 @@ public final class Strings extends Static {
      * @param value      the text to format.
      */
     public static void formatTo(final Formatter formatter, final int flags, int width, int precision, String value) {
-        final String format;
-        final Object[] args;
+        /*
+         * Converting to upper cases may change the string length in some locales.
+         * So we need to perform this conversion before to check the length.
+         */
         boolean isUpperCase = (flags & FormattableFlags.UPPERCASE) != 0;
-        if (isUpperCase && width > 0) {
-            // May change the string length in some locales.
+        if (isUpperCase && (width > 0 || precision >= 0)) {
             value = value.toUpperCase(formatter.locale());
             isUpperCase = false;                            // Because conversion has already been done.
         }
+        /*
+         * If the string is longer than the specified "precision", truncate
+         * and add "…" for letting user know that there is missing characters.
+         * This loop counts the number of Unicode code points rather than characters.
+         */
         int length = value.length();
         if (precision >= 0) {
             for (int i=0,n=0; i<length; i += n) {
@@ -305,7 +311,12 @@ public final class Strings extends Static {
                 n = Character.charCount(value.codePointAt(i));
             }
         }
-        // Double check since length() is faster than codePointCount(…).
+        /*
+         * If the string is shorter than the minimal width, add spaces on the left or right side.
+         * We double check with `width > length` since it is faster than codePointCount(…).
+         */
+        final String format;
+        final Object[] args;
         if (width > length && (width -= value.codePointCount(0, length)) > 0) {
             format = "%s%s";
             args = new Object[] {value, value};

@@ -17,7 +17,11 @@
 package org.apache.sis.internal.storage.io;
 
 import org.apache.sis.io.TableAppender;
-import org.apache.sis.internal.util.Numerics;
+
+import static java.lang.Math.addExact;
+import static java.lang.Math.multiplyExact;
+import static java.lang.Math.toIntExact;
+import static org.apache.sis.internal.util.Numerics.ceilDiv;
 
 
 /**
@@ -30,9 +34,12 @@ import org.apache.sis.internal.util.Numerics;
  * <p>This class assumes that the values are stored in a sequence (array or uncompressed file)
  * where index at dimension 0 varies fastest, followed by index at dimension 1, <i>etc</i>.</p>
  *
+ * <p>This class has no knowledge of data size. The same {@code Region} instance can be used
+ * for reading {@code byte} and {@code float} arrays for instance.</p>
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -64,7 +71,14 @@ public final class Region {
      *
      * The length of this array is the hyper-rectangle dimension plus one.
      */
-    final long[] skips;
+    private final long[] skips;
+
+    /**
+     * Additional values to add to {@link #skips}, but in bytes instead than as a number of values.
+     * This is the only field in this {@link Region} class to be expressed in byte units.
+     * This offset is rarely provided.
+     */
+    private long[] skipBytes;
 
     /**
      * Creates a new region. It is caller's responsibility to ensure that:
@@ -94,36 +108,44 @@ public final class Region {
         for (int i=0; i<dimension;) {
             final int  step  = subsamplings[i];
             final long lower =  regionLower[i];
-            final long count = Numerics.ceilDiv(regionUpper[i] - lower, step);
+            final long count = ceilDiv(regionUpper[i] - lower, step);
             final long upper = lower + ((count-1) * step + 1);
             final long span  = size[i];
             assert (count > 0) && (lower >= 0) && (upper > lower) && (upper <= span) : i;
-            targetSize[i] = Math.toIntExact(count);
 
-            position = Math.addExact(position, Math.multiplyExact(stride, lower));
-            skip     = Math.addExact(skip,     Math.multiplyExact(stride, span - (upper - lower)));
-            skips[i] = Math.addExact(skips[i], Math.multiplyExact(stride, step - 1));
-            stride   = Math.multiplyExact(stride, span);
-            skips[++i] = skip;
+            targetSize[i] = toIntExact(count);
+            position      = addExact(position, multiplyExact(stride, lower));
+            skip          = addExact(skip,     multiplyExact(stride, span - (upper - lower)));
+            skips[i]      = addExact(skips[i], multiplyExact(stride, step - 1));
+            stride        = multiplyExact(stride, span);
+            skips[++i]    = skip;
         }
         startAt = position;
     }
 
     /**
-     * Increases the number of values between two consecutive index values in the given dimension of the hyper-cube.
+     * Sets an additional offset between values at two consecutive index in the given dimension of the hyper-cube.
      * The strides are computed automatically at construction time, but this method can be invoked in some rare cases
      * where those values need to be modified (example: for adapting to the layout of netCDF "unlimited" variable).
      *
      * <div class="note"><b>Example:</b> in a cube of dimension 10×10×10, the number of values between indices
-     * (0,0,1) and (0,0,2) is 100. Invoking {@code increaseStride(1, 4)} will increase this value to 104.
-     * {@link HyperRectangleReader} will still read only the requested 100 values, but will skip 4 more values
-     * when moving from plane 1 to plane 2.</div>
+     * (0,0,1) and (0,0,2) is 100. If the values type is {@code float}, invoking {@code increaseStride(1, 12)}
+     * will increase this value to 103 (computed as 100 + 12/{@value Float#SIZE}). {@link HyperRectangleReader}
+     * will still read only the requested 100 values, but will skip 3 more values when moving from plane 1 to
+     * plane 2.</div>
+     *
+     * This method is the only one in this {@link Region} class to use a count of bytes instead than a count
+     * of sample values.
      *
      * @param  dimension  dimension for which to increase the stride.
-     * @param  skip       additional number of values to skip after we finished reading a block of data in the specified dimension.
+     * @param  skip       additional number of <strong>bytes</strong> to skip after we finished reading
+     *                    a block of data in the specified dimension.
      */
-    public void increaseStride(final int dimension, final long skip) {
-        skips[dimension] = Math.addExact(skips[dimension], skip);
+    public void setAdditionalByteOffset(final int dimension, final long skip) {
+        if (skipBytes == null) {
+            skipBytes = new long[getDimension()];
+        }
+        skipBytes[dimension] = skip;
     }
 
     /**
@@ -149,6 +171,26 @@ public final class Region {
     }
 
     /**
+     * Computes the number of stride for the given dimension. Caller must provide a base stride value,
+     * which is the stride that we would have in absence of subregion and additional bytes to skip.
+     * This method adds the given base the number of bytes to skip.
+     *
+     * @param  dimension    the dimension for which to compute the stride.
+     * @param  base         stride that we would have in absence of subregion and bytes to skip.
+     * @param  sampleSize   size of sample values, in bytes.
+     * @return stride in bytes.
+     * @throws ArithmeticException if the number of bytes exceed the {@code long} capacity.
+     */
+    final long stride(final int dimension, final int base, final int sampleSize) {
+        long stride = multiplyExact(addExact(skips[dimension], base), sampleSize);
+        if (skipBytes != null) {
+            // This additional offset is in bytes.
+            stride = addExact(stride, skipBytes[dimension]);
+        }
+        return stride;
+    }
+
+    /**
      * Returns the total number of values to be read from the sub-region while applying the subsampling.
      * This method takes in account only the given number of dimensions.
      */
@@ -157,7 +199,7 @@ public final class Region {
         for (int i=0; i<dimension; i++) {
             length *= targetSize[i];
         }
-        return Math.toIntExact(length);
+        return toIntExact(length);
     }
 
     /**
