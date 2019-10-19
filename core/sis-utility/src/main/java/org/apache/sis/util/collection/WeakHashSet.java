@@ -43,7 +43,7 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * the static {@code hashCode(a)} and {@code equals(a1, a2)} methods defined in the {@link Arrays}
  * class.</p>
  *
- * <div class="section">Optimizing memory use in factory implementations</div>
+ * <h2>Optimizing memory use in factory implementations</h2>
  * The {@code WeakHashSet} class has a {@link #get(Object)} method that is not part of the
  * {@link java.util.Set} interface. This {@code get} method retrieves an entry from this set
  * that is equals to the supplied object. The {@link #unique(Object)} method combines a
@@ -62,7 +62,7 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  *
  * Thus, {@code WeakHashSet} can be used inside a factory to prevent creating duplicate immutable objects.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code WeakHashSet} instance can be safely used by many threads without synchronization on the part of
  * the caller. But if a sequence of two or more method calls need to appear atomic from other threads perspective,
  * then the caller can synchronize on {@code this}.

@@ -59,7 +59,7 @@ import org.apache.sis.internal.jaxb.metadata.MD_Scope;
  * At least one of {@linkplain #getStatement statement}, {@linkplain #getProcessSteps() process steps}
  * and {@link #getSources() sources} shall be provided.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

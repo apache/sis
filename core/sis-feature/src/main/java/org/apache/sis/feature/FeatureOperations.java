@@ -41,7 +41,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * <p>A flexible but relatively cumbersome way to define arbitrary computations is to subclass {@link AbstractOperation}.
  * This {@code FeatureOperations} class provides a more convenient way to get a few commonly-used operations.</p>
  *
- * <div class="section">Operation name, designation and description</div>
+ * <h2>Operation name, designation and description</h2>
  * All operations are identified by a programmatic name, but can also have a more human-readable designation
  * for Graphical User Interfaces (GUI). Those identification information are specified in a {@code Map<String,?>}.
  * The recognized entries are the same than the ones documented in {@link AbstractIdentifiedType}, augmented with
@@ -147,7 +147,7 @@ public final class FeatureOperations extends Static {
      * Since this method does not create new property (it only redirects to an existing property),
      * this method ignores all {@code "result.*"} entries in the given {@code identification} map.
      *
-     * <div class="section">Read/write behavior</div>
+     * <h4>Read/write behavior</h4>
      * Since the {@link AbstractOperation#apply Operation.apply(…)} method returns directly the property
      * identified by the {@code referent} argument, the returned property is writable if the referenced
      * property is also writable.
@@ -182,7 +182,7 @@ public final class FeatureOperations extends Static {
      *   <li>The delimiter can not contain the {@code '\'} escape character.</li>
      * </ul>
      *
-     * <div class="section">Read/write behavior</div>
+     * <h4>Read/write behavior</h4>
      * This operation supports both reading and writing. When setting a value on the attribute created by this
      * operation, the given string value will be split around the {@code delimiter} and each substring will be
      * forwarded to the corresponding single property.
@@ -246,11 +246,11 @@ public final class FeatureOperations extends Static {
      * {@linkplain org.apache.sis.geometry.GeneralEnvelope#getCoordinateReferenceSystem() envelope CRS}
      * will be that CRS.
      *
-     * <div class="section">Limitations</div>
+     * <h4>Limitations</h4>
      * If a geometry contains other geometries, this operation queries only the envelope of the root geometry.
      * It is the root geometry responsibility to take in account the envelope of all its children.
      *
-     * <div class="section">Read/write behavior</div>
+     * <h4>Read/write behavior</h4>
      * This operation is read-only. Calls to {@code Attribute.setValue(Envelope)} will result in an
      * {@link IllegalStateException} to be thrown.
      *

@@ -30,7 +30,7 @@ import org.opengis.referencing.datum.ParametricDatum;
 /**
  * Defines the origin of a parametric coordinate reference system.
  *
- * <div class="section">Creating new parametric datum instances</div>
+ * <h2>Creating new parametric datum instances</h2>
  * New instances can be created either directly by specifying all information to a factory method (choices 2
  * and 3 below), or indirectly by specifying the identifier of an entry in a database (choices 1 below).
  *
@@ -43,7 +43,7 @@ import org.opengis.referencing.datum.ParametricDatum;
  *       {@linkplain #DefaultParametricDatum(Map) constructor}.</li>
  * </ol>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
  * all components were created using only SIS factories and static constants.

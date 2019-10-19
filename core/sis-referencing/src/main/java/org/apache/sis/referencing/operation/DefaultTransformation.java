@@ -40,7 +40,7 @@ import org.apache.sis.util.ArgumentChecks;
  * {@linkplain #getMathTransform() math transform}. Subclasses may have to override the {@link #getParameterValues()}
  * method if they need to provide a different set of parameters.</p>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. This means that unless otherwise noted in the javadoc,
  * {@code Transformation} instances created using only SIS factories and static constants can be shared

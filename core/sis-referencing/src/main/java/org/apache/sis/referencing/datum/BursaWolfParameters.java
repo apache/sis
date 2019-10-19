@@ -95,7 +95,7 @@ import java.util.Objects;
  *       The Position Vector convention is used by IAG and recommended by ISO 19111.</li>
  * </ul>
  *
- * <div class="section">Source and target geodetic datum</div>
+ * <h2>Source and target geodetic datum</h2>
  * The <var>source datum</var> in above coordinates transformation is the {@link DefaultGeodeticDatum} instance
  * that contain this {@code BursaWolfParameters}. It can be any datum, including datum that are valid only locally.
  * The <var>{@linkplain #getTargetDatum() target datum}</var> is specified at construction time and is often,
@@ -105,7 +105,7 @@ import java.util.Objects;
  * prime meridian}, then it is user's responsibility to apply longitude rotation before to use the Bursa-Wolf
  * parameters.</p>
  *
- * <div class="section">When Bursa-Wolf parameters are used</div>
+ * <h2>When Bursa-Wolf parameters are used</h2>
  * {@code BursaWolfParameters} are used in three contexts:
  * <ol>
  *   <li>Created as a step while creating a {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation
@@ -454,14 +454,14 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * {@linkplain DefaultGeodeticDatum#getPrimeMeridian() prime meridian}, then it is caller's responsibility
      * to apply longitude rotation before to use the matrix returned by this method.</p>
      *
-     * <div class="section">Time-dependent transformation</div>
+     * <h4>Time-dependent transformation</h4>
      * Some transformations use parameters that vary with time (e.g. operation method EPSG:1053).
      * Users can optionally specify a date for which the transformation is desired.
      * For transformations that do not depends on time, this date is ignored and can be null.
      * For time-dependent transformations, {@code null} values default to the transformation's
      * {@linkplain TimeDependentBWP#getTimeReference() reference time}.
      *
-     * <div class="section">Inverse transformation</div>
+     * <h4>Inverse transformation</h4>
      * The inverse transformation can be approximated by reversing the sign of the 7 parameters before to use them
      * in the above matrix. This is often considered sufficient since <cite>position vector transformations</cite>
      * are themselves approximations. However Apache SIS will rather use

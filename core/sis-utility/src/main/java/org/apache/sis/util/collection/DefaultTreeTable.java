@@ -307,7 +307,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * A {@link TreeTable.Node} implementation which can store values for a pre-defined list of columns.
      * The list of columns is specified by a {@link TreeTable}, or inherited from a parent node.
      *
-     * <div class="section">Note on the parent node</div>
+     * <h2>Note on the parent node</h2>
      * The value returned by the {@link #getParent()} method is updated automatically when this node
      * is <em>added to</em> or <em>removed from</em> the {@linkplain #getChildren() list of children}
      * of another {@code Node} instance - there is no {@code setParent(Node)} method. Since the parent

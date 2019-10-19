@@ -27,7 +27,7 @@ package org.apache.sis.referencing.operation.transform;
  * The {@link #suggest(int, int, int, int, int)  suggest(…)} method in this class returns a strategy
  * suitable to the {@code transform} arguments.
  *
- * <div class="section">Usage</div>
+ * <h2>Usage</h2>
  * The following code gives a skeleton for a {@code AbstractMathTransform} implementation
  * capable to transform an array of {@code double} coordinates:
  *

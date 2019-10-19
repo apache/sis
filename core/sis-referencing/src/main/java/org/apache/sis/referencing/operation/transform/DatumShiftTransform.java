@@ -51,7 +51,7 @@ import org.apache.sis.util.Debug;
  * More complex methods are subclasses of this {@code DatumShiftTransform} base class, but users should not assume
  * that this is the case of every transforms performing a datum shift.</p>
  *
- * <div class="section">Datum shift methods overview</div>
+ * <h2>Datum shift methods overview</h2>
  * The two CRS's ellipsoids have slightly different scale and rotation in space, and their center are located in
  * a slightly different position. Consequently geodetic datum shifts are often approximated by a constant scale,
  * rotation and translation applied on geocentric coordinates. Those approximations are handled in SIS

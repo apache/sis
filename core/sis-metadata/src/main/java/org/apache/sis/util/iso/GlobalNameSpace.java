@@ -24,7 +24,7 @@ import java.io.ObjectStreamException;
  * any global namespace in public API since ISO 19103 does not define them and users should not
  * need to handle them explicitly.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

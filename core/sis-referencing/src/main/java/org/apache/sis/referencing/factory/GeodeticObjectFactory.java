@@ -85,7 +85,7 @@ import org.apache.sis.xml.XML;
  * (or the {@link org.apache.sis.referencing.CRS#forCode(String)} convenience method)
  * when the CRS object to construct can be identified by a code in the namespace of an authority (typically EPSG).
  *
- * <div class="section">Object properties</div>
+ * <h2>Object properties</h2>
  * Most factory methods expect a {@link Map Map&lt;String,?&gt;} argument, often followed by explicit arguments.
  * Unless otherwise noticed, information provided in the {@code properties} map are considered ignorable metadata
  * while information provided in explicit arguments have an impact on coordinate transformation results.
@@ -179,7 +179,7 @@ import org.apache.sis.xml.XML;
  *   </tr>
  * </table>
  *
- * <div class="section">Localization</div>
+ * <h2>Localization</h2>
  * All localizable attributes like {@code "remarks"} may have a language and country code suffix.
  * For example the {@code "remarks_fr"} property stands for remarks in {@linkplain Locale#FRENCH French} and
  * the {@code "remarks_fr_CA"} property stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
@@ -1622,7 +1622,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * since this geodetic object factory is not an {@linkplain GeodeticAuthorityFactory authority factory}.
      * For such verification, see the {@link org.apache.sis.referencing.CRS#fromWKT(String)} convenience method.
      *
-     * <div class="section">Usage and performance considerations</div>
+     * <h4>Usage and performance considerations</h4>
      * The default implementation uses a shared instance of {@link org.apache.sis.io.wkt.WKTFormat}
      * with the addition of thread-safety. This is okay for occasional use,
      * but is sub-optimal if this method is extensively used in a multi-thread environment.

@@ -37,13 +37,13 @@ import org.apache.sis.util.resources.Errors;
  * Parses {@linkplain AxisDirection axis direction} of the kind <cite>"South along 90 deg East"</cite>.
  * Those directions are used in the EPSG database for polar stereographic projections.
  *
- * <div class="section">Reference meridian</div>
+ * <h2>Reference meridian</h2>
  * This class does not know whether the meridian is relative to Greenwich or any other reference meridian.
  * The reference meridian shall be inferred from the geodetic datum of the {@code GeographicCRS} instance
  * that contains (through its coordinate system) the axes having those directions. This is consistent with
  * ISO 19162:2015 §7.5.4(iv) - WKT 2 formatting.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This final class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD)

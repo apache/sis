@@ -48,7 +48,7 @@ import org.apache.sis.internal.referencing.DirectPositionView;
  * <div class="note"><b>Example:</b>
  * this transform is used for example with NADCON and NTv2 datum shift grids.</div>
  *
- * <div class="section">Input and output coordinates</div>
+ * <h2>Input and output coordinates</h2>
  * First, <cite>"real world"</cite> input coordinates (<var>x</var>,<var>y</var>) are converted to
  * <cite>grid</cite> coordinates (<var>gridX</var>, <var>gridY</var>), which are zero-based indices
  * in the two-dimensional grid. This conversion is applied by an affine transform <em>before</em>
@@ -192,7 +192,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * {@code InterpolatedTransform} instance with the steps needed for converting values between
      * geodetic and grid coordinates.
      *
-     * <div class="section">Unit of measurement</div>
+     * <h4>Unit of measurement</h4>
      * The unit of measurement is determined by {@link DatumShiftGrid#getCoordinateUnit()}:
      * <ul>
      *   <li>If the datum shift unit {@linkplain Units#isAngular(Unit) is angular}, then the transform

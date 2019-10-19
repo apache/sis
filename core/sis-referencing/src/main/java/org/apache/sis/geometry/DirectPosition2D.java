@@ -46,7 +46,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * do not have such restriction, and it would be hard to generalize. For example there is no clear "x" or "y"
  * classification for North-East direction.</div>
  *
- * <div class="section">Caution when used in collections</div>
+ * <h2>Caution when used in collections</h2>
  * Do not mix instances of this class with ordinary {@link Point2D} instances
  * in a {@code HashSet} or as {@code HashMap} keys.
  * It is not possible to met both {@link Point2D#hashCode()} and {@link DirectPosition#hashCode()}

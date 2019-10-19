@@ -54,7 +54,7 @@ abstract class MetadataVisitor<R> {
      * Keys are visited metadata instances and values are computed value. The value may be null if
      * the computation is in progress.
      *
-     * <div class="section">The problem</div>
+     * <h4>The problem</h4>
      * Cyclic associations can exist in ISO 19115 metadata. For example {@code Instrument} has a reference
      * to the platform it is mounted on, and the {@code Platform} has a list of instruments mounted on it.
      * Consequently walking down the metadata tree can cause infinite recursivity, unless we keep trace of

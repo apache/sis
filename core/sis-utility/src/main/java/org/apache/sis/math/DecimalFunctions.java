@@ -207,7 +207,7 @@ public final class DecimalFunctions extends Static {
      * map projection parameters defined by national mapping agencies.
      * </div>
      *
-     * <div class="section">Domain of validity</div>
+     * <h4>Domain of validity</h4>
      * The current implementation can not compute delta for {@code abs(value) < 3E-8} approximately,
      * except for the 0 value which is supported. For any non-zero value closer to zero than the 3E-8
      * threshold, this method returns {@code NaN} because of insufficient algorithm accuracy.

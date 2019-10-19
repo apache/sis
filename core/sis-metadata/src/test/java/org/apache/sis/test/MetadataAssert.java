@@ -141,7 +141,7 @@ public strictfp class MetadataAssert extends Assert {
      *
      * The comparison will ignore comments and the optional attributes given in arguments.
      *
-     * <div class="section">Ignored attributes substitution</div>
+     * <h4>Ignored attributes substitution</h4>
      * For convenience, this method replaces some well known prefixes in the {@code ignoredAttributes}
      * array by their full namespace URLs. For example this method replaces{@code "xsi:schemaLocation"}
      * by {@code "http://www.w3.org/2001/XMLSchema-instance:schemaLocation"}.

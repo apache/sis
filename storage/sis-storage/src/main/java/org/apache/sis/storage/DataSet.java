@@ -33,7 +33,7 @@ import org.opengis.geometry.Envelope;
  * attributes, and an arbitrary amount of {@code Feature} instances which contains the actual values for all bridges in
  * the dataset.</div>
  *
- * <div class="section">Metadata</div>
+ * <h2>Metadata</h2>
  * Datasets should have {@link #getMetadata() metadata} /
  * {@link org.apache.sis.metadata.iso.DefaultMetadata#getMetadataScopes() metadataScope} /
  * {@link org.apache.sis.metadata.iso.DefaultMetadataScope#getResourceScope() resourceScope} sets to

@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
  * Tests the {@link TreeNodeChildren} class.
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
- * <div class="section">Test dependency</div>
+ * <h2>Test dependency</h2>
  * This class uses the {@link TreeNode#getUserObject()} method for comparing the values.
  * We can hardly avoid to use some {@code TreeNode} methods because of the cross-dependencies.
  * However we try to use nothing else than {@code getUserObject()} because the purpose of this

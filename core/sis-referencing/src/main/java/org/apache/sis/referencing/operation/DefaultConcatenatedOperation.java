@@ -161,7 +161,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * This method invokes itself recursively if there is nested {@code ConcatenatedOperation} instances
      * in the given list. This should not happen according ISO 19111 standard, but we try to be safe.
      *
-     * <div class="section">How coordinate operation accuracy is determined</div>
+     * <h4>How coordinate operation accuracy is determined</h4>
      * If {@code setAccuracy} is {@code true}, then this method copies accuracy information found in the single
      * {@link Transformation} instance. This method ignores instances of other kinds for the following reason:
      * some {@link Conversion} instances declare an accuracy, which is typically close to zero. If a concatenated

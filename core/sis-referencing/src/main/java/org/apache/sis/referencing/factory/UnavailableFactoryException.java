@@ -24,7 +24,7 @@ import org.opengis.referencing.AuthorityFactory;
  * The most common case is when the {@link org.apache.sis.referencing.factory.sql.EPSGFactory}
  * has no connection to an EPSG database.
  *
- * <div class="section">Relationship with other exceptions</div>
+ * <h2>Relationship with other exceptions</h2>
  * This exception means that the whole factory is unusable.
  * By contrast, {@link MissingFactoryResourceException} means that at least one particular object
  * can not be created, but other objects may be okay.

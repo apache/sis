@@ -46,7 +46,7 @@ import org.apache.sis.internal.system.Modules;
  * <p>Options are <em>transitive</em>: if a service uses others services for its internal working, the given options
  * may also be given to those dependencies, at implementation choice.</p>
  *
- * <div class="section">Defining new options</div>
+ * <h2>Defining new options</h2>
  * Developers who wish to define their own options can define static constants in a subclass,
  * as in the following example:
  *
@@ -94,8 +94,8 @@ public class OptionKey<T> implements Serializable {
      * If this option is not provided, then the default value is format specific.
      * That default is often, but not necessarily, the {@linkplain TimeZone#getDefault() platform default}.
      *
-     * <div class="warning"><b>Upcoming API change — Java time API</b><br>
-     * The type may be changed to {@link java.time.ZoneId} when Apache SIS will target Java 8.
+     * <div class="warning"><b>Upcoming API change — Java time API</b>:
+     * the type may be changed to {@link java.time.ZoneId} when Apache SIS will target Java 8.
      * This change may be applied in synchronization with GeoAPI 4.0.
      * </div>
      *

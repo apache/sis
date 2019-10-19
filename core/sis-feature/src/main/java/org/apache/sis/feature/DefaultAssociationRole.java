@@ -50,7 +50,7 @@ import org.opengis.feature.PropertyNotFoundException;
  *       feature instances by other feature instances.</li>
  * </ul>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
  * instances) and all arguments (e.g. {@code valueType}) given to the constructor are also immutable.
  * Such immutable instances can be shared by many objects and passed between threads without synchronization.

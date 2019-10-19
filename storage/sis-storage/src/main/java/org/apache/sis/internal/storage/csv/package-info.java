@@ -38,7 +38,7 @@
  *   c,  10, 190, 12.0 1.0 10.0 2.0 11.0 3.0, vehicle, 1
  * }
  *
- * <div class="section">Departures from OGC specification</div>
+ * <h2>Departures from OGC specification</h2>
  * Current implementation is not strictly compliant with the Moving Features specification.
  * Departures are:
  *

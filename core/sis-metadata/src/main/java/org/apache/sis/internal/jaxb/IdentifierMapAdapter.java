@@ -48,13 +48,13 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * only for small maps (less than 10 elements). Given that objects typically have only one or
  * two identifiers, this is considered acceptable.</p>
  *
- * <div class="section">Special cases</div>
+ * <h2>Special cases</h2>
  * The identifiers for the following authorities are handled in a special way:
  * <ul>
  *   <li>{@link IdentifierSpace#HREF}: handled as a shortcut to {@link XLink#getHRef()}.</li>
  * </ul>
  *
- * <div class="section">Handling of duplicated authorities</div>
+ * <h2>Handling of duplicated authorities</h2>
  * The collection shall not contain more than one identifier for the same
  * {@linkplain Identifier#getAuthority() authority}. However duplications may happen if the user
  * has direct access to the list, for example through {@link Citation#getIdentifiers()}. If such
@@ -71,13 +71,13 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *       to getter methods.</li>
  * </ul>
  *
- * <div class="section">Handling of null identifiers</div>
+ * <h2>Handling of null identifiers</h2>
  * The collection of identifiers shall not contain any null element. This is normally ensured by
  * the {@link org.apache.sis.metadata.ModifiableMetadata} internal collection implementations.
  * This class performs opportunist null checks as an additional safety, but consistency is not
  * guaranteed. See {@link #size()} for more information.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * This class is thread safe if the underlying identifier collection is thread safe.
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -69,7 +69,7 @@ import org.apache.sis.measure.Range;
  *   <li>{@link Class} and {@link Throwable} instances are summarized.</li>
  * </ul>
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code IndexedResourceBundle} instance can be safely used by many threads without synchronization
  * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call from
  * multiple threads.

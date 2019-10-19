@@ -61,7 +61,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * In such case, only the first {@link #readable readable(…)} method invocation will succeed and all subsequent ones
  * will throw an exception.
  *
- * <div class="section">Multi-threading</div>
+ * <h2>Multi-threading</h2>
  * This class is not thread-safe, except for the static {@link #prepare prepare(…)} method.
  * Callers are responsible for synchronizing their call to any member methods ({@link #readable readable(…)}, <i>etc</i>).
  *

@@ -42,7 +42,7 @@ import org.apache.sis.storage.event.WarningEvent;
  * This class extends {@link StoreListeners} for convenience reasons.
  * This implementation details may change in any future SIS version.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * Default methods of this abstract class are thread-safe.
  * Synchronization, when needed, uses {@code this} lock.
  *

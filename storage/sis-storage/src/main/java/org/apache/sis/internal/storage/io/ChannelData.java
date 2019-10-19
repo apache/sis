@@ -275,7 +275,7 @@ public abstract class ChannelData implements Markable {
      * An {@code IOException} may be be thrown if the previous marked position lies in the
      * discarded portion of the stream.
      *
-     * <div class="section">Departure from Image I/O specification</div>
+     * <h4>Departure from Image I/O specification</h4>
      * The {@link javax.imageio.stream.ImageInputStream#reset()} contract specifies that if there is no matching mark,
      * then this method shall do nothing. This method throws {@link InvalidMarkException} instead; silently ignoring
      * the mismatch is considered too dangerous. However we may revisit this policy in the future if it appears to be

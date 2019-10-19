@@ -41,7 +41,7 @@ import java.sql.SQLException;
  *     }
  * }
  *
- * <div class="section">Relationship with {@code java.io.UncheckedIOException}</div>
+ * <h2>Relationship with {@code java.io.UncheckedIOException}</h2>
  * JDK8 provides a {@link java.io.UncheckedIOException} which partially overlaps
  * the purpose of this {@code BackingStoreException}. While Apache SIS still uses
  * {@code BackingStoreException} as a general mechanism for any kind of checked exceptions,

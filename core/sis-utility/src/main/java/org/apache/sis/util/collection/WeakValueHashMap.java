@@ -68,7 +68,7 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * <p>{@code WeakValueHashMap} works with array keys as one would expect. For example arrays of {@code int[]} are
  * compared using the {@link java.util.Arrays#equals(int[], int[])} method.</p>
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code WeakValueHashMap} instance can be safely used by many threads without synchronization on the part
  * of the caller. But if a sequence of two or more method calls need to appear atomic from other threads perspective,
  * then the caller can synchronize on {@code this}.

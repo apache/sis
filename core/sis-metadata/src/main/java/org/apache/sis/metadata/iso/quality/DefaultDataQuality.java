@@ -42,7 +42,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * and {@linkplain #getReports() reports} is provided. Those properties are declared
  * {@linkplain org.opengis.annotation.Obligation#CONDITIONAL conditional}.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

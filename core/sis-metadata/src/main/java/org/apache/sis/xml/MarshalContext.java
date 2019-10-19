@@ -45,13 +45,13 @@ public abstract class MarshalContext {
      * In particular children of {@link org.opengis.metadata.Metadata} inherit the locale
      * specified by the {@link org.opengis.metadata.Metadata#getLanguage()} attribute.</p>
      *
-     * <div class="section">Handling of {@code Locale.ROOT}</div>
+     * <h4>Handling of {@code Locale.ROOT}</h4>
      * {@link Locale#ROOT} is interpreted as a request for locale-neutral strings.
      * The meaning of "locale-neutral" is implementation specific - this is usually
      * very close to the English locale, but not necessarily. For examples dates are
      * formatted according ISO standard instead than the rules of the English locale.
      *
-     * <div class="section">Handling of {@code null} locale</div>
+     * <h4>Handling of {@code null} locale</h4>
      * A {@code null} value means that the locale is unspecified. Callers are encouraged
      * to use the root locale as the default value, but some flexibility is allowed.
      *
@@ -64,12 +64,12 @@ public abstract class MarshalContext {
     /**
      * Returns the timezone to use for (un)marshalling, or {@code null} if none was explicitly specified.
      *
-     * <div class="section">Handling of <code>null</code> timezone</div>
+     * <h4>Handling of <code>null</code> timezone</h4>
      * A {@code null} value means that the timezone is unspecified. Callers are encouraged
      * to use the UTC timezone as the default value, but some flexibility is allowed.
      *
-     * <div class="warning"><b>Upcoming API change — Java time API</b><br>
-     * Return type may be changed to {@link java.time.ZoneId} when Apache SIS will target Java 8.
+     * <div class="warning"><b>Upcoming API change — Java time API</b>:
+     * return type may be changed to {@link java.time.ZoneId} when Apache SIS will target Java 8.
      * This change may be applied in synchronization with GeoAPI 4.0.
      * </div>
      *

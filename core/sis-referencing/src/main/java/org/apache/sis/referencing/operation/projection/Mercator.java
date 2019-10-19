@@ -46,7 +46,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * <cite>Mercator Cylindrical</cite> projection (EPSG codes 9804, 9805, 1026, 1024, 1044, <span class="deprecated">9841</span>).
  * See the <a href="http://mathworld.wolfram.com/MercatorProjection.html">Mercator projection on MathWorld</a> for an overview.
  *
- * <div class="section">Description</div>
+ * <h2>Description</h2>
  * The parallels and the meridians are straight lines and cross at right angles; this projection thus produces
  * rectangular charts. The scale is true along the equator (by default) or along two parallels equidistant of the
  * equator (if a scale factor other than 1 is used).
@@ -59,7 +59,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * For <cite>Mercator (variant A)</cite> (EPSG code 9804), the line of contact is the equator.
  * For <cite>Mercator (variant B)</cite> (EPSG code 9805) lines of contact are symmetrical about the equator.</p>
  *
- * <div class="section">Behavior at poles</div>
+ * <h2>Behavior at poles</h2>
  * The projection of 90°N gives {@linkplain Double#POSITIVE_INFINITY positive infinity}.
  * The projection of 90°S gives {@linkplain Double#NEGATIVE_INFINITY negative infinity}.
  * Projection of a latitude outside the [-90 … 90]° range produces {@linkplain Double#NaN NaN}.

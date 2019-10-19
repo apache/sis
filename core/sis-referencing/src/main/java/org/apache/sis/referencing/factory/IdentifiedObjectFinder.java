@@ -53,7 +53,7 @@ import org.apache.sis.util.Utilities;
  *   <li>The same {@code IdentifiedObjectFinder} instance can be reused for consecutive searches.</li>
  * </ol>
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * {@code IdentifiedObjectFinder} are <strong>not</strong> guaranteed to be thread-safe even if the underlying factory
  * is thread-safe. If concurrent searches are desired, then a new instance should be created for each thread.
  *
@@ -545,7 +545,7 @@ public class IdentifiedObjectFinder {
      * The iteration stops as soon as a match is found (in other words, if more than one object is equals
      * to the specified one, then the {@code find(…)} method selects the first one in iteration order).</p>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation returns the same set than
      * <code>{@linkplain GeodeticAuthorityFactory#getAuthorityCodes(Class) getAuthorityCodes}(type)</code>
      * where {@code type} is the interface specified at construction type.

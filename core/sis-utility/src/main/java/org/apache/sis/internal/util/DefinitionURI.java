@@ -48,7 +48,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>{@code http://www.opengis.net/def/uom/SI/0/m%2Fs}</li>
  * </ul>
  *
- * <div class="section">Parts of URN</div>
+ * <h2>Parts of URN</h2>
  * URN begins with {@code "urn:ogc:def:"} (formerly {@code "urn:x-ogc:def:"}) followed by:
  * <ul>
  *   <li>an object {@linkplain #type}</li>
@@ -100,7 +100,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <tr><td>{@code "UCUM"}</td> <td>Unified Code for Units of Measure.</td></tr>
  * </table>
  *
- * <div class="section">Combined URNs</div>
+ * <h2>Combined URNs</h2>
  * This implementation does not handle combined URNs. An example of combined URN would be
  * {@code "urn:ogc:def:crs,crs:EPSG:6.3:27700,crs:EPSG:6.3:5701"}.
  *

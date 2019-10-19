@@ -48,7 +48,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * For example a {@code DataStore} for ShapeFiles will implement the {@link FeatureSet} interface,
  * while a {@code DataStore} for netCDF files will implement the {@link Aggregate} interface.</p>
  *
- * <div class="section">Thread safety policy</div>
+ * <h2>Thread safety policy</h2>
  * Data stores should be thread-safe, but their synchronization lock is implementation-dependent.
  * This base class uses only the {@code synchronized} keyword, applied on the following methods:
  *
@@ -284,7 +284,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * Note that this identifier is not guaranteed to be unique between different {@code DataStore} instances;
      * it only needs to be unique among the resources provided by this data store instance.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * <p>The default implementation searches for an identifier in the metadata,
      * at the location shown below, provided that conditions are met:</p>
      *
@@ -443,7 +443,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * or unless this {@code DataStore} is itself garbage collected. However if the given type of events can never
      * happen with this data store, then this method is not required to keep a reference to the given listener.</p>
      *
-     * <div class="section">Warning events</div>
+     * <h4>Warning events</h4>
      * If {@code eventType} is assignable from <code>{@linkplain org.apache.sis.storage.event.WarningEvent}.class</code>,
      * then registering that listener turns off logging of warning messages for this data store.
      * This side-effect is applied on the assumption that the registered listener will handle
@@ -471,7 +471,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * {@code removeListener(type, ls)} needs to be invoked twice in order to remove all instances of that listener.
      * If the given listener is not found, then this method does nothing (no exception is thrown).</p>
      *
-     * <div class="section">Warning events</div>
+     * <h4>Warning events</h4>
      * If {@code eventType} is <code>{@linkplain org.apache.sis.storage.event.WarningEvent}.class</code>
      * and if, after this method invocation, there is no remaining listener for warning events,
      * then this {@code DataStore} will send future warnings to the loggers.

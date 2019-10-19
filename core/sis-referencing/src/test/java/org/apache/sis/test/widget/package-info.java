@@ -22,7 +22,7 @@
  * This package may seem unused by code on the repository because it is often used only
  * temporarily during debugging phase.
  *
- * <div class="section">Other visualization tools</div>
+ * <h2>Other visualization tools</h2>
  * This package does not contains all visualization tools. Some debugging tools specific
  * to a particular class are provided in the package of that class. Examples:
  *

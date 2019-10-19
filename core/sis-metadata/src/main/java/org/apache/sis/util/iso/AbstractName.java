@@ -44,11 +44,11 @@ import org.apache.sis.util.resources.Errors;
  * For example the above-cited strings can both be split into smaller name components.
  * If such finer grain control is desired, {@link DefaultNameFactory} can be used instead of {@link Names}.</p>
  *
- * <div class="section">Natural ordering</div>
+ * <h2>Natural ordering</h2>
  * This class has a natural ordering that is inconsistent with {@link #equals(Object)}.
  * See {@link #compareTo(GenericName)} for more information.
  *
- * <div class="section">Note for implementers</div>
+ * <h2>Note for implementers</h2>
  * Subclasses need only to implement the following methods:
  * <ul>
  *   <li>{@link #scope()}</li>

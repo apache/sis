@@ -56,7 +56,7 @@ import org.apache.sis.util.Version;
  * on the classpath, then this class tries to instantiate a {@code NetcdfStore} backed by
  * the UCAR library.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code NetcdfStoreProvider} instance can be safely used by many threads without synchronization on
  * the part of the caller. However the {@link NetcdfStore} instances created by this factory are not thread-safe.
  *

@@ -42,7 +42,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * The channel and the buffer must be supplied by the caller. It is okay if they have already been used
  * before {@code ChannelDataInput} creation.
  *
- * <div class="section">Encapsulation</div>
+ * <h2>Encapsulation</h2>
  * This class exposes publicly the {@linkplain #channel} and the {@linkplain #buffer buffer} because this class
  * is not expected to perform all possible data manipulations that we can do with the buffers. This class is only
  * a helper tool, which often needs to be completed by specialized operations performed directly on the buffer.
@@ -52,7 +52,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * <p>Since this class is only a helper tool, it does not "own" the channel and consequently does not provide
  * {@code close()} method. It is users responsibility to close the channel after usage.</p>
  *
- * <div class="section">Relationship with {@code DataInput}</div>
+ * <h2>Relationship with {@code DataInput}</h2>
  * This class API is compatibly with the {@link java.io.DataInput} interface, so subclasses can implement that
  * interface if they wish. This class does not implement {@code DataInput} itself because it is not needed for
  * SIS purposes, and because {@code DataInput} has undesirable methods ({@code readLine()} and {@code readUTF()}).

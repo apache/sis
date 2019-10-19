@@ -63,7 +63,7 @@ import org.apache.sis.internal.system.Loggers;
  *   </ul></li>
  * </ul>
  *
- * <div class="section">Substituting a free text by a code list</div>
+ * <h2>Substituting a free text by a code list</h2>
  * The ISO standard allows to substitute some character strings in the <cite>"free text"</cite> domain
  * by a {@link CodeList} value.
  *

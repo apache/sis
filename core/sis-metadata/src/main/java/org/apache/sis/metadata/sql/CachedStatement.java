@@ -36,15 +36,15 @@ import org.apache.sis.internal.system.Loggers;
  * table is fetched, the {@link ResultSet} is automatically constructed. If many attributes are fetched consecutively
  * for the same record, then the same {@link ResultSet} is reused.
  *
- * <div class="section"><b>Synchronization</b>:
+ * <h2>Synchronization</h2>
  * This class is <strong>not</strong> thread-safe. Callers must perform their own synchronization in such a way
  * that only one query is executed on the same connection (JDBC connections can not be assumed thread-safe).
- * The synchronization lock shall be the {@link MetadataSource} which contain this entry.</div>
+ * The synchronization lock shall be the {@link MetadataSource} which contain this entry.
  *
- * <div class="section"><b>Closing</b>:
+ * <h2>Closing</h2>
  * While this class implements {@link java.lang.AutoCloseable}, it should not be used in a try-finally block.
  * This is because {@code CachedStatement} is typically closed by a different thread than the one that created
- * the {@code CachedStatement} instance. This object is closed by a background thread of {@link MetadataSource}.</div>
+ * the {@code CachedStatement} instance. This object is closed by a background thread of {@link MetadataSource}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0

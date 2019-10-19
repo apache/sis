@@ -57,12 +57,12 @@ import org.apache.sis.internal.util.Strings;
  *   <li>{@link DefaultNameFactory#toTypeName(Class)} if the factory given to the constructor.</li>
  * </ul>
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code DefaultRecordSchema} instance can be safely used by many threads without synchronization
  * on the part of the caller if the {@link NameFactory} given to the constructor is also thread-safe.
  * Subclasses should make sure that any overridden methods remain safe to call from multiple threads.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * This class is currently not serializable because {@code RecordSchema} contain an arbitrary amount of record
  * types in its {@linkplain #getDescription() description} map. Since each {@code RecordType} has a reference
  * to its schema, serializing a single {@code RecordType} could imply serializing all of them.

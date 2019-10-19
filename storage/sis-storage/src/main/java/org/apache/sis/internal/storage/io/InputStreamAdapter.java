@@ -25,7 +25,7 @@ import javax.imageio.stream.ImageInputStream;
 /**
  * Wraps an {@link ImageInputStream} as a standard {@link InputStream}.
  *
- * <div class="section">Thread-safety</div>
+ * <h2>Thread-safety</h2>
  * This class is thread-safe only if the underlying {@link ImageInputStream} is itself thread-safe.
  * For performance reasons, this class does not synchronize the frequently invoked {@code read(…)}
  * methods since they do nothing else than delegating to {@code ImageInputStream}. This means that

@@ -187,7 +187,7 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
      * This ensure that the grid indices (75.7432814, 78.4451225) is included in the test file.
      * Those grid indices is the location of the (2°25′32.4187″N 48°50′40.2441″W) test point to interpolate.
      *
-     * <div class="section">Limitations</div>
+     * <h4>Limitations</h4>
      * This method assumes that bounding box and increments have integer values, and that any fractional part
      * is rounding errors. This is usually the case when using the {@code "SECONDS"} unit of measurement.
      * This assumption does not apply to the shift values.

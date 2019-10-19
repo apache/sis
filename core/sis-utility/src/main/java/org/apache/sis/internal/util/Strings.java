@@ -58,7 +58,7 @@ public final class Strings extends Static {
      * The given separator character is append before the given {@code text} only if the buffer
      * is not empty and at least one {@code text} character is valid.
      *
-     * <div class="section">Relationship with {@code gml:id}</div>
+     * <h4>Relationship with {@code gml:id}</h4>
      * This method may be invoked for building {@code gml:id} values. Strictly speaking this is not appropriate
      * since the {@code xs:ID} type defines valid identifiers as containing only letters, digits, underscores,
      * hyphens, and periods. This differ from Unicode identifier in two ways:

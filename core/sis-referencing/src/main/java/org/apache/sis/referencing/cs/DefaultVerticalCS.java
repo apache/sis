@@ -51,7 +51,7 @@ import org.apache.sis.measure.Units;
  *   <td>“Gravity-related height” or “Depth”</td>
  * </tr></table>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * and the {@link CoordinateSystemAxis} instances given to the constructor are also immutable. Unless otherwise
  * noted in the javadoc, this condition holds if all components were created using only SIS factories and static

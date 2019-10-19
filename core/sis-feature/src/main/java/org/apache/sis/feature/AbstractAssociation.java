@@ -37,7 +37,7 @@ import org.opengis.feature.MultiValuedPropertyException;
  * An instance of an {@linkplain DefaultAssociationRole feature association role} containing the associated feature.
  * {@code AbstractAssociation} can be instantiated by calls to {@link DefaultAssociationRole#newInstance()}.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li><b>Multi-threading:</b> {@code AbstractAssociation} instances are <strong>not</strong> thread-safe.
  *       Synchronization, if needed, shall be done externally by the caller.</li>
@@ -158,7 +158,7 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
     /**
      * Sets the associated feature.
      *
-     * <div class="section">Validation</div>
+     * <h4>Validation</h4>
      * The amount of validation performed by this method is implementation dependent.
      * Usually, only the most basic constraints are verified. This is so for performance reasons
      * and also because some rules may be temporarily broken while constructing a feature.

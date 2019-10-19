@@ -41,7 +41,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 /**
  * Defines the origin of a temporal coordinate reference system.
  *
- * <div class="section">Creating new temporal datum instances</div>
+ * <h2>Creating new temporal datum instances</h2>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
  * Choice 1 in the following list is the easiest but most restrictive way to get a temporal datum.
@@ -64,7 +64,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *     TemporalDatum datum = CommonCRS.Temporal.JULIAN.datum();
  * }
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
  * all components were created using only SIS factories and static constants.

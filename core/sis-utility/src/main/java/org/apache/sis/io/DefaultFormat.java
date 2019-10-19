@@ -32,7 +32,7 @@ import org.apache.sis.internal.util.LocalizedParseException;
  * than the {@link java.text} package because the former provide the best guarantees
  * to format all significant digits.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@linkplain #getInstance instance} can be safely used by many threads without synchronization
  * on the part of the caller. Note that this is specific to {@code DefaultFormat} and generally not true
  * for arbitrary {@code Format} classes.

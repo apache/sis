@@ -104,7 +104,7 @@ import org.opengis.geometry.Geometry;
  *   <li>Finding coordinate operations between a source and a target CRS.</li>
  * </ul>
  *
- * <div class="section">Usage example</div>
+ * <h2>Usage example</h2>
  * The most frequently used methods in this class are {@link #forCode forCode(…)}, {@link #fromWKT fromWKT(…)}
  * and {@link #findOperation findOperation(…)}. An usage example is like below
  * (see the <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">Apache SIS™ Coordinate
@@ -124,7 +124,7 @@ import org.opengis.geometry.Geometry;
  *   System.out.println(position);
  * }
  *
- * <div class="section">Note on kinds of CRS</div>
+ * <h2>Note on kinds of CRS</h2>
  * The {@link #getSingleComponents(CoordinateReferenceSystem)} method decomposes an arbitrary CRS into a flat
  * list of single components. In such flat list, vertical and temporal components can easily be identified by
  * {@code instanceof} checks. But identifying the horizontal component is not as easy. The list below suggests
@@ -278,7 +278,7 @@ public final class CRS extends Static {
      * Should the WKT description and the authoritative description be in conflict, the WKT description prevails
      * as mandated by ISO 19162 standard (see {@link #fromAuthority fromAuthority(…)} if a different behavior is needed).
      *
-     * <div class="section">Usage and performance considerations</div>
+     * <h4>Usage and performance considerations</h4>
      * This convenience method delegates to
      * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)}
      * using a default factory instance. This is okay for occasional use, but has the following limitations:
@@ -393,7 +393,7 @@ public final class CRS extends Static {
      *   <li>Otherwise this method silently returns the given CRS as-is.</li>
      * </ul>
      *
-     * <div class="section">Avoiding warning redundancies</div>
+     * <h4>Avoiding warning redundancies</h4>
      * The warnings logged by this method are redundant with warnings logged by other methods in this class,
      * in particular {@link #fromWKT(String)} and {@link #fromXML(String)} methods. For avoiding this annoyance,
      * a {@code null} value for the {@code warningFilter} argument means to shut off those redundant loggings.
@@ -875,7 +875,7 @@ public final class CRS extends Static {
      * {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent#intersect intersection}
      * of the domain of validity of all components.
      *
-     * <div class="section">Ellipsoidal height</div>
+     * <h4>Ellipsoidal height</h4>
      * If a two-dimensional geographic or projected CRS if followed or preceded by a vertical CRS with ellipsoidal
      * {@linkplain org.apache.sis.referencing.datum.DefaultVerticalDatum#getVerticalDatumType() datum type}, then
      * this method combines them in a single three-dimensional geographic or projected CRS.  Note that standalone
@@ -883,7 +883,7 @@ public final class CRS extends Static {
      * the action described here fixes the issue. This is the reverse of <code>{@linkplain #getVerticalComponent
      * getVerticalComponent}(crs, true)</code>.
      *
-     * <div class="section">Components order</div>
+     * <h4>Components order</h4>
      * Apache SIS is permissive on the order of components that can be used in a compound CRS.
      * However for better inter-operability, users are encouraged to follow the order mandated by ISO 19162:
      *
@@ -925,7 +925,7 @@ public final class CRS extends Static {
      * This method can be used for dimensionality reduction, but not for changing axis order.
      * The specified dimensions are used as if they were in strictly increasing order without duplicated values.
      *
-     * <div class="section">Ellipsoidal height</div>
+     * <h4>Ellipsoidal height</h4>
      * This method can transform a three-dimensional geographic CRS into a two-dimensional geographic CRS.
      * In this aspect, this method is the converse of {@link #compound(CoordinateReferenceSystem...)}.
      * This method can also extract the {@linkplain CommonCRS.Vertical#ELLIPSOIDAL ellipsoidal height}
@@ -1159,7 +1159,7 @@ public final class CRS extends Static {
      * Otherwise if the given CRS is compound, then this method searches for the first vertical component
      * in the order of the {@linkplain #getSingleComponents(CoordinateReferenceSystem) single components list}.
      *
-     * <div class="section">Height in a three-dimensional geographic CRS</div>
+     * <h4>Height in a three-dimensional geographic CRS</h4>
      * In ISO 19111 model, ellipsoidal heights are indissociable from geographic CRS because such heights
      * without their (<var>latitude</var>, <var>longitude</var>) locations make little sense. Consequently
      * a standard-conformant library should return {@code null} when asked for the {@code VerticalCRS}

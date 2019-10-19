@@ -28,7 +28,7 @@ import org.apache.sis.util.ObjectConverter;
  * <strong>No other direct subtype shall exist</strong>.
  * See {@link #equals(Object)} for an explanation.</p>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This base class is immutable and thus inherently thread-safe. {@code ClassPair} immutability is necessary
  * for {@link ConverterRegistry}. Subclasses should also be immutable, but this requirement is not as strong
  * as for {@code ClassPair} (because subclasses are not used as keys in hash map).

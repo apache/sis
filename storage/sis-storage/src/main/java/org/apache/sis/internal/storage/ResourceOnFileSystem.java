@@ -27,7 +27,7 @@ import org.apache.sis.storage.Resource;
  * list the files that it uses. This is for informative purpose only and should not be used for
  * copying or deleting resources.
  *
- * <div class="section">Alternatives</div>
+ * <h2>Alternatives</h2>
  * <p>For copying data from one location to another, consider using
  * {@link org.apache.sis.storage.WritableAggregate#add(Resource)} instead.
  * The data store implementations may detect that some {@code add(…)} operations

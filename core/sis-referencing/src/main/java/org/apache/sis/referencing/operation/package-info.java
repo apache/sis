@@ -29,7 +29,7 @@
  *   <li>{@link org.apache.sis.referencing.operation.transform} — any transform other than map projections.</li>
  * </ul>
  *
- * <div class="section">Apache SIS extensions</div>
+ * <h2>Apache SIS extensions</h2>
  * Some SIS implementations provide additional methods that are not part of OGC/ISO specifications:
  *
  * <ul>
@@ -39,7 +39,7 @@
  *     — changes a <cite>defining conversion</cite> into a complete conversion.</li>
  * </ul>
  *
- * <div class="section">Apache SIS specific behavior</div>
+ * <h2>Apache SIS specific behavior</h2>
  * The following operations have a behavior in Apache SIS which may be different
  * than the behavior found in other software products. Those particularities apply only when the math transform is
  * {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createParameterizedTransform
@@ -53,7 +53,7 @@
  *     for converting the longitude axis of source and target CRS to degrees before this operation is applied.</li>
  * </ul>
  *
- * <div class="section"><cite>Early binding</cite> versus <cite>late binding</cite> implementations</div>
+ * <h2><cite>Early binding</cite> versus <cite>late binding</cite> implementations</h2>
  * There is sometime multiple ways of transforming coordinates for a given pair of source and target CRS.
  * For example the {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters}
  * may vary depending on the area of interest, like in the transformations from NAD27 to WGS84.

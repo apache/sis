@@ -55,7 +55,7 @@
  *   <li>Group may contain other groups.</li>
  * </ul>
  *
- * <div class="section">Usage</div>
+ * <h2>Usage</h2>
  * When using this {@code org.apache.sis.parameter} package, the starting point is usually to obtain a
  * {@linkplain org.apache.sis.parameter.DefaultParameterDescriptorGroup parameter group descriptor} for
  * the operation of interest. Those groups are provided by the operation implementers, so users do not

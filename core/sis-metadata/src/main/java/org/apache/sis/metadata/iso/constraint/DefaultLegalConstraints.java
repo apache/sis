@@ -39,7 +39,7 @@ import org.opengis.metadata.constraint.LegalConstraints;
  * {@linkplain #getAccessConstraints() access constraints} and/or {@linkplain #getUseConstraints()
  * use constraints} elements have a value of {@link Restriction#OTHER_RESTRICTIONS}.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

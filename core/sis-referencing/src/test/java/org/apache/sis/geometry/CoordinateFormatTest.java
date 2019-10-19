@@ -151,7 +151,6 @@ public final strictfp class CoordinateFormatTest extends TestCase {
         position.setCoordinateReferenceSystem(null);
         assertEquals("getPattern(Angle)", anglePattern, format.getPattern(Angle.class));
         assertEquals("getPattern(Date)",   datePattern, format.getPattern(Date .class));
-        if (false)  // TODO remove this line if we can require JDK13 at build time.
         assertEquals("23,78 -12,74 127,9 54 000,25",    format.format(position));
         /*
          * Try again with the original CRS, but different separator.

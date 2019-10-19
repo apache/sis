@@ -81,7 +81,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *       {@link #setRemarks(CharSequence) code setRemarks(…)} method.</li>
  * </ul>
  *
- * <div class="section">Namespaces and scopes</div>
+ * <h2>Namespaces and scopes</h2>
  * The {@code addName(…)} and {@code addIdentifier(…)} methods come in three flavors:
  *
  * <ul class="verbose">
@@ -119,7 +119,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * <code>"<b>OGC:</b>Mercator_1SP"</code> respectively.</div>
  *
  *
- * <div class="section">Builder property lifetimes</div>
+ * <h2>Builder property lifetimes</h2>
  * Some complex objects require the creation of many components. For example constructing a
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (CRS) may require constructing a
  * {@linkplain org.apache.sis.referencing.cs.AbstractCS coordinate system}, a
@@ -145,11 +145,11 @@ import org.opengis.referencing.ReferenceIdentifier;
  *   </li>
  * </ul>
  *
- * <div class="section">Usage examples</div>
+ * <h2>Usage examples</h2>
  * See {@link org.apache.sis.parameter.ParameterBuilder} class javadoc for more examples with the
  * <cite>Mercator</cite> projection parameters.
  *
- * <div class="section">Note for subclass implementers</div>
+ * <h2>Note for subclass implementers</h2>
  * <ul>
  *   <li>The type {@code <B>} shall be exactly the subclass type.
  *       For performance reasons, this is verified only if Java assertions are enabled.</li>
@@ -483,12 +483,12 @@ public abstract class Builder<B extends Builder<B>> {
      * code space} and {@linkplain #setVersion(String) version} information for creating the
      * {@link Identifier} or {@link GenericName} object.
      *
-     * <div class="section">Name and aliases</div>
+     * <h4>Name and aliases</h4>
      * This method can be invoked many times. The first invocation sets the
      * {@linkplain AbstractIdentifiedObject#getName() primary name}, and
      * all subsequent invocations add an {@linkplain AbstractIdentifiedObject#getAlias() alias}.
      *
-     * <div class="section">Deprecated names</div>
+     * <h4>Deprecated names</h4>
      * Some names may exist for historical reasons but have their use discouraged.
      * If <code>{@linkplain #setDeprecated(boolean) setDeprecated}(true)</code> has been invoked, then this
      * method creates a deprecated alias with the current {@linkplain #setRemarks(CharSequence) remarks}.
@@ -575,7 +575,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@linkplain #setVersion(String) version} and {@linkplain #setDescription(CharSequence) description}
      * specified to this builder (if any), since the given identifier may already contain those information.
      *
-     * <div class="section">Name and aliases</div>
+     * <h4>Name and aliases</h4>
      * This method can be invoked many times. The first invocation sets the
      * {@linkplain AbstractIdentifiedObject#getName() primary name} to the given value, and
      * all subsequent invocations add an {@linkplain AbstractIdentifiedObject#getAlias() alias}.
@@ -601,7 +601,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@linkplain #setVersion(String) version} and {@linkplain #setDescription(CharSequence) description}
      * specified to this builder (if any), since the given generic name may already contain those information.
      *
-     * <div class="section">Name and aliases</div>
+     * <h4>Name and aliases</h4>
      * This method can be invoked many times. The first invocation sets the
      * {@linkplain AbstractIdentifiedObject#getName() primary name} to the given value, and
      * all subsequent invocations add an {@linkplain AbstractIdentifiedObject#getAlias() alias}.
@@ -628,7 +628,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@linkplain #setVersion(String) version} and {@linkplain #setDescription(CharSequence) description} information
      * for creating the {@link Identifier} object.
      *
-     * <div class="section">Deprecated identifiers</div>
+     * <h4>Deprecated identifiers</h4>
      * Some identifiers may exist for historical reasons but have their use discouraged.
      * If <code>{@linkplain #setDeprecated(boolean) setDeprecated}(true)</code> has been invoked, then this
      * method creates a deprecated identifier with the current {@linkplain #setRemarks(CharSequence) remarks}.
