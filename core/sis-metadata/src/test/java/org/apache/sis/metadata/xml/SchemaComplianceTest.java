@@ -17,16 +17,15 @@
 package org.apache.sis.metadata.xml;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.Files;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.system.DataDirectory;
+import org.apache.sis.test.ProjectDirectories;
 import org.apache.sis.test.xml.SchemaCompliance;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assume.*;
-import static org.junit.Assert.*;
 
 
 /**
@@ -36,7 +35,7 @@ import static org.junit.Assert.*;
  * Content can be downloaded as ZIP files from <a href="https://standards.iso.org/iso/19115/">ISO portal</a>.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -58,22 +57,9 @@ public final strictfp class SchemaComplianceTest extends TestCase {
          * Locate the root of metadata class directory. In a Maven build:
          * "core/sis-metadata/target/classes/org/apache/sis/metadata/iso"
          */
-        final Path mdp = Paths.get(ISOMetadata.class.getResource("ISOMetadata.class").toURI()).getParent();
-        final Path cp = getParent(mdp, "org", "apache", "sis", "metadata", "iso");
-        final SchemaCompliance checker = new SchemaCompliance(cp, directory);
+        final ProjectDirectories dir = new ProjectDirectories(ISOMetadata.class);
+        final SchemaCompliance checker = new SchemaCompliance(dir.classesRootDirectory, directory);
         checker.loadDefaultSchemas();
-        checker.verify(mdp);
-    }
-
-    /**
-     * Returns the parent directory. The expected names of skipped directories are given in argument;
-     * they will be verified.
-     */
-    private static Path getParent(Path cp, final String... parents) {
-        for (int i=parents.length; --i >= 0;) {
-            assertTrue(cp.endsWith(parents[i]));
-            cp = cp.getParent();
-        }
-        return cp;
+        checker.verify(dir.classesPackageDirectory);
     }
 }
