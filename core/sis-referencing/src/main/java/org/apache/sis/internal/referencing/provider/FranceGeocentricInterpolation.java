@@ -144,6 +144,10 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Geocentric translation file </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Default value: {@code gr3df97a.txt}</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Path> FILE;
 

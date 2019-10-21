@@ -76,6 +76,12 @@ public final class GeographicToGeocentric extends GeodeticOperation {
      *   <caption>Parameter names</caption>
      *   <tr><td> SIS:     </td><td> dim </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: [2…3]</li>
+     *   <li>Default value: 3</li>
+     *   <li>Optional</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Integer> DIMENSION;
 

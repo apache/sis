@@ -85,6 +85,11 @@ public abstract class MapProjection extends AbstractProvider {
      *   <tr><td> GeoTIFF: </td><td> SemiMajorAxis </td></tr>
      *   <tr><td> Proj4:   </td><td> a </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (0.0 … ∞) m</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final DefaultParameterDescriptor<Double> SEMI_MAJOR;
 
@@ -103,6 +108,11 @@ public abstract class MapProjection extends AbstractProvider {
      *   <tr><td> GeoTIFF: </td><td> SemiMinorAxis </td></tr>
      *   <tr><td> Proj4:   </td><td> b </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (0.0 … ∞) m</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final DefaultParameterDescriptor<Double> SEMI_MINOR;
 
@@ -115,6 +125,11 @@ public abstract class MapProjection extends AbstractProvider {
      *   <caption>Parameter names</caption>
      *   <tr><td> SIS:     </td><td> eccentricity </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: [0.0 … 1.0]</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     @Debug
     public static final DefaultParameterDescriptor<Double> ECCENTRICITY;

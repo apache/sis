@@ -102,6 +102,11 @@ public final class Equirectangular extends AbstractProvider {
      *   <tr><td> GeoTIFF: </td><td> StdParallel1 </td></tr>
      *   <tr><td> Proj4:   </td><td> lat_ts </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (-90.0 … 90.0)°</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> STANDARD_PARALLEL;
 
@@ -122,6 +127,12 @@ public final class Equirectangular extends AbstractProvider {
      *   <tr><td> GeoTIFF: </td><td> CenterLat </td></tr>
      *   <tr><td> Proj4:   </td><td> lat_0 </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value restricted to 0</li>
+     *   <li>No default value</li>
+     *   <li>Optional</li>
+     * </ul>
      */
     static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 

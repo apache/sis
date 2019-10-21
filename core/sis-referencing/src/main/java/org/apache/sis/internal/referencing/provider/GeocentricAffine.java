@@ -128,6 +128,11 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      *   <tr><td> EPSG:    </td><td> X-axis rotation </td></tr>
      *   <tr><td> OGC:     </td><td> ex </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: [-648000.0 … 648000.0]″</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     static final ParameterDescriptor<Double> RX;
 
@@ -142,6 +147,11 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      *   <tr><td> EPSG:    </td><td> Y-axis rotation </td></tr>
      *   <tr><td> OGC:     </td><td> ey </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: [-648000.0 … 648000.0]″</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     static final ParameterDescriptor<Double> RY;
 
@@ -156,6 +166,11 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      *   <tr><td> EPSG:    </td><td> Z-axis rotation </td></tr>
      *   <tr><td> OGC:     </td><td> ez </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: [-648000.0 … 648000.0]″</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     static final ParameterDescriptor<Double> RZ;
 

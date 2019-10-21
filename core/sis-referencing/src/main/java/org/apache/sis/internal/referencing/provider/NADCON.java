@@ -79,6 +79,10 @@ public final class NADCON extends AbstractProvider {
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Latitude difference file </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Default value: {@code conus.las}</li>
+     * </ul>
      */
     private static final ParameterDescriptor<Path> LATITUDE;
 
@@ -91,6 +95,10 @@ public final class NADCON extends AbstractProvider {
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Longitude difference file </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Default value: {@code conus.los}</li>
+     * </ul>
      */
     private static final ParameterDescriptor<Path> LONGITUDE;
 

@@ -67,6 +67,11 @@ public class ObliqueMercator extends AbstractMercator {
      *   <tr><td> Proj4:   </td><td> lat_0 </td></tr>
      *   <tr><td> ESRI:    </td><td> Latitude_Of_Center </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (-90.0 … 90.0)°</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> LATITUDE_OF_CENTRE;
 
@@ -100,6 +105,11 @@ public class ObliqueMercator extends AbstractMercator {
      *   <tr><td> GeoTIFF: </td><td> AzimuthAngle </td></tr>
      *   <tr><td> Proj4:   </td><td> alpha </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: [-360.0 … 360.0]°</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> AZIMUTH;
 
@@ -116,6 +126,11 @@ public class ObliqueMercator extends AbstractMercator {
      *   <tr><td> GeoTIFF: </td><td> RectifiedGridAngle </td></tr>
      *   <tr><td> Proj4:   </td><td> gamma </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: [-360.0 … 360.0]°</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> RECTIFIED_GRID_ANGLE;
 
@@ -132,6 +147,11 @@ public class ObliqueMercator extends AbstractMercator {
      *   <tr><td> GeoTIFF: </td><td> ScaleAtCenter </td></tr>
      *   <tr><td> Proj4:   </td><td> k </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (0.0 … ∞)</li>
+     *   <li>Default value: 1</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> SCALE_FACTOR;
 

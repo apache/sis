@@ -94,6 +94,10 @@ public final class AlbersEqualArea extends MapProjection {
      *   <tr><td> GeoTIFF: </td><td> StdParallel1 </td></tr>
      *   <tr><td> Proj4:   </td><td> lat_1 </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> STANDARD_PARALLEL_1;
 
@@ -111,6 +115,10 @@ public final class AlbersEqualArea extends MapProjection {
      *   <tr><td> GeoTIFF: </td><td> StdParallel2 </td></tr>
      *   <tr><td> Proj4:   </td><td> lat_2 </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> STANDARD_PARALLEL_2;
 

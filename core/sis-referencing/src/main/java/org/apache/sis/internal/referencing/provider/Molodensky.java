@@ -83,6 +83,10 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Semi-major axis length difference </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> AXIS_LENGTH_DIFFERENCE;
 
@@ -96,6 +100,11 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Flattening difference </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: [-1.0 … 1.0]</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> FLATTENING_DIFFERENCE;
 

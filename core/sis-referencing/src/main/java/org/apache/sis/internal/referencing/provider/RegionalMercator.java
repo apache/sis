@@ -63,6 +63,11 @@ public class RegionalMercator extends AbstractMercator {
      *   <tr><td> GeoTIFF: </td><td> FalseOriginLat </td></tr>
      *   <tr><td> Proj4:   </td><td> lat_0 </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (-90.0 … 90.0)°</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> LATITUDE_OF_FALSE_ORIGIN;
 

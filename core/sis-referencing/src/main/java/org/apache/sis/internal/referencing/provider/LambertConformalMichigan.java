@@ -52,6 +52,11 @@ public final class LambertConformalMichigan extends AbstractLambert {
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Ellipsoid scaling factor </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (0.0 … ∞)</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> SCALE_FACTOR;
 

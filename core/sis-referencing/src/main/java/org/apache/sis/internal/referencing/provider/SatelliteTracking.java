@@ -127,6 +127,11 @@ public class SatelliteTracking extends MapProjection {
      *   <caption>Parameter names</caption>
      *   <tr><td> SIS:     </td><td> satellite_orbital_period </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (0.0 … ∞) d</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> SATELLITE_ORBITAL_PERIOD;
 
@@ -141,6 +146,11 @@ public class SatelliteTracking extends MapProjection {
      *   <caption>Parameter names</caption>
      *   <tr><td> SIS:     </td><td> ascending_node_period </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (0.0 … ∞) d</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> ASCENDING_NODE_PERIOD;
 

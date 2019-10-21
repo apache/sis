@@ -81,6 +81,10 @@ public final class NTv2 extends AbstractProvider {
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Latitude and longitude difference file </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>No default value</li>
+     * </ul>
      */
     private static final ParameterDescriptor<Path> FILE;
 

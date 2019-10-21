@@ -58,6 +58,11 @@ public final class LambertCylindricalEqualArea extends MapProjection {
      *   <tr><td> GeoTIFF: </td><td> StdParallel1 </td></tr>
      *   <tr><td> Proj4:   </td><td> lat_ts </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (-90.0 … 90.0)°</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> STANDARD_PARALLEL = Equirectangular.STANDARD_PARALLEL;
 

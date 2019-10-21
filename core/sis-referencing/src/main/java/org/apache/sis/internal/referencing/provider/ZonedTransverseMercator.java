@@ -55,6 +55,10 @@ public final class ZonedTransverseMercator extends AbstractProvider {
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Initial longitude </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Default value: -180°</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> INITIAL_LONGITUDE;
 
@@ -66,6 +70,11 @@ public final class ZonedTransverseMercator extends AbstractProvider {
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Zone width </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (0.0 … ∞)°</li>
+     *   <li>Default value: 6°</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> ZONE_WIDTH;
 

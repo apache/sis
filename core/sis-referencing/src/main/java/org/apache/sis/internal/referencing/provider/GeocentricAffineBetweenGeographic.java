@@ -70,6 +70,12 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
      *   <caption>Parameter names</caption>
      *   <tr><td> OGC:     </td><td> dim </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: [2…3]</li>
+     *   <li>No default value</li>
+     *   <li>Optional</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Integer> DIMENSION;
 
@@ -82,6 +88,11 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
      *   <caption>Parameter names</caption>
      *   <tr><td> OGC:     </td><td> src_semi_major </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (0.0 … ∞) m</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> SRC_SEMI_MAJOR;
 
@@ -94,6 +105,11 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
      *   <caption>Parameter names</caption>
      *   <tr><td> OGC:     </td><td> src_semi_minor </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (0.0 … ∞) m</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> SRC_SEMI_MINOR;
 
@@ -106,6 +122,11 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
      *   <caption>Parameter names</caption>
      *   <tr><td> OGC:     </td><td> tgt_semi_major </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (0.0 … ∞) m</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> TGT_SEMI_MAJOR;
 
@@ -118,6 +139,11 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
      *   <caption>Parameter names</caption>
      *   <tr><td> OGC:     </td><td> tgt_semi_minor </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (0.0 … ∞) m</li>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> TGT_SEMI_MINOR;
 

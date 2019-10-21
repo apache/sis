@@ -77,6 +77,10 @@ public final class PolarStereographicB extends AbstractStereographic {
      *   <tr><td> GeoTIFF: </td><td> StdParallel1 </td></tr>
      *   <tr><td> Proj4:   </td><td> lat_ts </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>No default value</li>
+     * </ul>
      */
     public static final ParameterDescriptor<Double> STANDARD_PARALLEL;
 
@@ -96,6 +100,11 @@ public final class PolarStereographicB extends AbstractStereographic {
      *   <tr><td> ESRI:    </td><td> Scale_Factor </td></tr>
      *   <tr><td> Proj4:   </td><td> k </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Value domain: (0.0 … ∞)</li>
+     *   <li>Default value: 1</li>
+     * </ul>
      */
     static final ParameterDescriptor<Double> SCALE_FACTOR;
 
