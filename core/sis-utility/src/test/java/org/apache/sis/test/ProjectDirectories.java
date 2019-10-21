@@ -16,6 +16,7 @@
  */
 package org.apache.sis.test;
 
+import java.io.File;
 import java.net.URL;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -54,6 +55,11 @@ public final class ProjectDirectories {
     public final Path classesRootDirectory;
 
     /**
+     * Name of the package of the class given at construction time.
+     */
+    private final String packageName;
+
+    /**
      * Find classes and sources directories using the given class as a member.
      * In the case of Maven multi-modules project, the directories will apply
      * only to the module containing the given class.
@@ -70,7 +76,8 @@ public final class ProjectDirectories {
             throw new AssertionError(e);
         }
         classesPackageDirectory = dir;
-        String pkg = JDK9.getPackageName(c);
+        packageName = JDK9.getPackageName(c);
+        String pkg = packageName;
         int s = pkg.length();
         do {
             pkg = pkg.substring(0, s);
@@ -82,6 +89,52 @@ public final class ProjectDirectories {
     }
 
     /**
+     * Returns the root directory of source Java code.
+     *
+     * @param  module  module name, e.g. {@code "core/sis-referencing"}.
+     *                 Used only if the project is not a Maven project.
+     * @return root directory of source Java files.
+     */
+    public Path getSourcesRootDirectory(final String module) {
+        Path dir = getMavenModule();
+        if (dir == null) {
+            /*
+             * This block is executed only if the compiled class file was not found in the location
+             * that we would have expected for a Maven project. Maybe the class is in the NetBeans
+             * build directory instead.
+             */
+            dir = classesRootDirectory;
+            do {
+                if (dir == null) {
+                    throw new AssertionError("No more parent directory.");
+                }
+                dir = dir.getParent();
+            } while (!Files.exists(dir.resolve("pom.xml")));
+            dir = dir.resolve(module.replace('/', File.separatorChar));
+        }
+        /*
+         * At this point `dir` is the root of the Maven module
+         * which contains the class given to the constructor.
+         */
+        dir = dir.resolve("src").resolve("main").resolve("java");
+        if (!Files.isDirectory(dir)) {
+            throw new AssertionError("Not a directory: " + dir);
+        }
+        return dir;
+    }
+
+    /**
+     * Returns the directory of source code for the package of the class given at construction time.
+     *
+     * @param  module  module name, e.g. {@code "core/sis-referencing"}.
+     *                 Used only if the project is not a Maven project.
+     * @return package directory of source Java files.
+     */
+    public Path getSourcesPackageDirectory(final String module) {
+        return getSourcesRootDirectory(module).resolve(packageName.replace('.', File.separatorChar));
+    }
+
+    /**
      * Returns whether the {@link #classesRootDirectory} is the sub-directory of a tree following Maven conventions.
      * This method verifies that the parent directories are {@code "target/*classes"} and that the parent directory
      * contains a {@code pom.xml} file.
@@ -89,16 +142,23 @@ public final class ProjectDirectories {
      * @return whether we are in a Maven module.
      */
     public boolean isMavenModule() {
+        return getMavenModule() != null;
+    }
+
+    /**
+     * Returns the path to Maven module, or {@code null} if none.
+     */
+    private Path getMavenModule() {
         Path dir = classesRootDirectory;
         if (dir.getFileName().toString().endsWith("classes")) {
             dir = dir.getParent();
             if (dir != null && dir.getFileName().toString().equals("target")) {
                 dir = dir.getParent();
                 if (dir != null && Files.isRegularFile(dir.resolve("pom.xml"))) {
-                    return true;
+                    return dir;
                 }
             }
         }
-        return false;
+        return null;
     }
 }
