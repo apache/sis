@@ -57,7 +57,8 @@ public final class ParameterNameTableGenerator extends SimpleFileVisitor<Path> {
     /**
      * Value as the kind of object expected in {@link DefaultParameterDescriptor}.
      */
-    private static final Double POSITIVE_ZERO = +0d,
+    private static final Double ONE           =  1d,
+                                POSITIVE_ZERO = +0d,
                                 NEGATIVE_ZERO = -0d,
                                 MIN_LONGITUDE = Longitude.MIN_VALUE,
                                 MAX_LONGITUDE = Longitude.MAX_VALUE,
@@ -228,11 +229,15 @@ public final class ParameterNameTableGenerator extends SimpleFileVisitor<Path> {
                         if (inclusive && MIN_LONGITUDE.equals(minValue) && MAX_LONGITUDE.equals(maxValue)) {
                             valueDomain = null;
                         }
+                    } else if (fieldName.contains("SCALE")) {
+                        if (!inclusive && POSITIVE_ZERO.equals(minValue) && maxValue == null) {
+                            valueDomain = null;
+                        }
                     } else if (minValue == null && maxValue == null) {
                         valueDomain = null;
                     }
                 }
-                if (POSITIVE_ZERO.equals(defaultValue)) {
+                if ((fieldName.contains("SCALE") ? ONE : POSITIVE_ZERO).equals(defaultValue)) {
                     defaultValue = null;
                 }
                 if (defaultValue != null || valueDomain != null || isOptional || noDefault) {
@@ -272,7 +277,7 @@ public final class ParameterNameTableGenerator extends SimpleFileVisitor<Path> {
                         }
                         lines.add(insertAt++, buffer.append("</li>").toString());
                         buffer.setLength(p);
-                    } else {
+                    } else if (noDefault) {
                         write(insertAt++, "  <li>No default value</li>");
                     }
                     if (isOptional) {

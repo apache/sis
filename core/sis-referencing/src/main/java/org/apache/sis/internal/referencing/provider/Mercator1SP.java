@@ -62,7 +62,6 @@ public final class Mercator1SP extends AbstractMercator {
      * <b>Notes:</b>
      * <ul>
      *   <li>Value restricted to 0</li>
-     *   <li>No default value</li>
      * </ul>
      */
     public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
@@ -98,11 +97,6 @@ public final class Mercator1SP extends AbstractMercator {
      *   <tr><td> GeoTIFF: </td><td> ScaleAtNatOrigin </td></tr>
      *   <tr><td> Proj4:   </td><td> k </td></tr>
      * </table>
-     * <b>Notes:</b>
-     * <ul>
-     *   <li>Value domain: (0.0 … ∞)</li>
-     *   <li>Default value: 1</li>
-     * </ul>
      */
     public static final ParameterDescriptor<Double> SCALE_FACTOR;
 

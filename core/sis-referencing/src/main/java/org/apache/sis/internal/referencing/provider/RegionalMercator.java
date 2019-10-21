@@ -66,7 +66,6 @@ public class RegionalMercator extends AbstractMercator {
      * <b>Notes:</b>
      * <ul>
      *   <li>Value domain: (-90.0 … 90.0)°</li>
-     *   <li>No default value</li>
      * </ul>
      */
     public static final ParameterDescriptor<Double> LATITUDE_OF_FALSE_ORIGIN;

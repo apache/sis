@@ -105,7 +105,6 @@ public final class Equirectangular extends AbstractProvider {
      * <b>Notes:</b>
      * <ul>
      *   <li>Value domain: (-90.0 … 90.0)°</li>
-     *   <li>No default value</li>
      * </ul>
      */
     public static final ParameterDescriptor<Double> STANDARD_PARALLEL;
@@ -130,7 +129,6 @@ public final class Equirectangular extends AbstractProvider {
      * <b>Notes:</b>
      * <ul>
      *   <li>Value restricted to 0</li>
-     *   <li>No default value</li>
      *   <li>Optional</li>
      * </ul>
      */

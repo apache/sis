@@ -131,7 +131,6 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      * <b>Notes:</b>
      * <ul>
      *   <li>Value domain: [-648000.0 … 648000.0]″</li>
-     *   <li>No default value</li>
      * </ul>
      */
     static final ParameterDescriptor<Double> RX;
@@ -150,7 +149,6 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      * <b>Notes:</b>
      * <ul>
      *   <li>Value domain: [-648000.0 … 648000.0]″</li>
-     *   <li>No default value</li>
      * </ul>
      */
     static final ParameterDescriptor<Double> RY;
@@ -169,7 +167,6 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      * <b>Notes:</b>
      * <ul>
      *   <li>Value domain: [-648000.0 … 648000.0]″</li>
-     *   <li>No default value</li>
      * </ul>
      */
     static final ParameterDescriptor<Double> RZ;

@@ -67,7 +67,6 @@ public final class Mercator2SP extends AbstractMercator {
      * <b>Notes:</b>
      * <ul>
      *   <li>Value domain: (-90.0 … 90.0)°</li>
-     *   <li>No default value</li>
      * </ul>
      */
     public static final ParameterDescriptor<Double> STANDARD_PARALLEL = Equirectangular.STANDARD_PARALLEL;
@@ -90,8 +89,6 @@ public final class Mercator2SP extends AbstractMercator {
      * </table>
      * <b>Notes:</b>
      * <ul>
-     *   <li>Value domain: (0.0 … ∞)</li>
-     *   <li>Default value: 1</li>
      *   <li>Optional</li>
      * </ul>
      */

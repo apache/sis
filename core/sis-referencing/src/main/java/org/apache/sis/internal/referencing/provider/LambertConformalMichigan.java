@@ -54,7 +54,6 @@ public final class LambertConformalMichigan extends AbstractLambert {
      * </table>
      * <b>Notes:</b>
      * <ul>
-     *   <li>Value domain: (0.0 … ∞)</li>
      *   <li>No default value</li>
      * </ul>
      */

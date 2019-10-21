@@ -99,11 +99,6 @@ public final class LambertConformal1SP extends AbstractLambert {
      *   <tr><td> GeoTIFF: </td><td> ScaleAtNatOrigin </td></tr>
      *   <tr><td> Proj4:   </td><td> k </td></tr>
      * </table>
-     * <b>Notes:</b>
-     * <ul>
-     *   <li>Value domain: (0.0 … ∞)</li>
-     *   <li>Default value: 1</li>
-     * </ul>
      */
     public static final ParameterDescriptor<Double> SCALE_FACTOR = Mercator1SP.SCALE_FACTOR;
 
