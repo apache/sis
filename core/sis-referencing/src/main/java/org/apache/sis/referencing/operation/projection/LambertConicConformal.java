@@ -45,8 +45,11 @@ import static org.apache.sis.math.MathFunctions.isPositive;
 
 /**
  * <cite>Lambert Conic Conformal</cite> projection (EPSG codes 9801, 9802, 9803, 9826, 1051).
- * See the <a href="http://mathworld.wolfram.com/LambertConformalConicProjection.html">Lambert conformal
- * conic projection on MathWorld</a> for an overview.
+ * See the following references for an overview:
+ * <ul>
+ *   <li><a href="https://en.wikipedia.org/wiki/Lambert_conformal_conic_projection">Lambert Conformal Conic projection on Wikipedia</a></li>
+ *   <li><a href="http://mathworld.wolfram.com/LambertConformalConicProjection.html">Lambert Conformal Conic projection on MathWorld</a></li>
+ * </ul>
  *
  * <h2>Description</h2>
  * Areas and shapes are deformed as one moves away from standard parallels.

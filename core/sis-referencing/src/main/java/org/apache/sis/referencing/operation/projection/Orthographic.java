@@ -31,9 +31,12 @@ import static org.apache.sis.internal.referencing.provider.Orthographic.*;
 
 
 /**
- * <cite>Orthographic</cite> projection (EPSG:9840). See "Orthographic projection" on
- * <a href="https://en.wikipedia.org/wiki/Orthographic_projection_in_cartography">Wikipedia</a> and
- * <a href="http://mathworld.wolfram.com/OrthographicProjection.html">MathWorld</a> for an overview.
+ * <cite>Orthographic</cite> projection (EPSG:9840).
+ * See the following references for an overview:
+ * <ul>
+ *   <li><a href="https://en.wikipedia.org/wiki/Orthographic_projection_in_cartography">Orthographic projection on Wikipedia</a></li>
+ *   <li><a href="http://mathworld.wolfram.com/OrthographicProjection.html">Orthographic projection on MathWorld</a></li>
+ * </ul>
  *
  * <h2>Description</h2>
  * This is a perspective azimuthal (planar) projection that is neither conformal nor equal-area.
