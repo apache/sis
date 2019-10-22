@@ -40,6 +40,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridRoundingMode;
+import org.apache.sis.coverage.IllegalSampleDimensionException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -63,7 +64,7 @@ import org.apache.sis.internal.jdk9.JDK9;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -375,14 +376,22 @@ public final class RasterResource extends AbstractGridResource implements Resour
             synchronized (lock) {
                 for (int i=0; i<ranges.length; i++) {
                     if (ranges[i] == null) {
-                        if (builder == null) builder = new SampleDimension.Builder();
-                        ranges[i] = createSampleDimension(builder, getVariable(i), i);
+                        if (builder == null) {
+                            builder = new SampleDimension.Builder();
+                        }
+                        try {
+                            ranges[i] = createSampleDimension(builder, getVariable(i), i);
+                        } catch (TransformException | IllegalSampleDimensionException e) {
+                            builder.categories().clear();
+                            ranges[i] = builder.build();
+                            warning(e);
+                        }
                         builder.clear();
                     }
                 }
             }
-        } catch (TransformException e) {
-            throw new DataStoreReferencingException(e);
+        } catch (RuntimeException e) {
+            throw new DataStoreContentException(e);
         }
         return UnmodifiableArrayList.wrap(ranges);
     }
@@ -393,6 +402,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * @param  builder  the builder to use for creating the sample dimension.
      * @param  band     the data for which to create a sample dimension.
      * @param  index    index in the variable dimension identified by {@link #bandDimension}.
+     * @throws IllegalSampleDimensionException if a sample dimension has overlapping ranges.
      * @throws TransformException if an error occurred while using the transfer function.
      */
     private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable band, final int index)

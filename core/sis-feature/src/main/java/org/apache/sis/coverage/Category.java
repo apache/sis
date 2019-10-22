@@ -69,7 +69,7 @@ import static java.lang.Double.doubleToRawLongBits;
  * <p>All {@code Category} objects are immutable and thread-safe.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -217,6 +217,8 @@ public class Category implements Serializable {
      *                  in the same {@link SampleDimension}.
      *                  The input is a real number in the {@code samples} range and the output shall be a unique value between
      *                  {@value MathFunctions#MIN_NAN_ORDINAL} and {@value MathFunctions#MAX_NAN_ORDINAL} inclusive.
+     * @throws IllegalSampleDimensionException if the {@code samples} range of values is empty
+     *         or the transfer function can not be used.
      */
     protected Category(final CharSequence name, NumberRange<?> samples, final MathTransform1D toUnits, final Unit<?> units,
              final DoubleToIntFunction toNaN)
@@ -237,7 +239,7 @@ public class Category implements Serializable {
          */
         if (!(minimum <= maximum)) {
             if (toUnits != null || !isNaN || doubleToRawLongBits(minimum) != doubleToRawLongBits(maximum)) {
-                throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalCategoryRange_2, name, samples));
+                throw new IllegalSampleDimensionException(Resources.format(Resources.Keys.IllegalCategoryRange_2, name, samples));
             }
         }
         if (isNaN) {
@@ -276,7 +278,7 @@ public class Category implements Serializable {
             range = samples;
             converse = new ConvertedCategory(this, toSamples, toUnits != null, units);
         } catch (TransformException e) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalTransferFunction_1, name), e);
+            throw new IllegalSampleDimensionException(Resources.format(Resources.Keys.IllegalTransferFunction_1, name), e);
         }
     }
 
