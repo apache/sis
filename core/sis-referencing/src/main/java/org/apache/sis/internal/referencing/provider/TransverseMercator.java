@@ -116,8 +116,8 @@ public final class TransverseMercator extends AbstractMercator {
         LATITUDE_OF_ORIGIN = createLatitude(builder
                 .addNamesAndIdentifiers(Mercator1SP.LATITUDE_OF_ORIGIN), true);
 
-        LONGITUDE_OF_ORIGIN = createLongitude(renameAlias(Mercator1SP.LONGITUDE_OF_ORIGIN,
-                Citations.NETCDF, LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN, builder));
+        LONGITUDE_OF_ORIGIN = createLongitude(renameAlias(builder, Mercator1SP.LONGITUDE_OF_ORIGIN,             // Copy from this parameter…
+                                         Citations.NETCDF, LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN));     // … except for this name.
 
         SCALE_FACTOR = createScale(builder
                 .addNamesAndIdentifiers(Mercator1SP.SCALE_FACTOR)

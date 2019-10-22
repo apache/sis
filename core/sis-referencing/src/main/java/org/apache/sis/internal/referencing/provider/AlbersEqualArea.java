@@ -170,8 +170,9 @@ public final class AlbersEqualArea extends MapProjection {
          * GeoTIFF: NatOriginLat
          */
         LATITUDE_OF_FALSE_ORIGIN = createLatitude(
-                renameAlias(LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN, Citations.GEOTIFF, Mercator1SP.LATITUDE_OF_ORIGIN, builder)
-                .rename(Citations.OGC, "latitude_of_center"), true);
+                renameAlias(builder,   LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN,    // Copy from this parameter…
+                            Citations.GEOTIFF, Mercator1SP.LATITUDE_OF_ORIGIN)          // … except for this name.
+                    .rename(Citations.OGC, "latitude_of_center"), true);
         /*
          * EPSG:    Longitude of false origin
          * OGC:     longitude_of_center
@@ -180,8 +181,9 @@ public final class AlbersEqualArea extends MapProjection {
          * GeoTIFF: NatOriginLong
          */
         LONGITUDE_OF_FALSE_ORIGIN = createLongitude(
-                renameAlias(LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN, Citations.GEOTIFF, Mercator1SP.LONGITUDE_OF_ORIGIN, builder)
-                .rename(Citations.OGC, "longitude_of_center"));
+                renameAlias(builder,   LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN,
+                            Citations.GEOTIFF, Mercator1SP.LONGITUDE_OF_ORIGIN)
+                    .rename(Citations.OGC, "longitude_of_center"));
         /*
          * EPSG:    Latitude of 1st standard parallel
          * OGC:     standard_parallel_1
@@ -210,7 +212,8 @@ public final class AlbersEqualArea extends MapProjection {
          * GeoTIFF: FalseEasting
          */
         EASTING_AT_FALSE_ORIGIN = createShift(
-                renameAlias(LambertConformal2SP.EASTING_AT_FALSE_ORIGIN, Citations.GEOTIFF, LambertConformal1SP.FALSE_EASTING, builder));
+                renameAlias(builder, LambertConformal2SP.EASTING_AT_FALSE_ORIGIN,
+                            Citations.GEOTIFF, LambertConformal1SP.FALSE_EASTING));
         /*
          * EPSG:    Northing at false origin
          * OGC:     false_northing
@@ -219,7 +222,8 @@ public final class AlbersEqualArea extends MapProjection {
          * GeoTIFF: FalseNorthing
          */
         NORTHING_AT_FALSE_ORIGIN = createShift(
-                renameAlias(LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN, Citations.GEOTIFF, LambertConformal1SP.FALSE_NORTHING, builder));
+                renameAlias(builder, LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN,
+                            Citations.GEOTIFF, LambertConformal1SP.FALSE_NORTHING));
 
         PARAMETERS = builder
                 .addIdentifier(             "9822")

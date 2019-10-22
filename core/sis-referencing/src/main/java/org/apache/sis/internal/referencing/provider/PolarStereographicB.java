@@ -100,6 +100,10 @@ public final class PolarStereographicB extends AbstractStereographic {
      *   <tr><td> ESRI:    </td><td> Scale_Factor </td></tr>
      *   <tr><td> Proj4:   </td><td> k </td></tr>
      * </table>
+     * <b>Notes:</b>
+     * <ul>
+     *   <li>Optional</li>
+     * </ul>
      */
     static final ParameterDescriptor<Double> SCALE_FACTOR;
 
@@ -120,7 +124,8 @@ public final class PolarStereographicB extends AbstractStereographic {
 
         SCALE_FACTOR = createScale(builder
                 .addNamesAndIdentifiers(Mercator2SP.SCALE_FACTOR)
-                .setRemarks(notFormalParameter("Polar Stereographic (variant A)")).setDeprecated(true));
+                .setRemarks(notFormalParameter("Polar Stereographic (variant A)"))
+                .setRequired(false).setDeprecated(true));
 
         PARAMETERS = builder
                 .addIdentifier(IDENTIFIER)
@@ -128,7 +133,7 @@ public final class PolarStereographicB extends AbstractStereographic {
                 .addName(Citations.S57,  "Polar stereographic")
                 .addName(Citations.S57,  "PST")
                 .addIdentifier(Citations.S57, "11")
-                .addName(sameNameAs(Citations.PROJ4, PolarStereographicA.PARAMETERS))
+                .addNameAndIdentifier(Citations.PROJ4, PolarStereographicA.PARAMETERS)
                 .createGroupForMapProjection(
                         STANDARD_PARALLEL,
                         LONGITUDE_OF_ORIGIN,

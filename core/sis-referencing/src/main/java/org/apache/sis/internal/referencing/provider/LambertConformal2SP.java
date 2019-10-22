@@ -237,7 +237,7 @@ public final class LambertConformal2SP extends AbstractLambert {
                 .addName(Citations.NETCDF,   "LambertConformal")
                 .addName(Citations.GEOTIFF,  "CT_LambertConfConic_2SP")
                 .addName(Citations.GEOTIFF,  "CT_LambertConfConic")
-                .addName(sameNameAs(Citations.PROJ4, LambertConformal1SP.PARAMETERS))
+                .addNameAndIdentifier(Citations.PROJ4, LambertConformal1SP.PARAMETERS)
                 .addIdentifier(Citations.GEOTIFF,  "8")
                 .addIdentifier(Citations.MAP_INFO, "3")
                 .addIdentifier(Citations.S57,      "6")

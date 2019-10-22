@@ -308,8 +308,12 @@ public abstract class MapProjection extends AbstractProvider {
     /**
      * Returns the name of the given authority declared in the given parameter descriptor.
      * This method is used only as a way to avoid creating many instances of the same name.
+     *
+     * @param  authority   the authority for which to get the name.
+     * @param  parameters  where to get name for the given authority.
+     * @throws NoSuchElementException if the given authority has not been found.
      */
-    static GenericName sameNameAs(final Citation authority, final GeneralParameterDescriptor parameters) {
+    private static GenericName sameNameAs(final Citation authority, final GeneralParameterDescriptor parameters) {
         for (final GenericName candidate : parameters.getAlias()) {
             if (candidate instanceof Identifier && ((Identifier) candidate).getAuthority() == authority) {
                 return candidate;
@@ -322,37 +326,80 @@ public abstract class MapProjection extends AbstractProvider {
      * Copies name, aliases and identifiers of the given {@code template}, except the alias and identifiers of the
      * given authority which are replaced by the alias and identifiers of the same authority in {@code replacement}.
      *
+     * @param  builder      an initially clean builder where to add the names and identifiers.
      * @param  template     the parameter from which to copy names and identifiers.
      * @param  toRename     authority of the alias to rename.
      * @param  replacement  the parameter from which to get the new name for the alias to rename.
-     * @param  builder      an initially clean builder where to add the names and identifiers.
      * @return the given {@code builder}, for method call chaining.
      *
      * @since 0.8
      */
-    static ParameterBuilder renameAlias(final ParameterDescriptor<Double> template, final Citation toRename,
-            final ParameterDescriptor<Double> replacement, final ParameterBuilder builder)
+    static ParameterBuilder renameAlias(final ParameterBuilder builder, final ParameterDescriptor<Double> template,
+                                        final Citation toRename, final ParameterDescriptor<Double> replacement)
+    {
+        renameAliases(builder, template, new Citation[] {toRename}, new ParameterDescriptor<?>[] {replacement});
+        return builder;
+    }
+
+    /**
+     * Same as above {@link #renameAlias(ParameterBuilder, ParameterDescriptor, Citation, ParameterDescriptor)
+     * renameAlias(…)} but with two aliases to rename.
+     *
+     * @param  builder      an initially clean builder where to add the names and identifiers.
+     * @param  template     the parameter from which to copy names and identifiers.
+     * @param  s1           authority of the first alias to rename.
+     * @param  r1           the parameter from which to get the new name for the first alias to rename.
+     * @param  s2           authority of the second alias to rename.
+     * @param  r2           the parameter from which to get the new name for the second alias to rename.
+     * @return the given {@code builder}, for method call chaining.
+     *
+     * @since 1.1
+     */
+    static ParameterBuilder renameAlias(final ParameterBuilder builder, final ParameterDescriptor<Double> template,
+                                        final Citation s1, final ParameterDescriptor<Double> r1,
+                                        final Citation s2, final ParameterDescriptor<Double> r2)
+    {
+        renameAliases(builder, template, new Citation[] {s1, s2}, new ParameterDescriptor<?>[] {r1, r2});
+        return builder;
+    }
+
+    /**
+     * Implementation of {@code renameAlias(…)} methods.
+     */
+    private static void renameAliases(final ParameterBuilder builder, final ParameterDescriptor<Double> template,
+            final Citation[] toRename, final ParameterDescriptor<?>[] replacement)
     {
         builder.addName(template.getName());
-        GenericName newName = sameNameAs(toRename, replacement);
-        Identifier newCode = IdentifiedObjects.getIdentifier(replacement, toRename);
+        final GenericName[] newNames = new GenericName[toRename.length];
+        final Identifier[]  newCodes = new Identifier [toRename.length];
+        for (int i=0; i<toRename.length; i++) {
+            newNames[i] = sameNameAs(toRename[i], replacement[i]);
+            newCodes[i] = IdentifiedObjects.getIdentifier(replacement[i], toRename[i]);
+        }
         for (GenericName alias : template.getAlias()) {
-            if (((Identifier) alias).getAuthority() == toRename) {
-                if (newName == null) continue;
-                alias = newName;
-                newName = null;
+            final Citation authority = ((Identifier) alias).getAuthority();
+            for (int i=0; i<toRename.length; i++) {
+                if (authority == toRename[i]) {
+                    if (newNames[i] == null) continue;
+                    alias = newNames[i];
+                    newNames[i] = null;
+                    break;
+                }
             }
             builder.addName(alias);
         }
         for (Identifier id : template.getIdentifiers()) {
-            if (id.getAuthority() == toRename) {
-                if (newCode == null) continue;
-                id = newCode;
-                newCode = null;
+            final Citation authority = id.getAuthority();
+            for (int i=0; i<toRename.length; i++) {
+                if (authority == toRename[i]) {
+                    if (newCodes[i] == null) continue;
+                    id = newCodes[i];
+                    newCodes[i] = null;
+                    break;
+                }
             }
             builder.addIdentifier(id);
         }
-        return builder;
     }
 
     /**

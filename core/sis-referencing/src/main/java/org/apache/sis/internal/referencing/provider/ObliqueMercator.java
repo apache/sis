@@ -33,7 +33,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/hotine_oblique_mercator.html">GeoTIFF parameters for Hotine Oblique Mercator</a>
  *
@@ -62,10 +62,9 @@ public class ObliqueMercator extends AbstractMercator {
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Latitude of projection centre </td></tr>
      *   <tr><td> OGC:     </td><td> latitude_of_center </td></tr>
-     *   <tr><td> ESRI:    </td><td> Latitude_Of_Origin </td></tr>
-     *   <tr><td> GeoTIFF: </td><td> NatOriginLat </td></tr>
-     *   <tr><td> Proj4:   </td><td> lat_0 </td></tr>
      *   <tr><td> ESRI:    </td><td> Latitude_Of_Center </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> CenterLat </td></tr>
+     *   <tr><td> Proj4:   </td><td> lat_0 </td></tr>
      * </table>
      * <b>Notes:</b>
      * <ul>
@@ -83,10 +82,9 @@ public class ObliqueMercator extends AbstractMercator {
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Longitude of projection centre </td></tr>
      *   <tr><td> OGC:     </td><td> longitude_of_center </td></tr>
-     *   <tr><td> ESRI:    </td><td> Central_Meridian </td></tr>
-     *   <tr><td> GeoTIFF: </td><td> NatOriginLong </td></tr>
-     *   <tr><td> Proj4:   </td><td> lonc </td></tr>
      *   <tr><td> ESRI:    </td><td> Longitude_Of_Center </td></tr>
+     *   <tr><td> GeoTIFF: </td><td> CenterLong </td></tr>
+     *   <tr><td> Proj4:   </td><td> lonc </td></tr>
      * </table>
      */
     public static final ParameterDescriptor<Double> LONGITUDE_OF_CENTRE;
@@ -156,18 +154,21 @@ public class ObliqueMercator extends AbstractMercator {
     static {
         final ParameterBuilder builder = builder();
 
-        LATITUDE_OF_CENTRE = createLatitude(builder.addNamesAndIdentifiers(AlbersEqualArea.LATITUDE_OF_FALSE_ORIGIN)
-                .reidentify(Citations.EPSG, "8811")
-                .rename    (Citations.EPSG, "Latitude of projection centre")
-                .addName   (Citations.ESRI, "Latitude_Of_Center")
-                .rename    (Citations.NETCDF), false);                  // Remove the netCDF name.
+        LATITUDE_OF_CENTRE = createLatitude(builder
+                .addIdentifier("8811")
+                .addName("Latitude of projection centre")
+                .addNameAndIdentifier(Citations.OGC,     AlbersEqualArea.LATITUDE_OF_FALSE_ORIGIN)
+                .addName             (Citations.ESRI,   "Latitude_Of_Center")
+                .addNameAndIdentifier(Citations.GEOTIFF, Equirectangular.LATITUDE_OF_ORIGIN)
+                .addNameAndIdentifier(Citations.PROJ4,   Equirectangular.LATITUDE_OF_ORIGIN), false);
 
-        LONGITUDE_OF_CENTRE = createLongitude(builder.addNamesAndIdentifiers(AlbersEqualArea.LONGITUDE_OF_FALSE_ORIGIN)
-                .reidentify(Citations.EPSG,  "8812")
-                .rename    (Citations.EPSG,  "Longitude of projection centre")
-                .addName   (Citations.ESRI,  "Longitude_Of_Center")
-                .rename    (Citations.PROJ4, "lonc")
-                .rename    (Citations.NETCDF));                         // Remove the netCDF name.
+        LONGITUDE_OF_CENTRE = createLongitude(builder
+                .addIdentifier("8812")
+                .addName("Longitude of projection centre")
+                .addNameAndIdentifier(Citations.OGC,     AlbersEqualArea.LONGITUDE_OF_FALSE_ORIGIN)
+                .addName             (Citations.ESRI,    "Longitude_Of_Center")
+                .addNameAndIdentifier(Citations.GEOTIFF, Equirectangular.LONGITUDE_OF_ORIGIN)
+                .addName             (Citations.PROJ4,   "lonc"));
 
         AZIMUTH = builder
                 .addIdentifier("8813")

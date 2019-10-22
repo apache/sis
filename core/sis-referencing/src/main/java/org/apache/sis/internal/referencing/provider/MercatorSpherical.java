@@ -67,7 +67,7 @@ public final class MercatorSpherical extends AbstractMercator {
 
         PARAMETERS = addNameAndLegacy(addIdentifierAndLegacy(builder, IDENTIFIER, "9841"),
                 "Mercator (Spherical)", "Mercator (1SP) (Spherical)")   // "Mercator (Spherical)" starting from EPSG version 7.6
-                .addName(sameNameAs(Citations.PROJ4, Mercator1SP.PARAMETERS))
+                .addNameAndIdentifier(Citations.PROJ4, Mercator1SP.PARAMETERS)
                 .createGroupForMapProjection(
                         Mercator1SP.LATITUDE_OF_ORIGIN,
                         Mercator1SP.LONGITUDE_OF_ORIGIN,

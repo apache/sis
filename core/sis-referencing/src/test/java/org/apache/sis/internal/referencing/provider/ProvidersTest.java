@@ -103,6 +103,7 @@ public final strictfp class ProvidersTest extends TestCase {
             ObliqueMercatorCenter.class,
             ObliqueMercatorTwoPoints.class,
             ObliqueMercatorTwoPointsCenter.class,
+            Orthographic.class,
             ZonedTransverseMercator.class,
             SatelliteTracking.class,
             Sinusoidal.class,
@@ -153,7 +154,7 @@ public final strictfp class ProvidersTest extends TestCase {
         final Map<GeneralParameterDescriptor, GeneralParameterDescriptor> parameters = new HashMap<>();
         final Map<Object, Object> namesAndIdentifiers = new HashMap<>();
         for (final Class<?> c : methods()) {
-            final OperationMethod method = (OperationMethod) c.newInstance();
+            final OperationMethod method = (OperationMethod) c.getConstructor((Class[]) null).newInstance((Object[]) null);
             final ParameterDescriptorGroup group = method.getParameters();
             final String operationName = group.getName().getCode();
             for (final GeneralParameterDescriptor param : group.descriptors()) {

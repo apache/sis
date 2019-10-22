@@ -145,8 +145,8 @@ final class ESRI extends Static {
      * @return the given {@code builder}, for method call chaining.
      */
     static ParameterBuilder copyNames(final ParameterBuilder builder, final ParameterDescriptor<Double> template) {
-        return builder.addName(MapProjection.sameNameAs(Citations.ESRI,  template))
-                      .addName(MapProjection.sameNameAs(Citations.OGC,   template))
-                      .addName(MapProjection.sameNameAs(Citations.PROJ4, template));
+        return builder.addNameAndIdentifier(Citations.ESRI,  template)
+                      .addNameAndIdentifier(Citations.OGC,   template)
+                      .addNameAndIdentifier(Citations.PROJ4, template);
     }
 }

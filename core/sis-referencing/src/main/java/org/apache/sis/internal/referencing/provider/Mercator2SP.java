@@ -132,7 +132,7 @@ public final class Mercator2SP extends AbstractMercator {
                 .addName(Citations.OGC,     "Mercator_2SP")
                 .addName(Citations.ESRI,    "Mercator")
                 .addName(Citations.NETCDF,  "Mercator")
-                .addName(sameNameAs(Citations.PROJ4, Mercator1SP.PARAMETERS))
+                .addNameAndIdentifier(Citations.PROJ4, Mercator1SP.PARAMETERS)
                 .addIdentifier(Citations.MAP_INFO, "26")    // MapInfo names this projection "Regional Mercator".
                 .addIdentifier(Citations.S57,       "8")
                 .createGroupForMapProjection(
