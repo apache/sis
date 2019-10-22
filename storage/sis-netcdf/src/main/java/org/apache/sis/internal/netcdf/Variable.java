@@ -787,14 +787,14 @@ public abstract class Variable extends Node {
 
     /**
      * Returns the range of valid values, or {@code null} if unknown. This is a shortcut for
-     * {@link Convention#validRange(Variable)} with a fallback on {@link #getRangeFallback()}.
+     * {@link Convention#validRange(Variable, Set)} with a fallback on {@link #getRangeFallback()}.
      *
      * @return the range of valid values, or {@code null} if unknown.
      *
-     * @see Convention#validRange(Variable)
+     * @see Convention#validRange(Variable, Set)
      */
     final NumberRange<?> getValidRange() {
-        NumberRange<?> range = decoder.convention().validRange(this);
+        NumberRange<?> range = decoder.convention().validRange(this, getNodataValues().keySet());
         if (range == null) {
             range = getRangeFallback();
         }
@@ -803,8 +803,8 @@ public abstract class Variable extends Node {
 
     /**
      * Returns the range of values as determined by the data type or other means, or {@code null} if unknown.
-     * This method is invoked only as a fallback if {@link Convention#validRange(Variable)} did not found a
-     * range of values by application of CF conventions. The returned range may be a range of packed values
+     * This method is invoked only as a fallback if {@link Convention#validRange(Variable, Set)} did not found
+     * a range of values by application of CF conventions. The returned range may be a range of packed values
      * or a range of real values. In the later case, the range shall be an instance of
      * {@link org.apache.sis.measure.MeasurementRange}.
      *
@@ -814,7 +814,7 @@ public abstract class Variable extends Node {
      *
      * @return the range of valid values, or {@code null} if unknown.
      *
-     * @see Convention#validRange(Variable)
+     * @see Convention#validRange(Variable, Set)
      */
     protected NumberRange<?> getRangeFallback() {
         final DataType dataType = getDataType();

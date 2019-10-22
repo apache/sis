@@ -63,7 +63,7 @@ import ucar.nc2.constants.CF;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-315">SIS-315</a>
  *
@@ -92,7 +92,7 @@ public class Convention {
     /**
      * Names of attributes where to fetch minimum and maximum sample values, in preference order.
      *
-     * @see #validRange(Variable)
+     * @see #validRange(Variable, Set)
      */
     private static final String[] RANGE_ATTRIBUTES = {
         "valid_range",      // Expected "reasonable" range for variable.
@@ -555,13 +555,13 @@ public class Convention {
      * Otherwise if this method returns the range of real values, then that range shall be an instance
      * of {@link MeasurementRange} for allowing the caller to distinguish the two cases.
      *
-     * @param  data  the variable to get valid range of values for.
-     *               This is usually a variable containing raster data.
+     * @param  data  the variable to get valid range of values for (usually a variable containing raster data).
+     * @param  nodataValues  the fill values and padding values.
      * @return the range of valid values, or {@code null} if unknown.
      *
      * @see Variable#getRangeFallback()
      */
-    public NumberRange<?> validRange(final Variable data) {
+    public NumberRange<?> validRange(final Variable data, final Set<Number> nodataValues) {
         Number minimum = null;
         Number maximum = null;
         Class<? extends Number> type = null;
@@ -590,23 +590,47 @@ public class Convention {
                     data.decoder.illegalAttributeValue(attribute, values.stringValue(i), e);
                 }
             }
+            /*
+             * Stop the loop and return a range as soon as we have enough information.
+             * Note that we may loop over many attributes before to complete information.
+             */
             if (minimum != null && maximum != null) {
                 /*
                  * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
                  * if the type of the range is equal to the type of the scale, and the type of the
                  * data is not wider, then assume that the minimum and maximum are real values.
                  */
+                final Class<?> scaleType  = data.getAttributeType(CDM.SCALE_FACTOR);
+                final Class<?> offsetType = data.getAttributeType(CDM.ADD_OFFSET);
                 final int rangeType = Numbers.getEnumConstant(type);
-                if (rangeType >= data.getDataType().number &&
-                    rangeType >= Math.max(Numbers.getEnumConstant(data.getAttributeType(CDM.SCALE_FACTOR)),
-                                          Numbers.getEnumConstant(data.getAttributeType(CDM.ADD_OFFSET))))
+                if ((scaleType != null || offsetType != null)
+                        && rangeType >= data.getDataType().number
+                        && rangeType >= Math.max(Numbers.getEnumConstant(scaleType),
+                                                 Numbers.getEnumConstant(offsetType)))
                 {
                     @SuppressWarnings({"unchecked", "rawtypes"})
                     final NumberRange<?> range = new MeasurementRange(type, minimum, true, maximum, true, data.getUnit());
                     return range;
                 } else {
+                    /*
+                     * The range use sample values (before conversion to the unit of measurement).
+                     * Before to return that range, check if the minimum or maximum overlaps with
+                     * a pad value. If this is the case, resolve the overlapping by making that
+                     * value exclusive instead than inclusive.
+                     */
+                    boolean isMinIncluded = true;
+                    boolean isMaxIncluded = true;
+                    if (!nodataValues.isEmpty()) {
+                        final double minValue = minimum.doubleValue();
+                        final double maxValue = maximum.doubleValue();
+                        for (final Number pad : nodataValues) {
+                            final double value = pad.doubleValue();
+                            isMinIncluded &= (minValue != value);
+                            isMaxIncluded &= (maxValue != value);
+                        }
+                    }
                     @SuppressWarnings({"unchecked", "rawtypes"})
-                    final NumberRange<?> range = new NumberRange(type, minimum, true, maximum, true);
+                    final NumberRange<?> range = new NumberRange(type, minimum, isMinIncluded, maximum, isMaxIncluded);
                     return range;
                 }
             }
@@ -616,7 +640,7 @@ public class Convention {
 
     /**
      * Compares two numbers which shall be of the same class.
-     * This is a helper method for {@link #validRange(Variable)}.
+     * This is a helper method for {@link #validRange(Variable, Set)}.
      */
     @SuppressWarnings("unchecked")
     private static int compare(final Number n1, final Number n2) {
@@ -669,8 +693,8 @@ public class Convention {
      * to be created for each variable.
      *
      * <p>This method is invoked in contexts where a transfer function is assumed to exist, for example
-     * because {@link #validRange(Variable)} returned a non-null value. Consequently this method shall
-     * never return {@code null}, but can return the identity function.</p>
+     * because {@link #validRange(Variable, Set)} returned a non-null value. Consequently this method
+     * shall never return {@code null}, but can return the identity function.</p>
      *
      * @param  data  the variable from which to determine the transfer function.
      *               This is usually a variable containing raster data.
