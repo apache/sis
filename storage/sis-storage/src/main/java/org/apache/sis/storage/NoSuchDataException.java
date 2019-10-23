@@ -18,35 +18,29 @@ package org.apache.sis.storage;
 
 import java.util.Locale;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Thrown when an invalid name is used for identifying a coverage, a feature or other kind of element in a data store.
- * A name may be invalid because no coverage or feature exists in the {@link DataStore} for that name,
- * or because the name is ambiguous (in which case the exception message should explain why),
- * or because the name of a new {@linkplain org.apache.sis.feature.DefaultFeatureType feature type}
- * to add in the {@code DataStore} conflicts with the name of an existing feature type.
+ * Thrown when requested data are not found in the data store.
+ * It may be because no resource of the given name has been found,
+ * or because data have been requested in a region of interest that
+ * does not intersect the data region.
  *
- * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- *
- * @see DataStore#findResource(String)
- *
- * @version 0.8
- * @since   0.8
+ * @version 1.1
+ * @since   1.1
  * @module
  */
-public class IllegalNameException extends NoSuchDataException {
+public class NoSuchDataException extends DataStoreException {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 2435437568097737351L;
+    private static final long serialVersionUID = -5883260753916229790L;
 
     /**
      * Creates an exception with no cause and no details message.
      */
-    public IllegalNameException() {
+    public NoSuchDataException() {
     }
 
     /**
@@ -54,7 +48,7 @@ public class IllegalNameException extends NoSuchDataException {
      *
      * @param message  the detail message.
      */
-    public IllegalNameException(final String message) {
+    public NoSuchDataException(final String message) {
         super(message);
     }
 
@@ -63,7 +57,7 @@ public class IllegalNameException extends NoSuchDataException {
      *
      * @param cause  the cause for this exception.
      */
-    public IllegalNameException(final Throwable cause) {
+    public NoSuchDataException(final Throwable cause) {
         super(cause);
     }
 
@@ -73,20 +67,8 @@ public class IllegalNameException extends NoSuchDataException {
      * @param message  the detail message.
      * @param cause    the cause for this exception.
      */
-    public IllegalNameException(final String message, final Throwable cause) {
+    public NoSuchDataException(final String message, final Throwable cause) {
         super(message, cause);
-    }
-
-    /**
-     * Creates a new exception with a message saying that the feature of the given name has not been found.
-     *
-     * @param locale   the locale for the message to be returned by {@link #getLocalizedMessage()}.
-     * @param store    name of the data store for which the feature has not been found, or {@code null} if unknown.
-     * @param feature  name of the feature that has not been found.
-     */
-    public IllegalNameException(final Locale locale, final String store, final String feature) {
-        super(locale, Resources.Keys.FeatureNotFound_2, (store != null) ? store
-                : Vocabulary.formatInternational(Vocabulary.Keys.Unnamed), feature);
     }
 
     /**
@@ -96,7 +78,7 @@ public class IllegalNameException extends NoSuchDataException {
      * @param key         one of {@link Resources.Keys} constants.
      * @param parameters  parameters to use for formatting the messages.
      */
-    IllegalNameException(final Locale locale, final short key, final Object... parameters) {
+    NoSuchDataException(final Locale locale, final short key, final Object... parameters) {
         super(locale, key, parameters);
     }
 }

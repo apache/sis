@@ -23,12 +23,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Method;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.storage.DataStoreProvider;
@@ -276,7 +276,7 @@ public class StoreListeners implements Localized {
                 }
             }
         }
-        return Classes.getShortClassName(source);
+        return Vocabulary.getResources(getLocale()).getString(Vocabulary.Keys.Unnamed);
     }
 
     /**

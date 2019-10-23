@@ -40,11 +40,13 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridRoundingMode;
+import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.coverage.IllegalSampleDimensionException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.MeasurementRange;
@@ -654,13 +656,15 @@ public final class RasterResource extends AbstractGridResource implements Resour
              */
             imageBuffer = RasterFactory.wrap(dataType.rasterDataType, sampleValues);
         } catch (IOException e) {
-            throw new DataStoreException(e);
+            throw new DataStoreException(canNotReadFile(), e);
+        } catch (DisjointExtentException e) {
+            throw new NoSuchDataException(canNotReadFile(), e);
         } catch (RuntimeException e) {                          // Many exceptions thrown by RasterFactory.wrap(…).
             final Throwable cause = e.getCause();
             if (cause instanceof TransformException) {
-                throw new DataStoreReferencingException(cause);
+                throw new DataStoreReferencingException(canNotReadFile(), cause);
             } else {
-                throw new DataStoreContentException(e);
+                throw new DataStoreContentException(canNotReadFile(), e);
             }
         }
         if (imageBuffer == null) {
@@ -671,14 +675,19 @@ public final class RasterResource extends AbstractGridResource implements Resour
     }
 
     /**
+     * Returns the error message for a file that can not be read.
+     *
+     * @return default error message to use in exceptions.
+     */
+    private String canNotReadFile() {
+        return Errors.getResources(getLocale()).getString(Errors.Keys.CanNotRead_1, getFilename());
+    }
+
+    /**
      * Returns the name of the netCDF file. This is used for error messages.
      */
     private String getFilename() {
-        if (location != null) {
-            return location.getFileName().toString();
-        } else {
-            return Vocabulary.getResources(getLocale()).getString(Vocabulary.Keys.Unnamed);
-        }
+        return (location != null) ? location.getFileName().toString() : getSourceName();
     }
 
     /**
