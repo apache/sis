@@ -430,12 +430,11 @@ public final class GCOM_C extends Convention {
      * Returns the range of valid values, or {@code null} if unknown.
      *
      * @param  data  the variable to get valid range of values for.
-     * @param  nodataValues  the fill values and padding values.
      * @return the range of valid values, or {@code null} if unknown.
      */
     @Override
-    public NumberRange<?> validRange(final Variable data, final Set<Number> nodataValues) {
-        NumberRange<?> range = super.validRange(data, nodataValues);
+    public NumberRange<?> validRange(final Variable data) {
+        NumberRange<?> range = super.validRange(data);
         if (range == null) {
             final double min = data.getAttributeAsNumber("Minimum_valid_DN");
             final double max = data.getAttributeAsNumber("Maximum_valid_DN");
@@ -471,7 +470,7 @@ public final class GCOM_C extends Convention {
 
     /**
      * Builds the function converting values from their packed formats in the variable to "real" values.
-     * This method is invoked only if {@link #validRange(Variable, Set)} returned a non-null value.
+     * This method is invoked only if {@link #validRange(Variable)} returned a non-null value.
      *
      * @param  data  the variable from which to determine the transfer function.
      * @return a transfer function built from the attributes defined in the given variable.

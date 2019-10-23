@@ -92,7 +92,7 @@ public class Convention {
     /**
      * Names of attributes where to fetch minimum and maximum sample values, in preference order.
      *
-     * @see #validRange(Variable, Set)
+     * @see #validRange(Variable)
      */
     private static final String[] RANGE_ATTRIBUTES = {
         "valid_range",      // Expected "reasonable" range for variable.
@@ -556,12 +556,11 @@ public class Convention {
      * of {@link MeasurementRange} for allowing the caller to distinguish the two cases.
      *
      * @param  data  the variable to get valid range of values for (usually a variable containing raster data).
-     * @param  nodataValues  the fill values and padding values.
      * @return the range of valid values, or {@code null} if unknown.
      *
      * @see Variable#getRangeFallback()
      */
-    public NumberRange<?> validRange(final Variable data, final Set<Number> nodataValues) {
+    public NumberRange<?> validRange(final Variable data) {
         Number minimum = null;
         Number maximum = null;
         Class<? extends Number> type = null;
@@ -613,13 +612,14 @@ public class Convention {
                     return range;
                 } else {
                     /*
-                     * The range use sample values (before conversion to the unit of measurement).
-                     * Before to return that range, check if the minimum or maximum overlaps with
-                     * a pad value. If this is the case, resolve the overlapping by making that
-                     * value exclusive instead than inclusive.
+                     * At this point, we determined that the range uses sample values (i.e. values before
+                     * conversion to the unit of measurement). Before to return that range, check if the
+                     * minimum or maximum value overlaps with a "no data" value. If yes, resolve the
+                     * overlapping by making a range bound exclusive instead than inclusive.
                      */
                     boolean isMinIncluded = true;
                     boolean isMaxIncluded = true;
+                    final Set<Number> nodataValues = data.getNodataValues().keySet();
                     if (!nodataValues.isEmpty()) {
                         final double minValue = minimum.doubleValue();
                         final double maxValue = maximum.doubleValue();
@@ -640,7 +640,7 @@ public class Convention {
 
     /**
      * Compares two numbers which shall be of the same class.
-     * This is a helper method for {@link #validRange(Variable, Set)}.
+     * This is a helper method for {@link #validRange(Variable)}.
      */
     @SuppressWarnings("unchecked")
     private static int compare(final Number n1, final Number n2) {
@@ -693,8 +693,8 @@ public class Convention {
      * to be created for each variable.
      *
      * <p>This method is invoked in contexts where a transfer function is assumed to exist, for example
-     * because {@link #validRange(Variable, Set)} returned a non-null value. Consequently this method
-     * shall never return {@code null}, but can return the identity function.</p>
+     * because {@link #validRange(Variable)} returned a non-null value. Consequently this method shall
+     * never return {@code null}, but can return the identity function.</p>
      *
      * @param  data  the variable from which to determine the transfer function.
      *               This is usually a variable containing raster data.

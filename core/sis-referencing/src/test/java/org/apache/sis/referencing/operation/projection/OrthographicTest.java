@@ -38,11 +38,11 @@ import static java.lang.StrictMath.*;
 @DependsOn(NormalizedProjectionTest.class)
 public final strictfp class OrthographicTest extends MapProjectionTestCase {
     /**
-     * Creates a new instance of {@link Orthographic}.
+     * Creates a new instance of {@link Orthographic} using spherical formulas.
      *
      * @param  φ0  latitude of projection centre.
      */
-    private void create(final double φ0) {
+    private void createSpherical(final double φ0) {
         final MapProjection provider = new org.apache.sis.internal.referencing.provider.Orthographic();
         final Parameters parameters = parameters(provider, false);
         parameters.parameter("latitude_of_origin").setValue(φ0);
@@ -60,7 +60,7 @@ public final strictfp class OrthographicTest extends MapProjectionTestCase {
      */
     @Test
     public void testEquatorial() throws TransformException {
-        create(0);
+        createSpherical(0);
         tolerance = 1E-4;                       // Accuracy of numbers provided in Snyder tables.
         verifyTransform(
             new double[] {                      // (λ,φ) coordinates in radians to project.
@@ -91,7 +91,7 @@ public final strictfp class OrthographicTest extends MapProjectionTestCase {
      */
     @Test
     public void testOblique() throws TransformException {
-        create(40);
+        createSpherical(40);
         tolerance = 1E-4;                       // Accuracy of numbers provided in Snyder tables.
         verifyTransform(
             new double[] {                      // (λ,φ) coordinates in radians to project.
@@ -124,7 +124,7 @@ public final strictfp class OrthographicTest extends MapProjectionTestCase {
      */
     @Test
     public void testPolarNorth() throws TransformException {
-        create(+90);
+        createSpherical(+90);
         tolerance = NORMALIZED_TOLERANCE;
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_RADIANS_NORTH, 753524735);
         verifyDerivative(toRadians(5), toRadians(85));
@@ -139,7 +139,7 @@ public final strictfp class OrthographicTest extends MapProjectionTestCase {
      */
     @Test
     public void testPolarSouth() throws TransformException {
-        create(-90);
+        createSpherical(-90);
         tolerance = NORMALIZED_TOLERANCE;
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_RADIANS_SOUTH, 753524735);
         verifyDerivative(toRadians(5), toRadians(-85));

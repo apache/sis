@@ -379,13 +379,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
                         if (builder == null) {
                             builder = new SampleDimension.Builder();
                         }
-                        try {
-                            ranges[i] = createSampleDimension(builder, getVariable(i), i);
-                        } catch (TransformException | IllegalSampleDimensionException e) {
-                            builder.categories().clear();
-                            ranges[i] = builder.build();
-                            warning(e);
-                        }
+                        ranges[i] = createSampleDimension(builder, getVariable(i), i);
                         builder.clear();
                     }
                 }
@@ -402,19 +396,15 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * @param  builder  the builder to use for creating the sample dimension.
      * @param  band     the data for which to create a sample dimension.
      * @param  index    index in the variable dimension identified by {@link #bandDimension}.
-     * @throws IllegalSampleDimensionException if a sample dimension has overlapping ranges.
-     * @throws TransformException if an error occurred while using the transfer function.
      */
-    private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable band, final int index)
-            throws TransformException
-    {
+    private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable band, final int index) {
         /*
          * Take the minimum and maximum values as determined by Apache SIS through the Convention class.  The UCAR library
          * is used only as a fallback. We give precedence to the range computed by Apache SIS instead than the range given
          * by UCAR because we need the range of packed values instead than the range of converted values.
          */
         NumberRange<?> range;
-        if (!createEnumeration(builder, band, index) && (range = band.getValidRange()) != null) {
+        if (!createEnumeration(builder, band, index) && (range = band.getValidRange()) != null) try {
             final MathTransform1D mt = band.getTransferFunction().getTransform();
             if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
                 /*
@@ -455,6 +445,14 @@ public final class RasterResource extends AbstractGridResource implements Resour
                 if (name == null) name = band.getName();
                 builder.addQuantitative(name, range, mt, band.getUnit());
             }
+        } catch (TransformException e) {
+            /*
+             * This exception may happen in the call to `inverse.transform`, when we tried to convert
+             * a range of measurement values (in the unit of measurement) to a range of sample values.
+             * If we failed to do that, we will not add quantitative category. But we still can add
+             * qualitative categories for "no data" sample values in the rest of this method.
+             */
+            warning(e);
         }
         /*
          * Adds the "missing value" or "fill value" as qualitative categories.  If a value has both roles, use "missing value"
@@ -501,7 +499,21 @@ public final class RasterResource extends AbstractGridResource implements Resour
         if (bandDimension >= 0) {
             name = Strings.toIndexed(name, index);
         }
-        return builder.setName(name).build();
+        builder.setName(name);
+        SampleDimension sd;
+        try {
+            sd = builder.build();
+        } catch (IllegalSampleDimensionException e) {
+            /*
+             * This error may happen if we have overlapping ranges of sample values.
+             * Abandon all categories. We do not keep the quantitative category because
+             * using it without taking in account the "no data" values may be dangerous.
+             */
+            builder.categories().clear();
+            sd = builder.build();
+            warning(e);
+        }
+        return sd;
     }
 
     /**
@@ -643,8 +655,6 @@ public final class RasterResource extends AbstractGridResource implements Resour
             imageBuffer = RasterFactory.wrap(dataType.rasterDataType, sampleValues);
         } catch (IOException e) {
             throw new DataStoreException(e);
-        } catch (TransformException e) {
-            throw new DataStoreReferencingException(e);
         } catch (RuntimeException e) {                          // Many exceptions thrown by RasterFactory.wrap(…).
             final Throwable cause = e.getCause();
             if (cause instanceof TransformException) {
