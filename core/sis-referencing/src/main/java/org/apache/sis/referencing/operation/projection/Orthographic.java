@@ -23,6 +23,9 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.ContextualParameters;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
 
@@ -55,12 +58,17 @@ public class Orthographic extends NormalizedProjection {
     /**
      * For compatibility with different versions during deserialization.
      */
-    private static final long serialVersionUID = -321305496803338120L;
+    private static final long serialVersionUID = -6140156868989213344L;
 
     /**
      * Sine and cosine of latitude of origin.
      */
     private final double sinφ0, cosφ0;
+
+    /**
+     * Value of (1 – ℯ²)⋅cosφ₀.
+     */
+    private final double mℯ2_cosφ0;
 
     /**
      * Work around for RFE #4093999 in Sun's bug database
@@ -72,7 +80,7 @@ public class Orthographic extends NormalizedProjection {
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, Initializer.AUTHALIC_RADIUS);
+        return new Initializer(method, parameters, roles, (byte) 0);
     }
 
     /**
@@ -100,6 +108,21 @@ public class Orthographic extends NormalizedProjection {
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         sinφ0 = sin(φ0);
         cosφ0 = cos(φ0);
+        mℯ2_cosφ0 = (1 - eccentricitySquared)*cosφ0;
+        /*
+         * For ellipsoidal formulas, equation given by EPSG guidance note contains:
+         *
+         *     N = FN + ν⋅[sinφ⋅cosφ₀ – cosφ⋅sinφ₀⋅cos(λ – λ₀)] + ℯ²⋅(ν₀⋅sinφ₀ – ν⋅sinφ)⋅cosφ₀
+         *
+         * In addition of false northing (FN), another constant term is ℯ²⋅(ν₀⋅sinφ₀)⋅cosφ₀
+         * which we factor out below. Note that we do not really need the "if" statement
+         * since the computed value below is zero in the spherical case.
+         */
+        if (eccentricity != 0) {
+            final double ν0 = initializer.radiusOfCurvature(sinφ0);
+            final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
+            denormalize.convertBefore(1, null, eccentricitySquared * ν0 * (sinφ0 * cosφ0));
+        }
     }
 
     /**
@@ -115,6 +138,26 @@ public class Orthographic extends NormalizedProjection {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
+        final Matrix2 derivative = derivate ? new Matrix2() : null;
+        transform(srcPts, srcOff, dstPts, dstOff, derivative);
+        return derivative;
+    }
+
+    /**
+     * Implementation of {@link #transform(double[], int, double[], int, boolean)}
+     * with possibility to recycle an existing matrix instance.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * in other map projections, we use a different class for ellipsoidal formulas.
+     * But the orthographic projection is a bit different; for this one it is more
+     * convenient to use a flag.</div>
+     *
+     * @return {@code cos(φ)}, useful for error tolerance check.
+     */
+    private double transform(final double[] srcPts, final int srcOff,
+                             final double[] dstPts, final int dstOff,
+                             final Matrix2 derivative)
+    {
         final double λ    = srcPts[srcOff  ];
         final double φ    = srcPts[srcOff+1];
         final double cosλ = cos(λ);
@@ -124,30 +167,45 @@ public class Orthographic extends NormalizedProjection {
         final double cosφ_cosλ = cosφ*cosλ;
         final double sinφ0_sinφ = sinφ0*sinφ;                   // Note: φ₀ here is φ₁ in Snyder.
         final double cosc = sinφ0_sinφ + cosφ0*cosφ_cosλ;       // Snyder (5-3) page 149
-        final double x, y;
+        double x, y;
         /*
          * c is the distance from the center of orthographic projection.
          * If that distance is greater than 90° (identied by cos(c) < 0)
          * then the point is on the opposite hemisphere and should be clipped.
          */
+        double rν;
         if (cosc >= 0) {
-            x = cosφ * sinλ;                        // Snyder (20-3)
-            y = cosφ0*sinφ - sinφ0*cosφ_cosλ;       // Snyder (20-4)
+            x  = cosφ * sinλ;                           // Snyder (20-3)
+            y  = mℯ2_cosφ0*sinφ - sinφ0*cosφ_cosλ;      // Snyder (20-4) × (1 – ℯ²)
+            rν = 1;
+            if (eccentricity != 0) {
+                /*
+                 * EPSG equations without the  ℯ²⋅(ν₀⋅sinφ₀ – ν⋅sinφ)⋅cosφ₀  additional term in y;
+                 * the  ℯ²⋅(ν₀⋅sinφ₀)⋅cosφ₀  part is applied by the denormalization matrix and the
+                 * remaining was applied by the (1 - ℯ²) multiplication factor above.
+                 */
+                final double ℯsinφ = eccentricity * sinφ;
+                rν = sqrt(1 - ℯsinφ * ℯsinφ);
+                x /= rν;
+                y /= rν;
+            }
         } else {
-            x = Double.NaN;
-            y = Double.NaN;
+            x  = Double.NaN;
+            y  = Double.NaN;
+            rν = Double.NaN;
         }
         if (dstPts != null) {
             dstPts[dstOff  ] = x;
             dstPts[dstOff+1] = y;
         }
-        if (!derivate) {
-            return null;
+        if (derivative != null) {
+            final double ρ = (1 - eccentricitySquared) / (rν*rν*rν);
+            derivative.m00 =  cosφ_cosλ / rν;                           // ∂E/∂λ
+            derivative.m01 = -sinφ*sinλ * ρ;                            // ∂E/∂φ
+            derivative.m10 =  sinφ0 * x;                                // ∂N/∂λ
+            derivative.m11 = (cosφ0 * cosφ + sinφ0_sinφ*cosλ) * ρ;      // ∂N/∂φ
         }
-        return new Matrix2(cosφ_cosλ,
-                          -sinφ*sinλ,
-                           sinφ0 * x,
-                           cosφ0 * cosφ + sinφ0_sinφ*cosλ);
+        return cosφ;
     }
 
     /**
@@ -170,6 +228,40 @@ public class Orthographic extends NormalizedProjection {
         final double cosc = sqrt(1 - ρ2);                       // NaN if ρ > 1.
         dstPts[dstOff  ]  = atan2(x, cosc*cosφ0 - y*sinφ0);     // Synder (20-15) with ρ = sin(c)
         dstPts[dstOff+1]  = asin(cosc*sinφ0 + y*cosφ0);         // Synder (20-14) where y⋅sin(c)/ρ = y/R with R=1.
+        if (eccentricity != 0) {
+            /*
+             * In the ellipsoidal case, there is no reverse formulas. Instead we take a first estimation of (λ,φ),
+             * compute the forward projection (E′,N′) for that estimation, compute the errors compared to specified
+             * (E,N) values, convert that (ΔE,ΔN) error into a (Δλ,Δφ) error using the inverse of Jacobian matrix,
+             * correct (λ,φ) and continue iteratively until the error is small enough. This algorithm described in
+             * EPSG guidance note could be applied to any map projection, not only Orthographic.
+             *
+             * See https://issues.apache.org/jira/browse/SIS-478
+             */
+            final Matrix2 J = new Matrix2();                    // Jacobian matrix.
+            double λ = dstPts[dstOff  ];
+            double φ = dstPts[dstOff+1];
+            for (int it=0; it<MAXIMUM_ITERATIONS; it++) {
+                final double cosφ = transform(dstPts, dstOff, dstPts, dstOff, J);
+                final double ΔE   = x - dstPts[dstOff  ];
+                final double ΔN   = y - dstPts[dstOff+1];
+                final double D    = (J.m01 * J.m10) - (J.m00 * J.m11);    // Determinant.
+                final double Δλ   = (J.m01*ΔN - J.m11*ΔE) / D;
+                final double Δφ   = (J.m10*ΔE - J.m00*ΔN) / D;
+                dstPts[dstOff  ]  = λ += Δλ;
+                dstPts[dstOff+1]  = φ += Δφ;
+                /*
+                 * Following condition uses ! for stopping iteration on NaN values.
+                 * We do not use Math.max(…) because we want to check NaN separately
+                 * for φ and λ.
+                 */
+                if (!(abs(Δφ) > ANGULAR_TOLERANCE || abs(cosφ*abs(Δλ)) > ANGULAR_TOLERANCE)) {
+                    dstPts[dstOff] = IEEEremainder(dstPts[dstOff], PI);
+                    return;
+                }
+            }
+            throw new ProjectionException(Resources.format(Resources.Keys.NoConvergence));
+        }
     }
 
     /**
