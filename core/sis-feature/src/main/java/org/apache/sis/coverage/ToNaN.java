@@ -29,7 +29,7 @@ import org.apache.sis.internal.feature.Resources;
  * {@link Category} constructor.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -102,7 +102,7 @@ search: if (!add(ordinal)) {
                 do if (add(--ordinal)) break search;
                 while (ordinal > MathFunctions.MIN_NAN_ORDINAL);
             }
-            throw new IllegalStateException(Resources.format(Resources.Keys.TooManyQualitatives));
+            throw new IllegalSampleDimensionException(Resources.format(Resources.Keys.TooManyQualitatives));
         }
         return ordinal;
     }

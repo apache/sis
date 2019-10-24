@@ -26,6 +26,7 @@ import org.apache.sis.util.Configuration;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.system.Modules;
 
 
@@ -173,15 +174,9 @@ public final class Logging extends Static {
      *
      * @since 1.0
      */
-    public static Logger getLogger(Class<?> source) {
+    public static Logger getLogger(final Class<?> source) {
         ArgumentChecks.ensureNonNull("source", source);
-        Class<?> outer;
-        while ((outer = source.getEnclosingClass()) != null) {
-            source = outer;
-        }
-        String name = source.getName();
-        final int separator = name.lastIndexOf('.');
-        name = (separator >= 1) ? name.substring(0, separator) : "";
+        String name = JDK9.getPackageName(source);
         if (name.startsWith(Modules.INTERNAL_CLASSNAME_PREFIX)) {
             // Remove the "internal" part from Apache SIS package names.
             name = Modules.CLASSNAME_PREFIX + name.substring(Modules.INTERNAL_CLASSNAME_PREFIX.length());

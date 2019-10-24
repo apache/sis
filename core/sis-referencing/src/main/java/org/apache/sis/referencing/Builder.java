@@ -171,7 +171,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @param <B>  the builder subclass.
  *
@@ -273,7 +273,7 @@ public abstract class Builder<B extends Builder<B>> {
         if (object != null) {
             properties.putAll(IdentifiedObjects.getProperties(object));
             final GenericName[] valueAlias = (GenericName[]) properties.remove(IdentifiedObject.ALIAS_KEY);
-            final ReferenceIdentifier[] valueIds = (ReferenceIdentifier[])  properties.remove(IdentifiedObject.IDENTIFIERS_KEY);
+            final ReferenceIdentifier[] valueIds = (ReferenceIdentifier[]) properties.remove(IdentifiedObject.IDENTIFIERS_KEY);
             if (valueAlias != null) aliases.addAll(Arrays.asList(valueAlias));
             if (valueIds != null) identifiers.addAll(Arrays.asList(valueIds));
         }
@@ -686,12 +686,12 @@ public abstract class Builder<B extends Builder<B>> {
 
 
     /**
-     * Returns {@code true} if the given name or identifier is deprecated.
+     * Returns {@code true} if the given name or identifier is non-null and non-deprecated.
      *
      * @see #isDeprecated()
      */
-    private static boolean isDeprecated(final Object object) {
-        return (object instanceof Deprecable) && ((Deprecable) object).isDeprecated();
+    private static boolean isValid(final Object object) {
+        return (object != null) && !((object instanceof Deprecable) && ((Deprecable) object).isDeprecated());
     }
 
     /**
@@ -701,7 +701,7 @@ public abstract class Builder<B extends Builder<B>> {
      * <p>This is a convenience method for using an existing object as a template, before to modify
      * some names by calls to {@link #rename(Citation, CharSequence[])}.</p>
      *
-     * @param  object  the object from which to copy the references to names and identifiers.
+     * @param  object  the object from which to copy the names and identifiers.
      * @return {@code this}, for method call chaining.
      *
      * @since 0.6
@@ -709,16 +709,46 @@ public abstract class Builder<B extends Builder<B>> {
     public B addNamesAndIdentifiers(final IdentifiedObject object) {
         ensureNonNull("object", object);
         for (final ReferenceIdentifier id : object.getIdentifiers()) {
-            if (!isDeprecated(id)) {
+            if (isValid(id)) {
                 addIdentifier(id);
             }
         }
         ReferenceIdentifier id = object.getName();
-        if (!isDeprecated(id)) {
+        if (isValid(id)) {
             addName(id);
         }
         for (final GenericName alias : object.getAlias()) {
-            if (!isDeprecated(alias)) {
+            if (isValid(alias)) {
+                addName(alias);
+            }
+        }
+        return self();
+    }
+
+    /**
+     * Adds the non-deprecated names and identifiers from the given object for the specified authority.
+     * This is a convenience method for reusing name and identifier already declared for another object.
+     *
+     * @param  authority  the authority for which to copy the name and identifier.
+     * @param  object     the object from which to copy the name and identifier.
+     * @return {@code this}, for method call chaining.
+     *
+     * @since 1.1
+     */
+    public B addNameAndIdentifier(final Citation authority, final IdentifiedObject object) {
+        ensureNonNull("authority", authority);
+        ensureNonNull("object", object);
+        for (final ReferenceIdentifier id : object.getIdentifiers()) {
+            if (isValid(id) && authority.equals(id.getAuthority())) {
+                addIdentifier(id);
+            }
+        }
+        ReferenceIdentifier id = object.getName();
+        if (isValid(id) && authority.equals(id.getAuthority())) {
+            addName(id);
+        }
+        for (final GenericName alias : object.getAlias()) {
+            if (isValid(alias) && (alias instanceof Identifier) && authority.equals(((Identifier) alias).getAuthority())) {
                 addName(alias);
             }
         }

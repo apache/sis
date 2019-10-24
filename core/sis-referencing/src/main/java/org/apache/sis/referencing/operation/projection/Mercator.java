@@ -44,7 +44,11 @@ import static org.apache.sis.math.MathFunctions.isPositive;
 
 /**
  * <cite>Mercator Cylindrical</cite> projection (EPSG codes 9804, 9805, 1026, 1024, 1044, <span class="deprecated">9841</span>).
- * See the <a href="http://mathworld.wolfram.com/MercatorProjection.html">Mercator projection on MathWorld</a> for an overview.
+ * See the following references for an overview:
+ * <ul>
+ *   <li><a href="https://en.wikipedia.org/wiki/Mercator_projection">Mercator projection on Wikipedia</a></li>
+ *   <li><a href="http://mathworld.wolfram.com/MercatorProjection.html">Mercator projection on MathWorld</a></li>
+ * </ul>
  *
  * <h2>Description</h2>
  * The parallels and the meridians are straight lines and cross at right angles; this projection thus produces

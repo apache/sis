@@ -68,7 +68,7 @@ import org.apache.sis.util.Debug;
  * not used in same time.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  * @module
  */
@@ -157,6 +157,7 @@ public class SampleDimension implements Serializable {
      * @param name        an identification for the sample dimension.
      * @param background  the background value, or {@code null} if none.
      * @param categories  the list of categories. May be empty if none.
+     * @throws IllegalSampleDimensionException if two or more categories have overlapping sample value range.
      */
     public SampleDimension(final GenericName name, final Number background, final Collection<? extends Category> categories) {
         ArgumentChecks.ensureNonNull("name", name);
@@ -973,6 +974,8 @@ public class SampleDimension implements Serializable {
          * Creates a new sample with the properties defined to this builder.
          *
          * @return the sample dimension.
+         * @throws IllegalSampleDimensionException if there is overlapping {@linkplain Category#getSampleRange()
+         *         ranges of sample values} or other problems that prevent the construction of sample dimensions.
          */
         public SampleDimension build() {
             GenericName name = dimensionName;

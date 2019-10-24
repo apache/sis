@@ -16,7 +16,10 @@
 # limitations under the License.
 # ------------------------------------------------------------------------
 
-BASE_DIR="`dirname $0`/.."
+set -o errexit
+
+BASE_DIR="`readlink --canonicalize-existing $0`"
+BASE_DIR="`dirname $BASE_DIR`/.."
 SIS_DATA="${SIS_DATA:-$BASE_DIR/data}"
 export SIS_DATA
 

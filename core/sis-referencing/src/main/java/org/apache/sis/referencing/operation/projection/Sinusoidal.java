@@ -34,8 +34,11 @@ import static org.apache.sis.internal.referencing.provider.Sinusoidal.*;
 
 /**
  * <cite>Sinusoidal equal-area</cite> projection, also known as <cite>"Sanson-Flamsteed"</cite>.
- * See the <a href="https://en.wikipedia.org/wiki/Sinusoidal_projection">Sinusoidal projection on Wikipedia</a>
- * for an overview.
+ * See the following references for an overview:
+ * <ul>
+ *   <li><a href="https://en.wikipedia.org/wiki/Sinusoidal_projection">Sinusoidal projection on Wikipedia</a></li>
+ *   <li><a href="http://mathworld.wolfram.com/SinusoidalProjection.html">Sinusoidal projection on MathWorld</a></li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

@@ -26,7 +26,7 @@ import org.junit.runners.Suite;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.5
  * @module
  */
@@ -70,6 +70,7 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.CategoryTest.class,
     org.apache.sis.coverage.CategoryListTest.class,
     org.apache.sis.coverage.SampleDimensionTest.class,
+    org.apache.sis.coverage.SampleRangeFormatTest.class,
     org.apache.sis.internal.coverage.ScaledColorSpaceTest.class,
     org.apache.sis.internal.coverage.BufferedGridCoverageTest.class
 })

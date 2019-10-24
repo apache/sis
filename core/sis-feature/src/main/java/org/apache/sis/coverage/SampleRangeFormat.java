@@ -35,7 +35,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * Formats the range of a category. This is used for {@link SampleDimension#toString()} implementation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -64,6 +64,11 @@ final class SampleRangeFormat extends RangeFormat {
      * If {@code false}, then we can omit the "Measures" column.
      */
     private boolean hasQuantitative;
+
+    /**
+     * Whether at least one category of any type has been found in at least one sample dimension.
+     */
+    private boolean hasCategory;
 
     /**
      * The localize resources for table header. Words will be "Values", "Measures" and "Name".
@@ -95,6 +100,7 @@ final class SampleRangeFormat extends RangeFormat {
         numFractionDigits = new int[count];
         hasPackedValues   = false;
         hasQuantitative   = false;
+        hasCategory       = false;
         for (int i=0; i<count; i++) {
             int ndigits = 0;
             for (final Category category : dimensions[i].getCategories()) {
@@ -107,6 +113,7 @@ final class SampleRangeFormat extends RangeFormat {
                 final boolean isPacked = (Double.doubleToRawLongBits(smin) != Double.doubleToRawLongBits(cmin))
                                        | (Double.doubleToRawLongBits(smax) != Double.doubleToRawLongBits(cmax));
                 hasPackedValues |= isPacked;
+                hasCategory = true;
                 /*
                  * If the sample values are already real values, pretend that they are packed in bytes.
                  * The intent is only to compute an arbitrary number of fraction digits.
@@ -209,36 +216,45 @@ final class SampleRangeFormat extends RangeFormat {
         if (hasPackedValues) table.append(words.getString(Vocabulary.Keys.Values))  .nextColumn();
         if (hasQuantitative) table.append(words.getString(Vocabulary.Keys.Measures)).nextColumn();
         /* Unconditional  */ table.append(words.getString(Vocabulary.Keys.Name))    .nextLine();
-        table.nextLine('═');
-        table.append('#');                      // Dummy character to be replaced by band name later.
-        table.appendHorizontalSeparator();
-        for (final SampleDimension dim : dimensions) {
-            for (final Category category : dim.getCategories()) {
-                /*
-                 * "Sample values" column. Omitted if all values are already real values.
-                 */
-                if (hasPackedValues) {
-                    table.setCellAlignment(TableAppender.ALIGN_RIGHT);
-                    table.append(formatSample(category.getRangeLabel()));
-                    table.nextColumn();
-                }
-                table.setCellAlignment(TableAppender.ALIGN_LEFT);
-                /*
-                 * "Real values" column. Omitted if no category has a transfer function.
-                 */
-                if (hasQuantitative) {
-                    final Category converted = category.converted();
-                    final String text;
-                    if (converted.isConvertedQualitative()) {
-                        text = String.valueOf(converted.getRangeLabel());       // Example: NaN #0
-                    } else {
-                        text = formatMeasure(converted.getSampleRange());       // Example: [6.0 … 25.0)°C
-                    }
-                    table.append(text);
-                    table.nextColumn();
-                }
-                table.append(category.getName().toString(getLocale()));
+        if (!hasCategory) {
+            table.nextLine('═');
+            table.setCellAlignment(TableAppender.ALIGN_LEFT);
+            for (final SampleDimension dim : dimensions) {
+                table.append(getName(dim));
                 table.nextLine();
+            }
+        } else {
+            for (final SampleDimension dim : dimensions) {
+                table.nextLine('═');
+                table.append('#');                      // Dummy character to be replaced by band name later.
+                table.appendHorizontalSeparator();
+                for (final Category category : dim.getCategories()) {
+                    /*
+                     * "Sample values" column. Omitted if all values are already real values.
+                     */
+                    if (hasPackedValues) {
+                        table.setCellAlignment(TableAppender.ALIGN_RIGHT);
+                        table.append(formatSample(category.getRangeLabel()));
+                        table.nextColumn();
+                    }
+                    table.setCellAlignment(TableAppender.ALIGN_LEFT);
+                    /*
+                     * "Real values" column. Omitted if no category has a transfer function.
+                     */
+                    if (hasQuantitative) {
+                        final Category converted = category.converted();
+                        final String text;
+                        if (converted.isConvertedQualitative()) {
+                            text = String.valueOf(converted.getRangeLabel());       // Example: NaN #0
+                        } else {
+                            text = formatMeasure(converted.getSampleRange());       // Example: [6.0 … 25.0)°C
+                        }
+                        table.append(text);
+                        table.nextColumn();
+                    }
+                    table.append(category.getName().toString(getLocale()));
+                    table.nextLine();
+                }
             }
         }
         table.appendHorizontalSeparator();
@@ -253,41 +269,49 @@ final class SampleRangeFormat extends RangeFormat {
          * a value on many cells. The following code changes some characters but do not change buffer
          * length.
          */
-        int lastDimensionEnd = 0;
-        final String lineSeparator = table.getLineSeparator();
-        final String toSearch = lineSeparator + '╞';
-        for (final SampleDimension dim : dimensions) {
-            int lineStart = buffer.indexOf(toSearch, lastDimensionEnd);
-            if (lineStart < 0) break;                                           // Should not happen.
-            lineStart += toSearch.length();
-            int i = replace(buffer, lineStart, '╪', '╧', '╡');
-            int limit = (i-2) - lineStart;                                      // Space available in a row.
-            i += lineSeparator.length() + 2;                                    // Beginning of next line.
-            /*
-             * At this point, 'i' is at the beginning of the row where to format the band name.
-             * The line above that row has been modified for removing vertical lines. Now fill
-             * the space in current row with band name and pad with white spaces.
-             */
-            final GenericName name = dim.getName();
-            String label;
-            if (name != null) {
-                label = name.toInternationalString().toString(getLocale());
-            } else {
-                label = words.getString(Vocabulary.Keys.Unnamed);
+        if (hasCategory) {
+            int lastDimensionEnd = 0;
+            final String lineSeparator = table.getLineSeparator();
+            final String toSearch = lineSeparator + '╞';
+            for (final SampleDimension dim : dimensions) {
+                int lineStart = buffer.indexOf(toSearch, lastDimensionEnd);
+                if (lineStart < 0) break;                                           // Should not happen.
+                lineStart += toSearch.length();
+                int i = replace(buffer, lineStart, '╪', '╧', '╡');
+                int limit = (i-2) - lineStart;                                      // Space available in a row.
+                i += lineSeparator.length() + 2;                                    // Beginning of next line.
+                /*
+                 * At this point, 'i' is at the beginning of the row where to format the band name.
+                 * The line above that row has been modified for removing vertical lines. Now fill
+                 * the space in current row with band name and pad with white spaces.
+                 */
+                String name = getName(dim);
+                if (name.length() > limit) {
+                    name = name.substring(0, limit);
+                }
+                limit += i;                                         // Now an absolute index instead than a length.
+                buffer.replace(i, i += name.length(), name);
+                while (i < limit) buffer.setCharAt(i++, ' ');
+                /*
+                 * At this point the sample dimension name has been written.
+                 * Update the next line and move to the next sample dimension.
+                 */
+                lastDimensionEnd = replace(buffer, i + lineSeparator.length() + 2, '┼', '┬', '┤');
             }
-            if (label.length() > limit) {
-                label = label.substring(0, limit);
-            }
-            limit += i;                                         // Now an absolute index instead than a length.
-            buffer.replace(i, i += label.length(), label);
-            while (i < limit) buffer.setCharAt(i++, ' ');
-            /*
-             * At this point the sample dimension name has been written.
-             * Update the next line and move to the next sample dimension.
-             */
-            lastDimensionEnd = replace(buffer, i + lineSeparator.length() + 2, '┼', '┬', '┤');
         }
         return buffer.toString();
+    }
+
+    /**
+     * Returns the localized name for the given dimension, or "unnamed" if none.
+     */
+    private String getName(final SampleDimension dim) {
+        final GenericName name = dim.getName();
+        if (name != null) {
+            return name.toInternationalString().toString(getLocale());
+        } else {
+            return words.getString(Vocabulary.Keys.Unnamed);
+        }
     }
 
     /**

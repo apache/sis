@@ -25,8 +25,6 @@ import java.util.Iterator;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.URL;
-import java.net.URISyntaxException;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.util.logging.MonolineFormatter;
@@ -92,35 +90,12 @@ public abstract strictfp class TestSuite {
      */
     protected static void assertNoMissingTest(final Class<? extends TestSuite> suite) {
         if (skipCheckForMissingTests) return;
-        final ClassLoader loader = suite.getClassLoader();
-        final URL url = loader.getResource(suite.getName().replace('.', '/') + ".class");
-        assertNotNull("Test suite class not found.", url);
-        File root;
-        try {
-            root = new File(url.toURI());
-        } catch (URISyntaxException | IllegalArgumentException e) {
-            // If not a file, then it is probably an entry in a JAR file.
-            fail(e.toString());
-            return;
-        }
-        for (File c = new File(suite.getName().replace('.', File.separatorChar)); (c = c.getParentFile()) != null;) {
-            root = root.getParentFile();
-            assertNotNull("Unexpected directory structure.", root);
-            assertEquals("Unexpected directory structure.", c.getName(), root.getName());
-        }
         /*
-         * At this point, we found the root "org" package. Verifies if we are in the Maven target directory.
-         * In some IDE configuration, all the ".class" files are in the same directory, in which case the
-         * verification performed by this method become irrelevant.
+         * Verifies if we are in the Maven target directory. In some IDE configuration, all the ".class" files
+         * are in the same directory, in which case the verification performed by this method become irrelevant.
          */
-        File moduleDir = root;
-        for (int i=0; i<3; i++) {
-            moduleDir = moduleDir.getParentFile();
-            if (moduleDir == null) {
-                return;
-            }
-        }
-        if (!new File(moduleDir, "pom.xml").isFile()) {
+        final ProjectDirectories dir = new ProjectDirectories(suite);
+        if (!dir.isMavenModule()) {
             return;
         }
         /*
@@ -142,6 +117,8 @@ public abstract strictfp class TestSuite {
                 it.remove();
             }
         }
+        final ClassLoader loader = suite.getClassLoader();
+        final File root = dir.classesRootDirectory.resolve("org").toFile();
         removeExistingTests(loader, root, new StringBuilder(120).append(root.getName()), tests);
         if (!tests.isEmpty()) {
             fail("Classes not found. Are they defined in an other module? " + tests);
