@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.internal.referencing.provider.MapProjection;
@@ -143,5 +144,19 @@ public final strictfp class OrthographicTest extends MapProjectionTestCase {
         tolerance = NORMALIZED_TOLERANCE;
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_RADIANS_SOUTH, 753524735);
         verifyDerivative(toRadians(5), toRadians(-85));
+    }
+
+    /**
+     * Tests the <cite>"Orthographic"</cite> (EPSG:9840) projection method.
+     * This test is defined in GeoAPI conformance test suite.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     *
+     * @see org.opengis.test.referencing.ParameterizedTransformTest#testOrthographic()
+     */
+    @Test
+    public void runGeoapiTest() throws FactoryException, TransformException {
+        createGeoApiTest(new org.apache.sis.internal.referencing.provider.Orthographic()).testOrthographic();
     }
 }

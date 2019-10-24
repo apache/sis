@@ -30,7 +30,7 @@ import org.opengis.referencing.operation.Matrix;
  * └             ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.1
  *
  * @see Matrix1
  * @see Matrix2
@@ -39,8 +39,7 @@ import org.opengis.referencing.operation.Matrix;
  * @since 0.4
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")             // No field in this class needs clone.
-public final class Matrix3 extends MatrixSIS {
+public class Matrix3 extends MatrixSIS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -297,5 +296,13 @@ public final class Matrix3 extends MatrixSIS {
         swap = m01; m01 = m10; m10 = swap;
         swap = m02; m02 = m20; m20 = swap;
         swap = m12; m12 = m21; m21 = swap;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Matrix3 clone() {
+        return (Matrix3) super.clone();
     }
 }

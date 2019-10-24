@@ -25,7 +25,6 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
-import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
 
@@ -150,13 +149,16 @@ public class Orthographic extends NormalizedProjection {
      * <div class="note"><b>Implementation note:</b>
      * in other map projections, we use a different class for ellipsoidal formulas.
      * But the orthographic projection is a bit different; for this one it is more
-     * convenient to use a flag.</div>
+     * convenient to use {@code if} statements.</div>
      *
+     * @param  derivative  where to store the Jacobian matrix, or {@code null} if none.
+     *         If this matrix is an {@link Inverter} instance, we take that as a flag
+     *         meaning to not set out-of-range results to NaN.
      * @return {@code cos(φ)}, useful for error tolerance check.
      */
-    private double transform(final double[] srcPts, final int srcOff,
-                             final double[] dstPts, final int dstOff,
-                             final Matrix2 derivative)
+    final double transform(final double[] srcPts, final int srcOff,
+                           final double[] dstPts, final int dstOff,
+                           final Matrix2 derivative)
     {
         final double λ    = srcPts[srcOff  ];
         final double φ    = srcPts[srcOff+1];
@@ -174,7 +176,7 @@ public class Orthographic extends NormalizedProjection {
          * then the point is on the opposite hemisphere and should be clipped.
          */
         double rν;
-        if (cosc >= 0) {
+        if (cosc >= 0 || derivative instanceof Inverter) {
             x  = cosφ * sinλ;                           // Snyder (20-3)
             y  = mℯ2_cosφ0*sinφ - sinφ0*cosφ_cosλ;      // Snyder (20-4) × (1 – ℯ²)
             rν = 1;
@@ -203,7 +205,7 @@ public class Orthographic extends NormalizedProjection {
             derivative.m00 =  cosφ_cosλ / rν;                           // ∂E/∂λ
             derivative.m01 = -sinφ*sinλ * ρ;                            // ∂E/∂φ
             derivative.m10 =  sinφ0 * x;                                // ∂N/∂λ
-            derivative.m11 = (cosφ0 * cosφ + sinφ0_sinφ*cosλ) * ρ;      // ∂N/∂φ
+            derivative.m11 = (cosφ0*cosφ + sinφ0_sinφ*cosλ) * ρ;        // ∂N/∂φ
         }
         return cosφ;
     }
@@ -238,29 +240,9 @@ public class Orthographic extends NormalizedProjection {
              *
              * See https://issues.apache.org/jira/browse/SIS-478
              */
-            final Matrix2 J = new Matrix2();                    // Jacobian matrix.
-            double λ = dstPts[dstOff  ];
-            double φ = dstPts[dstOff+1];
-            for (int it=0; it<MAXIMUM_ITERATIONS; it++) {
-                final double cosφ = transform(dstPts, dstOff, dstPts, dstOff, J);
-                final double ΔE   = x - dstPts[dstOff  ];
-                final double ΔN   = y - dstPts[dstOff+1];
-                final double D    = (J.m01 * J.m10) - (J.m00 * J.m11);    // Determinant.
-                final double Δλ   = (J.m01*ΔN - J.m11*ΔE) / D;
-                final double Δφ   = (J.m10*ΔE - J.m00*ΔN) / D;
-                dstPts[dstOff  ]  = λ += Δλ;
-                dstPts[dstOff+1]  = φ += Δφ;
-                /*
-                 * Following condition uses ! for stopping iteration on NaN values.
-                 * We do not use Math.max(…) because we want to check NaN separately
-                 * for φ and λ.
-                 */
-                if (!(abs(Δφ) > ANGULAR_TOLERANCE || abs(cosφ*abs(Δλ)) > ANGULAR_TOLERANCE)) {
-                    dstPts[dstOff] = IEEEremainder(dstPts[dstOff], PI);
-                    return;
-                }
-            }
-            throw new ProjectionException(Resources.format(Resources.Keys.NoConvergence));
+            final Inverter j = new Inverter();                      // Jacobian matrix.
+            j.inverseTransform(this, x, y, dstPts, dstOff);
+            dstPts[dstOff] = IEEEremainder(dstPts[dstOff], PI);
         }
     }
 
