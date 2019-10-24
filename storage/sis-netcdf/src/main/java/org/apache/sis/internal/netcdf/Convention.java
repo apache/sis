@@ -63,7 +63,7 @@ import ucar.nc2.constants.CF;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-315">SIS-315</a>
  *
@@ -555,8 +555,7 @@ public class Convention {
      * Otherwise if this method returns the range of real values, then that range shall be an instance
      * of {@link MeasurementRange} for allowing the caller to distinguish the two cases.
      *
-     * @param  data  the variable to get valid range of values for.
-     *               This is usually a variable containing raster data.
+     * @param  data  the variable to get valid range of values for (usually a variable containing raster data).
      * @return the range of valid values, or {@code null} if unknown.
      *
      * @see Variable#getRangeFallback()
@@ -590,23 +589,48 @@ public class Convention {
                     data.decoder.illegalAttributeValue(attribute, values.stringValue(i), e);
                 }
             }
+            /*
+             * Stop the loop and return a range as soon as we have enough information.
+             * Note that we may loop over many attributes before to complete information.
+             */
             if (minimum != null && maximum != null) {
                 /*
                  * Heuristic rule defined in UCAR documentation (see EnhanceScaleMissing interface):
                  * if the type of the range is equal to the type of the scale, and the type of the
                  * data is not wider, then assume that the minimum and maximum are real values.
                  */
+                final Class<?> scaleType  = data.getAttributeType(CDM.SCALE_FACTOR);
+                final Class<?> offsetType = data.getAttributeType(CDM.ADD_OFFSET);
                 final int rangeType = Numbers.getEnumConstant(type);
-                if (rangeType >= data.getDataType().number &&
-                    rangeType >= Math.max(Numbers.getEnumConstant(data.getAttributeType(CDM.SCALE_FACTOR)),
-                                          Numbers.getEnumConstant(data.getAttributeType(CDM.ADD_OFFSET))))
+                if ((scaleType != null || offsetType != null)
+                        && rangeType >= data.getDataType().number
+                        && rangeType >= Math.max(Numbers.getEnumConstant(scaleType),
+                                                 Numbers.getEnumConstant(offsetType)))
                 {
                     @SuppressWarnings({"unchecked", "rawtypes"})
                     final NumberRange<?> range = new MeasurementRange(type, minimum, true, maximum, true, data.getUnit());
                     return range;
                 } else {
+                    /*
+                     * At this point, we determined that the range uses sample values (i.e. values before
+                     * conversion to the unit of measurement). Before to return that range, check if the
+                     * minimum or maximum value overlaps with a "no data" value. If yes, resolve the
+                     * overlapping by making a range bound exclusive instead than inclusive.
+                     */
+                    boolean isMinIncluded = true;
+                    boolean isMaxIncluded = true;
+                    final Set<Number> nodataValues = data.getNodataValues().keySet();
+                    if (!nodataValues.isEmpty()) {
+                        final double minValue = minimum.doubleValue();
+                        final double maxValue = maximum.doubleValue();
+                        for (final Number pad : nodataValues) {
+                            final double value = pad.doubleValue();
+                            isMinIncluded &= (minValue != value);
+                            isMaxIncluded &= (maxValue != value);
+                        }
+                    }
                     @SuppressWarnings({"unchecked", "rawtypes"})
-                    final NumberRange<?> range = new NumberRange(type, minimum, true, maximum, true);
+                    final NumberRange<?> range = new NumberRange(type, minimum, isMinIncluded, maximum, isMaxIncluded);
                     return range;
                 }
             }

@@ -38,8 +38,11 @@ import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.
 
 /**
  * <cite>Oblique Stereographic</cite> projection (EPSG code 9809).
- * See the <a href="http://mathworld.wolfram.com/StereographicProjection.html">Stereographic projection
- * on MathWorld</a> for an overview.
+ * See the following references for an overview:
+ * <ul>
+ *   <li><a href="https://en.wikipedia.org/wiki/Stereographic_projection">Stereographic projection or Wikipedia</a></li>
+ *   <li><a href="http://mathworld.wolfram.com/StereographicProjection.html">Stereographic projection or MathWorld</a></li>
+ * </ul>
  *
  * <h2>Description</h2>
  * The directions starting from the central point are true, but the areas and the lengths become

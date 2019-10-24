@@ -866,11 +866,13 @@ public class TableAppender extends Appender implements Flushable {
      *
      * @param  out    the stream or buffer where to repeat the character.
      * @param  car    character to write (usually ' ').
-     * @param  count  number of repetition.
+     * @param  count  number of repetition, negative means 0.
      */
     private static void repeat(final Appendable out, final char car, int count) throws IOException {
         if (out instanceof StringBuilder) {
-            StringBuilders.repeat((StringBuilder) out, car, count);
+            if (count > 0) {
+                StringBuilders.repeat((StringBuilder) out, car, count);
+            }
         } else while (--count >= 0) {
             out.append(car);
         }

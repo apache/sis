@@ -170,7 +170,7 @@ public class ObliqueMercator extends ConformalProjection {
         final double rν2 = initializer.rν2(sinφ).doubleValue();                         // rν² = (1 - ℯ²⋅sin²φc)
         final double A   = Br / rν2;                                                    // a and kc handled later.
         final double D   = Br / (cosφ * sqrt(rν2));
-        final double sD1 = sqrt(Math.max(D*D - 1, 0));
+        final double sD1 = sqrt(max(D*D - 1, 0));
         final double F   = D + copySign(sD1, φc);
         H = F * pow(expΨ(φc, eccentricity*sinφ), -B);                                   // expΨ(…) = 1/t
         /*
@@ -222,13 +222,13 @@ public class ObliqueMercator extends ConformalProjection {
             final double P  = (L - H1) / (L + H1);
             double Δλ = λ1 - λ2;
             if (abs(Δλ) > PI) {
-                λ2 += copySign(2*Math.PI, Δλ);                      // Adjustment recommended by Snyder.
+                λ2 += copySign(2*PI, Δλ);                           // Adjustment recommended by Snyder.
                 Δλ = λ1 - λ2;
             }
             λ0 = (λ1 + λ2)/2 - atan(J * tan(B*Δλ/2) / P) / B;
             Δλ = λ1 - λ0;
             if (abs(Δλ) > PI) {
-                λ0 += copySign(2*Math.PI, Δλ);                      // Adjustment recommended by Snyder.
+                λ0 += copySign(2*PI, Δλ);                           // Adjustment recommended by Snyder.
                 Δλ = λ1 - λ0;
             }
             γ0 = atan(2 * sin(B * Δλ) / (H/H1 - H1/H));             // Do not use atan2(…) here.

@@ -110,7 +110,7 @@ import ucar.nc2.constants.CF;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://global.jaxa.jp/projects/sat/gcom_c/">SHIKISAI (GCOM-C) on JAXA</a>
  * @see <a href="https://en.wikipedia.org/wiki/Global_Change_Observation_Mission">GCOM on Wikipedia</a>

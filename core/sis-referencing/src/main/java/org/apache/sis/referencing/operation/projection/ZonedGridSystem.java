@@ -20,6 +20,7 @@ import java.util.EnumMap;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.Matrix;
@@ -38,7 +39,6 @@ import org.apache.sis.internal.util.Numerics;
 import static java.lang.Math.floor;
 import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
 import static org.apache.sis.internal.referencing.provider.ZonedTransverseMercator.*;
-import org.opengis.parameter.ParameterValueGroup;
 
 
 /**

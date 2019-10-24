@@ -159,13 +159,13 @@ public class ShapefileDescriptor {
     }
 
     /**
-     * Returns the M Min property. 
+     * Returns the M Min property.
      * @return M min.
      */
     public double getMmin() {
         return this.mmin;
     }
-    
+
     /**
      * Returns the M Max property.
      * @return M Max.
@@ -180,7 +180,7 @@ public class ShapefileDescriptor {
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
-        String lineSeparator = System.getProperty("line.separator", "\n");
+        String lineSeparator = System.lineSeparator();
 
         s.append("FileCode: ").append(this.fileCode).append(lineSeparator);
         s.append("FileLength: ").append(this.fileLength).append(lineSeparator);

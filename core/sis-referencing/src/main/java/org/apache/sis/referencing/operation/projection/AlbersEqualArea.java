@@ -39,8 +39,11 @@ import static org.apache.sis.internal.referencing.provider.AlbersEqualArea.*;
 
 /**
  * <cite>Albers Equal Area</cite> projection (EPSG code 9822).
- * See the <a href="http://mathworld.wolfram.com/AlbersEqual-AreaConicProjection.html">Albers Equal-Area
- * Conic projection on MathWorld</a> for an overview.
+ * See the following references for an overview:
+ * <ul>
+ *   <li><a href="https://en.wikipedia.org/wiki/Albers_projection">Albers projection on Wikipedia</a></li>
+ *   <li><a href="http://mathworld.wolfram.com/AlbersEqual-AreaConicProjection.html">Albers Equal-Area Conic projection on MathWorld</a></li>
+ * </ul>
  *
  * <p>The {@code "standard_parallel_2"} parameter is optional and will be given the same value as
  * {@code "standard_parallel_1"} if not set.</p>

@@ -68,6 +68,10 @@ public abstract strictfp class TestCase {
      * The intent is to make easier to identify test cases that fail with the current version
      * of SIS (e.g. because of unsupported operations), but should pass in a future version.
      *
+     * <p>Note: sometime the work is actually pending future GeoAPI development. But we still
+     * use that flag for those cases because the {@code "geoapi"} branches of Apache SIS follow
+     * closely GeoAPI developments.</p>
+     *
      * @since 0.4
      */
     public static final boolean PENDING_FUTURE_SIS_VERSION = false;

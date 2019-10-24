@@ -31,7 +31,7 @@ import org.apache.sis.internal.util.Numerics;
  * └         ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.4
+ * @version 1.1
  *
  * @see Matrix1
  * @see Matrix3
@@ -40,8 +40,7 @@ import org.apache.sis.internal.util.Numerics;
  * @since 0.4
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")             // No field in this class needs clone.
-public final class Matrix2 extends MatrixSIS {
+public class Matrix2 extends MatrixSIS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -284,6 +283,14 @@ public final class Matrix2 extends MatrixSIS {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Matrix2 clone() {
+        return (Matrix2) super.clone();
+    }
+
+    /**
      * Returns {@code true} if the specified object is of type {@code Matrix2} and
      * all of the data members are equal to the corresponding data members in this matrix.
      *
@@ -292,7 +299,7 @@ public final class Matrix2 extends MatrixSIS {
      */
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof Matrix2) {
+        if (object != null && object.getClass() == getClass()) {
             final Matrix2 that = (Matrix2) object;
             return Numerics.equals(this.m00, that.m00) &&
                    Numerics.equals(this.m01, that.m01) &&

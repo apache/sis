@@ -36,7 +36,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * This file will be deleted on the SIS JDK9 branch.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.0
+ * @since   1.1
  * @version 0.8
  * @module
  */
@@ -109,5 +109,22 @@ public final class JDK9 {
         if (b instanceof FloatBuffer)  return ((FloatBuffer) b).duplicate();
         if (b instanceof DoubleBuffer) return ((DoubleBuffer) b).duplicate();
         throw new IllegalArgumentException();
+    }
+
+    /**
+     * Place holder for {@code Class.getPackageName()}.
+     *
+     * @param  c  the class for which to get the package name.
+     * @return the name of the package.
+     */
+    public static String getPackageName(Class<?> c) {
+        Class<?> outer;
+        while ((outer = c.getEnclosingClass()) != null) {
+            c = outer;
+        }
+        String name = c.getName();
+        final int separator = name.lastIndexOf('.');
+        name = (separator >= 1) ? name.substring(0, separator) : "";
+        return name;
     }
 }
