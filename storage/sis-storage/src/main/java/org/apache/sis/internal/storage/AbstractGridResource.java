@@ -20,7 +20,10 @@ import java.util.Arrays;
 import java.util.Optional;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -35,7 +38,7 @@ import org.apache.sis.util.ArraysExt;
  * Base class for implementations of {@link GridCoverageResource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -293,5 +296,21 @@ public abstract class AbstractGridResource extends AbstractResource implements G
             }
             return builder;
         }
+    }
+
+    /**
+     * If the given exception is caused by a {@link FactoryException} or {@link TransformException},
+     * returns that cause. Otherwise returns {@code null}. This is a convenience method for deciding
+     * if an exception should be rethrown as an {@link DataStoreReferencingException}.
+     *
+     * @param  e  the exception for which to inspect the cause.
+     * @return the cause if it is a referencing problem, or {@code null} otherwise.
+     */
+    protected static Exception getReferencingCause(final RuntimeException e) {
+        final Throwable cause = e.getCause();
+        if (cause instanceof FactoryException || cause instanceof TransformException) {
+            return (Exception) cause;
+        }
+        return null;
     }
 }

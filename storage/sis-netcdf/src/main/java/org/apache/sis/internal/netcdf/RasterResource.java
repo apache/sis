@@ -660,8 +660,8 @@ public final class RasterResource extends AbstractGridResource implements Resour
         } catch (DisjointExtentException e) {
             throw new NoSuchDataException(canNotReadFile(), e);
         } catch (RuntimeException e) {                          // Many exceptions thrown by RasterFactory.wrap(…).
-            final Throwable cause = e.getCause();
-            if (cause instanceof TransformException) {
+            final Exception cause = getReferencingCause(e);
+            if (cause != null) {
                 throw new DataStoreReferencingException(canNotReadFile(), cause);
             } else {
                 throw new DataStoreContentException(canNotReadFile(), e);

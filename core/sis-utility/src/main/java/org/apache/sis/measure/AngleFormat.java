@@ -812,6 +812,7 @@ public class AngleFormat extends Format implements Localized {
      *
      * @param  resolution  the desired angle resolution, in decimal degrees.
      * @param  allowFieldChanges  whether this method is allowed to change the set of fields (degrees, minutes or seconds).
+     * @throws IllegalArgumentException if the given resolution is NaN or infinite.
      *
      * @since 1.0
      */

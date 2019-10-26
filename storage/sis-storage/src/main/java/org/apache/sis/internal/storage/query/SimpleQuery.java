@@ -48,11 +48,13 @@ import org.opengis.filter.sort.SortBy;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
+ *
+ * @todo Rename {@code FeatureQuery}.
  */
-public class SimpleQuery extends Query {
+public class SimpleQuery extends Query implements Cloneable {
     /**
      * Sentinel limit value for queries of unlimited length.
      * This value can be given to {@link #setLimit(long)} or retrieved from {@link #getLimit()}.
@@ -391,7 +393,7 @@ public class SimpleQuery extends Query {
      */
     public FeatureSet execute(final FeatureSet source) {
         ArgumentChecks.ensureNonNull("source", source);
-        return new FeatureSubset(source, this);
+        return new FeatureSubset(source, clone());
     }
 
     /**
@@ -413,6 +415,24 @@ public class SimpleQuery extends Query {
             columns[i].expectedType(i, valueType, ftb);
         }
         return ftb.build();
+    }
+
+    /**
+     * Returns a clone of this query.
+     *
+     * @return a clone of this query.
+     */
+    @Override
+    public SimpleQuery clone() {
+        /*
+         * Implementation note: no need to clone the arrays. It is safe to share the same array instances
+         * because this class does not modify them and does not return them directly to the user.
+         */
+        try {
+            return (SimpleQuery) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**

@@ -82,6 +82,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotGetCommonMetadata_2 = 39;
 
         /**
+         * Can not intersect the data with specified query.
+         */
+        public static final short CanNotIntersectDataWithQuery = 57;
+
+        /**
          * Can not read the Coordinate Reference System (CRS) Well Known Text (WKT) in “{0}”.
          */
         public static final short CanNotReadCRS_WKT_1 = 37;

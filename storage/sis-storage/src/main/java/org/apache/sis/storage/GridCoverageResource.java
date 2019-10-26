@@ -20,6 +20,7 @@ import java.util.List;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.internal.storage.query.CoverageQuery;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -37,6 +38,7 @@ import org.apache.sis.util.ArgumentChecks;
  * A coverage resource may be a member of {@link Aggregate} if a single file can provide many rasters.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.0
  * @module
@@ -107,6 +109,12 @@ public interface GridCoverageResource extends DataSet {
 
     /**
      * Requests a subset of the coverage.
+     * The filtering can be applied in two aspects:
+     *
+     * <ul>
+     *   <li>The returned {@code GridCoverageResource} may contain a smaller domain (grid extent).</li>
+     *   <li>The returned {@code GridCoverageResource} may contain a smaller range (less sample dimensions).</li>
+     * </ul>
      *
      * <p>The returned subset may be a <em>view</em> of this set, i.e. changes in this {@code GridCoverageResource}
      * may be reflected immediately on the returned subset (and conversely), but not necessarily.
@@ -115,16 +123,21 @@ public interface GridCoverageResource extends DataSet {
      *
      * <p>The default implementation throws {@link UnsupportedQueryException}.</p>
      *
-     * @since   1.1
-     * @param  query  definition of space and sample dimension transforms applied at reading time.
+     * @param  query  definition of domain (grid extent) and range (sample dimensions) filtering applied at reading time.
      * @return resulting coverage resource (never {@code null}).
      * @throws UnsupportedQueryException if this {@code GridCoverageResource} can not execute the given query.
      *         This includes query validation errors.
      * @throws DataStoreException if another error occurred while processing the query.
+     *
+     * @since 1.1
      */
-    default GridCoverageResource subset(Query query) throws UnsupportedQueryException, DataStoreException {
+    default GridCoverageResource subset(final Query query) throws UnsupportedQueryException, DataStoreException {
         ArgumentChecks.ensureNonNull("query", query);
-        throw new UnsupportedQueryException();
+        if (query instanceof CoverageQuery) {
+            return ((CoverageQuery) query).execute(this);
+        } else {
+            throw new UnsupportedQueryException();
+        }
     }
 
     /**
