@@ -57,7 +57,7 @@ import org.apache.sis.internal.util.Strings;
  * @since   0.8
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")
+@SuppressWarnings("CloneableImplementsClone")
 public class IntervalRectangle extends Rectangle2D {
     /** Minimal <var>x</var> coordinate value. */ public double xmin;
     /** Minimal <var>y</var> coordinate value. */ public double ymin;

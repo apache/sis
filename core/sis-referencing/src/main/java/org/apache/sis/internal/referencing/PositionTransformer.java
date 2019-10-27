@@ -83,7 +83,7 @@ import org.apache.sis.util.Utilities;
  * @since   1.0
  * @module
  */
-@SuppressWarnings({"serial", "CloneableClassWithoutClone"})         // Not intended to be serialized and nothing to clone.
+@SuppressWarnings({"serial", "CloneableImplementsClone"})         // Not intended to be serialized and nothing to clone.
 public final class PositionTransformer extends GeneralDirectPosition {
     /**
      * The factory to use for creating new coordinate operation.

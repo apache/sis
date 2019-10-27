@@ -37,7 +37,6 @@ import org.apache.sis.util.ArraysExt;
  * @since   0.4
  * @module
  */
-@SuppressWarnings("CloneInNonCloneableClass")
 final class Solver implements Matrix {                          // Not Cloneable, despite the clone() method.
     /**
      * The size of the (i, j, s) tuples used internally by {@link #solve(Matrix, Matrix, double[], int, int, boolean)}
@@ -84,9 +83,10 @@ final class Solver implements Matrix {                          // Not Cloneable
 
     /**
      * Returns {@code this} since this matrix is immutable.
+     * This method is defined because required by {@link Matrix} interface.
      */
     @Override
-    @SuppressWarnings("CloneDoesntCallSuperClone")
+    @SuppressWarnings({"CloneInNonCloneableClass", "CloneDoesntCallSuperClone"})
     public Matrix clone() {
         return this;
     }

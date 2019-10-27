@@ -154,7 +154,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
      */
-    @SuppressWarnings("CloneableClassWithoutClone")
+    @SuppressWarnings("CloneableImplementsClone")
     static final class EarthRadius extends DefaultParameterValue<Double> {
         /**
          * For cross-version compatibility. Actually instances of this class
@@ -239,7 +239,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getInverseFlattening()
      */
-    @SuppressWarnings("CloneableClassWithoutClone")
+    @SuppressWarnings("CloneableImplementsClone")
     static final class InverseFlattening extends DefaultParameterValue<Double> {
         /**
          * For cross-version compatibility. Actually instances of this class
@@ -359,7 +359,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#isIvfDefinitive()
      */
-    @SuppressWarnings("CloneableClassWithoutClone")
+    @SuppressWarnings("CloneableImplementsClone")
     static final class IsIvfDefinitive extends DefaultParameterValue<Boolean> {
         /**
          * For cross-version compatibility. Actually instances of this class
@@ -423,7 +423,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
      * from the {@code "standard_parallel_1"} and {@code "standard_parallel_1"} standard parameters. When this
      * non-standard parameter is explicitly set, the array elements are given to the above-cited standard parameters.
      */
-    @SuppressWarnings("CloneableClassWithoutClone")
+    @SuppressWarnings("CloneableImplementsClone")
     static final class StandardParallel extends DefaultParameterValue<double[]> {
         /**
          * For cross-version compatibility. Actually instances of this class

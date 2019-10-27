@@ -48,7 +48,6 @@ import org.opengis.util.FactoryException;
  * @since   0.6
  * @module
  */
-@SuppressWarnings("CloneInNonCloneableClass")   // Intentionally not Cloneable despite the clone() method.
 abstract class AbstractLinearTransform extends AbstractMathTransform implements LinearTransform, Matrix, Serializable {
     /**
      * For cross-version compatibility.
@@ -80,9 +79,10 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
 
     /**
      * Returns a copy of the matrix that user can modify.
+     * The object returned by this method is not of the same class than this object.
      */
     @Override
-    @SuppressWarnings("CloneDoesntCallSuperClone")
+    @SuppressWarnings({"CloneInNonCloneableClass", "CloneDoesntCallSuperClone"})
     public final Matrix clone() {
         return Matrices.copy(this);
     }

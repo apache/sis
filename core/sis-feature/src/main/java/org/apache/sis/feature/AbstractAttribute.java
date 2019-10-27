@@ -78,7 +78,6 @@ import org.opengis.feature.MultiValuedPropertyException;
  * @since 0.5
  * @module
  */
-@SuppressWarnings("CloneInNonCloneableClass")       // Decision left to subclasses - see javadoc
 public abstract class AbstractAttribute<V> extends Field<V> implements Attribute<V>, Serializable {
     /**
      * For cross-version compatibility.
@@ -495,7 +494,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *         or one of its {@linkplain #characteristics() characteristics} can not be cloned.
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"CloneInNonCloneableClass", "unchecked"})
     public AbstractAttribute<V> clone() throws CloneNotSupportedException {
         final AbstractAttribute<V> clone = (AbstractAttribute<V>) super.clone();
         final Map<String,Attribute<?>> c = clone.characteristics;

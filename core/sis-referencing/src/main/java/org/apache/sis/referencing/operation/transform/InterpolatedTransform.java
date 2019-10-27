@@ -129,7 +129,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      *
      * @see #createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
-    @SuppressWarnings( {"OverridableMethodCallDuringObjectConstruction", "fallthrough"})
+    @SuppressWarnings( {"OverridableMethodCallInConstructor", "fallthrough"})
     protected <T extends Quantity<T>> InterpolatedTransform(final DatumShiftGrid<T,T> grid) throws NoninvertibleMatrixException {
         /*
          * Create the contextual parameters using the descriptor of the provider that created the datum shift grid.
@@ -387,7 +387,9 @@ public class InterpolatedTransform extends DatumShiftTransform {
     /**
      * Compares the specified object with this math transform for equality.
      *
-     * @return {@inheritDoc}
+     * @param  object  the object to compare with this transform.
+     * @param  mode    the strictness level of the comparison. Default to {@link ComparisonMode#STRICT STRICT}.
+     * @return {@code true} if the given object is considered equals to this math transform.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {

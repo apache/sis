@@ -51,7 +51,7 @@ import static java.lang.Math.abs;
  * @since 1.1
  * @module
  */
-@SuppressWarnings({"CloneableClassWithoutClone", "serial"})
+@SuppressWarnings({"CloneableImplementsClone", "serial"})
 final class Inverter extends Matrix2 {
     /**
      * Creates a new matrix initialized to identity.

@@ -32,7 +32,7 @@ import org.apache.sis.io.TableAppender;
  * @since   1.0
  * @module
  */
-@SuppressWarnings({"CloneableClassWithoutClone", "serial"})         // Not intended to be cloned or serialized.
+@SuppressWarnings({"CloneableImplementsClone", "serial"})       // Not intended to be cloned or serialized.
 final class MetadataFormat extends TreeTableFormat {
     /**
      * The shared instance to use for the {@link TreeTableView#toString()} method implementation.

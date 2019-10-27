@@ -188,7 +188,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
          * First, check if we can use a xlink:href="#foo" reference to a gml:id="foo".
          * Only if no gml:id was found, check for user-defined xlink or uuidref.
          */
-        @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
+        @SuppressWarnings("OverridableMethodCallInConstructor")
         final Class<BoundType>  type     = getBoundType();
         final Context           context  = Context.current();
         final ReferenceResolver resolver = Context.resolver(context);
