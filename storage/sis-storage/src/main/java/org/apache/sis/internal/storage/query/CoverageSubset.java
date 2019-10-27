@@ -20,6 +20,7 @@ import java.util.List;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.DataStoreException;
@@ -31,6 +32,11 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 /**
  * The result of {@link CoverageQuery#execute(GridCoverageResource)}.
+ * This implementation merges the domain and range specified by the query with
+ * arguments of {@link GridCoverageResource#read(GridGeometry, int...)} method.
+ *
+ * <p>Current version does not yet support non-zero value for
+ * {@link CoverageQuery#getSourceDomainExpansion()}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -39,17 +45,20 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  */
 final class CoverageSubset extends AbstractGridResource {
     /**
-     * The coverage resource instances to filter.
+     * The coverage resource instances which provides the data.
      */
     private final GridCoverageResource source;
 
     /**
-     * The query for filtering the source coverage.
+     * The domain and range to read from the {@linkplain #source} coverage.
      */
     private final CoverageQuery query;
 
     /**
      * Creates a new coverage resource by filtering the given coverage using the given query.
+     *
+     * @param source  the coverage resource instances which provides the data.
+     * @param query   the domain and range to read from the {@code source} coverage.
      */
     CoverageSubset(final GridCoverageResource source, final CoverageQuery query) {
         super(source instanceof StoreListeners ? (StoreListeners) source : null);
@@ -59,6 +68,9 @@ final class CoverageSubset extends AbstractGridResource {
 
     /**
      * Returns the valid extent of grid coordinates clipped to the area specified in the query.
+     * It should be the geometry of the coverage that we get when invoking {@link #read read(…)}
+     * with {@code null} arguments, but this is not guaranteed.
+     * The returned grid geometry may be approximate.
      *
      * @return extent of grid coordinates clipped to the query.
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store,
@@ -66,10 +78,25 @@ final class CoverageSubset extends AbstractGridResource {
      */
     @Override
     public GridGeometry getGridGeometry() throws DataStoreException {
-        GridGeometry domain = source.getGridGeometry();
-        final GridGeometry sub = query.getDomain();
-        if (sub != null) try {
-            domain = domain.derive().subgrid(sub).build();
+        return clip(source.getGridGeometry(), query.getDomain(), GridRoundingMode.NEAREST);
+    }
+
+    /**
+     * Clips the given domain to an area of interest. If any argument is null, the other one is returned.
+     *
+     * @param  domain          the domain to clip, or {@code null}.
+     * @param  areaOfInterest  the area of interest, or {@code null}.
+     * @param  rounding        whether to clip to nearest box or an enclosing box.
+     * @return intersection of the given grid geometry.
+     * @throws DataStoreException if the intersection can not be computed.
+     */
+    private GridGeometry clip(final GridGeometry domain, final GridGeometry areaOfInterest,
+            final GridRoundingMode rounding) throws DataStoreException
+    {
+        if (domain == null) return areaOfInterest;
+        if (areaOfInterest == null) return domain;
+        try {
+            return domain.derive().rounding(rounding).subgrid(areaOfInterest).build();
         } catch (IllegalArgumentException | IllegalStateException e) {
             final String msg = Resources.forLocale(getLocale()).getString(Resources.Keys.CanNotIntersectDataWithQuery);
             final Exception cause = getReferencingCause(e);
@@ -79,7 +106,6 @@ final class CoverageSubset extends AbstractGridResource {
                 throw new DataStoreException(msg, e);
             }
         }
-        return domain;
     }
 
     /**
@@ -92,17 +118,17 @@ final class CoverageSubset extends AbstractGridResource {
     @Override
     public List<SampleDimension> getSampleDimensions() throws DataStoreException {
         final List<SampleDimension> dimensions = source.getSampleDimensions();
-        if (query.getRangeCount() == 0) {
+        final int[] range = query.getRange();
+        if (range == null) {
             return dimensions;
         }
-        final int[] range = query.getRange();
         final SampleDimension[] subset = new SampleDimension[range.length];
         for (int i=0; i<range.length; i++) {
             final int j = range[i];
             try {
                 subset[i] = dimensions.get(j);
             } catch (IndexOutOfBoundsException e) {
-                throw new DataStoreException(invalidRange(j), e);
+                throw new DataStoreException(invalidRange(dimensions.size(), j), e);
             }
         }
         return UnmodifiableArrayList.wrap(subset);
@@ -118,18 +144,33 @@ final class CoverageSubset extends AbstractGridResource {
      */
     @Override
     public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
-        if (domain == null) {
-            domain = query.getDomain();
+        domain = clip(domain, query.getDomain(), GridRoundingMode.ENCLOSING);
+        final int[] qr = query.getRange();
+        if (range == null) {
+            range = qr;
+        } else if (qr != null) {
+            final int[] sub = new int[range.length];
+            for (int i=0; i<range.length; i++) {
+                final int j = range[i];
+                if (j >= 0 && j < qr.length) {
+                    sub[i] = qr[j];
+                } else {
+                    throw new IllegalArgumentException(invalidRange(qr.length, j));
+                }
+            }
+            range = sub;
         }
-        range = query.subrange(this, range);
         return source.read(domain, range);
     }
 
     /**
      * Creates an exception message for an invalid range index.
+     *
+     * @param size   number of sample dimensions in source coverage.
+     * @param index  the index which is out of bounds.
      */
-    final String invalidRange(final int index) {
+    private String invalidRange(final int size, final int index) {
         return Resources.forLocale(getLocale()).getString(
-                Resources.Keys.InvalidSampleDimensionIndex_2, query.getRangeCount() - 1, index);
+                Resources.Keys.InvalidSampleDimensionIndex_2, size - 1, index);
     }
 }

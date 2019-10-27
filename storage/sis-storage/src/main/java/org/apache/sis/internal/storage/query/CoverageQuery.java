@@ -27,6 +27,7 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.Query;
+import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -86,56 +87,31 @@ public final class CoverageQuery extends Query implements Cloneable {
 
     /**
      * Sets the indices of samples dimensions to read.
+     * A {@code null} value means to read all sample dimensions (no filtering on range).
+     * If non-null, then the {@code range} array shall contain at least one element,
+     * all elements must be positive and no value can be duplicated.
      *
-     * @param  range   0-based indices of sample dimensions to read,
-     *                 or {@code null} or an empty sequence for reading them all.
+     * @param  range   0-based indices of sample dimensions to read, or {@code null} for reading them all.
+     * @throws IllegalArgumentException if the given array is empty or contains negative or duplicated values.
      */
-    public void setRange(final int... range) {
-        this.range = (range != null && range.length != 0) ? range.clone() : null;
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
+    public void setRange(int... range) {
+        if (range != null) {
+            range = range.clone();
+            ArgumentChecks.ensureNonEmpty("range", range, 0, Integer.MAX_VALUE, true);
+            // Assign only after we verified that the argument is valid.
+        }
+        this.range = range;
     }
 
     /**
-     * Returns the indices of samples dimensions to read.
+     * Returns the indices of samples dimensions to read, or {@code null} if there is no filtering on range.
+     * If non-null, the returned array shall never be empty.
      *
      * @return 0-based indices of sample dimensions to read, or {@code null} for reading them all.
      */
     public int[] getRange() {
         return (range != null) ? range.clone() : null;
-    }
-
-    /**
-     * Converts the given range indices from the indices relative to the sub-coverage
-     * to indices relative to the source coverage.
-     *
-     * @param  caller   the caller, used for error messages only.
-     * @param  request  the range indices to convert, or {@code null} or empty if none.
-     * @return the range of indices relative to the source coverage.
-     * @throws IllegalArgumentException if an index is invalid.
-     */
-    final int[] subrange(final CoverageSubset caller, final int[] request) {
-        if (range == null) {
-            return request;
-        }
-        if (request == null || request.length == 0) {
-            return range.clone();
-        }
-        final int[] sub = new int[request.length];
-        for (int i=0; i<request.length; i++) {
-            final int j = request[i];
-            if (j >= 0 && j < range.length) {
-                sub[i] = range[j];
-            } else {
-                throw new IllegalArgumentException(caller.invalidRange(j));
-            }
-        }
-        return sub;
-    }
-
-    /**
-     * Returns the number of range indices, or 0 if no range sub-setting has been specified.
-     */
-    final int getRangeCount() {
-        return (range != null) ? range.length : 0;
     }
 
     /**
@@ -171,9 +147,13 @@ public final class CoverageQuery extends Query implements Cloneable {
      *
      * @param  source  the coverage resource to filter.
      * @return a view over the given coverage resource containing only the given domain and range.
+     * @throws UnsupportedQueryException if this query contains filtering options not yet supported.
      */
-    public GridCoverageResource execute(final GridCoverageResource source) {
+    public GridCoverageResource execute(final GridCoverageResource source) throws UnsupportedQueryException {
         ArgumentChecks.ensureNonNull("source", source);
+        if (getSourceDomainExpansion() != 0) {
+            throw new UnsupportedQueryException("Source domain expansion not yet supported.");
+        }
         return new CoverageSubset(source, clone());
     }
 
