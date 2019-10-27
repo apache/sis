@@ -58,7 +58,7 @@ abstract class RecordDefinition {                                       // Inten
      * is not an instance of {@link DefaultRecordType}. So this adapter is used only if Apache SIS is mixed
      * with other implementations.
      *
-     * <h4>Serialization</h4>
+     * <h2>Serialization</h2>
      * This class is serializable if the {@code RecordType} given to the constructor is also serializable.
      */
     static final class Adapter extends RecordDefinition implements Serializable {

@@ -40,6 +40,7 @@ public final class QuadTreeWriter {
      *            the quad tree
      * @param directory
      *            the directory where the index file is located
+     * @throws IOException if an I/O error occurred.
      */
     public static void writeTreeToFile(QuadTree tree, String directory) throws IOException {
         createIdxDir(directory);

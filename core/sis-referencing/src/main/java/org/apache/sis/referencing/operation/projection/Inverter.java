@@ -46,7 +46,7 @@ import static java.lang.Math.abs;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  *
- * @ee <a href="https://issues.apache.org/jira/browse/SIS-478">SIS-478</a>
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-478">SIS-478</a>
  *
  * @since 1.1
  * @module
