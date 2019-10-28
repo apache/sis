@@ -21,10 +21,12 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
+import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.AbstractGridResource;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -98,10 +100,13 @@ final class CoverageSubset extends AbstractGridResource {
         try {
             return domain.derive().rounding(rounding).subgrid(areaOfInterest).build();
         } catch (IllegalArgumentException | IllegalStateException e) {
-            final String msg = Resources.forLocale(getLocale()).getString(Resources.Keys.CanNotIntersectDataWithQuery);
+            final String msg = Resources.forLocale(getLocale())
+                    .getString(Resources.Keys.CanNotIntersectDataWithQuery_1, getSourceName());
             final Exception cause = getReferencingCause(e);
             if (cause != null) {
                 throw new DataStoreReferencingException(msg, cause);
+            } else if (e instanceof DisjointExtentException) {
+                throw new NoSuchDataException(msg, e);
             } else {
                 throw new DataStoreException(msg, e);
             }
