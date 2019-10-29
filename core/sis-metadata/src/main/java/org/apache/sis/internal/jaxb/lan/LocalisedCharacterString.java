@@ -95,10 +95,16 @@ final class LocalisedCharacterString {
      * @param  localeId  the new locale.
      * @see <a href="https://issues.apache.org/jira/browse/SIS-137">SIS-137</a>
      */
-    public void setLocale(final String localeId) {
+    public void setLocale(String localeId) {
         if (localeId != null) {
+            /*
+             * If the URI contains #, skip all characters up to that '#' (otherwise do nothing).
+             * Then if there is a "locale-" string after that point, skip also that "locale-".
+             */
+            final int start = localeId.indexOf('#') + 1;            // 0 if # is not found.
+            localeId = localeId.substring(Math.max(localeId.indexOf('-', start) + 1, start));
             final Context context = Context.current();
-            locale = Context.converter(context).toLocale(context, localeId.substring(localeId.indexOf('-') + 1));
+            locale = Context.converter(context).toLocale(context, localeId);
         } else {
             locale = null;
         }
