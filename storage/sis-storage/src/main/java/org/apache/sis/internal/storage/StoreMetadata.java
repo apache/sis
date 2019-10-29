@@ -21,6 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.storage.Resource;
 
 
 /**
@@ -79,4 +80,12 @@ public @interface StoreMetadata {
      * @return the filename suffixes, case insensitive. Never null but can be empty.
      */
     String[] fileSuffixes() default {};
+
+    /**
+     * Returns an array of resource types the {@link DataStoreProvider} may be able
+     * to expose.
+     *
+     * @return information about the expected resource types which might be encounter with this format.
+     */
+    Class<? extends Resource>[] resourceTypes() default {};
 }

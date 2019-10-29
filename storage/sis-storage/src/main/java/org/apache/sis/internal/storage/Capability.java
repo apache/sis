@@ -48,7 +48,12 @@ public enum Capability {
     /**
      * The annotated implementation can write data.
      */
-    WRITE(Vocabulary.Keys.Write);
+    WRITE(Vocabulary.Keys.Write),
+
+    /**
+     * The annotated implementation can create new data.
+     */
+    CREATE(Vocabulary.Keys.Create);
 
     /**
      * The {@link Vocabulary} key to use for fetching a localized name.

@@ -202,6 +202,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short CoverageDomain = 162;
 
         /**
+         * Create
+         */
+        public static final short Create = 176;
+
+        /**
          * Current date and time
          */
         public static final short CurrentDateTime = 20;

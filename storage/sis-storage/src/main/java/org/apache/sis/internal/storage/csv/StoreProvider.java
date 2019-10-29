@@ -32,6 +32,7 @@ import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -50,7 +51,8 @@ import org.apache.sis.util.ArgumentChecks;
  */
 @StoreMetadata(formatName   = StoreProvider.NAME,
                fileSuffixes = "csv",
-               capabilities = Capability.READ)
+               capabilities = Capability.READ,
+               resourceTypes = FeatureSet.class)
 public final class StoreProvider extends URIDataStore.Provider {
     /**
      * The format names for static features and moving features.

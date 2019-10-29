@@ -43,6 +43,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.logging.Logging;
@@ -70,7 +71,8 @@ import org.apache.sis.util.Version;
  */
 @StoreMetadata(formatName   = NetcdfStoreProvider.NAME,
                fileSuffixes = "nc",
-               capabilities = Capability.READ)
+               capabilities = Capability.READ,
+               resourceTypes = GridCoverageResource.class)
 public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The format name.

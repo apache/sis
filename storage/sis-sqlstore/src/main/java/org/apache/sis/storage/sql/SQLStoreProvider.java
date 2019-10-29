@@ -44,6 +44,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.ArgumentChecks;
 
 import static org.apache.sis.internal.sql.feature.Database.WILDCARD;
+import org.apache.sis.storage.FeatureSet;
 
 
 /**
@@ -56,7 +57,8 @@ import static org.apache.sis.internal.sql.feature.Database.WILDCARD;
  * @module
  */
 @StoreMetadata(formatName   = SQLStoreProvider.NAME,
-               capabilities = Capability.READ)
+               capabilities = Capability.READ,
+               resourceTypes = FeatureSet.class)
 public class SQLStoreProvider extends DataStoreProvider {
     /**
      * The format name.

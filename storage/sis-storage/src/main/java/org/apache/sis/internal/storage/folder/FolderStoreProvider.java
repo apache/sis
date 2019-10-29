@@ -47,6 +47,8 @@ import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.GridCoverageResource;
 
 
 /**
@@ -61,7 +63,8 @@ import org.apache.sis.setup.OptionKey;
  * @module
  */
 @StoreMetadata(formatName   = FolderStoreProvider.NAME,
-               capabilities = {Capability.READ, Capability.WRITE})
+               capabilities = {Capability.READ, Capability.WRITE},
+               resourceTypes = {FeatureSet.class, GridCoverageResource.class})
 public final class FolderStoreProvider extends DataStoreProvider {
     /**
      * A short name or abbreviation for the data format.
