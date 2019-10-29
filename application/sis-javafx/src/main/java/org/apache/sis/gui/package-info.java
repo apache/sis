@@ -16,17 +16,18 @@
  */
 
 /**
- * A set of helper classes for the SIS implementation.
+ * JavaFX application for Apache SIS.
+ * All classes in this package extend the JavaFX {@link javafx.application.Application} class
+ * (for controls reusable in other applications, see sub-packages).
+ * Those applications may be instantiated and modified programmatically
+ * (for example by adding new menu items),
+ * but compatibility with future Apache SIS versions is not guaranteed.
  *
- * <STRONG>Do not use!</STRONG>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
- *
+ * @author  Smaniotto Enzo
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-package org.apache.sis.internal.gui;
+package org.apache.sis.gui;

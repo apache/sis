@@ -22,16 +22,14 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
-import javafx.scene.image.ImageView;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Widget button used to select a {@link CoordinateReferenceSystem}.
  *
- *
- * @author Johann Sorel (Geomatys)
- * @version 0.8
- * @since   0.8
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public class CRSButton extends Button{
@@ -57,10 +55,8 @@ public class CRSButton extends Button{
                 CoordinateReferenceSystem oldValue, CoordinateReferenceSystem newValue) -> {
             if (newValue!=null) {
                 setText(newValue.getName().toString());
-                setGraphic(new ImageView(CRSTable.getIcon(newValue)));
             } else {
                 setText(" - ");
-                setGraphic(null);
             }
         });
     }

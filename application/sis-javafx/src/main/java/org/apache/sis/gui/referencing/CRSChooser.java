@@ -22,6 +22,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
@@ -29,7 +31,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.gui.FXUtilities;
+import org.apache.sis.internal.gui.Resources;
 
 
 /**
@@ -59,13 +61,14 @@ public class CRSChooser extends BorderPane {
      */
     public CRSChooser() {
         try {
-            FXUtilities.loadJRXML(this, CRSChooser.class);
+            loadJRXML(this, CRSChooser.class);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
         uiSearch.addEventHandler(KeyEvent.KEY_PRESSED, (KeyEvent event) -> {
-            if (updateText) return;
-            uiTable.searchCRS(uiSearch.getText());
+            if (!updateText) {
+                uiTable.searchCRS(uiSearch.getText());
+            }
         });
 
         uiTable = new CRSTable();
@@ -82,6 +85,27 @@ public class CRSChooser extends BorderPane {
                 updateText = false;
             }
         });
+    }
+
+    /**
+     * Loads and initializes widget from JRXML definition provided in this module.
+     * The JRXML file shall be in the same package than the given {@code loader} class
+     * and have the same simple name followed by the {@code ".fxml"} extension.
+     *
+     * @param  target  the widget for which to load the JRXML file.
+     * @param  loader  the class to use for loading the file.
+     * @throws IOException if an error occurred while loading the JRXML file.
+     */
+    private static void loadJRXML(final Parent target, final Class<?> loader) throws IOException {
+        final FXMLLoader fxl = new FXMLLoader(loader.getResource(loader.getSimpleName() + ".fxml"), Resources.getInstance());
+        fxl.setRoot(target);
+        fxl.setController(target);
+        /*
+         * In some environements like OSGi, we must use the class loader of the widget
+         * (not the class loader of FXMLLoader).
+         */
+        fxl.setClassLoader(loader.getClassLoader());
+        fxl.load();
     }
 
     /**

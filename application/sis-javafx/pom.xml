@@ -60,7 +60,27 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Martin Desruisseaux</name>
+      <id>desruisseaux</id>
+      <email>desruisseaux@apache.org</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
+
+  <contributors>
+    <contributor>
+      <name>Smaniotto Enzo</name>
+      <roles>
+        <role>GSoC student</role>
+      </roles>
+    </contributor>
+  </contributors>
 
 
   <!-- ===========================================================
@@ -68,18 +88,6 @@
        =========================================================== -->
   <build>
     <plugins>
-      <!-- To be removed after SIS has been fully modularized. -->
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <release>9</release>
-          <compilerArgs>
-            <arg>--module-path</arg> <arg>${env.PATH_TO_FX}</arg>
-            <arg>--add-modules</arg> <arg>javafx.graphics,javafx.controls,javafx.fxml,javafx.swing</arg>
-          </compilerArgs>
-        </configuration>
-      </plugin>
-
       <!-- Anticipation for Java 9 -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -94,23 +102,75 @@
           </archive>
         </configuration>
       </plugin>
+
+      <!-- To be removed after SIS has been fully modularized. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.6.0</version>
+        <executions>
+          <execution>
+            <id>default-cli</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <commandlineArgs>
+                --class-path "%classpath"
+                --module-path "${env.PATH_TO_FX}"
+                --add-modules javafx.graphics,javafx.controls,javafx.fxml
+                org.apache.sis.gui.DataViewer
+              </commandlineArgs>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
 
   <!-- ===========================================================
            Dependencies
+           All JavaFX dependencies must be under "provided" scope.
+           We can not redistribute them since they are under GPL +
+           classpath exception.
        =========================================================== -->
   <dependencies>
     <dependency>
       <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-metadata</artifactId>
+      <artifactId>sis-referencing</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.webjars</groupId>
-      <artifactId>material-design-icons</artifactId>
-      <version>3.0.1</version>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-netcdf</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-earth-observation</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- Build time only, not included in distribution. -->
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-controls</artifactId>
+      <version>13</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-fxml</artifactId>
+      <version>13</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 

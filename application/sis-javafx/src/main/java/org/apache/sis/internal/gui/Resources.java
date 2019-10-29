@@ -18,7 +18,6 @@ package org.apache.sis.internal.gui;
 
 import java.net.URL;
 import java.util.MissingResourceException;
-import javax.annotation.processing.Generated;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
@@ -29,8 +28,8 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public final class Resources extends IndexedResourceBundle {
@@ -40,7 +39,6 @@ public final class Resources extends IndexedResourceBundle {
      * inlines final integer values, using long identifiers will not bloat the constant
      * pools of compiled classes.
      */
-    @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
     public static final class Keys extends KeyConstants {
         /**
          * The unique instance of key constants handler.
@@ -62,6 +60,16 @@ public final class Resources extends IndexedResourceBundle {
          * Coordinate Reference Systems
          */
         public static final short CRSs = 1;
+
+        /**
+         * Can not open “{0}”
+         */
+        public static final short CanNotReadFile_1 = 5;
+
+        /**
+         * Error opening file
+         */
+        public static final short ErrorOpeningFile = 6;
 
         /**
          * Geospatial data files

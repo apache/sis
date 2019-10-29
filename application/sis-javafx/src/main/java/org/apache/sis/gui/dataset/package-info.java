@@ -16,17 +16,13 @@
  */
 
 /**
- * A set of helper classes for the SIS implementation.
+ * Widgets about data {@link org.apache.sis.storage.Resource} and their metadata.
  *
- * <STRONG>Do not use!</STRONG>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
- *
+ * @author  Smaniotto Enzo
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-package org.apache.sis.internal.gui;
+package org.apache.sis.gui.dataset;

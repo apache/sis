@@ -33,8 +33,9 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import org.apache.sis.gui.metadata.ResourceView;
+import org.apache.sis.gui.dataset.ResourceView;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.gui.RecentChoices;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.storage.DataStoreProvider;
@@ -50,11 +51,20 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Smaniotto Enzo
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
-public class Main extends Application {
+public class DataViewer extends Application {
+    /**
+     * Starts the Apache SIS application.
+     *
+     * @param args  ignored.
+     */
+    public static void main(final String[] args) {
+        launch(args);
+    }
+
     /**
      * The primary stage onto which the application scene is set.
      */
@@ -68,11 +78,19 @@ public class Main extends Application {
 
     /**
      * The file filters to use in the dialog box shown by the "File" ▶ "Open" menu.
-     * This array is created when first needed.
+     * This array is created together with {@link #saveFilters} when first needed.
      *
      * @see #createFileFilters()
      */
     private FileChooser.ExtensionFilter[] openFilters;
+
+    /**
+     * The file filters to use in the dialog box shown by the "File" ▶ "Save" menu.
+     * This array is created together with {@link #openFilters} when first needed.
+     *
+     * @see #createFileFilters()
+     */
+    private FileChooser.ExtensionFilter[] saveFilters;
 
     /**
      * The last filter used by the {@link #open()} action.
@@ -82,7 +100,7 @@ public class Main extends Application {
     /**
      * Creates a new Apache SIS application.
      */
-    public Main() {
+    public DataViewer() {
     }
 
     /**
@@ -134,20 +152,20 @@ public class Main extends Application {
     private void createFileFilters() {
         final Resources res = Resources.getInstance();
         final Set<String> allSuffixes = new LinkedHashSet<>();
-        final List<FileChooser.ExtensionFilter> openFilters = new ArrayList<>();
-//      final List<FileChooser.ExtensionFilter> saveFilters = new ArrayList<>();
+        final List<FileChooser.ExtensionFilter> open = new ArrayList<>();
+        final List<FileChooser.ExtensionFilter> save = new ArrayList<>();
         /*
          * Add an "All files (*.*)" filter only for the Open action.
          * The Save action will need to specify a specific filter.
          */
-        openFilters.add(new FileChooser.ExtensionFilter(res.getString(Resources.Keys.AllFiles), "*.*"));
+        open.add(new FileChooser.ExtensionFilter(res.getString(Resources.Keys.AllFiles), "*.*"));
         for (DataStoreProvider provider : DataStores.providers()) {
             final StoreMetadata md = provider.getClass().getAnnotation(StoreMetadata.class);
             if (md != null) {
                 final String[] suffixes = md.fileSuffixes();
                 if (suffixes.length != 0) {
                     final boolean canOpen = ArraysExt.contains(md.capabilities(), Capability.READ);
-//                  final boolean canSave = ArraysExt.contains(md.capabilities(), Capability.WRITE);
+                    final boolean canSave = ArraysExt.contains(md.capabilities(), Capability.WRITE);
                     for (int i=0; i < suffixes.length; i++) {
                         final String fs = "*.".concat(suffixes[i]);
                         suffixes[i] = fs;
@@ -157,8 +175,8 @@ public class Main extends Application {
                     }
                     final FileChooser.ExtensionFilter f = new FileChooser.ExtensionFilter(
                                     md.formatName() + " (" + suffixes[0] + ')', suffixes);
-                    if (canOpen) openFilters.add(f);
-//                  if (canSave) saveFilters.add(f);
+                    if (canOpen) open.add(f);
+                    if (canSave) save.add(f);
                 }
             }
         }
@@ -166,10 +184,10 @@ public class Main extends Application {
          * Add a filter for all geospatial files in second position, after "All files" and before
          * the filters for specific formats. This will be the default filter for the "Open" action.
          */
-        openFilters.add(1, new FileChooser.ExtensionFilter(res.getString(Resources.Keys.GeospatialFiles),
+        open.add(1, new FileChooser.ExtensionFilter(res.getString(Resources.Keys.GeospatialFiles),
                             allSuffixes.toArray(new String[allSuffixes.size()])));
-        this.openFilters = openFilters.toArray(new FileChooser.ExtensionFilter[openFilters.size()]);
-//      this.saveFilters = saveFilters.toArray(new FileChooser.ExtensionFilter[saveFilters.size()]);
+        this.openFilters = open.toArray(new FileChooser.ExtensionFilter[open.size()]);
+        this.saveFilters = save.toArray(new FileChooser.ExtensionFilter[save.size()]);
     }
 
     /**
@@ -186,19 +204,12 @@ public class Main extends Application {
         chooser.setTitle(Resources.format(Resources.Keys.OpenDataFile));
         chooser.getExtensionFilters().addAll(openFilters);
         chooser.setSelectedExtensionFilter(lastFilter);
+        chooser.setInitialDirectory(RecentChoices.getOpenDirectory());
         final List<File> files = chooser.showOpenMultipleDialog(window);
         if (files != null) {
+            RecentChoices.setOpenDirectory(files);
             lastFilter = chooser.getSelectedExtensionFilter();
             content.open(files);
         }
-    }
-
-    /**
-     * Starts the Apache SIS application.
-     *
-     * @param args  ignored.
-     */
-    public static void main(final String[] args) {
-        launch(args);
     }
 }

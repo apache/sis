@@ -14,19 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.internal.gui;
+
+import java.nio.file.Path;
+import javafx.concurrent.Task;
+
 
 /**
- * A set of helper classes for the SIS implementation.
+ * A task executed on a file.
+ * This is used for reporting more information in case of error.
  *
- * <STRONG>Do not use!</STRONG>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
- *
- * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @param <V> the kind of value computed by the task.
+ *
+ * @since 1.1
  * @module
  */
-package org.apache.sis.internal.gui;
+public abstract class TaskOnFile<V> extends Task<V> {
+    /**
+     * The file or URI on which an operation was performed.
+     */
+    protected final Path file;
+
+    /**
+     * Creates a new task operating on the given file.
+     *
+     * @param  file  the file on which the task is operating.
+     */
+    protected TaskOnFile(final Path file) {
+        this.file = file;
+        setOnFailed(ExceptionReporter::show);
+    }
+}

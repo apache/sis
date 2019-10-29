@@ -17,8 +17,6 @@
 package org.apache.sis.gui.referencing;
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -40,27 +38,17 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.util.Callback;
-import org.apache.sis.internal.gui.FontGlyphs;
-import org.apache.sis.internal.gui.FXUtilities;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.resources.Vocabulary;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.ProjectedCRS;
-import org.opengis.referencing.operation.ConicProjection;
-import org.opengis.referencing.operation.CylindricalProjection;
-import org.opengis.referencing.operation.PlanarProjection;
-import org.opengis.referencing.operation.Projection;
 import org.opengis.util.FactoryException;
 
 /**
@@ -73,21 +61,6 @@ import org.opengis.util.FactoryException;
 final class CRSTable extends ScrollPane {
 
     private static final Color COLOR = new Color(30, 150, 250);
-    private static final Image ICON_GEO, ICON_SQUARE, ICON_STEREO, ICON_UTM, ICON_CONIC;
-    private static final Image ICON_UNKNOWN = FontGlyphs.createImage("\uE22F",16,COLOR);
-    static {
-        final Class<?> c = CRSTable.class;
-        final Dimension dim = new Dimension(16, 16);
-        try {
-            ICON_GEO    = FXUtilities.getImage(c, "proj_geo.png",    dim);
-            ICON_SQUARE = FXUtilities.getImage(c, "proj_square.png", dim);
-            ICON_STEREO = FXUtilities.getImage(c, "proj_stereo.png", dim);
-            ICON_UTM    = FXUtilities.getImage(c, "proj_utm.png",    dim);
-            ICON_CONIC  = FXUtilities.getImage(c, "proj_conic.png",  dim);
-        } catch (IOException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
 
     private final ObjectProperty<CoordinateReferenceSystem> crsProperty = new SimpleObjectProperty<>();
     private final TableView<Code> uiTable = new TableView<>();
@@ -215,31 +188,6 @@ final class CRSTable extends ScrollPane {
         return codes;
     }
 
-    static Image getIcon(IdentifiedObject obj) {
-        Image icon = ICON_UNKNOWN;
-        if (obj instanceof GeographicCRS) {
-            icon = ICON_GEO;
-        } else if (obj instanceof ProjectedCRS) {
-            final ProjectedCRS pcrs = (ProjectedCRS) obj;
-            final Projection proj = pcrs.getConversionFromBase();
-
-            if (String.valueOf(proj.getName()).toLowerCase().contains("utm")) {
-                icon = ICON_UTM;
-            } else if (proj instanceof ConicProjection) {
-                icon = ICON_CONIC;
-            } else if (proj instanceof CylindricalProjection) {
-                icon = ICON_SQUARE;
-            } else if (proj instanceof PlanarProjection) {
-                icon = ICON_STEREO;
-            } else {
-                icon = ICON_SQUARE;
-            }
-        } else {
-            icon = ICON_SQUARE;
-        }
-        return icon;
-    }
-
     private static class TypeColumn extends TableColumn<Code, Code> {
 
         public TypeColumn() {
@@ -248,31 +196,7 @@ final class CRSTable extends ScrollPane {
             setMinWidth(30);
             setMaxWidth(30);
             setCellValueFactory((CellDataFeatures<Code, Code> param) -> new SimpleObjectProperty<>(param.getValue()));
-            setCellFactory(new Callback<TableColumn<Code, Code>, TableCell<Code, Code>>() {
-
-                @Override
-                public TableCell<Code, Code> call(TableColumn<Code, Code> param) {
-                    return new TableCell<Code,Code>(){
-                        @Override
-                        protected void updateItem(Code item, boolean empty) {
-                            super.updateItem(item, empty);
-                            setGraphic(null);
-                            if (item!=null){
-                                Image icon = ICON_UNKNOWN;
-                                try {
-                                    final IdentifiedObject obj = item.createObject();
-                                    icon = getIcon(obj);
-                                } catch (FactoryException ex) {
-                                    error(ex);
-                                }
-                                setGraphic(new ImageView(icon));
-                            }
-                        }
-                    };
-                }
-            });
         }
-
     }
 
     private static class CodeColumn extends TableColumn<Code, String> {
@@ -298,9 +222,6 @@ final class CRSTable extends ScrollPane {
     }
 
     private static class WKTColumn extends TableColumn<Code, Code> {
-
-        private static final Image ICON = FontGlyphs.createImage("\uE873",16,COLOR);
-
         public WKTColumn() {
             super("");
             setEditable(false);
@@ -330,16 +251,6 @@ final class CRSTable extends ScrollPane {
                                     }
                                 }
                             });
-                        }
-
-                        @Override
-                        protected void updateItem(Code item, boolean empty) {
-                            super.updateItem(item, empty);
-                            if (item !=null && !empty) {
-                                setGraphic(new ImageView(ICON));
-                            } else {
-                                setGraphic(null);
-                            }
                         }
                     };
                 }

@@ -16,52 +16,41 @@
  */
 package org.apache.sis.gui.dataset;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.util.Callback;
+import javafx.collections.ObservableList;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableCell;
 import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTableRow;
 import javafx.scene.control.TreeTableView;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.text.TextAlignment;
-import javafx.util.Callback;
-import org.apache.sis.internal.gui.FontGlyphs;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.Metadata;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.identification.Identification;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
-import org.opengis.metadata.Metadata;
-import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.identification.Identification;
-import org.opengis.util.InternationalString;
 
 
 /**
  * Tree viewer displaying a {@link Resource} hierarchy.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public class ResourceTree extends TreeTableView<Resource> {
-
-    private static final Image ICON_VECTOR = FontGlyphs.createImage("\uE922",18,Color.GRAY);
-    private static final Image ICON_FOLDER = FontGlyphs.createImage("\uE2C8",18,Color.GRAY);
-    private static final Image ICON_STORE = FontGlyphs.createImage("\uE2C7",18,Color.GRAY);
-    private static final Image ICON_OTHER = FontGlyphs.createImage("\uE24D",18,Color.GRAY);
 
     public ResourceTree() {
         getColumns().add(new ResourceNameColumn());
@@ -88,25 +77,6 @@ public class ResourceTree extends TreeTableView<Resource> {
             setRoot(null);
         } else {
             setRoot(new ResourceItem(resource));
-        }
-    }
-
-    /**
-     * Find an appropriate icon for given resource.
-     *
-     * @param resource resource to test
-     * @return image icon
-     */
-    private static Image getTypeIcon(Resource resource){
-        if (resource instanceof FeatureSet) {
-            return ICON_VECTOR;
-        } else if (resource instanceof DataStore) {
-            return ICON_STORE;
-        } else if (resource instanceof Aggregate) {
-            return ICON_FOLDER;
-        } else {
-            // Unspecific resource type
-            return ICON_OTHER;
         }
     }
 
@@ -216,7 +186,6 @@ public class ResourceTree extends TreeTableView<Resource> {
     }
 
     private static class Cell extends TreeTableCell<Resource, String> {
-
         @Override
         public void updateItem(String item, boolean empty) {
             super.updateItem(item, empty);
@@ -226,18 +195,6 @@ public class ResourceTree extends TreeTableView<Resource> {
             setAlignment(Pos.CENTER_LEFT);
             setTextAlignment(TextAlignment.LEFT);
             setWrapText(false);
-            if (empty) return;
-
-            final TreeTableRow<Resource> row = getTreeTableRow();
-            if (row == null) {
-                return;
-            }
-            final TreeItem<Resource> ti = row.getTreeItem();
-            if (ti == null) {
-                return;
-            }
-            final Resource resource = ti.getValue();
-            setGraphic(new ImageView(getTypeIcon(resource)));
         }
     }
 }

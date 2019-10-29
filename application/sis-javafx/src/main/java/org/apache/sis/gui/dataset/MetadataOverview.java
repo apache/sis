@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.gui.metadata;
+package org.apache.sis.gui.dataset;
 
 import java.io.IOException;
 import java.io.InputStream;

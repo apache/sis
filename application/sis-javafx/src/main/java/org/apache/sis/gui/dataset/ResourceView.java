@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.gui.metadata;
+package org.apache.sis.gui.dataset;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +42,8 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import org.apache.sis.gui.dataset.FeatureTable;
+import org.apache.sis.internal.gui.ExceptionReporter;
+import org.apache.sis.internal.gui.TaskOnFile;
 import org.apache.sis.internal.storage.folder.FolderStoreProvider;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.Aggregate;
@@ -54,11 +56,11 @@ import org.apache.sis.storage.StorageConnector;
 
 
 /**
- * Show resources available in data files.
+ * Shows resources available in data files.
  *
  * @author  Smaniotto Enzo
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public class ResourceView {
@@ -223,14 +225,14 @@ public class ResourceView {
     }
 
     private void addMetadatPanel(Resource res, String filePath) {
-        Task<MetadataOverview> task = new Task<MetadataOverview>() {
+        Task<MetadataOverview> task = new TaskOnFile<MetadataOverview>(Paths.get(filePath)) {
             @Override
             protected MetadataOverview call() throws DataStoreException {
                 MetadataOverview meta;
                 if (res != null) {
                     meta = new MetadataOverview(((DefaultMetadata) res.getMetadata()), filePath);
                 } else {
-                    DataStore ds = DataStores.open(filePath);
+                    DataStore ds = DataStores.open(file);
                     meta = new MetadataOverview(new DefaultMetadata(ds.getMetadata()), filePath);
                 }
                 return meta;
@@ -244,17 +246,6 @@ public class ResourceView {
             ProgressIndicator p = new ProgressIndicator(-1);
             p.setPrefSize(17, 18);
             setContent(p);
-        });
-        task.setOnFailed(wse -> {
-            final Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("An error was occur");
-            Label lab = new Label(task.getException().getMessage());
-            lab.setWrapText(true);
-            lab.setMaxWidth(650);
-            VBox vb = new VBox();
-            vb.getChildren().add(lab);
-            alert.getDialogPane().setContent(vb);
-            alert.show();
         });
         final Thread thread = new Thread(task);
         thread.setDaemon(true);
@@ -272,12 +263,12 @@ public class ResourceView {
     }
 
     private void openFile(File f) {
-        Task<Void> t = new Task<Void>() {
+        Task<Void> t = new TaskOnFile<Void>(f.toPath()) {
             @Override
             protected Void call() throws DataStoreException {
+                DataStore ds = DataStores.open(file);
                 MetadataOverview meta;
-                DataStore ds = DataStores.open(f.getAbsolutePath());
-                meta = new MetadataOverview(new DefaultMetadata(ds.getMetadata()), f.getAbsolutePath());
+                meta = new MetadataOverview(new DefaultMetadata(ds.getMetadata()), file.toString());
                 return null;
             }
         };
@@ -287,7 +278,8 @@ public class ResourceView {
             if (labToTrv.contains(f.getAbsolutePath())) {
                 for (Label elem : labelToItem.keySet()) {
                     if (elem.getId().equals(f.getAbsolutePath())) {
-                        Event.fireEvent(elem, new MouseEvent(MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0, MouseButton.PRIMARY, 1, true, true, true, true, true, true, true, true, true, true, null));
+                        Event.fireEvent(elem, new MouseEvent(MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0, MouseButton.PRIMARY,
+                                1, true, true, true, true, true, true, true, true, true, true, null));
                     }
                 }
             } else {
@@ -297,17 +289,6 @@ public class ResourceView {
                 labToTrv.add(f.getAbsolutePath());
                 root.getChildren().add(tItem);
             }
-        });
-        t.setOnFailed(ac -> {
-            final Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("An error was occur");
-            Label lab = new Label(t.getException().getMessage());
-            lab.setWrapText(true);
-            lab.setMaxWidth(650);
-            VBox vb = new VBox();
-            vb.getChildren().add(lab);
-            alert.getDialogPane().setContent(vb);
-            alert.show();
         });
         final Thread thread = new Thread(t);
         thread.setDaemon(true);
@@ -345,7 +326,7 @@ public class ResourceView {
                     }
                     if (content != null && content instanceof MetadataOverview) {
                         if (parent.getId().equals(((MetadataOverview) content).fromFile)) {
-                            setContent(new Label("   Please choose a file to open   "));
+                            setContent(new Label("Please choose a file to open"));
                         }
                     }
                 });
@@ -369,15 +350,7 @@ public class ResourceView {
                         ti.getChildren().add(tiChild);
                     }
                 } catch (DataStoreException ex) {
-                    final Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("An error was occur");
-                    Label lab = new Label(ex.getMessage());
-                    lab.setWrapText(true);
-                    lab.setMaxWidth(650);
-                    VBox vb = new VBox();
-                    vb.getChildren().add(lab);
-                    alert.getDialogPane().setContent(vb);
-                    alert.show();
+                    ExceptionReporter.canNotReadFile(firstFile.toPath(), ex);
                 }
                 root.getChildren().add(ti);
                 labToTrv.add(parent.getText());
@@ -393,7 +366,7 @@ public class ResourceView {
                     elem.getValue().setTextFill(Color.RED);
                 }
             });
-            setContent(new Label("   Please choose a file to open   "));
+            setContent(new Label("Please choose a file to open"));
         }
     }
 }
