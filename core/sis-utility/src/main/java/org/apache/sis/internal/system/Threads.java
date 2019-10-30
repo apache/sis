@@ -31,17 +31,17 @@ import org.apache.sis.util.logging.Logging;
  * dependencies the other way around.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.3
  * @module
  */
-final class Threads extends Static {
+public final class Threads extends Static {
     /**
      * The parent of every threads declared in this class. This parent will be declared as close
      * as possible to the root of all thread groups (i.e. not as an application thread subgroup).
      * The intent is to separate the library thread groups from the user application thread groups.
      */
-    static final ThreadGroup SIS;
+    public static final ThreadGroup SIS;
     static {
         ThreadGroup parent = Thread.currentThread().getThreadGroup();
         try {

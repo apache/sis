@@ -80,12 +80,10 @@ import org.apache.sis.util.iso.Types;
 class MetadataOverview extends StackPane {
 
     private final Metadata metadata;
-    final String fromFile;
     private final Locale locale = Locale.getDefault();
 
-    public MetadataOverview(final DefaultMetadata md, final String fromFile) {
+    public MetadataOverview(final DefaultMetadata md) {
         this.metadata = md;
-        this.fromFile = fromFile;
         VBox root = new VBox();
         root.setStyle("-fx-background-color: linear-gradient(to bottom right, #aeb7c4, #fafafa);");
 

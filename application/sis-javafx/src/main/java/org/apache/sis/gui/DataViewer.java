@@ -34,6 +34,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.sis.gui.dataset.ResourceView;
+import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.RecentChoices;
 import org.apache.sis.internal.storage.Capability;
@@ -211,5 +212,16 @@ public class DataViewer extends Application {
             lastFilter = chooser.getSelectedExtensionFilter();
             content.open(files);
         }
+    }
+
+    /**
+     * Invoked when the application should stop.
+     *
+     * @throws Exception if an error occurred.
+     */
+    @Override
+    public void stop() throws Exception {
+        BackgroundThreads.stop();
+        super.stop();
     }
 }

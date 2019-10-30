@@ -16,12 +16,10 @@
  */
 package org.apache.sis.internal.gui;
 
-import java.nio.file.Path;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
-import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.TextArea;
@@ -31,6 +29,9 @@ import org.apache.sis.util.Classes;
 /**
  * A modal dialog box reporting an exception.
  * This dialog box contains an expandable section with the full stack trace.
+ *
+ * @todo If another error happen in a background thread while this dialog is visible,
+ *       add the error in the existing dialog instead than opening a new one.
  *
  * @author  Smaniotto Enzo
  * @author  Martin Desruisseaux (Geomatys)
@@ -50,11 +51,11 @@ public final class ExceptionReporter {
      *
      * @param  event  an event for the task where an error occurred.
      */
-    public static void show(final WorkerStateEvent event) {
+    static void show(final WorkerStateEvent event) {
         final Worker<?> worker = event.getSource();
         final Throwable exception = worker.getException();
-        if (worker instanceof TaskOnFile) {
-            canNotReadFile(((TaskOnFile) worker).file, exception);
+        if (worker instanceof ResourceLoader) {
+            canNotReadFile(((ResourceLoader) worker).getFileName(), exception);
         } else {
             show((short) 0, (short) 0, null, exception);
         }
@@ -67,9 +68,8 @@ public final class ExceptionReporter {
      * @param  file       the file that can not be read.
      * @param  exception  the error that occurred.
      */
-    public static void canNotReadFile(final Path file, final Throwable exception) {
-        show(Resources.Keys.ErrorOpeningFile, Resources.Keys.CanNotReadFile_1,
-                new Object[] {file.getFileName()}, exception);
+    public static void canNotReadFile(final String file, final Throwable exception) {
+        show(Resources.Keys.ErrorOpeningFile, Resources.Keys.CanNotReadFile_1, new Object[] {file}, exception);
     }
 
     /**
@@ -105,7 +105,6 @@ public final class ExceptionReporter {
             final PrintWriter  writer = new PrintWriter(buffer);
             exception.printStackTrace(writer);
             final TextArea trace = new TextArea(buffer.toString());
-            trace.setPadding(Insets.EMPTY);
             trace.setPrefRowCount​(20);
             trace.setEditable(false);
 
