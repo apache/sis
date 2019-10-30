@@ -35,7 +35,8 @@ import org.opengis.metadata.citation.Citation;
  * <p>This is not a committed API since the way to represent data store capabilities is likely to change.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.1
  * @since   0.8
  * @module
  */

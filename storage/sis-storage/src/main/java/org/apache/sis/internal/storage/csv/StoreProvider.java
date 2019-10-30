@@ -45,13 +45,13 @@ import org.apache.sis.util.ArgumentChecks;
  * the part of the caller. However the {@link Store} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
-@StoreMetadata(formatName   = StoreProvider.NAME,
-               fileSuffixes = "csv",
-               capabilities = Capability.READ,
+@StoreMetadata(formatName    = StoreProvider.NAME,
+               fileSuffixes  = "csv",
+               capabilities  = Capability.READ,
                resourceTypes = FeatureSet.class)
 public final class StoreProvider extends URIDataStore.Provider {
     /**

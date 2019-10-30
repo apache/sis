@@ -31,7 +31,8 @@ import org.apache.sis.storage.Resource;
  * <p>This is not a committed API since the way to represent data store capabilities is likely to change.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -82,8 +83,11 @@ public @interface StoreMetadata {
     String[] fileSuffixes() default {};
 
     /**
-     * Returns an array of resource types the {@link DataStoreProvider} may be able
-     * to expose.
+     * Returns the types of resource that the {@link DataStoreProvider} may be able to produce.
+     * Values in this array may be
+     * {@link org.apache.sis.storage.Aggregate},
+     * {@link org.apache.sis.storage.FeatureSet} or
+     * {@link org.apache.sis.storage.GridCoverageResource}.
      *
      * @return information about the expected resource types which might be encounter with this format.
      */

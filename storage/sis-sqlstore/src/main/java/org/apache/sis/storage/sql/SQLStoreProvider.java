@@ -38,13 +38,14 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalOpenParameterException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.ArgumentChecks;
 
 import static org.apache.sis.internal.sql.feature.Database.WILDCARD;
-import org.apache.sis.storage.FeatureSet;
 
 
 /**
@@ -52,13 +53,13 @@ import org.apache.sis.storage.FeatureSet;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
-@StoreMetadata(formatName   = SQLStoreProvider.NAME,
-               capabilities = Capability.READ,
-               resourceTypes = FeatureSet.class)
+@StoreMetadata(formatName    = SQLStoreProvider.NAME,
+               capabilities  = Capability.READ,
+               resourceTypes = {Aggregate.class, FeatureSet.class})
 public class SQLStoreProvider extends DataStoreProvider {
     /**
      * The format name.

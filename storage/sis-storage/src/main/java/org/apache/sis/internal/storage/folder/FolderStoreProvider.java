@@ -47,6 +47,7 @@ import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.GridCoverageResource;
 
@@ -58,13 +59,13 @@ import org.apache.sis.storage.GridCoverageResource;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
-@StoreMetadata(formatName   = FolderStoreProvider.NAME,
-               capabilities = {Capability.READ, Capability.WRITE},
-               resourceTypes = {FeatureSet.class, GridCoverageResource.class})
+@StoreMetadata(formatName    = FolderStoreProvider.NAME,
+               capabilities  = {Capability.READ, Capability.WRITE},
+               resourceTypes = {Aggregate.class, FeatureSet.class, GridCoverageResource.class})
 public final class FolderStoreProvider extends DataStoreProvider {
     /**
      * A short name or abbreviation for the data format.

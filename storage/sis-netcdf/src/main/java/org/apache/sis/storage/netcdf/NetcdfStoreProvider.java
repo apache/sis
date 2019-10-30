@@ -44,6 +44,8 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.logging.Logging;
@@ -62,17 +64,17 @@ import org.apache.sis.util.Version;
  * the part of the caller. However the {@link NetcdfStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see NetcdfStore
  *
  * @since 0.3
  * @module
  */
-@StoreMetadata(formatName   = NetcdfStoreProvider.NAME,
-               fileSuffixes = "nc",
-               capabilities = Capability.READ,
-               resourceTypes = GridCoverageResource.class)
+@StoreMetadata(formatName    = NetcdfStoreProvider.NAME,
+               fileSuffixes  = "nc",
+               capabilities  = Capability.READ,
+               resourceTypes = {Aggregate.class, FeatureSet.class, GridCoverageResource.class})
 public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The format name.
