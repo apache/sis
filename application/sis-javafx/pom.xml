@@ -88,6 +88,18 @@
        =========================================================== -->
   <build>
     <plugins>
+      <!-- To be removed after SIS has been fully modularized. -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <release>13</release>
+          <compilerArgs>
+            <arg>--module-path</arg> <arg>${env.PATH_TO_FX}</arg>
+            <arg>--add-modules</arg> <arg>javafx.graphics,javafx.controls,javafx.fxml,javafx.swing</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+
       <!-- Anticipation for Java 9 -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -101,29 +113,6 @@
             </manifestEntries>
           </archive>
         </configuration>
-      </plugin>
-
-      <!-- To be removed after SIS has been fully modularized. -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.6.0</version>
-        <executions>
-          <execution>
-            <id>default-cli</id>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <configuration>
-              <commandlineArgs>
-                --class-path "%classpath"
-                --module-path "${env.PATH_TO_FX}"
-                --add-modules javafx.graphics,javafx.controls,javafx.fxml
-                org.apache.sis.gui.DataViewer
-              </commandlineArgs>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
@@ -152,25 +141,6 @@
       <artifactId>sis-earth-observation</artifactId>
       <version>${project.version}</version>
       <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.xml.bind</groupId>
-      <artifactId>jakarta.xml.bind-api</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-
-    <!-- Build time only, not included in distribution. -->
-    <dependency>
-      <groupId>org.openjfx</groupId>
-      <artifactId>javafx-controls</artifactId>
-      <version>13</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.openjfx</groupId>
-      <artifactId>javafx-fxml</artifactId>
-      <version>13</version>
-      <scope>provided</scope>
     </dependency>
   </dependencies>
 

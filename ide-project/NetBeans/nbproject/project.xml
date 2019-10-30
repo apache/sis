@@ -24,6 +24,7 @@
             <name>Apache SIS on GeoAPI 4.0</name>
             <source-roots>
                 <root id="src.local-src.dir" name="Local sources (unversioned)"/>
+                <root id="src.javafx.dir" name="JavaFX application"/>
                 <root id="src.webapp.dir" name="Web application"/>
                 <root id="src.console.dir" name="Console"/>
                 <root id="src.portrayal.dir" name="Portrayal"/>
