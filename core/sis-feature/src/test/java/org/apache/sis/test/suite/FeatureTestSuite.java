@@ -56,6 +56,7 @@ import org.junit.runners.Suite;
     org.apache.sis.filter.FilterByIdentifierTest.class,
     org.apache.sis.filter.ArithmeticFunctionTest.class,
     org.apache.sis.filter.ComparisonFunctionTest.class,
+    org.apache.sis.filter.BetweenFunctionTest.class,
     org.apache.sis.filter.TemporalFunctionTest.class,
     org.apache.sis.filter.SQLMMTest.class,
     org.apache.sis.internal.feature.AttributeConventionTest.class,

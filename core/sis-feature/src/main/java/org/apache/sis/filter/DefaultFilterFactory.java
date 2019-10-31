@@ -407,7 +407,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyIsBetween between(final Expression expression, final Expression lower, final Expression upper) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new ComparisonFunction.Between(expression, lower, upper);
     }
 
     /**

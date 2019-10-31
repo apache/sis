@@ -32,6 +32,8 @@ import java.time.chrono.ChronoLocalDateTime;
 import java.time.chrono.ChronoZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
+import java.util.Arrays;
+import java.util.Collection;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -714,5 +716,56 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         @Override public Object accept(FilterVisitor visitor, Object extraData) {
             return visitor.visit(this, extraData);
         }
+    }
+
+    /**
+     * The {@value #NAME} filter.
+     */
+    static final class Between extends Node implements org.opengis.filter.PropertyIsBetween {
+        /** For cross-version compatibility during (de)serialization. */
+        private static final long serialVersionUID = -2434954008425799595L;
+
+        private final GreaterThanOrEqualTo lower;
+        private final LessThanOrEqualTo upper;
+
+        Between(final Expression expression, final Expression lower, final Expression upper) {
+            this.lower = new GreaterThanOrEqualTo(expression, lower, true, MatchAction.ANY);
+            this.upper = new LessThanOrEqualTo(expression, upper, true, MatchAction.ANY);
+        }
+
+
+        /** Identification of this operation. */
+        @Override protected String getName() {return NAME;}
+
+        @Override
+        protected Collection<?> getChildren() {
+            return Arrays.asList(lower.expression1, lower.expression2, upper.expression2);
+        }
+
+        @Override
+        public Expression getExpression() {
+            return lower.expression1;
+        }
+
+        @Override
+        public Expression getLowerBoundary() {
+            return lower.expression2;
+        }
+
+        @Override
+        public Expression getUpperBoundary() {
+            return upper.expression2;
+        }
+
+        @Override
+        public boolean evaluate(Object object) {
+            return lower.evaluate(object) && upper.evaluate(object);
+        }
+
+        @Override
+        public Object accept(FilterVisitor visitor, Object extraData) {
+            return visitor.visit(this, extraData);
+        }
+
     }
 }
