@@ -17,6 +17,7 @@
 package org.apache.sis.internal.gui;
 
 import java.net.URL;
+import java.util.Locale;
 import java.util.MissingResourceException;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
@@ -77,6 +78,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short GeospatialFiles = 4;
 
         /**
+         * Loading…
+         */
+        public static final short Loading = 7;
+
+        /**
          * Open data file
          */
         public static final short OpenDataFile = 2;
@@ -100,6 +106,17 @@ public final class Resources extends IndexedResourceBundle {
     @Override
     protected KeyConstants getKeyConstants() {
         return Keys.INSTANCE;
+    }
+
+    /**
+     * Returns resources in the given locale.
+     *
+     * @param  locale  the locale, or {@code null} for the default locale.
+     * @return resources in the given locale.
+     * @throws MissingResourceException if resources can not be found.
+     */
+    public static Resources forLocale(final Locale locale) throws MissingResourceException {
+        return getBundle(Resources.class, locale);
     }
 
     /**

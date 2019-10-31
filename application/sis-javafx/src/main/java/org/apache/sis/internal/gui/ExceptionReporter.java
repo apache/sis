@@ -51,7 +51,7 @@ public final class ExceptionReporter {
      *
      * @param  event  an event for the task where an error occurred.
      */
-    static void show(final WorkerStateEvent event) {
+    public static void show(final WorkerStateEvent event) {
         final Worker<?> worker = event.getSource();
         final Throwable exception = worker.getException();
         if (worker instanceof ResourceLoader) {

@@ -16,36 +16,60 @@
  */
 package org.apache.sis.internal.gui;
 
+import java.net.URI;
+import java.net.URL;
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStores;
+import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.storage.folder.FolderStoreProvider;
 import org.apache.sis.internal.storage.io.IOUtilities;
 
 
 /**
- * Task in charge of loading a resource. No action is registered by default for successful completion;
- * caller should invoke {@link #setOnSucceeded(EventHandler)} for defining such action. However if the
- * operation fails, the default action is to report the error in a dialog box.
+ * Task in charge of loading a resource. No action is registered by default;
+ * caller should invoke {@link #setOnSucceeded(EventHandler)} for defining such action.
+ * Example:
  *
- * <p>After the task has been configured, it can be executed by invoking
- * {@link BackgroundThreads#execute(Runnable)}.</p>
+ * {@preformat java
+ *     public void loadResource(final Object source) {
+ *         final ResourceLoader loader = new ResourceLoader(source);
+ *         loader.setOnSucceeded((event) -> addResource((Resource) event.getSource().getValue()));
+ *         loader.setOnFailed(ExceptionReporter::show);
+ *         BackgroundThreads.execute(loader);
+ *     }
+ * }
+ *
+ * This class maintains a cache. If the same {@code source} argument is given to the constructor
+ * and the associated resource is still in memory, it will be returned directly.
  *
  * @todo Set title. Add progress listener and cancellation capability.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @see BackgroundThreads#execute(Runnable)
+ *
+ * @since 1.1
  * @module
  */
 public final class ResourceLoader extends Task<Resource> {
+    /**
+     * The cache of previously loaded resources.
+     * Used for avoiding to load the same resource twice.
+     */
+    private static final Cache<Object,Resource> CACHE = new Cache<>();
+
     /**
      * The {@link Resource} input.
      * This is usually a {@link File} or {@link Path}.
@@ -53,14 +77,56 @@ public final class ResourceLoader extends Task<Resource> {
     private final Object source;
 
     /**
+     * Key to use in the {@link CACHE}, or {@code null} if the resource should not be cached.
+     * If possible, this is a {@link Path} containing the real path. If we can not perform
+     * such conversion, then it is either {@code null} or the same object than {@link #source}.
+     */
+    private final Object key;
+
+    /**
      * Creates a new task for opening the given input.
      *
      * @param  source  the source of the resource to load.
      *         This is usually a {@link File} or {@link Path}.
      */
-    public ResourceLoader(final Object source) {
+    public ResourceLoader(Object source) {
         this.source = source;
-        setOnFailed(ExceptionReporter::show);
+        try {
+            if (source instanceof StorageConnector) {
+                source = ((StorageConnector) source).getStorage();
+            }
+            if (source instanceof AutoCloseable) {
+                source = null;                                      // Do not cache InputStream, Channel, etc.
+            } else {
+                if (source instanceof File) {
+                    source = ((File) source).getAbsoluteFile();     // First in case the next line fail.
+                    source = ((File) source).toPath();              // May throw InvalidPathException.
+                } else if (source instanceof URL) {
+                    source = ((URL) source).toURI();                // May throw URISyntaxException.
+                }
+                if (source instanceof URI) {                        // May be the result of above URL.toURI().
+                    source = Paths.get((URI) source);               // May throw FileSystemNotFoundException.
+                }
+                if (source instanceof Path) {                       // May be the result of a previous block.
+                    source = ((Path) source).toRealPath();          // May throw IOException.
+                }
+            }
+        } catch (URISyntaxException | IOException | IllegalArgumentException e) {
+            // Ignore — keep `source` as is (File, URI, URI or non-absolute Path).
+        } catch (DataStoreException | RuntimeException e) {
+            source = null;
+        }
+        key = source;
+    }
+
+    /**
+     * Returns the resource if it has already been loaded before, or {@code null} otherwise.
+     * If loading is in progress in another thread, this method returns {@code null} without waiting.
+     *
+     * @return the resource, or {@code null} if not yet available.
+     */
+    public Resource fromCache() {
+        return (key != null) ? CACHE.peek(key) : null;
     }
 
     /**
@@ -73,6 +139,26 @@ public final class ResourceLoader extends Task<Resource> {
      */
     @Override
     protected Resource call() throws DataStoreException {
+        if (key == null) {
+            return load();
+        }
+        Resource resource = null;
+        final Cache.Handler<Resource> handler = CACHE.lock(key);
+        try {
+            resource = handler.peek();
+            if (resource == null) {
+                resource = load();
+            }
+        } finally {
+            handler.putAndUnlock(resource);
+        }
+        return resource;
+    }
+
+    /**
+     * Loads the resource after we verified that it is not in the cache.
+     */
+    private Resource load() throws DataStoreException {
         Object input = source;
         if (input instanceof StorageConnector) {
             input = ((StorageConnector) input).getStorage();

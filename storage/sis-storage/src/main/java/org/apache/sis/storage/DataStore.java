@@ -490,6 +490,13 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     /**
      * Closes this data store and releases any underlying resources.
      *
+     * <h4>Note for implementers</h4>
+     * Data stores having resources to release should <em>not</em> override the {@link Object#equals(Object)}
+     * and {@link #hashCode()} methods, since comparisons other than identity comparisons may confuse some
+     * cache mechanisms (e.g. they may think that a data store has already been closed).
+     * Conversely data stores for which {@code addListener(…)}, {@code removeListener(…)} and {@code close()}
+     * methods perform no operation can override {@code equals(…)} and {@code hashCode()} if desired.
+     *
      * @throws DataStoreException if an error occurred while closing this data store.
      */
     @Override

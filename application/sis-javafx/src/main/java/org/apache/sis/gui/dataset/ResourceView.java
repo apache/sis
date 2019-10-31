@@ -17,20 +17,13 @@
 package org.apache.sis.gui.dataset;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TreeItem;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.TransferMode;
 import javafx.scene.control.SplitPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStore;
@@ -53,31 +46,9 @@ public class ResourceView {
 
     public final SplitPane pane = new SplitPane();
 
-    /**
-     * This List contain all the elements present in the TreeView, referenced by their id
-     * (set to the specific location of each file). Used to know if a file is already open.
-     */
-    private final List<String> labToTrv = new ArrayList<>();
-
-    private Label sauvLabel;
-
     public ResourceView() {
-        final VBox dragTarget = new VBox();
         resources = new ResourceTree();
-        resources.setOnDragOver(event -> {
-            if (event.getGestureSource() != dragTarget && event.getDragboard().hasFiles()) {
-                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-            }
-            event.consume();
-        });
-        resources.setOnDragDropped(event -> {
-            Dragboard db = event.getDragboard();
-            File firstFile = db.getFiles().get(0);
-//          List<?> fileList = (List<?>) db.getContent(DataFormat.FILES); // To open multiple files in one drop.
-            resources.loadResource(firstFile);
-            event.setDropCompleted(true);
-            event.consume();
-        });
+        resources.makeDropTarget();
         pane.getItems().add(resources);
     }
 
@@ -101,14 +72,9 @@ public class ResourceView {
         }
     }
 
-    private TreeItem<Resource> root() {
-        return resources.getRoot();
-    }
-
     private void addContextMenu(Label lab) {
         MenuItem close = new MenuItem("Close");
         close.setOnAction(ac -> {
-            labToTrv.remove(lab.getId());
             final Object content = getContent();
             if (content != null && content instanceof FeatureTable) {
                 pane.getItems().remove(1);
@@ -127,21 +93,6 @@ public class ResourceView {
         });
         ContextMenu cm = new ContextMenu(feature, close);
         lab.setContextMenu(cm);
-    }
-
-    // Define what happens when an element of the TreeView is clicked.
-    private void setOnClick(Label lab) {
-        addContextMenu(lab);
-        lab.setOnMouseClicked(click -> {
-            if (click.getButton() == MouseButton.PRIMARY) {
-                if (sauvLabel != null) {
-                    sauvLabel.setTextFill(Color.BLACK);
-                }
-                addMetadatPanel(null);
-                sauvLabel = lab;
-                lab.setTextFill(Color.RED);
-            }
-        });
     }
 
     private void addFeaturePanel(String filePath) {
