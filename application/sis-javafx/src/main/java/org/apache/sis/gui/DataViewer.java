@@ -20,7 +20,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -33,7 +32,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import org.apache.sis.gui.dataset.ResourceView;
+import org.apache.sis.gui.dataset.ResourceExplorer;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.RecentChoices;
@@ -42,12 +41,11 @@ import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
  * Entry point for Apache SIS application.
- * Current implementation shows a {@link ResourceView} on which user can drop the files to open.
+ * Current implementation shows a {@link ResourceExplorer} on which user can drop the files to open.
  * The content shown by this {@code Main} class may change in any future Apache SIS version.
  *
  * @author  Smaniotto Enzo
@@ -75,7 +73,7 @@ public class DataViewer extends Application {
      * The main content of this application. For now this is the metadata viewer.
      * In a future version it may be another component.
      */
-    private ResourceView content;
+    private ResourceExplorer content;
 
     /**
      * The file filters to use in the dialog box shown by the "File" ▶ "Open" menu.
@@ -113,30 +111,29 @@ public class DataViewer extends Application {
     @Override
     public void start(final Stage window) {
         this.window = window;
-        final Vocabulary vocabulary = Vocabulary.getResources((Locale) null);
+        final Resources localized = Resources.getInstance();
         /*
          * Configure the menu bar. For most menu item, the action is to invoke a method
          * of the same name in this application class (e.g. open()).
          */
         final MenuBar menus = new MenuBar();
-        final Menu file = new Menu(vocabulary.getString(Vocabulary.Keys.File));
+        final Menu file = new Menu(localized.getString(Resources.Keys.File));
         {
-            final MenuItem open = new MenuItem(vocabulary.getMenuLabel(Vocabulary.Keys.Open));
+            final MenuItem open = new MenuItem(localized.getMenuLabel(Resources.Keys.Open));
             open.setAccelerator(KeyCombination.keyCombination("Shortcut+O"));
             open.setOnAction(e -> open());
 
-            final MenuItem exit = new MenuItem(vocabulary.getString(Vocabulary.Keys.Exit));
-            exit.setOnAction(e -> Platform.exit());
+            final MenuItem exit = localized.menu(Resources.Keys.Exit, e -> Platform.exit());
             file.getItems().addAll(open, new SeparatorMenuItem(), exit);
         }
         menus.getMenus().add(file);
         /*
          * Set the main content and show.
          */
-        content = new ResourceView();
+        content = new ResourceExplorer();
         final BorderPane pane = new BorderPane();
         pane.setTop(menus);
-        pane.setCenter(content.pane);
+        pane.setCenter(content.getPane());
         Scene scene = new Scene(pane);
         window.setTitle("Apache Spatial Information System");
         window.setScene(scene);
@@ -210,12 +207,13 @@ public class DataViewer extends Application {
         if (files != null) {
             RecentChoices.setOpenDirectory(files);
             lastFilter = chooser.getSelectedExtensionFilter();
-            content.open(files);
+            content.loadResources(files);
         }
     }
 
     /**
-     * Invoked when the application should stop.
+     * Invoked when the application should stop. No SIS application can be used after
+     * this method has been invoked (i.e. the application can not be restarted).
      *
      * @throws Exception if an error occurred.
      */

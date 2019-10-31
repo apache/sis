@@ -73,16 +73,19 @@ import org.apache.sis.util.iso.Types;
  * Metadata Viewer.
  *
  * @author  Smaniotto Enzo
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 class MetadataOverview extends StackPane {
 
-    private final Metadata metadata;
+    private Metadata metadata;
     private final Locale locale = Locale.getDefault();
 
-    public MetadataOverview(final DefaultMetadata md) {
+    public MetadataOverview() {
+    }
+
+    public void setMetadata(final DefaultMetadata md) {
         this.metadata = md;
         VBox root = new VBox();
         root.setStyle("-fx-background-color: linear-gradient(to bottom right, #aeb7c4, #fafafa);");
@@ -126,7 +129,7 @@ class MetadataOverview extends StackPane {
         root.getChildren().add(toggleGroupLayout);
         root.getChildren().add(summaryView);
 
-        this.getChildren().add(root);
+        this.getChildren().setAll(root);
     }
 
     private VBox createSummaryView() {

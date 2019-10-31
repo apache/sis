@@ -34,6 +34,7 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.storage.folder.FolderStoreProvider;
 import org.apache.sis.internal.storage.io.IOUtilities;
+import org.apache.sis.storage.DataStore;
 
 
 /**
@@ -54,6 +55,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
  * and the associated resource is still in memory, it will be returned directly.
  *
  * @todo Set title. Add progress listener and cancellation capability.
+ * @todo Need a mechanism for deciding when to close the data store. May need an usage count.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -67,8 +69,9 @@ public final class ResourceLoader extends Task<Resource> {
     /**
      * The cache of previously loaded resources.
      * Used for avoiding to load the same resource twice.
+     * Can be used from any thread.
      */
-    private static final Cache<Object,Resource> CACHE = new Cache<>();
+    private static final Cache<Object,DataStore> CACHE = new Cache<>();
 
     /**
      * The {@link Resource} input.
@@ -122,10 +125,11 @@ public final class ResourceLoader extends Task<Resource> {
     /**
      * Returns the resource if it has already been loaded before, or {@code null} otherwise.
      * If loading is in progress in another thread, this method returns {@code null} without waiting.
+     * This method can be invoked from any thread.
      *
      * @return the resource, or {@code null} if not yet available.
      */
-    public Resource fromCache() {
+    public DataStore fromCache() {
         return (key != null) ? CACHE.peek(key) : null;
     }
 
@@ -135,30 +139,17 @@ public final class ResourceLoader extends Task<Resource> {
      * be parsed as a set of sub-resources.
      *
      * @return the resource.
-     * @throws DataStoreException if an exception occurred while loading the resource.
+     * @throws Exception if an exception occurred while loading the resource.
      */
     @Override
-    protected Resource call() throws DataStoreException {
-        if (key == null) {
-            return load();
-        }
-        Resource resource = null;
-        final Cache.Handler<Resource> handler = CACHE.lock(key);
-        try {
-            resource = handler.peek();
-            if (resource == null) {
-                resource = load();
-            }
-        } finally {
-            handler.putAndUnlock(resource);
-        }
-        return resource;
+    protected DataStore call() throws Exception {
+        return (key != null) ? CACHE.getOrCreate(key, this::load) : load();
     }
 
     /**
      * Loads the resource after we verified that it is not in the cache.
      */
-    private Resource load() throws DataStoreException {
+    private DataStore load() throws DataStoreException {
         Object input = source;
         if (input instanceof StorageConnector) {
             input = ((StorageConnector) input).getStorage();

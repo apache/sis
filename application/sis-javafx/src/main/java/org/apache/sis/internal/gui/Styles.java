@@ -31,6 +31,11 @@ import javafx.scene.paint.Color;
  */
 public final class Styles {
     /**
+     * Usual color of text.
+     */
+    public static final Color NORMAL_TEXT = Color.BLACK;
+
+    /**
      * Color of text in a selection.
      */
     public static final Color SELECTED_TEXT = Color.WHITE;

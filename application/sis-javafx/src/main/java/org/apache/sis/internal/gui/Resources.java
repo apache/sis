@@ -19,6 +19,9 @@ package org.apache.sis.internal.gui;
 import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.MenuItem;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
@@ -68,9 +71,24 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotReadFile_1 = 5;
 
         /**
+         * Close
+         */
+        public static final short Close = 8;
+
+        /**
          * Error opening file
          */
         public static final short ErrorOpeningFile = 6;
+
+        /**
+         * Exit
+         */
+        public static final short Exit = 9;
+
+        /**
+         * File
+         */
+        public static final short File = 10;
 
         /**
          * Geospatial data files
@@ -81,6 +99,11 @@ public final class Resources extends IndexedResourceBundle {
          * Loading…
          */
         public static final short Loading = 7;
+
+        /**
+         * Open
+         */
+        public static final short Open = 11;
 
         /**
          * Open data file
@@ -189,5 +212,18 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg2) throws MissingResourceException
     {
         return getInstance().getString(key, arg0, arg1, arg2);
+    }
+
+    /**
+     * Creates a new menu item with a localized text specified by the given key.
+     *
+     * @param  key       the key for the text of the menu item.
+     * @param  onAction  action to execute when the menu is selected.
+     * @return the menu item with the specified text and action.
+     */
+    public MenuItem menu(final short key, final EventHandler<ActionEvent> onAction) {
+        final MenuItem item = new MenuItem(getString(key));
+        item.setOnAction(onAction);
+        return item;
     }
 }

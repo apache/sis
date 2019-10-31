@@ -30,13 +30,13 @@ import javafx.concurrent.Task;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.paint.Color;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
@@ -65,6 +65,9 @@ import org.apache.sis.internal.gui.Styles;
  * A resource can be added by a call to {@link #addResource(Resource)} or loaded from
  * a file by {@link #loadResource(Object)}.
  *
+ * <p>{@code ResourceTree} registers the necessarily handlers for making this view a target
+ * of "drag and drop" events. Users can drop files or URLs for opening data files.</p>
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -73,60 +76,20 @@ import org.apache.sis.internal.gui.Styles;
  */
 public class ResourceTree extends TreeView<Resource> {
     /**
-     * The locale for resource title.
+     * The resources for localized strings. Stored because needed often
+     * (when loading data, when building a contextual menu, etc.).
      */
-    private final Locale locale;
+    private final Resources localized;
 
     /**
      * Creates a new tree of resources with initially no resource to show.
      * For showing a resource, invoke {@link #setResource(Resource)} after construction.
      */
     public ResourceTree() {
-        locale = Locale.getDefault(Locale.Category.DISPLAY);
+        localized = Resources.forLocale(Locale.getDefault(Locale.Category.DISPLAY));
         setCellFactory(ResourceTree::newCell);
-    }
-
-    /**
-     * Registers the necessarily handler for making this view a target of "drag and drop" events.
-     * It allows users to drop files or URLs for opening data files.
-     */
-    public void makeDropTarget() {
-        setOnDragOver(event -> {
-            final Dragboard db = event.getDragboard();
-            if (db.hasFiles() || db.hasUrl()) {
-                event.acceptTransferModes(TransferMode.COPY);
-            }
-            event.consume();
-        });
+        setOnDragOver(ResourceTree::onDragOver);
         setOnDragDropped(this::load);
-    }
-
-    /**
-     * Loads a resource resulting from a "drag and drop" event.
-     *
-     * @param  event  the "drag and drop" event.
-     */
-    private void load(final DragEvent event) {
-        final Dragboard db = event.getDragboard();
-        final List<File> files = db.getFiles();
-        boolean success = false;
-        if (files != null) {
-            for (final File file : files) {
-                loadResource(file);
-            }
-            success = true;
-        } else {
-            String url = db.getUrl();
-            if (url != null) try {
-                loadResource(new URL(url));
-                success = true;
-            } catch (MalformedURLException e) {
-                url = url.substring(url.lastIndexOf('/') + 1);
-                ExceptionReporter.canNotReadFile(url, e);
-            }
-        }
-        event.setDropCompleted(success);
-        event.consume();
     }
 
     /**
@@ -173,20 +136,22 @@ public class ResourceTree extends TreeView<Resource> {
         }
         final TreeItem<Resource> item = getRoot();
         if (item != null) {
-            Resource root = item.getValue();
+            final Resource root = item.getValue();
             if (root != null) {
                 if (root == resource) {
                     return false;
                 }
-                if (!(root instanceof Root)) {
+                final Root addTo;
+                if (root instanceof Root) {
+                    addTo = (Root) root;
+                } else {
                     final TreeItem<Resource> group = new TreeItem<>();
-                    final Root newRoot = new Root(group);
-                    newRoot.add(root);
-                    root = newRoot;
+                    addTo = new Root(group);
+                    addTo.add(root);
                     setRoot(group);
                     setShowRoot(false);
                 }
-                return ((Root) root).add(resource);
+                return addTo.add(resource);
             }
         }
         setRoot(new Item(resource));
@@ -204,15 +169,70 @@ public class ResourceTree extends TreeView<Resource> {
      *                 a {@link java.io.File} or {@link java.nio.file.Path}.
      */
     public void loadResource(final Object source) {
-        final ResourceLoader loader = new ResourceLoader(source);
-        final Resource existing = loader.fromCache();
-        if (existing != null) {
-            addResource(existing);
-        } else {
-            loader.setOnSucceeded((event) -> addResource((Resource) event.getSource().getValue()));
-            loader.setOnFailed(ExceptionReporter::show);
-            BackgroundThreads.execute(loader);
+        if (source != null) {
+            if (source instanceof Resource) {
+                addResource((Resource) source);
+            } else {
+                final ResourceLoader loader = new ResourceLoader(source);
+                final Resource existing = loader.fromCache();
+                if (existing != null) {
+                    addResource(existing);
+                } else {
+                    loader.setOnSucceeded((event) -> addResource((Resource) event.getSource().getValue()));
+                    loader.setOnFailed(ExceptionReporter::show);
+                    BackgroundThreads.execute(loader);
+                }
+            }
         }
+    }
+
+    /**
+     * Invoked when the user drops files or a URL on this resource tree.
+     * This method starts the loading processes in a background thread.
+     * The loading is started by calls to {@link #loadResource(Object)}.
+     *
+     * @param  event  the "drag and drop" event.
+     */
+    private void load(final DragEvent event) {
+        final Dragboard db = event.getDragboard();
+        final List<File> files = db.getFiles();
+        boolean success = false;
+        if (files != null) {
+            for (final File file : files) {
+                loadResource(file);
+            }
+            success = true;
+        } else {
+            final String url = db.getUrl();
+            if (url != null) try {
+                loadResource(new URL(url));
+                success = true;
+            } catch (MalformedURLException e) {
+                /*
+                 * Try to take only the filename, taken as the text after last '/' ignoring
+                 * the very last character (this is the purpose of the `length - 2` part).
+                 * The resulting `start` will be 0 if no '/' is found.
+                 */
+                final int start = url.lastIndexOf('/', url.length() - 2) + 1;
+                int stop = url.indexOf('?', start);
+                if (stop <= 0) stop = url.length();
+                ExceptionReporter.canNotReadFile(url.substring(start, stop), e);
+            }
+        }
+        event.setDropCompleted(success);
+        event.consume();
+    }
+
+    /**
+     * Invoked when the user drags something over the resource tree but has not yet dropped them.
+     * This method determines if the {@link ResourceTree} accepts this drag.
+     */
+    private static void onDragOver(final DragEvent event) {
+        final Dragboard db = event.getDragboard();
+        if (db.hasFiles() || db.hasUrl()) {
+            event.acceptTransferModes(TransferMode.COPY);
+        }
+        event.consume();
     }
 
     /**
@@ -224,7 +244,7 @@ public class ResourceTree extends TreeView<Resource> {
      * @return whether the resource has been removed.
      */
     public boolean removeResource(final Resource resource) {
-        return isRoot(resource, true);
+        return findOrRemove(resource, true);
     }
 
     /**
@@ -234,7 +254,7 @@ public class ResourceTree extends TreeView<Resource> {
      * @param  remove    {@code true} for removing the resource, or {@code false} for checking only.
      * @return whether the resource has been found in the roots.
      */
-    private boolean isRoot(final Resource resource, final boolean remove) {
+    private boolean findOrRemove(final Resource resource, final boolean remove) {
         if (resource != null) {
             final TreeItem<Resource> item = getRoot();
             if (item != null) {
@@ -260,7 +280,7 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
-     * Invoked when a new cell need to be created. This method creates a specialized instance
+     * Invoked when a new cell needs to be created. This method creates a specialized instance
      * which will get the cell text from a resource by a call to {@link #getTitle(Resource)}.
      *
      * @param  tree  the {@link ResourceTree} for which to create a cell.
@@ -271,12 +291,19 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
+     * Returns the locale to use for titles, messages, labels, etc.
+     */
+    private Locale getLocale() {
+        return localized.getLocale();
+    }
+
+    /**
      * Returns a label for a resource. Current implementation returns the
      * {@linkplain DataStore#getDisplayName() data store display name} if available,
      * or the title found in {@linkplain Resource#getMetadata() metadata} otherwise.
      *
      * @param  resource  the resource for which to get a label, or {@code null}.
-     * @return the resource display name of title, never null.
+     * @return the resource display name or the citation title, never null.
      */
     private String getTitle(final Resource resource) {
         Throwable failure = null;
@@ -333,7 +360,7 @@ public class ResourceTree extends TreeView<Resource> {
          * If we failed to get the name, use "unnamed" with the exception message.
          * It may still be possible to select this resource, view it or expand the children nodes.
          */
-        String text = Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed);
+        String text = Vocabulary.getResources(getLocale()).getString(Vocabulary.Keys.Unnamed);
         if (failure != null) {
             text = text + " — " + string(failure);
         }
@@ -345,7 +372,7 @@ public class ResourceTree extends TreeView<Resource> {
      */
     private String string(final InternationalString i18n) {
         if (i18n != null) {
-            String t = i18n.toString(locale);
+            String t = i18n.toString(getLocale());
             if (t != null && !(t = t.trim()).isEmpty()) {
                 return t;
             }
@@ -358,7 +385,7 @@ public class ResourceTree extends TreeView<Resource> {
      * This method returns the message if one exist, or the exception class name otherwise.
      */
     private String string(final Throwable failure) {
-        String text = Exceptions.getLocalizedMessage(failure, locale);
+        String text = Exceptions.getLocalizedMessage(failure, getLocale());
         if (text == null || (text = text.trim()).isEmpty()) {
             text = Classes.getShortClassName(failure);
         }
@@ -388,36 +415,55 @@ public class ResourceTree extends TreeView<Resource> {
          */
         @Override
         protected void updateItem(final Resource resource, boolean empty) {
-            super.updateItem(resource, empty);      // Mandatory according JavaFX documentation.
-            final ResourceTree tree = (ResourceTree) getTreeView();
+            /*
+             * This method is sometime invoked even if the resource is the same. It may be for example
+             * because the selected state changed. In such case, we do not need to construct again the
+             * title, contextual menu, etc. Only the color may change. More generally we don't need to
+             * fetch data from enclosing ResourceTree if the resource is the same, so we mark this case
+             * by setting `tree` to null.
+             */
+            final ResourceTree tree = (getItem() != resource) ? (ResourceTree) getTreeView() : null;
+            super.updateItem(resource, empty);          // Mandatory according JavaFX documentation.
+            Color color = Styles.NORMAL_TEXT;
             String text = null;
             if (!empty) {
                 if (resource == PseudoResource.LOADING) {
-                    setTextFill(isSelected() ? Styles.SELECTED_TEXT : Styles.LOADING_TEXT);
-                    text = Resources.forLocale(tree.locale).getString(Resources.Keys.Loading);
+                    color = Styles.LOADING_TEXT;
+                    if (tree != null) text = tree.localized.getString(Resources.Keys.Loading);
                 } else if (resource instanceof Unloadable) {
-                    setTextFill(isSelected() ? Styles.SELECTED_TEXT : Styles.ERROR_TEXT);
-                    text = tree.string(((Unloadable) resource).failure);
+                    color = Styles.ERROR_TEXT;
+                    if (tree != null) text = tree.string(((Unloadable) resource).failure);
                 } else {
-                    text = tree.getTitle(resource);
+                    if (tree != null) text = tree.getTitle(resource);
                 }
             }
-            setText(text);
+            setTextFill(isSelected() ? Styles.SELECTED_TEXT : color);
             /*
              * If the resource is at the root, add a menu for removing it.
+             * If we find that the cell already has a menu, we do not need
+             * to build it again (it may change in a future SIS version if
+             * the menu is not always the same).
              */
-            if (tree.isRoot(resource, false)) {
-                final ContextMenu menu = new ContextMenu();
-                final MenuItem item = new MenuItem("Close");
-                item.setOnAction(this::close);
-                menu.getItems().add(item);
+            if (tree != null) {
+                setText(text);
+                ContextMenu menu = null;
+                if (tree.findOrRemove(resource, false)) {
+                    menu = getContextMenu();
+                    if (menu == null) {
+                        final Resources localized = tree.localized;
+                        menu = new ContextMenu();
+                        menu.getItems().add(localized.menu(Resources.Keys.Close, this::close));
+                    }
+                }
                 setContextMenu(menu);
             }
         }
 
+        /**
+         * Invoked when user selected the "close" action in the contextual menu.
+         */
         private void close(final ActionEvent event) {
-            final ResourceTree tree = (ResourceTree) getTreeView();
-            tree.removeResource(getItem());
+            ((ResourceTree) getTreeView()).removeResource(getItem());
         }
     }
 
