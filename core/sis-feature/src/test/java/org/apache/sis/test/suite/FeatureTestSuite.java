@@ -49,6 +49,7 @@ import org.junit.runners.Suite;
     org.apache.sis.feature.EnvelopeOperationTest.class,
     org.apache.sis.feature.FeatureFormatTest.class,
     org.apache.sis.feature.FeaturesTest.class,
+    org.apache.sis.filter.CapabilitiesTest.class,
     org.apache.sis.filter.LeafExpressionTest.class,
     org.apache.sis.filter.LogicalFunctionTest.class,
     org.apache.sis.filter.UnaryFunctionTest.class,

@@ -832,7 +832,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Operator operator(final String name) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Capabilities.Operator(name);
     }
 
     /**
@@ -840,7 +840,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public SpatialOperator spatialOperator(final String name, final GeometryOperand[] geometryOperands) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Capabilities.SpatialOperator(name, geometryOperands);
     }
 
     /**
@@ -848,7 +848,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public FunctionName functionName(final String name, final int nargs) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Capabilities.FunctionName(name, null, nargs);
     }
 
     /**
@@ -856,7 +856,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Functions functions(final FunctionName[] functionNames) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Capabilities.Functions(functionNames);
     }
 
     /**
@@ -864,7 +864,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public SpatialOperators spatialOperators(final SpatialOperator[] spatialOperators) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Capabilities.SpatialOperators(spatialOperators);
     }
 
     /**
@@ -872,7 +872,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public ComparisonOperators comparisonOperators(final Operator[] comparisonOperators) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Capabilities.ComparisonOperators(comparisonOperators);
     }
 
     /**
@@ -880,7 +880,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public ArithmeticOperators arithmeticOperators(final boolean simple, final Functions functions) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Capabilities.ArithmeticOperators(simple, functions);
     }
 
     /**
@@ -890,7 +890,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     public ScalarCapabilities scalarCapabilities(final ComparisonOperators comparison,
             final ArithmeticOperators arithmetic, final boolean logical)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Capabilities.ScalarCapabilities(logical, comparison, arithmetic);
     }
 
     /**
@@ -900,7 +900,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     public SpatialCapabilities spatialCapabilities(
             final GeometryOperand[] geometryOperands, final SpatialOperators spatial)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Capabilities.SpatialCapabilities(geometryOperands, spatial);
     }
 
     /**
@@ -908,7 +908,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public IdCapabilities idCapabilities(final boolean eid, final boolean fid) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Capabilities.IdCapabilities(eid, fid);
     }
 
     /**
@@ -919,7 +919,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
             final ScalarCapabilities scalar, final SpatialCapabilities spatial,
             final TemporalCapabilities temporal, final IdCapabilities id)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Capabilities.FilterCapabilities(version, id, spatial, scalar, temporal);
     }
 
     /**
@@ -927,6 +927,6 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public TemporalCapabilities temporalCapabilities(TemporalOperand[] temporalOperands, TemporalOperators temporal) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Capabilities.TemporalCapabilities(temporalOperands, temporal);
     }
 }
