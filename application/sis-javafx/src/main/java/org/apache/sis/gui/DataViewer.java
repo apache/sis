@@ -215,7 +215,7 @@ public class DataViewer extends Application {
      * Invoked when the application should stop. No SIS application can be used after
      * this method has been invoked (i.e. the application can not be restarted).
      *
-     * @throws Exception if an error occurred.
+     * @throws Exception if an error occurred, for example while closing a data store.
      */
     @Override
     public void stop() throws Exception {

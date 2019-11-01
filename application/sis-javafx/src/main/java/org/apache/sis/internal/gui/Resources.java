@@ -66,7 +66,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CRSs = 1;
 
         /**
-         * Can not open “{0}”
+         * Can not close “{0}”. Data may be lost.
+         */
+        public static final short CanNotClose_1 = 12;
+
+        /**
+         * Can not open “{0}”.
          */
         public static final short CanNotReadFile_1 = 5;
 
@@ -74,6 +79,11 @@ public final class Resources extends IndexedResourceBundle {
          * Close
          */
         public static final short Close = 8;
+
+        /**
+         * Error closing file
+         */
+        public static final short ErrorClosingFile = 13;
 
         /**
          * Error opening file

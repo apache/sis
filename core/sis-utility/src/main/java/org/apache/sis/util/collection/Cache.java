@@ -1279,7 +1279,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     /**
      * Returns the set of entries in this cache. The returned set is subjects to the same caution
      * than the ones documented in the {@link ConcurrentHashMap#entrySet()} method, except that
-     * it doesn't support removal of elements (including through the {@link Iterator#remove}
+     * it does not support removal of elements (including through the {@link Iterator#remove}
      * method call).
      *
      * @return a view of the entries contained in this map.

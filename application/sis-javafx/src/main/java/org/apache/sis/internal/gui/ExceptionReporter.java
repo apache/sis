@@ -81,7 +81,7 @@ public final class ExceptionReporter {
      * @param arguments   the arguments for creating the text identified by the {@code text} key.
      * @param exception   the exception to report.
      */
-    private static void show(final short title, final short text, final Object[] arguments, final Throwable exception) {
+    static void show(final short title, final short text, final Object[] arguments, final Throwable exception) {
         if (exception != null) {
             String message = exception.getLocalizedMessage();
             if (message == null) {

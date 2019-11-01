@@ -20,8 +20,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Threads;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -70,10 +73,22 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
 
     /**
      * Invoked at application shutdown time for stopping the executor threads after they completed their task.
-     * This method returns immediately but the background threads may continue for some time if they did not
-     * finished their task yet.
+     * This method returns soon but the background threads may continue for some time if they did not finished
+     * their task yet.
+     *
+     * @throws Exception if an error occurred while closing at least one data store.
      */
-    public static void stop() {
+    public static void stop() throws Exception {
         EXECUTOR.shutdown();
+        try {
+            EXECUTOR.awaitTermination(30, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            /*
+             * Someone does not want to wait for termination.
+             * Closes the data stores now even if some of them may still be in use.
+             */
+            Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), BackgroundThreads.class, "stop", e);
+        }
+        ResourceLoader.closeAll();
     }
 }

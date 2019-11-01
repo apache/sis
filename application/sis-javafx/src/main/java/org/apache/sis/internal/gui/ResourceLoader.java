@@ -24,8 +24,11 @@ import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
+import javafx.application.Platform;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -55,7 +58,6 @@ import org.apache.sis.storage.DataStore;
  * and the associated resource is still in memory, it will be returned directly.
  *
  * @todo Set title. Add progress listener and cancellation capability.
- * @todo Need a mechanism for deciding when to close the data store. May need an usage count.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -176,5 +178,86 @@ public final class ResourceLoader extends Task<Resource> {
             name = Vocabulary.format(Vocabulary.Keys.Unknown);
         }
         return name;
+    }
+
+    /**
+     * Removes the given data store from cache and closes it. It is caller's responsibility
+     * to ensure that the given data store is not used anymore before to invoke this method.
+     * This method should be invoked from JavaFX thread for making sure there is no new usage
+     * of the given data store starting while we are closing it. However after the data store
+     * has been removed from the cache, the close action is performed in a background thread.
+     *
+     * @param  toClose  the data store to remove from the cache and to close.
+     * @return {@code true} if the value has been removed from the cache, or {@code false}
+     *         if it has not been found. Note that the data store is closed in all cases.
+     */
+    public static boolean removeAndClose(final DataStore toClose) {
+        /*
+         * A simpler code would be as below, but can not be used at this time because our
+         * Cache.entrySet() implementation does not support the Iterator.remove() operation.
+         *
+         * CACHE.values().removeIf((v) -> v == toClose);
+         */
+        boolean removed = false;
+        for (final Cache.Entry<Object,DataStore> entries : CACHE.entrySet()) {
+            if (entries.getValue() == toClose) {
+                removed |= CACHE.remove(entries.getKey(), toClose);
+            }
+        }
+        BackgroundThreads.execute(() -> {
+            try {
+                toClose.close();
+            } catch (final Throwable e) {
+                Platform.runLater(() -> {
+                    ExceptionReporter.show(Resources.Keys.ErrorClosingFile, Resources.Keys.CanNotClose_1,
+                                           new Object[] {toClose.getDisplayName()}, e);
+                });
+            }
+        });
+        return removed;
+    }
+
+    /**
+     * Closes all data stores. This method should be invoked only after all background threads
+     * terminated in case some of them were using a data store. The data stores will be closed
+     * in parallel.
+     *
+     * @throws Exception if an error occurred while closing at least one data store.
+     */
+    static void closeAll() throws Exception {
+        final Closer closer = new Closer();
+        do {
+            Stream.of(CACHE.keySet().toArray()).parallel().forEach(closer);
+        } while (!CACHE.isEmpty());
+        closer.rethrow();
+    }
+
+    /**
+     * The handler in charge of closing the data store and record the failures if some errors happen.
+     * The same handler instance may be used concurrently while closing many data stores in parallel.
+     */
+    private static final class Closer implements Consumer<Object> {
+        /** The error that occurred while closing a data store. */
+        private Exception error;
+
+        /** Closes the given data store. */
+        @Override public void accept(final Object source) {
+            final DataStore toClose = CACHE.remove(source);
+            if (source != null) try {
+                toClose.close();
+            } catch (Exception e) {
+                synchronized (this) {
+                    if (error == null) error = e;
+                    else error.addSuppressed(e);
+                }
+            }
+        }
+
+        /** If an error occurred, re-throws that error. */
+        synchronized void rethrow() throws Exception {
+            if (error != null) {
+                throw error;
+            }
+        }
     }
 }

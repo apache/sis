@@ -146,8 +146,8 @@ public class ResourceTree extends TreeView<Resource> {
                     addTo = (Root) root;
                 } else {
                     final TreeItem<Resource> group = new TreeItem<>();
-                    addTo = new Root(group);
-                    addTo.add(root);
+                    addTo = new Root(group, root);
+                    group.setValue(addTo);
                     setRoot(group);
                     setShowRoot(false);
                 }
@@ -236,15 +236,19 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
-     * Removes the given resource. A resource can be removed only if it is a root.
-     * If the given resource is not in this tree view or is not a root resource,
-     * then this method does nothing.
+     * Removes the given resource from the tree and closes it if it is a {@link DataStore}.
+     * It is caller's responsibility to ensure that the given resource is not used anymore.
+     * A resource can be removed only if it is a root. If the given resource is not in this
+     * tree view or is not a root resource, then this method does nothing.
      *
      * @param  resource  the resource to remove, or {@code null}.
-     * @return whether the resource has been removed.
      */
-    public boolean removeResource(final Resource resource) {
-        return findOrRemove(resource, true);
+    public void removeAndClose(final Resource resource) {
+        if (findOrRemove(resource, true)) {
+            if (resource instanceof DataStore) {
+                ResourceLoader.removeAndClose((DataStore) resource);
+            }
+        }
     }
 
     /**
@@ -463,7 +467,7 @@ public class ResourceTree extends TreeView<Resource> {
          * Invoked when user selected the "close" action in the contextual menu.
          */
         private void close(final ActionEvent event) {
-            ((ResourceTree) getTreeView()).removeResource(getItem());
+            ((ResourceTree) getTreeView()).removeAndClose(getItem());
         }
     }
 
@@ -608,9 +612,13 @@ public class ResourceTree extends TreeView<Resource> {
         /**
          * Creates a new aggregate which is going to be wrapped in the given item.
          * Caller should invoke {@code group.setValue(root)} after this constructor.
+         *
+         * @param  group     the new tree root which will contain "real" resources.
+         * @param  previous  the previous root, to be added in the new group.
          */
-        Root(final TreeItem<Resource> group) {
+        Root(final TreeItem<Resource> group, final Resource previous) {
             components = group.getChildren();
+            add(previous);
         }
 
         /**
