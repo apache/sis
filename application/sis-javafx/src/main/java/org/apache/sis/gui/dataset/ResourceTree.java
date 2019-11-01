@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -131,6 +132,7 @@ public class ResourceTree extends TreeView<Resource> {
      *         if it was already presents or if the given resource is {@code null}.
      */
     public boolean addResource(final Resource resource) {
+        assert Platform.isFxApplicationThread();
         if (resource == null) {
             return false;
         }
@@ -259,6 +261,7 @@ public class ResourceTree extends TreeView<Resource> {
      * @return whether the resource has been found in the roots.
      */
     private boolean findOrRemove(final Resource resource, final boolean remove) {
+        assert Platform.isFxApplicationThread();
         if (resource != null) {
             final TreeItem<Resource> item = getRoot();
             if (item != null) {
@@ -297,7 +300,7 @@ public class ResourceTree extends TreeView<Resource> {
     /**
      * Returns the locale to use for titles, messages, labels, etc.
      */
-    private Locale getLocale() {
+    final Locale getLocale() {
         return localized.getLocale();
     }
 

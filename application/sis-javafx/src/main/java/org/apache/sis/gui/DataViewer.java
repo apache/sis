@@ -133,7 +133,7 @@ public class DataViewer extends Application {
         content = new ResourceExplorer();
         final BorderPane pane = new BorderPane();
         pane.setTop(menus);
-        pane.setCenter(content.getPane());
+        pane.setCenter(content.getView());
         Scene scene = new Scene(pane);
         window.setTitle("Apache Spatial Information System");
         window.setScene(scene);
