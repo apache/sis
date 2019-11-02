@@ -122,6 +122,8 @@ abstract class Form<T> extends GridPane implements EventHandler<ActionEvent> {
     /**
      * Sets the information from the given metadata. Subclasses extract the collection of interest
      * and delegate to the {@link #setInformation(Collection, IntFunction)} method.
+     *
+     * @param  metadata  the metadata to show, or {@code null}.
      */
     abstract void setInformation(Metadata metadata);
 
@@ -199,6 +201,7 @@ abstract class Form<T> extends GridPane implements EventHandler<ActionEvent> {
     private void update(final int index) {
         rowsEnd = rowsStart;
         buildContent(information[index]);
+        setRowSpan(pagination, nextRowIndex());              // For avoiding to interfer with getRowCount().
         final ObservableList<Node> children = getChildren();
         children.subList(rowsEnd, children.size()).clear();
         setRowSpan(pagination, getRowCount());
@@ -229,7 +232,7 @@ abstract class Form<T> extends GridPane implements EventHandler<ActionEvent> {
             valueCtrl = (Label) children.get(rowsEnd + 1);
             labelCtrl.setText(label);
         } else {
-            final int row = (rowsEnd - rowsStart) / NUM_CHILD_PER_ROW;
+            final int row = nextRowIndex();
             labelCtrl = new Label(label);
             valueCtrl = new Label();
             labelCtrl.setLabelFor(valueCtrl);
@@ -241,6 +244,20 @@ abstract class Form<T> extends GridPane implements EventHandler<ActionEvent> {
         }
         valueCtrl.setText(value);
         rowsEnd += NUM_CHILD_PER_ROW;
+    }
+
+    /**
+     * Returns the index of the next row in the grid pane.
+     */
+    final int nextRowIndex() {
+        return (rowsEnd - rowsStart) / NUM_CHILD_PER_ROW;
+    }
+
+    /**
+     * Returns {@code true} if this form contains no data.
+     */
+    boolean isEmpty() {
+        return rowsStart == rowsEnd;
     }
 
     /**

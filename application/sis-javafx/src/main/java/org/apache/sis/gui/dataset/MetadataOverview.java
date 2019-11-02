@@ -32,6 +32,7 @@ import javafx.geometry.HPos;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
@@ -96,7 +97,7 @@ final class MetadataOverview {
      * This is similar to {@link javafx.scene.control.Accordion} except that we allow an arbitrary amount
      * of titled panes to be opened in same time.
      */
-    private final VBox panes;
+    private final ScrollPane content;
 
     /**
      * The locale to use for international strings.
@@ -136,12 +137,6 @@ final class MetadataOverview {
     private boolean worldMapLoaded;
 
     /**
-     * The metadata to show, or {@code null} if none.
-     * This is set by {@link #setMetadata(Metadata)}.
-     */
-    private Metadata metadata;
-
-    /**
      * If the metadata can not be obtained, the reason.
      *
      * @todo show in this control.
@@ -156,12 +151,23 @@ final class MetadataOverview {
     private int selectionCounter;
 
     /**
+     * The pane where to show information about resource identification, spatial representation, etc.
+     * Those panes will be added in the {@link #content} when we determined that they are not empty.
+     */
+    private final TitledPane[] information;
+
+    /**
      * Creates an initially empty metadata overview.
      */
     MetadataOverview(final Locale locale) {
         textLocale   = locale;
         formatLocale = Locale.getDefault(Locale.Category.FORMAT);
-        panes        = new VBox();
+        information  = new TitledPane[] {
+            new TitledPane("Resource identification", new IdentificationInfo()),
+            new TitledPane("Spatial representation",  new RepresentationInfo())
+        };
+        content = new ScrollPane(new VBox());
+        content.setFitToWidth(true);
     }
 
     /**
@@ -171,7 +177,7 @@ final class MetadataOverview {
      * @return the region to show.
      */
     public final Region getView() {
-        return panes;
+        return content;
     }
 
     /**
@@ -218,7 +224,7 @@ final class MetadataOverview {
                     }
                 }
 
-                /** Invoked when an error occurred while fetching metadata. à*/
+                /** Invoked when an error occurred while fetching metadata. */
                 @Override protected void failed() {
                     setMetadata((Metadata) null);
                     failure = getException();
@@ -231,30 +237,26 @@ final class MetadataOverview {
     /**
      * Sets the content of this pane to the given metadata.
      *
-     * @param  md  the metadata to show, or {@code null}.
+     * @param  metadata  the metadata to show, or {@code null}.
      */
-    public void setMetadata(final Metadata md) {
+    public void setMetadata(final Metadata metadata) {
         assert Platform.isFxApplicationThread();
-        metadata = md;
-        failure  = null;
-        final ObservableList<Node> children = panes.getChildren();
-        children.clear();
-        if (md != null) {
-            addIfNonEmpty(children, "Identification info",    new IdentificationInfo(), md);
-            addIfNonEmpty(children, "Spatial representation", new RepresentationInfo(), md);
-        }
-    }
-
-    /**
-     * Adds the given pane to the list of children if the pane is non-null and non-empty.
-     * If added, a {@link TitledPane} is created with the given title.
-     */
-    private static void addIfNonEmpty(final ObservableList<Node> children, final String title,
-            final Form<?> pane, final Metadata md)
-    {
-        if (pane != null && !pane.getChildren().isEmpty()) {
-            pane.setInformation(md);
-            children.add(new TitledPane(title, pane));
+        failure = null;
+        final ObservableList<Node> children = ((VBox) content.getContent()).getChildren();
+        int i = 0;
+        for (TitledPane pane : information) {
+            final Form<?> info = (Form<?>) pane.getContent();
+            info.setInformation(metadata);
+            final boolean isEmpty   = info.isEmpty();
+            final boolean isPresent = (i < children.size()) && children.get(i) == pane;
+            if (isEmpty == isPresent) {     // Should not be present if empty, or should be present if non-empty.
+                if (isEmpty) {
+                    children.remove(i);
+                } else {
+                    children.add(i, pane);
+                }
+            }
+            if (!isEmpty) i++;
         }
     }
 
@@ -296,7 +298,6 @@ final class MetadataOverview {
                 assert getChildren().get(1) == extentOnMap;
                 getChildren().set(1, extentOnMap = new Canvas());
                 setColumnSpan(extentOnMap, NUM_CHILD_PER_ROW);
-                setRowIndex(extentOnMap, 0);
                 setHalignment(extentOnMap, HPos.CENTER);
             }
         }
@@ -306,6 +307,14 @@ final class MetadataOverview {
          */
         private boolean isWorldMapEmpty() {
             return extentOnMap.getWidth() == 0 && extentOnMap.getHeight() == 0;
+        }
+
+        /**
+         * Returns {@code true} if this form contains no data.
+         */
+        @Override
+        boolean isEmpty() {
+            return super.isEmpty() && isWorldMapEmpty();
         }
 
         /**
@@ -321,7 +330,7 @@ final class MetadataOverview {
          */
         @Override
         void setInformation(final Metadata metadata) {
-            setInformation(nonNull(metadata.getIdentificationInfo()), Identification[]::new);
+            setInformation(nonNull(metadata == null ? null : metadata.getIdentificationInfo()), Identification[]::new);
         }
 
         /**
@@ -425,7 +434,7 @@ final class MetadataOverview {
                 text = IdentifiedObjects.toString(identifier);
             }
             addRow("Extent:", text);
-            setRowIndex(extentOnMap, getRowCount());
+            setRowIndex(extentOnMap, nextRowIndex());
         }
 
         /**
@@ -527,11 +536,13 @@ final class MetadataOverview {
         @Override
         void setInformation(final Metadata metadata) {
             referenceSystem = null;
-            setInformation(nonNull(metadata.getSpatialRepresentationInfo()), SpatialRepresentation[]::new);
-            for (final ReferenceSystem rs : nonNull(metadata.getReferenceSystemInfo())) {
-                if (rs != null) {
-                    referenceSystem = rs;
-                    break;
+            setInformation(nonNull(metadata == null ? null : metadata.getSpatialRepresentationInfo()), SpatialRepresentation[]::new);
+            if (metadata != null) {
+                for (final ReferenceSystem rs : nonNull(metadata.getReferenceSystemInfo())) {
+                    if (rs != null) {
+                        referenceSystem = rs;
+                        break;
+                    }
                 }
             }
         }
@@ -565,7 +576,7 @@ final class MetadataOverview {
     /**
      * @todo
      */
-    private void createContact() {
+    private void createContact(final Metadata metadata) {
         for (final Responsibility contact : nonNull(metadata.getContacts())) {
             for (final Party party : nonNull(contact.getParties())) {
                 final String name = string(party.getName());
