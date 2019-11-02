@@ -59,6 +59,9 @@ public class ResourceExplorer {
         pane      = new SplitPane();
         pane.getItems().setAll(resources, metadata.getView());
         resources.getSelectionModel().getSelectedItems().addListener(this::selectResource);
+        SplitPane.setResizableWithParent(resources, Boolean.FALSE);
+        SplitPane.setResizableWithParent(metadata.getView(), Boolean.TRUE);
+        pane.setDividerPosition(0, 300);
     }
 
     /**
