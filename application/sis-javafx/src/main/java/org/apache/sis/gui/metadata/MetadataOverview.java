@@ -49,7 +49,7 @@ import org.apache.sis.util.logging.Logging;
 /**
  * A panel showing a summary of metadata.
  *
- * @author  Smaniotto Enzo
+ * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1

@@ -45,7 +45,7 @@ import org.apache.sis.storage.Resource;
 /**
  *
  * @author  Johann Sorel (Geomatys)
- * @author  Smaniotto Enzo
+ * @author  Smaniotto Enzo (GSoC)
  * @version 1.0
  * @since   1.0
  * @module

@@ -23,7 +23,7 @@
  * (for example by adding new menu items),
  * but compatibility with future Apache SIS versions is not guaranteed.
  *
- * @author  Smaniotto Enzo
+ * @author  Smaniotto Enzo (GSoC)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

@@ -29,7 +29,7 @@ import org.apache.sis.gui.metadata.MetadataOverview;
 /**
  * A panel showing a {@linkplain ResourceTree tree of resources} together with their metadata.
  *
- * @author  Smaniotto Enzo
+ * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1

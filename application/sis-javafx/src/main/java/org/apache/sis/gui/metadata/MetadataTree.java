@@ -34,7 +34,7 @@ import org.opengis.referencing.ReferenceSystem;
 
 /**
  *
- * @author Siddhesh Rane
+ * @author Siddhesh Rane (GSoC)
  */
 final class MetadataTree extends TreeTableView<TreeTable.Node> {
 

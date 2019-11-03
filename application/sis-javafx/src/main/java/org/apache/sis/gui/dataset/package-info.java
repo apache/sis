@@ -18,7 +18,7 @@
 /**
  * Widgets about data {@link org.apache.sis.storage.Resource} and their metadata.
  *
- * @author  Smaniotto Enzo
+ * @author  Smaniotto Enzo (GSoC)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

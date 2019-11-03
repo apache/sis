@@ -48,7 +48,7 @@ import org.apache.sis.util.ArraysExt;
  * Current implementation shows a {@link ResourceExplorer} on which user can drop the files to open.
  * The content shown by this {@code Main} class may change in any future Apache SIS version.
  *
- * @author  Smaniotto Enzo
+ * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1

@@ -33,7 +33,7 @@ import org.apache.sis.util.Classes;
  * @todo If another error happen in a background thread while this dialog is visible,
  *       add the error in the existing dialog instead than opening a new one.
  *
- * @author  Smaniotto Enzo
+ * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
