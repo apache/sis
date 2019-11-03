@@ -53,7 +53,6 @@ import org.opengis.metadata.extent.GeographicDescription;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.spatial.Dimension;
-import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.GridSpatialRepresentation;
 import org.opengis.referencing.ReferenceSystem;
@@ -378,17 +377,22 @@ final class MetadataOverview {
             }
             title.setText(text);
             /*
-             * The abstract, or if there is no abstract the credit as a fallback because it can provide
-             * some hints about the product. The topic category (climatology, health, etc.) follows.
+             * The abstract, or if there is no abstract the purpose, or if no purpose the credit as a fallback.
+             * We use those fallback because they can provide some hints about the product.
+             * The topic category (climatology, health, etc.) follows.
              */
             short label = Resources.Keys.Abstract;
             text = owner.string(info.getAbstract());
             if (text == null) {
-                for (final InternationalString c : nonNull(info.getCredits())) {
-                    text = owner.string(c);
-                    if (text != null) {
-                        label = Resources.Keys.Credit;
-                        break;
+                label = Resources.Keys.Purpose;
+                text = owner.string(info.getPurpose());
+                if (text == null) {
+                    for (final InternationalString c : nonNull(info.getCredits())) {
+                        text = owner.string(c);
+                        if (text != null) {
+                            label = Resources.Keys.Credit;
+                            break;
+                        }
                     }
                 }
             }
@@ -607,26 +611,50 @@ final class MetadataOverview {
         /**
          * Invoked when new spatial representation information should be shown.
          * This method updates all fields in this section with the content of given information.
+         * The information to show depends on the {@code info} subtype.
          */
         @Override
         void buildContent(final SpatialRepresentation info) {
-            addLine(Resources.Keys.ReferenceSystem, IdentifiedObjects.getName(referenceSystem, null));
             if (info instanceof GridSpatialRepresentation) {
-                final GridSpatialRepresentation sr = (GridSpatialRepresentation) info;
-                final StringBuffer buffer = new StringBuffer();
-                for (final Dimension dim : nonNull(sr.getAxisDimensionProperties())) {
-                    owner.getNumberFormat().format(dim.getDimensionSize(), buffer, new FieldPosition(0));
-                    buffer.append(' ').append(owner.string(Types.getCodeTitle(dim.getDimensionName()))).append(" × ");
-                }
-                if (buffer.length() != 0) {
-                    buffer.setLength(buffer.length() - 3);
-                    addLine(Resources.Keys.Dimensions, buffer.toString());
-                }
-                final CellGeometry cg = sr.getCellGeometry();
-                if (cg != null) {
-                    addLine(Resources.Keys.CellGeometry, owner.string(Types.getCodeTitle(cg)));
-                }
+                build((GridSpatialRepresentation) info);
             }
+            addLine(Resources.Keys.ReferenceSystem, IdentifiedObjects.getName(referenceSystem, null));
+        }
+
+        /**
+         * Adds information specific to the {@link GridSpatialRepresentation} subtype.
+         *
+         * @todo Change the representation for using a table instead. In addition of dimension name and size,
+         *       the metadata may also provide a more meaningful title (e.g. "longitude"), a description and
+         *       the resolution. Note that VectorSpatialRepresentation would also needs a table.
+         */
+        private void build(final GridSpatialRepresentation info) {
+            int dimensionCount = 0;
+            final StringBuffer buffer = new StringBuffer();
+            for (final Dimension dim : nonNull(info.getAxisDimensionProperties())) {
+                final String  name = owner.string(Types.getCodeTitle(dim.getDimensionName()));
+                final Integer size = dim.getDimensionSize();
+                if (size != null) {
+                    owner.getNumberFormat().format(size, buffer, new FieldPosition(0));
+                    if (name != null) buffer.append(' ');
+                }
+                if (name != null) {
+                    buffer.append(name);
+                } else if (size == null) {
+                    buffer.append('?');
+                }
+                buffer.append(" × ");
+                dimensionCount++;
+            }
+            if (dimensionCount != 0) {
+                buffer.setLength(buffer.length() - 3);
+                addLine(Resources.Keys.Dimensions, buffer.toString());
+            }
+            final Integer nd = info.getNumberOfDimensions();
+            if (nd != null && nd != dimensionCount) {
+                addLine(Resources.Keys.NumberOfDimensions, owner.getNumberFormat().format(dimensionCount));
+            }
+            addLine(Resources.Keys.CellGeometry, owner.string(Types.getCodeTitle(info.getCellGeometry())));
         }
     }
 

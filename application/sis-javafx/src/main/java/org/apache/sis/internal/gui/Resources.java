@@ -146,6 +146,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Loading = 7;
 
         /**
+         * Number of dimensions:
+         */
+        public static final short NumberOfDimensions = 27;
+
+        /**
          * Open…
          */
         public static final short Open = 11;
@@ -159,6 +164,11 @@ public final class Resources extends IndexedResourceBundle {
          * Publication date:
          */
         public static final short PublicationDate = 21;
+
+        /**
+         * Purpose:
+         */
+        public static final short Purpose = 28;
 
         /**
          * Reference system:
