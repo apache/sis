@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.gui.dataset;
+package org.apache.sis.gui.metadata;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,7 +85,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  * @since   1.1
  * @module
  */
-final class MetadataOverview {
+public class MetadataOverview {
     /**
      * Minimal size of rectangles to be drawn by {@link IdentificationInfo#drawOnMap(GeographicBoundingBox)}.
      * If a rectangle is smaller, it will be expanded to this size. We use a minimal size because otherwise
@@ -160,10 +160,14 @@ final class MetadataOverview {
 
     /**
      * Creates an initially empty metadata overview.
+     *
+     * @param  textLocale  the locale for the text.
+     * @param  dataLocale  the locale for formatting numbers and dates.
+     *                     This is often the same than {@code textLocale}.
      */
-    MetadataOverview(final Locale locale) {
-        localized    = Resources.forLocale(locale);
-        formatLocale = Locale.getDefault(Locale.Category.FORMAT);
+    public MetadataOverview(final Locale textLocale, final Locale dataLocale) {
+        localized    = Resources.forLocale(textLocale);
+        formatLocale = dataLocale;
         information  = new TitledPane[] {
             new TitledPane(localized.getString(Resources.Keys.ResourceIdentification), new IdentificationInfo(this)),
             new TitledPane(localized.getString(Resources.Keys.SpatialRepresentation),  new RepresentationInfo(this))
@@ -265,7 +269,7 @@ final class MetadataOverview {
          */
         int i = 0;
         for (TitledPane pane : information) {
-            final MetadataSection<?> info = (MetadataSection<?>) pane.getContent();
+            final Section<?> info = (Section<?>) pane.getContent();
             info.setInformation(metadata);
             final boolean isEmpty   = info.isEmpty();
             final boolean isPresent = (i < children.size()) && children.get(i) == pane;
@@ -288,7 +292,7 @@ final class MetadataOverview {
      * The same pane can be used for an arbitrary amount of identifications.
      * Each instance is identified by its title.
      */
-    private static final class IdentificationInfo extends MetadataSection<Identification> {
+    private static final class IdentificationInfo extends Section<Identification> {
         /**
          * The resource title, or if non the identifier as a fallback.
          */
@@ -577,7 +581,7 @@ final class MetadataOverview {
      * The pane where to show the values of {@link SpatialRepresentation} objects.
      * The same pane can be used for an arbitrary amount of spatial representations.
      */
-    private static final class RepresentationInfo extends MetadataSection<SpatialRepresentation> {
+    private static final class RepresentationInfo extends Section<SpatialRepresentation> {
         /**
          * The reference system, or {@code null} if none.
          */

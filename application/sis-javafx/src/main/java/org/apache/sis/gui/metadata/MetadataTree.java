@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.gui.dataset;
+package org.apache.sis.gui.metadata;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -36,7 +36,7 @@ import org.opengis.referencing.ReferenceSystem;
  *
  * @author Siddhesh Rane
  */
-final class MetadataNode extends TreeTableView<TreeTable.Node> {
+final class MetadataTree extends TreeTableView<TreeTable.Node> {
 
     private static final Predicate<TreeTable.Node> HIDE_EMPTY_LEAF = t -> !t.isLeaf() || t.getValue(TableColumn.VALUE) != null;
     private static final Predicate<TreeTable.Node> EXPAND_SINGLE_CHILD = node -> node.getChildren().size() == 1 || node.getParent() == null;
@@ -118,12 +118,12 @@ final class MetadataNode extends TreeTableView<TreeTable.Node> {
         return order.get();
     }
 
-    MetadataNode(TreeTable treeTable) {
+    MetadataTree(TreeTable treeTable) {
         this();
         setTreeTable(treeTable);
     }
 
-    private MetadataNode() {
+    private MetadataTree() {
         createTableColumns();
         setShowRoot(false);
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);

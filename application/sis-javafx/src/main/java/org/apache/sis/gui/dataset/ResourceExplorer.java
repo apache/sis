@@ -16,12 +16,14 @@
  */
 package org.apache.sis.gui.dataset;
 
+import java.util.Locale;
 import java.util.Collection;
 import javafx.collections.ListChangeListener;
 import javafx.scene.layout.Region;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TreeItem;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.gui.metadata.MetadataOverview;
 
 
 /**
@@ -55,7 +57,7 @@ public class ResourceExplorer {
      */
     public ResourceExplorer() {
         resources = new ResourceTree();
-        metadata  = new MetadataOverview(resources.getLocale());
+        metadata  = new MetadataOverview(resources.getLocale(), Locale.getDefault(Locale.Category.FORMAT));
         pane      = new SplitPane();
         pane.getItems().setAll(resources, metadata.getView());
         resources.getSelectionModel().getSelectedItems().addListener(this::selectResource);

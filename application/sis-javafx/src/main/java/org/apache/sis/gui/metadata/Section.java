@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.gui.dataset;
+package org.apache.sis.gui.metadata;
 
 import java.text.NumberFormat;
 import java.util.Collection;
@@ -53,7 +53,7 @@ import org.apache.sis.util.ArraysExt;
  * @since 1.1
  * @module
  */
-abstract class MetadataSection<T> extends GridPane implements EventHandler<ActionEvent> {
+abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> {
     /**
      * Margin to keep around all forms.
      */
@@ -110,7 +110,7 @@ abstract class MetadataSection<T> extends GridPane implements EventHandler<Actio
     /**
      * Creates a new section.
      */
-    MetadataSection(final MetadataOverview owner) {
+    Section(final MetadataOverview owner) {
         this.owner = owner;
         pageGroup  = new ToggleGroup();
         pagination = new TilePane(Orientation.VERTICAL);
