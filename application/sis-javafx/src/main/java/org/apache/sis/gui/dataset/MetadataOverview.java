@@ -47,10 +47,6 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
-import org.opengis.metadata.citation.Party;
-import org.opengis.metadata.citation.Individual;
-import org.opengis.metadata.citation.Organisation;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicDescription;
@@ -629,26 +625,6 @@ final class MetadataOverview {
                 final CellGeometry cg = sr.getCellGeometry();
                 if (cg != null) {
                     addLine(Resources.Keys.CellGeometry, owner.string(Types.getCodeTitle(cg)));
-                }
-            }
-        }
-    }
-
-    /**
-     * @todo
-     */
-    private void createContact(final Metadata metadata) {
-        for (final Responsibility contact : nonNull(metadata.getContacts())) {
-            for (final Party party : nonNull(contact.getParties())) {
-                final String name = string(party.getName());
-                if (name != null) {
-                    String partyType = "Party";
-                    if (party instanceof Organisation) {
-                        partyType = "Organisation";
-                    } else if (party instanceof Individual) {
-                        partyType = "Author";
-                    }
-                    // TODO
                 }
             }
         }
