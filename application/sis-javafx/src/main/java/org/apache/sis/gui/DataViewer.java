@@ -137,8 +137,8 @@ public class DataViewer extends Application {
         Scene scene = new Scene(pane);
         window.setTitle("Apache Spatial Information System");
         window.setScene(scene);
-        window.setWidth(800);
-        window.setHeight(650);
+        window.setWidth(1000);
+        window.setHeight(800);
         window.show();
     }
 

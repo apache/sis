@@ -69,6 +69,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
@@ -402,7 +403,7 @@ final class MetadataOverview {
                 }
             }
             if (text == null) {
-                text = Vocabulary.getResources(owner.localized.getLocale()).getString(Vocabulary.Keys.Untitled);
+                text = vocabulary(Vocabulary.Keys.Untitled);
             }
             title.setText(text);
             /*
@@ -457,11 +458,14 @@ final class MetadataOverview {
              */
             addLine(Resources.Keys.TypeOfResource, owner.string(nonNull(info.getSpatialRepresentationTypes())));
             /*
-             * Write the first description about the spatio-temporal extent,
-             * then draw all geographic extents on a map.
+             * Write the first description about the spatio-temporal extent, then draw all geographic bounding boxes
+             * on a world map. If the bounding box encompasses the whole world, replace it by a "World" description.
+             * The reason is that drawing a box over the whole world is not very informative; it rather looks like a
+             * border around the image.
              */
             text = null;
             Identifier identifier = null;
+            boolean isWorld = false;
             for (final Extent extent : nonNull(info.getExtents())) {
                 if (extent != null) {
                     if (text == null) {
@@ -471,8 +475,8 @@ final class MetadataOverview {
                         if (identifier == null && ge instanceof GeographicDescription) {
                             identifier = ((GeographicDescription) ge).getGeographicIdentifier();
                         }
-                        if (ge instanceof GeographicBoundingBox) {
-                            drawOnMap((GeographicBoundingBox) ge);
+                        if (!isWorld && ge instanceof GeographicBoundingBox) {
+                            isWorld = drawOnMap((GeographicBoundingBox) ge);
                         }
                     }
                 }
@@ -480,8 +484,21 @@ final class MetadataOverview {
             if (text == null) {
                 text = IdentifiedObjects.toString(identifier);
             }
+            if (isWorld) {
+                clearWorldMap();
+                if (text == null) {
+                    text = vocabulary(Vocabulary.Keys.World);
+                }
+            }
             addLine(Resources.Keys.Extent, text);
             setRowIndex(extentOnMap, nextRowIndex());
+        }
+
+        /**
+         * Returns a localized word from the {@link Vocabulary} resources.
+         */
+        private String vocabulary(final short key) {
+            return Vocabulary.getResources(owner.localized.getLocale()).getString(key);
         }
 
         /**
@@ -489,44 +506,71 @@ final class MetadataOverview {
          * if there is many bounding boxes on the same map.
          *
          * @param  bbox  the bounding box to draw.
+         * @return {@code true} if the given bounding box encompasses the whole world.
          */
-        private void drawOnMap(final GeographicBoundingBox bbox) {
+        private boolean drawOnMap(final GeographicBoundingBox bbox) {
             double north = Latitude.clamp(bbox.getNorthBoundLatitude());
             double south = Latitude.clamp(bbox.getSouthBoundLatitude());
             double east  =                bbox.getEastBoundLongitude();
             double west  =                bbox.getWestBoundLongitude();
-            if (!(north >= south) || !Double.isFinite(east) || !Double.isFinite(west)) {
-                return;
-            }
-            // Normalize `west` in the [-180 … +180)° range and apply same normalization on `east`.
-            east -= (west - (west = Longitude.normalize(west)));
-            if (isWorldMapEmpty()) {
-                final Image image = owner.getWorldMap();
-                if (image == null) {
-                    return;                         // Failed to load the image.
+            if (Math.abs(east - west) >= (Longitude.MAX_VALUE - Longitude.MIN_VALUE - 2*Formulas.ANGULAR_TOLERANCE)) {
+                if (north >= Latitude.MAX_VALUE - Formulas.ANGULAR_TOLERANCE &&
+                    south <= Latitude.MIN_VALUE + Formulas.ANGULAR_TOLERANCE)
+                {
+                    return true;                            // Bounding box encompasses the whole world.
                 }
-                extentOnMap.setWidth (image.getWidth());
-                extentOnMap.setHeight(image.getHeight());
-                extentOnMap.getGraphicsContext2D().drawImage(image, 0, 0);
+                west = Longitude.MIN_VALUE;
+                east = Longitude.MAX_VALUE;                 // Whole world in longitudes, but not in latitude.
+            } else {
+                if (west != 180) west = Longitude.normalize(west);
+                if (east != 180) east = Longitude.normalize(east);
+                if (east < west) {
+                    east += Longitude.MAX_VALUE - Longitude.MIN_VALUE;      // Box crosses the anti-meridian.
+                }
             }
-            double x = (Longitude.MAX_VALUE - Longitude.MIN_VALUE)  / 2 + west;
-            double y =  (Latitude.MAX_VALUE -  Latitude.MIN_VALUE)  / 2 - north;
-            double w = east  - west;        // TODO: handle envelope spanning anti-meridian.
-            double h = north - south;
-            if (w < MIN_RECT_SIZE) {
-                x -= (MIN_RECT_SIZE - w) / 2;
-                w  =  MIN_RECT_SIZE;
+            if (north >= south && Double.isFinite(east) && Double.isFinite(west)) {
+                double x = (Longitude.MAX_VALUE - Longitude.MIN_VALUE)  / 2 + west;
+                double y =  (Latitude.MAX_VALUE -  Latitude.MIN_VALUE)  / 2 - north;
+                double w = east  - west;
+                double h = north - south;
+                if (w < MIN_RECT_SIZE) {
+                    x -= (MIN_RECT_SIZE - w) / 2;
+                    w  =  MIN_RECT_SIZE;
+                }
+                if (h < MIN_RECT_SIZE) {
+                    y -= (MIN_RECT_SIZE - h) / 2;
+                    h  =  MIN_RECT_SIZE;
+                }
+                final double wi = Math.min(w, Longitude.MAX_VALUE - x);         // Width of part inside [-180 … +180]°.
+                w -= wi;                                                        // Width of part not drawn by `wi`.
+                /*
+                 * At this point we got the coordinates of the rectangle to draw, adjusted for making sure
+                 * that they are inside valid ranges. The `w` variable is usually 0, unless we had to cut
+                 * the rectangle in two parts because of anti-meridian crossing.
+                 */
+                if (isWorldMapEmpty()) {
+                    final Image image = owner.getWorldMap();
+                    if (image == null) {
+                        return false;                   // Failed to load the image.
+                    }
+                    extentOnMap.setWidth (image.getWidth());
+                    extentOnMap.setHeight(image.getHeight());
+                    extentOnMap.getGraphicsContext2D().drawImage(image, 0, 0);
+                }
+                final GraphicsContext gc = extentOnMap.getGraphicsContext2D();
+                gc.setStroke(Color.DARKBLUE);
+                gc.setGlobalAlpha(0.1);
+                gc.fillRect(x, y, wi, h);
+                if (w > 0) {
+                    gc.fillRect(Longitude.MIN_VALUE, y, w, h);
+                }
+                gc.setGlobalAlpha(1.0);
+                gc.strokeRect(x, y, wi, h);
+                if (w > 0) {
+                    gc.strokeRect(Longitude.MIN_VALUE, y, w, h);
+                }
             }
-            if (h < MIN_RECT_SIZE) {
-                y -= (MIN_RECT_SIZE - h) / 2;
-                h  =  MIN_RECT_SIZE;
-            }
-            final GraphicsContext gc = extentOnMap.getGraphicsContext2D();
-            gc.setStroke(Color.DARKBLUE);
-            gc.setGlobalAlpha(0.1);
-            gc.fillRect(x, y, w, h);
-            gc.setGlobalAlpha(1.0);
-            gc.strokeRect(x, y, w, h);
+            return false;
         }
     }
 
