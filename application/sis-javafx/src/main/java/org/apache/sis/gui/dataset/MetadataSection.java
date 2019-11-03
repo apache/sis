@@ -54,14 +54,14 @@ import org.apache.sis.util.ArraysExt;
  * @since 1.1
  * @module
  */
-abstract class Form<T> extends GridPane implements EventHandler<ActionEvent> {
+abstract class MetadataSection<T> extends GridPane implements EventHandler<ActionEvent> {
     /**
      * Margin to keep around all forms.
      */
     private static final Insets PADDING = new Insets(12);
 
     /**
-     * The pane which contains this form. Used for fetching information like number format
+     * The pane which contains this section. Used for fetching information like number format
      * or localization resources.
      */
     final MetadataOverview owner;
@@ -73,7 +73,7 @@ abstract class Form<T> extends GridPane implements EventHandler<ActionEvent> {
     static final int NUM_CHILD_PER_LINE = 2;
 
     /**
-     * For selecting which form to show when there is many. Children are {@link ToggleButton}.
+     * For selecting which section to show when there is many. Children are {@link ToggleButton}.
      * The number of buttons should be the length of {@link #information} array.
      */
     private final TilePane pagination;
@@ -84,13 +84,13 @@ abstract class Form<T> extends GridPane implements EventHandler<ActionEvent> {
     private final ToggleGroup pageGroup;
 
     /**
-     * The information to show in the form, or {@code null} if not yet determined.
+     * The information to show in this section, or {@code null} if not yet determined.
      * This array shall not contain any null element.
      */
     private T[] information;
 
     /**
-     * Index of the grid pane row containing the first (label, value) pair of this form.
+     * Index of the grid pane row containing the first (label, value) pair of this section.
      * This is usually 0, unless there is some heading rows managed by the subclass.
      */
     private int rowOfFirstLine;
@@ -109,9 +109,9 @@ abstract class Form<T> extends GridPane implements EventHandler<ActionEvent> {
     private int linesEndIndex;
 
     /**
-     * Creates a new form.
+     * Creates a new section.
      */
-    Form(final MetadataOverview owner) {
+    MetadataSection(final MetadataOverview owner) {
         this.owner = owner;
         pageGroup  = new ToggleGroup();
         pagination = new TilePane(Orientation.VERTICAL);
@@ -236,7 +236,7 @@ abstract class Form<T> extends GridPane implements EventHandler<ActionEvent> {
     abstract void buildContent(T info);
 
     /**
-     * Adds a (label, value) pair to this form.
+     * Adds a (label, value) pair to this section.
      * This method does nothing if the given {@code value} is null.
      *
      * @param  label  a {@link Resources.Keys} for the label of the line to add.
@@ -283,7 +283,7 @@ abstract class Form<T> extends GridPane implements EventHandler<ActionEvent> {
     }
 
     /**
-     * Returns {@code true} if this form contains no data.
+     * Returns {@code true} if this section contains no data.
      */
     boolean isEmpty() {
         return linesStartIndex == linesEndIndex;

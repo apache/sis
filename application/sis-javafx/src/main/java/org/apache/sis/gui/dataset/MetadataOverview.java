@@ -294,7 +294,7 @@ final class MetadataOverview {
          */
         int i = 0;
         for (TitledPane pane : information) {
-            final Form<?> info = (Form<?>) pane.getContent();
+            final MetadataSection<?> info = (MetadataSection<?>) pane.getContent();
             info.setInformation(metadata, grid);
             final boolean isEmpty   = info.isEmpty();
             final boolean isPresent = (i < children.size()) && children.get(i) == pane;
@@ -317,7 +317,7 @@ final class MetadataOverview {
      * The same pane can be used for an arbitrary amount of identifications.
      * Each instance is identified by its title.
      */
-    private static final class IdentificationInfo extends Form<Identification> {
+    private static final class IdentificationInfo extends MetadataSection<Identification> {
         /**
          * The resource title, or if non the identifier as a fallback.
          */
@@ -371,7 +371,7 @@ final class MetadataOverview {
         }
 
         /**
-         * Returns {@code true} if this form contains no data.
+         * Returns {@code true} if this section contains no data.
          */
         @Override
         boolean isEmpty() {
@@ -388,8 +388,7 @@ final class MetadataOverview {
 
         /**
          * Invoked when new identification information should be shown.
-         * This method updates all fields in this form with the content
-         * of given identification information.
+         * This method updates all fields in this section with the content of given identification information.
          */
         @Override
         void buildContent(final Identification info) {
@@ -559,7 +558,7 @@ final class MetadataOverview {
      * The pane where to show the values of {@link SpatialRepresentation} objects.
      * The same pane can be used for an arbitrary amount of spatial representations.
      */
-    private static final class RepresentationInfo extends Form<SpatialRepresentation> {
+    private static final class RepresentationInfo extends MetadataSection<SpatialRepresentation> {
         /**
          * The reference system, or {@code null} if none.
          */
@@ -592,7 +591,7 @@ final class MetadataOverview {
 
         /**
          * Invoked when new spatial representation information should be shown.
-         * This method updates all fields in this form with the content of given information.
+         * This method updates all fields in this section with the content of given information.
          */
         @Override
         void buildContent(final SpatialRepresentation info) {
