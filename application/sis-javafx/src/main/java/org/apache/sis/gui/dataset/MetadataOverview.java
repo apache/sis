@@ -65,12 +65,10 @@ import org.opengis.util.ControlledVocabulary;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.measure.Latitude;
@@ -153,9 +151,6 @@ final class MetadataOverview {
 
     /**
      * If the metadata or the grid geometry can not be obtained, the reason.
-     * A non-null value does not necessarily implies that there is no metadata to show.
-     * The error may have occurred while fetching additional information after the main
-     * metadata, in which case the error is considered as a warning.
      *
      * @todo show in this control.
      */
@@ -164,7 +159,7 @@ final class MetadataOverview {
     /**
      * The pane where to show information about resource identification, spatial representation, etc.
      * Those panes will be added in the {@link #content} when we determined that they are not empty.
-     * The content of those panes is updated by {@link #setMetadata(Metadata, GridGeometry)}.
+     * The content of those panes is updated by {@link #setMetadata(Metadata)}.
      */
     private final TitledPane[] information;
 
@@ -214,7 +209,7 @@ final class MetadataOverview {
 
     /**
      * Fetches the metadata in a background thread and delegates to
-     * {@link #setMetadata(Metadata, GridGeometry)} when ready.
+     * {@link #setMetadata(Metadata)} when ready.
      *
      * @param  resource  the resource for which to show metadata, or {@code null}.
      */
@@ -225,31 +220,15 @@ final class MetadataOverview {
             loader = null;
         }
         if (resource == null) {
-            setMetadata(null, null);
+            setMetadata((Metadata) null);
         } else {
             final class Getter extends Task<Metadata> {
-                /**
-                 * The grid resource, fetched as a complement to metadata.
-                 */
-                private GridGeometry grid;
-
-                /**
-                 * If we failed to get the grid, consider as a warning (not a failure).
-                 */
-                private DataStoreException warning;
-
                 /**
                  * Invoked in a background thread for fetching metadata,
                  * eventually with other information like grid geometry.
                  */
                 @Override protected Metadata call() throws DataStoreException {
-                    final Metadata metadata = resource.getMetadata();
-                    if (resource instanceof GridCoverageResource && !isCancelled()) try {
-                        grid = ((GridCoverageResource) resource).getGridGeometry();
-                    } catch (DataStoreException e) {
-                        warning = e;
-                    }
-                    return metadata;
+                    return resource.getMetadata();
                 }
 
                 /**
@@ -257,8 +236,7 @@ final class MetadataOverview {
                  */
                 @Override protected void succeeded() {
                     if (!isCancelled()) {
-                        setMetadata(getValue(), grid);
-                        error = warning;
+                        setMetadata(getValue());
                     }
                 }
 
@@ -267,7 +245,7 @@ final class MetadataOverview {
                  */
                 @Override protected void failed() {
                     if (!isCancelled()) {
-                        setMetadata(null, null);
+                        setMetadata((Metadata) null);
                         error = getException();
                     }
                 }
@@ -277,14 +255,11 @@ final class MetadataOverview {
     }
 
     /**
-     * Sets the content of this pane to the given metadata. The metadata can be completed
-     * by an optional {@link GridGeometry}, which can be used for producing more complete
-     * information in the "Spatial representation" pane.
+     * Sets the content of this pane to the given metadata.
      *
      * @param  metadata  the metadata to show, or {@code null}.
-     * @param  grid      if the resource is a {@link GridCoverageResource}, the grid geometry.
      */
-    public void setMetadata(final Metadata metadata, final GridGeometry grid) {
+    public void setMetadata(final Metadata metadata) {
         assert Platform.isFxApplicationThread();
         error = null;
         final ObservableList<Node> children = ((VBox) content.getContent()).getChildren();
@@ -296,7 +271,7 @@ final class MetadataOverview {
         int i = 0;
         for (TitledPane pane : information) {
             final MetadataSection<?> info = (MetadataSection<?>) pane.getContent();
-            info.setInformation(metadata, grid);
+            info.setInformation(metadata);
             final boolean isEmpty   = info.isEmpty();
             final boolean isPresent = (i < children.size()) && children.get(i) == pane;
             if (isEmpty == isPresent) {     // Should not be present if empty, or should be present if non-empty.
@@ -383,7 +358,7 @@ final class MetadataOverview {
          * Sets the identification information from the given metadata.
          */
         @Override
-        void setInformation(final Metadata metadata, final GridGeometry grid) {
+        void setInformation(final Metadata metadata) {
             setInformation(nonNull(metadata == null ? null : metadata.getIdentificationInfo()), Identification[]::new);
         }
 
@@ -620,7 +595,7 @@ final class MetadataOverview {
          * Sets the spatial representation information from the given metadata.
          */
         @Override
-        void setInformation(final Metadata metadata, final GridGeometry grid) {
+        void setInformation(final Metadata metadata) {
             referenceSystem = null;
             setInformation(nonNull(metadata == null ? null : metadata.getSpatialRepresentationInfo()), SpatialRepresentation[]::new);
             if (metadata != null) {

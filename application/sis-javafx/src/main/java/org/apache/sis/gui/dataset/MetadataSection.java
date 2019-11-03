@@ -35,7 +35,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.TilePane;
 import org.opengis.metadata.Metadata;
-import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.ArraysExt;
 
@@ -143,9 +142,8 @@ abstract class MetadataSection<T> extends GridPane implements EventHandler<Actio
      * and delegate to the {@link #setInformation(Collection, IntFunction)} method.
      *
      * @param  metadata  the metadata to show, or {@code null}.
-     * @param  grid      the grid geometry if available, or {@code null}.
      */
-    abstract void setInformation(Metadata metadata, GridGeometry grid);
+    abstract void setInformation(Metadata metadata);
 
     /**
      * Specifies a new set of information objects to show. This method takes a snapshot of
