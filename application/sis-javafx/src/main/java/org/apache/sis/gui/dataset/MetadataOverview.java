@@ -28,16 +28,20 @@ import java.util.StringJoiner;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.concurrent.Worker;
 import javafx.geometry.HPos;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TitledPane;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -52,8 +56,6 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicDescription;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.identification.Identification;
-import org.opengis.metadata.identification.DataIdentification;
-import org.opengis.metadata.identification.ServiceIdentification;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.spatial.SpatialRepresentation;
@@ -63,14 +65,19 @@ import org.opengis.util.ControlledVocabulary;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Vocabulary;
 
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 
@@ -100,9 +107,9 @@ final class MetadataOverview {
     private final ScrollPane content;
 
     /**
-     * The locale to use for international strings.
+     * The resources for localized strings. Stored because needed often.
      */
-    private final Locale textLocale;
+    final Resources localized;
 
     /**
      * The locale to use for date/number formatters.
@@ -137,22 +144,26 @@ final class MetadataOverview {
     private boolean worldMapLoaded;
 
     /**
-     * If the metadata can not be obtained, the reason.
+     * If this {@link MetadataOverview} is loading metadata, the worker doing this task.
+     * Otherwise {@code null}. This is used for cancelling the currently running loading
+     * process if {@link #setMetadata(Resource)} is invoked again before completion.
+     */
+    private Worker<Metadata> loader;
+
+    /**
+     * If the metadata or the grid geometry can not be obtained, the reason.
+     * A non-null value does not necessarily implies that there is no metadata to show.
+     * The error may have occurred while fetching additional information after the main
+     * metadata, in which case the error is considered as a warning.
      *
      * @todo show in this control.
      */
-    private Throwable failure;
-
-    /**
-     * Incremented every time that a new metadata needs to be shown.
-     * This is used in case two calls to {@link #setMetadata(Resource)}
-     * are run concurrently and do not finish in the order they were started.
-     */
-    private int selectionCounter;
+    private Throwable error;
 
     /**
      * The pane where to show information about resource identification, spatial representation, etc.
      * Those panes will be added in the {@link #content} when we determined that they are not empty.
+     * The content of those panes is updated by {@link #setMetadata(Metadata, GridGeometry)}.
      */
     private final TitledPane[] information;
 
@@ -160,11 +171,11 @@ final class MetadataOverview {
      * Creates an initially empty metadata overview.
      */
     MetadataOverview(final Locale locale) {
-        textLocale   = locale;
+        localized    = Resources.forLocale(locale);
         formatLocale = Locale.getDefault(Locale.Category.FORMAT);
         information  = new TitledPane[] {
-            new TitledPane("Resource identification", new IdentificationInfo()),
-            new TitledPane("Spatial representation",  new RepresentationInfo())
+            new TitledPane(localized.getString(Resources.Keys.ResourceIdentification), new IdentificationInfo(this)),
+            new TitledPane(localized.getString(Resources.Keys.SpatialRepresentation),  new RepresentationInfo(this))
         };
         content = new ScrollPane(new VBox());
         content.setFitToWidth(true);
@@ -183,7 +194,7 @@ final class MetadataOverview {
     /**
      * Returns the format to use for writing numbers.
      */
-    private NumberFormat getNumberFormat() {
+    final NumberFormat getNumberFormat() {
         if (numberFormat == null) {
             numberFormat = NumberFormat.getInstance(formatLocale);
         }
@@ -201,33 +212,63 @@ final class MetadataOverview {
     }
 
     /**
-     * Fetches the metadata in a background thread and delegates to {@link #setMetadata(Metadata)} when ready.
+     * Fetches the metadata in a background thread and delegates to
+     * {@link #setMetadata(Metadata, GridGeometry)} when ready.
      *
      * @param  resource  the resource for which to show metadata, or {@code null}.
      */
     public void setMetadata(final Resource resource) {
         assert Platform.isFxApplicationThread();
+        if (loader != null) {
+            loader.cancel();
+            loader = null;
+        }
         if (resource == null) {
-            setMetadata((Metadata) null);
+            setMetadata(null, null);
         } else {
-            final int sequence = ++selectionCounter;
             final class Getter extends Task<Metadata> {
-                /** Invoked in a background thread for fetching metadata. */
+                /**
+                 * The grid resource, fetched as a complement to metadata.
+                 */
+                private GridGeometry grid;
+
+                /**
+                 * If we failed to get the grid, consider as a warning (not a failure).
+                 */
+                private DataStoreException warning;
+
+                /**
+                 * Invoked in a background thread for fetching metadata,
+                 * eventually with other information like grid geometry.
+                 */
                 @Override protected Metadata call() throws DataStoreException {
-                    return resource.getMetadata();
+                    final Metadata metadata = resource.getMetadata();
+                    if (resource instanceof GridCoverageResource && !isCancelled()) try {
+                        grid = ((GridCoverageResource) resource).getGridGeometry();
+                    } catch (DataStoreException e) {
+                        warning = e;
+                    }
+                    return metadata;
                 }
 
-                /** Shows the result, unless another {@link #setMetadata(Resource)} has been invoked. */
+                /**
+                 * Shows the result, unless another {@link #setMetadata(Resource)} has been invoked.
+                 */
                 @Override protected void succeeded() {
-                    if (sequence == selectionCounter) {
-                        setMetadata(getValue());
+                    if (!isCancelled()) {
+                        setMetadata(getValue(), grid);
+                        error = warning;
                     }
                 }
 
-                /** Invoked when an error occurred while fetching metadata. */
+                /**
+                 * Invoked when an error occurred while fetching metadata.
+                 */
                 @Override protected void failed() {
-                    setMetadata((Metadata) null);
-                    failure = getException();
+                    if (!isCancelled()) {
+                        setMetadata(null, null);
+                        error = getException();
+                    }
                 }
             }
             BackgroundThreads.execute(new Getter());
@@ -235,18 +276,26 @@ final class MetadataOverview {
     }
 
     /**
-     * Sets the content of this pane to the given metadata.
+     * Sets the content of this pane to the given metadata. The metadata can be completed
+     * by an optional {@link GridGeometry}, which can be used for producing more complete
+     * information in the "Spatial representation" pane.
      *
      * @param  metadata  the metadata to show, or {@code null}.
+     * @param  grid      if the resource is a {@link GridCoverageResource}, the grid geometry.
      */
-    public void setMetadata(final Metadata metadata) {
+    public void setMetadata(final Metadata metadata, final GridGeometry grid) {
         assert Platform.isFxApplicationThread();
-        failure = null;
+        error = null;
         final ObservableList<Node> children = ((VBox) content.getContent()).getChildren();
+        /*
+         * We want to include only the non-empty panes in the children list. But instead of
+         * removing everything and adding back non-empty panes, we check case-by-case if a
+         * child should be added or removed. It will often result in no modification at all.
+         */
         int i = 0;
         for (TitledPane pane : information) {
             final Form<?> info = (Form<?>) pane.getContent();
-            info.setInformation(metadata);
+            info.setInformation(metadata, grid);
             final boolean isEmpty   = info.isEmpty();
             final boolean isPresent = (i < children.size()) && children.get(i) == pane;
             if (isEmpty == isPresent) {     // Should not be present if empty, or should be present if non-empty.
@@ -268,7 +317,12 @@ final class MetadataOverview {
      * The same pane can be used for an arbitrary amount of identifications.
      * Each instance is identified by its title.
      */
-    private final class IdentificationInfo extends Form<Identification> {
+    private static final class IdentificationInfo extends Form<Identification> {
+        /**
+         * The resource title, or if non the identifier as a fallback.
+         */
+        private final Label title;
+
         /**
          * The canvas where to draw geographic bounding boxes over a world map.
          * Shall never be null, but need to be recreated for each new map.
@@ -282,22 +336,29 @@ final class MetadataOverview {
         /**
          * Creates an initially empty view for identification information.
          */
-        IdentificationInfo() {
-            extentOnMap = new Canvas();                         // Size of (0,0) by default.
-            add(extentOnMap, 0, 0, NUM_CHILD_PER_ROW, 1);
+        IdentificationInfo(final MetadataOverview owner) {
+            super(owner);
+            title = new Label();
+            title.setFont(Font.font(null, FontWeight.BOLD, 14));
+            add(title, 0, 0, NUM_CHILD_PER_LINE, 1);
+
+            extentOnMap = new Canvas();                     // Size of (0,0) by default.
+            add(extentOnMap, 0, 0, NUM_CHILD_PER_LINE, 1);  // Will be moved to a different location by buildContent(…).
             setHalignment(extentOnMap, HPos.CENTER);
             finished();
         }
 
         /**
-         * If the world map contains a map from some previous metadata,
-         * discard the old canvas and create a new one.
+         * If the world map contains a map from some previous metadata, discards the old canvas and create a new one.
+         * We do that because as of JavaFX 13, we found no way to clear the content of an existing {@link Canvas}.
          */
+        @Workaround(library = "JavaFX", version = "13")
         private void clearWorldMap() {
             if (!isWorldMapEmpty()) {
-                assert getChildren().get(1) == extentOnMap;
-                getChildren().set(1, extentOnMap = new Canvas());
-                setColumnSpan(extentOnMap, NUM_CHILD_PER_ROW);
+                final int p = linesStartIndex() - 1;
+                assert getChildren().get(p) == extentOnMap;
+                getChildren().set(p, extentOnMap = new Canvas());
+                setColumnSpan(extentOnMap, NUM_CHILD_PER_LINE);
                 setHalignment(extentOnMap, HPos.CENTER);
             }
         }
@@ -318,18 +379,10 @@ final class MetadataOverview {
         }
 
         /**
-         * Returns the format to use for writing numbers.
-         */
-        @Override
-        NumberFormat getNumberFormat() {
-            return MetadataOverview.this.getNumberFormat();
-        }
-
-        /**
          * Sets the identification information from the given metadata.
          */
         @Override
-        void setInformation(final Metadata metadata) {
+        void setInformation(final Metadata metadata, final GridGeometry grid) {
             setInformation(nonNull(metadata == null ? null : metadata.getIdentificationInfo()), Identification[]::new);
         }
 
@@ -344,71 +397,66 @@ final class MetadataOverview {
             String text = null;
             final Citation citation = info.getCitation();
             if (citation != null) {
-                text = string(citation.getTitle());
+                text = owner.string(citation.getTitle());
                 if (text == null) {
                     text = Citations.getIdentifier(citation);
                 }
             }
-            addRow("Title:", text);
+            if (text == null) {
+                text = Vocabulary.getResources(owner.localized.getLocale()).getString(Vocabulary.Keys.Untitled);
+            }
+            title.setText(text);
             /*
              * The abstract, or if there is no abstract the credit as a fallback because it can provide
              * some hints about the product. The topic category (climatology, health, etc.) follows.
              */
-            String label = "Abstract:";
-            text = string(info.getAbstract());
+            short label = Resources.Keys.Abstract;
+            text = owner.string(info.getAbstract());
             if (text == null) {
                 for (final InternationalString c : nonNull(info.getCredits())) {
-                    text = string(c);
+                    text = owner.string(c);
                     if (text != null) {
-                        label = "Credit:";
+                        label = Resources.Keys.Credit;
                         break;
                     }
                 }
             }
-            addRow(label, text);
-            addRow("Topic Category:", string(nonNull(info.getTopicCategories())));
-            /*
-             * Whether the resource is about data or about a service. If it is about data,
-             * we will not write anything since this will be considered the default.
-             */
-            text = null;
-            if (!(info instanceof DataIdentification)) {
-                if (info instanceof ServiceIdentification) {
-                    text = "Service";
-                } else {
-                    text = "The resource does not specify if it contains data.";
-                }
-            }
-            addRow("Type of resource:", text);
-            addRow("Representation:", string(nonNull(info.getSpatialRepresentationTypes())));
+            addLine(label, text);
+            addLine(Resources.Keys.TopicCategory, owner.string(nonNull(info.getTopicCategories())));
             /*
              * Select a single, arbitrary date. We take the release or publication date if available.
              * If no publication date is found, fallback on the creation date. If no creation date is
              * found neither, fallback on the first date regardless its type.
              */
             if (citation != null) {
-                label = null;
-                Date     date = null;
+                Date date = null;
+                label = Resources.Keys.Date;
                 for (final CitationDate c : nonNull(citation.getDates())) {
                     final Date cd = c.getDate();
                     if (cd != null) {
                         final DateType type = c.getDateType();
                         if (DateType.PUBLICATION.equals(type) || DateType.RELEASED.equals(type)) {
-                            label = "Publication date:";
+                            label = Resources.Keys.PublicationDate;
                             date  = cd;
                             break;                      // Take the first publication or release date.
                         }
                         final boolean isCreation = DateType.CREATION.equals(type);
                         if (date == null || isCreation) {
-                            label = isCreation ? "Creation date:" : "Date:";
+                            label = isCreation ? Resources.Keys.CreationDate : Resources.Keys.Date;
                             date  = cd;     // Fallback date: creation date, or the first date otherwise.
                         }
                     }
                 }
                 if (date != null) {
-                    addRow(label, getDateFormat().format(date));
+                    addLine(label, owner.getDateFormat().format(date));
                 }
             }
+            /*
+             * Type of resource: vector, grid, table, tin, video, etc. It gives a slight overview
+             * of the next section, "Spatial representation". For that reason we put it close to
+             * that next section, i.e. last in this section but just before the map.
+             */
+            addLine(Resources.Keys.TypeOfResource, owner.string(nonNull(info.getSpatialRepresentationTypes())));
             /*
              * Write the first description about the spatio-temporal extent,
              * then draw all geographic extents on a map.
@@ -418,7 +466,7 @@ final class MetadataOverview {
             for (final Extent extent : nonNull(info.getExtents())) {
                 if (extent != null) {
                     if (text == null) {
-                        text = string(extent.getDescription());
+                        text = owner.string(extent.getDescription());
                     }
                     for (final GeographicExtent ge : nonNull(extent.getGeographicElements())) {
                         if (identifier == null && ge instanceof GeographicDescription) {
@@ -433,7 +481,7 @@ final class MetadataOverview {
             if (text == null) {
                 text = IdentifiedObjects.toString(identifier);
             }
-            addRow("Extent:", text);
+            addLine(Resources.Keys.Extent, text);
             setRowIndex(extentOnMap, nextRowIndex());
         }
 
@@ -451,8 +499,10 @@ final class MetadataOverview {
             if (!(north >= south) || !Double.isFinite(east) || !Double.isFinite(west)) {
                 return;
             }
+            // Normalize `west` in the [-180 … +180)° range and apply same normalization on `east`.
+            east -= (west - (west = Longitude.normalize(west)));
             if (isWorldMapEmpty()) {
-                final Image image = getWorldMap();
+                final Image image = owner.getWorldMap();
                 if (image == null) {
                     return;                         // Failed to load the image.
                 }
@@ -509,7 +559,7 @@ final class MetadataOverview {
      * The pane where to show the values of {@link SpatialRepresentation} objects.
      * The same pane can be used for an arbitrary amount of spatial representations.
      */
-    private final class RepresentationInfo extends Form<SpatialRepresentation> {
+    private static final class RepresentationInfo extends Form<SpatialRepresentation> {
         /**
          * The reference system, or {@code null} if none.
          */
@@ -518,23 +568,16 @@ final class MetadataOverview {
         /**
          * Creates an initially empty view for spatial representation information.
          */
-        RepresentationInfo() {
+        RepresentationInfo(final MetadataOverview owner) {
+            super(owner);
             finished();
-        }
-
-        /**
-         * Returns the format to use for writing numbers.
-         */
-        @Override
-        NumberFormat getNumberFormat() {
-            return MetadataOverview.this.getNumberFormat();
         }
 
         /**
          * Sets the spatial representation information from the given metadata.
          */
         @Override
-        void setInformation(final Metadata metadata) {
+        void setInformation(final Metadata metadata, final GridGeometry grid) {
             referenceSystem = null;
             setInformation(nonNull(metadata == null ? null : metadata.getSpatialRepresentationInfo()), SpatialRepresentation[]::new);
             if (metadata != null) {
@@ -553,21 +596,21 @@ final class MetadataOverview {
          */
         @Override
         void buildContent(final SpatialRepresentation info) {
-            addRow("Reference system:", IdentifiedObjects.getName(referenceSystem, null));
+            addLine(Resources.Keys.ReferenceSystem, IdentifiedObjects.getName(referenceSystem, null));
             if (info instanceof GridSpatialRepresentation) {
                 final GridSpatialRepresentation sr = (GridSpatialRepresentation) info;
                 final StringBuffer buffer = new StringBuffer();
                 for (final Dimension dim : nonNull(sr.getAxisDimensionProperties())) {
-                    getNumberFormat().format(dim.getDimensionSize(), buffer, new FieldPosition(0));
-                    buffer.append(' ').append(string(Types.getCodeTitle(dim.getDimensionName()))).append(" × ");
+                    owner.getNumberFormat().format(dim.getDimensionSize(), buffer, new FieldPosition(0));
+                    buffer.append(' ').append(owner.string(Types.getCodeTitle(dim.getDimensionName()))).append(" × ");
                 }
                 if (buffer.length() != 0) {
                     buffer.setLength(buffer.length() - 3);
-                    addRow("Dimensions:", buffer.toString());
+                    addLine(Resources.Keys.Dimensions, buffer.toString());
                 }
                 final CellGeometry cg = sr.getCellGeometry();
                 if (cg != null) {
-                    addRow("Cell geometry:", string(Types.getCodeTitle(cg)));
+                    addLine(Resources.Keys.CellGeometry, owner.string(Types.getCodeTitle(cg)));
                 }
             }
         }
@@ -610,7 +653,7 @@ final class MetadataOverview {
      */
     private String string(final InternationalString i18n) {
         if (i18n != null) {
-            String t = i18n.toString(textLocale);
+            String t = i18n.toString(localized.getLocale());
             if (t != null && !(t = t.trim()).isEmpty()) {
                 return t;
             }

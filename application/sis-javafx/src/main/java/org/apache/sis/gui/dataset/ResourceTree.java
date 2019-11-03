@@ -69,6 +69,11 @@ import org.apache.sis.internal.gui.Styles;
  * <p>{@code ResourceTree} registers the necessarily handlers for making this view a target
  * of "drag and drop" events. Users can drop files or URLs for opening data files.</p>
  *
+ * <h2>Limitations</h2>
+ * If the user selects "close" in the contextual menu, the resource if closed (if it is an instance
+ * of {@link DataStore}). There is not yet a mechanism for keeping it open if the resource is shared
+ * by another {@link ResourceTree} instance.
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

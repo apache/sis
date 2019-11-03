@@ -56,6 +56,11 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Abstract:
+         */
+        public static final short Abstract = 14;
+
+        /**
          * All files
          */
         public static final short AllFiles = 3;
@@ -76,9 +81,34 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotReadFile_1 = 5;
 
         /**
+         * Cell geometry:
+         */
+        public static final short CellGeometry = 15;
+
+        /**
          * Close
          */
         public static final short Close = 8;
+
+        /**
+         * Creation date:
+         */
+        public static final short CreationDate = 16;
+
+        /**
+         * Credit:
+         */
+        public static final short Credit = 17;
+
+        /**
+         * Date:
+         */
+        public static final short Date = 18;
+
+        /**
+         * Dimensions:
+         */
+        public static final short Dimensions = 19;
 
         /**
          * Error closing file
@@ -96,6 +126,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Exit = 9;
 
         /**
+         * Extent:
+         */
+        public static final short Extent = 20;
+
+        /**
          * File
          */
         public static final short File = 10;
@@ -111,7 +146,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Loading = 7;
 
         /**
-         * Open
+         * Open…
          */
         public static final short Open = 11;
 
@@ -119,6 +154,36 @@ public final class Resources extends IndexedResourceBundle {
          * Open data file
          */
         public static final short OpenDataFile = 2;
+
+        /**
+         * Publication date:
+         */
+        public static final short PublicationDate = 21;
+
+        /**
+         * Reference system:
+         */
+        public static final short ReferenceSystem = 22;
+
+        /**
+         * Resource identification
+         */
+        public static final short ResourceIdentification = 23;
+
+        /**
+         * Spatial representation
+         */
+        public static final short SpatialRepresentation = 24;
+
+        /**
+         * Topic category:
+         */
+        public static final short TopicCategory = 25;
+
+        /**
+         * Type of resource:
+         */
+        public static final short TypeOfResource = 26;
     }
 
     /**

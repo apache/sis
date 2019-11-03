@@ -119,7 +119,7 @@ public class DataViewer extends Application {
         final MenuBar menus = new MenuBar();
         final Menu file = new Menu(localized.getString(Resources.Keys.File));
         {
-            final MenuItem open = new MenuItem(localized.getMenuLabel(Resources.Keys.Open));
+            final MenuItem open = new MenuItem(localized.getString(Resources.Keys.Open));
             open.setAccelerator(KeyCombination.keyCombination("Shortcut+O"));
             open.setOnAction(e -> open());
 
