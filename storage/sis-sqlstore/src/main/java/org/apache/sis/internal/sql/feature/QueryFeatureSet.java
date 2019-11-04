@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Spliterator;
-import java.util.StringJoiner;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -225,6 +224,10 @@ public class QueryFeatureSet extends AbstractFeatureSet {
     }
 
     class SubsetAdapter extends SQLQueryAdapter {
+
+        SubsetAdapter() {
+            super(queryBuilder.dialect);
+        }
 
         @Override
         protected FeatureSet create(CharSequence where, SortBy[] sorting, ColumnRef[] columns) {

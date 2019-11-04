@@ -310,6 +310,16 @@ public abstract class Geometries<G> {
     public abstract G createPolyline(int dimension, Vector... coordinates);
 
     /**
+     * Force conversion of input geometry to a polygon. If input is a closed line (e.g: Linear ring), it should be
+     * converted to polygon object. Otherwise, an error should be thrown.
+     *
+     * @param polyline The polyline to see as a polygon.
+     * @return A polygon object.
+     * @throws IllegalArgumentException If given object is not a closed line (linear ring).
+     */
+    public abstract G toPolygon(G polyline) throws IllegalArgumentException;
+
+    /**
      * Merges a sequence of polyline instances if the first instance is an implementation of this library.
      *
      * @param  first      the first instance to merge.
@@ -444,7 +454,7 @@ public abstract class Geometries<G> {
          * it, because in an orthonormal space, I don't see any case where it could be useful. However, in case it
          * have to be added, we can do it here by amending created ring(s).
          */
-        return mainRect;
+        return toPolygon(mainRect);
     }
 
     /**
@@ -480,7 +490,7 @@ public abstract class Geometries<G> {
 
     public abstract double[] getPoints(Object geometry);
 
-    abstract Object createMultiPolygonImpl(final Object... polygonsOrLinearRings);
+    abstract G createMultiPolygonImpl(final Object... polygonsOrLinearRings);
 
     public static Object createMultiPolygon(final Object... polygonsOrLinearRings) {
         return findStrategy(g -> g.createMultiPolygonImpl(polygonsOrLinearRings));

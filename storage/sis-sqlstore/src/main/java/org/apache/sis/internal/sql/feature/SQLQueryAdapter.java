@@ -3,10 +3,12 @@ package org.apache.sis.internal.sql.feature;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.opengis.filter.Filter;
 import org.opengis.filter.sort.SortBy;
 
+import org.apache.sis.internal.metadata.sql.Dialect;
 import org.apache.sis.internal.storage.SubsetAdapter;
 import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.FeatureSet;
@@ -17,6 +19,20 @@ abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
     private SortBy[] sorting;
 
     private CharSequence where;
+
+    private final Supplier<? extends ANSIInterpreter> filterInterpreter;
+
+    protected SQLQueryAdapter() {
+        this(() -> new ANSIInterpreter());
+    }
+
+    protected SQLQueryAdapter(final Dialect dbDialect) {
+        this(forDialect(dbDialect));
+    }
+
+    protected SQLQueryAdapter(Supplier<? extends ANSIInterpreter> filterInterpreter) {
+        this.filterInterpreter = filterInterpreter;
+    }
 
     /**
      * No-op implementation. SQL optimisation is dynamically applied through {@link StreamSQL}.
@@ -41,7 +57,7 @@ abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
     @Override
     public final Filter filter(Filter filter) {
         try {
-            final Object result = filter.accept(new ANSIInterpreter(), null);
+            final Object result = filter.accept(filterInterpreter.get(), null);
             if (ANSIInterpreter.isNonEmptyText(result)) {
                 where = (CharSequence) result;
                 return Filter.INCLUDE;
@@ -88,6 +104,7 @@ abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
     static class Table extends SQLQueryAdapter {
         final org.apache.sis.internal.sql.feature.Table parent;
         public Table(org.apache.sis.internal.sql.feature.Table parent) {
+            super(parent.createStatement().dialect);
             this.parent = parent;
         }
 
@@ -99,4 +116,10 @@ abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
         }
     }
 
+    public static Supplier<ANSIInterpreter> forDialect(final Dialect dialect) {
+        switch (dialect) {
+            case POSTGRESQL: return () -> new PostGISInterpreter();
+            default: return () -> new ANSIInterpreter();
+        }
+    }
 }

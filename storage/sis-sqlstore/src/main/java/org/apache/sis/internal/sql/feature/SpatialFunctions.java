@@ -16,27 +16,17 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.math.BigDecimal;
 import java.sql.DatabaseMetaData;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.sql.Types;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.ZoneOffset;
-import java.util.function.Function;
+import java.util.Optional;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import org.apache.sis.internal.metadata.sql.Dialect;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.setup.GeometryLibrary;
-
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -64,6 +54,9 @@ class SpatialFunctions {
      */
     final GeometryLibrary library;
 
+    private final ANSIMapping defaultMapping;
+    private final Optional<DialectMapping> specificMapping;
+
     /**
      * Creates a new accessor to geospatial functions for the database described by given metadata.
      */
@@ -88,6 +81,10 @@ class SpatialFunctions {
          * For now use the default library.
          */
         library = null;
+
+        final Dialect dialect = Dialect.guess(metadata);
+        specificMapping = forDialect(dialect);
+        defaultMapping = new ANSIMapping(isByteUnsigned);
     }
 
     /**
@@ -105,58 +102,8 @@ class SpatialFunctions {
      */
     @SuppressWarnings("fallthrough")
     protected ColumnAdapter<?> toJavaType(final int sqlType, final String sqlTypeName) {
-        switch (sqlType) {
-            case Types.BIT:
-            case Types.BOOLEAN:                 return forceCast(Boolean.class);
-            case Types.TINYINT:                 if (!isByteUnsigned) return forceCast(Byte.class);  // else fallthrough.
-            case Types.SMALLINT:                return forceCast(Short.class);
-            case Types.INTEGER:                 return forceCast(Integer.class);
-            case Types.BIGINT:                  return forceCast(Long.class);
-            case Types.REAL:                    return forceCast(Float.class);
-            case Types.FLOAT:                   // Despite the name, this is implemented as DOUBLE in major databases.
-            case Types.DOUBLE:                  return forceCast(Double.class);
-            case Types.NUMERIC:                 // Similar to DECIMAL except that it uses exactly the specified precision.
-            case Types.DECIMAL:                 return forceCast(BigDecimal.class);
-            case Types.CHAR:
-            case Types.VARCHAR:
-            case Types.LONGVARCHAR:             return new ColumnAdapter<>(String.class, ResultSet::getString);
-            case Types.DATE:                    return new ColumnAdapter<>(Date.class, ResultSet::getDate);
-            case Types.TIME:                    return new ColumnAdapter<>(LocalTime.class, SpatialFunctions::toLocalTime);
-            case Types.TIMESTAMP:               return new ColumnAdapter<>(Instant.class, SpatialFunctions::toInstant);
-            case Types.TIME_WITH_TIMEZONE:      return new ColumnAdapter<>(OffsetTime.class, SpatialFunctions::toOffsetTime);
-            case Types.TIMESTAMP_WITH_TIMEZONE: return new ColumnAdapter<>(OffsetDateTime.class, SpatialFunctions::toODT);
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:           return new ColumnAdapter<>(byte[].class, ResultSet::getBytes);
-            case Types.ARRAY:                   return forceCast(Object[].class);
-            case Types.OTHER:                   // Database-specific accessed via getObject and setObject.
-            case Types.JAVA_OBJECT:             return new ColumnAdapter<>(Object.class, ResultSet::getObject);
-            default:                            return null;
-        }
-    }
-
-    private static LocalTime toLocalTime(ResultSet source, int columnIndex) throws SQLException {
-        final Time time = source.getTime(columnIndex);
-        return time == null ? null : time.toLocalTime();
-    }
-
-    private static Instant toInstant(ResultSet source, int columnIndex) throws SQLException {
-        final Timestamp t = source.getTimestamp(columnIndex);
-        return t == null ? null : t.toInstant();
-    }
-
-    private static OffsetDateTime toODT(ResultSet source, int columnIndex) throws SQLException {
-        final Timestamp t = source.getTimestamp(columnIndex);
-        final int offsetMinute = t.getTimezoneOffset();
-        return t == null ? null : t.toInstant()
-                .atOffset(ZoneOffset.ofHoursMinutes(offsetMinute / 60, offsetMinute % 60));
-    }
-
-    private static OffsetTime toOffsetTime(ResultSet source, int columnIndex) throws SQLException {
-        final Time t = source.getTime(columnIndex);
-        final int offsetMinute = t.getTimezoneOffset();
-        return t == null ? null : t.toLocalTime()
-                .atOffset(ZoneOffset.ofHoursMinutes(offsetMinute / 60, offsetMinute % 60));
+        return specificMapping.flatMap(dialect -> dialect.getMapping(sqlType, sqlTypeName))
+                .orElseGet(() -> defaultMapping.getMappingImpl(sqlType, sqlTypeName));
     }
 
     /**
@@ -174,34 +121,10 @@ class SpatialFunctions {
         return null;
     }
 
-    private static <T> ColumnAdapter<T> forceCast(final Class<T> targetType) {
-        return new ColumnAdapter<>(targetType, (r, i) -> forceCast(targetType, r, i));
-    }
-
-    private static <T> T forceCast(final Class<T> targetType, ResultSet source, final Integer columnIndex) throws SQLException {
-        final Object value = source.getObject(columnIndex);
-        return value == null ? null : targetType.cast(value);
-    }
-
-    protected static class ColumnAdapter<T> implements SQLBiFunction<ResultSet, Integer, T> {
-        final Class<T> javaType;
-        private final SQLBiFunction<ResultSet, Integer, T> fetchValue;
-
-        protected ColumnAdapter(Class<T> javaType, SQLBiFunction<ResultSet, Integer, T> fetchValue) {
-            ensureNonNull("Result java type", javaType);
-            ensureNonNull("Function for value retrieval", fetchValue);
-            this.javaType = javaType;
-            this.fetchValue = fetchValue;
-        }
-
-        @Override
-        public T apply(ResultSet resultSet, Integer integer) throws SQLException {
-            return fetchValue.apply(resultSet, integer);
-        }
-
-        @Override
-        public <V> SQLBiFunction<ResultSet, Integer, V> andThen(Function<? super T, ? extends V> after) {
-            return fetchValue.andThen(after);
+    static Optional<DialectMapping> forDialect(final Dialect dialect) {
+        switch (dialect) {
+            case POSTGRESQL: return Optional.of(new PostGISMapping());
+            default: return Optional.empty();
         }
     }
 }

@@ -10,8 +10,6 @@ import java.util.List;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 
-import org.apache.sis.internal.sql.feature.SpatialFunctions.ColumnAdapter;
-
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 class FeatureAdapter {

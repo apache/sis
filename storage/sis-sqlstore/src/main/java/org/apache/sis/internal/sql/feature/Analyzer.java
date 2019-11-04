@@ -345,7 +345,7 @@ final class Analyzer {
         int i = 0;
         for (SQLColumn col : spec.getColumns()) {
             i++;
-            final SpatialFunctions.ColumnAdapter<?> colAdapter = functions.toJavaType(col.getType(), col.getTypeName());
+            final ColumnAdapter<?> colAdapter = functions.toJavaType(col.getType(), col.getTypeName());
             Class<?> type = colAdapter.javaType;
             final String colName = col.getName().getColumnName();
             final String attrName = col.getName().getAttributeName();
