@@ -47,7 +47,7 @@ public final strictfp class BetweenFunctionTest extends TestCase {
 
     /**
      * Expected name of the filter to be evaluated. The {@link #evaluate(Filter)} method
-     * will compare {@link Filter#getName()} against this value.
+     * will compare {@link Node#getName()} against this value.
      */
     private String expectedName;
 

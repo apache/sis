@@ -82,7 +82,7 @@ final class RepresentationInfo extends Section<SpatialRepresentation> {
         if (info instanceof GridSpatialRepresentation) {
             build((GridSpatialRepresentation) info);
         }
-        addLine(Resources.Keys.ReferenceSystem, IdentifiedObjects.getName(referenceSystem, null));
+        addLine(Resources.Keys.ReferenceSystem, IdentifiedObjects.getDisplayName(referenceSystem, owner.localized.getLocale()));
     }
 
     /**

@@ -37,6 +37,7 @@ import org.apache.sis.internal.referencing.provider.GeocentricAffine;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
@@ -277,8 +278,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             params = ((Parameterized) transform).getParameterValues();
         }
         if (params != null) {
-            String name = params.getDescriptor().getName().getCode();
-            if (name != null && !(name = name.trim()).isEmpty()) {
+            final String name = Strings.trimOrNull(params.getDescriptor().getName().getCode());
+            if (name != null) {
                 return name;
             }
         }

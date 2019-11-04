@@ -52,6 +52,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.xml.IdentifiedObject;
 
 // Branch-dependent imports
@@ -348,7 +349,7 @@ public class MetadataWriter extends MetadataSource {
          * etc.) is associated only to Responsibility. So it make sense to use the Responsibility ID for
          * the contact info.
          */
-        identifier = nonEmpty(removeReservedChars(suggestIdentifier(metadata, asValueMap), null));
+        identifier = Strings.trimOrNull(removeReservedChars(suggestIdentifier(metadata, asValueMap), null));
         if (identifier == null) {
             identifier = parent;
             if (identifier == null) {
@@ -704,9 +705,9 @@ public class MetadataWriter extends MetadataSource {
             identifiers = Collections.emptySet();
         }
         for (final Identifier id : identifiers) {
-            identifier = nonEmpty(id.getCode());
+            identifier = Strings.trimOrNull(id.getCode());
             if (identifier != null) {
-                final String cs = nonEmpty(id.getCodeSpace());
+                final String cs = Strings.trimOrNull(id.getCodeSpace());
                 if (cs != null) {
                     identifier = cs + Constants.DEFAULT_SEPARATOR + identifier;
                 }
@@ -714,14 +715,14 @@ public class MetadataWriter extends MetadataSource {
             }
         }
         if (identifier == null && metadata instanceof Citation) {
-            identifier = nonEmpty(Citations.toCodeSpace((Citation) metadata));
+            identifier = Strings.trimOrNull(Citations.toCodeSpace((Citation) metadata));
         }
         if (identifier == null) {
             final TitleProperty tp = metadata.getClass().getAnnotation(TitleProperty.class);
             if (tp != null) {
-                final Object value = asValueMap.get(nonEmpty(tp.name()));
+                final Object value = asValueMap.get(Strings.trimOrNull(tp.name()));
                 if (value != null) {
-                    identifier = nonEmpty(value.toString());
+                    identifier = Strings.trimOrNull(value.toString());
                 }
             }
         }
@@ -788,18 +789,5 @@ public class MetadataWriter extends MetadataSource {
      */
     private static boolean isReservedChar(final int c) {
         return (c == TableHierarchy.TYPE_OPEN) || (c == TableHierarchy.TYPE_CLOSE);
-    }
-
-    /**
-     * Trims leading and trailing spaces and returns the given value if non-empty, or {@code null} otherwise.
-     */
-    private static String nonEmpty(String value) {
-        if (value != null) {
-            value = value.trim();
-            if (value.isEmpty()) {
-                value = null;
-            }
-        }
-        return value;
     }
 }

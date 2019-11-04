@@ -282,16 +282,12 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
      * This method is invoked by JavaFX when a new cell needs to be rendered.
      */
     private static ObservableValue<Object> getPropertyValue(final CellDataFeatures<TreeTable.Node, Object> cell) {
+        final MetadataTree view = (MetadataTree) cell.getTreeTableView();
         Object value = getValue(cell, TableColumn.VALUE);
         if (value instanceof IdentifiedObject) {
-            String name = IdentifiedObjects.getName((IdentifiedObject) value, null);
-            if (name == null) {
-                name = IdentifiedObjects.getIdentifierOrName((IdentifiedObject) value);
-            }
-            value = name;
+            value = IdentifiedObjects.getDisplayName((IdentifiedObject) value, view.textLocale);
         }
         if (value instanceof InternationalString) {
-            final MetadataTree view = (MetadataTree) cell.getTreeTableView();
             value = ((InternationalString) value).toString(view.textLocale);
         }
         return new ReadOnlyObjectWrapper<>(value);

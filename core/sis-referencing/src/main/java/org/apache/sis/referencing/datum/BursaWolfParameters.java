@@ -249,7 +249,8 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
             final PrimeMeridian actual = targetDatum.getPrimeMeridian();
             if (actual.getGreenwichLongitude() != 0 && !Utilities.equalsIgnoreMetadata(pm, actual)) {
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedPrimeMeridian_2,
-                        IdentifiedObjects.getName(pm, null), IdentifiedObjects.getName(actual, null)));
+                        IdentifiedObjects.getDisplayName(pm, null),
+                        IdentifiedObjects.getDisplayName(actual, null)));
             }
         }
         ensureFinite("tX", tX);

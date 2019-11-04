@@ -112,8 +112,8 @@ public class NetcdfStore extends DataStore implements Aggregate {
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
         decoder.location = path;
-        String id = decoder.stringValue(ACDD.id);
-        if (id == null || (id = id.trim()).isEmpty()) {
+        String id = Strings.trimOrNull(decoder.stringValue(ACDD.id));
+        if (id == null) {
             id = decoder.getFilename();
         }
         if (id != null) {

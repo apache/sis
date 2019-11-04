@@ -43,6 +43,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.system.Modules;
@@ -364,8 +365,8 @@ public class FeatureFormat extends TabularFormat<Object> {
             }
             final InternationalString definition = featureType.getDefinition();
             if (definition != null) {
-                String text = definition.toString(displayLocale);
-                if (text != null && !(text = text.trim()).isEmpty()) {
+                final String text = Strings.trimOrNull(definition.toString(displayLocale));
+                if (text != null) {
                     toAppendTo.append(getLineSeparator()).append(text);
                 }
             }

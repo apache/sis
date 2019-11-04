@@ -411,7 +411,7 @@ public class LocationFormat extends TabularFormat<Location> {
             }
         }
         if (crs != null) {
-            append(table, vocabulary, Vocabulary.Keys.CoordinateRefSys, IdentifiedObjects.getName(crs, null));
+            append(table, vocabulary, Vocabulary.Keys.CoordinateRefSys, IdentifiedObjects.getDisplayName(crs, locale));
         }
         /*
          * Organization responsible for defining the characteristics of the location instance.

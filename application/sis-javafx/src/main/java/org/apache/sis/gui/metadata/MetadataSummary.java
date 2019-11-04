@@ -43,6 +43,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.iso.Types;
@@ -330,12 +331,6 @@ public class MetadataSummary {
      * Returns the given international string as a non-empty localized string, or {@code null} if none.
      */
     final String string(final InternationalString i18n) {
-        if (i18n != null) {
-            String t = i18n.toString(localized.getLocale());
-            if (t != null && !(t = t.trim()).isEmpty()) {
-                return t;
-            }
-        }
-        return null;
+        return (i18n != null) ? Strings.trimOrNull(i18n.toString(localized.getLocale())) : null;
     }
 }

@@ -58,6 +58,7 @@ import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -326,10 +327,8 @@ public class ResourceTree extends TreeView<Resource> {
              * the same product, while the display name have better chances to be distinct for each file.
              */
             if (resource instanceof DataStore) {
-                String name = ((DataStore) resource).getDisplayName();
-                if (name != null && !(name = name.trim()).isEmpty()) {
-                    return name;
-                }
+                final String name = Strings.trimOrNull(((DataStore) resource).getDisplayName());
+                if (name != null) return name;
             }
             /*
              * Search for a title in metadata first because it has better chances
@@ -383,13 +382,7 @@ public class ResourceTree extends TreeView<Resource> {
      * Returns the given international string as a non-empty localized string, or {@code null} if none.
      */
     private String string(final InternationalString i18n) {
-        if (i18n != null) {
-            String t = i18n.toString(getLocale());
-            if (t != null && !(t = t.trim()).isEmpty()) {
-                return t;
-            }
-        }
-        return null;
+        return (i18n != null) ? Strings.trimOrNull(i18n.toString(getLocale())) : null;
     }
 
     /**
@@ -397,8 +390,8 @@ public class ResourceTree extends TreeView<Resource> {
      * This method returns the message if one exist, or the exception class name otherwise.
      */
     private String string(final Throwable failure) {
-        String text = Exceptions.getLocalizedMessage(failure, getLocale());
-        if (text == null || (text = text.trim()).isEmpty()) {
+        String text = Strings.trimOrNull(Exceptions.getLocalizedMessage(failure, getLocale()));
+        if (text == null) {
             text = Classes.getShortClassName(failure);
         }
         return text;

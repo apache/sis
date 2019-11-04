@@ -38,6 +38,7 @@ import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.internal.sql.feature.Database;
 import org.apache.sis.internal.sql.feature.Resources;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Exceptions;
 
@@ -211,8 +212,8 @@ public class SQLStore extends DataStore implements Aggregate {
                 try {
                     final Method method = source.getClass().getMethod(c);
                     if (method.getReturnType() == String.class) {
-                        String name = (String) method.invoke(source);
-                        if (name != null && !(name = name.trim()).isEmpty()) {
+                        final String name = Strings.trimOrNull((String) method.invoke(source));
+                        if (name != null) {
                             builder.addTitle(name);
                             break;
                         }

@@ -33,6 +33,7 @@ import org.opengis.util.RecordType;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.AbstractMapEntry;
 import org.apache.sis.internal.metadata.RecordSchemaSIS;
 
@@ -448,7 +449,8 @@ public class DefaultRecord implements Record, Serializable {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-419">SIS-419</a>
      */
     private void setValue(String value) {
-        if (value != null && !(value = value.trim()).isEmpty()) {
+        value = Strings.trimOrNull(value);
+        if (value != null) {
             values = new String[] {value};
         }
     }

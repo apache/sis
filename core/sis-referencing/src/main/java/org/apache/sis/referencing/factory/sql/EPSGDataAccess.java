@@ -84,6 +84,7 @@ import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -842,8 +843,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * @throws SQLException if an error occurred while querying the database.
      */
     private static String getOptionalString(final ResultSet result, final int columnIndex) throws SQLException {
-        String value = result.getString(columnIndex);
-        return (value != null) && !(value = value.trim()).isEmpty() && !result.wasNull() ? value : null;
+        final String value = Strings.trimOrNull(result.getString(columnIndex));
+        return (value == null) || result.wasNull() ? null : value;
     }
 
     /**
@@ -903,8 +904,8 @@ codes:  for (int i=0; i<codes.length; i++) {
     private String getString(final String code, final ResultSet result, final int columnIndex, final int columnFault)
             throws SQLException, FactoryDataException
     {
-        String value = result.getString(columnIndex);
-        if (value == null || (value = value.trim()).isEmpty() || result.wasNull()) {
+        final String value = Strings.trimOrNull(result.getString(columnIndex));
+        if (value == null || result.wasNull()) {
             throw new FactoryDataException(nullValue(result, columnFault, code));
         }
         return value;
@@ -924,8 +925,8 @@ codes:  for (int i=0; i<codes.length; i++) {
     private String getString(final Comparable<?> code, final ResultSet result, final int columnIndex)
             throws SQLException, FactoryDataException
     {
-        String value = result.getString(columnIndex);
-        if (value == null || (value = value.trim()).isEmpty() || result.wasNull()) {
+        final String value = Strings.trimOrNull(result.getString(columnIndex));
+        if (value == null || result.wasNull()) {
             throw new FactoryDataException(nullValue(result, columnIndex, code));
         }
         return value;

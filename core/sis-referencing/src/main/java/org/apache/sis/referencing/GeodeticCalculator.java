@@ -360,7 +360,7 @@ public class GeodeticCalculator {
      */
     private String transformError(final boolean toCRS) {
         return Resources.format(Resources.Keys.CanNotConvertCoordinates_2,
-                toCRS ? 1 : 0, IdentifiedObjects.getName(getPositionCRS(), null));
+                toCRS ? 1 : 0, IdentifiedObjects.getDisplayName(getPositionCRS(), null));
     }
 
     /**

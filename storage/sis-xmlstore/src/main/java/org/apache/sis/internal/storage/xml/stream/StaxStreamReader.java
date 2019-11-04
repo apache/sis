@@ -39,6 +39,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.storage.io.IOUtilities;
@@ -321,14 +322,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @throws XMLStreamException if a text element can not be returned.
      */
     protected final String getElementText() throws XMLStreamException {
-        String text = reader.getElementText();
-        if (text != null) {
-            text = text.trim();
-            if (!text.isEmpty()) {
-                return text;
-            }
-        }
-        return null;
+        return Strings.trimOrNull(reader.getElementText());
     }
 
     /**

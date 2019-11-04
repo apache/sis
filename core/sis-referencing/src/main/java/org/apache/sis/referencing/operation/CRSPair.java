@@ -106,7 +106,7 @@ final class CRSPair {
                 label = sb.append(((CoordinateSystem) cs).getDimension()).append('D').toString();
             }
         }
-        String name = IdentifiedObjects.getName(object, null);
+        String name = IdentifiedObjects.getDisplayName(object, null);
         if (name != null) {
             int i = 30;                                         // Arbitrary length threshold.
             if (name.length() >= i) {

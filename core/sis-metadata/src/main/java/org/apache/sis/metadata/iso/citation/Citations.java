@@ -39,8 +39,6 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.metadata.iso.DefaultIdentifier;           // For javadoc
 
-import static org.apache.sis.internal.util.CollectionsExt.nonEmptyIterator;
-
 
 /**
  * A set of pre-defined constants and static methods working on {@linkplain Citation citations}.
@@ -529,6 +527,17 @@ public final class Citations extends Static {
      */
     private static boolean equalsFiltered(final CharSequence s1, final CharSequence s2) {
         return CharSequences.equalsFiltered(s1, s2, Characters.Filter.LETTERS_AND_DIGITS, true);
+    }
+
+    /**
+     * Returns the collection iterator, or {@code null} if the given collection is null or empty.
+     *
+     * @param  <E>         the type of elements in the collection.
+     * @param  collection  the collection from which to get the iterator, or {@code null}.
+     * @return the iterator over the given collection elements, or {@code null}.
+     */
+    private static <E> Iterator<E> nonEmptyIterator(final Collection<E> collection) {
+        return (collection != null && !collection.isEmpty()) ? collection.iterator() : null;
     }
 
     /**

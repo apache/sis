@@ -49,7 +49,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * bit tedious to explain, which is an other indication that they should not be in public API.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -120,28 +120,6 @@ public final class CollectionsExt extends Static {
         } else {
             return 1;
         }
-    }
-
-    /**
-     * Returns the collection iterator, or {@code null} if the given collection is null or empty.
-     *
-     * @param  <E>         the type of elements in the collection.
-     * @param  collection  the collection from which to get the iterator, or {@code null}.
-     * @return the iterator over the given collection elements, or {@code null}.
-     */
-    public static <E> Iterator<E> nonEmptyIterator(final Collection<E> collection) {
-        return (collection != null && !collection.isEmpty()) ? collection.iterator() : null;
-    }
-
-    /**
-     * Returns the collection iterator. This is a null-safe method used as a safety against broken implementations.
-     *
-     * @param  <E>         the type of elements in the collection.
-     * @param  collection  the collection from which to get the iterator, or {@code null}.
-     * @return the iterator over the given collection elements, never {@code null}.
-     */
-    public static <E> Iterator<E> iterator(final Collection<E> collection) {
-        return (collection != null) ? collection.iterator() : Collections.emptyIterator();
     }
 
     /**

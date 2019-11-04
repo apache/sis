@@ -542,6 +542,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * @see #skipTrailingWhitespaces(CharSequence, int, int)
      * @see #trimWhitespaces(CharSequence)
+     * @see String#stripLeading()
      */
     public static int skipLeadingWhitespaces(final CharSequence text, int fromIndex, final int toIndex) {
         while (fromIndex < toIndex) {
@@ -579,6 +580,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * @see #skipLeadingWhitespaces(CharSequence, int, int)
      * @see #trimWhitespaces(CharSequence)
+     * @see String#stripTrailing()
      */
     public static int skipTrailingWhitespaces(final CharSequence text, final int fromIndex, int toIndex) {
         while (toIndex > fromIndex) {
@@ -958,6 +960,8 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @param  text  the text from which to remove leading and trailing whitespaces, or {@code null}.
      * @return a string with leading and trailing whitespaces removed, or {@code null} is the given
      *         text was null.
+     *
+     * @todo To be replaced by {@link String#strip()} in JDK 11.
      */
     public static String trimWhitespaces(String text) {
         if (text != null) {
@@ -980,6 +984,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * @see #skipLeadingWhitespaces(CharSequence, int, int)
      * @see #skipTrailingWhitespaces(CharSequence, int, int)
+     * @see String#strip()
      */
     public static CharSequence trimWhitespaces(CharSequence text) {
         if (text != null) {

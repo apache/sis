@@ -44,6 +44,7 @@ import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.CharSequences;
@@ -394,13 +395,8 @@ final class Table extends AbstractFeatureSet {
         if (id instanceof Relation) {
             try (ResultSet reflect = analyzer.metadata.getTables(id.catalog, schemaEsc, tableEsc, null)) {
                 while (reflect.next()) {
-                    remarks = analyzer.getUniqueString(reflect, Reflection.REMARKS);
-                    if (remarks != null) {
-                        remarks = remarks.trim();
-                        if (remarks.isEmpty()) {
-                            remarks = null;
-                        } else break;
-                    }
+                    remarks = Strings.trimOrNull(analyzer.getUniqueString(reflect, Reflection.REMARKS));
+                    if (remarks != null) break;
                 }
             }
         }

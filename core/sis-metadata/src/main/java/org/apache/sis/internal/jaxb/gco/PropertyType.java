@@ -30,6 +30,7 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.ReferenceResolver;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
@@ -453,7 +454,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @category xlink
      */
     public final void setTitle(String title) {
-        if (title != null && !(title = title.trim()).isEmpty()) {
+        title = Strings.trimOrNull(title);
+        if (title != null) {
             xlink(true).setTitle(new SimpleInternationalString(title));
         }
     }
