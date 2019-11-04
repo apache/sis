@@ -42,6 +42,7 @@ import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -85,10 +86,10 @@ final class IdentificationInfo extends Section<Identification> {
     /**
      * Creates an initially empty view for identification information.
      */
-    IdentificationInfo(final MetadataOverview owner) {
+    IdentificationInfo(final MetadataSummary owner) {
         super(owner);
         title = new Label();
-        title.setFont(Font.font(null, FontWeight.BOLD, 14));
+        title.setFont(Font.font(null, FontWeight.BOLD, 15));
         add(title, 0, 0, NUM_CHILD_PER_LINE, 1);
 
         extentOnMap = new Canvas();                     // Size of (0,0) by default.
@@ -152,6 +153,8 @@ final class IdentificationInfo extends Section<Identification> {
         }
         if (text == null) {
             text = vocabulary(Vocabulary.Keys.Untitled);
+        } else if (CharSequences.isUnicodeIdentifier(text)) {
+            text = CharSequences.camelCaseToSentence(text).toString();
         }
         title.setText(text);
         /*
@@ -302,7 +305,7 @@ final class IdentificationInfo extends Section<Identification> {
              * the rectangle in two parts because of anti-meridian crossing.
              */
             if (isWorldMapEmpty()) {
-                final Image image = owner.getWorldMap();
+                final Image image = MetadataSummary.getWorldMap();
                 if (image == null) {
                     return false;                   // Failed to load the image.
                 }

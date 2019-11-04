@@ -48,7 +48,7 @@ final class RepresentationInfo extends Section<SpatialRepresentation> {
     /**
      * Creates an initially empty view for spatial representation information.
      */
-    RepresentationInfo(final MetadataOverview owner) {
+    RepresentationInfo(final MetadataSummary owner) {
         super(owner);
         finished();
     }

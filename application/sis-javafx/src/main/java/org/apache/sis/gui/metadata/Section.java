@@ -63,7 +63,7 @@ abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> 
      * The pane which contains this section. Used for fetching information like number format
      * or localization resources.
      */
-    final MetadataOverview owner;
+    final MetadataSummary owner;
 
     /**
      * Number of children per line. This is not necessarily the number of columns in the grid pane
@@ -110,7 +110,7 @@ abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> 
     /**
      * Creates a new section.
      */
-    Section(final MetadataOverview owner) {
+    Section(final MetadataSummary owner) {
         this.owner = owner;
         pageGroup  = new ToggleGroup();
         pagination = new TilePane(Orientation.VERTICAL);

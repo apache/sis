@@ -21,9 +21,12 @@ import java.util.Collection;
 import javafx.collections.ListChangeListener;
 import javafx.scene.layout.Region;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TreeItem;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.gui.metadata.MetadataOverview;
+import org.apache.sis.gui.metadata.MetadataSummary;
+import org.apache.sis.internal.gui.Resources;
 
 
 /**
@@ -44,7 +47,7 @@ public class ResourceExplorer {
     /**
      * The widget showing metadata about a selected resource.
      */
-    private final MetadataOverview metadata;
+    private final MetadataSummary metadata;
 
     /**
      * The control that put everything together.
@@ -57,9 +60,15 @@ public class ResourceExplorer {
      */
     public ResourceExplorer() {
         resources = new ResourceTree();
-        metadata  = new MetadataOverview(resources.getLocale(), Locale.getDefault(Locale.Category.FORMAT));
+        metadata  = new MetadataSummary(resources.getLocale(), Locale.getDefault(Locale.Category.FORMAT));
         pane      = new SplitPane();
-        pane.getItems().setAll(resources, metadata.getView());
+
+        final Tab mdTab = new Tab(resources.localized.getString(Resources.Keys.Summary), metadata.getView());
+        final TabPane tabs = new TabPane(mdTab);
+        tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        tabs.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
+
+        pane.getItems().setAll(resources, tabs);
         resources.getSelectionModel().getSelectedItems().addListener(this::selectResource);
         SplitPane.setResizableWithParent(resources, Boolean.FALSE);
         SplitPane.setResizableWithParent(metadata.getView(), Boolean.TRUE);

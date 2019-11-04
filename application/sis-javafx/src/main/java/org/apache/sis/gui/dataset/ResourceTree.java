@@ -85,7 +85,7 @@ public class ResourceTree extends TreeView<Resource> {
      * The resources for localized strings. Stored because needed often
      * (when loading data, when building a contextual menu, etc.).
      */
-    private final Resources localized;
+    final Resources localized;
 
     /**
      * Creates a new tree of resources with initially no resource to show.

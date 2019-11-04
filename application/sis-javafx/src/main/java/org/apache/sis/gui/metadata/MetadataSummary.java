@@ -55,7 +55,7 @@ import org.apache.sis.util.logging.Logging;
  * @since   1.1
  * @module
  */
-public class MetadataOverview {
+public class MetadataSummary {
     /**
      * Titles panes for different metadata sections (identification info, spatial information, <i>etc</i>).
      * This is similar to {@link javafx.scene.control.Accordion} except that we allow an arbitrary amount
@@ -93,15 +93,15 @@ public class MetadataOverview {
      *
      * @see #getWorldMap()
      */
-    private Image worldMap;
+    private static Image worldMap;
 
     /**
      * Whether we already tried to load {@link #worldMap}.
      */
-    private boolean worldMapLoaded;
+    private static boolean worldMapLoaded;
 
     /**
-     * If this {@link MetadataOverview} is loading metadata, the worker doing this task.
+     * If this {@link MetadataSummary} is loading metadata, the worker doing this task.
      * Otherwise {@code null}. This is used for cancelling the currently running loading
      * process if {@link #setMetadata(Resource)} is invoked again before completion.
      */
@@ -128,7 +128,7 @@ public class MetadataOverview {
      * @param  dataLocale  the locale for formatting numbers and dates.
      *                     This is often the same than {@code textLocale}.
      */
-    public MetadataOverview(final Locale textLocale, final Locale dataLocale) {
+    public MetadataSummary(final Locale textLocale, final Locale dataLocale) {
         localized    = Resources.forLocale(textLocale);
         formatLocale = dataLocale;
         information  = new TitledPane[] {
@@ -140,7 +140,7 @@ public class MetadataOverview {
     }
 
     /**
-     * Returns the region containing the visual components managed by this {@code MetadataOverview}.
+     * Returns the region containing the visual components managed by this {@code MetadataSummary}.
      * The subclass is implementation dependent and may change in any future version.
      *
      * @return the region to show.
@@ -248,21 +248,23 @@ public class MetadataOverview {
     }
 
     /**
-     * Returns an image of size 360×180 pixels showing a map of the world,
-     * or {@code null} if we failed to load the image.
+     * Returns an image of size 360×180 pixels showing a map of the world, or {@code null}
+     * if we failed to load the image. This method shall be invoked in JavaFX thread;
+     * the map is small enough that loading it in that thread should not be an issue.
      */
-    final Image getWorldMap() {
+    static Image getWorldMap() {
+        assert Platform.isFxApplicationThread();
         if (!worldMapLoaded) {
             worldMapLoaded = true;                  // Set now for avoiding retries in case of failure.
             Exception error;
-            try (InputStream in = MetadataOverview.class.getResourceAsStream("WorldMap360x180.png")) {
+            try (InputStream in = MetadataSummary.class.getResourceAsStream("WorldMap360x180.png")) {
                 worldMap = new Image(in);
                 error = worldMap.getException();
             } catch (IOException e) {
                 error = e;
             }
             if (error != null) {
-                Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), MetadataOverview.class, "getWorldMap", error);
+                Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), MetadataSummary.class, "getWorldMap", error);
             }
         }
         return worldMap;

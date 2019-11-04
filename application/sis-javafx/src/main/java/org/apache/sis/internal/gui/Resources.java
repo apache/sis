@@ -186,6 +186,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short SpatialRepresentation = 24;
 
         /**
+         * Summary
+         */
+        public static final short Summary = 29;
+
+        /**
          * Topic category:
          */
         public static final short TopicCategory = 25;
