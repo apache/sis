@@ -17,11 +17,6 @@
 
 /**
  * JavaFX application for Apache SIS.
- * All classes in this package extend the JavaFX {@link javafx.application.Application} class
- * (for controls reusable in other applications, see sub-packages).
- * Those applications may be instantiated and modified programmatically
- * (for example by adding new menu items),
- * but compatibility with future Apache SIS versions is not guaranteed.
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Johann Sorel (Geomatys)

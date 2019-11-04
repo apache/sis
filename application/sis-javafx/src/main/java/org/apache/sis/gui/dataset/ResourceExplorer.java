@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.dataset;
 
-import java.util.Locale;
 import java.util.Collection;
 import javafx.collections.ListChangeListener;
 import javafx.scene.layout.Region;
@@ -26,6 +25,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TreeItem;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.gui.metadata.MetadataSummary;
+import org.apache.sis.gui.metadata.MetadataTree;
 import org.apache.sis.internal.gui.Resources;
 
 
@@ -60,11 +60,15 @@ public class ResourceExplorer {
      */
     public ResourceExplorer() {
         resources = new ResourceTree();
-        metadata  = new MetadataSummary(resources.getLocale(), Locale.getDefault(Locale.Category.FORMAT));
+        metadata  = new MetadataSummary();
         pane      = new SplitPane();
 
-        final Tab mdTab = new Tab(resources.localized.getString(Resources.Keys.Summary), metadata.getView());
-        final TabPane tabs = new TabPane(mdTab);
+        final MetadataTree metadataTree = new MetadataTree();
+        metadata.metadataProperty.addListener((p,o,n) -> metadataTree.setContent(n));
+
+        final Tab summaryTab = new Tab(resources.localized.getString(Resources.Keys.Summary),  metadata.getView());
+        final Tab metadatTab = new Tab(resources.localized.getString(Resources.Keys.Metadata), metadataTree);
+        final TabPane tabs = new TabPane(summaryTab, metadatTab);
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         tabs.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
 

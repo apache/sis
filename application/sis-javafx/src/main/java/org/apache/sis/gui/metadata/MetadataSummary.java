@@ -24,6 +24,10 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.StringJoiner;
 import javafx.application.Platform;
+import javafx.beans.DefaultProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
@@ -45,7 +49,6 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 
 
-
 /**
  * A panel showing a summary of metadata.
  *
@@ -55,6 +58,7 @@ import org.apache.sis.util.logging.Logging;
  * @since   1.1
  * @module
  */
+@DefaultProperty("metadata")
 public class MetadataSummary {
     /**
      * Titles panes for different metadata sections (identification info, spatial information, <i>etc</i>).
@@ -70,6 +74,7 @@ public class MetadataSummary {
 
     /**
      * The locale to use for date/number formatters.
+     * This is often the same than {@link #localized}.
      */
     private final Locale formatLocale;
 
@@ -108,6 +113,14 @@ public class MetadataSummary {
     private Worker<Metadata> loader;
 
     /**
+     * The metadata shown in this pane.
+     *
+     * @see #getMetadata()
+     * @see #setMetadata(Metadata)
+     */
+    public final ObjectProperty<Metadata> metadataProperty;
+
+    /**
      * If the metadata or the grid geometry can not be obtained, the reason.
      *
      * @todo show in this control.
@@ -123,20 +136,18 @@ public class MetadataSummary {
 
     /**
      * Creates an initially empty metadata overview.
-     *
-     * @param  textLocale  the locale for the text.
-     * @param  dataLocale  the locale for formatting numbers and dates.
-     *                     This is often the same than {@code textLocale}.
      */
-    public MetadataSummary(final Locale textLocale, final Locale dataLocale) {
-        localized    = Resources.forLocale(textLocale);
-        formatLocale = dataLocale;
+    public MetadataSummary() {
+        localized    = Resources.forLocale(Locale.getDefault(Locale.Category.DISPLAY));
+        formatLocale = Locale.getDefault(Locale.Category.FORMAT);
         information  = new TitledPane[] {
             new TitledPane(localized.getString(Resources.Keys.ResourceIdentification), new IdentificationInfo(this)),
             new TitledPane(localized.getString(Resources.Keys.SpatialRepresentation),  new RepresentationInfo(this))
         };
         content = new ScrollPane(new VBox());
         content.setFitToWidth(true);
+        metadataProperty = new SimpleObjectProperty<>(this, "metadata");
+        metadataProperty.addListener(MetadataSummary::applyChange);
     }
 
     /**
@@ -218,32 +229,65 @@ public class MetadataSummary {
 
     /**
      * Sets the content of this pane to the given metadata.
+     * This is a convenience method for setting {@link #metadataProperty} value.
      *
      * @param  metadata  the metadata to show, or {@code null}.
+     *
+     * @see #metadataProperty
+     * @see #setMetadata(Resource)
      */
-    public void setMetadata(final Metadata metadata) {
+    public final void setMetadata(final Metadata metadata) {
         assert Platform.isFxApplicationThread();
-        error = null;
-        final ObservableList<Node> children = ((VBox) content.getContent()).getChildren();
-        /*
-         * We want to include only the non-empty panes in the children list. But instead of
-         * removing everything and adding back non-empty panes, we check case-by-case if a
-         * child should be added or removed. It will often result in no modification at all.
-         */
-        int i = 0;
-        for (TitledPane pane : information) {
-            final Section<?> info = (Section<?>) pane.getContent();
-            info.setInformation(metadata);
-            final boolean isEmpty   = info.isEmpty();
-            final boolean isPresent = (i < children.size()) && children.get(i) == pane;
-            if (isEmpty == isPresent) {     // Should not be present if empty, or should be present if non-empty.
-                if (isEmpty) {
-                    children.remove(i);
-                } else {
-                    children.add(i, pane);
+        metadataProperty.setValue(metadata);
+    }
+
+    /**
+     * Returns the metadata currently shown, or {@code null} if none.
+     * This is a convenience method for fetching {@link #metadataProperty} value.
+     *
+     * @return the metadata currently shown, or {@code null} if none.
+     *
+     * @see #metadataProperty
+     * @see #setMetadata(Metadata)
+     */
+    public final Metadata getMetadata() {
+        return metadataProperty.getValue();
+    }
+
+    /**
+     * Invoked when {@link #metadataProperty} value changed.
+     *
+     * @param  property  the property which has been modified.
+     * @param  oldValue  the old metadata.
+     * @param  metadata  the metadata to use for building new content.
+     */
+    private static void applyChange(final ObservableValue<? extends Metadata> property,
+                                    final Metadata oldValue, final Metadata metadata)
+    {
+        final MetadataSummary s = (MetadataSummary) ((SimpleObjectProperty<?>) property).getBean();
+        s.error = null;
+        if (metadata != oldValue) {
+            final ObservableList<Node> children = ((VBox) s.content.getContent()).getChildren();
+            /*
+             * We want to include only the non-empty panes in the children list. But instead of
+             * removing everything and adding back non-empty panes, we check case-by-case if a
+             * child should be added or removed. It will often result in no modification at all.
+             */
+            int i = 0;
+            for (TitledPane pane : s.information) {
+                final Section<?> info = (Section<?>) pane.getContent();
+                info.setInformation(metadata);
+                final boolean isEmpty   = info.isEmpty();
+                final boolean isPresent = (i < children.size()) && children.get(i) == pane;
+                if (isEmpty == isPresent) {     // Should not be present if empty, or should be present if non-empty.
+                    if (isEmpty) {
+                        children.remove(i);
+                    } else {
+                        children.add(i, pane);
+                    }
                 }
+                if (!isEmpty) i++;
             }
-            if (!isEmpty) i++;
         }
     }
 

@@ -61,8 +61,8 @@ import org.apache.sis.internal.gui.Styles;
 
 
 /**
- * Tree viewer displaying a {@link Resource} hierarchy.
- * This viewer can be used for showing the content of one or many {@link DataStore}s.
+ * A view of data {@link Resource}s organized as a tree.
+ * This view can be used for showing the content of one or many {@link DataStore}s.
  * A resource can be added by a call to {@link #addResource(Resource)} or loaded from
  * a file by {@link #loadResource(Object)}.
  *

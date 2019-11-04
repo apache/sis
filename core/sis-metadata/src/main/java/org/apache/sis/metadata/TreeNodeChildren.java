@@ -47,7 +47,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -317,6 +317,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      */
     @Override
     public boolean isEmpty() {
+        if (titleProperty >= 0) return size() == 0;     // COUNT_FIRST is not reliable in this case.
         return accessor.count(metadata, parent.table.valuePolicy, PropertyAccessor.COUNT_FIRST) == 0;
     }
 

@@ -146,6 +146,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Loading = 7;
 
         /**
+         * Metadata
+         */
+        public static final short Metadata = 30;
+
+        /**
          * Number of dimensions:
          */
         public static final short NumberOfDimensions = 27;
