@@ -33,6 +33,7 @@ import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.InternationalString;
+import org.opengis.util.ControlledVocabulary;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.metadata.MetadataStandard;
@@ -40,6 +41,7 @@ import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -128,6 +130,7 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
         nameColumn .setCellValueFactory(MetadataTree::getPropertyName);
         valueColumn.setCellValueFactory(MetadataTree::getPropertyValue);
 
+        setShowRoot(false);
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         getColumns().setAll(nameColumn, valueColumn);
         contentProperty.addListener(MetadataTree::applyChange);
@@ -286,6 +289,9 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
         Object value = getValue(cell, TableColumn.VALUE);
         if (value instanceof IdentifiedObject) {
             value = IdentifiedObjects.getDisplayName((IdentifiedObject) value, view.textLocale);
+        }
+        if (value instanceof ControlledVocabulary) {
+            value = Types.getCodeTitle((ControlledVocabulary) value);
         }
         if (value instanceof InternationalString) {
             value = ((InternationalString) value).toString(view.textLocale);

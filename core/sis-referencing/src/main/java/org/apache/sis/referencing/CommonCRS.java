@@ -494,7 +494,7 @@ public enum CommonCRS {
             single = CRS.getHorizontalComponent(crs);
             if (single == null) {
                 throw new IllegalArgumentException(Resources.format(
-                        Resources.Keys.NonHorizontalCRS_1, IdentifiedObjects.getName(crs, null)));
+                        Resources.Keys.NonHorizontalCRS_1, IdentifiedObjects.getDisplayName(crs, null)));
             }
         }
         final Datum datum = single.getDatum();
@@ -503,7 +503,7 @@ public enum CommonCRS {
             if (c != null) return c;
         }
         throw new IllegalArgumentException(Errors.format(
-                Errors.Keys.UnsupportedDatum_1, IdentifiedObjects.getName(datum, null)));
+                Errors.Keys.UnsupportedDatum_1, IdentifiedObjects.getDisplayName(datum, null)));
     }
 
     /**

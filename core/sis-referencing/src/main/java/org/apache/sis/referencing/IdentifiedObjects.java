@@ -354,14 +354,19 @@ public final class IdentifiedObjects extends Static {
     }
 
     /**
-     * Returns a name that can be used for display purpose. This method returns the first non-blank
+     * Returns a name that can be used for display purpose. This method checks the non-blank
      * {@linkplain AbstractIdentifiedObject#getName() name},
      * {@linkplain AbstractIdentifiedObject#getAlias() alias} or
      * {@linkplain AbstractIdentifiedObject#getIdentifiers() identifier}, in that order.
-     * The name should never be missing, but this method nevertheless fallbacks on aliases and identifiers
-     * as a safety against incomplete implementations. If an identifier implements {@link GenericName}
-     * (as with {@link NamedIdentifier}), its {@link GenericName#toInternationalString() toInternationalString()}
-     * method will be used.
+     * If the primary name seems to be the {@linkplain CharSequences#isAcronymForWords acronym} of an alias,
+     * then the alias is returned. For example if the name is <cite>"WGS 84"</cite> and an alias is
+     * <cite>"World Geodetic System 1984"</cite>, then that later alias is returned.
+     *
+     * <div class="note"><b>Note:</b>
+     * the name should never be missing, but this method nevertheless
+     * fallbacks on identifiers as a safety against incomplete implementations.
+     * If an identifier implements {@link GenericName} (as with {@link NamedIdentifier}),
+     * its {@link GenericName#toInternationalString() toInternationalString()} method will be used.</div>
      *
      * @param  object  the identified object, or {@code null}.
      * @param  locale  the locale for the name to return, or {@code null} for the default.
@@ -374,19 +379,23 @@ public final class IdentifiedObjects extends Static {
             return null;
         }
         String name = toString(object.getName(), locale);
-alt:    if (name == null) {
-            for (final GenericName c : nonNull(object.getAlias())) {
-                name = toString(c, locale);
-                if (name != null) break alt;
+        for (final GenericName c : nonNull(object.getAlias())) {
+            final String alias = toString(c, locale);
+            if (alias != null) {
+                if (name == null || CharSequences.isAcronymForWords(name, alias)) {
+                    return alias;
+                }
+                final String unlocalized = c.toString();
+                if (!alias.equals(unlocalized) && CharSequences.isAcronymForWords(name, unlocalized)) {
+                    return alias;           // Select the localized version instead of `unlocalized`.
+                }
             }
+        }
+        if (name == null) {
             for (final Identifier id : nonNull(object.getIdentifiers())) {
                 name = toString(id, locale);
-                if (name != null) break alt;
+                if (name != null) break;
             }
-            return null;
-        }
-        if (name.indexOf(' ') < 0) {
-            name = CharSequences.camelCaseToSentence(name).toString();
         }
         return name;
     }
