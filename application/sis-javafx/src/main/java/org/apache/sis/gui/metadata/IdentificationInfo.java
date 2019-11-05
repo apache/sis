@@ -62,6 +62,14 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  */
 final class IdentificationInfo extends Section<Identification> {
     /**
+     * Size of the map. Current version uses a size of 360×180° so that the scale factor
+     * from the map to degrees is 1. Future version may use a different size, in which
+     * case the scale factor will need to be added in the code.
+     */
+    private static final double MAP_WIDTH  = Longitude.MAX_VALUE - Longitude.MIN_VALUE,
+                                MAP_HEIGHT =  Latitude.MAX_VALUE -  Latitude.MIN_VALUE;
+
+    /**
      * Minimal size of rectangles to be drawn by {@link IdentificationInfo#drawOnMap(GeographicBoundingBox)}.
      * If a rectangle is smaller, it will be expanded to this size. We use a minimal size because otherwise
      * small rectangles may be practically invisible.
@@ -285,8 +293,8 @@ final class IdentificationInfo extends Section<Identification> {
             }
         }
         if (north >= south && Double.isFinite(east) && Double.isFinite(west)) {
-            double x = (Longitude.MAX_VALUE - Longitude.MIN_VALUE)  / 2 + west;
-            double y =  (Latitude.MAX_VALUE -  Latitude.MIN_VALUE)  / 2 - north;
+            double x = MAP_WIDTH  / 2 + west;
+            double y = MAP_HEIGHT / 2 - north;
             double w = east  - west;
             double h = north - south;
             if (w < MIN_RECT_SIZE) {
@@ -297,8 +305,8 @@ final class IdentificationInfo extends Section<Identification> {
                 y -= (MIN_RECT_SIZE - h) / 2;
                 h  =  MIN_RECT_SIZE;
             }
-            final double wi = Math.min(w, Longitude.MAX_VALUE - x);         // Width of part inside [-180 … +180]°.
-            w -= wi;                                                        // Width of part not drawn by `wi`.
+            final double wi = Math.min(w, MAP_WIDTH - x);               // Width of part inside [-180 … +180]°.
+            w -= wi;                                                    // Width of part not drawn by `wi`.
             /*
              * At this point we got the coordinates of the rectangle to draw, adjusted for making sure
              * that they are inside valid ranges. The `w` variable is usually 0, unless we had to cut
@@ -318,12 +326,12 @@ final class IdentificationInfo extends Section<Identification> {
             gc.setGlobalAlpha(0.1);
             gc.fillRect(x, y, wi, h);
             if (w > 0) {
-                gc.fillRect(Longitude.MIN_VALUE, y, w, h);
+                gc.fillRect(0, y, w, h);
             }
             gc.setGlobalAlpha(1.0);
             gc.strokeRect(x, y, wi, h);
             if (w > 0) {
-                gc.strokeRect(Longitude.MIN_VALUE, y, w, h);
+                gc.strokeRect(0, y, w, h);
             }
         }
         return false;
