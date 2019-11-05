@@ -127,8 +127,25 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
      * Creates a new initially empty metadata tree.
      */
     public MetadataTree() {
-        textLocale      = Locale.getDefault(Locale.Category.DISPLAY);
-        dataLocale      = Locale.getDefault(Locale.Category.FORMAT);
+        this(null);
+    }
+
+    /**
+     * Creates a new initially empty metadata tree which will be automatically updated
+     * when the given widget shows new metadata. This constructor registers a listener
+     * to {@link MetadataSummary#metadataProperty} which forwards the metadata changes
+     * to {@link #setContent(Metadata)}.
+     *
+     * @param  controller  the widget to watch, or {@code null} if none.
+     */
+    public MetadataTree(final MetadataSummary controller) {
+        if (controller != null) {
+            textLocale = controller.localized.getLocale();
+            dataLocale = controller.dataLocale;
+        } else {
+            textLocale = Locale.getDefault(Locale.Category.DISPLAY);
+            dataLocale = Locale.getDefault(Locale.Category.FORMAT);
+        }
         contentProperty = new ContentProperty(this);
         nameColumn      = new TreeTableColumn<>(TableColumn.NAME .getHeader().toString(textLocale));
         valueColumn     = new TreeTableColumn<>(TableColumn.VALUE.getHeader().toString(textLocale));
@@ -138,6 +155,9 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         getColumns().setAll(nameColumn, valueColumn);
         contentProperty.addListener(MetadataTree::applyChange);
+        if (controller != null) {
+            controller.metadataProperty.addListener((p,o,n) -> setContent(n));
+        }
     }
 
     /**

@@ -106,6 +106,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Credit = 17;
 
         /**
+         * Data
+         */
+        public static final short Data = 32;
+
+        /**
          * Date:
          */
         public static final short Date = 18;
@@ -154,6 +159,11 @@ public final class Resources extends IndexedResourceBundle {
          * Metadata
          */
         public static final short Metadata = 30;
+
+        /**
+         * No feature type information.
+         */
+        public static final short NoFeatureTypeInfo = 33;
 
         /**
          * Number of dimensions:

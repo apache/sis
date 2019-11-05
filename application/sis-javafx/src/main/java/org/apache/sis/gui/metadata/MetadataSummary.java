@@ -79,7 +79,7 @@ public class MetadataSummary {
      * The locale to use for date/number formatters.
      * This is often the same than {@link #localized}.
      */
-    private final Locale formatLocale;
+    final Locale dataLocale;
 
     /**
      * The format to use for writing numbers, created when first needed.
@@ -140,9 +140,9 @@ public class MetadataSummary {
      * Creates an initially empty metadata overview.
      */
     public MetadataSummary() {
-        localized    = Resources.forLocale(Locale.getDefault(Locale.Category.DISPLAY));
-        formatLocale = Locale.getDefault(Locale.Category.FORMAT);
-        information  = new TitledPane[] {
+        localized   = Resources.forLocale(Locale.getDefault(Locale.Category.DISPLAY));
+        dataLocale  = Locale.getDefault(Locale.Category.FORMAT);
+        information = new TitledPane[] {
             new TitledPane(localized.getString(Resources.Keys.ResourceIdentification), new IdentificationInfo(this)),
             new TitledPane(localized.getString(Resources.Keys.SpatialRepresentation),  new RepresentationInfo(this))
         };
@@ -174,7 +174,7 @@ public class MetadataSummary {
      */
     final NumberFormat getNumberFormat() {
         if (numberFormat == null) {
-            numberFormat = NumberFormat.getInstance(formatLocale);
+            numberFormat = NumberFormat.getInstance(dataLocale);
         }
         return numberFormat;
     }
@@ -184,7 +184,7 @@ public class MetadataSummary {
      */
     final DateFormat getDateFormat() {
         if (dateFormat == null) {
-            dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, formatLocale);
+            dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, dataLocale);
         }
         return dateFormat;
     }
@@ -216,8 +216,8 @@ public class MetadataSummary {
                 /**
                  * Shows the result, unless another {@link #setMetadata(Resource)} has been invoked.
                  */
-                @Override protected void succeeded() {if (!isCancelled()) setMetadata(getValue());}
-                @Override protected void failed()    {if (!isCancelled()) setError(getException());}
+                @Override protected void succeeded() {super.succeeded(); setMetadata(getValue());}
+                @Override protected void failed()    {super.failed();    setError(getException());}
             }
             BackgroundThreads.execute(new Getter());
         }

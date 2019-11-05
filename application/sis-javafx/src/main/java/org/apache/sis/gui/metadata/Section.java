@@ -185,7 +185,7 @@ abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> 
         /*
          * Update the pane content with the first information.
          */
-        setVisible(n != 0);
+        linesEndIndex = linesStartIndex;
         if (n != 0) {
             pageGroup.selectToggle((ToggleButton) pagination.getChildren().get(0));
             update(0);
@@ -284,6 +284,6 @@ abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> 
      * Returns {@code true} if this section contains no data.
      */
     boolean isEmpty() {
-        return linesStartIndex == linesEndIndex;
+        return linesStartIndex >= linesEndIndex;
     }
 }

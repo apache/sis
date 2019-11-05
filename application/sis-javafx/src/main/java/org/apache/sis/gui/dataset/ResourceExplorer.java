@@ -27,6 +27,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.gui.metadata.MetadataSummary;
 import org.apache.sis.gui.metadata.MetadataTree;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.storage.FeatureSet;
 
 
 /**
@@ -45,6 +46,11 @@ public class ResourceExplorer {
     private final ResourceTree resources;
 
     /**
+     * The data as a table.
+     */
+    private final FeatureTable features;
+
+    /**
      * The widget showing metadata about a selected resource.
      */
     private final MetadataSummary metadata;
@@ -61,21 +67,21 @@ public class ResourceExplorer {
     public ResourceExplorer() {
         resources = new ResourceTree();
         metadata  = new MetadataSummary();
+        features  = new FeatureTable();
         pane      = new SplitPane();
 
-        final MetadataTree metadataTree = new MetadataTree();
-        metadata.metadataProperty.addListener((p,o,n) -> metadataTree.setContent(n));
+        final TabPane tabs = new TabPane(
+            new Tab(resources.localized.getString(Resources.Keys.Summary),  metadata.getView()),
+            new Tab(resources.localized.getString(Resources.Keys.Data),     features),
+            new Tab(resources.localized.getString(Resources.Keys.Metadata), new MetadataTree(metadata)));
 
-        final Tab summaryTab = new Tab(resources.localized.getString(Resources.Keys.Summary),  metadata.getView());
-        final Tab metadatTab = new Tab(resources.localized.getString(Resources.Keys.Metadata), metadataTree);
-        final TabPane tabs = new TabPane(summaryTab, metadatTab);
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         tabs.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
 
         pane.getItems().setAll(resources, tabs);
         resources.getSelectionModel().getSelectedItems().addListener(this::selectResource);
         SplitPane.setResizableWithParent(resources, Boolean.FALSE);
-        SplitPane.setResizableWithParent(metadata.getView(), Boolean.TRUE);
+        SplitPane.setResizableWithParent(tabs, Boolean.TRUE);
         pane.setDividerPosition(0, 300);
     }
 
@@ -91,8 +97,9 @@ public class ResourceExplorer {
     }
 
     /**
-     * Adds all the given resources to the resource tree. The given collection typically contains
-     * files to load, but may also contain {@link Resource} instances to add directly.
+     * Loads all given sources in background threads and add them to the resource tree.
+     * The given collection typically contains files to load,
+     * but may also contain {@link Resource} instances to add directly.
      * This method forwards the files to {@link ResourceTree#loadResource(Object)},
      * which will allocate a background thread for each resource to load.
      *
@@ -108,8 +115,9 @@ public class ResourceExplorer {
     }
 
     /**
-     * Invoked when a new item is selected in the resource tree.
-     * This method takes the first non-null resource and forward to the children.
+     * Invoked in JavaFX thread when a new item is selected in the resource tree.
+     * Normally, only one resource is selected since we use a single selection model.
+     * We nevertheless loop over the items as a paranoiac check and take the first non-null resource.
      *
      * @param  change  a change event with the new resource to show.
      */
@@ -122,5 +130,6 @@ public class ResourceExplorer {
             }
         }
         metadata.setMetadata(resource);
+        features.setFeatures((resource instanceof FeatureSet) ? (FeatureSet) resource : null);
     }
 }
