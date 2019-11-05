@@ -24,6 +24,11 @@ import org.opengis.filter.expression.Expression;
 
 /**
  * The {@value #NAME} filter.
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 final class DefaultLike extends Node implements PropertyIsLike {
 

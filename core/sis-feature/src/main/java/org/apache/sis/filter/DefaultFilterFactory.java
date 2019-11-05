@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.opengis.filter.*;
 import org.opengis.filter.capability.*;
 import org.opengis.filter.capability.SpatialOperator;
@@ -37,6 +40,9 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.feature.FunctionRegister;
 import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -109,7 +115,19 @@ public class DefaultFilterFactory implements FilterFactory2 {
     public BBOX bbox(final Expression e, final double minx, final double miny,
             final double maxx, final double maxy, final String srs)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        GeneralEnvelope env;
+        if (srs == null || srs.isEmpty()) {
+            env = new GeneralEnvelope(2);
+        } else {
+            try {
+                env = new GeneralEnvelope(CRS.forCode(srs));
+            } catch (FactoryException ex) {
+                throw new BackingStoreException(ex.getMessage(), ex);
+            }
+        }
+        env.setRange(0, minx, maxx);
+        env.setRange(1, miny, maxy);
+        return bbox(e, env);
     }
 
     /**
@@ -117,7 +135,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public BBOX bbox(final Expression e, final Envelope bounds) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new SpatialFunction.BBOX(e, bounds);
     }
 
     /**
@@ -147,7 +165,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     public Beyond beyond(final Expression left, final Expression right,
             final double distance, final String units)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new SpatialFunction.Beyond(left, right, distance, units);
     }
 
     /**
@@ -165,7 +183,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Contains contains(final Expression left, final Expression right) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new SpatialFunction.Contains(left, right);
     }
 
     /**
@@ -183,7 +201,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Crosses crosses(final Expression left, final Expression right) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new SpatialFunction.Crosses(left, right);
     }
 
     /**
@@ -201,7 +219,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Disjoint disjoint(final Expression left, final Expression right) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new SpatialFunction.Disjoint(left, right);
     }
 
     /**
@@ -223,7 +241,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     public DWithin dwithin(final Expression left, final Expression right,
             final double distance, final String units)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new SpatialFunction.DWithin(left, right, distance, units);
     }
 
     /**
@@ -241,7 +259,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Equals equal(final Expression left, final Expression right) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new SpatialFunction.Equals(left, right);
     }
 
     /**
@@ -259,7 +277,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Intersects intersects(final Expression left, final Expression right) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new SpatialFunction.Intersects(left, right);
     }
 
     /**
@@ -277,7 +295,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Overlaps overlaps(final Expression left, final Expression right) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new SpatialFunction.Overlaps(left, right);
     }
 
     /**
@@ -295,7 +313,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Touches touches(final Expression left, final Expression right) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new SpatialFunction.Touches(left, right);
     }
 
     /**
@@ -313,7 +331,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Within within(final Expression left, final Expression right) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new SpatialFunction.Within(left, right);
     }
 
     // IDENTIFIERS /////////////////////////////////////////////////////////////

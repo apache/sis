@@ -17,6 +17,8 @@
 package org.apache.sis.cql;
 
 import java.text.ParseException;
+import java.time.Instant;
+import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -62,7 +64,6 @@ import org.opengis.filter.temporal.TContains;
 import org.opengis.filter.temporal.TEquals;
 import org.opengis.filter.temporal.TOverlaps;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -137,10 +138,9 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
                 filter);
     }
 
-    @Ignore
     @Test
     public void testOrAnd1() throws CQLException {
-        final String cql = "Title = 'VMAI' OR (Title ILIKE 'LO?Li' AND DWITHIN(BoundingBox, POINT(12.1 28.9), 10, meters))";
+        final String cql = "Title = 'VMAI' OR (Title ILIKE '!$P_att%ern?' AND DWITHIN(BoundingBox, POINT(12.1 28.9), 10, meters))";
         final Object obj = CQL.parseFilter(cql);
         assertTrue(obj instanceof Filter);
         final Filter filter = (Filter) obj;
@@ -148,14 +148,13 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
                 FF.or(
                     FF.equals(FF.property("Title"), FF.literal("VMAI")),
                     FF.and(
-                        FF.like(FF.property("Title"), "LO?Li","%","_","\\",false),
+                        FF.like(FF.property("Title"), "!$Pa_tt%ern?","%","_","\\",false),
                         FF.dwithin(FF.property("BoundingBox"), FF.literal(baseGeometryPoint), 10, "meters")
                         )
                 ),
                 filter);
     }
 
-    @Ignore
     @Test
     public void testOrAnd2() throws CQLException {
         final Geometry geom =  GF.createPolygon(
@@ -197,7 +196,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertEquals(FF.not(FF.equals(FF.property("att"), FF.literal(15))), filter);
     }
 
-    @Ignore
     @Test
     public void testPropertyIsBetween() throws CQLException {
         final String cql = "att BETWEEN 15 AND 30";
@@ -257,14 +255,13 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertEquals(FF.notEqual(FF.property("att"), FF.literal(15)), filter);
     }
 
-    @Ignore
     @Test
     public void testPropertyIsNotEqualTo2() throws CQLException {
         final String cql = "att <>'15'";
         final Object obj = CQL.parseFilter(cql);
         assertTrue(obj instanceof PropertyIsNotEqualTo);
         final PropertyIsNotEqualTo filter = (PropertyIsNotEqualTo) obj;
-        assertEquals(FF.notEqual(FF.property("att"), FF.literal(15)), filter);
+        assertEquals(FF.notEqual(FF.property("att"), FF.literal("15")), filter);
     }
 
     @Test
@@ -303,7 +300,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertEquals(FF.lessOrEqual(FF.property("att"), FF.literal(15)), filter);
     }
 
-    @Ignore
     @Test
     public void testPropertyIsLike() throws CQLException {
         final String cql = "att LIKE '%hello_'";
@@ -313,7 +309,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertEquals(FF.like(FF.property("att"),"%hello_", "%", "_", "\\",true), filter);
     }
 
-    @Ignore
     @Test
     public void testPropertyIsNotLike() throws CQLException {
         final String cql = "att NOT LIKE '%hello_'";
@@ -323,7 +318,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertEquals(FF.not(FF.like(FF.property("att"),"%hello_", "%", "_", "\\",true)), filter);
     }
 
-    @Ignore
     @Test
     public void testPropertyIsLikeInsensitive() throws CQLException {
         final String cql = "att ILIKE '%hello_'";
@@ -352,7 +346,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertEquals(FF.isNull(FF.property("att")), filter);
     }
 
-    @Ignore
     @Test
     public void testBBOX1() throws CQLException {
         final String cql = "BBOX(\"att\" ,10, 20, 30, 40)";
@@ -362,7 +355,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertEquals(FF.bbox(FF.property("att"), 10,20,30,40, null), filter);
     }
 
-    @Ignore
     @Test
     public void testBBOX2() throws CQLException {
         final String cql = "BBOX(\"att\" ,10, 20, 30, 40, 'CRS:84')";
@@ -372,7 +364,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertEquals(FF.bbox(FF.property("att"), 10,20,30,40, "CRS:84"), filter);
     }
 
-    @Ignore
     @Test
     public void testBBOX3() throws CQLException {
         final String cql = "BBOX(att ,10, 20, 30, 40, 'CRS:84')";
@@ -382,7 +373,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertEquals(FF.bbox(FF.property("att"), 10,20,30,40, "CRS:84"), filter);
     }
 
-    @Ignore
     @Test
     public void testBBOX4() throws CQLException {
         final String cql = "BBOX(geometry,-10,-20,10,20)";
@@ -392,7 +382,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertEquals(FF.bbox(FF.property("geometry"), -10,-20,10,20,null), filter);
     }
 
-    @Ignore
     @Test
     public void testBeyond() throws CQLException {
         final String cql = "BEYOND(\"att\" ,POLYGON((10 20, 30 40, 50 60, 10 20)), 10, meters)";
@@ -407,7 +396,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertTrue(baseGeometry.equalsExact(filtergeo));
     }
 
-    @Ignore
     @Test
     public void testContains() throws CQLException {
         final String cql = "CONTAINS(\"att\" ,POLYGON((10 20, 30 40, 50 60, 10 20)))";
@@ -422,7 +410,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertTrue(baseGeometry.equalsExact(filtergeo));
     }
 
-    @Ignore
     @Test
     public void testCrosses() throws CQLException {
         final String cql = "CROSSES(\"att\" ,POLYGON((10 20, 30 40, 50 60, 10 20)))";
@@ -437,7 +424,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertTrue(baseGeometry.equalsExact(filtergeo));
     }
 
-    @Ignore
     @Test
     public void testDisjoint() throws CQLException {
         final String cql = "DISJOINT(\"att\" ,POLYGON((10 20, 30 40, 50 60, 10 20)))";
@@ -452,7 +438,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertTrue(baseGeometry.equalsExact(filtergeo));
     }
 
-    @Ignore
     @Test
     public void testDWithin() throws CQLException {
         final String cql = "DWITHIN(\"att\" ,POLYGON((10 20, 30 40, 50 60, 10 20)), 10, 'meters')";
@@ -469,7 +454,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertTrue(baseGeometry.equalsExact(filtergeo));
     }
 
-    @Ignore
     @Test
     public void testDWithin2() throws CQLException {
         //there is an error in this syntax, meters is a literal so it should be writen 'meters"
@@ -489,7 +473,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
     }
 
-    @Ignore
     @Test
     public void testEquals() throws CQLException {
         final String cql = "EQUALS(\"att\" ,POLYGON((10 20, 30 40, 50 60, 10 20)))";
@@ -504,7 +487,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertTrue(baseGeometry.equalsExact(filtergeo));
     }
 
-    @Ignore
     @Test
     public void testIntersects() throws CQLException {
         final String cql = "INTERSECTS(\"att\" ,POLYGON((10 20, 30 40, 50 60, 10 20)))";
@@ -519,7 +501,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertTrue(baseGeometry.equalsExact(filtergeo));
     }
 
-    @Ignore
     @Test
     public void testOverlaps() throws CQLException {
         final String cql = "OVERLAPS(\"att\" ,POLYGON((10 20, 30 40, 50 60, 10 20)))";
@@ -534,7 +515,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertTrue(baseGeometry.equalsExact(filtergeo));
     }
 
-    @Ignore
     @Test
     public void testTouches() throws CQLException {
         final String cql = "TOUCHES(\"att\" ,POLYGON((10 20, 30 40, 50 60, 10 20)))";
@@ -549,7 +529,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertTrue(baseGeometry.equalsExact(filtergeo));
     }
 
-    @Ignore
     @Test
     public void testWithin() throws CQLException {
         final String cql = "WITHIN(\"att\" ,POLYGON((10 20, 30 40, 50 60, 10 20)))";
@@ -564,7 +543,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
         assertTrue(baseGeometry.equalsExact(filtergeo));
     }
 
-    @Ignore
     @Test
     public void testCombine1() throws CQLException {
         final String cql = "NOT att = 15 OR att BETWEEN 15 AND 30";
@@ -580,7 +558,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
                 );
     }
 
-    @Ignore
     @Test
     public void testCombine2() throws CQLException {
         final String cql = "(NOT att = 15) OR (att BETWEEN 15 AND 30)";
@@ -596,7 +573,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
                 );
     }
 
-    @Ignore
     @Test
     public void testCombine3() throws CQLException {
         final String cql = "(NOT att1 = 15) AND (att2 = 15 OR att3 BETWEEN 15 AND 30) AND (att4 BETWEEN 1 AND 2)";
@@ -633,7 +609,6 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
                 );
     }
 
-    @Ignore
     @Test
     public void testAfter() throws CQLException, ParseException {
         final String cql = "att AFTER 2012-03-21T05:42:36Z";
@@ -643,12 +618,11 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
         assertEquals(FF.property("att"), filter.getExpression1());
         assertTrue(filter.getExpression2() instanceof Literal);
-        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
-        final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof TemporalAccessor);
+        final TemporalAccessor filterdate = (TemporalAccessor) ((Literal)filter.getExpression2()).getValue();
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), Instant.from(filterdate));
     }
 
-    @Ignore
     @Test
     public void testAnyInteracts() throws CQLException, ParseException {
         final String cql = "att ANYINTERACTS 2012-03-21T05:42:36Z";
@@ -658,12 +632,11 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
         assertEquals(FF.property("att"), filter.getExpression1());
         assertTrue(filter.getExpression2() instanceof Literal);
-        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
-        final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof TemporalAccessor);
+        final TemporalAccessor filterdate = (TemporalAccessor) ((Literal)filter.getExpression2()).getValue();
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), Instant.from(filterdate));
     }
 
-    @Ignore
     @Test
     public void testBefore() throws CQLException, ParseException {
         final String cql = "att BEFORE 2012-03-21T05:42:36Z";
@@ -673,12 +646,11 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
         assertEquals(FF.property("att"), filter.getExpression1());
         assertTrue(filter.getExpression2() instanceof Literal);
-        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
-        final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof TemporalAccessor);
+        final TemporalAccessor filterdate = (TemporalAccessor) ((Literal)filter.getExpression2()).getValue();
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), Instant.from(filterdate));
     }
 
-    @Ignore
     @Test
     public void testBegins() throws CQLException, ParseException {
         final String cql = "att BEGINS 2012-03-21T05:42:36Z";
@@ -688,12 +660,11 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
         assertEquals(FF.property("att"), filter.getExpression1());
         assertTrue(filter.getExpression2() instanceof Literal);
-        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
-        final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof TemporalAccessor);
+        final TemporalAccessor filterdate = (TemporalAccessor) ((Literal)filter.getExpression2()).getValue();
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), Instant.from(filterdate));
     }
 
-    @Ignore
     @Test
     public void testBegunBy() throws CQLException, ParseException {
         final String cql = "att BEGUNBY 2012-03-21T05:42:36Z";
@@ -703,12 +674,11 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
         assertEquals(FF.property("att"), filter.getExpression1());
         assertTrue(filter.getExpression2() instanceof Literal);
-        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
-        final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof TemporalAccessor);
+        final TemporalAccessor filterdate = (TemporalAccessor) ((Literal)filter.getExpression2()).getValue();
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), Instant.from(filterdate));
     }
 
-    @Ignore
     @Test
     public void testDuring() throws CQLException, ParseException {
         final String cql = "att DURING 2012-03-21T05:42:36Z";
@@ -718,12 +688,11 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
         assertEquals(FF.property("att"), filter.getExpression1());
         assertTrue(filter.getExpression2() instanceof Literal);
-        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
-        final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof TemporalAccessor);
+        final TemporalAccessor filterdate = (TemporalAccessor) ((Literal)filter.getExpression2()).getValue();
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), Instant.from(filterdate));
     }
 
-    @Ignore
     @Test
     public void testEndedBy() throws CQLException, ParseException {
         final String cql = "att ENDEDBY 2012-03-21T05:42:36Z";
@@ -733,12 +702,11 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
         assertEquals(FF.property("att"), filter.getExpression1());
         assertTrue(filter.getExpression2() instanceof Literal);
-        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
-        final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof TemporalAccessor);
+        final TemporalAccessor filterdate = (TemporalAccessor) ((Literal)filter.getExpression2()).getValue();
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), Instant.from(filterdate));
     }
 
-    @Ignore
     @Test
     public void testEnds() throws CQLException, ParseException {
         final String cql = "att ENDS 2012-03-21T05:42:36Z";
@@ -748,12 +716,11 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
         assertEquals(FF.property("att"), filter.getExpression1());
         assertTrue(filter.getExpression2() instanceof Literal);
-        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
-        final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof TemporalAccessor);
+        final TemporalAccessor filterdate = (TemporalAccessor) ((Literal)filter.getExpression2()).getValue();
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), Instant.from(filterdate));
     }
 
-    @Ignore
     @Test
     public void testMeets() throws CQLException, ParseException {
         final String cql = "att MEETS 2012-03-21T05:42:36Z";
@@ -763,12 +730,11 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
         assertEquals(FF.property("att"), filter.getExpression1());
         assertTrue(filter.getExpression2() instanceof Literal);
-        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
-        final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof TemporalAccessor);
+        final TemporalAccessor filterdate = (TemporalAccessor) ((Literal)filter.getExpression2()).getValue();
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), Instant.from(filterdate));
     }
 
-    @Ignore
     @Test
     public void testMetBy() throws CQLException, ParseException {
         final String cql = "att METBY 2012-03-21T05:42:36Z";
@@ -778,12 +744,11 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
         assertEquals(FF.property("att"), filter.getExpression1());
         assertTrue(filter.getExpression2() instanceof Literal);
-        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
-        final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof TemporalAccessor);
+        final TemporalAccessor filterdate = (TemporalAccessor) ((Literal)filter.getExpression2()).getValue();
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), Instant.from(filterdate));
     }
 
-    @Ignore
     @Test
     public void testOverlappedBy() throws CQLException, ParseException {
         final String cql = "att OVERLAPPEDBY 2012-03-21T05:42:36Z";
@@ -793,12 +758,11 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
         assertEquals(FF.property("att"), filter.getExpression1());
         assertTrue(filter.getExpression2() instanceof Literal);
-        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
-        final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof TemporalAccessor);
+        final TemporalAccessor filterdate = (TemporalAccessor) ((Literal)filter.getExpression2()).getValue();
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), Instant.from(filterdate));
     }
 
-    @Ignore
     @Test
     public void testTcontains() throws CQLException, ParseException {
         final String cql = "att TCONTAINS 2012-03-21T05:42:36Z";
@@ -808,12 +772,11 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
         assertEquals(FF.property("att"), filter.getExpression1());
         assertTrue(filter.getExpression2() instanceof Literal);
-        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
-        final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof TemporalAccessor);
+        final TemporalAccessor filterdate = (TemporalAccessor) ((Literal)filter.getExpression2()).getValue();
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), Instant.from(filterdate));
     }
 
-    @Ignore
     @Test
     public void testTequals() throws CQLException, ParseException {
         final String cql = "att TEQUALS 2012-03-21T05:42:36Z";
@@ -823,12 +786,11 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
         assertEquals(FF.property("att"), filter.getExpression1());
         assertTrue(filter.getExpression2() instanceof Literal);
-        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
-        final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof TemporalAccessor);
+        final TemporalAccessor filterdate = (TemporalAccessor) ((Literal)filter.getExpression2()).getValue();
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), Instant.from(filterdate));
     }
 
-    @Ignore
     @Test
     public void testToverlaps() throws CQLException, ParseException {
         final String cql = "att TOVERLAPS 2012-03-21T05:42:36Z";
@@ -838,9 +800,9 @@ public final strictfp class FilterReadingTest extends CQLTestCase {
 
         assertEquals(FF.property("att"), filter.getExpression1());
         assertTrue(filter.getExpression2() instanceof Literal);
-        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof Date);
-        final Date filterdate = (Date) ((Literal)filter.getExpression2()).getValue();
-        assertEquals(parseDate("2012-03-21T05:42:36Z"), filterdate);
+        assertTrue( ((Literal)filter.getExpression2()).getValue() instanceof TemporalAccessor);
+        final TemporalAccessor filterdate = (TemporalAccessor) ((Literal)filter.getExpression2()).getValue();
+        assertEquals(parseDate("2012-03-21T05:42:36Z"), Instant.from(filterdate));
     }
 
 }

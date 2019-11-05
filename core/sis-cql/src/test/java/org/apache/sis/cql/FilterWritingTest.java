@@ -23,10 +23,10 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LinearRing;
 import org.opengis.filter.Filter;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 
 
 /**
@@ -111,7 +111,6 @@ public final strictfp class FilterWritingTest extends CQLTestCase {
         assertEquals("NOT att = 15", cql);
     }
 
-    @Ignore
     @Test
     public void testPropertyIsBetween() throws CQLException {
         final Filter filter = FF.between(FF.property("att"), FF.literal(15), FF.literal(30));
@@ -185,7 +184,6 @@ public final strictfp class FilterWritingTest extends CQLTestCase {
         assertEquals("att IS NULL", cql);
     }
 
-    @Ignore
     @Test
     public void testBBOX() throws CQLException {
         final Filter filter = FF.bbox(FF.property("att"), 10,20,30,40, null);
@@ -194,7 +192,6 @@ public final strictfp class FilterWritingTest extends CQLTestCase {
         assertEquals("BBOX(att,10.0,30.0,20.0,40.0)", cql);
     }
 
-    @Ignore
     @Test
     public void testBeyond() throws CQLException {
         final Filter filter = FF.beyond(FF.property("att"), FF.literal(baseGeometry), 0, "");
@@ -203,7 +200,6 @@ public final strictfp class FilterWritingTest extends CQLTestCase {
         assertEquals("BEYOND(att,POLYGON ((10 20, 30 40, 50 60, 10 20)))", cql);
     }
 
-    @Ignore
     @Test
     public void testContains() throws CQLException {
         final Filter filter = FF.contains(FF.property("att"), FF.literal(baseGeometry));
@@ -212,7 +208,6 @@ public final strictfp class FilterWritingTest extends CQLTestCase {
         assertEquals("CONTAINS(att,POLYGON ((10 20, 30 40, 50 60, 10 20)))", cql);
     }
 
-    @Ignore
     @Test
     public void testCrosses() throws CQLException {
         final Filter filter = FF.crosses(FF.property("att"), FF.literal(baseGeometry));
@@ -221,7 +216,6 @@ public final strictfp class FilterWritingTest extends CQLTestCase {
         assertEquals("CROSSES(att,POLYGON ((10 20, 30 40, 50 60, 10 20)))", cql);
     }
 
-    @Ignore
     @Test
     public void testDisjoint() throws CQLException {
         final Filter filter = FF.disjoint(FF.property("att"), FF.literal(baseGeometry));
@@ -230,7 +224,6 @@ public final strictfp class FilterWritingTest extends CQLTestCase {
         assertEquals("DISJOINT(att,POLYGON ((10 20, 30 40, 50 60, 10 20)))", cql);
     }
 
-    @Ignore
     @Test
     public void testDWithin() throws CQLException {
         final Filter filter = FF.dwithin(FF.property("att"), FF.literal(baseGeometry), 0, "");
@@ -239,7 +232,6 @@ public final strictfp class FilterWritingTest extends CQLTestCase {
         assertEquals("DWITHIN(att,POLYGON ((10 20, 30 40, 50 60, 10 20)))", cql);
     }
 
-    @Ignore
     @Test
     public void testEquals() throws CQLException {
         final Filter filter = FF.equal(FF.property("att"), FF.literal(baseGeometry));
@@ -248,7 +240,6 @@ public final strictfp class FilterWritingTest extends CQLTestCase {
         assertEquals("EQUALS(att,POLYGON ((10 20, 30 40, 50 60, 10 20)))", cql);
     }
 
-    @Ignore
     @Test
     public void testIntersects() throws CQLException {
         final Filter filter = FF.intersects(FF.property("att"), FF.literal(baseGeometry));
@@ -257,7 +248,6 @@ public final strictfp class FilterWritingTest extends CQLTestCase {
         assertEquals("INTERSECTS(att,POLYGON ((10 20, 30 40, 50 60, 10 20)))", cql);
     }
 
-    @Ignore
     @Test
     public void testOverlaps() throws CQLException {
         final Filter filter = FF.overlaps(FF.property("att"), FF.literal(baseGeometry));
@@ -266,7 +256,6 @@ public final strictfp class FilterWritingTest extends CQLTestCase {
         assertEquals("OVERLAPS(att,POLYGON ((10 20, 30 40, 50 60, 10 20)))", cql);
     }
 
-    @Ignore
     @Test
     public void testTouches() throws CQLException {
         final Filter filter = FF.touches(FF.property("att"), FF.literal(baseGeometry));
@@ -275,7 +264,6 @@ public final strictfp class FilterWritingTest extends CQLTestCase {
         assertEquals("TOUCHES(att,POLYGON ((10 20, 30 40, 50 60, 10 20)))", cql);
     }
 
-    @Ignore
     @Test
     public void testWithin() throws CQLException {
         final Filter filter = FF.within(FF.property("att"), FF.literal(baseGeometry));

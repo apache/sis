@@ -17,10 +17,10 @@
 package org.apache.sis.cql;
 
 import java.time.Instant;
-import java.util.Date;
 import org.opengis.filter.FilterFactory2;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.apache.sis.filter.DefaultFilterFactory;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.test.TestCase;
 
 
@@ -54,7 +54,7 @@ strictfp class CQLTestCase extends TestCase {
     /**
      * Returns a date from the given string.
      */
-    static Date parseDate(final String date) {
-        return Date.from(Instant.parse(date));
+    static Instant parseDate(final String date) {
+        return Instant.from(StandardDateFormat.FORMAT.parse(date));
     }
 }

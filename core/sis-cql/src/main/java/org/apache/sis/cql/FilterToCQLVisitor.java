@@ -16,6 +16,7 @@
  */
 package org.apache.sis.cql;
 
+import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -567,6 +568,9 @@ final class FilterToCQLVisitor implements FilterVisitor, ExpressionVisitor {
         } else if (value instanceof Date) {
             final Date date = (Date) value;
             sb.append(StandardDateFormat.FORMAT.format(date.toInstant()));
+        } else if (value instanceof TemporalAccessor) {
+            final TemporalAccessor date = (TemporalAccessor) value;
+            sb.append(StandardDateFormat.FORMAT.format(date));
         } else if (value instanceof Geometry) {
             final Geometry geometry = (Geometry) value;
             final WKTWriter writer = new WKTWriter();
