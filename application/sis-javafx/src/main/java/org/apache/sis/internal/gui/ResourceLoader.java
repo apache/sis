@@ -209,8 +209,7 @@ public final class ResourceLoader extends Task<Resource> {
                 toClose.close();
             } catch (final Throwable e) {
                 Platform.runLater(() -> {
-                    ExceptionReporter.show(Resources.Keys.ErrorClosingFile, Resources.Keys.CanNotClose_1,
-                                           new Object[] {toClose.getDisplayName()}, e);
+                    ExceptionReporter.canNotCloseFile(toClose.getDisplayName(), e);
                 });
             }
         });

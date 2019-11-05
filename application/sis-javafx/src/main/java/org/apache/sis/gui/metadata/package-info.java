@@ -17,6 +17,8 @@
 
 /**
  * Widgets about metadata.
+ * Those widgets can show a {@link org.opengis.metadata.Metadata} instance in a tree,
+ * or show only a summary.
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Johann Sorel (Geomatys)

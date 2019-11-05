@@ -91,6 +91,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Close = 8;
 
         /**
+         * Copy
+         */
+        public static final short Copy = 31;
+
+        /**
          * Creation date:
          */
         public static final short CreationDate = 16;

@@ -42,10 +42,12 @@ import org.opengis.util.ControlledVocabulary;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 
@@ -123,10 +125,9 @@ public class MetadataSummary {
 
     /**
      * If the metadata or the grid geometry can not be obtained, the reason.
-     *
-     * @todo show in this control.
+     * This is created only when first needed.
      */
-    private Throwable error;
+    private ExceptionReporter error;
 
     /**
      * The pane where to show information about resource identification, spatial representation, etc.
@@ -149,6 +150,13 @@ public class MetadataSummary {
         content.setFitToWidth(true);
         metadataProperty = new SimpleObjectProperty<>(this, "metadata");
         metadataProperty.addListener(MetadataSummary::applyChange);
+    }
+
+    /**
+     * Returns the children inside the view.
+     */
+    private ObservableList<Node> getChildren() {
+        return ((VBox) content.getContent()).getChildren();
     }
 
     /**
@@ -208,21 +216,8 @@ public class MetadataSummary {
                 /**
                  * Shows the result, unless another {@link #setMetadata(Resource)} has been invoked.
                  */
-                @Override protected void succeeded() {
-                    if (!isCancelled()) {
-                        setMetadata(getValue());
-                    }
-                }
-
-                /**
-                 * Invoked when an error occurred while fetching metadata.
-                 */
-                @Override protected void failed() {
-                    if (!isCancelled()) {
-                        setMetadata((Metadata) null);
-                        error = getException();
-                    }
-                }
+                @Override protected void succeeded() {if (!isCancelled()) setMetadata(getValue());}
+                @Override protected void failed()    {if (!isCancelled()) setError(getException());}
             }
             BackgroundThreads.execute(new Getter());
         }
@@ -256,6 +251,23 @@ public class MetadataSummary {
     }
 
     /**
+     * Clears the metadata panel and write instead an exception report.
+     *
+     * @param  exception  the exception that occurred.
+     */
+    public final void setError(final Throwable exception) {
+        ArgumentChecks.ensureNonNull("exception", exception);
+        setMetadata((Metadata) null);
+        if (error == null) {
+            error = new ExceptionReporter(exception);
+        } else {
+            error.setException(exception);
+        }
+        final ObservableList<Node> children = getChildren();
+        children.setAll(error.getView());
+    }
+
+    /**
      * Invoked when {@link #metadataProperty} value changed.
      *
      * @param  property  the property which has been modified.
@@ -268,7 +280,10 @@ public class MetadataSummary {
         final MetadataSummary s = (MetadataSummary) ((SimpleObjectProperty<?>) property).getBean();
         s.error = null;
         if (metadata != oldValue) {
-            final ObservableList<Node> children = ((VBox) s.content.getContent()).getChildren();
+            final ObservableList<Node> children = s.getChildren();
+            if (!children.isEmpty() && !(children.get(0) instanceof Section)) {
+                children.clear();       // If we were previously showing an error, clear all.
+            }
             /*
              * We want to include only the non-empty panes in the children list. But instead of
              * removing everything and adding back non-empty panes, we check case-by-case if a

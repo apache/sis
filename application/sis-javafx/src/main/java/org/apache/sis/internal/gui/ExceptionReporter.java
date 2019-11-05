@@ -20,9 +20,16 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DialogPane;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.Label;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.layout.Region;
 import org.apache.sis.util.Classes;
 
 
@@ -39,11 +46,58 @@ import org.apache.sis.util.Classes;
  * @since   1.1
  * @module
  */
-public final class ExceptionReporter {
+public final class ExceptionReporter implements EventHandler<ActionEvent> {
     /**
-     * Do not allow instantiation of this class.
+     * The margin to use for the stack trace. We add some spaces on the top and left sides.
      */
-    private ExceptionReporter() {
+    private static final Insets MARGIN = new Insets(9, 0, 0, 40);
+
+    /**
+     * The component where to show the stack trace.
+     */
+    private final Label trace;
+
+    /**
+     * Creates a new exception reporter showing the stack trace of the given exception.
+     *
+     * @param  exception  the error to report.
+     */
+    public ExceptionReporter(final Throwable exception) {
+        trace = new Label(getStackTrace(exception));
+        trace.setPadding(MARGIN);
+
+        final Resources localized = Resources.getInstance();
+        final ContextMenu menu = new ContextMenu();
+        menu.getItems().add(localized.menu(Resources.Keys.Copy, this));
+        trace.setContextMenu(menu);
+    }
+
+    /**
+     * Updates the content of this reporter with a new stack trace.
+     *
+     * @param  exception  the new error to report.
+     */
+    public void setException(final Throwable exception) {
+        trace.setText(getStackTrace(exception));
+    }
+
+    /**
+     * Gets the stack trace of the given exception.
+     */
+    private static String getStackTrace(final Throwable exception) {
+        final StringWriter buffer = new StringWriter();
+        final PrintWriter  writer = new PrintWriter(buffer);
+        exception.printStackTrace(writer);
+        return buffer.toString();
+    }
+
+    /**
+     * Returns the control to insert in a scene for showing the stack trace.
+     *
+     * @return the stack trace viewer.
+     */
+    public final Region getView() {
+        return trace;
     }
 
     /**
@@ -73,6 +127,17 @@ public final class ExceptionReporter {
     }
 
     /**
+     * Shows the reporter for a failure to close a file.
+     * This method does nothing if the exception is null.
+     *
+     * @param  file       the file that can not be closed.
+     * @param  exception  the error that occurred.
+     */
+    public static void canNotCloseFile(final String file, final Throwable exception) {
+        show(Resources.Keys.ErrorClosingFile, Resources.Keys.CanNotClose_1, new Object[] {file}, exception);
+    }
+
+    /**
      * Constructs and shows the exception reporter. The title and text are keys from the {@link Resources}.
      * If the title and/or text are 0, then the {@link Alert} default title and text will be used.
      *
@@ -81,7 +146,7 @@ public final class ExceptionReporter {
      * @param arguments   the arguments for creating the text identified by the {@code text} key.
      * @param exception   the exception to report.
      */
-    static void show(final short title, final short text, final Object[] arguments, final Throwable exception) {
+    private static void show(final short title, final short text, final Object[] arguments, final Throwable exception) {
         if (exception != null) {
             String message = exception.getLocalizedMessage();
             if (message == null) {
@@ -98,20 +163,23 @@ public final class ExceptionReporter {
                 }
             }
             alert.setContentText(message);
-            /*
-             * Format the stack trace to be shown in the expandable section.
-             */
-            final StringWriter buffer = new StringWriter();
-            final PrintWriter  writer = new PrintWriter(buffer);
-            exception.printStackTrace(writer);
-            final TextArea trace = new TextArea(buffer.toString());
-            trace.setPrefRowCount​(20);
-            trace.setEditable(false);
-
             final DialogPane pane = alert.getDialogPane();
-            pane.setExpandableContent(trace);
+            pane.setExpandableContent(new ExceptionReporter(exception).trace);
             pane.setPrefWidth(650);
             alert.show();
         }
+    }
+
+    /**
+     * Invoked when the user selected the "Copy" action in contextual menu.
+     * This method is public as an implementation side-effect; do not use.
+     *
+     * @param event ignored.
+     */
+    @Override
+    public void handle(final ActionEvent event) {
+        final ClipboardContent content = new ClipboardContent();
+        content.putString(trace.getText());
+        Clipboard.getSystemClipboard().setContent(content);
     }
 }

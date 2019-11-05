@@ -57,6 +57,11 @@ import org.apache.sis.util.iso.Types;
  * <p>While this view is designed mostly for metadata, it can actually be used
  * for other kinds of data provided by the {@link TreeTable} interface.</p>
  *
+ * @todo Add contextual menu for saving or copying in clipboard the XML starting from the selected node.
+ *       Add contextual menu for showing a node in the summary pane (we would store in memory the path,
+ *       including sequence number for multi-values property, and apply it to all opened resources).
+ *       Add a panel for controlling the number/date/angle format pattern.
+ *
  * @author  Siddhesh Rane (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -130,7 +135,6 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
         nameColumn .setCellValueFactory(MetadataTree::getPropertyName);
         valueColumn.setCellValueFactory(MetadataTree::getPropertyValue);
 
-        setShowRoot(false);
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         getColumns().setAll(nameColumn, valueColumn);
         contentProperty.addListener(MetadataTree::applyChange);
@@ -209,15 +213,16 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
      */
     private static final class Item extends TreeItem<TreeTable.Node> {
         /**
-         * +1 if this item is a leaf, +2 if it has children, or 0 if not yet determined.
+         * Whether this node is a leaf.
          */
-        private byte isLeaf;
+        private final boolean isLeaf;
 
         /**
          * Creates a new node.
          */
         Item(final TreeTable.Node node) {
             super(node);
+            isLeaf = node.isLeaf() || node.getChildren().isEmpty();
         }
 
         /**
@@ -225,11 +230,7 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
          */
         @Override
         public boolean isLeaf() {
-            if (isLeaf == 0) {
-                final TreeTable.Node node = getValue();
-                isLeaf = (node.isLeaf() || node.getChildren().isEmpty()) ? (byte) 1 : 2;
-            }
-            return isLeaf == 1;
+            return isLeaf;
         }
 
         /**
@@ -283,6 +284,10 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
     /**
      * Returns the value of the metadata property wrapped by the given argument.
      * This method is invoked by JavaFX when a new cell needs to be rendered.
+     *
+     * @todo Format other kinds of objects (numbers, dates, timezones, etc.).
+     *       See {@link org.apache.sis.util.collection.TreeTableFormat},
+     *       if possible by putting some code in common.
      */
     private static ObservableValue<Object> getPropertyValue(final CellDataFeatures<TreeTable.Node, Object> cell) {
         final MetadataTree view = (MetadataTree) cell.getTreeTableView();
