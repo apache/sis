@@ -544,7 +544,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
             final String wildcard, final String singleChar,
             final String escape, final boolean isMatchingCase)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new DefaultLike(expression, pattern, wildcard, singleChar, escape, isMatchingCase);
     }
 
     /**
