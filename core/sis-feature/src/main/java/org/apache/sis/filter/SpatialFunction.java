@@ -288,6 +288,11 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
      */
     static final class BBOX extends SpatialFunction implements org.opengis.filter.spatial.BBOX {
 
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -4806881904891000892L;
+
         //cache the bbox geometry
         private transient PreparedGeometry boundingGeometry;
         private final org.locationtech.jts.geom.Envelope boundingEnv;
@@ -409,6 +414,11 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
      */
     static final class Beyond extends SpatialFunction implements org.opengis.filter.spatial.Beyond {
 
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -610084000917390844L;
+
         private final double distance;
         private final String units;
         private final Unit unit;
@@ -476,6 +486,11 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
      */
     static final class Contains extends SpatialFunction implements org.opengis.filter.spatial.Contains {
 
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -5510684627928940359L;
+
         Contains(Expression expression1, Expression expression2) {
             super(expression1, expression2);
         }
@@ -523,6 +538,11 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
      * The {@value #NAME} filter.
      */
     static final class Crosses extends SpatialFunction implements org.opengis.filter.spatial.Crosses {
+
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -7022836273547341845L;
 
         Crosses(Expression expression1, Expression expression2) {
             super(expression1, expression2);
@@ -573,6 +593,11 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
      */
     static final class Disjoint extends SpatialFunction implements org.opengis.filter.spatial.Disjoint {
 
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 8822946475076920125L;
+
         Disjoint(Expression expression1, Expression expression2) {
             super(expression1, expression2);
         }
@@ -621,6 +646,11 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
      * The {@value #NAME} filter.
      */
     static final class DWithin extends SpatialFunction implements org.opengis.filter.spatial.DWithin {
+
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 7327351792495760963L;
 
         private final double distance;
         private final String units;
@@ -689,6 +719,11 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
      */
     static final class Equals extends SpatialFunction implements org.opengis.filter.spatial.Equals {
 
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 6396428140074394187L;
+
         Equals(Expression expression1, Expression expression2) {
             super(expression1, expression2);
         }
@@ -730,6 +765,11 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
      * The {@value #NAME} filter.
      */
     static final class Intersects extends SpatialFunction implements org.opengis.filter.spatial.Intersects {
+
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 6685367450421799746L;
 
         Intersects(Expression expression1, Expression expression2) {
             super(expression1, expression2);
@@ -779,6 +819,11 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
      */
     static final class Overlaps extends SpatialFunction implements org.opengis.filter.spatial.Overlaps {
 
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 8793232792848445944L;
+
         Overlaps(Expression expression1, Expression expression2) {
             super(expression1, expression2);
         }
@@ -827,6 +872,11 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
      */
     static final class Touches extends SpatialFunction implements org.opengis.filter.spatial.Touches {
 
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -2747074093157567315L;
+
         Touches(Expression expression1, Expression expression2) {
             super(expression1, expression2);
         }
@@ -867,6 +917,11 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
      * The {@value #NAME} filter.
      */
     static final class Within extends SpatialFunction implements org.opengis.filter.spatial.Within {
+
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 2089897118466562931L;
 
         Within(Expression expression1, Expression expression2) {
             super(expression1, expression2);

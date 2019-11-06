@@ -131,9 +131,11 @@ public final strictfp class SpatialFunctionTest extends TestCase {
     public void testBBOX() {
         BBOX bbox = FF.bbox(FF.literal(RIGHT_GEOMETRY), 1, 1, 6, 6, "EPSG:4326");
         assertTrue(bbox.evaluate(null));
+        assertSerializedEquals(bbox);
 
         bbox = FF.bbox(FF.literal(RIGHT_GEOMETRY), -3, -2, 4, 1, "EPSG:4326");
         assertFalse(bbox.evaluate(null));
+        assertSerializedEquals(bbox);
     }
 
     @Test
@@ -142,30 +144,37 @@ public final strictfp class SpatialFunctionTest extends TestCase {
 
         Beyond beyond = FF.beyond(FF.literal(RIGHT_GEOMETRY), FF.literal(GEOM_DISTANCE_1), 1.5d, "m");
         assertFalse(beyond.evaluate(null));
+        assertSerializedEquals(beyond);
 
         beyond = FF.beyond(FF.literal(RIGHT_GEOMETRY), FF.literal(GEOM_DISTANCE_3), 1.5d, "m");
         assertTrue(beyond.evaluate(null));
+        assertSerializedEquals(beyond);
     }
 
     @Test
     public void testContains() {
         Contains contains = FF.contains(FF.literal(GEOM_CONTAINS),FF.literal(RIGHT_GEOMETRY));
         assertTrue(contains.evaluate(null));
+        assertSerializedEquals(contains);
 
         contains = FF.contains(FF.literal(GEOM_DISTANCE_1),FF.literal(RIGHT_GEOMETRY));
         assertFalse(contains.evaluate(null));
+        assertSerializedEquals(contains);
     }
 
     @Test
     public void testCrosses() {
         Crosses crosses = FF.crosses(FF.literal(GEOM_CONTAINS),FF.literal(RIGHT_GEOMETRY));
         assertFalse(crosses.evaluate(null));
+        assertSerializedEquals(crosses);
 
         crosses = FF.crosses(FF.literal(GEOM_CROSSES),FF.literal(RIGHT_GEOMETRY));
         assertTrue(crosses.evaluate(null));
+        assertSerializedEquals(crosses);
 
         crosses = FF.crosses(FF.literal(GEOM_DISTANCE_1),FF.literal(RIGHT_GEOMETRY));
         assertFalse(crosses.evaluate(null));
+        assertSerializedEquals(crosses);
     }
 
     @Test
@@ -174,98 +183,124 @@ public final strictfp class SpatialFunctionTest extends TestCase {
 
         DWithin within = FF.dwithin(FF.literal(RIGHT_GEOMETRY), FF.literal(GEOM_DISTANCE_1), 1.5d, "m");
         assertTrue(within.evaluate(null));
+        assertSerializedEquals(within);
 
         within = FF.dwithin(FF.literal(RIGHT_GEOMETRY), FF.literal(GEOM_DISTANCE_3), 1.5d, "m");
         assertFalse(within.evaluate(null));
+        assertSerializedEquals(within);
     }
 
     @Test
     public void testDisjoint() {
         Disjoint disjoint = FF.disjoint(FF.literal(GEOM_CONTAINS),FF.literal(RIGHT_GEOMETRY));
         assertFalse(disjoint.evaluate(null));
+        assertSerializedEquals(disjoint);
 
         disjoint = FF.disjoint(FF.literal(GEOM_CROSSES),FF.literal(RIGHT_GEOMETRY));
         assertFalse(disjoint.evaluate(null));
+        assertSerializedEquals(disjoint);
 
         disjoint = FF.disjoint(FF.literal(GEOM_DISTANCE_1),FF.literal(RIGHT_GEOMETRY));
         assertTrue(disjoint.evaluate(null));
+        assertSerializedEquals(disjoint);
     }
 
     @Test
     public void testEquals() {
         Equals equal = FF.equal(FF.literal(GEOM_CONTAINS),FF.literal(RIGHT_GEOMETRY));
         assertFalse(equal.evaluate(null));
+        assertSerializedEquals(equal);
 
         equal = FF.equal(FF.literal(GEOM_CROSSES),FF.literal(RIGHT_GEOMETRY));
         assertFalse(equal.evaluate(null));
+        assertSerializedEquals(equal);
 
         equal = FF.equal(FF.literal(GF.createGeometry(RIGHT_GEOMETRY)),FF.literal(RIGHT_GEOMETRY));
         assertTrue(equal.evaluate(null));
+        assertSerializedEquals(equal);
     }
 
     @Test
     public void testIntersect() {
         Intersects intersect = FF.intersects(FF.literal(GEOM_CONTAINS), FF.literal(RIGHT_GEOMETRY));
         assertTrue(intersect.evaluate(null));
+        assertSerializedEquals(intersect);
 
         intersect = FF.intersects(FF.literal(GEOM_CROSSES), FF.literal(RIGHT_GEOMETRY));
         assertTrue(intersect.evaluate(null));
+        assertSerializedEquals(intersect);
 
         intersect = FF.intersects(FF.literal(GEOM_INTERSECT), FF.literal(RIGHT_GEOMETRY));
         assertTrue(intersect.evaluate(null));
+        assertSerializedEquals(intersect);
 
         intersect = FF.intersects(FF.literal(GEOM_DISTANCE_1), FF.literal(RIGHT_GEOMETRY));
         assertFalse(intersect.evaluate(null));
+        assertSerializedEquals(intersect);
 
         intersect = FF.intersects(FF.literal(GEOM_DISTANCE_3), FF.literal(RIGHT_GEOMETRY));
         assertFalse(intersect.evaluate(null));
+        assertSerializedEquals(intersect);
     }
 
     @Test
     public void testOverlaps() {
         Overlaps overlaps = FF.overlaps(FF.literal(GEOM_CONTAINS), FF.literal(RIGHT_GEOMETRY));
         assertFalse(overlaps.evaluate(null));
+        assertSerializedEquals(overlaps);
 
         overlaps = FF.overlaps(FF.literal(GEOM_DISTANCE_1), FF.literal(RIGHT_GEOMETRY));
         assertFalse(overlaps.evaluate(null));
+        assertSerializedEquals(overlaps);
 
         overlaps = FF.overlaps(FF.literal(GEOM_CROSSES), FF.literal(RIGHT_GEOMETRY));
         assertFalse(overlaps.evaluate(null));
+        assertSerializedEquals(overlaps);
 
         overlaps = FF.overlaps(FF.literal(GEOM_INTERSECT), FF.literal(RIGHT_GEOMETRY));
         assertTrue(overlaps.evaluate(null));
+        assertSerializedEquals(overlaps);
     }
 
     @Test
     public void testTouches() {
         Touches touches = FF.touches(FF.literal(GEOM_CONTAINS), FF.literal(RIGHT_GEOMETRY));
         assertFalse(touches.evaluate(null));
+        assertSerializedEquals(touches);
 
         touches = FF.touches(FF.literal(GEOM_CROSSES), FF.literal(RIGHT_GEOMETRY));
         assertFalse(touches.evaluate(null));
+        assertSerializedEquals(touches);
 
         touches = FF.touches(FF.literal(GEOM_DISTANCE_1), FF.literal(RIGHT_GEOMETRY));
         assertFalse(touches.evaluate(null));
+        assertSerializedEquals(touches);
 
         touches = FF.touches(FF.literal(GEOM_TOUCHES), FF.literal(RIGHT_GEOMETRY));
         assertTrue(touches.evaluate(null));
+        assertSerializedEquals(touches);
     }
 
     @Test
     public void testWithin() {
         Within within = FF.within(FF.literal(GEOM_CONTAINS), FF.literal(RIGHT_GEOMETRY));
         assertFalse(within.evaluate(null));
+        assertSerializedEquals(within);
 
         within = FF.within(FF.literal(GEOM_CROSSES), FF.literal(RIGHT_GEOMETRY));
         assertFalse(within.evaluate(null));
+        assertSerializedEquals(within);
 
         within = FF.within(FF.literal(GEOM_DISTANCE_1), FF.literal(RIGHT_GEOMETRY));
         assertFalse(within.evaluate(null));
+        assertSerializedEquals(within);
 
         within = FF.within(FF.literal(GEOM_TOUCHES), FF.literal(RIGHT_GEOMETRY));
         assertFalse(within.evaluate(null));
+        assertSerializedEquals(within);
 
         within = FF.within(FF.literal(RIGHT_GEOMETRY), FF.literal(GEOM_CONTAINS) );
         assertTrue(within.evaluate(null));
+        assertSerializedEquals(within);
     }
 }
