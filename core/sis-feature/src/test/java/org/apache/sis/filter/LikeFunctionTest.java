@@ -23,7 +23,7 @@ import org.junit.Ignore;
 
 
 /**
- * Tests {@link ComparisonFunction.Like} implementations.
+ * Tests {@code ComparisonFunction.Like} implementations.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 2.0
