@@ -20,17 +20,12 @@ import java.util.Locale;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Spliterator;
-import java.util.stream.Stream;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.CancellationException;
 import javafx.application.Platform;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.WorkerStateEvent;
-import javafx.concurrent.Task;
 import javafx.util.Callback;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
@@ -42,14 +37,13 @@ import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.storage.DataStoreException;
 
 
 /**
  * A view of {@link FeatureSet} data organized as a table. The features are specified by a call
  * to {@link #setFeatures(FeatureSet)}, which will load the features in a background thread.
- * At first only {@value #PAGE_SIZE} features are loaded.
+ * At first only a limited amount of features are loaded.
  * More features will be loaded only when the user scroll down.
  *
  * <p>If this view is removed from scene graph, then {@link #interrupt()} should be called
@@ -63,14 +57,6 @@ import org.apache.sis.storage.DataStoreException;
  * @module
  */
 public class FeatureTable extends TableView<Feature> {
-    /**
-     * Maximum number of features to load in a background task.
-     * If there is more features to load, we will use many tasks.
-     *
-     * @see #nextPageLoader
-     */
-    private static final int PAGE_SIZE = 100;
-
     /**
      * The locale to use for texts.
      */
@@ -91,13 +77,14 @@ public class FeatureTable extends TableView<Feature> {
     private FeatureType featureType;
 
     /**
-     * If not all features have been read, the task for loading the next batch of {@value #PAGE_SIZE} features.
+     * If not all features have been read, the task for loading the next batch
+     * of {@value FeatureLoader#PAGE_SIZE} features in a background thread.
      * This task will be executed only if there is a need to see new features.
      *
      * <p>If a loading is in progress, then this field is the loader doing the work.
      * But this field will be updated with next loader as soon as the loading is completed.</p>
      */
-    private Loader nextPageLoader;
+    private FeatureLoader nextPageLoader;
 
     /**
      * Creates an initially empty table.
@@ -120,17 +107,17 @@ public class FeatureTable extends TableView<Feature> {
      * <p><b>Note:</b> the table content may appear unmodified after this method returns.
      * The modifications will appear at an undetermined amount of time later.</p>
      *
-     * @param  features  the features, or {@code null} if none.
+     * @param  features  the features to show in this table, or {@code null} if none.
      */
     public void setFeatures(final FeatureSet features) {
         assert Platform.isFxApplicationThread();
-        final Loader previous = nextPageLoader;
+        final FeatureLoader previous = nextPageLoader;
         if (previous != null) {
             nextPageLoader = null;
             previous.cancel();
         }
         if (features != null) {
-            setLoader(new InitialLoader(features));
+            prepare(new InitialLoader(features));
             BackgroundThreads.execute(nextPageLoader);
         } else {
             featureType = null;
@@ -140,29 +127,32 @@ public class FeatureTable extends TableView<Feature> {
     }
 
     /**
-     * Sets {@link #nextPageLoader} to the given values and sets the listeners, but without starting the task yet.
+     * Sets {@link #nextPageLoader} to the given values and sets the listeners,
+     * but without starting the task yet.
      *
-     * @param  loader  the loader for next {@value #PAGE_SIZE} features,
+     * @param  loader  the loader for next {@value FeatureLoader#PAGE_SIZE} features,
      *                 or {@code null} if there is no more features to load.
      */
-    private void setLoader(final Loader loader) {
+    private void prepare(final FeatureLoader loader) {
         if (loader != null) {
             loader.setOnSucceeded(this::addFeatures);
             loader.setOnCancelled(this::cancelled);
-            loader.setOnFailed(this::cancelled);
+            loader.setOnFailed   (this::cancelled);
         }
         nextPageLoader = loader;
     }
 
     /**
      * Invoked in JavaFX thread after new feature instances are ready.
+     * This method adds the new rows in the table and prepares another
+     * task for loading the next batch of features when needed.
      */
     private void addFeatures(final WorkerStateEvent event) {
         assert Platform.isFxApplicationThread();
-        final Loader loader = (Loader) event.getSource();
+        final FeatureLoader loader = (FeatureLoader) event.getSource();
         if (loader == nextPageLoader) {
             getItems().addAll((List<Feature>) event.getSource().getValue());
-            setLoader(nextPageLoader.next());
+            prepare(nextPageLoader.next());
 
             // TODO: temporary hack: we should not start the job now, but wait until we need it.
             if (nextPageLoader != null) {
@@ -177,12 +167,14 @@ public class FeatureTable extends TableView<Feature> {
 
     /**
      * Invoked in JavaFX thread when a loading process has been cancelled or failed.
+     * This method closes the {@link FeatureLoader} if it did not closed itself,
+     * then eventually shows the error in the table area.
      *
      * @see #interrupt()
      */
     private void cancelled(final WorkerStateEvent event) {
         assert Platform.isFxApplicationThread();
-        final Loader loader = (Loader) event.getSource();
+        final FeatureLoader loader = (FeatureLoader) event.getSource();
         final boolean isCurrentLoader = (loader == nextPageLoader);
         if (isCurrentLoader) {
             nextPageLoader = null;
@@ -213,148 +205,11 @@ public class FeatureTable extends TableView<Feature> {
     }
 
     /**
-     * A task to execute in background thread for fetching feature instances.
-     * This task does not load all features; only {@value #PAGE_SIZE} of them are loaded.
-     *
-     * <p>Loading processes are started by {@link InitialLoader}.
-     * Only additional pages are loaded by ordinary {@code Loader}.</p>
-     */
-    private static class Loader extends Task<List<Feature>> {
-        /**
-         * The stream to close after we finished to iterate over features.
-         * This stream should not be used for any other purpose.
-         */
-        private Stream<Feature> toClose;
-
-        /**
-         * If the reading process is not finished, the iterator for reading more feature instances.
-         */
-        private Spliterator<Feature> iterator;
-
-        /**
-         * An estimation of the number of features, or {@link Long#MAX_VALUE} if unknown.
-         */
-        private long estimatedCount;
-
-        /**
-         * Creates a new loader. This constructor is for {@link InitialLoader} usage only.
-         */
-        Loader() {
-            estimatedCount = Long.MAX_VALUE;
-        }
-
-        /**
-         * Creates a new task for continuing the work of a previous task.
-         * The new task will load the next {@value #PAGE_SIZE} features.
-         */
-        private Loader(final Loader previous) {
-            toClose        = previous.toClose;
-            iterator       = previous.iterator;
-            estimatedCount = previous.estimatedCount;
-        }
-
-        /**
-         * Initializes this task for reading features from the specified set.
-         * This method shall be invoked by {@link InitialLoader} only.
-         */
-        final void initialize(final FeatureSet features) throws DataStoreException {
-            toClose        = features.features(false);
-            iterator       = toClose .spliterator();
-            estimatedCount = iterator.estimateSize();
-        }
-
-        /**
-         * If there is more features to load, returns a new task for loading the next
-         * {@value #PAGE_SIZE} features. Otherwise returns {@code null}.
-         */
-        final Loader next() {
-            return (iterator != null) ? new Loader(this) : null;
-        }
-
-        /**
-         * Loads up to {@value #PAGE_SIZE} features.
-         */
-        @Override
-        protected List<Feature> call() throws DataStoreException {
-            final Spliterator<Feature> it = iterator;
-            iterator = null;                                // Clear now in case an exception happens below.
-            final List<Feature> instances = new ArrayList<>((int) Math.min(estimatedCount, PAGE_SIZE));
-            if (it != null) try {
-                while (it.tryAdvance(instances::add)) {
-                    if (instances.size() >= PAGE_SIZE) {
-                        iterator = it;                      // Remember that there is more instances to read.
-                        return instances;                   // Intentionally skip the call to close().
-                    }
-                    if (isCancelled()) {
-                        break;
-                    }
-                }
-            } catch (BackingStoreException e) {
-                try {
-                    close();
-                } catch (DataStoreException s) {
-                    e.addSuppressed(s);
-                }
-                throw e.unwrapOrRethrow(DataStoreException.class);
-            }
-            close();                                        // Loading has been cancelled.
-            return instances;
-        }
-
-        /**
-         * Closes the feature stream. This method can be invoked only when {@link #call()} finished its work.
-         * It is safe to invoke this method again even if this loader has already been closed.
-         */
-        final void close() throws DataStoreException {
-            iterator = null;
-            final Stream<Feature> c = toClose;
-            if (c != null) try {
-                toClose = null;                             // Clear now in case an exception happens below.
-                c.close();
-            } catch (BackingStoreException e) {
-                throw e.unwrapOrRethrow(DataStoreException.class);
-            }
-        }
-
-        /**
-         * Wait for {@link #call()} to finish its work either successfully or as a result of cancellation,
-         * then close the stream. This method should be invoked in a background thread when we don't know
-         * if the task is still running or not.
-         *
-         * @see FeatureTable#interrupt()
-         */
-        final void waitAndClose() {
-            Throwable error = null;
-            try {
-                get();      // Wait for the task to stop before to close the stream.
-            } catch (InterruptedException | CancellationException e) {
-                // Ignore, we will try to close the stream right now.
-                recoverableException("interrupt", e);
-            } catch (ExecutionException e) {
-                error = e.getCause();
-            }
-            try {
-                close();
-            } catch (DataStoreException e) {
-                if (error != null) {
-                    error.addSuppressed(e);
-                } else {
-                    error = e;
-                }
-            }
-            if (error != null) {
-                // FeatureTable.interrupt is the public API calling this method.
-                unexpectedException("interrupt", error);
-            }
-        }
-    }
-
-    /**
      * The task to execute in background thread for initiating the loading process.
      * This tasks is created only for the first {@value #PAGE_SIZE} features.
-     * For all additional features, an ordinary {@link Loader} will be used.
+     * For all additional features, an ordinary {@link FeatureLoader} will be used.
      */
-    private final class InitialLoader extends Loader {
+    private final class InitialLoader extends FeatureLoader {
         /**
          * The set of features to read.
          */
@@ -368,9 +223,9 @@ public class FeatureTable extends TableView<Feature> {
         }
 
         /**
-         * Gets the feature type, initialize the iterator and gets the first {@value #PAGE_SIZE} features.
-         * The {@link FeatureType} should be given by {@link FeatureSet#getType()}, but this method is
-         * robust to incomplete implementations where {@code getType()} returns {@code null}.
+         * Gets the feature type, initializes the iterator and gets the first {@value #PAGE_SIZE} features.
+         * The {@link FeatureType} should be given by {@link FeatureSet#getType()} but this method is robust
+         * to incomplete implementations where {@code getType()} returns {@code null}.
          */
         @Override
         protected List<Feature> call() throws DataStoreException {
@@ -382,7 +237,7 @@ public class FeatureTable extends TableView<Feature> {
             }
             /*
              * Following code is a safety for FeatureSet that do not implement the `getType()` method.
-             * This method is mandatory and implementation should not be allowed to return null, but
+             * That method is mandatory and implementations should not be allowed to return null, but
              * incomplete implementations exist so we are better to be safe. If we can not get the type
              * from the first feature instances, we will give up.
              */
@@ -484,7 +339,7 @@ public class FeatureTable extends TableView<Feature> {
      */
     public void interrupt() {
         assert Platform.isFxApplicationThread();
-        final Loader loader = nextPageLoader;
+        final FeatureLoader loader = nextPageLoader;
         nextPageLoader = null;
         if (loader != null) {
             loader.cancel();
@@ -497,14 +352,14 @@ public class FeatureTable extends TableView<Feature> {
      * to different data than the one currently viewed. The {@code method} argument should be the
      * public API (if possible) invoking the method where the exception is caught.
      */
-    private static void unexpectedException(final String method, final Throwable exception) {
+    static void unexpectedException(final String method, final Throwable exception) {
         Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), FeatureTable.class, method, exception);
     }
 
     /**
      * Reports an exception that we choose to ignore.
      */
-    private static void recoverableException(final String method, final Exception exception) {
+    static void recoverableException(final String method, final Exception exception) {
         Logging.recoverableException(Logging.getLogger(Modules.APPLICATION), FeatureTable.class, method, exception);
     }
 }
