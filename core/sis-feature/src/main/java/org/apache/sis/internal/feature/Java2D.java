@@ -287,7 +287,12 @@ add:    for (;;) {
      * Parses the given WKT.
      */
     @Override
-    public Object parseWKT(final String wkt) {
+    public Shape parseWKT(final String wkt) {
+        throw unsupported(2);
+    }
+
+    @Override
+    public Shape parseWKB(byte[] source) {
         throw unsupported(2);
     }
 

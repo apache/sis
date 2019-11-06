@@ -41,6 +41,7 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKTReader;
 
 
@@ -77,8 +78,17 @@ final class JTS extends Geometries<Geometry> {
      * @throws ParseException if the WKT can not be parsed.
      */
     @Override
-    public Object parseWKT(final String wkt) throws ParseException {
+    public Geometry parseWKT(final String wkt) throws ParseException {
         return new WKTReader(factory).read(wkt);
+    }
+
+    @Override
+    public Geometry parseWKB(byte[] source) {
+        try {
+            return new WKBReader(factory).read(source);
+        } catch (ParseException e) {
+            throw new BackingStoreException("Cannot decode given bytes as a WKB geometry", e);
+        }
     }
 
     /**

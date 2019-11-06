@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -227,8 +228,14 @@ add:    for (;;) {
      * Parses the given WKT.
      */
     @Override
-    public Object parseWKT(final String wkt) {
+    public Geometry parseWKT(final String wkt) {
         return OperatorImportFromWkt.local().execute(WktImportFlags.wktImportDefaults, Geometry.Type.Unknown, wkt, null);
+    }
+
+    @Override
+    public Geometry parseWKB(byte[] source) {
+        final OperatorImportFromWkb op = OperatorImportFromWkb.local();
+        return op.execute(WkbImportFlags.wkbImportDefaults, Geometry.Type.Unknown, ByteBuffer.wrap(source), null);
     }
 
     /**

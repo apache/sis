@@ -281,7 +281,15 @@ public abstract class Geometries<G> {
      * @return the geometry object for the given WKT.
      * @throws Exception if the WKT can not be parsed. The exception sub-class depends on the implementation.
      */
-    public abstract Object parseWKT(String wkt) throws Exception;
+    public abstract G parseWKT(String wkt) throws Exception;
+
+    /**
+     * Try to read given bytes as a WKB encoded geometry.
+     * @param source Contains the WKB data. Must not be null.
+     * @return Decoded Geometry, never null.
+     * @throws RuntimeException If given byte array is not a consistent WKB, or denote some unsupported geometry type.
+     */
+    public abstract G parseWKB(byte[] source);
 
     /**
      * Creates a two-dimensional point from the given coordinate. If the CRS is geographic, then the
