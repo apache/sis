@@ -25,6 +25,7 @@ import javafx.collections.ObservableListBase;
 import org.opengis.feature.Feature;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -33,10 +34,18 @@ import org.apache.sis.util.ArraysExt;
  * When an element is requested, if that element has not yet been read, the reading is done
  * in a background thread.
  *
+ * <p>This list is unmodifiable through public API. It can be modified only through package-private API.
+ * This restriction exists for preventing uncontrolled modifications to introduce inconsistencies with
+ * the modifications to be applied by the loader running in background thread.</p>
+ *
  * <p>This list does not accept null elements; any attempt to add a null feature is silently ignored.
  * The null value is reserved for meaning that the element is in process of being loaded.</p>
  *
  * <p>All methods in this class shall be invoked from JavaFX thread.</p>
+ *
+ * @todo Current implementation does not release previously loaded features.
+ *       We could do that in a previous version if memory usage is a problem,
+ *       provided that {@link Spliterator#ORDERED} is set.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -44,6 +53,23 @@ import org.apache.sis.util.ArraysExt;
  * @module
  */
 final class FeatureList extends ObservableListBase<Feature> {
+    /**
+     * Number of empty rows to show in the bottom of the table when we don't know how many rows still
+     * need to be read. Those rows do not stay empty for long since they will become valid as soon as
+     * the background loader finished to load a page ({@value FeatureLoader#PAGE_SIZE} rows).
+     */
+    private static final long NUM_PENDING_ROWS = 10;
+
+    /**
+     * Maximum number of rows that this list will allow.
+     */
+    private static final int MAXIMUM_ROWS = Integer.MAX_VALUE;
+
+    /**
+     * The {@link #elements} value when this list is empty.
+     */
+    private static final Feature[] EMPTY = new Feature[0];
+
     /**
      * The elements in this list, never {@code null}.
      */
@@ -81,7 +107,28 @@ final class FeatureList extends ObservableListBase<Feature> {
      * Creates a new list of features.
      */
     FeatureList() {
-        elements = new Feature[0];
+        elements = EMPTY;
+    }
+
+    /**
+     * Returns the currently valid elements.
+     */
+    private List<Feature> validElements() {
+        return UnmodifiableArrayList.wrap(elements, 0, validCount);
+    }
+
+    /**
+     * Clears the content of this list. This method shall be invoked when no loader is running
+     * in a background thread, or when the loaded decided itself to invoke this method.
+     */
+    final void clearUnsafe() {
+        final List<Feature> removed = validElements();
+        elements = EMPTY;
+        estimatedSize = 0;
+        validCount    = 0;
+        beginChange();
+        nextReplace(0, 0, removed);
+        endChange();
     }
 
     /**
@@ -101,10 +148,11 @@ final class FeatureList extends ObservableListBase<Feature> {
             previous.cancel();
         }
         if (features != null) {
-            nextPageLoader = new FeatureLoader.Initial(table, features);
+            nextPageLoader = new FeatureLoader(table, features);
             BackgroundThreads.execute(nextPageLoader);
             return true;
         } else {
+            clearUnsafe();
             return false;
         }
     }
@@ -112,35 +160,43 @@ final class FeatureList extends ObservableListBase<Feature> {
     /**
      * Invoked by {@link FeatureLoader} for replacing the current content by a new list of features.
      * The list size after this method invocation will be {@code expectedSize}, not {@code count}.
-     * The missing elements will be implicitly null until {@link #addFeatures(Feature[], int)} is invoked.
-     * If the expected size is unknown (i.e. its value is {@link Long#MAX_VALUE}),
+     * The missing elements will be implicitly null until {@link #addFeatures(Feature[], int, boolean)}
+     * is invoked. If the expected size is unknown (i.e. its value is {@link Long#MAX_VALUE}),
      * then an arbitrary size is computed from {@code count}.
      *
      * @param  remainingCount   value of {@link Spliterator#estimateSize()} after partial traversal.
      * @param  characteristics  value of {@link Spliterator#characteristics()}.
      * @param  features         new features. This array is not cloned and may be modified in-place.
      * @param  count            number of valid elements in the given array.
+     * @param  hasMore          if the stream may have more features.
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
-    final void setFeatures(long remainingCount, int characteristics, final Feature[] features, final int count) {
+    final void setFeatures(long remainingCount, int characteristics,
+                           final Feature[] features, final int count, final boolean hasMore)
+    {
         assert Platform.isFxApplicationThread();
         int newValidCount = 0;
         for (int i=0; i<count; i++) {
             final Feature f = features[i];
             if (f != null) features[newValidCount++] = f;       // Exclude null elements.
         }
-        final List<Feature> removed = Arrays.asList(elements);  // Want this call outside {beginChange … endChange}.
+        final List<Feature> removed = validElements();          // Want this call outside {beginChange … endChange}.
         if (remainingCount == Long.MAX_VALUE) {
-            remainingCount    = count + 10L;                    // Arbitrary additional amount.
+            remainingCount  = count + NUM_PENDING_ROWS;         // Arbitrary additional amount.
             characteristics = 0;
         }
-        estimatedSize = (int) Math.min(Integer.MAX_VALUE, Math.addExact(remainingCount, newValidCount));
+        estimatedSize = (int) Math.min(MAXIMUM_ROWS, Math.addExact(remainingCount, newValidCount));
         isSizeExact   = (characteristics & Spliterator.SIZED) != 0;
         elements      = features;
         validCount    = newValidCount;
+        if (hasMore && estimatedSize <= newValidCount) {
+            // Estimated size seems incorrect. Add some empty rows for triggering a new page load.
+            estimatedSize = (int) Math.min(MAXIMUM_ROWS, newValidCount + NUM_PENDING_ROWS);
+        }
         beginChange();
         nextReplace(0, estimatedSize, removed);
         endChange();
+        checkOverflow();
     }
 
     /**
@@ -149,9 +205,10 @@ final class FeatureList extends ObservableListBase<Feature> {
      *
      * @param  features  the features to add. Null elements are ignored.
      * @param  count     number of valid elements in the given array.
+     * @param  hasMore   if the stream may have more features.
      * @throws ArithmeticException if the number of elements exceeds this list capacity.
      */
-    final void addFeatures(final Feature[] features, final int count) {
+    final void addFeatures(final Feature[] features, final int count, final boolean hasMore) {
         assert Platform.isFxApplicationThread();
         if (count > 0) {
             int newValidCount = Math.addExact(validCount, count);
@@ -170,13 +227,29 @@ final class FeatureList extends ObservableListBase<Feature> {
              */
             final int replaceTo = Math.min(newValidCount, estimatedSize);
             final List<Feature> removed = Collections.nCopies(replaceTo - validCount, null);
-            if (newValidCount > estimatedSize) {
+            if (newValidCount >= estimatedSize) {
                 estimatedSize = newValidCount;              // Update before we send events.
+                if (hasMore) {
+                    // Estimated size seems incorrect. Add some empty rows for triggering a new page load.
+                    estimatedSize = (int) Math.min(MAXIMUM_ROWS, newValidCount + NUM_PENDING_ROWS);
+                }
             }
             beginChange();
             nextReplace(validCount, replaceTo, removed);
             nextAdd(replaceTo, validCount = newValidCount);
             endChange();
+            checkOverflow();
+        }
+    }
+
+    /**
+     * If we can not load more features stop the reading process.
+     *
+     * @todo Add some message in the widget for warning the user.
+     */
+    private void checkOverflow() {
+        if (validCount >= MAXIMUM_ROWS) {
+            interrupt();
         }
     }
 
@@ -189,6 +262,7 @@ final class FeatureList extends ObservableListBase<Feature> {
      */
     final void setNextPage(final FeatureLoader next) {
         assert Platform.isFxApplicationThread();
+        assert nextPageLoader.isDone();
         nextPageLoader = next;
         if (next == null) {
             final int n = estimatedSize - validCount;
@@ -234,8 +308,9 @@ final class FeatureList extends ObservableListBase<Feature> {
         if (isSizeExact && index >= estimatedSize) {
             throw new IndexOutOfBoundsException(index);
         }
-        if (nextPageLoader != null) {
-            BackgroundThreads.execute(nextPageLoader);
+        final FeatureLoader loader = nextPageLoader;
+        if (loader != null && loader.getState() == FeatureLoader.State.READY) {
+            BackgroundThreads.execute(loader);
         }
         return null;
     }

@@ -36,15 +36,12 @@ import org.apache.sis.internal.gui.Resources;
  * This task does not load all features; only {@value #PAGE_SIZE} of them are loaded.
  * The boolean value returned by this task tells whether there is more features to load.
  *
- * <p>Loading processes are started by {@link Initial} loader.
- * Only additional pages are loaded by ordinary {@code FeatureLoader}.</p>
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
+final class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
     /**
      * Maximum number of features to load in a background task.
      * If there is more features to load, we will use many tasks.
@@ -58,6 +55,13 @@ class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
      * All methods on this object shall be invoked from JavaFX thread.
      */
     private final FeatureTable table;
+
+    /**
+     * The feature set from which to get the initial configuration.
+     * This is non-null only for the task loading the first {@value #PAGE_SIZE} instances,
+     * then become null for all subsequent tasks.
+     */
+    private final FeatureSet initializer;
 
     /**
      * The stream to close after we finished to iterate over features.
@@ -83,23 +87,11 @@ class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
     private int count;
 
     /**
-     * Creates a new loader. Callers shall invoke {@link #initialize(FeatureSet)}
-     * in the worker thread before to let the {@link #call()} method be executed.
-     *
-     * @see #initialize(FeatureSet)
+     * Creates a new loader for the given set of features.
      */
-    FeatureLoader(final FeatureTable table) {
-        this.table = table;
-    }
-
-    /**
-     * Initializes this task for reading features from the specified set.
-     * This method is invoked by subclasses after construction but before
-     * {@link #call()} execution.
-     */
-    final void initialize(final FeatureSet features) throws DataStoreException {
-        toClose  = features.features(false);
-        iterator = toClose.spliterator();
+    FeatureLoader(final FeatureTable table, final FeatureSet features) {
+        this.table  = table;
+        initializer = features;
     }
 
     /**
@@ -107,17 +99,10 @@ class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
      * The new task will load the next {@value #PAGE_SIZE} features.
      */
     private FeatureLoader(final FeatureLoader previous) {
-        table    = previous.table;
-        toClose  = previous.toClose;
-        iterator = previous.iterator;
-    }
-
-    /**
-     * Returns the list where to add features.
-     * All methods on the returned list shall be invoked from JavaFX thread.
-     */
-    private FeatureList destination() {
-        return (FeatureList) table.getItems();
+        table       = previous.table;
+        toClose     = previous.toClose;
+        iterator    = previous.iterator;
+        initializer = null;
     }
 
     /**
@@ -133,23 +118,39 @@ class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
      * Invoked in a background thread for loading up to {@value #PAGE_SIZE} features.
      * If this method completed successfully but there is still more feature to read,
      * then {@link #iterator} will keep a non-null value and a new {@link FeatureLoader}
-     * should be prepared for reading of another page of features. In other cases,
-     * {@link #iterator} is null and the stream has been closed.
+     * well be prepared by {@link #succeeded()} for reading of another page of features.
+     * In other cases, {@link #iterator} is null and the stream has been closed.
      *
      * @return whether there is more features to load.
      */
     @Override
     protected Boolean call() throws DataStoreException {
-        // Note: iterator.estimateSize() is a count or remaining elements.
-        final int stopAt = (int) Math.min(iterator.estimateSize(), PAGE_SIZE);
+        final boolean isTypeKnown;
+        if (initializer != null) {
+            isTypeKnown = setType(initializer.getType());
+            toClose     = initializer.features(false);
+            iterator    = toClose.spliterator();
+        } else {
+            isTypeKnown = true;
+        }
+        /*
+         * iterator.estimateSize() is a count or remaining elements (not the total number).
+         * If the number of remaining elements is equal to smaller than the page size, try
+         * to read one more element in order to check if we really reached the stream end.
+         * We do that because the estimated count is only approximate.
+         */
+        final long remaining = iterator.estimateSize();
+        final int stopAt = (remaining > PAGE_SIZE) ? PAGE_SIZE : 1 + (int) remaining;
         loaded = new Feature[stopAt];
         try {
             while (iterator.tryAdvance(this)) {
                 if (count >= stopAt) {
+                    setMissingType(isTypeKnown);
                     return Boolean.TRUE;                // Intentionally skip the call to close().
                 }
                 if (isCancelled()) {
-                    break;
+                    close();
+                    return Boolean.FALSE;
                 }
             }
         } catch (BackingStoreException e) {
@@ -160,7 +161,8 @@ class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
             }
             throw e.unwrapOrRethrow(DataStoreException.class);
         }
-        close();                                        // Loading completed or has been cancelled.
+        close();                                        // Loading completed successfully.
+        setMissingType(isTypeKnown);
         return Boolean.FALSE;
     }
 
@@ -213,20 +215,38 @@ class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
     }
 
     /**
+     * Returns the list where to add features.
+     * All methods on the returned list shall be invoked from JavaFX thread.
+     */
+    private FeatureList destination() {
+        return (FeatureList) table.getItems();
+    }
+
+    /**
      * Invoked in JavaFX thread after new feature instances are ready.
      * This method adds the new rows in the table and prepares another
      * task for loading the next batch of features when needed.
      */
     @Override
-    protected final void succeeded() {
+    protected void succeeded() {
         final FeatureList addTo = destination();
         if (addTo.isCurrentLoader(this)) {
-            if (this instanceof Initial) {
-                addTo.setFeatures(iterator.estimateSize(), iterator.characteristics(), loaded, count);
+            final boolean hasMore = getValue();
+            if (initializer != null) {
+                final long remainingCount;
+                final int characteristics;
+                if (hasMore) {
+                    remainingCount  = iterator.estimateSize();
+                    characteristics = iterator.characteristics();
+                } else {
+                    remainingCount  = 0;
+                    characteristics = Spliterator.SIZED;
+                }
+                addTo.setFeatures(remainingCount, characteristics, loaded, count, hasMore);
             } else {
-                addTo.addFeatures(loaded, count);
+                addTo.addFeatures(loaded, count, hasMore);
             }
-            addTo.setNextPage(getValue() ? new FeatureLoader(this) : null);
+            addTo.setNextPage(hasMore ? new FeatureLoader(this) : null);
         } else try {
             close();
         } catch (DataStoreException e) {
@@ -242,7 +262,7 @@ class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
      * @see FeatureTable#interrupt()
      */
     @Override
-    protected final void cancelled() {
+    protected void cancelled() {
         final FeatureList addTo = destination();
         final boolean isCurrentLoader = addTo.isCurrentLoader(this);
         if (isCurrentLoader) {
@@ -277,44 +297,8 @@ class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
      * Invoked in JavaFX thread when a loading process failed.
      */
     @Override
-    protected final void failed() {
+    protected void failed() {
         cancelled();
-    }
-
-    /**
-     * The task to execute in background thread for initiating the loading process.
-     * This tasks is created only for the first {@value #PAGE_SIZE} features.
-     * For all additional features, an ordinary {@link FeatureLoader} will be used.
-     */
-    static final class Initial extends FeatureLoader {
-        /**
-         * The set of features to read.
-         */
-        private final FeatureSet features;
-
-        /**
-         * Initializes a new task for loading features from the given set.
-         */
-        Initial(final FeatureTable table, final FeatureSet features) {
-            super(table);
-            this.features = features;
-        }
-
-        /**
-         * Gets the feature type, initializes the iterator and gets the first {@value #PAGE_SIZE} features.
-         * The {@link FeatureType} should be given by {@link FeatureSet#getType()} but this method is robust
-         * to incomplete implementations where {@code getType()} returns {@code null}.
-         */
-        @Override
-        protected Boolean call() throws DataStoreException {
-            final boolean isTypeKnown = setType(features.getType());
-            initialize(features);
-            final Boolean status = super.call();
-            if (isTypeKnown) {
-                setTypeFromFirst();
-            }
-            return status;
-        }
     }
 
     /**
@@ -322,10 +306,14 @@ class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
      * then this method delegates to {@link FeatureTable#setFeatureType(FeatureType)} in
      * the JavaFX thread. This will erase the previous content and prepare new columns.
      *
+     * <p>This method is invoked, directly or indirectly, only from the {@link #call()}
+     * method with non-null {@link #initializer}. Consequently the new rows have not yet
+     * been added at this time.</p>
+     *
      * @param  type  the feature type, or {@code null}.
      * @return whether the given type was non-null.
      */
-    final boolean setType(final FeatureType type) {
+    private boolean setType(final FeatureType type) {
         if (type != null) {
             Platform.runLater(() -> table.setFeatureType(type));
             return true;
@@ -340,13 +328,15 @@ class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
      * incomplete implementations exist so we are better to be safe. If we can not get the type
      * from the first feature instances, we will give up.
      */
-    final void setTypeFromFirst() throws DataStoreException {
-        for (int i=0; i<count; i++) {
-            final Feature f = loaded[i];
-            if (f != null && setType(f.getType())) {
-                return;
+    private void setMissingType(final boolean isTypeKnown) throws DataStoreException {
+        if (!isTypeKnown) {
+            for (int i=0; i<count; i++) {
+                final Feature f = loaded[i];
+                if (f != null && setType(f.getType())) {
+                    return;
+                }
             }
+            throw new DataStoreException(Resources.forLocale(table.textLocale).getString(Resources.Keys.NoFeatureTypeInfo));
         }
-        throw new DataStoreException(Resources.forLocale(table.textLocale).getString(Resources.Keys.NoFeatureTypeInfo));
     }
 }

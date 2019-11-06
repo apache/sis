@@ -99,7 +99,6 @@ public class FeatureTable extends TableView<Feature> {
         final FeatureList items = (FeatureList) getItems();
         if (!items.setFeatures(this, features)) {
             featureType = null;
-            items.clear();
             getColumns().clear();
         }
     }
@@ -110,7 +109,7 @@ public class FeatureTable extends TableView<Feature> {
      * determined from the given type.
      */
     final void setFeatureType(final FeatureType type) {
-        getItems().clear();
+        ((FeatureList) getItems()).clearUnsafe();
         if (type != null && !type.equals(featureType)) {
             final Collection<? extends PropertyType> properties = type.getProperties(true);
             final List<TableColumn<Feature,?>> columns = new ArrayList<>(properties.size());
