@@ -20,12 +20,10 @@ import java.util.Locale;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
-import javafx.application.Platform;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
-import javafx.concurrent.WorkerStateEvent;
 import javafx.util.Callback;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
@@ -33,11 +31,8 @@ import org.opengis.feature.PropertyType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.storage.DataStoreException;
 
 
 /**
@@ -60,7 +55,7 @@ public class FeatureTable extends TableView<Feature> {
     /**
      * The locale to use for texts.
      */
-    private final Locale textLocale;
+    final Locale textLocale;
 
     /**
      * The locale to use for dates/numbers.
@@ -77,16 +72,6 @@ public class FeatureTable extends TableView<Feature> {
     private FeatureType featureType;
 
     /**
-     * If not all features have been read, the task for loading the next batch
-     * of {@value FeatureLoader#PAGE_SIZE} features in a background thread.
-     * This task will be executed only if there is a need to see new features.
-     *
-     * <p>If a loading is in progress, then this field is the loader doing the work.
-     * But this field will be updated with next loader as soon as the loading is completed.</p>
-     */
-    private FeatureLoader nextPageLoader;
-
-    /**
      * Creates an initially empty table.
      */
     public FeatureTable() {
@@ -94,6 +79,7 @@ public class FeatureTable extends TableView<Feature> {
         dataLocale = Locale.getDefault(Locale.Category.FORMAT);
         setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         setTableMenuButtonVisible(true);
+        setItems(new FeatureList());
     }
 
     /**
@@ -110,160 +96,11 @@ public class FeatureTable extends TableView<Feature> {
      * @param  features  the features to show in this table, or {@code null} if none.
      */
     public void setFeatures(final FeatureSet features) {
-        assert Platform.isFxApplicationThread();
-        final FeatureLoader previous = nextPageLoader;
-        if (previous != null) {
-            nextPageLoader = null;
-            previous.cancel();
-        }
-        if (features != null) {
-            prepare(new InitialLoader(features));
-            BackgroundThreads.execute(nextPageLoader);
-        } else {
+        final FeatureList items = (FeatureList) getItems();
+        if (!items.setFeatures(this, features)) {
             featureType = null;
-            getItems().clear();
+            items.clear();
             getColumns().clear();
-        }
-    }
-
-    /**
-     * Sets {@link #nextPageLoader} to the given values and sets the listeners,
-     * but without starting the task yet.
-     *
-     * @param  loader  the loader for next {@value FeatureLoader#PAGE_SIZE} features,
-     *                 or {@code null} if there is no more features to load.
-     */
-    private void prepare(final FeatureLoader loader) {
-        if (loader != null) {
-            loader.setOnSucceeded(this::addFeatures);
-            loader.setOnCancelled(this::cancelled);
-            loader.setOnFailed   (this::cancelled);
-        }
-        nextPageLoader = loader;
-    }
-
-    /**
-     * Invoked in JavaFX thread after new feature instances are ready.
-     * This method adds the new rows in the table and prepares another
-     * task for loading the next batch of features when needed.
-     */
-    private void addFeatures(final WorkerStateEvent event) {
-        assert Platform.isFxApplicationThread();
-        final FeatureLoader loader = (FeatureLoader) event.getSource();
-        if (loader == nextPageLoader) {
-            getItems().addAll((List<Feature>) event.getSource().getValue());
-            prepare(nextPageLoader.next());
-
-            // TODO: temporary hack: we should not start the job now, but wait until we need it.
-            if (nextPageLoader != null) {
-                BackgroundThreads.execute(nextPageLoader);
-            }
-        } else try {
-            loader.close();
-        } catch (DataStoreException e) {
-            unexpectedException("addFeatures", e);
-        }
-    }
-
-    /**
-     * Invoked in JavaFX thread when a loading process has been cancelled or failed.
-     * This method closes the {@link FeatureLoader} if it did not closed itself,
-     * then eventually shows the error in the table area.
-     *
-     * @see #interrupt()
-     */
-    private void cancelled(final WorkerStateEvent event) {
-        assert Platform.isFxApplicationThread();
-        final FeatureLoader loader = (FeatureLoader) event.getSource();
-        final boolean isCurrentLoader = (loader == nextPageLoader);
-        if (isCurrentLoader) {
-            nextPageLoader = null;
-        }
-        /*
-         * Loader should be already closed if error or cancellation happened during the reading process.
-         * But it may not be closed if the task was cancelled before it started, or maybe because of some
-         * other holes we missed. So close again as a double-check.
-         */
-        Throwable exception = loader.getException();
-        try {
-            loader.close();
-        } catch (DataStoreException e) {
-            if (exception == null) {
-                exception = e;
-            } else {
-                exception.addSuppressed(e);
-            }
-        }
-        if (exception != null) {
-            if (isCurrentLoader) {
-                exception.printStackTrace();        // TODO: write somewhere in the widget.
-            } else {
-                // Since we moved to other data, not appropriate anymore for current widget.
-                unexpectedException("cancelled", exception);
-            }
-        }
-    }
-
-    /**
-     * The task to execute in background thread for initiating the loading process.
-     * This tasks is created only for the first {@value #PAGE_SIZE} features.
-     * For all additional features, an ordinary {@link FeatureLoader} will be used.
-     */
-    private final class InitialLoader extends FeatureLoader {
-        /**
-         * The set of features to read.
-         */
-        private final FeatureSet features;
-
-        /**
-         * Initializes a new task for loading features from the given set.
-         */
-        InitialLoader(final FeatureSet features) {
-            this.features = features;
-        }
-
-        /**
-         * Gets the feature type, initializes the iterator and gets the first {@value #PAGE_SIZE} features.
-         * The {@link FeatureType} should be given by {@link FeatureSet#getType()} but this method is robust
-         * to incomplete implementations where {@code getType()} returns {@code null}.
-         */
-        @Override
-        protected List<Feature> call() throws DataStoreException {
-            final boolean isTypeKnown = setType(features.getType());
-            initialize(features);
-            final List<Feature> instances = super.call();
-            if (isTypeKnown) {
-                return instances;
-            }
-            /*
-             * Following code is a safety for FeatureSet that do not implement the `getType()` method.
-             * That method is mandatory and implementations should not be allowed to return null, but
-             * incomplete implementations exist so we are better to be safe. If we can not get the type
-             * from the first feature instances, we will give up.
-             */
-            for (final Feature f : instances) {
-                if (f != null && setType(f.getType())) {
-                    return instances;
-                }
-            }
-            throw new DataStoreException(Resources.forLocale(textLocale).getString(Resources.Keys.NoFeatureTypeInfo));
-        }
-
-        /**
-         * Invoked when the feature type may have been found. If the given type is non-null,
-         * then this method delegates to {@link FeatureTable#setFeatureType(FeatureType)} in
-         * the JavaFX thread. This will erase the previous content and prepare new columns.
-         *
-         * @param  type  the feature type, or {@code null}.
-         * @return whether the given type was non-null.
-         */
-        private boolean setType(final FeatureType type) {
-            if (type != null) {
-                Platform.runLater(() -> setFeatureType(type));
-                return true;
-            } else {
-                return false;
-            }
         }
     }
 
@@ -272,8 +109,7 @@ public class FeatureTable extends TableView<Feature> {
      * This method clears all rows and replaces all columns by new columns
      * determined from the given type.
      */
-    private void setFeatureType(final FeatureType type) {
-        assert Platform.isFxApplicationThread();
+    final void setFeatureType(final FeatureType type) {
         getItems().clear();
         if (type != null && !type.equals(featureType)) {
             final Collection<? extends PropertyType> properties = type.getProperties(true);
@@ -318,9 +154,13 @@ public class FeatureTable extends TableView<Feature> {
          */
         @Override
         public ObservableValue<Object> call(final TableColumn.CellDataFeatures<Feature, Object> cell) {
-            Object value = cell.getValue().getPropertyValue(name);
-            if (value instanceof Collection<?>) {
-                value = "collection";               // TODO
+            Object value = null;
+            final Feature feature = cell.getValue();
+            if (feature != null) {
+                value = feature.getPropertyValue(name);
+                if (value instanceof Collection<?>) {
+                    value = "collection";               // TODO
+                }
             }
             return new ReadOnlyObjectWrapper<>(value);
         }
@@ -338,13 +178,7 @@ public class FeatureTable extends TableView<Feature> {
      * This method returns immediately; the release of resources happens in a background thread.
      */
     public void interrupt() {
-        assert Platform.isFxApplicationThread();
-        final FeatureLoader loader = nextPageLoader;
-        nextPageLoader = null;
-        if (loader != null) {
-            loader.cancel();
-            BackgroundThreads.execute(loader::waitAndClose);
-        }
+        ((FeatureList) getItems()).interrupt();
     }
 
     /**

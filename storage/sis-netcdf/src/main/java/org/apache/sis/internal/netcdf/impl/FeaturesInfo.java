@@ -402,11 +402,11 @@ search: for (final VariableInfo counts : decoder.variables) {
         }
 
         /**
-         * Returns the number of features.
+         * Returns the remaining number of features to traverse.
          */
         @Override
         public long estimateSize() {
-            return counts.size();
+            return counts.size() - index;
         }
 
         /**

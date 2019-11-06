@@ -807,6 +807,9 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             /**
              * Guess the number of elements to be returned. The value returned by this method is very rough,
              * and likely greater than the real amount of elements that will actually be returned.
+             *
+             * <p><b>Note:</b> returned value should be the number of <em>remaining</em> elements, but
+             * current implementation does not compute how many elements we have already traversed.</p>
              */
             @Override
             public long estimateSize() {
@@ -1141,6 +1144,9 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * Returns an estimation of the number of cells in the area covered by this iterator. The returned value
          * may be greater than the real amount since we do not take in account the fact that the number of cells
          * in a row become lower as we approach poles.
+         *
+         * <p><b>Note:</b> returned value should be the number of <em>remaining</em> elements, but
+         * current implementation does not compute how many elements we have already traversed.</p>
          */
         @Override
         public long estimateSize() {

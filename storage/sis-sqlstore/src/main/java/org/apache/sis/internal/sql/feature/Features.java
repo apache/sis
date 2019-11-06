@@ -135,9 +135,9 @@ final class Features implements Spliterator<Feature>, Runnable {
     private final Class<?> keyComponentClass;
 
     /**
-     * Estimated number of rows, or {@literal <= 0} if unknown.
+     * Estimated number of remaining rows, or {@literal <= 0} if unknown.
      */
-    private final long estimatedSize;
+    private long estimatedSize;
 
     /**
      * Creates a new iterator over the feature instances.
@@ -311,7 +311,7 @@ final class Features implements Spliterator<Feature>, Runnable {
     }
 
     /**
-     * Returns the estimated number of features, or {@link Long#MAX_VALUE} if unknown.
+     * Returns the estimated number of remaining features, or {@link Long#MAX_VALUE} if unknown.
      */
     @Override
     public long estimateSize() {
@@ -362,6 +362,7 @@ final class Features implements Spliterator<Feature>, Runnable {
      */
     private boolean fetch(final Consumer<? super Feature> action, final boolean all) throws SQLException {
         while (result.next()) {
+            estimatedSize--;
             final Feature feature = featureType.newInstance();
             for (int i=0; i < attributeNames.length; i++) {
                 final Object value = result.getObject(i+1);
