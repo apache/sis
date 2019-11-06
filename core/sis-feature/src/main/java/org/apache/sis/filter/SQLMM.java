@@ -34,7 +34,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @todo Implement all SQL/MM specification functions.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 2.0
  * @since   1.1
  * @module
  */
@@ -58,7 +58,8 @@ final class SQLMM implements FunctionRegister {
      */
     @Override
     public Collection<String> getNames() {
-        return Arrays.asList(ST_Transform.NAME, ST_Centroid.NAME, ST_Buffer.NAME);
+        return Arrays.asList(ST_Transform.NAME, ST_Centroid.NAME, ST_Buffer.NAME,
+                ST_Simplify.NAME, ST_SimplifyPreserveTopology.NAME);
     }
 
     /**
@@ -79,9 +80,11 @@ final class SQLMM implements FunctionRegister {
         }
         try {
             switch (name) {
-                case ST_Transform.NAME: return new ST_Transform(parameters);
-                case ST_Centroid.NAME:  return new ST_Centroid(parameters);
-                case ST_Buffer.NAME:    return new ST_Buffer(parameters);
+                case ST_Transform.NAME:                 return new ST_Transform(parameters);
+                case ST_Centroid.NAME:                  return new ST_Centroid(parameters);
+                case ST_Buffer.NAME:                    return new ST_Buffer(parameters);
+                case ST_Simplify.NAME:                  return new ST_Simplify(parameters);
+                case ST_SimplifyPreserveTopology.NAME:  return new ST_SimplifyPreserveTopology(parameters);
                 default: throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownFunction_1, name));
             }
         } catch (FactoryException e) {
