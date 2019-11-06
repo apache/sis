@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
@@ -25,40 +26,57 @@ class FeatureAdapter {
         this.attributeMappers = Collections.unmodifiableList(new ArrayList<>(attributeMappers));
     }
 
-    Feature read(final ResultSet cursor, final Connection origin) throws SQLException {
-        final Feature result = readAttributes(cursor);
-        addImports(result, cursor);
-        addExports(result);
-        return result;
+    ResultSetAdapter prepare(final Connection target) {
+        final List<ReadyMapper> rtu = attributeMappers.stream()
+                .map(mapper -> mapper.prepare(target))
+                .collect(Collectors.toList());
+        return new ResultSetAdapter(rtu);
     }
 
-    private void addImports(final Feature target, final ResultSet cursor) {
-        // TODO: see Features class
-    }
+    final class ResultSetAdapter {
+        final List<ReadyMapper> mappers;
 
-    private void addExports(final Feature target) {
-        // TODO: see Features class
-    }
-
-    private Feature readAttributes(final ResultSet cursor) throws SQLException {
-        final Feature result = type.newInstance();
-        for (PropertyMapper mapper : attributeMappers) mapper.read(cursor, result);
-        return result;
-    }
-
-    List<Feature> prefetch(final int size, final ResultSet cursor, final Connection origin) throws SQLException {
-        // TODO: optimize by resolving import associations by  batch import fetching.
-        final ArrayList<Feature> features = new ArrayList<>(size);
-        for (int i = 0 ; i < size && cursor.next() ; i++) {
-            features.add(read(cursor, origin));
+        ResultSetAdapter(List<ReadyMapper> mappers) {
+            this.mappers = mappers;
         }
 
-        return features;
+        Feature read(final ResultSet cursor) throws SQLException {
+            final Feature result = readAttributes(cursor);
+            addImports(result, cursor);
+            addExports(result);
+            return result;
+        }
+
+        private Feature readAttributes(final ResultSet cursor) throws SQLException {
+            final Feature result = type.newInstance();
+            for (ReadyMapper mapper : mappers) mapper.read(cursor, result);
+            return result;
+        }
+
+        //final SQLBiFunction<ResultSet, Integer, ?>[] adapters;
+        List<Feature> prefetch(final int size, final ResultSet cursor) throws SQLException {
+            // TODO: optimize by resolving import associations by  batch import fetching.
+            final ArrayList<Feature> features = new ArrayList<>(size);
+            for (int i = 0 ; i < size && cursor.next() ; i++) {
+                features.add(read(cursor));
+            }
+
+            return features;
+        }
+
+        private void addImports(final Feature target, final ResultSet cursor) {
+            // TODO: see Features class
+        }
+
+        private void addExports(final Feature target) {
+            // TODO: see Features class
+        }
     }
 
     static final class PropertyMapper {
         // TODO: by using a indexed implementation of Feature, we could avoid the name mapping. However, a JMH benchmark
-        // would be required in order to be sure it's impacting performance positively.
+        // would be required in order to be sure it's impacting performance positively. also, features are sparse by
+        // nature, and an indexed implementation could (to verify, still) be bad on memory footprint.
         final String propertyName;
         final int columnIndex;
         final ColumnAdapter fetchValue;
@@ -69,9 +87,23 @@ class FeatureAdapter {
             this.fetchValue = fetchValue;
         }
 
+        ReadyMapper prepare(final Connection target) {
+            return new ReadyMapper(this, fetchValue.prepare(target));
+        }
+    }
+
+    private static class ReadyMapper {
+        final SQLBiFunction<ResultSet, Integer, ?> reader;
+        final PropertyMapper parent;
+
+        public ReadyMapper(PropertyMapper parent, SQLBiFunction<ResultSet, Integer, ?> reader) {
+            this.reader = reader;
+            this.parent = parent;
+        }
+
         private void read(ResultSet cursor, Feature target) throws SQLException {
-            final Object value = fetchValue.apply(cursor, columnIndex);
-            if (value != null) target.setPropertyValue(propertyName, value);
+            final Object value = reader.apply(cursor, parent.columnIndex);
+            if (value != null) target.setPropertyValue(parent.propertyName, value);
         }
     }
 }

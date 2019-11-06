@@ -48,6 +48,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.logging.Logging;
 
+import static org.apache.sis.internal.sql.feature.Database.connectReadOnly;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensurePositive;
 
@@ -179,7 +180,7 @@ class StreamSQL extends StreamDecoration<Feature> {
             // If underlying connector does not support query estimation, we will fallback on brut-force counting.
             return super.count();
         }
-        try (Connection conn = QueryFeatureSet.connectReadOnly(source)) {
+        try (Connection conn = connectReadOnly(source)) {
             try (Statement st = conn.createStatement();
                  ResultSet rs = st.executeQuery(sql)) {
                 if (rs.next()) {
@@ -194,7 +195,7 @@ class StreamSQL extends StreamDecoration<Feature> {
     @Override
     protected synchronized Stream<Feature> createDecoratedStream() {
         final AtomicReference<Connection> connectionRef = new AtomicReference<>();
-        Stream<Feature> featureStream = Stream.of(uncheck(() -> QueryFeatureSet.connectReadOnly(source)))
+        Stream<Feature> featureStream = Stream.of(uncheck(() -> connectReadOnly(source)))
                 .map(Supplier::get)
                 .peek(connectionRef::set)
                 .flatMap(conn -> {

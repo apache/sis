@@ -112,7 +112,7 @@ public final class Database {
             final GenericName[] tableNames, final WarningListeners<DataStore> listeners)
             throws SQLException, DataStoreException
     {
-        final Analyzer analyzer = new Analyzer(source, connection.getMetaData(), listeners, store.getLocale());
+        final Analyzer analyzer = new Analyzer(source, connection, listeners, store.getLocale());
         final String[] tableTypes = getTableTypes(analyzer.metadata);
         final Set<TableReference> declared = new LinkedHashSet<>();
         for (final GenericName tableName : tableNames) {
@@ -232,5 +232,33 @@ public final class Database {
     @Override
     public String toString() {
         return TableReference.toString(this, (n) -> appendTo(n));
+    }
+
+    /**
+     * Acquire a connection over parent database, forcing a few parameters to ensure optimal read performance and
+     * limiting user rights :
+     * <ul>
+     *     <li>{@link Connection#setAutoCommit(boolean) auto-commit} to false</li>
+     *     <li>{@link Connection#setReadOnly(boolean) querying read-only}</li>
+     * </ul>
+     *
+     * @param source Database pointer to create connection from.
+     * @return A new connection to database, with deactivated auto-commit.
+     * @throws SQLException If we cannot create a new connection. See {@link DataSource#getConnection()} for details.
+     */
+    public static Connection connectReadOnly(final DataSource source) throws SQLException {
+        final Connection c = source.getConnection();
+        try {
+            c.setAutoCommit(false);
+            c.setReadOnly(true);
+        } catch (SQLException e) {
+            try {
+                c.close();
+            } catch (RuntimeException | SQLException bis) {
+                e.addSuppressed(bis);
+            }
+            throw e;
+        }
+        return c;
     }
 }

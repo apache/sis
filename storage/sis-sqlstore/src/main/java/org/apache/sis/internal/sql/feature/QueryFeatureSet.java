@@ -123,7 +123,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
      * @throws SQLException If input query compiling or analysis of its metadata fails.
      */
     public QueryFeatureSet(SQLBuilder queryBuilder, DataSource source, Connection conn) throws SQLException {
-        this(queryBuilder, new Analyzer(source, conn.getMetaData(), null, null), source, conn);
+        this(queryBuilder, new Analyzer(source, conn, null, null), source, conn);
     }
 
 
@@ -193,34 +193,6 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         }
 
         return super.subset(query);
-    }
-
-    /**
-     * Acquire a connection over parent database, forcing a few parameters to ensure optimal read performance and
-     * limiting user rights :
-     * <ul>
-     *     <li>{@link Connection#setAutoCommit(boolean) auto-commit} to false</li>
-     *     <li>{@link Connection#setReadOnly(boolean) querying read-only}</li>
-     * </ul>
-     *
-     * @param source Database pointer to create connection from.
-     * @return A new connection to database, with deactivated auto-commit.
-     * @throws SQLException If we cannot create a new connection. See {@link DataSource#getConnection()} for details.
-     */
-    public static Connection connectReadOnly(final DataSource source) throws SQLException {
-        final Connection c = source.getConnection();
-        try {
-            c.setAutoCommit(false);
-            c.setReadOnly(true);
-        } catch (SQLException e) {
-            try {
-                c.close();
-            } catch (RuntimeException | SQLException bis) {
-                e.addSuppressed(bis);
-            }
-            throw e;
-        }
-        return c;
     }
 
     class SubsetAdapter extends SQLQueryAdapter {
@@ -379,11 +351,11 @@ public class QueryFeatureSet extends AbstractFeatureSet {
     private abstract class QuerySpliterator  implements java.util.Spliterator<Feature> {
 
         final ResultSet result;
-        final Connection origin;
+        final FeatureAdapter.ResultSetAdapter adapter;
 
         private QuerySpliterator(ResultSet result, Connection origin) {
             this.result = result;
-            this.origin = origin;
+            this.adapter = QueryFeatureSet.this.adapter.prepare(origin);
         }
 
         @Override
@@ -408,7 +380,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         public boolean tryAdvance(Consumer<? super Feature> action) {
             try {
                 if (result.next()) {
-                    final Feature f = adapter.read(result, origin);
+                    final Feature f = adapter.read(result);
                     action.accept(f);
                     return true;
                 } else return false;
@@ -433,7 +405,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
      * there's not much improvement regarding to naive streaming approach. IMHO, two improvements would really impact
      * performance positively if done:
      * <ul>
-     *     <li>Optimisation of batch loading through {@link FeatureAdapter#prefetch(int, ResultSet, Connection)}</li>
+     *     <li>Optimisation of batch loading through {@link FeatureAdapter.ResultSetAdapter#prefetch(int, ResultSet)}</li>
      *     <li>Better splitting balance, as stated by {@link Spliterator#trySplit()}</li>
      * </ul>
      */
@@ -493,7 +465,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
             if (chunk == null || idx >= chunk.size()) {
                 idx = 0;
                 try {
-                    chunk = adapter.prefetch(fetchSize, result, origin);
+                    chunk = adapter.prefetch(fetchSize, result);
                 } catch (SQLException e) {
                     throw new BackingStoreException(e);
                 }

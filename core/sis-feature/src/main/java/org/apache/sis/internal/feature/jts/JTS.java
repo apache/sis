@@ -117,7 +117,7 @@ public final class JTS extends Static {
             return Optional.empty();
         } else if (ud instanceof CoordinateReferenceSystem) {
             target.setUserData(toSet);
-            return Optional.of((CoordinateReferenceSystem)ud);
+            return Optional.of((CoordinateReferenceSystem) ud);
         } else if (ud instanceof Map) {
             final Map asMap = (Map) ud;
             // In case user-data contains other useful data, we don't switch from map to CRS. We also reset SRID.

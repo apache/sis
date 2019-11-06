@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.sql.feature;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,8 +28,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.sql.DataSource;
 
-import org.opengis.feature.Feature;
-import org.opengis.feature.PropertyType;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
@@ -52,6 +51,8 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.ResourceInternationalString;
 
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
 
 /**
  * Helper methods for creating {@code FeatureType}s from database structure.
@@ -60,6 +61,7 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.0
  * @since   1.0
  * @module
@@ -71,6 +73,11 @@ final class Analyzer {
      * because {@code SQLStore} will frequently opens and closes connections.
      */
     final DataSource source;
+
+    /**
+     * A connection used all along this component life to query database.
+     */
+    final Connection connection;
 
     /**
      * Information about the database as a whole.
@@ -147,20 +154,24 @@ final class Analyzer {
      * Creates a new analyzer for the database described by given metadata.
      *
      * @param  source     the data source, usually given by user at {@code SQLStore} creation time.
-     * @param  metadata   Value of {@code source.getConnection().getMetaData()}.
+     * @param  databaseConnection   Database entrypoint. It's the caller responsability to handle connection lifecycle,
+     *                              and ensure this object life span is shorter than the connection one.
      * @param  listeners  Value of {@code SQLStore.listeners}.
      * @param  locale     Value of {@code SQLStore.getLocale()}.
      */
-    Analyzer(final DataSource source, final DatabaseMetaData metadata, final WarningListeners<DataStore> listeners,
+    Analyzer(final DataSource source, final Connection databaseConnection, final WarningListeners<DataStore> listeners,
              final Locale locale) throws SQLException
     {
+        ensureNonNull("Database connection provider", source);
+        ensureNonNull("Database connection", databaseConnection);
         this.source      = source;
-        this.metadata    = metadata;
+        this.connection  = databaseConnection;
+        this.metadata    = databaseConnection.getMetaData();
         this.listeners   = listeners;
         this.locale      = locale;
         this.strings     = new HashMap<>();
         this.escape      = metadata.getSearchStringEscape();
-        this.functions   = new SpatialFunctions(metadata);
+        this.functions   = new SpatialFunctions(databaseConnection, metadata);
         this.nameFactory = DefaultFactories.forBuildin(NameFactory.class);
         /*
          * The following tables are defined by ISO 19125 / OGC Simple feature access part 2.
@@ -305,10 +316,6 @@ final class Analyzer {
         warnings.add(Resources.formatInternational(key, argument));
     }
 
-    private PropertyAdapter analyze(SQLColumn target) {
-        throw new UnsupportedOperationException();
-    }
-
     /**
      * Invoked after we finished to create all tables. This method flush the warnings
      * (omitting duplicated warnings), then returns all tables including dependencies.
@@ -345,26 +352,21 @@ final class Analyzer {
         int i = 0;
         for (SQLColumn col : spec.getColumns()) {
             i++;
-            final ColumnAdapter<?> colAdapter = functions.toJavaType(col.getType(), col.getTypeName());
-            Class<?> type = colAdapter.javaType;
-            final String colName = col.getName().getColumnName();
-            final String attrName = col.getName().getAttributeName();
-            if (type == null) {
-                warning(Resources.Keys.UnknownType_1, colName);
-                type = Object.class;
-            }
+            final ColumnAdapter<?> colAdapter = functions.toJavaType(col);
+            Class<?> type = colAdapter.getJavaType();
+            final String colName = col.naming.getColumnName();
+            final String attrName = col.naming.getAttributeName();
 
             final AttributeTypeBuilder<?> attribute = builder
                     .addAttribute(type)
                     .setName(attrName);
-            if (col.isNullable()) attribute.setMinimumOccurs(0);
-            final int precision = col.getPrecision();
-            /* TODO: we should check column type. Precision for numbers or blobs is meaningfull, but the convention
+            if (col.isNullable) attribute.setMinimumOccurs(0);
+            /* TODO: we should check column type. Precision for numbers or blobs is meaningful, but the convention
              * exposed by SIS does not allow to distinguish such cases.
              */
-            if (precision > 0) attribute.setMaximalLength(precision);
+            if (col.precision > 0) attribute.setMaximalLength(col.precision);
 
-            col.getCrs().ifPresent(attribute::setCRS);
+            colAdapter.getCrs().ifPresent(attribute::setCRS);
             if (geomCol.equals(attrName)) attribute.addRole(AttributeRole.DEFAULT_GEOMETRY);
 
             if (pkCols.contains(colName)) attribute.addRole(AttributeRole.IDENTIFIER_COMPONENT);
@@ -422,11 +424,10 @@ final class Analyzer {
         }
     }
 
-    private interface PropertyAdapter {
-        PropertyType getType();
-        void fill(ResultSet source, final Feature target);
-    }
-
+    /**
+     * TODO: this object needs a live connection. Check if we should parse all information at built, to avoid requiring
+     * keeping a connection all along.
+     */
     private final class TableMetadata implements SQLTypeSpecification {
         final TableReference id;
         private final String tableEsc;
@@ -448,7 +449,6 @@ final class Analyzer {
                 final List<String> cols = new ArrayList<>();
                 while (reflect.next()) {
                     cols.add(getUniqueString(reflect, Reflection.COLUMN_NAME));
-                    // The actual Boolean value will be fetched in the loop on columns later.
                 }
                 pk = PrimaryKey.create(cols);
             }
@@ -577,12 +577,18 @@ final class Analyzer {
 
             final ArrayList<SQLColumn> tmpCols = new ArrayList<>(total);
             for (int i = 1 ; i <= total ; i++) {
+                final TableReference optTable;
+                final String table = meta.getTableName(i);
+                if (table != null) {
+                    optTable = new TableReference(meta.getCatalogName(i), meta.getSchemaName(i), table, null);
+                } else optTable = null;
                 tmpCols.add(new SQLColumn(
                         meta.getColumnType(i),
                         meta.getColumnTypeName(i),
                         meta.isNullable(i) == ResultSetMetaData.columnNullable,
                         new ColumnRef(meta.getColumnName(i)).as(meta.getColumnLabel(i)),
-                        meta.getPrecision(i)
+                        meta.getPrecision(i),
+                        optTable
                 ));
             }
 
@@ -619,5 +625,4 @@ final class Analyzer {
             return Collections.EMPTY_LIST;
         }
     }
-
 }

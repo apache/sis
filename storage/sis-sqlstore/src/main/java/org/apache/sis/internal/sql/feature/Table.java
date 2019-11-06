@@ -200,7 +200,7 @@ final class Table extends AbstractFeatureSet {
         this.hasGeometry      = specification.getPrimaryGeometryColumn().isPresent();
         this.attributes       = Collections.unmodifiableList(
                 specification.getColumns().stream()
-                        .map(SQLColumn::getName)
+                        .map(column -> column.naming)
                         .collect(Collectors.toList())
         );
     }

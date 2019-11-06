@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
@@ -207,8 +208,8 @@ final class JTS extends Geometries<Geometry> {
     }
 
     @Override
-    public Geometry toPolygon(Geometry polyline) throws IllegalArgumentException {
-        if (polyline instanceof Polygon) return polyline;
+    public Polygon toPolygon(Geometry polyline) throws IllegalArgumentException {
+        if (polyline instanceof Polygon) return (Polygon) polyline;
 
         Polygon result = null;
         if (polyline instanceof LinearRing) {
@@ -269,7 +270,7 @@ final class JTS extends Geometries<Geometry> {
      * @throws ClassCastException if an element in the iterator is not a JTS geometry.
      */
     @Override
-    final Geometry tryMergePolylines(Object next, final Iterator<?> polylines) {
+    public final Geometry tryMergePolylines(Object next, final Iterator<?> polylines) {
         if (!(next instanceof MultiLineString || next instanceof LineString || next instanceof Point)) {
             return null;
         }
@@ -332,16 +333,22 @@ add:    for (;;) {
     }
 
     @Override
-    MultiPolygon createMultiPolygonImpl(Object... polygonsOrLinearRings) {
-        final Polygon[] polys = new Polygon[polygonsOrLinearRings.length];
-        for (int i = 0 ; i < polys.length ; i++) {
-            Object o = polygonsOrLinearRings[i];
-            if (o instanceof GeometryWrapper) o = ((GeometryWrapper) o).geometry;
-
-            if (o instanceof Polygon) polys[i] = (Polygon) o;
-            else if (o instanceof LinearRing) polys[i] = factory.createPolygon((LinearRing) o);
-        }
-
+    public MultiPolygon createMultiPolygon(Stream<?> polygonsOrLinearRings) {
+        final Polygon[] polys = polygonsOrLinearRings
+                .map(this::castToPolygon)
+                .toArray(size -> new Polygon[size]);
         return factory.createMultiPolygon(polys);
+    }
+
+    private Polygon castToPolygon(Object input) {
+        if (input instanceof GeometryWrapper) input = ((GeometryWrapper) input).geometry;
+
+        if (input instanceof Geometry) return toPolygon((Geometry) input);
+        else throw new IllegalArgumentException("Given argument cannot be cast to polygon");
+    }
+
+    @Override
+    public void setCRS(Geometry target, CoordinateReferenceSystem toApply) {
+        org.apache.sis.internal.feature.jts.JTS.setCoordinateReferenceSystem(target, toApply);
     }
 }

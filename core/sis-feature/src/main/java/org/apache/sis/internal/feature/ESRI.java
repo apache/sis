@@ -18,6 +18,7 @@ package org.apache.sis.internal.feature;
 
 import java.nio.ByteBuffer;
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.math.Vector;
@@ -150,7 +151,7 @@ final class ESRI extends Geometries<Geometry> {
     @Override
     public Geometry toPolygon(Geometry polyline) throws IllegalArgumentException {
         if (polyline instanceof Polygon) return polyline;
-        return createMultiPolygonImpl(polyline);
+        return createMultiPolygon(Stream.of(polyline));
     }
 
     /**
@@ -159,7 +160,7 @@ final class ESRI extends Geometries<Geometry> {
      * @throws ClassCastException if an element in the iterator is not an ESRI geometry.
      */
     @Override
-    final Geometry tryMergePolylines(Object next, final Iterator<?> polylines) {
+    public final Geometry tryMergePolylines(Object next, final Iterator<?> polylines) {
         if (!(next instanceof MultiPath || next instanceof Point)) {
             return null;
         }
@@ -213,15 +214,17 @@ add:    for (;;) {
     }
 
     @Override
-    Polygon createMultiPolygonImpl(Object... polygonsOrLinearRings) {
-        final Polygon poly = new Polygon();
-        for (final Object polr : polygonsOrLinearRings) {
-            if (polr instanceof MultiPath) {
-                poly.add((MultiPath) polr, false);
-            } else throw new UnsupportedOperationException("Unsupported geometry type: "+polr == null ? "null" : polr.getClass().getCanonicalName());
-        }
+    public Polygon createMultiPolygon(Stream<?> polygonsOrLinearRings) {
+        return polygonsOrLinearRings.map(ESRI::toMultiPath).reduce(
+                new Polygon(),
+                (p, m) -> {p.add(m, false); return p;},
+                (p1, p2) -> {p1.add(p2, false); return p1;}
+        );
+    }
 
-        return poly;
+    private static MultiPath toMultiPath(Object polr) {
+        if (polr instanceof MultiPath) return (MultiPath) polr;
+        else throw new UnsupportedOperationException("Unsupported geometry type: "+polr == null ? "null" : polr.getClass().getCanonicalName());
     }
 
     /**

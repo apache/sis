@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -37,7 +38,6 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 
-import static org.apache.sis.util.ArgumentChecks.ensureNonEmpty;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
@@ -201,7 +201,7 @@ final class Java2D extends Geometries<Shape> {
      * @throws ClassCastException if an element in the iterator is not a {@link Shape} or a {@link Point2D}.
      */
     @Override
-    final Shape tryMergePolylines(Object next, final Iterator<?> polylines) {
+    public final Shape tryMergePolylines(Object next, final Iterator<?> polylines) {
         if (!(next instanceof Shape || next instanceof Point2D)) {
             return null;
         }
@@ -257,12 +257,10 @@ add:    for (;;) {
     }
 
     @Override
-    Shape createMultiPolygonImpl(Object... polygonsOrLinearRings) {
-        ensureNonEmpty("Polygons or linear rings to merge", polygonsOrLinearRings);
-        if (polygonsOrLinearRings.length == 1 && polygonsOrLinearRings[0] instanceof Shape)
-            return (Shape) polygonsOrLinearRings[0];
-        final Iterator<Object> it = Arrays.asList(polygonsOrLinearRings).iterator();
-        return tryMergePolylines(it.next(), it);
+    public Shape createMultiPolygon(Stream<?> polygonsOrLinearRings) {
+        final Iterator<?> it = polygonsOrLinearRings.iterator();
+        if (it.hasNext()) return tryMergePolylines(it.next(), it);
+        throw new IllegalArgumentException("Empty input");
     }
 
     @Override

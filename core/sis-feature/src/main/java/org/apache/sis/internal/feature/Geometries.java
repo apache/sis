@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.stream.Stream;
 
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
@@ -335,7 +336,7 @@ public abstract class Geometries<G> {
      * @return the merged polyline, or {@code null} if the first instance is not an implementation of this library.
      * @throws ClassCastException if an element in the iterator is not an implementation of this library.
      */
-    abstract G tryMergePolylines(Object first, Iterator<?> polylines);
+    public abstract G tryMergePolylines(Object first, Iterator<?> polylines);
 
     /**
      * Merges a sequence of points or polylines into a single polyline instances.
@@ -455,7 +456,7 @@ public abstract class Geometries<G> {
             maxY = splittedLeft[3];
             Vector[] points2 = clockwiseRing(minX, minY, maxX, maxY);
             final G secondRect = createPolyline(2, points2);
-            return createMultiPolygonImpl(mainRect, secondRect);
+            return createMultiPolygon(Stream.of(mainRect, secondRect));
         }
 
         /* Geotk original method had an option to insert a median point on wrappped around axis, but we have not ported
@@ -498,9 +499,20 @@ public abstract class Geometries<G> {
 
     public abstract double[] getPoints(Object geometry);
 
-    abstract G createMultiPolygonImpl(final Object... polygonsOrLinearRings);
+    public abstract G createMultiPolygon(final Stream<?> polygonsOrLinearRings);
 
-    public static Object createMultiPolygon(final Object... polygonsOrLinearRings) {
-        return findStrategy(g -> g.createMultiPolygonImpl(polygonsOrLinearRings));
+    public static Object createMultiPolygon_(final Stream polygonsOrLinearRings) {
+        return findStrategy(g -> g.createMultiPolygon(polygonsOrLinearRings));
+    }
+
+    /**
+     * Try and associate given coordinate reference system to the specified geometry. It should replace any previously
+     * set referencing information.
+     *
+     * @param target The geometry to embed referencing information into.
+     * @param toApply Referencing information to add.
+     */
+    public void setCRS(G target, CoordinateReferenceSystem toApply) {
+        throw new UnsupportedOperationException("Not supported yet");
     }
 }

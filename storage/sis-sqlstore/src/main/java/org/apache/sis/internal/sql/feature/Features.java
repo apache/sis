@@ -151,7 +151,7 @@ final class Features implements Spliterator<Feature> {
      */
     private final long estimatedSize;
 
-    private final FeatureAdapter adapter;
+    private final FeatureAdapter.ResultSetAdapter adapter;
 
     /**
      * Creates a new iterator over the feature instances.
@@ -182,7 +182,7 @@ final class Features implements Spliterator<Feature> {
             attributeNames[i++] = column.getAttributeName();
         }
         this.featureType = table.featureType;
-        this.adapter = table.adapter;
+        this.adapter = table.adapter.prepare(connection);
         final DatabaseMetaData metadata = connection.getMetaData();
         estimatedSize = following.isEmpty() ? table.countRows(metadata, true) : 0;
         /*
@@ -418,7 +418,7 @@ final class Features implements Spliterator<Feature> {
     private boolean fetch(final Consumer<? super Feature> action, final boolean all) throws SQLException {
         while (result.next()) {
             // TODO: give connection to adapter.
-            final Feature feature = adapter.read(result, null);
+            final Feature feature = adapter.read(result);
             for (int i=0; i < dependencies.length; i++) {
                 final Features dependency = dependencies[i];
                 final int[] columnIndices = foreignerKeyIndices[i];

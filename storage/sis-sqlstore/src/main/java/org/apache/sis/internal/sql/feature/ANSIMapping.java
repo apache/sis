@@ -14,8 +14,6 @@ import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
 
-import org.apache.sis.internal.metadata.sql.Dialect;
-
 public class ANSIMapping implements DialectMapping {
 
     /**
@@ -30,17 +28,20 @@ public class ANSIMapping implements DialectMapping {
     }
 
     @Override
-    public Dialect getDialect() {
-        return Dialect.ANSI;
+    public Spi getSpi() {
+        return null;
     }
 
     @Override
-    public Optional<ColumnAdapter<?>> getMapping(int sqlType, String sqlTypeName) {
-        return Optional.ofNullable(getMappingImpl(sqlType, sqlTypeName));
+    public void close() throws SQLException {}
+
+    @Override
+    public Optional<ColumnAdapter<?>> getMapping(SQLColumn columnDefinition) {
+        return Optional.ofNullable(getMappingImpl(columnDefinition));
     }
 
-    public ColumnAdapter<?> getMappingImpl(int sqlType, String sqlTypeName) {
-        switch (sqlType) {
+    public ColumnAdapter<?> getMappingImpl(SQLColumn columnDefinition) {
+        switch (columnDefinition.type) {
             case Types.BIT:
             case Types.BOOLEAN:                 return forceCast(Boolean.class);
             case Types.TINYINT:                 if (!isByteUnsigned) return forceCast(Byte.class);  // else fallthrough.
@@ -54,18 +55,18 @@ public class ANSIMapping implements DialectMapping {
             case Types.DECIMAL:                 return forceCast(BigDecimal.class);
             case Types.CHAR:
             case Types.VARCHAR:
-            case Types.LONGVARCHAR:             return new ColumnAdapter<>(String.class, ResultSet::getString);
-            case Types.DATE:                    return new ColumnAdapter<>(Date.class, ResultSet::getDate);
-            case Types.TIME:                    return new ColumnAdapter<>(LocalTime.class, ANSIMapping::toLocalTime);
-            case Types.TIMESTAMP:               return new ColumnAdapter<>(Instant.class, ANSIMapping::toInstant);
-            case Types.TIME_WITH_TIMEZONE:      return new ColumnAdapter<>(OffsetTime.class, ANSIMapping::toOffsetTime);
-            case Types.TIMESTAMP_WITH_TIMEZONE: return new ColumnAdapter<>(OffsetDateTime.class, ANSIMapping::toODT);
+            case Types.LONGVARCHAR:             return new ColumnAdapter.Simple<>(String.class, ResultSet::getString);
+            case Types.DATE:                    return new ColumnAdapter.Simple<>(Date.class, ResultSet::getDate);
+            case Types.TIME:                    return new ColumnAdapter.Simple<>(LocalTime.class, ANSIMapping::toLocalTime);
+            case Types.TIMESTAMP:               return new ColumnAdapter.Simple<>(Instant.class, ANSIMapping::toInstant);
+            case Types.TIME_WITH_TIMEZONE:      return new ColumnAdapter.Simple<>(OffsetTime.class, ANSIMapping::toOffsetTime);
+            case Types.TIMESTAMP_WITH_TIMEZONE: return new ColumnAdapter.Simple<>(OffsetDateTime.class, ANSIMapping::toODT);
             case Types.BINARY:
             case Types.VARBINARY:
-            case Types.LONGVARBINARY:           return new ColumnAdapter<>(byte[].class, ResultSet::getBytes);
+            case Types.LONGVARBINARY:           return new ColumnAdapter.Simple<>(byte[].class, ResultSet::getBytes);
             case Types.ARRAY:                   return forceCast(Object[].class);
             case Types.OTHER:                   // Database-specific accessed via getObject and setObject.
-            case Types.JAVA_OBJECT:             return new ColumnAdapter<>(Object.class, ResultSet::getObject);
+            case Types.JAVA_OBJECT:             return new ColumnAdapter.Simple<>(Object.class, ResultSet::getObject);
             default:                            return null;
         }
     }
@@ -95,7 +96,7 @@ public class ANSIMapping implements DialectMapping {
     }
 
     private static <T> ColumnAdapter<T> forceCast(final Class<T> targetType) {
-        return new ColumnAdapter<>(targetType, (r, i) -> forceCast(targetType, r, i));
+        return new ColumnAdapter.Simple<>(targetType, (r, i) -> forceCast(targetType, r, i));
     }
 
     private static <T> T forceCast(final Class<T> targetType, ResultSet source, final Integer columnIndex) throws SQLException {

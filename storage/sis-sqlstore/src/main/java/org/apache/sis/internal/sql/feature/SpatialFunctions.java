@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.sql.feature;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -60,7 +61,7 @@ class SpatialFunctions {
     /**
      * Creates a new accessor to geospatial functions for the database described by given metadata.
      */
-    SpatialFunctions(final DatabaseMetaData metadata) throws SQLException {
+    SpatialFunctions(final Connection c, final DatabaseMetaData metadata) throws SQLException {
         /*
          * Get information about whether byte are unsigned.
          * According JDBC specification, the rows shall be ordered by DATA_TYPE.
@@ -83,7 +84,7 @@ class SpatialFunctions {
         library = null;
 
         final Dialect dialect = Dialect.guess(metadata);
-        specificMapping = forDialect(dialect);
+        specificMapping = forDialect(dialect, c);
         defaultMapping = new ANSIMapping(isByteUnsigned);
     }
 
@@ -96,14 +97,13 @@ class SpatialFunctions {
      * <p>The default implementation handles the types declared in {@link Types} class.
      * Subclasses should handle the geometry types declared by spatial extensions.</p>
      *
-     * @param  sqlType      SQL type code as one of {@link java.sql.Types} constants.
-     * @param  sqlTypeName  data source dependent type name. For User Defined Type (UDT) the name is fully qualified.
+     * @param  columnDefinition Definition of source database column, including its SQL type and type name.
      * @return corresponding java type, or {@code null} if unknown.
      */
     @SuppressWarnings("fallthrough")
-    protected ColumnAdapter<?> toJavaType(final int sqlType, final String sqlTypeName) {
-        return specificMapping.flatMap(dialect -> dialect.getMapping(sqlType, sqlTypeName))
-                .orElseGet(() -> defaultMapping.getMappingImpl(sqlType, sqlTypeName));
+    protected ColumnAdapter<?> toJavaType(final SQLColumn columnDefinition) {
+        return specificMapping.flatMap(dialect -> dialect.getMapping(columnDefinition))
+                .orElseGet(() -> defaultMapping.getMappingImpl(columnDefinition));
     }
 
     /**
@@ -121,9 +121,9 @@ class SpatialFunctions {
         return null;
     }
 
-    static Optional<DialectMapping> forDialect(final Dialect dialect) {
+    static Optional<DialectMapping> forDialect(final Dialect dialect, Connection c) throws SQLException {
         switch (dialect) {
-            case POSTGRESQL: return Optional.of(new PostGISMapping());
+            case POSTGRESQL: return new PostGISMapping.Spi().create(c);
             default: return Optional.empty();
         }
     }

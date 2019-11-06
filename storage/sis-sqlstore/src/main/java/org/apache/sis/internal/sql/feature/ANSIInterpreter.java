@@ -184,7 +184,7 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
     public Object visit(BBOX filter, Object extraData) {
         // TODO: This is a wrong interpretation, but sqlmm has no equivalent of filter encoding bbox, so we'll
         // fallback on a standard intersection. However, PostGIS, H2, etc. have their own versions of such filters.
-        return function("ST_Intersects(", filter, extraData);
+        return function("ST_Intersects", filter, extraData);
     }
 
     @Override

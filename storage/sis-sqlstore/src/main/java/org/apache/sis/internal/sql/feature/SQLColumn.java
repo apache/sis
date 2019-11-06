@@ -1,58 +1,58 @@
 package org.apache.sis.internal.sql.feature;
 
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSetMetaData;
-import java.util.Optional;
+import java.sql.Types;
 
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.internal.metadata.sql.Reflection;
 
+/**
+ * A simple POJO to hold information about an SQL column. This mainly represents information extracted from
+ * {@link DatabaseMetaData#getColumns(String, String, String, String) database metadata}.
+ * Note that for now, only a few selected information are represented. If needed, new fields could be added if needed.
+ * The aim is to describe as well as possible all SQL related information about a column, to allow mapping to feature
+ * model as accurate as possible.
+ */
 class SQLColumn {
+
+    /**
+     * Value type as specified in {@link Types}
+     */
     final int type;
+    /**
+     * A name for the value type, free-text from the database engine. For more information about this, please see
+     * {@link DatabaseMetaData#getColumns(String, String, String, String)} and {@link Reflection#TYPE_NAME}.
+     */
     final String typeName;
-    private final boolean isNullable;
-    private final ColumnRef naming;
-    private final int precision;
+    final boolean isNullable;
+
+    /**
+     * Name of the column, optionally with an alias, in case of a query analysis.
+     */
+    final ColumnRef naming;
+
+    /**
+     * Same as {@link ResultSetMetaData#getPrecision(int)}. It will be 0 if unknown. For texts, it represents maximum
+     * number of characters allowed. For numbers, its maximum precision. For blobs, a limit in allowed number of bytes.
+     */
+    final int precision;
+
+    /**
+     * Optional. The table that contains this column. It could be null in case this column specification is done from
+     * query analysis.
+     */
+    final TableReference origin;
 
     SQLColumn(int type, String typeName, boolean isNullable, ColumnRef naming, int precision) {
+        this(type, typeName, isNullable, naming, precision, null);
+    }
+
+    SQLColumn(int type, String typeName, boolean isNullable, ColumnRef naming, int precision, TableReference origin) {
         this.type = type;
         this.typeName = typeName;
         this.isNullable = isNullable;
         this.naming = naming;
         this.precision = precision;
-    }
-
-    public ColumnRef getName() {
-        return naming;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public String getTypeName() {
-        return typeName;
-    }
-
-    public boolean isNullable() {
-        return isNullable;
-    }
-
-    /**
-     * Same as {@link ResultSetMetaData#getPrecision(int)}.
-     * @return 0 if unknown. For texts, maximum number of characters allowed. For numerics, max precision. For blobs,
-     * number of bytes allowed.
-     */
-    public int getPrecision() {
-        return precision;
-    }
-
-    /**
-     * TODO: implement.
-     * Note : This method could be used not only for geometric fields, but also on numeric ones representing 1D
-     * systems.
-     *
-     * @return null for now, implementation needed.
-     */
-    public Optional<CoordinateReferenceSystem> getCrs() {
-        return Optional.empty();
+        this.origin = origin;
     }
 }
