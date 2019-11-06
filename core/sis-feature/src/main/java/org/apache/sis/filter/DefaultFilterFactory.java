@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.opengis.filter.*;
 import org.opengis.filter.capability.*;
