@@ -24,15 +24,19 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.Region;
+import javafx.geometry.Pos;
 import javafx.util.Callback;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.internal.gui.ExceptionReporter;
 
 
 /**
@@ -83,6 +87,14 @@ public class FeatureTable extends TableView<Feature> {
     }
 
     /**
+     * Returns the list where to add features.
+     * All methods on the returned list shall be invoked from JavaFX thread.
+     */
+    final FeatureList getFeatureList() {
+        return (FeatureList) getItems();
+    }
+
+    /**
      * Sets the features to show in this table. This method loads an arbitrary amount of
      * features in a background thread. It does not load all features if the feature set
      * is large, unless the user scroll down.
@@ -96,10 +108,11 @@ public class FeatureTable extends TableView<Feature> {
      * @param  features  the features to show in this table, or {@code null} if none.
      */
     public void setFeatures(final FeatureSet features) {
-        final FeatureList items = (FeatureList) getItems();
+        final FeatureList items = getFeatureList();
         if (!items.setFeatures(this, features)) {
             featureType = null;
             getColumns().clear();
+            setPlaceholder(null);
         }
     }
 
@@ -109,7 +122,8 @@ public class FeatureTable extends TableView<Feature> {
      * determined from the given type.
      */
     final void setFeatureType(final FeatureType type) {
-        ((FeatureList) getItems()).clearUnsafe();
+        setPlaceholder(null);
+        getFeatureList().clearUnsafe();
         if (type != null && !type.equals(featureType)) {
             final Collection<? extends PropertyType> properties = type.getProperties(true);
             final List<TableColumn<Feature,?>> columns = new ArrayList<>(properties.size());
@@ -177,7 +191,18 @@ public class FeatureTable extends TableView<Feature> {
      * This method returns immediately; the release of resources happens in a background thread.
      */
     public void interrupt() {
-        ((FeatureList) getItems()).interrupt();
+        getFeatureList().interrupt();
+    }
+
+    /**
+     * Replaces the table content by an exception message.
+     * This method is invoked after a loading process failed.
+     */
+    final void setException(final Throwable exception) {
+        getFeatureList().clearUnsafe();
+        final Region trace = new ExceptionReporter(exception).getView();
+        StackPane.setAlignment(trace, Pos.TOP_LEFT);
+        setPlaceholder(trace);
     }
 
     /**

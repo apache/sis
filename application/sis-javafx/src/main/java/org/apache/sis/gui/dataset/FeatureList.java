@@ -246,6 +246,9 @@ final class FeatureList extends ObservableListBase<Feature> {
      * If we can not load more features stop the reading process.
      *
      * @todo Add some message in the widget for warning the user.
+     *       Proposal: set MAXIMUM_ROWS to MAX_INTEGER - 1 and reserve the last table row for a message.
+     *       That row would span all columns. That row could also be used for exception message when the
+     *       exception did not happened at the file beginning.
      */
     private void checkOverflow() {
         if (validCount >= MAXIMUM_ROWS) {

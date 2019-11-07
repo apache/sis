@@ -23,6 +23,7 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DialogPane;
@@ -64,6 +65,7 @@ public final class ExceptionReporter implements EventHandler<ActionEvent> {
      */
     public ExceptionReporter(final Throwable exception) {
         trace = new Label(getStackTrace(exception));
+        trace.setAlignment(Pos.TOP_LEFT);
         trace.setPadding(MARGIN);
 
         final Resources localized = Resources.getInstance();

@@ -75,6 +75,9 @@ import org.apache.sis.internal.util.Strings;
  * of {@link DataStore}). There is not yet a mechanism for keeping it open if the resource is shared
  * by another {@link ResourceTree} instance.
  *
+ * @todo Listen to warnings and save log records in a separated collection for each data store.
+ *       Add to the contextual menu an option for viewing the log records of selected data store.
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

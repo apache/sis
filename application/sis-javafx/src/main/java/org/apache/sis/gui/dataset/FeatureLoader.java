@@ -194,7 +194,10 @@ final class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
         try {
             get();                            // Wait for the task to stop before to close the stream.
         } catch (InterruptedException | CancellationException e) {
-            // Someone does not want to let us wait before closing.
+            /*
+             * Someone does not want to let us wait before closing. But log the exception so that
+             * if a ClosedChannelException happens in another thread, we can understand why.
+             */
             FeatureTable.recoverableException("interrupt", e);
         } catch (ExecutionException e) {
             error = e.getCause();
@@ -215,21 +218,14 @@ final class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
     }
 
     /**
-     * Returns the list where to add features.
-     * All methods on the returned list shall be invoked from JavaFX thread.
-     */
-    private FeatureList destination() {
-        return (FeatureList) table.getItems();
-    }
-
-    /**
      * Invoked in JavaFX thread after new feature instances are ready.
      * This method adds the new rows in the table and prepares another
      * task for loading the next batch of features when needed.
      */
     @Override
     protected void succeeded() {
-        final FeatureList addTo = destination();
+        super.succeeded();
+        final FeatureList addTo = table.getFeatureList();
         if (addTo.isCurrentLoader(this)) {
             final boolean hasMore = getValue();
             if (initializer != null) {
@@ -256,14 +252,30 @@ final class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
 
     /**
      * Invoked in JavaFX thread when a loading process has been cancelled or failed.
-     * This method closes the {@link FeatureLoader} if it did not closed itself,
-     * then eventually shows the error in the table area.
      *
      * @see FeatureTable#interrupt()
      */
     @Override
     protected void cancelled() {
-        final FeatureList addTo = destination();
+        super.cancelled();
+        stop("cancelled");
+    }
+
+    /**
+     * Invoked in JavaFX thread when a loading process failed.
+     */
+    @Override
+    protected void failed() {
+        super.failed();
+        stop("failed");
+    }
+
+    /**
+     * Closes the {@link FeatureLoader} if it did not closed itself,
+     * then eventually shows the error in the table area.
+     */
+    private void stop(final String caller) {
+        final FeatureList addTo = table.getFeatureList();
         final boolean isCurrentLoader = addTo.isCurrentLoader(this);
         if (isCurrentLoader) {
             addTo.setNextPage(null);
@@ -285,20 +297,12 @@ final class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
         }
         if (exception != null) {
             if (isCurrentLoader) {
-                exception.printStackTrace();        // TODO: write somewhere in the widget.
+                table.setException(exception);
             } else {
                 // Since we moved to other data, not appropriate anymore for current widget.
-                FeatureTable.unexpectedException("cancelled", exception);
+                FeatureTable.unexpectedException(caller, exception);
             }
         }
-    }
-
-    /**
-     * Invoked in JavaFX thread when a loading process failed.
-     */
-    @Override
-    protected void failed() {
-        cancelled();
     }
 
     /**
