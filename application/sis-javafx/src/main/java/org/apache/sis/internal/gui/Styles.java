@@ -56,6 +56,11 @@ public final class Styles {
     public static final Color ERROR_TEXT = Color.RED;
 
     /**
+     * Color for header of expanded rows in {@link org.apache.sis.gui.dataset.FeatureTable}.
+     */
+    public static final Color EXPANDED_ROW = Color.GAINSBORO;
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Styles() {

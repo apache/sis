@@ -34,9 +34,10 @@ import org.apache.sis.util.ArraysExt;
  * When an element is requested, if that element has not yet been read, the reading is done
  * in a background thread.
  *
- * <p>This list is unmodifiable through public API. It can be modified only through package-private API.
- * This restriction exists for preventing uncontrolled modifications to introduce inconsistencies with
- * the modifications to be applied by the loader running in background thread.</p>
+ * <p>This list is unmodifiable through public API except for the {@link #clear()} method.
+ * This list should be modified only through package-private API.
+ * The intent is to prevents uncontrolled modifications to introduce inconsistencies
+ * with the modifications to be applied by the loader running in background thread.</p>
  *
  * <p>This list does not accept null elements; any attempt to add a null feature is silently ignored.
  * The null value is reserved for meaning that the element is in process of being loaded.</p>
@@ -61,9 +62,9 @@ final class FeatureList extends ObservableListBase<Feature> {
     private static final long NUM_PENDING_ROWS = 10;
 
     /**
-     * Maximum number of rows that this list will allow.
+     * Maximum number of rows that this list will allow. Must be smaller than {@link Integer#MAX_VALUE}.
      */
-    private static final int MAXIMUM_ROWS = Integer.MAX_VALUE;
+    private static final int MAXIMUM_ROWS = Integer.MAX_VALUE - 1;
 
     /**
      * The {@link #elements} value when this list is empty.
@@ -118,10 +119,13 @@ final class FeatureList extends ObservableListBase<Feature> {
     }
 
     /**
-     * Clears the content of this list. This method shall be invoked when no loader is running
-     * in a background thread, or when the loaded decided itself to invoke this method.
+     * Clears the content of this list. While this method can be invoked from public API,
+     * it should be reserved to {@link FeatureList} and {@link FeatureTable} internal usage.
+     * This method should be invoked only when no loader is running in a background thread,
+     * or when the loaded decided itself to invoke this method.
      */
-    final void clearUnsafe() {
+    @Override
+    public void clear() {
         final List<Feature> removed = validElements();
         elements = EMPTY;
         estimatedSize = 0;
@@ -140,7 +144,7 @@ final class FeatureList extends ObservableListBase<Feature> {
      * @param  features  the features to show in the table, or {@code null} if none.
      * @return whether a background process has been scheduled.
      */
-    final boolean setFeatures(final FeatureTable table, final FeatureSet features) {
+    final boolean startFeaturesLoading(final FeatureTable table, final FeatureSet features) {
         assert Platform.isFxApplicationThread();
         final FeatureLoader previous = nextPageLoader;
         if (previous != null) {
@@ -152,7 +156,7 @@ final class FeatureList extends ObservableListBase<Feature> {
             BackgroundThreads.execute(nextPageLoader);
             return true;
         } else {
-            clearUnsafe();
+            clear();
             return false;
         }
     }
@@ -236,7 +240,7 @@ final class FeatureList extends ObservableListBase<Feature> {
             }
             beginChange();
             nextReplace(validCount, replaceTo, removed);
-            nextAdd(replaceTo, validCount = newValidCount);
+            nextAdd(replaceTo, replaceTo + (validCount = newValidCount));
             endChange();
             checkOverflow();
         }
@@ -246,7 +250,7 @@ final class FeatureList extends ObservableListBase<Feature> {
      * If we can not load more features stop the reading process.
      *
      * @todo Add some message in the widget for warning the user.
-     *       Proposal: set MAXIMUM_ROWS to MAX_INTEGER - 1 and reserve the last table row for a message.
+     *       Proposal: set MAXIMUM_ROWS to MAX_INTEGER - 2 and reserve the last table row for a message.
      *       That row would span all columns. That row could also be used for exception message when the
      *       exception did not happened at the file beginning.
      */

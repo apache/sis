@@ -20,22 +20,28 @@ import java.util.Locale;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.value.ObservableValue;
+import javafx.scene.control.TableCell;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.Region;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.util.Callback;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.internal.gui.IdentityValueFactory;
 import org.apache.sis.internal.gui.ExceptionReporter;
 
 
@@ -47,6 +53,12 @@ import org.apache.sis.internal.gui.ExceptionReporter;
  *
  * <p>If this view is removed from scene graph, then {@link #interrupt()} should be called
  * for stopping any loading process that may be under progress.</p>
+ *
+ * @todo This class does not yet handle {@link FeatureAssociationRole}. We could handle them with
+ *       {@link javafx.scene.control.SplitPane} with the main feature table in the upper part and
+ *       the feature table of selected cell in the bottom part. Bottom part could put tables in a
+ *       {@link javafx.scene.control.Accordion} since there is possibly different tables to show
+ *       depending on the column of selected cell.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Smaniotto Enzo (GSoC)
@@ -81,7 +93,7 @@ public class FeatureTable extends TableView<Feature> {
     public FeatureTable() {
         textLocale = Locale.getDefault(Locale.Category.DISPLAY);
         dataLocale = Locale.getDefault(Locale.Category.FORMAT);
-        setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+        setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         setTableMenuButtonVisible(true);
         setItems(new FeatureList());
     }
@@ -91,7 +103,25 @@ public class FeatureTable extends TableView<Feature> {
      * All methods on the returned list shall be invoked from JavaFX thread.
      */
     final FeatureList getFeatureList() {
-        return (FeatureList) getItems();
+        final ObservableList<Feature> items = getItems();
+        if (items instanceof FeatureList) {
+            return (FeatureList) items;
+        } else {
+            return (FeatureList) ((ExpandableList) getItems()).getSource();
+        }
+    }
+
+    /**
+     * Returns the list where to add features when some properties may be multi-valued.
+     * This method wraps the {@link FeatureList} into an {@link ExpandableList} if needed.
+     */
+    private ExpandableList getExpandableList() {
+        final ObservableList<Feature> items = getItems();
+        if (items instanceof ExpandableList) {
+            return (ExpandableList) items;
+        } else {
+            return new ExpandableList((FeatureList) items);
+        }
     }
 
     /**
@@ -109,7 +139,7 @@ public class FeatureTable extends TableView<Feature> {
      */
     public void setFeatures(final FeatureSet features) {
         final FeatureList items = getFeatureList();
-        if (!items.setFeatures(this, features)) {
+        if (!items.startFeaturesLoading(this, features)) {
             featureType = null;
             getColumns().clear();
             setPlaceholder(null);
@@ -123,34 +153,85 @@ public class FeatureTable extends TableView<Feature> {
      */
     final void setFeatureType(final FeatureType type) {
         setPlaceholder(null);
-        getFeatureList().clearUnsafe();
+        getItems().clear();
         if (type != null && !type.equals(featureType)) {
             final Collection<? extends PropertyType> properties = type.getProperties(true);
             final List<TableColumn<Feature,?>> columns = new ArrayList<>(properties.size());
+            final List<String> multiValued = new ArrayList<>(columns.size());
             for (final PropertyType pt : properties) {
+                /*
+                 * Get localized text to show in column header. Also remember
+                 * the plain property name; it will be needed for ValueGetter.
+                 */
                 final String name = pt.getName().toString();
                 String title = string(pt.getDesignation());
                 if (title == null) {
                     title = string(pt.getName().toInternationalString());
                     if (title == null) title = name;
                 }
-                final TableColumn<Feature, Object> column = new TableColumn<>(title);
+                /*
+                 * If the property may contain more than one value, we will
+                 * need a specialized cell getter.
+                 *
+                 * TODO: we should also handle FeatureAssociationRole here.
+                 *       See comment in class javadoc.
+                 */
+                boolean isMultiValued = false;
+                if (pt instanceof AttributeType<?>) {
+                    isMultiValued = ((AttributeType<?>) pt).getMaximumOccurs() > 1;
+                }
+                if (isMultiValued) {
+                    multiValued.add(name);
+                }
+                /*
+                 * Create and configure the column. For multi-valued properties, ValueGetter always
+                 * gives the whole collection. Fetching a particular element in that collection will
+                 * be ElementCell's work.
+                 */
+                final TableColumn<Feature,Object> column = new TableColumn<>(title);
                 column.setCellValueFactory(new ValueGetter(name));
+                column.setCellFactory(isMultiValued ? ElementCell::new : ValueCell::new);
                 columns.add(column);
+            }
+            /*
+             * If there is at least one multi-valued property, insert a column which will contain
+             * an icon in front of rows having a property with more than one value.
+             */
+            if (multiValued.isEmpty()) {
+                setItems(getFeatureList());         // Will fire a change event only if the list is not the same.
+            } else {
+                final ExpandableList list = getExpandableList();
+                list.setMultivaluedColumns(multiValued);
+                final TableColumn<Feature,Feature> column = new TableColumn<>();
+                column.setCellValueFactory(IdentityValueFactory.instance());
+                column.setCellFactory(list);
+                column.setReorderable(false);
+                column.setSortable   (false);
+                column.setResizable  (false);
+                column.setMinWidth(20);
+                column.setMaxWidth(20);
+                columns.add(0, column);
+                setItems(list);
             }
             getColumns().setAll(columns);       // Change columns in an all or nothing operation.
         }
         featureType = type;
     }
 
+
+
+
     /**
-     * Fetch values to show in the table cells.
+     * Given a {@link Feature}, returns the value of the property having the name specified at construction time.
+     * Note that if the property is multi-valued, then this getter returns the whole collection since we have no
+     * easy way to know the current row number. Fetching a particular element in that collection will be done by
+     * {@link ExpandedFeature}.
      */
     private static final class ValueGetter implements Callback<TableColumn.CellDataFeatures<Feature,Object>, ObservableValue<Object>> {
         /**
          * The name of the feature property for which to fetch values.
          */
-        final String name;
+        private final String name;
 
         /**
          * Creates a new getter of property values.
@@ -163,7 +244,7 @@ public class FeatureTable extends TableView<Feature> {
 
         /**
          * Returns the value of the feature property wrapped by the given argument.
-         * This method is invoked by JavaFX when a new cell needs to be rendered.
+         * This method is invoked by JavaFX when a cell needs to be rendered with a new value.
          */
         @Override
         public ObservableValue<Object> call(final TableColumn.CellDataFeatures<Feature, Object> cell) {
@@ -171,11 +252,68 @@ public class FeatureTable extends TableView<Feature> {
             final Feature feature = cell.getValue();
             if (feature != null) {
                 value = feature.getPropertyValue(name);
-                if (value instanceof Collection<?>) {
-                    value = "collection";               // TODO
-                }
             }
             return new ReadOnlyObjectWrapper<>(value);
+        }
+    }
+
+    /**
+     * A cell displaying a value in {@link FeatureTable}. This base class expects single values.
+     * If the property values are collections, then {@link ElementCell} should be used instead.
+     */
+    private static class ValueCell extends TableCell<Feature,Object> {
+        /**
+         * Creates a new cell for feature property value.
+         *
+         * @param  column  the column where the cell will be shown.
+         */
+        ValueCell(final TableColumn<Feature,Object> column) {
+            // Column not used at this time, but we need it in method signature.
+        }
+
+        /**
+         * Invoked when a new value needs to be show.
+         *
+         * @todo Needs to check for object type (number, date, etc.).
+         */
+        @Override
+        protected void updateItem(final Object value, final boolean empty) {
+            if (value == getItem()) return;
+            super.updateItem(value, empty);
+            String text = null;
+            if (value != null) {
+                text = value.toString();
+            }
+            setText(text);
+        }
+    }
+
+    /**
+     * Fetch single elements from multi-valued properties.
+     */
+    private static final class ElementCell extends ValueCell {
+        /**
+         * Creates a new cell for multi-values feature property value.
+         *
+         * @param  column  the column where the cell will be shown.
+         */
+        ElementCell(final TableColumn<Feature,Object> column) {
+            super(column);
+        }
+
+        /**
+         * Invoked when a new value needs to be show.
+         */
+        @Override
+        protected void updateItem(Object value, final boolean empty) {
+            if (value instanceof List<?>) {
+                final List<?> c = (List<?>) value;
+                value = c.isEmpty() ? null : c.get(0);
+            } else if (value instanceof Iterable<?>) {
+                final Iterator<?> c = ((Iterable<?>) value).iterator();
+                value = c.hasNext() ? c.next() : null;
+            }
+            super.updateItem(value, empty);
         }
     }
 
@@ -187,7 +325,7 @@ public class FeatureTable extends TableView<Feature> {
     }
 
     /**
-     * If a loading process was under way, interrupts it and close the feature stream.
+     * If a loading process was under way, interrupts it and closes the feature stream.
      * This method returns immediately; the release of resources happens in a background thread.
      */
     public void interrupt() {
@@ -199,7 +337,7 @@ public class FeatureTable extends TableView<Feature> {
      * This method is invoked after a loading process failed.
      */
     final void setException(final Throwable exception) {
-        getFeatureList().clearUnsafe();
+        getItems().clear();
         final Region trace = new ExceptionReporter(exception).getView();
         StackPane.setAlignment(trace, Pos.TOP_LEFT);
         setPlaceholder(trace);
