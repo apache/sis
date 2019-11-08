@@ -16,8 +16,6 @@
  */
 package org.apache.sis.gui.metadata;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Collection;
@@ -40,16 +38,15 @@ import javafx.scene.layout.VBox;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.ControlledVocabulary;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -315,17 +312,8 @@ public class MetadataSummary {
     static Image getWorldMap() {
         assert Platform.isFxApplicationThread();
         if (!worldMapLoaded) {
-            worldMapLoaded = true;                  // Set now for avoiding retries in case of failure.
-            Exception error;
-            try (InputStream in = MetadataSummary.class.getResourceAsStream("WorldMap360x180.png")) {
-                worldMap = new Image(in);
-                error = worldMap.getException();
-            } catch (IOException e) {
-                error = e;
-            }
-            if (error != null) {
-                Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), MetadataSummary.class, "getWorldMap", error);
-            }
+            worldMapLoaded = true;              // Set now for avoiding retries in case of failure.
+            worldMap = Styles.loadIcon(MetadataSummary.class, "getWorldMap", "WorldMap360x180.png");
         }
         return worldMap;
     }

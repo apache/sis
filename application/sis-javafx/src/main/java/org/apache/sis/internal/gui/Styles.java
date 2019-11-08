@@ -16,7 +16,12 @@
  */
 package org.apache.sis.internal.gui;
 
+import java.io.IOException;
+import java.io.InputStream;
 import javafx.scene.paint.Color;
+import javafx.scene.image.Image;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Modules;
 
 
 /**
@@ -54,5 +59,30 @@ public final class Styles {
      * Do not allow instantiation of this class.
      */
     private Styles() {
+    }
+
+    /**
+     * Loads an image of the given name.
+     * This method should be used only for relatively small images.
+     *
+     * @param  caller  class to use for fetching resource. Also used for logging.
+     * @param  method  the method invoking this method. Used only in case of logging.
+     * @param  file    filename of the image to load.
+     * @return the image, or {@code null} if the operation failed.
+     */
+    public static Image loadIcon(final Class<?> caller, final String method, final String file) {
+        Image image;
+        Exception error;
+        try (InputStream in = caller.getResourceAsStream(file)) {
+            image = new Image(in);
+            error = image.getException();
+        } catch (IOException e) {
+            image = null;
+            error = e;
+        }
+        if (error != null) {
+            Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), caller, method, error);
+        }
+        return image;
     }
 }

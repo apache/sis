@@ -415,7 +415,7 @@ public class ResourceTree extends TreeView<Resource> {
         }
 
         /**
-         * Invoked when a new resource need to be shown in the tree view.
+         * Invoked when a new resource needs to be shown in the tree view.
          * This method sets the text to a title that describe the resource.
          *
          * @param resource  the resource to show.
