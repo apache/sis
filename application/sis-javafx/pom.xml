@@ -95,7 +95,7 @@
           <release>13</release>
           <compilerArgs>
             <arg>--module-path</arg> <arg>${env.PATH_TO_FX}</arg>
-            <arg>--add-modules</arg> <arg>javafx.graphics,javafx.controls,javafx.fxml,javafx.swing</arg>
+            <arg>--add-modules</arg> <arg>javafx.graphics,javafx.controls</arg>
           </compilerArgs>
         </configuration>
       </plugin>

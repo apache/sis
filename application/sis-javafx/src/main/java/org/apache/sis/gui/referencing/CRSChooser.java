@@ -16,22 +16,28 @@
  */
 package org.apache.sis.gui.referencing;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import javafx.beans.property.ObjectProperty;
+import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Locale;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
+import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.referencing.CRS;
 
 
 /**
@@ -39,84 +45,141 @@ import org.apache.sis.internal.gui.Resources;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
-public class CRSChooser extends BorderPane {
-
-    @FXML
-    private BorderPane uiPane;
-
-    @FXML
-    private TextField uiSearch;
-
-    private CRSTable uiTable;
-
-    private final ObjectProperty<CoordinateReferenceSystem> crsProperty = new SimpleObjectProperty<>();
-    private boolean updateText;
-
+public class CRSChooser {
     /**
-     * Create a new CRSChooser with no {@link CoordinateReferenceSystem} defined.
+     * The preferred locale of CRS descriptions.
      */
-    public CRSChooser() {
-        try {
-            loadJRXML(this, CRSChooser.class);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        uiSearch.addEventHandler(KeyEvent.KEY_PRESSED, (KeyEvent event) -> {
-            if (!updateText) {
-                uiTable.searchCRS(uiSearch.getText());
-            }
-        });
-
-        uiTable = new CRSTable();
-        uiPane.setCenter(uiTable);
-
-        uiTable.crsProperty().bindBidirectional(crsProperty);
-
-        crsProperty.addListener((ObservableValue<? extends CoordinateReferenceSystem> observable,
-                              CoordinateReferenceSystem oldValue, CoordinateReferenceSystem newValue) -> {
-            uiTable.crsProperty().set(newValue);
-            if (newValue != null) {
-                updateText = true;
-                uiSearch.setText(newValue.getName().toString());
-                updateText = false;
-            }
-        });
-    }
+    private final Locale locale;
 
     /**
-     * Loads and initializes widget from JRXML definition provided in this module.
-     * The JRXML file shall be in the same package than the given {@code loader} class
-     * and have the same simple name followed by the {@code ".fxml"} extension.
+     * The pane where the controls for this CRS chooser will be put.
+     */
+    final BorderPane content;
+
+    /**
+     * The text field where user can enter a fragment of the name of the CRS (s)he is looking for.
+     */
+    private final TextField searchField;
+
+    /**
+     * The table showing CRS names together with their codes.
+     */
+    private final TableView<Code> table;
+
+    /**
+     * Creates chooser proposing all coordinate reference systems from the given factory.
      *
-     * @param  target  the widget for which to load the JRXML file.
-     * @param  loader  the class to use for loading the file.
-     * @throws IOException if an error occurred while loading the JRXML file.
+     * @param  factory  the factory to use for creating coordinate reference systems, or {@code null}
+     *                  for the {@linkplain CRS#getAuthorityFactory(String) Apache SIS default factory}.
      */
-    private static void loadJRXML(final Parent target, final Class<?> loader) throws IOException {
-        final FXMLLoader fxl = new FXMLLoader(loader.getResource(loader.getSimpleName() + ".fxml"), Resources.getInstance());
-        fxl.setRoot(target);
-        fxl.setController(target);
+    public CRSChooser(final CRSAuthorityFactory factory) {
+        locale = Locale.getDefault();
+        table  = new TableView<>();
         /*
-         * In some environements like OSGi, we must use the class loader of the widget
-         * (not the class loader of FXMLLoader).
+         * Loading of all CRS codes may take about one second.
+         * Following put an animation will the CRS are loading.
+         *
+         * TODO: use deferred loading instead.
          */
-        fxl.setClassLoader(loader.getClassLoader());
-        fxl.load();
+        final ProgressIndicator loading = new ProgressIndicator();
+        loading.setMaxWidth(60);
+        loading.setMaxHeight(60);
+        loading.setProgress(-1);
+        table.setPlaceholder(loading);
+
+        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final TableColumn<Code,String> names = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Name));
+        final TableColumn<Code,String> codes = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Code));
+        codes.setPrefWidth(150);
+        codes.setCellValueFactory((TableColumn.CellDataFeatures<Code,String> p) -> new SimpleObjectProperty<>(p.getValue().code));
+        names.setCellValueFactory((TableColumn.CellDataFeatures<Code,String> p) -> new SimpleObjectProperty<>(p.getValue().name(locale)));
+
+        table.getColumns().setAll(names, codes);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.setTableMenuButtonVisible(false);
+
+        content = new BorderPane();
+        searchField = new TextField();
+        searchField.addEventHandler(KeyEvent.KEY_PRESSED, (KeyEvent event) -> {
+            searchCRS(searchField.getText());
+        });
+        content.setCenter(table);
+
+        BackgroundThreads.execute(new Loader(factory));
+    }
+
+    private final class Loader extends Task<List<Code>> {
+        private CRSAuthorityFactory factory;
+
+        Loader(final CRSAuthorityFactory factory) {
+            this.factory = factory;
+        }
+
+        @Override
+        protected List<Code> call() throws Exception {
+            if (factory == null) {
+                factory = CRS.getAuthorityFactory(null);
+            }
+            final Set<String> strs = factory.getAuthorityCodes(CoordinateReferenceSystem.class);
+            final List<Code> codes = new ArrayList<>();
+            for (final String code : strs) {
+                codes.add(new Code(factory, code));
+            }
+            return codes;
+        }
+
+        @Override
+        protected void succeeded() {
+            table.setItems(FXCollections.observableArrayList(getValue()));
+            table.setPlaceholder(new Label(""));
+        }
+
+        @Override
+        protected void failed() {
+            error(getException());
+        }
+    }
+
+    public void searchCRS(final String searchword){
+        filter(searchword);
+    }
+
+    private static void error(final Throwable e) {
+        // TODO
     }
 
     /**
-     * Returns the property containing the edited {@link CoordinateReferenceSystem}.
-     * This property can be modified and will send events.
-     * It can be used with JavaFx binding operations.
+     * Display only the CRS name that contains the specified keywords. The {@code keywords}
+     * argument is a space-separated list, usually provided by the user after he pressed the
+     * "Search" button.
      *
-     * @return Property containing the edited {@link CoordinateReferenceSystem}
+     * @param keywords space-separated list of keywords to look for.
      */
-    public ObjectProperty<CoordinateReferenceSystem> crsProperty(){
-        return crsProperty;
+    private void filter(String keywords) {
+        final List<Code> allValues = table.getItems();
+        List<Code> model = allValues;
+        if (keywords != null) {
+            keywords = keywords.toLowerCase(locale).trim();
+            final String[] tokens = keywords.split("\\s+");
+            if (tokens.length != 0) {
+                model = new ArrayList<>();
+                scan:
+                for (Code code : allValues) {
+                    final String name = code.toString().toLowerCase(locale);
+                    for (int j=0; j<tokens.length; j++) {
+                        if (!name.contains(tokens[j])) {
+                            continue scan;
+                        }
+                    }
+                    model.add(code);
+                }
+            }
+        }
+        table.getItems().setAll(model);
     }
 
     /**
@@ -127,14 +190,14 @@ public class CRSChooser extends BorderPane {
      * @return modified {@link CoordinateReferenceSystem}.
      */
     public static CoordinateReferenceSystem showDialog(Object parent, CoordinateReferenceSystem crs) {
-        final CRSChooser chooser = new CRSChooser();
-        chooser.crsProperty.set(crs);
+        final CRSChooser chooser = new CRSChooser(null);
+//        chooser.crsProperty.set(crs);
         final Alert alert = new Alert(Alert.AlertType.NONE);
         final DialogPane pane = alert.getDialogPane();
-        pane.setContent(chooser);
+        pane.setContent(chooser.content);
         alert.getButtonTypes().setAll(ButtonType.OK,ButtonType.CANCEL);
         alert.setResizable(true);
         final ButtonType res = alert.showAndWait().orElse(ButtonType.CANCEL);
-        return res == ButtonType.CANCEL ? null : chooser.crsProperty.get();
+        return null;//res == ButtonType.CANCEL ? null : chooser.crsProperty.get();
     }
 }
