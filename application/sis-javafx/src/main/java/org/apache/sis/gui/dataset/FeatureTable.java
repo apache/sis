@@ -26,7 +26,10 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TableCell;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.Region;
+import javafx.beans.DefaultProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -54,6 +57,13 @@ import org.apache.sis.internal.gui.ExceptionReporter;
  * <p>If this view is removed from scene graph, then {@link #interrupt()} should be called
  * for stopping any loading process that may be under progress.</p>
  *
+ * <h2>Limitations</h2>
+ * <ul>
+ *   <li>The {@link #itemsProperty() itemsProperty} should be considered read-only.
+ *       For changing content, use the {@link #featuresProperty} instead.</li>
+ *   <li>The list returned by {@link #getItems()} should be considered read-only.</li>
+ * </ul>
+ *
  * @todo This class does not yet handle {@link FeatureAssociationRole}. We could handle them with
  *       {@link javafx.scene.control.SplitPane} with the main feature table in the upper part and
  *       the feature table of selected cell in the bottom part. Bottom part could put tables in a
@@ -67,6 +77,7 @@ import org.apache.sis.internal.gui.ExceptionReporter;
  * @since   1.1
  * @module
  */
+@DefaultProperty("features")
 public class FeatureTable extends TableView<Feature> {
     /**
      * The locale to use for texts.
@@ -88,11 +99,23 @@ public class FeatureTable extends TableView<Feature> {
     private FeatureType featureType;
 
     /**
+     * The data shown in this table. Note that setting this property to a non-null value
+     * does not modify the table content immediately. Instead, a background process will
+     * load the feature instances.
+     *
+     * @see #getFeatures()
+     * @see #setFeatures(FeatureSet)
+     */
+    public final ObjectProperty<FeatureSet> featuresProperty;
+
+    /**
      * Creates an initially empty table.
      */
     public FeatureTable() {
-        textLocale = Locale.getDefault(Locale.Category.DISPLAY);
-        dataLocale = Locale.getDefault(Locale.Category.FORMAT);
+        textLocale       = Locale.getDefault(Locale.Category.DISPLAY);
+        dataLocale       = Locale.getDefault(Locale.Category.FORMAT);
+        featuresProperty = new SimpleObjectProperty<>(this, "features");
+        featuresProperty.addListener(this::startFeaturesLoading);
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         setTableMenuButtonVisible(true);
         setItems(new FeatureList());
@@ -125,6 +148,17 @@ public class FeatureTable extends TableView<Feature> {
     }
 
     /**
+     * Returns the source of features for this table.
+     *
+     * @return the features shown in this table, or {@code null} if none.
+     *
+     * @see #featuresProperty
+     */
+    public final FeatureSet getFeatures() {
+        return featuresProperty.get();
+    }
+
+    /**
      * Sets the features to show in this table. This method loads an arbitrary amount of
      * features in a background thread. It does not load all features if the feature set
      * is large, unless the user scroll down.
@@ -136,8 +170,20 @@ public class FeatureTable extends TableView<Feature> {
      * The modifications will appear at an undetermined amount of time later.</p>
      *
      * @param  features  the features to show in this table, or {@code null} if none.
+     *
+     * @see #featuresProperty
      */
-    public void setFeatures(final FeatureSet features) {
+    public final void setFeatures(final FeatureSet features) {
+        featuresProperty.set(features);
+    }
+
+    /**
+     * Invoked (indirectly) when the user sets a new {@link FeatureSet}.
+     * See {@link #setFeatures(FeatureSet)} for method description.
+     */
+    private void startFeaturesLoading(final ObservableValue<? extends FeatureSet> property,
+                                      final FeatureSet old, final FeatureSet features)
+    {
         final FeatureList items = getFeatureList();
         if (!items.startFeaturesLoading(this, features)) {
             featureType = null;

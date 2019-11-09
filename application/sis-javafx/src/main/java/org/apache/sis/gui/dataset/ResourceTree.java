@@ -71,9 +71,13 @@ import org.apache.sis.internal.util.Strings;
  * of "drag and drop" events. Users can drop files or URLs for opening data files.</p>
  *
  * <h2>Limitations</h2>
- * If the user selects "close" in the contextual menu, the resource if closed (if it is an instance
- * of {@link DataStore}). There is not yet a mechanism for keeping it open if the resource is shared
- * by another {@link ResourceTree} instance.
+ * <ul>
+ *   <li>The {@link #rootProperty() rootProperty} should be considered read-only.
+ *       For changing content, use the {@link #setResource(Resource)} instead.</li>
+ *   <li>If the user selects "close" in the contextual menu, the resource is closed (if it is an instance
+ *       of {@link DataStore}). There is not yet a mechanism for keeping it open if the resource is shared
+ *       by another {@link ResourceTree} instance.</li>
+ * </ul>
  *
  * @todo Listen to warnings and save log records in a separated collection for each data store.
  *       Add to the contextual menu an option for viewing the log records of selected data store.

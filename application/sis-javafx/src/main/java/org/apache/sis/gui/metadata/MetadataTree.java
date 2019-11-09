@@ -54,8 +54,14 @@ import org.apache.sis.util.iso.Types;
  *   <li>{@link TableColumn#VALUE} — the property value typically as a string, number or date.</li>
  * </ul>
  *
- * <p>While this view is designed mostly for metadata, it can actually be used
- * for other kinds of data provided by the {@link TreeTable} interface.</p>
+ * While this view is designed mostly for metadata, it can actually be used
+ * for other kinds of data provided by the {@link TreeTable} interface.
+ *
+ * <h2>Limitations</h2>
+ * <ul>
+ *   <li>The {@link #rootProperty() rootProperty} should be considered read-only.
+ *       For changing content, use the {@link #contentProperty} instead.</li>
+ * </ul>
  *
  * @todo Add contextual menu for saving or copying in clipboard the XML starting from the selected node.
  *       Add contextual menu for showing a node in the summary pane (we would store in memory the path,
