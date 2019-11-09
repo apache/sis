@@ -321,6 +321,15 @@ public class FeatureTable extends TableView<Feature> {
          * Invoked when a new value needs to be show.
          *
          * @todo Needs to check for object type (number, date, etc.).
+         *       Should share with {@link org.apache.sis.gui.metadata.MetadataTree}.
+         *
+         * @todo For points, use {@link TableColumn#getColumns() nested columns} (one per dimension)
+         *       with labels fetched from the CRS. For geometries, consider expanding points as we do
+         *       for collections.
+         *
+         * @todo For {@link ValueCell} only (not {@link ElementCell}), if the feature is {@link ExpandedFeature}
+         *       with {@code index != 0}, write text in gray. We could also use the value formatted at index 0
+         *       for avoiding to format the same thing many times.
          */
         @Override
         protected void updateItem(final Object value, final boolean empty) {
