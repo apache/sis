@@ -82,7 +82,7 @@
  * @author  Jody Garnett (Refractions)
  * @author  Didier Richard (IGN)
  * @author  John Grange
- * @version 1.0
+ * @version 1.1
  *
  * @see org.apache.sis.metadata.sql
  *

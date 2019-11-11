@@ -112,13 +112,13 @@ public class FeatureTable extends TableView<Feature> {
      * Creates an initially empty table.
      */
     public FeatureTable() {
+        super(new FeatureList());
         textLocale       = Locale.getDefault(Locale.Category.DISPLAY);
         dataLocale       = Locale.getDefault(Locale.Category.FORMAT);
         featuresProperty = new SimpleObjectProperty<>(this, "features");
         featuresProperty.addListener(this::startFeaturesLoading);
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         setTableMenuButtonVisible(true);
-        setItems(new FeatureList());
     }
 
     /**

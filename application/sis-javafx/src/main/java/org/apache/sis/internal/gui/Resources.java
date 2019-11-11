@@ -146,6 +146,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short File = 10;
 
         /**
+         * Filter:
+         */
+        public static final short Filter = 34;
+
+        /**
          * Geospatial data files
          */
         public static final short GeospatialFiles = 4;

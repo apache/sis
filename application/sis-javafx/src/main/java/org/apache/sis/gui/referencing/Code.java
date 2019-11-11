@@ -16,16 +16,15 @@
  */
 package org.apache.sis.gui.referencing;
 
-import java.util.Locale;
-import org.opengis.util.FactoryException;
-import org.opengis.referencing.crs.CRSAuthorityFactory;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.util.Exceptions;
+import javafx.geometry.Pos;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import org.apache.sis.internal.gui.Styles;
 
 
 /**
- * Stores the code of a coordinate reference system (CRS) together with its description.
- * The description will be fetched when first needed and returned by {@link #toString()}.
+ * Stores the code of a coordinate reference system (CRS) together with its name or description.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -36,56 +35,77 @@ import org.apache.sis.util.Exceptions;
 final class Code {
     /**
      * The CRS code. Usually defined by EPSG, but other authorities are allowed.
+     * This is the value returned by {@link #toString()}.
      */
     final String code;
 
     /**
-     * The CRS object name for the {@linkplain #code}, fetched when first needed.
+     * The CRS object description for the {@linkplain #code}.
      * In Apache SIS implementation of EPSG factory, this is the CRS name.
      */
-    private String name;
-
-    /**
-     * The object returned by {@link #crs()}, cached for reuse.
-     */
-    private CoordinateReferenceSystem crs;
-
-    /**
-     * The authority factory to use for fetching the name.
-     */
-    private final CRSAuthorityFactory factory;
+    private ReadOnlyStringWrapper name;
 
     /**
      * Creates a code from the specified value.
      */
-    Code(final CRSAuthorityFactory factory, final String code) {
-        this.factory = factory;
-        this.code    = code;
+    Code(final String code) {
+        this.code = code;
     }
 
     /**
-     * Creates the object identified by code.
+     * Returns the property where to store the name or description of this authority code.
      */
-    CoordinateReferenceSystem crs() throws FactoryException {
-        if (crs == null) {
-            crs = factory.createCoordinateReferenceSystem(code);
-        }
-        return crs;
-    }
-
-    /**
-     * Returns a description of the object. This method fetches the description when first needed.
-     * If the operation fails, the exception message will be used as a description.
-     *
-     * @param  locale  the desired locale, or {@code null} for the default locale.
-     * @return the object name in the given locale if possible.
-     */
-    String name(final Locale locale) {
-        if (name == null) try {
-            name = factory.getDescriptionText(code).toString(locale);
-        } catch (FactoryException e) {
-            name = Exceptions.getLocalizedMessage(e, locale);
+    final ReadOnlyStringWrapper name() {
+        if (name == null) {
+            name = new ReadOnlyStringWrapper();
         }
         return name;
+    }
+
+    /**
+     * Returns {@link #code}. This behavior is required for {@link CRSChooser} since it
+     * will invoke {@link Object#toString()} directly for the column of authority codes.
+     */
+    @Override
+    public String toString() {
+        return code;
+    }
+
+    /*
+     * Do not override equals(Object) and hashCode(). We rely on identity comparisons
+     * when using this object as keys in HashMap.
+     */
+
+    /**
+     * A cell displaying a code value.
+     */
+    static final class Cell extends TableCell<Code,Code> {
+        /**
+         * Creates a new cell for feature property value.
+         *
+         * @param  column  the column where the cell will be shown.
+         */
+        Cell(final TableColumn<Code,Code> column) {
+            // Column not used at this time, but we need it in method signature.
+            setAlignment(Pos.BASELINE_RIGHT);
+            setTextFill(Styles.CODE_TEXT);
+        }
+
+        /**
+         * Invoked when a new value needs to be show.
+         *
+         * @todo I didn't found how to get white text color when the row is selected.
+         *       Current color (blue~gray on blue) is hard to read.
+         */
+        @Override
+        protected void updateItem(final Code value, final boolean empty) {
+            if (value == getItem()) return;
+            super.updateItem(value, empty);
+            String text = null;
+            if (value != null) {
+                text = value.toString();
+            }
+            setText(text);
+        }
     }
 }

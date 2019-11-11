@@ -103,6 +103,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -156,7 +157,7 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
  * @author  Matthias Basler
  * @author  Andrea Aime (TOPP)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
@@ -529,6 +530,14 @@ addURIs:    for (int i=0; ; i++) {
 
     /**
      * Returns a map of EPSG authority codes as keys and object names as values.
+     * The cautions documented in {@link #getAuthorityCodes(Class)} apply also to this map.
+     *
+     * @todo We may need to give some public access to this map if callers need descriptions
+     *       for other kinds of object than CRS. Current {@link #getDescriptionText(String)}
+     *       implementation selects CRS if the same code is used by many kinds of objects.
+     *
+     * @see #getAuthorityCodes(Class)
+     * @see #getDescriptionText(String)
      */
     private synchronized Map<String,String> getCodeMap(final Class<?> type) throws SQLException {
         CloseableReference<AuthorityCodes> reference = authorityCodes.get(type);
@@ -625,6 +634,8 @@ addURIs:    for (int i=0; ; i++) {
             }
         } catch (SQLException exception) {
             throw new FactoryException(exception.getLocalizedMessage(), exception);
+        } catch (BackingStoreException exception) {       // Cause is SQLException.
+            throw new FactoryException(exception.getLocalizedMessage(), exception.getCause());
         }
         throw noSuchAuthorityCode(IdentifiedObject.class, code);
     }

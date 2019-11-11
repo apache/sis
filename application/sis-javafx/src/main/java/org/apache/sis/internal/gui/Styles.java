@@ -51,6 +51,11 @@ public final class Styles {
     public static final Color LOADING_TEXT = Color.BLUE;
 
     /**
+     * Color of text for authority codes.
+     */
+    public static final Color CODE_TEXT = Color.LIGHTSLATEGREY;
+
+    /**
      * Color of text shown in place of data that we failed to load.
      */
     public static final Color ERROR_TEXT = Color.RED;
