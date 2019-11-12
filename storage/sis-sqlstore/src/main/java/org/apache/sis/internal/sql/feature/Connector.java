@@ -9,7 +9,8 @@ import org.opengis.feature.Feature;
 import org.apache.sis.storage.DataStoreException;
 
 /**
- * Simple abstraction to describe a component capable of loading data from an SQL connection. Used
+ * Simple abstraction to describe a component capable of loading data from an SQL connection. Used for subsetting SQL
+ * related feature sets.
  */
 interface Connector {
     /**

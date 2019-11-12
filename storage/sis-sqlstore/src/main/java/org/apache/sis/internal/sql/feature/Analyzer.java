@@ -333,14 +333,40 @@ final class Analyzer {
         return tables.values();
     }
 
+    /**
+     * Performs a simple analysis of given table to find its attributes and constraints.
+     *
+     * @param table The table to analyze.
+     * @param importedBy If this analysis is caused by another table analysis (foreign key between tables), it can be
+     *                   specified here. It will serve to deactivate constraints from the table to analyze and this one,
+     *                   to avoid cyclic associations.
+     * @return Table metadata, never null.
+     * @throws SQLException If something goes wrong while contacting database (fetching table metadata).
+     */
     public SQLTypeSpecification create(final TableReference table, final TableReference importedBy) throws SQLException {
         return new TableMetadata(table, importedBy);
     }
 
-    public SQLTypeSpecification create(final PreparedStatement target, final String sourceQuery, final GenericName optName) throws SQLException {
-        return new QuerySpecification(target, sourceQuery, optName);
+    /**
+     * Analyze given SQL query to find what columns are returned.
+     * @param target The statement defining the query to analyze.
+     * @param definition An optional definition (free-text) to describe this statement. This typically can be text
+     *                   representation of user query.
+     * @param optName A name to identify the query. Can be null.
+     * @return Metadata of input statement, never null.
+     * @throws SQLException If something goes wrong while contacting database to fetch statement metadata.
+     */
+    public SQLTypeSpecification create(final PreparedStatement target, final String definition, final GenericName optName) throws SQLException {
+        return new QuerySpecification(target, definition, optName);
     }
 
+    /**
+     * Creates a component in charge of mapping information between JDBC data and Feature model.
+     * @param spec The SQL metadata which will serve to infer Feature model mappings. Mandatory.
+     * @return A mapping layer above SQL information. Never null.
+     * @throws SQLException If we fail querying some additional metadata from database. Especially, we need to ask
+     * database for some relation information.
+     */
     public FeatureAdapter buildAdapter(final SQLTypeSpecification spec) throws SQLException {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder(nameFactory, functions.library, locale);
         builder.setName(spec.getName().orElseGet(RANDOME_NAME));
@@ -563,16 +589,16 @@ final class Analyzer {
         final int total;
         final PreparedStatement source;
         private final ResultSetMetaData meta;
-        private final String query;
+        private final String definition;
         private final GenericName name;
 
         private final List<SQLColumn> columns;
 
-        public QuerySpecification(PreparedStatement source, String sourceQuery, GenericName optName) throws SQLException {
+        public QuerySpecification(PreparedStatement source, String definition, GenericName optName) throws SQLException {
             this.source = source;
             meta = source.getMetaData();
             total = meta.getColumnCount();
-            query = sourceQuery;
+            this.definition = definition;
             name = optName;
 
             final ArrayList<SQLColumn> tmpCols = new ArrayList<>(total);
@@ -602,7 +628,7 @@ final class Analyzer {
 
         @Override
         public Optional<String> getDefinition() throws SQLException {
-            return Optional.of(query);
+            return Optional.ofNullable(definition);
         }
 
         @Override

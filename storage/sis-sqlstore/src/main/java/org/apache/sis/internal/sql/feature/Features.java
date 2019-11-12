@@ -417,7 +417,6 @@ final class Features implements Spliterator<Feature> {
      */
     private boolean fetch(final Consumer<? super Feature> action, final boolean all) throws SQLException {
         while (result.next()) {
-            // TODO: give connection to adapter.
             final Feature feature = adapter.read(result);
             for (int i=0; i < dependencies.length; i++) {
                 final Features dependency = dependencies[i];

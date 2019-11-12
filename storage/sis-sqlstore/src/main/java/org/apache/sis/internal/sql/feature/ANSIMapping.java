@@ -14,7 +14,10 @@ import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
 
-public class ANSIMapping implements DialectMapping {
+/**
+ * Default JDBC mapping type, used as a fallback when no other database-specific mapping can handle value binding.
+ */
+class ANSIMapping implements DialectMapping {
 
     /**
      * Whether {@link Types#TINYINT} is an unsigned integer. Both conventions (-128 … 127 range and
@@ -23,7 +26,7 @@ public class ANSIMapping implements DialectMapping {
      */
     private final boolean isByteUnsigned;
 
-    public ANSIMapping(boolean isByteUnsigned) {
+    ANSIMapping(boolean isByteUnsigned) {
         this.isByteUnsigned = isByteUnsigned;
     }
 
@@ -40,7 +43,7 @@ public class ANSIMapping implements DialectMapping {
         return Optional.ofNullable(getMappingImpl(columnDefinition));
     }
 
-    public ColumnAdapter<?> getMappingImpl(SQLColumn columnDefinition) {
+    ColumnAdapter<?> getMappingImpl(SQLColumn columnDefinition) {
         switch (columnDefinition.type) {
             case Types.BIT:
             case Types.BOOLEAN:                 return forceCast(Boolean.class);
