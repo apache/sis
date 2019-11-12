@@ -54,8 +54,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * No case insensitive support of binary comparison is done.
  *
- * TODO: define a set of accepter property names, so any {@link PropertyName} filter refering to non pure SQL property
- * (like relations) will cause a failure.
+ * TODO: define a set of accepter property names (even better: link to {@link FeatureAdapter}), so any {@link PropertyName}
+ * filter refering to non pure SQL property (like relations) will cause a failure.
  *
  * @author Alexis Manin (Geomatys)
  */
@@ -184,6 +184,8 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
     public Object visit(BBOX filter, Object extraData) {
         // TODO: This is a wrong interpretation, but sqlmm has no equivalent of filter encoding bbox, so we'll
         // fallback on a standard intersection. However, PostGIS, H2, etc. have their own versions of such filters.
+        if (filter.getExpression1() == null || filter.getExpression2() == null)
+            throw new UnsupportedOperationException("Not supported yet : bbox over all geometric properties");
         return function("ST_Intersects", filter, extraData);
     }
 
@@ -212,7 +214,7 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
 
     @Override
     public Object visit(DWithin filter, Object extraData) {
-        // TODO: as for beyond, unit determination is a bit complicated.
+        // TODO: as for beyond filter above, unit determination is a bit complicated.
         throw new UnsupportedOperationException("Not yet: unit management to handle properly");
     }
 

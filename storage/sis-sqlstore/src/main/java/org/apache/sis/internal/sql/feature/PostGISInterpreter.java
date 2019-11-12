@@ -14,6 +14,8 @@ public class PostGISInterpreter extends ANSIInterpreter {
      */
     @Override
     public CharSequence visit(BBOX filter, Object extraData) {
+        if (filter.getExpression1() == null || filter.getExpression2() == null)
+            throw new UnsupportedOperationException("Not supported yet : bbox over all geometric properties");
         return join(filter, "&&", extraData);
     }
 }
