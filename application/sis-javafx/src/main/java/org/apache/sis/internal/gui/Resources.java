@@ -76,6 +76,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotClose_1 = 12;
 
         /**
+         * Can not create reference system “{0}”.
+         */
+        public static final short CanNotCreateCRS_1 = 35;
+
+        /**
          * Can not open “{0}”.
          */
         public static final short CanNotReadFile_1 = 5;
@@ -126,6 +131,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ErrorClosingFile = 13;
 
         /**
+         * Error creating reference system
+         */
+        public static final short ErrorCreatingCRS = 36;
+
+        /**
          * Error opening file
          */
         public static final short ErrorOpeningFile = 6;
@@ -149,6 +159,11 @@ public final class Resources extends IndexedResourceBundle {
          * Filter:
          */
         public static final short Filter = 34;
+
+        /**
+         * Format:
+         */
+        public static final short Format = 38;
 
         /**
          * Geospatial data files
@@ -204,6 +219,11 @@ public final class Resources extends IndexedResourceBundle {
          * Resource identification
          */
         public static final short ResourceIdentification = 23;
+
+        /**
+         * Select a coordinate reference system
+         */
+        public static final short SelectCRS = 37;
 
         /**
          * Spatial representation

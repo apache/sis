@@ -737,6 +737,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Scale = 136;
 
         /**
+         * Simplified
+         */
+        public static final short Simplified = 174;
+
+        /**
          * {0}/{1}
          */
         public static final short SlashSeparatedList_2 = 137;

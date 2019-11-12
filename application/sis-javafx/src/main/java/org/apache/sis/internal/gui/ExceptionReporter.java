@@ -140,6 +140,17 @@ public final class ExceptionReporter implements EventHandler<ActionEvent> {
     }
 
     /**
+     * Shows the reporter for a failure to create a CRS.
+     * This method does nothing if the exception is null.
+     *
+     * @param  code       code of the CRS that can not be created.
+     * @param  exception  the error that occurred.
+     */
+    public static void canNotCreateCRS(final String code, final Throwable exception) {
+        show(Resources.Keys.ErrorCreatingCRS, Resources.Keys.CanNotCreateCRS_1, new Object[] {code}, exception);
+    }
+
+    /**
      * Constructs and shows the exception reporter. The title and text are keys from the {@link Resources}.
      * If the title and/or text are 0, then the {@link Alert} default title and text will be used.
      *

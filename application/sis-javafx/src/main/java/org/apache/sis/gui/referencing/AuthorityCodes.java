@@ -41,6 +41,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.util.Constants;
 
 
@@ -87,19 +88,36 @@ final class AuthorityCodes extends ObservableListBase<Code>
     final Locale locale;
 
     /**
-     * The task where to send request for CRS descriptions, or {@code null} if an error occurred.
-     * In later case, no more background tasks will be scheduled.
+     * The task where to send requests for CRS descriptions (never {@code null}).
      */
     private Loader loader;
 
     /**
+     * Non-null if an error occurred while fetching CRS codes.
+     *
+     * @todo Provide a button for showing this error in an {@link ExceptionReporter}.
+     */
+    private Throwable error;
+
+    /**
      * Creates a new deferred list and starts a background process for loading CRS codes.
+     *
+     * @param  factory  the authority factory, or {@code null} for default factory.
+     * @param  locale   the preferred locale of CRS descriptions.
      */
     AuthorityCodes(final CRSAuthorityFactory factory, final Locale locale) {
         this.locale = locale;
         codes  = new Object[0];
         loader = new Loader(factory);
         BackgroundThreads.execute(loader);
+    }
+
+    /**
+     * Returns the authority factory. If no explicit factory has been given at construction time,
+     * the {@linkplain CRS#getAuthorityFactory(String) Apache SIS default factory} is returned.
+     */
+    final CRSAuthorityFactory getFactory() throws FactoryException {
+        return loader.getFactory();
     }
 
     /**
@@ -159,7 +177,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
     final ReadOnlyStringWrapper getName(final Code code) {
         final ReadOnlyStringWrapper p = code.name();
         final String name = p.getValue();
-        if (name == null && loader != null) {
+        if (name == null) {
             loader.requestName(code);
         }
         return p;
@@ -245,6 +263,18 @@ final class AuthorityCodes extends ObservableListBase<Code>
         }
 
         /**
+         * Returns the authority factory. This method is normally invoked from the background thread,
+         * but we nevertheless synchronize it in case {@link AuthorityCodes#getFactory()} is invoked
+         * concurrently.
+         */
+        final synchronized CRSAuthorityFactory getFactory() throws FactoryException {
+            if (factory == null) {
+                factory = CRS.getAuthorityFactory(Constants.EPSG);
+            }
+            return factory;
+        }
+
+        /**
          * Sends to this background thread a request for fetching the name (description) of given code.
          * The {@link AuthorityCodes} list will receive an update event after the name has been fetched.
          * This method is invoked from JavaFX thread.
@@ -271,6 +301,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
                 snapshot = toDescribe.toArray(new Code[size]);
                 toDescribe.clear();
             }
+            final CRSAuthorityFactory factory = getFactory();
             final Map<Code,String> updated = new IdentityHashMap<>(snapshot.length);
             for (final Code code : snapshot) {
                 // Do not update code in this thread; it will be updated in JavaFX thread.
@@ -298,10 +329,8 @@ final class AuthorityCodes extends ObservableListBase<Code>
         protected Object call() throws Exception {
             long lastTime = System.nanoTime();
             List<String> codes = Collections.emptyList();
+            final CRSAuthorityFactory factory = getFactory();
             try {
-                if (factory == null) {
-                    factory = CRS.getAuthorityFactory(Constants.EPSG);
-                }
                 if (loadCodes) {
                     codes = new ArrayList<>(100);
                     final Iterator<String> it = factory.getAuthorityCodes(type).iterator();
@@ -353,11 +382,37 @@ final class AuthorityCodes extends ObservableListBase<Code>
                 updated = (Map<Code,String>) result;
             }
             update(newCodes, updated);
-            /*
-             * Prepare the next task for loading description. If new description requests were posted
-             * between the end of `call()` execution and the start of this `succeeded()` execution,
-             * starts the new task immediately.
-             */
+            scheduleNewLoader();
+        }
+
+        /**
+         * Invoked if an error occurred while loading the codes. A pseudo-code is added with error message.
+         * A background task is still scheduled for allowing {@link AuthorityCodes} to get descriptions of
+         * codes obtained so far.
+         */
+        @Override
+        protected void failed() {
+            super.failed();
+            final Throwable e = getException();
+            if (error == null) {
+                final Code code = new Code(Vocabulary.getResources(locale).getString(Vocabulary.Keys.Errors));
+                String message = Exceptions.getLocalizedMessage(e, locale);
+                if (message == null) {
+                    message = e.getClass().getSimpleName();
+                }
+                code.name().set(message);
+                add(code);
+            }
+            error = e;
+            scheduleNewLoader();
+        }
+
+        /**
+         * Prepares the next task for loading descriptions. If new description requests were posted
+         * between the end of {@link #call()} execution and the start of the {@link #succeeded()} or
+         * {@link #failed()} execution, starts the new task immediately.
+         */
+        private void scheduleNewLoader() {
             loader = new Loader(this);
             final boolean isEmpty;
             synchronized (toDescribe) {
@@ -366,24 +421,6 @@ final class AuthorityCodes extends ObservableListBase<Code>
             if (!isEmpty) {
                 BackgroundThreads.execute(loader);
             }
-        }
-
-        /**
-         * Invoked if an error occurred while loading the codes. A pseudo-code is added with error message
-         * and no more background tasks will be scheduled.
-         */
-        @Override
-        protected void failed() {
-            super.failed();
-            loader = null;
-            final Throwable e = getException();
-            final Code code = new Code(Vocabulary.getResources(locale).getString(Vocabulary.Keys.Errors));
-            String message = Exceptions.getLocalizedMessage(e, locale);
-            if (message == null) {
-                message = e.toString();
-            }
-            code.name().set(message);
-            add(code);
         }
     }
 }
