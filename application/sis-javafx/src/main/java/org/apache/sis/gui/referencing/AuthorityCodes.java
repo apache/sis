@@ -29,6 +29,7 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableListBase;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.concurrent.Task;
 import javafx.util.Callback;
 import org.opengis.util.FactoryException;
@@ -70,6 +71,12 @@ final class AuthorityCodes extends ObservableListBase<Code>
     private static final long REFRESH_DELAY = StandardDateFormat.NANOS_PER_SECOND / 10;
 
     /**
+     * The table view which use this list, or {@code null} if we don't need this information anymore.
+     * See {@link #describedCodes} for an explanation about its purpose.
+     */
+    TableView<Code> owner;
+
+    /**
      * The type of object for which we want authority codes. Fixed to {@link CoordinateReferenceSystem} for now,
      * but could be made configurable in a future version. Making this field configurable would require resolving
      * the "todo" documented in class javadoc.
@@ -81,6 +88,13 @@ final class AuthorityCodes extends ObservableListBase<Code>
      * Elements are initially {@link String} instances and can be replaced later by {@link Code} instances.
      */
     private Object[] codes;
+
+    /**
+     * Count of the number of {@linkplain #codes} for which we completed the {@link Code#name} information.
+     * This is used for notifying the {@linkplain #owner} when we do not expect more information to be loaded.
+     * This notification is only indicative and may not be fully accurate. Effect should be only visual.
+     */
+    private int describedCodes;
 
     /**
      * The preferred locale of CRS descriptions.
@@ -206,12 +220,30 @@ final class AuthorityCodes extends ObservableListBase<Code>
                 final String name = updated.remove(value);
                 if (name != null) {
                     ((Code) value).name().set(name);            // The name needs to be set in JavaFX thread.
+                    describedCodes++;
                     nextUpdate(i);
                 }
             }
         }
         nextAdd(s, n);
         endChange();
+        if (describedCodes >= n) {
+            removeHourglass();
+        }
+    }
+
+    /**
+     * Removes the hourglass icon which was shown in the table during initial data loading phase.
+     * Removing this icon restores the JavaFX default behavior, which is to show "no data" when the
+     * list is empty. We want this default behavior when we think that there is no more data to load.
+     * This is especially important when the user apply a filter which produces an empty result.
+     * Since the effect is only visual, its okay if the criterion for invoking this method is approximate.
+     */
+    private void removeHourglass() {
+        if (owner != null) {
+            owner.setPlaceholder(null);
+            owner = null;
+        }
     }
 
     /**
@@ -404,6 +436,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
                 add(code);
             }
             error = e;
+            removeHourglass();
             scheduleNewLoader();
         }
 

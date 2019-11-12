@@ -18,7 +18,6 @@ package org.apache.sis.gui.referencing;
 
 import java.util.Locale;
 import java.util.Optional;
-import java.util.function.Predicate;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
@@ -37,6 +36,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.text.Font;
 import javafx.stage.Window;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.opengis.util.FactoryException;
@@ -44,9 +44,7 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.gui.IdentityValueFactory;
 import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.referencing.CRS;
 
 
@@ -107,6 +105,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         final Vocabulary     vocabulary = Vocabulary.getResources(locale);
         final AuthorityCodes codeList   = new AuthorityCodes(factory, locale);
         table = new TableView<>(codeList);
+        codeList.owner = table;
         /*
          * Columns to show in CRS table. First column is typically EPSG codes and second
          * column is the CRS descriptions. The content is loaded in a background thread.
@@ -121,13 +120,16 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         table.setPrefWidth(500);
         table.getColumns().setAll(codes, names);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        final Label clock = new Label("\u23F3");      // Unicode U+23F3: Hourglass With Flowing Sand.
+        clock.setFont(Font.font(40));
+        table.setPlaceholder(clock);
         /*
          * Text field for filtering the list of CRS codes using keywords.
          * The filtering is applied when the "Enter" key is pressed in that field.
          */
         searchField = new TextField();
         searchField.setOnAction((ActionEvent event) -> {
-            filter(searchField.getText());
+            CodeFilter.apply(table, searchField.getText());
         });
         HBox.setHgrow(searchField, Priority.ALWAYS);
         final Label label = new Label(i18n.getString(Resources.Keys.Filter));
@@ -136,7 +138,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
          * Button for showing the CRS description in Well Known Text (WKT) format.
          * The button is enabled only if a row in the table is selected.
          */
-        final ToggleButton info = new ToggleButton("ℹ");            // Unicode U+2139: Information Source.
+        final ToggleButton info = new ToggleButton("\uD83D\uDDB9"); // Unicode U+1F5B9: Document With Text.
         table.getSelectionModel().selectedItemProperty().addListener((e,o,n) -> info.setDisable(n == null));
         info.setOnAction((ActionEvent event) -> {
             setTools(info.isSelected());
@@ -207,53 +209,6 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
             items = ((FilteredList<?>) items).getSource();
         }
         return (AuthorityCodes) items;
-    }
-
-    /**
-     * Displays only the CRS whose names contains the specified keywords. The {@code keywords}
-     * argument is a space-separated list provided by the user after he pressed "Enter" key.
-     *
-     * @param  keywords  space-separated list of keywords to look for.
-     */
-    private void filter(String keywords) {
-        final ObservableList<Code> items = table.getItems();
-        final AuthorityCodes allCodes;
-        FilteredList<Code> filtered;
-        if (items instanceof AuthorityCodes) {
-            allCodes = (AuthorityCodes) items;
-            filtered = null;
-        } else {
-            filtered = (FilteredList<Code>) items;
-            allCodes = (AuthorityCodes) filtered.getSource();
-        }
-        keywords = Strings.trimOrNull(keywords);
-        if (keywords != null) {
-            keywords = keywords.toLowerCase(allCodes.locale);
-            final String[] tokens = (String[]) CharSequences.split(keywords, ' ');
-            if (tokens.length != 0) {
-                final Predicate<Code> p = (code) -> {
-                    String name = allCodes.getName(code).getValue();
-                    if (name == null) {
-                        return false;
-                    }
-                    name = name.toLowerCase(allCodes.locale);
-                    for (final String token : tokens) {
-                        if (!name.contains(token)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                };
-                if (filtered == null) {
-                    filtered = new FilteredList<>(allCodes, p);
-                    table.setItems(filtered);
-                } else {
-                    filtered.setPredicate(p);
-                }
-                return;
-            }
-        }
-        table.setItems(allCodes);
     }
 
     /**
