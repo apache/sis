@@ -307,6 +307,7 @@ final class IdentificationInfo extends Section<Identification> {
             }
             final double wi = Math.min(w, MAP_WIDTH - x);               // Width of part inside [-180 … +180]°.
             w -= wi;                                                    // Width of part not drawn by `wi`.
+            final boolean crossAntimeridian = (w > 0);
             /*
              * At this point we got the coordinates of the rectangle to draw, adjusted for making sure
              * that they are inside valid ranges. The `w` variable is usually 0, unless we had to cut
@@ -325,13 +326,19 @@ final class IdentificationInfo extends Section<Identification> {
             gc.setStroke(Color.DARKBLUE);
             gc.setGlobalAlpha(0.1);
             gc.fillRect(x, y, wi, h);
-            if (w > 0) {
-                gc.fillRect(0, y, w, h);
+            if (crossAntimeridian) {
+                gc.fillRect(0, y, w, h);            // Second half of rectangle crossing anti-meridian.
             }
             gc.setGlobalAlpha(1.0);
-            gc.strokeRect(x, y, wi, h);
-            if (w > 0) {
-                gc.strokeRect(0, y, w, h);
+            if (!crossAntimeridian) {
+                gc.strokeRect(x, y, wi, h);
+            } else {
+                double xw = x + wi;
+                double yh = y + h;
+                gc.strokePolyline(new double[] {xw, x, x,  xw},
+                                  new double[] {y,  y, yh, yh}, 4);
+                gc.strokePolyline(new double[] {0, w, w,  0},
+                                  new double[] {y, y, yh, yh}, 4);
             }
         }
         return false;

@@ -236,7 +236,7 @@ final class ExpandableList extends TransformationList<Feature,Feature>
     @Override
     public int size() {
         int size = getSource().size();
-        if (expansion != null) {
+        if (size != 0 && expansion != null) {
             size += expansion.length - 1;
         }
         return size;
