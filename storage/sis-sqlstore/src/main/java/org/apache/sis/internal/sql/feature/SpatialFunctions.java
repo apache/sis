@@ -22,12 +22,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.sis.internal.metadata.sql.Dialect;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -121,10 +124,26 @@ class SpatialFunctions {
         return null;
     }
 
+    /**
+     * TODO: improve by using service loader discovery, to allow user custom mappings.
+     * @param dialect Dialect of the target database.
+     * @param c The connection to use if mapping initialization requires fetching information from database.
+     * @return
+     * @throws SQLException
+     */
     static Optional<DialectMapping> forDialect(final Dialect dialect, Connection c) throws SQLException {
         switch (dialect) {
             case POSTGRESQL: return new PostGISMapping.Spi().create(c);
-            default: return Optional.empty();
+            default: {
+                try {
+                    return new OGC06104r4.Spi().create(c);
+                } catch (SQLException e) {
+                    final Logger logger = Logging.getLogger("org.apache.sis.internal.sql");
+                    logger.warning("No supported geometric binding. For more information, activate debug logs.");
+                    logger.log(Level.FINE, "Error while creating default Geometric binding over SQL", e);
+                }
+            }
         }
+        return Optional.empty();
     }
 }

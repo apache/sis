@@ -155,7 +155,7 @@
     <dependency>
       <groupId>org.locationtech.jts</groupId>
       <artifactId>jts-core</artifactId>
-      <scope>compile</scope>
+      <scope>test</scope>
     </dependency>
 
     <dependency>

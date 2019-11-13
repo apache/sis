@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.text.ParseException;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -17,6 +16,8 @@ import org.apache.sis.internal.metadata.sql.Dialect;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.logging.Logging;
+
+import static org.apache.sis.internal.sql.feature.OGC06104r4.*;
 
 /**
  * Maps geometric values between PostGIS natural representation (Hexadecimal EWKT) and SIS.
@@ -32,8 +33,6 @@ public final class PostGISMapping implements DialectMapping {
     final GeometryIdentification identifyGeometries;
     final GeometryIdentification identifyGeographies;
 
-    final Connection connection;
-
     final Geometries library;
 
     /**
@@ -46,7 +45,6 @@ public final class PostGISMapping implements DialectMapping {
     final Cache<Integer, CoordinateReferenceSystem> sessionCache;
 
     private PostGISMapping(final PostGISMapping.Spi spi, Connection c) throws SQLException {
-        connection = c;
         this.spi = spi;
         sessionCache = new Cache<>(7, 0, true);
         this.identifyGeometries = new GeometryIdentification(c, "geometry_columns", "f_geometry_column", "type", sessionCache);
@@ -62,13 +60,11 @@ public final class PostGISMapping implements DialectMapping {
 
     @Override
     public Optional<ColumnAdapter<?>> getMapping(SQLColumn definition) {
-        switch (definition.type) {
-            case (Types.OTHER): return Optional.ofNullable(forOther(definition));
-        }
-        return Optional.empty();
+        return Optional.ofNullable(forGeometry(definition));
     }
 
-    private ColumnAdapter<?> forOther(SQLColumn definition) {
+    private ColumnAdapter<?> forGeometry(SQLColumn definition) {
+        if (definition.typeName == null) return null;
         switch (definition.typeName.trim().toLowerCase()) {
             case "geometry":
                 return forGeometry(definition, identifyGeometries);
@@ -87,7 +83,7 @@ public final class PostGISMapping implements DialectMapping {
             throw new BackingStoreException(e);
         }
         String geometryType = geomDef == null ? null : geomDef.type;
-        final Class geomClass = getGeometricClass(geometryType);
+        final Class geomClass = getGeometricClass(geometryType, library);
 
         if (geomDef == null || geomDef.crs == null) {
             return new HexEWKBDynamicCrs(geomClass);
@@ -96,29 +92,6 @@ public final class PostGISMapping implements DialectMapping {
             //geometryDecoder = new WKBReader(geomDef.crs);
             return new HexEWKBFixedCrs(geomClass, geomDef.crs);
         }
-    }
-
-    private Class getGeometricClass(String geometryType) {
-        if (geometryType == null) return library.rootClass;
-
-        // remove Z, M or ZM suffix
-        if (geometryType.endsWith("M")) geometryType = geometryType.substring(0, geometryType.length()-1);
-        if (geometryType.endsWith("Z")) geometryType = geometryType.substring(0, geometryType.length()-1);
-
-        final Class geomClass;
-        switch (geometryType) {
-            case "POINT":
-                geomClass = library.pointClass;
-                break;
-            case "LINESTRING":
-                geomClass = library.polylineClass;
-                break;
-            case "POLYGON":
-                geomClass = library.polygonClass;
-                break;
-            default: geomClass = library.rootClass;
-        }
-        return geomClass;
     }
 
     @Override
@@ -155,52 +128,6 @@ public final class PostGISMapping implements DialectMapping {
         @Override
         public Dialect getDialect() {
             return Dialect.POSTGRESQL;
-        }
-    }
-
-    private abstract class Reader implements ColumnAdapter {
-
-        final Class geomClass;
-
-        public Reader(Class geomClass) {
-            this.geomClass = geomClass;
-        }
-
-        @Override
-        public Class getJavaType() {
-            return geomClass;
-        }
-    }
-
-    private final class WKBReader extends Reader implements SQLBiFunction<ResultSet, Integer, Object> {
-
-        final CoordinateReferenceSystem crsToApply;
-
-        private WKBReader(Class geomClass, CoordinateReferenceSystem crsToApply) {
-            super(geomClass);
-            this.crsToApply = crsToApply;
-        }
-
-        @Override
-        public Object apply(ResultSet resultSet, Integer integer) throws SQLException {
-            final byte[] bytes = resultSet.getBytes(integer);
-            if (bytes == null) return null;
-            final Object value = library.parseWKB(bytes);
-            if (value != null && crsToApply != null) {
-                library.setCRS(value, crsToApply);
-            }
-
-            return value;
-        }
-
-        @Override
-        public SQLBiFunction prepare(Connection target) {
-            return this;
-        }
-
-        @Override
-        public Optional<CoordinateReferenceSystem> getCrs() {
-            return Optional.ofNullable(crsToApply);
         }
     }
 

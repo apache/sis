@@ -68,7 +68,9 @@ class ANSIMapping implements DialectMapping {
             case Types.VARBINARY:
             case Types.LONGVARBINARY:           return new ColumnAdapter.Simple<>(byte[].class, ResultSet::getBytes);
             case Types.ARRAY:                   return forceCast(Object[].class);
-            case Types.OTHER:                   // Database-specific accessed via getObject and setObject.
+            case Types.OTHER:
+
+            // Database-specific accessed via getObject and setObject.
             case Types.JAVA_OBJECT:             return new ColumnAdapter.Simple<>(Object.class, ResultSet::getObject);
             default:                            return null;
         }
