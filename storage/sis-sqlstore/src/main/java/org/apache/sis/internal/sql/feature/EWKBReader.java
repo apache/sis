@@ -24,9 +24,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonEmpty;
  * This format is the natural form returned by a query selection a geometry field
  * whithout using any ST_X method.
  *
- * TODO: This format is almost equivalent to standard WKB, except that it includes SRID information. If needed, adding
- * minor tweaks and flags should suffice to make it compatible with both formats. See {@link #MASK_SRID } usage for
- * details.
+ * @implNote This format is almost equivalent to standard WKB. In fact, it should already be compatible with standard
+ * WKB, as the only added  component by EWKB is srid, and it's hidden in geometry type using bitmask.
  *
  * @author Johann Sorel (Geomatys)
  * @author Alexis Manin (Geomatys)
@@ -148,19 +147,12 @@ class EWKBReader {
                     .iterator();
             if (it.hasNext()) {
                 final Object first = it.next();
-                if (it.hasNext()) return factory.tryMergePolylines(first, it);
-                else return first;
+                return factory.tryMergePolylines(first, it);
             }
             throw new IllegalStateException("No geometry decoded");
         }
 
         private Object readMultiPolygon() {
-            final int count = readCount();
-            final Object[] polygons = new Object[count];
-            for (int i = 0 ; i < count ; i++) {
-                polygons[i] = new Reader(factory, buffer).read();
-            }
-
             return factory.createMultiPolygon(
                     IntStream.range(0, readCount())
                             .mapToObj(i -> new Reader(factory, buffer).read())
@@ -183,7 +175,7 @@ class EWKBReader {
         }
 
         private Object readPolygon() {
-            final int nbRings=buffer.getInt();
+            final int nbRings=readCount();
             final Vector outerShell = Vector.create(readCoordinateSequence());
 
             final double[] nans = new double[dimension];
