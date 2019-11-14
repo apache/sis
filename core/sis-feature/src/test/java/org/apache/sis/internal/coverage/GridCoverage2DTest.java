@@ -40,6 +40,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -55,7 +56,7 @@ public class GridCoverage2DTest extends TestCase {
      * Tests with a two-dimensional coverage.
      */
     @Test
-    public void testCoverage2D() {
+    public void testCoverage2D() throws FactoryException {
         /*
          * Create coverage of 2×2 pixels with an identity "grid to CRS" transform.
          * The range of sample values will be [-10 … +10]°C.
