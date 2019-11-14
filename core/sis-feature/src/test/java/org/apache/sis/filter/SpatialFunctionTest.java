@@ -16,14 +16,6 @@
  */
 package org.apache.sis.filter;
 
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
-
-import static org.apache.sis.test.Assert.*;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LinearRing;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.filter.spatial.Beyond;
@@ -36,6 +28,18 @@ import org.opengis.filter.spatial.Intersects;
 import org.opengis.filter.spatial.Overlaps;
 import org.opengis.filter.spatial.Touches;
 import org.opengis.filter.spatial.Within;
+
+import org.apache.sis.test.TestCase;
+
+import org.junit.Test;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LinearRing;
+
+import static org.apache.sis.test.Assert.assertFalse;
+import static org.apache.sis.test.Assert.assertSerializedEquals;
+import static org.apache.sis.test.Assert.assertTrue;
 
 
 /**
@@ -129,11 +133,11 @@ public final strictfp class SpatialFunctionTest extends TestCase {
 
     @Test
     public void testBBOX() {
-        BBOX bbox = FF.bbox(FF.literal(RIGHT_GEOMETRY), 1, 1, 6, 6, "EPSG:4326");
+        BBOX bbox = FF.bbox(FF.literal(RIGHT_GEOMETRY), 1, 1, 6, 6, null);
         assertTrue(bbox.evaluate(null));
         assertSerializedEquals(bbox);
 
-        bbox = FF.bbox(FF.literal(RIGHT_GEOMETRY), -3, -2, 4, 1, "EPSG:4326");
+        bbox = FF.bbox(FF.literal(RIGHT_GEOMETRY), -3, -2, 4, 1, null);
         assertFalse(bbox.evaluate(null));
         assertSerializedEquals(bbox);
     }

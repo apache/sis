@@ -16,6 +16,9 @@
  */
 package org.apache.sis.filter;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import org.opengis.feature.AttributeType;
@@ -27,13 +30,17 @@ import org.opengis.filter.expression.Literal;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.TransformException;
 
 import org.apache.sis.feature.Features;
 import org.apache.sis.geometry.AbstractEnvelope;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.util.collection.BackingStoreException;
 
 /**
  * @implNote AMBIGUITY : Description of BBOX operator from <a href="http://docs.opengeospatial.org/is/09-026r2/09-026r2.html#60">
@@ -48,23 +55,31 @@ import org.apache.sis.util.NullArgumentException;
  *
  *     TODO: CRS check.
  */
-final class DefaultBBOX implements BBOX {
+final class DefaultBBOX implements BBOX, Serializable {
+
+    private static final long serialVersionUID = 3068335120981348484L;
 
     final Expression left;
     final Expression right;
 
-    private final Predicate intersects;
+    private transient Predicate intersects;
 
     DefaultBBOX(Expression left, Expression right) {
+        this.left = left;
+        this.right = right;
+        init();
+    }
+
+    /**
+     * Initialize this filter state. It is necessary because of serialization compliance.
+     */
+    private void init() {
         if (left == null && right == null) {
             throw new NullArgumentException(
                     "Both arguments are null, but at least one must be given " +
                             "(as stated in OGC Filter encoding corrigendum 2.0.2, section 7.8.3.2)."
             );
         }
-
-        this.left = left;
-        this.right = right;
 
         if (left instanceof Literal) {
             intersects = asOptimizedTest((Literal) left, right);
@@ -106,13 +121,13 @@ final class DefaultBBOX implements BBOX {
          * operand is null. It does not state what to do if both are null, but we'll follow the same behavior.
          */
         if (leftEval == null || rightEval == null) return false;
-        return GeneralEnvelope.castOrCopy(leftEval).intersects(rightEval);
+        return intersect(AbstractEnvelope.castOrCopy(leftEval), rightEval);
     }
 
     private static boolean intersect(final Object candidate, final Expression valueExtractor, final AbstractEnvelope constEnvelope) {
         final Envelope candidateEnv = asEnvelope(valueExtractor, candidate);
         if (candidateEnv == null) return false;
-        return constEnvelope.intersects(candidateEnv, true);
+        return intersect(constEnvelope, candidateEnv);
     }
 
     /**
@@ -126,7 +141,7 @@ final class DefaultBBOX implements BBOX {
      */
     private static boolean multiIntersect(Object candidate, Envelope fixed) {
         // TODO: We could optimize by caching feature-type properties. The best way would be an initialisation
-        // procedure freezing target data type, but I'm no sure such a mechanism would be possible.
+        // procedure freezing target data type, but I'm not sure such a mechanism would be possible.
         final GeneralEnvelope constEnv = GeneralEnvelope.castOrCopy(fixed);
         if (candidate instanceof Feature) {
             final Feature f = (Feature) candidate;
@@ -147,15 +162,15 @@ final class DefaultBBOX implements BBOX {
                     .map(p -> p.getName().toString())
                     .map(f::getPropertyValue)
                     .map(Geometries::getEnvelope)
-                    .allMatch(fEnv -> fEnv != null && constEnv.intersects(fEnv, true));
+                    .allMatch(fEnv -> fEnv != null && intersect(constEnv, fEnv));
         } else if (candidate instanceof Envelope) {
-            return constEnv.intersects((Envelope) candidate);
+            return intersect(constEnv, (Envelope) candidate);
         } else {
             final Envelope env = Geometries.getEnvelope(candidate);
             if (env == null) throw new UnsupportedOperationException(
                     "Candidate type unsupported: "+candidate == null ? "null" : candidate.getClass().getCanonicalName()
             );
-            return constEnv.intersects(env);
+            return intersect(constEnv, env);
         }
     }
 
@@ -180,6 +195,44 @@ final class DefaultBBOX implements BBOX {
         return other == null ? it -> multiIntersect(it, constEnv) : it -> intersect(it, other, constEnv);
     }
 
+    /**
+     * Ensure that given envelopes intersect, transforming them in a common suitable system if needed.
+     */
+    private static boolean intersect(AbstractEnvelope left, Envelope right) {
+        final CRSMatching.Match bridge = CRSMatching
+                .left(left.getCoordinateReferenceSystem())
+                .right(right.getCoordinateReferenceSystem());
+        final CoordinateOperation left2CommonOp = bridge.fromLeft().orElse(null);
+        final CoordinateOperation right2CommonOp = bridge.fromRight().orElse(null);
+        try {
+            if (left2CommonOp != null) left = Envelopes.transform(left2CommonOp, left);
+            if (right2CommonOp != null) right = Envelopes.transform(right2CommonOp, right);
+        } catch (TransformException e) {
+            throw new BackingStoreException(e);
+        }
+
+        return left.intersects(right, true); // See class doc for why true here.
+    }
+
+    private void readObject(java.io.ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+        init();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DefaultBBOX that = (DefaultBBOX) o;
+        return Objects.equals(left, that.left) &&
+                Objects.equals(right, that.right);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(left, right);
+    }
     /*
      * DEPRECATED OPERATIONS: NOT IMPLEMENTED
      */

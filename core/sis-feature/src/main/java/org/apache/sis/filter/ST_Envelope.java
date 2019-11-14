@@ -31,6 +31,8 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.Features;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.internal.feature.AttributeConvention;
@@ -45,13 +47,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author Alexis Manin (Geomatys)
  */
-public class ST_Envelope extends AbstractFunction implements FeatureExpression {
+public class ST_Envelope extends NamedFunction implements FeatureExpression {
 
     public static final String NAME = "ST_Envelope";
 
     private final Worker worker;
     public ST_Envelope(Expression[] parameters) {
-        super(NAME, parameters, null);
+        super(parameters);
         if (parameters == null || parameters.length != 1) throw new MismatchedDimensionException(
                 String.format(
                     "Single parameter expected for %s operation: source Geometry. However, %d arguments were provided",
@@ -66,13 +68,18 @@ public class ST_Envelope extends AbstractFunction implements FeatureExpression {
     }
 
     @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
     public Object evaluate(Object object) {
         return worker.evaluate(object);
     }
 
     @Override
-    public PropertyType expectedType(FeatureType type) {
-        return worker.type(type);
+    public PropertyTypeBuilder expectedType(FeatureType valueType, FeatureTypeBuilder addTo) {
+        return addTo.addProperty(worker.type(valueType));
     }
 
     /**
@@ -126,7 +133,7 @@ public class ST_Envelope extends AbstractFunction implements FeatureExpression {
 
         @Override
         public PropertyType type(FeatureType target) {
-            final PropertyType expressionType = source.expectedType(target);
+            final PropertyType expressionType = source.expectedType(target, new FeatureTypeBuilder()).build();
             final AttributeType<?> attr = Features.castOrUnwrap(expressionType)
                     .orElseThrow(() -> new UnsupportedOperationException("Cannot evaluate given expression because it does not create attribute values"));
             // If given expression evaluates directly to a bbox, there's no need for a conversion step.

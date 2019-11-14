@@ -29,11 +29,13 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.metadata.sql.Dialect;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.logging.Logging;
 
-import static org.apache.sis.internal.sql.feature.OGC06104r4.*;
+import static org.apache.sis.internal.sql.feature.OGC06104r4.Reader;
+import static org.apache.sis.internal.sql.feature.OGC06104r4.getGeometricClass;
 
 /**
  * Maps geometric values between PostGIS natural representation (Hexadecimal EWKT) and SIS.
@@ -60,13 +62,13 @@ public final class PostGISMapping implements DialectMapping {
      */
     final Cache<Integer, CoordinateReferenceSystem> sessionCache;
 
-    private PostGISMapping(final PostGISMapping.Spi spi, Connection c) throws SQLException {
+    private PostGISMapping(final PostGISMapping.Spi spi, GeometryLibrary geometryDriver, Connection c) throws SQLException {
         this.spi = spi;
         sessionCache = new Cache<>(7, 0, true);
         this.identifyGeometries = new GeometryIdentification(c, "geometry_columns", "f_geometry_column", "type", sessionCache);
         this.identifyGeographies = new GeometryIdentification(c, "geography_columns", "f_geography_column", "type", sessionCache);
 
-        this.library = Geometries.implementation(null);
+        this.library = Geometries.implementation(geometryDriver);
     }
 
     @Override
@@ -118,7 +120,7 @@ public final class PostGISMapping implements DialectMapping {
     public static final class Spi implements DialectMapping.Spi {
 
         @Override
-        public Optional<DialectMapping> create(Connection c) throws SQLException {
+        public Optional<DialectMapping> create(GeometryLibrary geometryDriver, Connection c) throws SQLException {
             try {
                 checkPostGISVersion(c);
             } catch (SQLException e) {
@@ -127,7 +129,7 @@ public final class PostGISMapping implements DialectMapping {
                 logger.log(Level.FINE, "Cannot determine PostGIS version", e);
                 return Optional.empty();
             }
-            return Optional.of(new PostGISMapping(this, c));
+            return Optional.of(new PostGISMapping(this, geometryDriver, c));
         }
 
         private void checkPostGISVersion(final Connection c) throws SQLException {

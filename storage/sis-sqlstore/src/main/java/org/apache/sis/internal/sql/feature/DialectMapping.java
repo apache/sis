@@ -20,7 +20,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
 
+import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.metadata.sql.Dialect;
+import org.apache.sis.setup.GeometryLibrary;
 
 /**
  * Specifies mapping between values stored in database and Java. It is particularly useful for geo-related information,
@@ -54,12 +56,15 @@ public interface DialectMapping extends SQLCloseable {
     interface Spi {
         /**
          * Checks if database is compliant with this service specification, and create a mapper in such case.
+         *
+         * @param geometryDriver The library to use if the given mapping needs to create geometries. It mainly serves
+         *                       to obtain a geometry factory through {@link Geometries#implementation(GeometryLibrary)}.
          * @param c The connection to use to connect to the database. It will be read-only.
          * @return A component compatible with database of given connection, or nothing if the database is not supported
          * by this component.
          * @throws SQLException If an error occurs while fetching information from database.
          */
-        Optional<DialectMapping> create(final Connection c) throws SQLException;
+        Optional<DialectMapping> create(final GeometryLibrary geometryDriver, final Connection c) throws SQLException;
 
         /**
          *

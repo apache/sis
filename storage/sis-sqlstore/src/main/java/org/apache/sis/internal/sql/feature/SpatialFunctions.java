@@ -87,7 +87,7 @@ class SpatialFunctions {
         library = null;
 
         final Dialect dialect = Dialect.guess(metadata);
-        specificMapping = forDialect(dialect, c);
+        specificMapping = forDialect(dialect, library, c);
         defaultMapping = new ANSIMapping(isByteUnsigned);
     }
 
@@ -131,12 +131,12 @@ class SpatialFunctions {
      * @return
      * @throws SQLException
      */
-    static Optional<DialectMapping> forDialect(final Dialect dialect, Connection c) throws SQLException {
+    static Optional<DialectMapping> forDialect(final Dialect dialect, final GeometryLibrary geomDriver, Connection c) throws SQLException {
         switch (dialect) {
-            case POSTGRESQL: return new PostGISMapping.Spi().create(c);
+            case POSTGRESQL: return new PostGISMapping.Spi().create(geomDriver, c);
             default: {
                 try {
-                    return new OGC06104r4.Spi().create(c);
+                    return new OGC06104r4.Spi().create(geomDriver, c);
                 } catch (SQLException e) {
                     final Logger logger = Logging.getLogger("org.apache.sis.internal.sql");
                     logger.warning("No supported geometric binding. For more information, activate debug logs.");

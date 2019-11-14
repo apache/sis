@@ -26,6 +26,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.metadata.sql.Dialect;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Cache;
 
@@ -53,12 +54,12 @@ final class OGC06104r4 implements DialectMapping {
      */
     final Cache<Integer, CoordinateReferenceSystem> sessionCache;
 
-    private OGC06104r4(final OGC06104r4.Spi spi, Connection c) throws SQLException {
+    private OGC06104r4(final OGC06104r4.Spi spi, GeometryLibrary geometryDriver, Connection c) throws SQLException {
         this.spi = spi;
         sessionCache = new Cache<>(7, 0, true);
         this.identifyGeometries = new GeometryIdentification(c, sessionCache);
 
-        this.library = Geometries.implementation(null);
+        this.library = Geometries.implementation(geometryDriver);
     }
 
     @Override
@@ -163,8 +164,8 @@ final class OGC06104r4 implements DialectMapping {
     public static final class Spi implements DialectMapping.Spi {
 
         @Override
-        public Optional<DialectMapping> create(Connection c) throws SQLException {
-            return Optional.of(new OGC06104r4(this, c));
+        public Optional<DialectMapping> create(GeometryLibrary geometryDriver, Connection c) throws SQLException {
+            return Optional.of(new OGC06104r4(this, geometryDriver, c));
         }
 
         @Override

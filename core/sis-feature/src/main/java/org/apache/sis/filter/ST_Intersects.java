@@ -16,8 +16,11 @@
  */
 package org.apache.sis.filter;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import org.opengis.filter.FilterVisitor;
@@ -41,17 +44,16 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonEmpty;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 /**
- * TODO: check CRS
  * TODO: refine once Geometry API is stable.
  */
-public class ST_Intersects implements Intersects {
+public final class ST_Intersects implements Intersects, Serializable {
 
     public static final String NAME = "ST_Intersect";
 
     final Expression left;
     final Expression right;
 
-    private final Predicate intersects;
+    private transient Predicate intersects;
 
     public ST_Intersects(Expression[] parameters) {
         ensureNonEmpty("Parameters", parameters);
@@ -59,6 +61,10 @@ public class ST_Intersects implements Intersects {
 
         left = parameters[0];
         right = parameters[1];
+        init();
+    }
+
+    private void init() {
         ensureNonNull("Left operand", left);
         ensureNonNull("Right operand", right);
         if (left instanceof Literal && right instanceof Literal) {
@@ -93,7 +99,7 @@ public class ST_Intersects implements Intersects {
     private static org.locationtech.jts.geom.Geometry transformSilently(org.locationtech.jts.geom.Geometry target, CoordinateOperation op) {
         try {
             return JTS.transform(target, op);
-        } catch (TransformException e) {
+        } catch (TransformException | FactoryException e) {
             throw new BackingStoreException(e);
         }
     }
@@ -172,5 +178,28 @@ public class ST_Intersects implements Intersects {
     @Override
     public Object accept(FilterVisitor visitor, Object extraData) {
         return visitor.visit(this, extraData);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ST_Intersects that = (ST_Intersects) o;
+        return left.equals(that.left) &&
+                right.equals(that.right);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(left, right);
+    }
+
+    /**
+     * Initialize this filter state. It is necessary because of serialization compliance.
+     */
+    private void readObject(java.io.ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+        init();
     }
 }

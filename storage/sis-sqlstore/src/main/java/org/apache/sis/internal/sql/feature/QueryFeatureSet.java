@@ -40,8 +40,8 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.UnsupportedQueryException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.logging.WarningListeners;
 
 /**
  * Stores SQL query given at built time, and execute it when calling {@link #features(boolean) data stream}. Note that
@@ -153,7 +153,7 @@ public class QueryFeatureSet extends AbstractFeatureSet {
         this(queryBuilder, createAdapter(queryBuilder, analyzer, conn), analyzer.listeners, source);
     }
 
-    QueryFeatureSet(SQLBuilder queryBuilder, FeatureAdapter adapter, WarningListeners listeners, DataSource source) {
+    QueryFeatureSet(SQLBuilder queryBuilder, FeatureAdapter adapter, StoreListeners listeners, DataSource source) {
         super(listeners);
         this.source = source;
         this.adapter = adapter;
