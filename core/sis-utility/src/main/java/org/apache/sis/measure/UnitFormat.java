@@ -1138,7 +1138,7 @@ appPow: if (unit == null) {
             }
             /*
              * Not an EPSG code. Maybe it is a URI like this example:
-             * http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
+             * http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
              *
              * If we find such 'uom' value, we could replace 'symbols' by that 'uom'. But it would cause a wrong
              * error index to be reported in case of parsing failure. We will rather try to adjust the indices

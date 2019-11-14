@@ -100,7 +100,7 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mri/1.0/mri.xsd",
+@XmlSchema(location="https://standards.iso.org/iso/19115/-3/mri/1.0/mri.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRI,
            xmlns = {
                 @XmlNs(prefix = "mri",  namespaceURI = Namespaces.MRI),        // Metadata for Resource Identification

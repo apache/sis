@@ -230,6 +230,7 @@ public final strictfp class DefinitionURITest extends TestCase {
         assertEquals("4326", DefinitionURI.codeOf("crs", "EPSG", "http://www.opengis.net/gml/srs/epsg.xml#4326"));
         assertNull  (        DefinitionURI.codeOf("crs", "OGC",  "http://www.opengis.net/gml/srs/epsg.xml#4326"));
         assertNull  (        DefinitionURI.codeOf("uom", "EPSG", "http://www.opengis.net/gml/srs/epsg.xml#4326"));
+        assertNull  (        DefinitionURI.codeOf("uom", "EPSG", "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
         assertNull  (        DefinitionURI.codeOf("uom", "EPSG", "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
     }
 }

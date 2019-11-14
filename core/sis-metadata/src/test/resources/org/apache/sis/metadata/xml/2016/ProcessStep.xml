@@ -24,7 +24,7 @@
     xmlns:gco = "http://standards.iso.org/iso/19115/-3/gco/1.0"
     xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/mrl/1.0
-                          http://standards.iso.org/iso/19115/-3/mrl/1.0/mrl.xsd">
+                          https://standards.iso.org/iso/19115/-3/mrl/1.0/mrl.xsd">
 
   <mrl:description>
     <gco:CharacterString>Some process step.</gco:CharacterString>

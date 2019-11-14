@@ -24,8 +24,8 @@
     xmlns:gcx="http://standards.iso.org/iso/19115/-3/gcx/1.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xlink="http://www.w3.org/1999/xlink"
-    xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/cit/1.0 http://standards.iso.org/iso/19115/-3/cit/1.0/cit.xsd
-                          http://standards.iso.org/iso/19115/-3/gcx/1.0 http://standards.iso.org/iso/19115/-3/gcx/1.0/gcx.xsd">
+    xsi:schemaLocation = "http://standards.iso.org/iso/19115/-3/cit/1.0 https://standards.iso.org/iso/19115/-3/cit/1.0/cit.xsd
+                          http://standards.iso.org/iso/19115/-3/gcx/1.0 https://standards.iso.org/iso/19115/-3/gcx/1.0/gcx.xsd">
 
   <cit:title>
     <gco:CharacterString>Fight against poverty</gco:CharacterString>

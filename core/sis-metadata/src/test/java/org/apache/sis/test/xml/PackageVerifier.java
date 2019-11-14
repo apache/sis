@@ -49,11 +49,11 @@ import static org.apache.sis.test.TestCase.PENDING_FUTURE_SIS_VERSION;
 
 
 /**
- * Verify JAXB annotations in a single package. A new instance of this class is created by
+ * Verifies JAXB annotations in a single package. A new instance of this class is created by
  * {@link SchemaCompliance#verify(java.nio.file.Path)} for each Java package to be verified.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -171,7 +171,11 @@ final strictfp class PackageVerifier {
                 namespace = schema.namespace();
                 String location = schema.location();
                 if (!XmlSchema.NO_LOCATION.equals(location)) {
-                    if (!location.startsWith(schema.namespace())) {
+                    String expected = location;
+                    if (expected.startsWith("https:")) {
+                        expected = "http:" + expected.substring(6);
+                    }
+                    if (!expected.startsWith(schema.namespace())) {
                         throw new SchemaException("XML schema location inconsistent with namespace in package " + name);
                     }
                     schemas.loadSchema(location);

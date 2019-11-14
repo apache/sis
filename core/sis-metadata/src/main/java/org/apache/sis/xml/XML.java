@@ -137,8 +137,10 @@ public final class XML extends Static {
     public static final String TIMEZONE = "org.apache.sis.xml.timezone";
 
     /**
-     * Specifies the root URL of schemas. The value for this property shall
-     * be an instance of {@link Map Map&lt;String,String&gt;}.
+     * Specifies the root URL of schemas. This property specifies only the schema locations;
+     * it does not change the content of marshalled XML documents (for content schemas, see
+     * {@link #METADATA_VERSION}). The value for this property shall be an instance of
+     * {@link Map Map&lt;String,String&gt;}.
      * This property controls the URL to be used when marshalling the following elements:
      *
      * <ul>
@@ -148,14 +150,11 @@ public final class XML extends Static {
      *       (for example {@code <gco:Distance>}).</li>
      * </ul>
      *
-     * Two {@code Map} keys are currently recognized: {@code "cat"} and {@code "gmd"},
-     * which stands for the new ISO 19115-3:2016 and the legacy ISO 19139:2007 schemas respectively.
-     * The key to be used depends on the {@linkplain #METADATA_VERSION metadata version} to be marshalled.
-     * Additional keys, if any, are ignored. Future SIS versions may recognize more keys.
-     *
-     * <h4>Valid values</h4>
-     * The following table gives some typical URLs.
-     * The URL in bold character is the default one.
+     * The currently recognized keys are listed below.
+     * The entries to be used depend on the {@linkplain #METADATA_VERSION metadata version} to be marshalled.
+     * For example the {@code "cat"} entry is used when marshalling ISO 19115-3:2016 document, while the
+     * {@code "gmd"} and {@code "gmi"} entries are used when marshalling ISO 19139:2007 documents.
+     * The following table gives some typical URLs, with the default URL in bold characters:
      *
      * <table class="sis">
      *   <caption>Supported schemas</caption>
@@ -163,13 +162,22 @@ public final class XML extends Static {
      *   <tr><td><b>cat</b></td><td>
      *     <b>http://standards.iso.org/iso/19115/</b>
      *   </td></tr>
-     *   <tr><td><b>gmd</b></td><td>
+     *   <tr><td class="hsep"><b>gmd</b></td><td class="hsep">
+     *     <b>http://www.isotc211.org/2005/</b><br>
+     *        http://schemas.opengis.net/iso/19139/20070417/<br>
+     *        http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/
+     *   </td></tr>
+     *   <tr><td class="hsep"><b>gmi</b></td><td class="hsep">
      *        http://www.isotc211.org/2005/<br>
-     *     <b>http://schemas.opengis.net/iso/19139/20070417/</b><br>
-     *        http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/<br>
-     *        http://eden.ign.fr/xsd/fra/20060922/
+     *     <b>http://standards.iso.org/iso/19115/-2/gmi/1.0/</b>
+     *   </td></tr>
+     *   <tr><td class="hsep"><b>gml</b></td><td class="hsep">
+     *     <b>http://schemas.opengis.net/gml/3.2.1/</b><br>
+     *        https://www.isotc211.org/2005/gml/
      *   </td></tr>
      * </table>
+     *
+     * Additional keys, if any, are ignored. Future SIS versions may recognize more keys.
      */
     public static final String SCHEMAS = "org.apache.sis.xml.schemas";
     // If more keys are documented, update the Pooled.SCHEMAS_KEY array.
@@ -331,7 +339,7 @@ public final class XML extends Static {
      * {@preformat xml
      *   <gmd:language>
      *     <gmd:LanguageCode
-     *         codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode"
+     *         codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#LanguageCode"
      *         codeListValue="fra">French</gmd:LanguageCode>
      *   </gmd:language>
      * }

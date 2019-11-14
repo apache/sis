@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
  * Tests {@link XPaths}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -40,6 +40,7 @@ public final strictfp class XPathsTest extends TestCase {
     @Test
     public void testEndOfURI() {
         assertEquals(26, XPaths.endOfURI("urn:ogc:def:uom:EPSG::9001", 0));
+        assertEquals(80, XPaths.endOfURI("http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])", 0));
         assertEquals(97, XPaths.endOfURI("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])", 0));
         assertEquals(-1, XPaths.endOfURI("m/s", 0));
         assertEquals(-1, XPaths.endOfURI("m.s", 0));
@@ -51,8 +52,8 @@ public final strictfp class XPathsTest extends TestCase {
      */
     @Test
     public void testXPointer() {
-        assertEquals("m", XPaths.xpointer("uom", "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#m"));
-        assertEquals("m", XPaths.xpointer("uom", "http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
+        assertEquals("m", XPaths.xpointer("uom", "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#m"));
+        assertEquals("m", XPaths.xpointer("uom", "http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])"));
         assertEquals("m", XPaths.xpointer("uom", "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/uom/ML_gmxUom.xml#xpointer(//*[@gml:id='m'])"));
         assertEquals("m", XPaths.xpointer("uom", "../uom/ML_gmxUom.xml#xpointer(//*[@gml:id='m'])"));
     }

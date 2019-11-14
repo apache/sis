@@ -72,7 +72,7 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mrd/1.0/mrd.xsd",
+@XmlSchema(location="https://standards.iso.org/iso/19115/-3/mrd/1.0/mrd.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRD,
            xmlns = {
                 @XmlNs(prefix = "mrd", namespaceURI = Namespaces.MRD),      // Metadata for Resource Distribution

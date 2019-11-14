@@ -27,10 +27,10 @@ import static org.junit.Assert.*;
 
 
 /**
- * Test {@link Measure}.
+ * Tests {@link Measure}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -57,7 +57,7 @@ public final strictfp class MeasureTest extends TestCase {
     @DependsOnMethod("testGetUOM")
     public void testSetUOM() throws URISyntaxException {
         final Measure measure = new Measure();
-        measure.setUOM("http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#m");
+        measure.setUOM("http://www.isotc211.org/2005/resources/uom/gmxUom.xml#m");
         assertEquals(Units.METRE, measure.unit);
         assertEquals("urn:ogc:def:uom:EPSG::9001", measure.getUOM());
         measure.asXPointer = true;

@@ -25,20 +25,20 @@
     xmlns:gco   = "http://www.isotc211.org/2005/gco"
     xmlns:xsi   = "http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xlink = "http://www.w3.org/1999/xlink"
-    xsi:schemaLocation = "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd
-                          http://www.isotc211.org/2005/gmx http://schemas.opengis.net/iso/19139/20070417/gmx/gmx.xsd">
+    xsi:schemaLocation = "http://www.isotc211.org/2005/gmd https://www.isotc211.org/2005/gmd/gmd.xsd
+                          http://www.isotc211.org/2005/gmx https://www.isotc211.org/2005/gmx/gmx.xsd">
 
   <gmd:fileIdentifier>
     <gco:CharacterString>test/Metadata.xml</gco:CharacterString>
   </gmd:fileIdentifier>
   <gmd:language>
-    <gmd:LanguageCode codeListValue="eng" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode">English</gmd:LanguageCode>
+    <gmd:LanguageCode codeListValue="eng" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#LanguageCode">English</gmd:LanguageCode>
   </gmd:language>
   <gmd:characterSet>
-    <gmd:MD_CharacterSetCode codeListValue="utf8" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode">UTF-8</gmd:MD_CharacterSetCode>
+    <gmd:MD_CharacterSetCode codeListValue="utf8" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode">UTF-8</gmd:MD_CharacterSetCode>
   </gmd:characterSet>
   <gmd:hierarchyLevel>
-    <gmd:MD_ScopeCode codeSpace="eng" codeListValue="dataset" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_ScopeCode">Dataset</gmd:MD_ScopeCode>
+    <gmd:MD_ScopeCode codeSpace="eng" codeListValue="dataset" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode">Dataset</gmd:MD_ScopeCode>
   </gmd:hierarchyLevel>
   <gmd:hierarchyLevelName>
     <gmx:Anchor xlink:href="SDN:L231:3:CDI">Pseudo Common Data Index record</gmx:Anchor>
@@ -97,7 +97,7 @@
       <!-- End of section to be referenced later. -->
 
       <gmd:role>
-        <gmd:CI_RoleCode codeListValue="author" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode">Author</gmd:CI_RoleCode>
+        <gmd:CI_RoleCode codeListValue="author" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode">Author</gmd:CI_RoleCode>
       </gmd:role>
     </gmd:CI_ResponsibleParty>
   </gmd:contact>
@@ -109,7 +109,7 @@
       <gmd:geometricObjects>
         <gmd:MD_GeometricObjects>
           <gmd:geometricObjectType>
-            <gmd:MD_GeometricObjectTypeCode codeListValue="point" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_GeometricObjectTypeCode">Point</gmd:MD_GeometricObjectTypeCode>
+            <gmd:MD_GeometricObjectTypeCode codeListValue="point" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_GeometricObjectTypeCode">Point</gmd:MD_GeometricObjectTypeCode>
           </gmd:geometricObjectType>
         </gmd:MD_GeometricObjects>
       </gmd:geometricObjects>
@@ -160,7 +160,7 @@
             <gco:CharacterString>European Directory of Marine Organisations</gco:CharacterString>
           </gmd:definition>
           <gmd:dataType>
-            <gmd:MD_DatatypeCode codeListValue="codelist" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode">Codelist</gmd:MD_DatatypeCode>
+            <gmd:MD_DatatypeCode codeListValue="codelist" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode">Codelist</gmd:MD_DatatypeCode>
           </gmd:dataType>
           <gmd:parentEntity>
             <gco:CharacterString>SeaDataNet</gco:CharacterString>
@@ -189,7 +189,7 @@
                 <gco:Date>1990-06-05</gco:Date>
               </gmd:date>
               <gmd:dateType>
-                <gmd:CI_DateTypeCode codeSpace="eng" codeListValue="revision" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode">Revision</gmd:CI_DateTypeCode>
+                <gmd:CI_DateTypeCode codeSpace="eng" codeListValue="revision" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode">Revision</gmd:CI_DateTypeCode>
               </gmd:dateType>
             </gmd:CI_Date>
           </gmd:date>
@@ -199,7 +199,7 @@
                 <gco:Date>1979-08-03</gco:Date>
               </gmd:date>
               <gmd:dateType>
-                <gmd:CI_DateTypeCode codeSpace="eng" codeListValue="creation" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode">Creation</gmd:CI_DateTypeCode>
+                <gmd:CI_DateTypeCode codeSpace="eng" codeListValue="creation" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode">Creation</gmd:CI_DateTypeCode>
               </gmd:dateType>
             </gmd:CI_Date>
           </gmd:date>
@@ -249,7 +249,7 @@
                 </gmd:CI_Contact>
               </gmd:contactInfo>
               <gmd:role>
-                <gmd:CI_RoleCode codeListValue="originator" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode">Originator</gmd:CI_RoleCode>
+                <gmd:CI_RoleCode codeListValue="originator" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode">Originator</gmd:CI_RoleCode>
               </gmd:role>
             </gmd:CI_ResponsibleParty>
           </gmd:citedResponsibleParty>
@@ -265,7 +265,7 @@
           </gmd:organisationName>
           <gmd:contactInfo xlink:href="#IFREMER"/>
           <gmd:role>
-            <gmd:CI_RoleCode codeListValue="custodian" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode">Custodian</gmd:CI_RoleCode>
+            <gmd:CI_RoleCode codeListValue="custodian" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode">Custodian</gmd:CI_RoleCode>
           </gmd:role>
         </gmd:CI_ResponsibleParty>
       </gmd:pointOfContact>
@@ -285,7 +285,7 @@
             <gmx:Anchor xlink:href="SDN:P021:35:ATTN">Transmittance and attenuance of the water column</gmx:Anchor>
           </gmd:keyword>
           <gmd:type>
-            <gmd:MD_KeywordTypeCode codeListValue="theme" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode">Theme</gmd:MD_KeywordTypeCode>
+            <gmd:MD_KeywordTypeCode codeListValue="theme" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode">Theme</gmd:MD_KeywordTypeCode>
           </gmd:type>
           <gmd:thesaurusName>
             <gmd:CI_Citation>
@@ -301,7 +301,7 @@
                     <gco:Date>2008-11-26</gco:Date>
                   </gmd:date>
                   <gmd:dateType>
-                    <gmd:CI_DateTypeCode codeSpace="eng" codeListValue="revision" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode">Revision</gmd:CI_DateTypeCode>
+                    <gmd:CI_DateTypeCode codeSpace="eng" codeListValue="revision" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode">Revision</gmd:CI_DateTypeCode>
                   </gmd:dateType>
                 </gmd:CI_Date>
               </gmd:date>
@@ -322,7 +322,7 @@
       <gmd:resourceConstraints>
         <gmd:MD_LegalConstraints>
           <gmd:accessConstraints>
-            <gmd:MD_RestrictionCode codeListValue="license" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode">Licence</gmd:MD_RestrictionCode>
+            <gmd:MD_RestrictionCode codeListValue="license" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode">Licence</gmd:MD_RestrictionCode>
           </gmd:accessConstraints>
         </gmd:MD_LegalConstraints>
       </gmd:resourceConstraints>
@@ -342,22 +342,22 @@
                     <gco:Date>1990-06-05</gco:Date>
                   </gmd:date>
                   <gmd:dateType>
-                    <gmd:CI_DateTypeCode codeSpace="eng" codeListValue="revision" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode">Revision</gmd:CI_DateTypeCode>
+                    <gmd:CI_DateTypeCode codeSpace="eng" codeListValue="revision" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode">Revision</gmd:CI_DateTypeCode>
                   </gmd:dateType>
                 </gmd:CI_Date>
               </gmd:date>
             </gmd:CI_Citation>
           </gmd:aggregateDataSetName>
           <gmd:associationType>
-            <gmd:DS_AssociationTypeCode codeListValue="largerWorkCitation" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode">Larger work citation</gmd:DS_AssociationTypeCode>
+            <gmd:DS_AssociationTypeCode codeListValue="largerWorkCitation" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode">Larger work citation</gmd:DS_AssociationTypeCode>
           </gmd:associationType>
           <gmd:initiativeType>
-            <gmd:DS_InitiativeTypeCode codeListValue="campaign" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DS_InitiativeTypeCode">Campaign</gmd:DS_InitiativeTypeCode>
+            <gmd:DS_InitiativeTypeCode codeListValue="campaign" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_InitiativeTypeCode">Campaign</gmd:DS_InitiativeTypeCode>
           </gmd:initiativeType>
         </gmd:MD_AggregateInformation>
       </gmd:aggregationInfo>
       <gmd:language>
-        <gmd:LanguageCode codeListValue="eng" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode">English</gmd:LanguageCode>
+        <gmd:LanguageCode codeListValue="eng" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#LanguageCode">English</gmd:LanguageCode>
       </gmd:language>
       <gmd:topicCategory>
         <gmd:MD_TopicCategoryCode>oceans</gmd:MD_TopicCategoryCode>
@@ -465,7 +465,7 @@
               </gmd:organisationName>
               <gmd:contactInfo xlink:href="#IFREMER"/>
               <gmd:role>
-                <gmd:CI_RoleCode codeListValue="distributor" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode">Distributor</gmd:CI_RoleCode>
+                <gmd:CI_RoleCode codeListValue="distributor" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode">Distributor</gmd:CI_RoleCode>
               </gmd:role>
             </gmd:CI_ResponsibleParty>
           </gmd:distributorContact>
@@ -488,7 +488,7 @@
                 <gco:CharacterString>Dummy download link</gco:CharacterString>
               </gmd:description>
               <gmd:function>
-                <gmd:CI_OnLineFunctionCode codeSpace="eng" codeListValue="download" codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode">Download</gmd:CI_OnLineFunctionCode>
+                <gmd:CI_OnLineFunctionCode codeSpace="eng" codeListValue="download" codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode">Download</gmd:CI_OnLineFunctionCode>
               </gmd:function>
             </gmd:CI_OnlineResource>
           </gmd:onLine>

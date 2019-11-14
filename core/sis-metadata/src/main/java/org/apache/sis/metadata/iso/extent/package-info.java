@@ -140,7 +140,7 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location="http://standards.iso.org/iso/19115/-3/gex/1.0/gex.xsd",
+@XmlSchema(location="https://standards.iso.org/iso/19115/-3/gex/1.0/gex.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.GEX,
            xmlns = {
                 @XmlNs(prefix = "gex", namespaceURI = Namespaces.GEX),      // Geospatial Extent

@@ -49,7 +49,7 @@ import org.apache.sis.measure.Units;
  *
  * {@preformat xml
  *   <mri:distance>
- *     <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
+ *     <gco:Distance uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
  *   </mri:distance>
  * }
  *
@@ -133,8 +133,8 @@ public final class Measure {
      * or one of the following:
      *
      * {@preformat text
-     *     http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
      *     http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
+     *     http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
      * }
      *
      * @return the string representation of the unit of measure.
