@@ -18,14 +18,13 @@ package org.apache.sis.internal.coverage;
 
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.util.Collection;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.internal.image.TranslatedRenderedImage;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ArgumentChecks;
@@ -132,17 +131,12 @@ public final class GridCoverage2D extends GridCoverage {
                 final BufferedImage bi = (BufferedImage) image;
                 return bi.getSubimage(subX, subY, subWidth, subHeight);
             } else {
-                //todo : current approach makes a copy of the datas, a better solution should be found
-                final WritableRaster raster = image.getTile(image.getMinTileX(), image.getMinTileY()).createCompatibleWritableRaster(subWidth, subHeight);
-                final WritableRaster derivate = raster.createWritableTranslatedChild(subX, subY);
-                image.copyData(derivate);
-                ColorModel cm = image.getColorModel();
-                return new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
+                return new TranslatedRenderedImage(image, subX, subY);
             }
         }
     }
 
-    public double[] evaluate(DirectPosition position, double[] pixel) throws CannotEvaluateException {
+    public double[] evaluate(DirectPosition position, double[] buffer) throws CannotEvaluateException {
 
         try {
             position = toGridCoord(position);
@@ -167,7 +161,7 @@ public final class GridCoverage2D extends GridCoverage {
             }
 
             if (getBounds().contains(x,y)) {
-                return image.getTile(XToTileX(x), YToTileY(y)).getPixel(x, y, pixel);
+                return image.getTile(XToTileX(x), YToTileY(y)).getPixel(x, y, buffer);
             }
             throw new PointOutsideCoverageException("");
         } catch (FactoryException | TransformException ex) {
@@ -177,6 +171,7 @@ public final class GridCoverage2D extends GridCoverage {
 
     /**
      * Converts the specified point to grid coordinate.
+     *
      * @param point point to transform to grid coordinate
      * @return point in grid coordinate
      * @throws org.opengis.util.FactoryException if creating transformation fails
@@ -193,7 +188,6 @@ public final class GridCoverage2D extends GridCoverage {
         } else {
             trs = getGridGeometry().getGridToCRS(PixelInCell.CELL_CENTER);
         }
-
         return trs.transform(point, null);
     }
 
