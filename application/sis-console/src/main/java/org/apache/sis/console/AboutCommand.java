@@ -54,7 +54,7 @@ import org.apache.sis.internal.util.X364;
  *   <li>{@code --verbose}: prints all information including the libraries.</li>
  * </ul>
  *
- * <div class="section">About SIS installation on a remote machine</div>
+ * <h2>About SIS installation on a remote machine</h2>
  * This sub-command can provide information about SIS installation on a remote machine,
  * provided that remote access has been enabled at the Java Virtual Machine startup time.
  * See {@link org.apache.sis.console} package javadoc for more information.

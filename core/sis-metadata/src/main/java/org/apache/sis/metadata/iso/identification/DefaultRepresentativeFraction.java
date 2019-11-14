@@ -60,7 +60,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.ensurePositive;
  *   <li>{@link #setScale(double)} for computing the denominator from a scale value.</li>
  * </ul>
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>
@@ -283,7 +283,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Makes this representative fraction unmodifiable. After invocation to this method,
      * any call to a setter method will throw an {@link UnmodifiableMetadataException}.
      *
-     * @see ModifiableMetadata#transition(ModifiableMetadata.State)
+     * @see ModifiableMetadata#transitionTo(ModifiableMetadata.State)
      *
      * @since 0.7
      */

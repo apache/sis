@@ -36,12 +36,12 @@ import org.apache.sis.internal.util.CheckedArrayList;
  * which must be final. Iterators traverse the elements in the order in which the
  * code list constants are declared.
  *
- * <div class="section">Implementation note</div>
+ * <h2>Implementation note</h2>
  * {@code CodeListSet} is implemented internally by bit vectors for compact and efficient storage.
  * All bulk operations ({@code addAll}, {@code removeAll}, {@code containsAll}) are very quick if
  * their argument is also a {@code CodeListSet} instance.
  *
- * <div class="section">Usage example</div>
+ * <h2>Usage example</h2>
  * The following example creates a set of {@link org.opengis.referencing.cs.AxisDirection}s
  * for a (<var>x</var>,<var>y</var>,<var>z</var>) coordinate system:
  *

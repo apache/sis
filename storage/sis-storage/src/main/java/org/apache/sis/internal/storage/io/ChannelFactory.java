@@ -45,12 +45,11 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ForwardOnlyStorageException;
+import org.apache.sis.storage.event.StoreListeners;
 
 
 /**
@@ -62,7 +61,7 @@ import org.apache.sis.storage.ForwardOnlyStorageException;
  * In such case, only the first {@link #readable readable(…)} method invocation will succeed and all subsequent ones
  * will throw an exception.
  *
- * <div class="section">Multi-threading</div>
+ * <h2>Multi-threading</h2>
  * This class is not thread-safe, except for the static {@link #prepare prepare(…)} method.
  * Callers are responsible for synchronizing their call to any member methods ({@link #readable readable(…)}, <i>etc</i>).
  *
@@ -231,10 +230,10 @@ public abstract class ChannelFactory {
         if (storage instanceof URL) {
             final URL file = (URL) storage;
             return new ChannelFactory() {
-                @Override public ReadableByteChannel readable(String filename, WarningListeners<DataStore> listeners) throws IOException {
+                @Override public ReadableByteChannel readable(String filename, StoreListeners listeners) throws IOException {
                     return Channels.newChannel(file.openStream());
                 }
-                @Override public WritableByteChannel writable(String filename, WarningListeners<DataStore> listeners) throws IOException {
+                @Override public WritableByteChannel writable(String filename, StoreListeners listeners) throws IOException {
                     return Channels.newChannel(file.openConnection().getOutputStream());
                 }
             };
@@ -252,10 +251,10 @@ public abstract class ChannelFactory {
             final Path path = (Path) storage;
             if (!Files.isDirectory(path)) {
                 return new ChannelFactory() {
-                    @Override public ReadableByteChannel readable(String filename, WarningListeners<DataStore> listeners) throws IOException {
+                    @Override public ReadableByteChannel readable(String filename, StoreListeners listeners) throws IOException {
                         return Files.newByteChannel(path, optionSet);
                     }
-                    @Override public WritableByteChannel writable(String filename, WarningListeners<DataStore> listeners) throws IOException {
+                    @Override public WritableByteChannel writable(String filename, StoreListeners listeners) throws IOException {
                         return Files.newByteChannel(path, optionSet);
                     }
                 };
@@ -292,12 +291,12 @@ public abstract class ChannelFactory {
      * it is caller's responsibility to wrap the stream in a {@link java.io.BufferedInputStream} if desired.
      *
      * @param  filename  data store name to report in case of failure.
-     * @param  listeners set of registered {@code WarningListener}s for the data store, or {@code null} if none.
+     * @param  listeners set of registered {@code StoreListener}s for the data store, or {@code null} if none.
      * @return the input stream.
      * @throws DataStoreException if the channel is read-once.
      * @throws IOException if the input stream or its underlying byte channel can not be created.
      */
-    public InputStream inputStream(String filename, WarningListeners<DataStore> listeners)
+    public InputStream inputStream(String filename, StoreListeners listeners)
             throws DataStoreException, IOException
     {
         return Channels.newInputStream(readable(filename, listeners));
@@ -308,12 +307,12 @@ public abstract class ChannelFactory {
      * it is caller's responsibility to wrap the stream in a {@link java.io.BufferedOutputStream} if desired.
      *
      * @param  filename  data store name to report in case of failure.
-     * @param  listeners set of registered {@code WarningListener}s for the data store, or {@code null} if none.
+     * @param  listeners set of registered {@code StoreListener}s for the data store, or {@code null} if none.
      * @return the output stream.
      * @throws DataStoreException if the channel is write-once.
      * @throws IOException if the output stream or its underlying byte channel can not be created.
      */
-    public OutputStream outputStream(String filename, WarningListeners<DataStore> listeners)
+    public OutputStream outputStream(String filename, StoreListeners listeners)
             throws DataStoreException, IOException
     {
         return Channels.newOutputStream(writable(filename, listeners));
@@ -325,12 +324,12 @@ public abstract class ChannelFactory {
      * this method throws an exception.
      *
      * @param  filename  data store name to report in case of failure.
-     * @param  listeners set of registered {@code WarningListener}s for the data store, or {@code null} if none.
+     * @param  listeners set of registered {@code StoreListener}s for the data store, or {@code null} if none.
      * @return the channel for the given input.
      * @throws DataStoreException if the channel is read-once.
      * @throws IOException if an error occurred while opening the channel.
      */
-    public abstract ReadableByteChannel readable(String filename, WarningListeners<DataStore> listeners)
+    public abstract ReadableByteChannel readable(String filename, StoreListeners listeners)
             throws DataStoreException, IOException;
 
     /**
@@ -339,12 +338,12 @@ public abstract class ChannelFactory {
      * this method throws an exception.
      *
      * @param  filename  data store name to report in case of failure.
-     * @param  listeners set of registered {@code WarningListener}s for the data store, or {@code null} if none.
+     * @param  listeners set of registered {@code StoreListener}s for the data store, or {@code null} if none.
      * @return the channel for the given output.
      * @throws DataStoreException if the channel is write-once.
      * @throws IOException if an error occurred while opening the channel.
      */
-    public abstract WritableByteChannel writable(String filename, WarningListeners<DataStore> listeners)
+    public abstract WritableByteChannel writable(String filename, StoreListeners listeners)
             throws DataStoreException, IOException;
 
     /**
@@ -385,7 +384,7 @@ public abstract class ChannelFactory {
          * throws an exception on all subsequent invocations.
          */
         @Override
-        public ReadableByteChannel readable(final String filename, final WarningListeners<DataStore> listeners)
+        public ReadableByteChannel readable(final String filename, final StoreListeners listeners)
                 throws DataStoreException, IOException
         {
             final Channel in = channel;
@@ -407,7 +406,7 @@ public abstract class ChannelFactory {
          * throws an exception on all subsequent invocations.
          */
         @Override
-        public WritableByteChannel writable(final String filename, final WarningListeners<DataStore> listeners)
+        public WritableByteChannel writable(final String filename, final StoreListeners listeners)
                 throws DataStoreException, IOException
         {
             final Channel out = channel;
@@ -459,7 +458,7 @@ public abstract class ChannelFactory {
          * {@link File} to a {@link Path}. On all subsequent invocations, the file is opened silently.</p>
          */
         @Override
-        public FileInputStream inputStream(final String filename, final WarningListeners<DataStore> listeners)
+        public FileInputStream inputStream(final String filename, final StoreListeners listeners)
                 throws IOException
         {
             final FileInputStream in;
@@ -489,7 +488,7 @@ public abstract class ChannelFactory {
          * {@link File} to a {@link Path}. On all subsequent invocations, the file is opened silently.</p>
          */
         @Override
-        public FileOutputStream outputStream(final String filename, final WarningListeners<DataStore> listeners)
+        public FileOutputStream outputStream(final String filename, final StoreListeners listeners)
                 throws IOException
         {
             final FileOutputStream out;
@@ -511,7 +510,7 @@ public abstract class ChannelFactory {
          * Since the exception was nevertheless unexpected, log its stack trace in order to allow the developer
          * to check if there is something wrong.
          */
-        private void warning(final String method, final WarningListeners<DataStore> listeners) {
+        private void warning(final String method, final StoreListeners listeners) {
             if (cause != null) {
                 final LogRecord record = new LogRecord(Level.WARNING, cause.toString());
                 record.setLoggerName(Modules.STORAGE);
@@ -531,7 +530,7 @@ public abstract class ChannelFactory {
          * Opens a new channel for the file given at construction time.
          */
         @Override
-        public ReadableByteChannel readable(String filename, WarningListeners<DataStore> listeners) throws IOException {
+        public ReadableByteChannel readable(String filename, StoreListeners listeners) throws IOException {
             return inputStream(filename, listeners).getChannel();
         }
 
@@ -539,7 +538,7 @@ public abstract class ChannelFactory {
          * Opens a new channel for the file given at construction time.
          */
         @Override
-        public WritableByteChannel writable(String filename, WarningListeners<DataStore> listeners) throws IOException {
+        public WritableByteChannel writable(String filename, StoreListeners listeners) throws IOException {
             return outputStream(filename, listeners).getChannel();
         }
     }

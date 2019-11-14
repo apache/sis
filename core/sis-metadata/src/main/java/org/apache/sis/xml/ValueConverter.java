@@ -192,7 +192,8 @@ public class ValueConverter {
      * <table class="sis">
      *   <caption>IANA to ISO 19115:2003 character set code</caption>
      *   <tr>
-     *     <td><table class="compact" summary="IANA to ISO 19115:2003">
+     *     <td><table class="compact">
+     *       <caption>From ISO codes</caption>
      *       <tr><td style="width: 90px"><b>IANA</b></td><td><b>ISO 19115:2003</b></td></tr>
      *       <tr><td>{@code ISO-8859-1}</td>  <td>{@code 8859part1}</td></tr>
      *       <tr><td>{@code ISO-8859-2}</td>  <td>{@code 8859part2}</td></tr>
@@ -211,7 +212,8 @@ public class ValueConverter {
      *       <tr><td>{@code ISO-8859-15}</td> <td>{@code 8859part15}</td></tr>
      *       <tr><td>{@code ISO-8859-16}</td> <td>{@code 8859part16}</td></tr>
      *     </table></td>
-     *     <td class="sep"><table class="compact" summary="IANA to ISO 19115:2003">
+     *     <td class="sep"><table class="compact">
+     *       <caption>Others</caption>
      *       <tr><td style="width: 90px"><b>IANA</b></td><td><b>ISO 19115:2003</b></td></tr>
      *       <tr><td>{@code UCS-2}</td>     <td>{@code ucs2}</td></tr>
      *       <tr><td>{@code UCS-4}</td>     <td>{@code ucs4}</td></tr>

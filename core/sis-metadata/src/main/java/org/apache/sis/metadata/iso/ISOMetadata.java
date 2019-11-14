@@ -114,7 +114,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * Returns the metadata standard implemented by subclasses,
      * which is {@linkplain MetadataStandard#ISO_19115 ISO 19115}.
      *
-     * <div class="section">Note for implementors</div>
+     * <h4>Note for implementers</h4>
      * Subclasses shall not override this method in a way that depends on the object state,
      * since this method may be indirectly invoked by copy constructors (i.e. is may be
      * invoked before this metadata object is fully constructed).
@@ -223,9 +223,9 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * {@inheritDoc}
      */
     @Override
-    public boolean transition(final State target) {
+    public boolean transitionTo(final State target) {
         final Collection<Identifier> p = identifiers;
-        final boolean changed = super.transition(target);
+        final boolean changed = super.transitionTo(target);
         if (changed) {
             /*
              * The 'identifiers' collection will have been replaced by an unmodifiable collection if

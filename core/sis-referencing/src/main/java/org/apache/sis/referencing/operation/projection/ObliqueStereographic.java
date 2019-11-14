@@ -38,10 +38,13 @@ import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.
 
 /**
  * <cite>Oblique Stereographic</cite> projection (EPSG code 9809).
- * See the <a href="http://mathworld.wolfram.com/StereographicProjection.html">Stereographic projection
- * on MathWorld</a> for an overview.
+ * See the following references for an overview:
+ * <ul>
+ *   <li><a href="https://en.wikipedia.org/wiki/Stereographic_projection">Stereographic projection or Wikipedia</a></li>
+ *   <li><a href="http://mathworld.wolfram.com/StereographicProjection.html">Stereographic projection or MathWorld</a></li>
+ * </ul>
  *
- * <div class="section">Description</div>
+ * <h2>Description</h2>
  * The directions starting from the central point are true, but the areas and the lengths become
  * increasingly deformed as one moves away from the center. This projection is frequently used
  * for mapping polar areas, but can also be used for other limited areas centered on a point.

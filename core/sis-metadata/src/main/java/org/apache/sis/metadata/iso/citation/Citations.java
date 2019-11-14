@@ -25,7 +25,6 @@ import java.util.Locale;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.referencing.IdentifiedObject;                // For javadoc
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
@@ -39,8 +38,6 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.metadata.iso.DefaultIdentifier;           // For javadoc
-
-import static org.apache.sis.internal.util.CollectionsExt.nonEmptyIterator;
 
 
 /**
@@ -66,7 +63,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonEmptyIterator;
  * The constants defined in this class are typically values returned by:
  * <ul>
  *   <li>{@link DefaultCitation#getIdentifiers()} for the {@link #ISBN} and {@link #ISSN} constants.</li>
- *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()} for other {@code IdentifierSpace} constants.</li>
+ *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()} for other {@code IdentifierSpace} constants.</li>
  *   <li>{@link org.apache.sis.metadata.iso.DefaultMetadata#getMetadataStandards()} for other {@code Citation} constants.</li>
  * </ul>
  *
@@ -78,7 +75,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonEmptyIterator;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -97,7 +94,7 @@ public final class Citations extends Static {
      * providing for example a unified view of {@code MI_Band} and {@code MD_Band}). This is why those standards
      * are defined in a collection rather than as separated constants.
      *
-     * <div class="section">Content and future evolution</div>
+     * <h4>Content and future evolution</h4>
      * The content of this list may vary in future Apache SIS versions depending on the evolution of standards
      * and in the way that SIS support them. The current content is:
      *
@@ -106,7 +103,7 @@ public final class Citations extends Static {
      *   <li>{@linkplain org.opengis.annotation.Specification#ISO_19115_2 ISO 19115-2:2019} at index 1.</li>
      * </ul>
      *
-     * <div class="section">Main usage</div>
+     * <h4>Main usage</h4>
      * This value can be returned by:
      * <ul>
      *   <li>{@link org.apache.sis.metadata.iso.DefaultMetadata#getMetadataStandards()}</li>
@@ -156,7 +153,7 @@ public final class Citations extends Static {
      * The citation {@linkplain DefaultCitation#getCitedResponsibleParties() responsible party} is
      * the IOGP organization, but the {@linkplain IdentifierSpace#getName() namespace} is {@code "EPSG"}.
      *
-     * <div class="section">When to use "EPSG" and "IOGP"</div>
+     * <h4>When to use "EPSG" and "IOGP"</h4>
      * For all usages except GML, the {@code "EPSG"} namespace shall be used for identifying
      * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} objects.
      * But in the particular case of GML, both {@code "EPSG"} and {@code "IOGP"} appear in different locations.
@@ -181,10 +178,10 @@ public final class Citations extends Static {
      * the {@code "IOGP:EPSG"} identifier is handled in a special way by {@link #getIdentifier(Citation)},
      * which return only {@code "EPSG"}.
      *
-     * <div class="section">Main usage</div>
+     * <h4>Main usage</h4>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      *   <li>{@link org.apache.sis.referencing.factory.sql.EPSGFactory#getAuthority()}
      *       with the addition of version information.</li>
      * </ul>
@@ -204,7 +201,7 @@ public final class Citations extends Static {
      * The {@linkplain IdentifierSpace#getName() namespace} declared by this constant is {@code "OGC"},
      * but the {@code "CRS"}, {@code "AUTO"} and {@code "AUTO2"} namespaces are also commonly found in practice.</p>
      *
-     * <div class="section">Main usage</div>
+     * <h4>Main usage</h4>
      * This value can be returned by:
      * <ul>
      *   <li>{@link org.apache.sis.referencing.factory.CommonAuthorityFactory#getAuthority()}</li>
@@ -237,7 +234,7 @@ public final class Citations extends Static {
      * <tr><td>{@code "OGC:false_northing"}</td>    <td>False northing</td></tr>
      * </table></div>
      *
-     * <div class="section">Specifications referenced</div>
+     * <h4>Specifications referenced</h4>
      * The specification actually referenced by this citation is implementation dependent
      * and may change in future SIS version. Some of the specifications used are:
      *
@@ -250,10 +247,10 @@ public final class Citations extends Static {
      * We do not commit to a particular OGC specification in order to keep the flexibility to change the
      * {@linkplain DefaultCitation#getTitle() title} or URL according newer OGC publications.
      *
-     * <div class="section">Main usage</div>
+     * <h4>Main usage</h4>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
      * @see #EPSG
@@ -283,10 +280,10 @@ public final class Citations extends Static {
      * <tr><td>{@code "ESRI:False_Northing"}</td>    <td>{@code "OGC:false_northing"}</td></tr>
      * </table></div>
      *
-     * <div class="section">Main usage</div>
+     * <h4>Main usage</h4>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
      * @see #OGC
@@ -318,10 +315,10 @@ public final class Citations extends Static {
      * <tr><td>{@code "NetCDF:false_northing"}</td>                    <td>False northing</td></tr>
      * </table></div>
      *
-     * <div class="section">Main usage</div>
+     * <h4>Main usage</h4>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
      * @since 0.4
@@ -333,10 +330,10 @@ public final class Citations extends Static {
      * the <a href="http://trac.osgeo.org/geotiff/">GeoTIFF</a> specification.
      * This specification identifies some map projections by their own numerical codes.
      *
-     * <div class="section">Main usage</div>
+     * <h4>Main usage</h4>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
      * @since 0.4
@@ -346,10 +343,10 @@ public final class Citations extends Static {
     /**
      * The authority for identifiers of objects defined by the <a href="https://proj4.org/">Proj.4</a> project.
      *
-     * <div class="section">Main usage</div>
+     * <h4>Main usage</h4>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
      * @since 0.4
@@ -359,10 +356,10 @@ public final class Citations extends Static {
     /**
      * The authority for identifiers of objects defined by MapInfo.
      *
-     * <div class="section">Main usage</div>
+     * <h4>Main usage</h4>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
      * @since 0.6
@@ -373,10 +370,10 @@ public final class Citations extends Static {
      * The <a href="http://www.iho.int/iho_pubs/standard/S-57Ed3.1/31Main.pdf">IHO transfer standard
      * for digital hydrographic data</a> specification.
      *
-     * <div class="section">Main usage</div>
+     * <h4>Main usage</h4>
      * This value can be returned by:
      * <ul>
-     *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()}</li>
      * </ul>
      *
      * @since 0.6
@@ -388,7 +385,7 @@ public final class Citations extends Static {
      * The ISO 19115 metadata standard defines a specific attribute for this information,
      * but the SIS library handles it like any other identifier.
      *
-     * <div class="section">Main usage</div>
+     * <h4>Main usage</h4>
      * This value can be returned by:
      * <ul>
      *   <li>{@link DefaultCitation#getIdentifiers()}</li>
@@ -403,7 +400,7 @@ public final class Citations extends Static {
      * The ISO 19115 metadata standard defines a specific attribute for this information,
      * but the SIS library handles it like any other identifier.
      *
-     * <div class="section">Main usage</div>
+     * <h4>Main usage</h4>
      * This value can be returned by:
      * <ul>
      *   <li>{@link DefaultCitation#getIdentifiers()}</li>
@@ -416,7 +413,7 @@ public final class Citations extends Static {
     /**
      * The codespace of objects that are specific to the <a href="http://sis.apache.org">Apache SIS</a> project.
      *
-     * <div class="section">Main usage</div>
+     * <h4>Main usage</h4>
      * This value can be returned by:
      * <ul>
      *   <li>{@link org.apache.sis.metadata.iso.quality.DefaultConformanceResult#getSpecification()}</li>
@@ -530,6 +527,17 @@ public final class Citations extends Static {
      */
     private static boolean equalsFiltered(final CharSequence s1, final CharSequence s2) {
         return CharSequences.equalsFiltered(s1, s2, Characters.Filter.LETTERS_AND_DIGITS, true);
+    }
+
+    /**
+     * Returns the collection iterator, or {@code null} if the given collection is null or empty.
+     *
+     * @param  <E>         the type of elements in the collection.
+     * @param  collection  the collection from which to get the iterator, or {@code null}.
+     * @return the iterator over the given collection elements, or {@code null}.
+     */
+    private static <E> Iterator<E> nonEmptyIterator(final Collection<E> collection) {
+        return (collection != null && !collection.isEmpty()) ? collection.iterator() : null;
     }
 
     /**
@@ -810,27 +818,6 @@ public final class Citations extends Static {
     }
 
     /**
-     * Infers a valid Unicode identifier from the given citation, or returns {@code null} if none.
-     *
-     * @param  citation  the citation for which to get the Unicode identifier, or {@code null}.
-     * @return a non-empty Unicode identifier for the given citation without leading or trailing whitespaces,
-     *         or {@code null} if the given citation is null or does not have any Unicode identifier or title.
-     *
-     * @see org.apache.sis.metadata.iso.ImmutableIdentifier
-     * @see org.apache.sis.referencing.IdentifiedObjects#getSimpleNameOrIdentifier(IdentifiedObject)
-     * @see org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence)
-     *
-     * @since 0.6
-     *
-     * @deprecated Replaced by {@link #toCodeSpace(Citation)} in order to reduce the risk of inconsistent
-     *             behavior if those two methods are mixed.
-     */
-    @Deprecated
-    public static String getUnicodeIdentifier(final Citation citation) {
-        return removeIgnorableCharacters(Identifiers.getIdentifier(citation, true));
-    }
-
-    /**
      * Infers a code space from the given citation, or returns {@code null} if none.
      * This method is useful for extracting a short designation of an authority (e.g. {@code "EPSG"})
      * for processing purpose. This method performs the following actions:
@@ -877,17 +864,6 @@ public final class Citations extends Static {
         } else {
             return removeIgnorableCharacters(Identifiers.getIdentifier(citation, true));
         }
-    }
-
-    /**
-     * @deprecated Renamed as {@link #toCodeSpace(Citation)}. The previous name was confusing because this
-     * method does not return the namespace of the given citation, but instead represents it as a namespace.
-     *
-     * @since 0.8
-     */
-    @Deprecated
-    public static String getCodeSpace(final Citation citation) {
-        return toCodeSpace(citation);
     }
 
     /**

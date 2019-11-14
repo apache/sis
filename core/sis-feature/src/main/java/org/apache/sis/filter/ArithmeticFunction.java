@@ -20,6 +20,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.Fraction;
@@ -27,7 +29,6 @@ import org.apache.sis.math.Fraction;
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
 import org.opengis.filter.expression.BinaryExpression;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.ExpressionVisitor;
@@ -39,8 +40,8 @@ import org.opengis.filter.expression.ExpressionVisitor;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpression, FeatureExpression {
@@ -65,6 +66,20 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
      */
     static AttributeType<Number> createNumericType(final String name) {
         return createType(Number.class, name);
+    }
+
+    /**
+     * Returns the type of results computed by this arithmetic function.
+     */
+    protected abstract AttributeType<Number> expectedType();
+
+    /**
+     * Provides the type of results computed by this expression. That type depends only
+     * on the {@code ArithmeticFunction} subclass and is given by {@link #expectedType()}.
+     */
+    @Override
+    public final PropertyTypeBuilder expectedType(FeatureType ignored, FeatureTypeBuilder addTo) {
+        return addTo.addProperty(expectedType());
     }
 
     /**
@@ -118,12 +133,12 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
      * The "Add" (+) expression.
      */
     static final class Add extends ArithmeticFunction implements org.opengis.filter.expression.Add {
-        /** For cross-version compatibility. */
+        /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 5445433312445869201L;
 
         /** Description of results of the {@value #NAME} expression. */
         private static final AttributeType<Number> TYPE = createNumericType(NAME);
-        @Override public PropertyType expectedType(FeatureType type) {return TYPE;}
+        @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
         /** Creates a new expression for the {@value #NAME} operation. */
         Add(Expression expression1, Expression expression2) {
@@ -131,8 +146,8 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         }
 
         /** Identification of this operation. */
-        @Override protected String name() {return NAME;}
-        @Override protected char symbol() {return '+';}
+        @Override protected String getName() {return NAME;}
+        @Override protected char   symbol()  {return '+';}
 
         /** Applies this expression to the given operands. */
         @Override protected Number applyAsDouble  (double     left, double     right) {return left + right;}
@@ -141,7 +156,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         @Override protected Number applyAsInteger (BigInteger left, BigInteger right) {return left.add(right);}
         @Override protected Number applyAsLong    (long       left, long       right) {return Math.addExact(left, right);}
 
-        /** Implementation of the visitor pattern. */
+        /** Implementation of the visitor pattern (not used by Apache SIS). */
         @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
             return visitor.visit(this, extraData);
         }
@@ -152,12 +167,12 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
      * The "Sub" (−) expression.
      */
     static final class Subtract extends ArithmeticFunction implements org.opengis.filter.expression.Subtract {
-        /** For cross-version compatibility. */
+        /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 3048878022726271508L;
 
         /** Description of results of the {@value #NAME} expression. */
         private static final AttributeType<Number> TYPE = createNumericType(NAME);
-        @Override public PropertyType expectedType(FeatureType type) {return TYPE;}
+        @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
         /** Creates a new expression for the {@value #NAME} operation. */
         Subtract(Expression expression1, Expression expression2) {
@@ -165,8 +180,8 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         }
 
         /** Identification of this operation. */
-        @Override protected String name() {return NAME;}
-        @Override protected char symbol() {return '−';}
+        @Override protected String getName() {return NAME;}
+        @Override protected char   symbol()  {return '−';}
 
         /** Applies this expression to the given operands. */
         @Override protected Number applyAsDouble  (double     left, double     right) {return left - right;}
@@ -175,7 +190,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         @Override protected Number applyAsInteger (BigInteger left, BigInteger right) {return left.subtract(right);}
         @Override protected Number applyAsLong    (long       left, long       right) {return Math.subtractExact(left, right);}
 
-        /** Implementation of the visitor pattern. */
+        /** Implementation of the visitor pattern (not used by Apache SIS). */
         @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
             return visitor.visit(this, extraData);
         }
@@ -186,12 +201,12 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
      * The "Mul" (×) expression.
      */
     static final class Multiply extends ArithmeticFunction implements org.opengis.filter.expression.Multiply {
-        /** For cross-version compatibility. */
+        /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -1300022614832645625L;
 
         /** Description of results of the {@value #NAME} expression. */
         private static final AttributeType<Number> TYPE = createNumericType(NAME);
-        @Override public PropertyType expectedType(FeatureType type) {return TYPE;}
+        @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
         /** Creates a new expression for the {@value #NAME} operation. */
         Multiply(Expression expression1, Expression expression2) {
@@ -199,8 +214,8 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         }
 
         /** Identification of this operation. */
-        @Override protected String name() {return NAME;}
-        @Override protected char symbol() {return '×';}
+        @Override protected String getName() {return NAME;}
+        @Override protected char   symbol()  {return '×';}
 
         /** Applies this expression to the given operands. */
         @Override protected Number applyAsDouble  (double     left, double     right) {return left * right;}
@@ -209,7 +224,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         @Override protected Number applyAsInteger (BigInteger left, BigInteger right) {return left.multiply(right);}
         @Override protected Number applyAsLong    (long       left, long       right) {return Math.multiplyExact(left, right);}
 
-        /** Implementation of the visitor pattern. */
+        /** Implementation of the visitor pattern (not used by Apache SIS). */
         @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
             return visitor.visit(this, extraData);
         }
@@ -220,12 +235,12 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
      * The "Div" (÷) expression.
      */
     static final class Divide extends ArithmeticFunction implements org.opengis.filter.expression.Divide {
-        /** For cross-version compatibility. */
+        /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -7709291845568648891L;
 
         /** Description of results of the {@value #NAME} expression. */
         private static final AttributeType<Number> TYPE = createNumericType(NAME);
-        @Override public PropertyType expectedType(FeatureType type) {return TYPE;}
+        @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
         /** Creates a new expression for the {@value #NAME} operation. */
         Divide(Expression expression1, Expression expression2) {
@@ -233,8 +248,8 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         }
 
         /** Identification of this operation. */
-        @Override protected String name() {return NAME;}
-        @Override protected char symbol() {return '÷';}
+        @Override protected String getName() {return NAME;}
+        @Override protected char   symbol()  {return '÷';}
 
         /** Applies this expression to the given operands. */
         @Override protected Number applyAsDouble  (double     left, double     right) {return left / right;}
@@ -258,7 +273,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
             }
         }
 
-        /** Implementation of the visitor pattern. */
+        /** Implementation of the visitor pattern (not used by Apache SIS). */
         @Override public Object accept(ExpressionVisitor visitor, Object extraData) {
             return visitor.visit(this, extraData);
         }

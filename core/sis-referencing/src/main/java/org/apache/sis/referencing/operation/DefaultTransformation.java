@@ -40,7 +40,7 @@ import org.apache.sis.util.ArgumentChecks;
  * {@linkplain #getMathTransform() math transform}. Subclasses may have to override the {@link #getParameterValues()}
  * method if they need to provide a different set of parameters.</p>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. This means that unless otherwise noted in the javadoc,
  * {@code Transformation} instances created using only SIS factories and static constants can be shared
@@ -153,9 +153,9 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code Transformation.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code Transformation}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
      * own set of interfaces.</div>
      *
      * @return {@code Transformation.class} or a user-defined sub-interface.

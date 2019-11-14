@@ -36,9 +36,11 @@ import static org.apache.sis.internal.referencing.provider.Mollweide.*;
 
 /**
  * <cite>Mollweide</cite> projection.
- * See the <a href="http://mathworld.wolfram.com/MollweideProjection.html">Mollweide projection on MathWorld</a>
- * or the <a href="https://en.wikipedia.org/wiki/Mollweide_projection">Mollweide projection on Wikipedia</a>
- * for an overview.
+ * See the following references for an overview:
+ * <ul>
+ *   <li><a href="https://en.wikipedia.org/wiki/Mollweide_projection">Mollweide projection on Wikipedia</a></li>
+ *   <li><a href="http://mathworld.wolfram.com/MollweideProjection.html">Mollweide projection on MathWorld</a></li>
+ * </ul>
  *
  * @todo This projection is not {@link org.apache.sis.math.FunctionProperty#SURJECTIVE surjective}.
  *       Consequently {@link org.apache.sis.referencing.CRS#suggestCommonTarget CRS.suggestCommonTarget(…)}

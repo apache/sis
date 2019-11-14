@@ -46,7 +46,7 @@ import org.apache.sis.internal.system.Modules;
  * <p>Options are <em>transitive</em>: if a service uses others services for its internal working, the given options
  * may also be given to those dependencies, at implementation choice.</p>
  *
- * <div class="section">Defining new options</div>
+ * <h2>Defining new options</h2>
  * Developers who wish to define their own options can define static constants in a subclass,
  * as in the following example:
  *
@@ -94,8 +94,8 @@ public class OptionKey<T> implements Serializable {
      * If this option is not provided, then the default value is format specific.
      * That default is often, but not necessarily, the {@linkplain TimeZone#getDefault() platform default}.
      *
-     * <div class="warning"><b>Upcoming API change — Java time API</b><br>
-     * The type may be changed to {@link java.time.ZoneId} when Apache SIS will target Java 8.
+     * <div class="warning"><b>Upcoming API change — Java time API</b>:
+     * the type may be changed to {@link java.time.ZoneId} when Apache SIS will target Java 8.
      * This change may be applied in synchronization with GeoAPI 4.0.
      * </div>
      *
@@ -256,7 +256,7 @@ public class OptionKey<T> implements Serializable {
 
     /**
      * Returns the option value in the given map for this key, or {@code null} if none.
-     * This is a convenience method for implementors, which can be used as below:
+     * This is a convenience method for implementers, which can be used as below:
      *
      * {@preformat java
      *     public <T> T getOption(final OptionKey<T> key) {
@@ -274,7 +274,7 @@ public class OptionKey<T> implements Serializable {
 
     /**
      * Sets a value for this option key in the given map, or in a new map if the given map is {@code null}.
-     * This is a convenience method for implementors, which can be used as below:
+     * This is a convenience method for implementers, which can be used as below:
      *
      * {@preformat java
      *     public <T> void setOption(final OptionKey<T> key, final T value) {

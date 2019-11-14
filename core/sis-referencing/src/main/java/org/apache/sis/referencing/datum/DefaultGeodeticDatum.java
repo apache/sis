@@ -58,7 +58,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * Geodetic datum are used together with ellipsoidal coordinate system, and also with Cartesian
  * coordinate system centered in the ellipsoid (or sphere).
  *
- * <div class="section">Bursa-Wolf parameters</div>
+ * <h2>Bursa-Wolf parameters</h2>
  * One or many {@link BursaWolfParameters} can optionally be associated to each {@code DefaultGeodeticDatum} instance.
  * This association is not part of the ISO 19111 model, but still a common practice (especially in older standards).
  * Associating Bursa-Wolf parameters to geodetic datum is known as the <cite>early-binding</cite> approach.
@@ -92,7 +92,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  *   </li>
  * </ol>
  *
- * <div class="section">Creating new geodetic datum instances</div>
+ * <h2>Creating new geodetic datum instances</h2>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
  * Choice 1 in the following list is the easiest but most restrictive way to get a geodetic datum.
@@ -115,7 +115,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  *     GeodeticDatum datum = CommonCRS.WGS84.datum();
  * }
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
  * the {@link Ellipsoid} and the {@link PrimeMeridian} given to the constructor are also immutable. Unless otherwise
  * noted in the javadoc, this condition holds if all components were created using only SIS factories and static
@@ -315,9 +315,9 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code GeodeticDatum.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code GeodeticDatum}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
      * own set of interfaces.</div>
      *
      * @return {@code GeodeticDatum.class} or a user-defined sub-interface.
@@ -384,7 +384,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * in EPSG dataset version 8.9, all datum shifts that can be represented by this method use Greenwich as the
      * prime meridian, both in source and target datum.</div>
      *
-     * <div class="section">Search criterion</div>
+     * <h4>Search criterion</h4>
      * If the given {@code areaOfInterest} is non-null and contains at least one geographic bounding box, then this
      * method ignores any Bursa-Wolf parameters having a {@linkplain BursaWolfParameters#getDomainOfValidity() domain
      * of validity} that does not intersect the given geographic extent.
@@ -398,13 +398,13 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *       and {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#inverse() inverted}.</li>
      * </ol>
      *
-     * <div class="section">Multi-occurrences resolution</div>
+     * <h4>Multi-occurrences resolution</h4>
      * If more than one {@code BursaWolfParameters} instance is found in any of the above steps, then the one having
      * the largest intersection between its {@linkplain BursaWolfParameters#getDomainOfValidity() domain of validity}
      * and the given extent will be selected. If more than one instance have the same intersection, then the first
      * occurrence is selected.
      *
-     * <div class="section">Time-dependent parameters</div>
+     * <h4>Time-dependent parameters</h4>
      * If the given extent contains a {@linkplain org.opengis.metadata.extent.TemporalExtent temporal extent},
      * then the instant located midway between start and end time will be taken as the date where to evaluate the
      * Bursa-Wolf parameters. This is relevant only to {@linkplain TimeDependentBWP time-dependent parameters}.
@@ -496,7 +496,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * <cite>"Paris"</cite>, then this method compares only the <cite>"Nouvelle Triangulation Française"</cite> part.
      * </div>
      *
-     * <div class="section">Future evolutions</div>
+     * <h4>Future evolutions</h4>
      * This method implements heuristic rules learned from experience while trying to provide inter-operability
      * with different data producers. Those rules may be adjusted in any future SIS version according experience
      * gained while working with more data producers.

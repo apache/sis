@@ -37,7 +37,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @since   0.8
  * @module
  */
-public class IllegalNameException extends DataStoreException {
+public class IllegalNameException extends NoSuchDataException {
     /**
      * For cross-version compatibility.
      */

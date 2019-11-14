@@ -32,8 +32,8 @@ import org.opengis.filter.FilterVisitor;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 abstract class LogicalFunction extends Node {
@@ -104,8 +104,8 @@ abstract class LogicalFunction extends Node {
         }
 
         /** Returns a name for this filter. */
-        @Override protected String name() {return "And";}
-        @Override protected char symbol() {return filters.length <= 2 ? '∧' : '⋀';}
+        @Override protected String getName() {return "And";}
+        @Override protected char   symbol()  {return filters.length <= 2 ? '∧' : '⋀';}
 
         /** Implementation of the visitor pattern. */
         @Override public Object accept(FilterVisitor visitor, Object extraData) {
@@ -137,8 +137,8 @@ abstract class LogicalFunction extends Node {
         }
 
         /** Returns a name for this filter. */
-        @Override protected String name() {return "Or";}
-        @Override protected char symbol() {return filters.length <= 2 ? '∨' : '⋁';}
+        @Override protected String getName() {return "Or";}
+        @Override protected char   symbol()  {return filters.length <= 2 ? '∨' : '⋁';}
 
         /** Implementation of the visitor pattern. */
         @Override public Object accept(FilterVisitor visitor, Object extraData) {

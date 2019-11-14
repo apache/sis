@@ -33,7 +33,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
 /**
  * Handles conversions between {@link Path}, {@link File}, {@link URI} and {@link URL} objects.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This base class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)

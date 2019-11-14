@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Collections;
+import java.util.logging.Filter;
 import java.util.logging.LogRecord;             // For javadoc
 import java.net.URL;
 import java.io.File;
@@ -45,7 +46,6 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.jaxb.TypeRegistration;
@@ -75,19 +75,18 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <tr><td>{@link #LOCALE}</td>             <td>{@link Locale}</td>            <td>for specifying the locale to use for international strings and code lists.</td></tr>
  *   <tr><td>{@link #TIMEZONE}</td>           <td>{@link TimeZone}</td>          <td>for specifying the timezone to use for dates and times.</td></tr>
  *   <tr><td>{@link #SCHEMAS}</td>            <td>{@link Map}</td>               <td>for specifying the root URL of metadata schemas to use.</td></tr>
- *   <tr><td>{@link #DEFAULT_NAMESPACE}</td>  <td>{@link String}</td>            <td>for specifying the default namespace of the XML document to write.</td></tr>
  *   <tr><td>{@link #GML_VERSION}</td>        <td>{@link Version}</td>           <td>for specifying the GML version of the document to be (un)marshalled.</td></tr>
  *   <tr><td>{@link #METADATA_VERSION}</td>   <td>{@link Version}</td>           <td>for specifying the metadata version of the document to be (un)marshalled.</td></tr>
  *   <tr><td>{@link #RESOLVER}</td>           <td>{@link ReferenceResolver}</td> <td>for replacing {@code xlink} or {@code uuidref} attributes by the actual object to use.</td></tr>
  *   <tr><td>{@link #CONVERTER}</td>          <td>{@link ValueConverter}</td>    <td>for controlling the conversion of URL, UUID, Units or similar objects.</td></tr>
  *   <tr><td>{@link #STRING_SUBSTITUTES}</td> <td>{@code String[]}</td>          <td>for specifying which code lists to replace by simpler {@code <gco:CharacterString>} elements.</td></tr>
- *   <tr><td>{@link #WARNING_LISTENER}</td>   <td>{@link WarningListener}</td>   <td>for being notified about non-fatal warnings.</td></tr>
+ *   <tr><td>{@link #WARNING_FILTER}</td>     <td>{@link Filter}</td>            <td>for being notified about non-fatal warnings.</td></tr>
  * </table>
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -104,7 +103,7 @@ public final class XML extends Static {
      * such case, the unmarshaller will try to pickup a string in the language specified
      * by this property.</p>
      *
-     * <div class="section">Default behavior</div>
+     * <h4>Default behavior</h4>
      * If this property is never set, then (un)marshalling will try to use "unlocalized" strings -
      * typically some programmatic strings like {@linkplain org.opengis.annotation.UML#identifier()
      * UML identifiers}. While such identifiers often look like English words, they are not
@@ -112,7 +111,7 @@ public final class XML extends Static {
      * The algorithm attempting to find a "unlocalized" string is defined in the
      * {@link org.apache.sis.util.iso.DefaultInternationalString#toString(Locale)} javadoc.
      *
-     * <div class="section">Special case</div>
+     * <h4>Special case</h4>
      * If the object to be marshalled is an instance of
      * {@link org.apache.sis.metadata.iso.DefaultMetadata}, then the value given to its
      * {@link org.apache.sis.metadata.iso.DefaultMetadata#setLanguage(Locale) setLanguage(Locale)}
@@ -129,7 +128,7 @@ public final class XML extends Static {
      * The value for this property shall be an instance of {@link TimeZone}
      * or a {@link CharSequence} recognized by {@link TimeZone#getTimeZone(String)}.
      *
-     * <div class="section">Default behavior</div>
+     * <h4>Default behavior</h4>
      * If this property is never set, then (un)marshalling will use the
      * {@linkplain TimeZone#getDefault() default timezone}.
      *
@@ -154,7 +153,7 @@ public final class XML extends Static {
      * The key to be used depends on the {@linkplain #METADATA_VERSION metadata version} to be marshalled.
      * Additional keys, if any, are ignored. Future SIS versions may recognize more keys.
      *
-     * <div class="section">Valid values</div>
+     * <h4>Valid values</h4>
      * The following table gives some typical URLs.
      * The URL in bold character is the default one.
      *
@@ -176,19 +175,6 @@ public final class XML extends Static {
     // If more keys are documented, update the Pooled.SCHEMAS_KEY array.
 
     /**
-     * Specifies the default namespace of the XML document to write.
-     * An example of value for this key is {@code "http://www.isotc211.org/2005/gmd"}.
-     *
-     * <div class="section">Current limitation</div>
-     * In current SIS implementation, this property is honored only by the {@link MarshallerPool} constructors.
-     * Specifying this property to {@link javax.xml.bind.Marshaller#setProperty(String, Object)} is too late.
-     *
-     * @deprecated Use {@link javax.xml.bind.annotation.XmlSchema} instead.
-     */
-    @Deprecated
-    public static final String DEFAULT_NAMESPACE = "org.apache.sis.xml.defaultNamespace";
-
-    /**
      * Specifies the GML version of the document to be marshalled or unmarshalled.
      * The GML version may affect the set of XML elements to be marshalled and their namespaces.
      * Note that GML 3.2 is identical to ISO 19136:2007.
@@ -200,7 +186,7 @@ public final class XML extends Static {
      * The value can be {@link String} or {@link Version} object.
      * If no version is specified, then the most recent supported GML version is assumed.
      *
-     * <div class="section">Supported GML versions</div>
+     * <h4>Supported GML versions</h4>
      * Apache SIS currently supports GML 3.2.1 by default. SIS can read and write GML 3.2
      * if this property is set to "3.2". It is also possible to set this property to "3.1",
      * but the marshalled XML is not GML 3.1.1 conformant because of the differences between the two schemas.
@@ -219,7 +205,7 @@ public final class XML extends Static {
      * For example the {@code <gml:domainOfValidity>} element inside a coordinate reference system
      * is always marshalled using ISO 19139:2007 if the enclosing element uses GML 3.2 schema.</p>
      *
-     * <div class="section">Supported metadata versions</div>
+     * <h4>Supported metadata versions</h4>
      * Apache SIS currently supports ISO 19115-3:2016 by default. This version can be explicitly
      * set with value "2014" or above (because the abstract model was defined in ISO 19115-1:2014).
      * SIS can write legacy ISO 19139:2007 documents if this property is set to a value less than "2014".
@@ -364,15 +350,15 @@ public final class XML extends Static {
 
     /**
      * Specifies a listener to be notified when a non-fatal error occurred during the (un)marshalling.
-     * The value for this property shall be an instance of {@code WarningListener<Object>}.
+     * The value for this property shall be an instance of {@link Filter}.
      *
      * <p>By default, warnings that occur during the (un)marshalling process are logged. However if a
-     * property is set for this key, then the {@link WarningListener#warningOccured(Object, LogRecord)}
-     * method will be invoked and the warning will <em>not</em> be logged by the (un)marshaller.</p>
+     * property is set for this key, then the {@link Filter#isLoggable(LogRecord)} method will be invoked.
+     * If that method returns {@code false}, then the warning will not be logged by the (un)marshaller.</p>
      *
-     * @see WarningListener
+     * @since 1.0
      */
-    public static final String WARNING_LISTENER = "org.apache.sis.xml.warningListener";
+    public static final String WARNING_FILTER = "org.apache.sis.xml.warningFilter";
 
     /**
      * The pool of marshallers and unmarshallers used by this class.

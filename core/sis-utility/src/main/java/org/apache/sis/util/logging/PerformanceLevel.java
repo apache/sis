@@ -35,7 +35,7 @@ import static org.apache.sis.util.ArgumentChecks.ensurePositive;
  * disabled by default, and enabling them imply enabling configuration logging too. This is
  * done that way because the configuration typically have a significant impact on performance.</p>
  *
- * <div class="section">Enabling performance logging</div>
+ * <h2>Enabling performance logging</h2>
  * Performance logging can be enabled in various ways. Among others:
  *
  * <ul>

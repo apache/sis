@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import org.opengis.test.Validators;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;

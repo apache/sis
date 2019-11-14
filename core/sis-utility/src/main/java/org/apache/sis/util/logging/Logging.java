@@ -26,11 +26,12 @@ import org.apache.sis.util.Configuration;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
+import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.system.Modules;
 
 
 /**
- * A set of utilities method for configuring loggings in SIS. Library implementors should fetch
+ * A set of utilities method for configuring loggings in SIS. Library implementers should fetch
  * their loggers using the {@link #getLogger(String)} static method defined in this {@code Logging}
  * class rather than the one defined in the standard {@link Logger} class, in order to give SIS a
  * chance to redirect the logs to an other framework like
@@ -48,7 +49,7 @@ import org.apache.sis.internal.system.Modules;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -115,7 +116,7 @@ public final class Logging extends Static {
      * If the given {@code factory} argument is {@code null} (the default),
      * then the standard Logging framework will be used.
      *
-     * <div class="section">Limitation</div>
+     * <h4>Limitation</h4>
      * SIS classes typically declare a logger constant like below:
      *
      * {@preformat java
@@ -153,6 +154,7 @@ public final class Logging extends Static {
      * @return a logger for the specified name.
      */
     public static Logger getLogger(final String name) {
+        ArgumentChecks.ensureNonNull("name", name);
         final LoggerFactory<?> factory = Logging.factory;
         if (factory != null) {
             final Logger logger = factory.getLogger(name);
@@ -164,20 +166,17 @@ public final class Logging extends Static {
     }
 
     /**
-     * Returns a logger for the specified class. This convenience method invokes
-     * {@link #getLogger(String)} with the package name as the logger name.
+     * Returns a logger for the package of the specified class. This convenience method invokes
+     * {@link #getLogger(String)} with the package name of the given class taken as the logger name.
      *
-     * @param  classe  the class for which to obtain a logger.
+     * @param  source  the class which will emit a logging message.
      * @return a logger for the specified class.
+     *
+     * @since 1.0
      */
-    static Logger getLogger(Class<?> classe) {
-        Class<?> outer;
-        while ((outer = classe.getEnclosingClass()) != null) {
-            classe = outer;
-        }
-        String name = classe.getName();
-        final int separator = name.lastIndexOf('.');
-        name = (separator >= 1) ? name.substring(0, separator) : "";
+    public static Logger getLogger(final Class<?> source) {
+        ArgumentChecks.ensureNonNull("source", source);
+        String name = JDK9.getPackageName(source);
         if (name.startsWith(Modules.INTERNAL_CLASSNAME_PREFIX)) {
             // Remove the "internal" part from Apache SIS package names.
             name = Modules.CLASSNAME_PREFIX + name.substring(Modules.INTERNAL_CLASSNAME_PREFIX.length());
@@ -257,7 +256,7 @@ public final class Logging extends Static {
                 if (!classname.equals(classe)) {
                     continue;
                 }
-            } else if (!WarningListeners.isPublic(element)) {
+            } else if (!isPublic(element)) {
                 continue;
             }
             /*
@@ -297,6 +296,30 @@ public final class Logging extends Static {
             record.setSourceMethodName(method);
         }
         return logger;
+    }
+
+    /**
+     * Returns {@code true} if the given stack trace element describes a method considered part of public API.
+     * This method is invoked in order to infer the class and method names to declare in a {@link LogRecord}.
+     * We do not document this feature in public Javadoc because it is based on heuristic rules that may change.
+     *
+     * <p>The current implementation compares the class name against a hard-coded list of classes to hide.
+     * This implementation may change in any future SIS version.</p>
+     *
+     * @param  e  a stack trace element.
+     * @return {@code true} if the class and method specified by the given element can be considered public API.
+     */
+    private static boolean isPublic(final StackTraceElement e) {
+        final String classname = e.getClassName();
+        if (classname.startsWith("java") || classname.startsWith(Modules.INTERNAL_CLASSNAME_PREFIX) ||
+            classname.indexOf('$') >= 0 || e.getMethodName().indexOf('$') >= 0)
+        {
+            return false;
+        }
+        if (classname.startsWith(Modules.CLASSNAME_PREFIX + "util.logging.")) {
+            return classname.endsWith("Test");      // Consider JUnit tests as public.
+        }
+        return true;    // TODO: with StackWalker on JDK9, check if the class is public.
     }
 
     /**

@@ -127,13 +127,13 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
     }
 
     /**
-     * Tests {@link DefaultCitation#transition(DefaultCitation.State)} to the final state.
+     * Tests {@link DefaultCitation#transitionTo(DefaultCitation.State)} to the final state.
      */
     @Test
     public void testTransitionToFinal() {
         final DefaultCitation original = create();
         final DefaultCitation clone = create();
-        clone.transition(DefaultCitation.State.FINAL);
+        clone.transitionTo(DefaultCitation.State.FINAL);
         assertEquals("original.state", DefaultCitation.State.EDITABLE, original.state());
         assertEquals("clone.state",    DefaultCitation.State.FINAL,    clone.state());
         assertEquals(original, clone);
@@ -153,23 +153,6 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
     public void testCopy() {
         final DefaultCitation original = create();
         final DefaultCitation clone = (DefaultCitation) new MetadataCopier(MetadataStandard.ISO_19115).copy(original);
-        assertCopy(original, clone);
-    }
-
-    /**
-     * Tests {@link DefaultCitation#unmodifiable()}.
-     *
-     * @deprecated To be removed after we removed {@link DefaultCitation#unmodifiable()}.
-     */
-    @Test
-    @Deprecated
-    public void testUnmodifiable() {
-        final DefaultCitation original = create();
-        final DefaultCitation clone = (DefaultCitation) original.unmodifiable();    // This will invoke 'freeze()'.
-        assertSame("original.unmodifiable", clone, original.unmodifiable());
-        assertSame("clone.unmodifiable",    clone, clone.unmodifiable());
-        assertEquals("original.state", DefaultCitation.State.EDITABLE, original.state());
-        assertEquals("clone.state",    DefaultCitation.State.FINAL,    clone.state());
         assertCopy(original, clone);
     }
 
@@ -211,7 +194,7 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
      * Verifies that {@code actual} is an unmodifiable copy of {@code expected}.
      */
     private static <T> void assertCopy(final Collection<T> expected, final Collection<T> actual) {
-        assertNotSame("ModifiableMetadata.transition(FINAL) shall have copied the collection.", expected, actual);
+        assertNotSame("ModifiableMetadata.transitionTo(FINAL) shall have copied the collection.", expected, actual);
         assertEquals("The copied collection shall have the same content than the original.", expected, actual);
         try {
             actual.add(null);

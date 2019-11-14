@@ -63,21 +63,23 @@ import org.apache.sis.io.wkt.Convention;
  * This class is often used for defining 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
  * coordinate reference systems as an aggregation of simpler CRS. Below is two examples of such aggregations:
  *
- * <table class="compact" summary="Illustration of a compound CRS.">
- * <tr><th>Flat list</th><th>Hierarchical structure</th></tr>
- * <tr><td><blockquote>
+ * <div class="horizontal-flow">
+ * <div><p><b>Flat list</b></p>
+ * <blockquote>
  *   <code>CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)<br>
  *   <code>  ├─ProjectedCRS</code> — (<var>x</var>, <var>y</var>)<br>
  *   <code>  ├─VerticalCRS</code> — (<var>z</var>)<br>
  *   <code>  └─TemporalCRS</code> — (<var>t</var>)
- * </blockquote></td><td><blockquote>
+ * </blockquote></div>
+ * <div><p><b>Hierarchical structure</b></p>
+ * <blockquote>
  *   <code>CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)<br>
  *   <code>  ├─CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>)<br>
  *   <code>  │   ├─ProjectedCRS</code> — (<var>x</var>, <var>y</var>)<br>
  *   <code>  │   └─VerticalCRS</code> — (<var>z</var>)<br>
  *   <code>  └─TemporalCRS</code> — (<var>t</var>)
- * </blockquote></td></tr>
- * </table>
+ * </blockquote></div>
+ * </div>
  *
  * Strictly speaking, only the flat list on the left side is allowed by OGC/ISO specifications.
  * However Apache SIS relaxes this rule by allowing hierarchies as shown on the right side. This
@@ -85,7 +87,7 @@ import org.apache.sis.io.wkt.Convention;
  * part (e.g. the EPSG identifier) that would otherwise been lost. Users can obtain the list of their
  * choice by invoking {@link #getSingleComponents()} or {@link #getComponents()} respectively.
  *
- * <div class="section">Component order</div>
+ * <h2>Component order</h2>
  * ISO 19162 restricts compound CRS to the following components in that order:
  * <ul>
  *   <li>A mandatory horizontal CRS (only one of two-dimensional {@code GeographicCRS} or {@code ProjectedCRS} or {@code EngineeringCRS}).</li>
@@ -102,7 +104,7 @@ import org.apache.sis.io.wkt.Convention;
  *
  * However users are encouraged to follow ISO 19162 restriction for better portability.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * and all {@link CoordinateReferenceSystem} instances given to the constructor are also immutable.
  * Unless otherwise noted in the javadoc, this condition holds if all components were created using only
@@ -304,9 +306,9 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code CompoundCRS.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code CompoundCRS}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
      * own set of interfaces.</div>
      *
      * @return {@code CompoundCRS.class} or a user-defined sub-interface.
@@ -560,7 +562,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code CompoundCRS[…]} element.
      *
-     * <div class="section">WKT validity</div>
+     * <h4>WKT validity</h4>
      * The WKT version 2 format restricts compound CRS to the following components in that order:
      *
      * <ul>

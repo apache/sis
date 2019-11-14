@@ -85,7 +85,7 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.math.Vector;
 
@@ -894,7 +894,7 @@ public class Formatter implements Localized {
      * Longitudes are relative to the Greenwich meridian, with values increasing toward East.
      * Latitudes values are increasing toward North.
      *
-     * <div class="section">Numerical precision</div>
+     * <h4>Numerical precision</h4>
      * The ISO 19162 standards recommends to format those values with only 2 decimal digits.
      * This is because {@code GeographicBoundingBox} does not specify the datum, so this box
      * is an approximated information only.
@@ -1637,7 +1637,7 @@ public class Formatter implements Localized {
      *
      * <p>If the given unit is null, then this method does nothing and returns {@code null}.</p>
      *
-     * <div class="section">Special case</div>
+     * <h4>Special case</h4>
      * If the WKT conventions are {@code WKT1_COMMON_UNITS}, then this method ignores the given unit
      * and returns {@code null}. See {@link Convention#WKT1_COMMON_UNITS} javadoc for more information.
      *

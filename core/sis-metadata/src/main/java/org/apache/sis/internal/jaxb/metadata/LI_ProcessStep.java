@@ -63,7 +63,7 @@ public final class LI_ProcessStep extends PropertyType<LI_ProcessStep, ProcessSt
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <mrl:LI_ProcessStep>} XML element.
      *
-     * @param  metadata  the metadata element to marshall.
+     * @param  metadata  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override

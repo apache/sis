@@ -1074,7 +1074,7 @@ class CoordinateOperationRegistry {
      *
      *       <div class="note"><b>Note:</b> we do not have many objects that are both a {@code CoordinateOperation}
      *       and a {@code MathTransform}, but that combination is not forbidden. Since such practice is sometime
-     *       convenient for the implementor, Apache SIS allows that.</div></li>
+     *       convenient for the implementer, Apache SIS allows that.</div></li>
      *
      *   <li>If the given {@code type} is null, then this method infers the type from whether the given properties
      *       specify and accuracy or not. If those properties were created by the {@link #properties(Identifier)}

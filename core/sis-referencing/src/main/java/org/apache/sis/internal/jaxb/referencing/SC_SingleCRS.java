@@ -63,7 +63,7 @@ public final class SC_SingleCRS extends PropertyType<SC_SingleCRS, SingleCRS> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:AbstractSingleCRS>} XML element.
      *
-     * @param  crs  the element to marshall.
+     * @param  crs  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
@@ -96,7 +96,7 @@ public final class SC_SingleCRS extends PropertyType<SC_SingleCRS, SingleCRS> {
     public void setElement(final AbstractCRS crs) {
         if (!(crs instanceof SingleCRS)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedValueInElement_2,
-                    "baseCRS", IdentifiedObjects.getName(crs, null)));
+                    "baseCRS", IdentifiedObjects.getDisplayName(crs, null)));
         }
         metadata = (SingleCRS) crs;
         if (crs.getCoordinateSystem()    == null) incomplete("coordinateSystem");

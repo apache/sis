@@ -193,7 +193,7 @@ search: for (final VariableInfo counts : decoder.variables) {
                     final DimensionInfo sampleDimension = decoder.findDimension(sampleDimName);
                     if (sampleDimension == null) {
                         decoder.listeners.warning(decoder.resources().getString(Resources.Keys.DimensionNotFound_3,
-                                decoder.getFilename(), counts.getName(), sampleDimName), null);
+                                decoder.getFilename(), counts.getName(), sampleDimName));
                         continue;
                     }
                     /*
@@ -222,7 +222,7 @@ search: for (final VariableInfo counts : decoder.variables) {
                         }
                         if (identifiers == null) {
                             decoder.listeners.warning(decoder.resources().getString(Resources.Keys.VariableNotFound_2,
-                                    decoder.getFilename(), featureDimension.name), null);
+                                    decoder.getFilename(), featureDimension.name));
                             continue;
                         }
                     }
@@ -241,7 +241,7 @@ search: for (final VariableInfo counts : decoder.variables) {
                             decoder.listeners.warning(decoder.resources().getString(
                                     Resources.Keys.UnexpectedDimensionForVariable_4,
                                     decoder.getFilename(), identifiers.getName(),
-                                    featureDimension.getName(), identifiers.dimensions[i].name), null);
+                                    featureDimension.getName(), identifiers.dimensions[i].name));
                             continue search;
                         }
                     }
@@ -402,11 +402,11 @@ search: for (final VariableInfo counts : decoder.variables) {
         }
 
         /**
-         * Returns the number of features.
+         * Returns the remaining number of features to traverse.
          */
         @Override
         public long estimateSize() {
-            return counts.size();
+            return counts.size() - index;
         }
 
         /**

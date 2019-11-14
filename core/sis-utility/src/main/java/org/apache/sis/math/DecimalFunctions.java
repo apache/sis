@@ -207,7 +207,7 @@ public final class DecimalFunctions extends Static {
      * map projection parameters defined by national mapping agencies.
      * </div>
      *
-     * <div class="section">Domain of validity</div>
+     * <h4>Domain of validity</h4>
      * The current implementation can not compute delta for {@code abs(value) < 3E-8} approximately,
      * except for the 0 value which is supported. For any non-zero value closer to zero than the 3E-8
      * threshold, this method returns {@code NaN} because of insufficient algorithm accuracy.
@@ -509,8 +509,8 @@ public final class DecimalFunctions extends Static {
      * <table class="sis">
      *   <caption>Examples</caption>
      *   <tr><th>Accurate</th> <th>Approximate</th> <th>Result</th> <th>Comment</th></tr>
-     *   <tr><td>0.123456</td> <td>0.123</td>       <td>true</td>   <td>Differ on in digits not specified by {@code approximate}.</td></tr>
-     *   <tr><td>0.123456</td> <td>0.123000</td>    <td>true</td>   <td>This method can no distinguish missing digits from trailing zeros.</td></tr>
+     *   <tr><td>0.123456</td> <td>0.123</td>       <td>true</td>   <td>Differ in digits not specified by {@code approximate}.</td></tr>
+     *   <tr><td>0.123456</td> <td>0.123000</td>    <td>true</td>   <td>This method can not distinguish missing digits from trailing zeros.</td></tr>
      *   <tr><td>0.123456</td> <td>0.123001</td>    <td>false</td>  <td>No missing digits, and some of them differ.</td></tr>
      *   <tr><td>0.123</td>    <td>0.123456</td>    <td>false</td>  <td>{@code approximate} and {@code accurate} can not be interchanged.</td></tr>
      * </table>

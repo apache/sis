@@ -31,13 +31,12 @@ import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.sql.SQLStore;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalNameException;
-import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.Debug;
 
@@ -109,7 +108,7 @@ public final class Database {
      * @throws DataStoreException if a logical error occurred while analyzing the database structure.
      */
     public Database(final SQLStore store, final Connection connection, final DataSource source,
-            final GenericName[] tableNames, final WarningListeners<DataStore> listeners)
+            final GenericName[] tableNames, final StoreListeners listeners)
             throws SQLException, DataStoreException
     {
         final Analyzer analyzer = new Analyzer(source, connection, listeners, store.getLocale());

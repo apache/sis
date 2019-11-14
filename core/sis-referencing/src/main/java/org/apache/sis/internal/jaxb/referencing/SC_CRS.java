@@ -63,7 +63,7 @@ public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:AbstractCRS>} XML element.
      *
-     * @param  crs  the element to marshall.
+     * @param  crs  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

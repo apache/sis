@@ -62,7 +62,7 @@ public final class MX_DataFile extends PropertyType<MX_DataFile, DataFile> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given metadata value
      * in a {@code <gcx:MX_DataFile>} XML element.
      *
-     * @param  metadata  the metadata element to marshall.
+     * @param  metadata  the metadata element to marshal.
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override

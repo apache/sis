@@ -16,53 +16,189 @@
  */
 package org.apache.sis.gui.referencing;
 
+import java.util.EnumMap;
+import java.util.Locale;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
+import javafx.concurrent.Task;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.DialogPane;
 import javafx.scene.control.TextArea;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.util.StringConverter;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.WKTFormat;
+import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.Exceptions;
 
 
 /**
  * Small panel to display an object as WKT in various conventions.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
-final class WKTPane extends BorderPane {
+final class WKTPane extends StringConverter<Convention> implements ChangeListener<Convention> {
+    /**
+     * The object to use for formatting and CRS.
+     */
+    private final WKTFormat format;
 
-    private final ChoiceBox<Convention> choice = new ChoiceBox<>(FXCollections.observableArrayList(Convention.values()));
-    private final TextArea text = new TextArea();
+    /**
+     * A choice box for choosing the WKT conventions.
+     */
+    final ChoiceBox<Convention> convention;
 
-    public WKTPane(final FormattableObject obj) {
-        setTop(choice);
-        setCenter(text);
+    /**
+     * Localized string representations of {@link #convention}.
+     */
+    private final EnumMap<Convention,String> conventionTexts;
 
-        choice.valueProperty().addListener(new ChangeListener<Convention>() {
-            @Override
-            public void changed(ObservableValue<? extends Convention> observable, Convention oldValue, Convention newValue) {
-                text.setText(obj.toString(newValue));
-            }
-        });
-        choice.getSelectionModel().select(Convention.WKT1);
+    /**
+     * The pane where to show the Well Known Text.
+     */
+    final TextArea text = new TextArea();
+
+    /**
+     * The object to format.
+     */
+    private CoordinateReferenceSystem crs;
+
+    /**
+     * Creates a new pane for showing CRS Well Known Text.
+     */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    WKTPane(final Locale locale) {
+        final Convention[] sc = {           // Selected conventions in the order we want them to appear.
+            Convention.WKT2_SIMPLIFIED,
+            Convention.WKT2,
+            Convention.WKT1,
+            Convention.WKT1_COMMON_UNITS
+        };
+        conventionTexts = new EnumMap<>(Convention.class);
+        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        for (final Convention c : sc) {
+            conventionTexts.put(c, toString(c, vocabulary));
+        }
+        format = new WKTFormat(locale, null);
+        format.setConvention(Convention.WKT2_SIMPLIFIED);
+        convention = new ChoiceBox<>(FXCollections.observableArrayList(sc));
+        convention.setConverter(this);
+        convention.getSelectionModel().select(format.getConvention());
+        convention.valueProperty().addListener(this);
+        convention.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(convention, Priority.ALWAYS);
     }
 
-    public static void showDialog(Object parent, FormattableObject candidate){
-        final WKTPane chooser = new WKTPane(candidate);
+    /**
+     * Returns the text to write in {@link #convention} choice box for the given convention.
+     */
+    @SuppressWarnings("fallthrough")
+    private String toString(final Convention c, final Vocabulary vocabulary) {
+        final Object version;
+        boolean simplified = false;
+        switch (c) {
+            case WKT2_SIMPLIFIED:   simplified = true;         // Fall through.
+            case WKT2:              version = 2; break;
+            case WKT1:              version = 1; break;
+            case WKT1_COMMON_UNITS: version = "GDAL 1-2"; break;
+            default: return c.name();
+        }
+        String text = vocabulary.getString(Vocabulary.Keys.Version_2, "WKT (Well Known Text)", version);
+        if (simplified) {
+            text += " — " + vocabulary.getString(Vocabulary.Keys.Simplified);
+        }
+        return text;
+    }
 
-        final Alert alert = new Alert(Alert.AlertType.NONE);
-        final DialogPane pane = alert.getDialogPane();
-        pane.setContent(chooser);
-        alert.getButtonTypes().setAll(ButtonType.OK);
-        alert.setResizable(true);
-        alert.showAndWait();
+    /**
+     * Returns the text to write in {@link #convention} choice box for the given convention.
+     */
+    @Override
+    public String toString(final Convention c) {
+        return conventionTexts.get(c);
+    }
+
+    /**
+     * Returns the convention from the given string.
+     * This is the reverse of {@link #toString(Convention)}.
+     */
+    @Override
+    public Convention fromString(final String text) {
+        for (final EnumMap.Entry<Convention,String> e : conventionTexts.entrySet()) {
+            if (e.getValue().equals(text)) return e.getKey();
+        }
+        return null;
+    }
+
+    /**
+     * Invoked when the user select a new format. This method is public as an implementation side-effect;
+     * it should not be invoked explicitly.
+     */
+    @Override
+    public void changed(ObservableValue<? extends Convention> observable, Convention oldValue, Convention newValue) {
+        format.setConvention(newValue);
+        refresh();
+    }
+
+    /**
+     * Sets the CRS to show in this pane. The CRS is constructed in a background thread.
+     */
+    final void setContent(final AuthorityCodes source, final String code) {
+        text.setDisable(true);
+        BackgroundThreads.execute(new Task<CoordinateReferenceSystem>() {
+            /** Invoked in background thread for fetching the CRS from an authority code. */
+            @Override protected CoordinateReferenceSystem call() throws FactoryException {
+                return source.getFactory().createCoordinateReferenceSystem(code);
+            }
+
+            /** Invoked in JavaFX thread on success. */
+            @Override protected void succeeded() {
+                super.succeeded();
+                setContent(getValue());
+            }
+
+            /** Invoked in JavaFX thread on cancellation. */
+            @Override protected void cancelled() {
+                super.cancelled();
+                text.setText(null);
+            }
+
+            /** Invoked in JavaFX thread on failure. */
+            @Override protected void failed() {
+                super.failed();
+                text.setDisable(false);
+                text.setEditable(false);
+                text.setText(Exceptions.getLocalizedMessage(getException(), source.locale));
+            }
+        });
+    }
+
+    /**
+     * Sets the content to the given coordianate reference system.
+     */
+    private void setContent(final CoordinateReferenceSystem newCRS) {
+        text.setEditable(false);     // TODO: make editable if we allow WKT parsing in a future version.
+        text.setDisable(false);
+        if (newCRS != crs) {
+            crs = newCRS;
+            refresh();
+        }
+    }
+
+    /**
+     * Rewrites the WKT using current conventions.
+     */
+    private void refresh() {
+        if (crs != null) {
+            text.setText(format.format(crs));
+        }
     }
 }

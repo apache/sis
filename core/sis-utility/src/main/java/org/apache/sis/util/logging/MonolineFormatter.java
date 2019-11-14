@@ -52,7 +52,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * this formatter uses only one line per message instead of two. For example messages formatted by
  * {@code MonolineFormatter} may look like:
  *
- * <blockquote><table style="color:white; background:black" class="compact" summary="Logging example.">
+ * <blockquote><table style="color:white; background:black" class="compact">
+ * <caption style="color:black">Logging example</caption>
  * <tr><td><code>00:01</code></td><td style="background:blue"><code>CONFIG</code></td>
  *     <td><code><b>[MyApplication]</b> Read configuration from “my-application/setup.xml”.</code></td></tr>
  * <tr><td><code>00:03</code></td><td style="background:green"><code>INFO</code></td>
@@ -74,7 +75,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  *       without package (e.g. {@code "NetcdfStore"}).</li>
  * </ul>
  *
- * <div class="section">Configuration from {@code logging.properties}</div>
+ * <h2>Configuration from {@code logging.properties}</h2>
  * The format can also be set from the {@code jre/lib/logging.properties} file.
  * For example, user can cut and paste the following properties into {@code logging.properties}:
  *
@@ -106,7 +107,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  *     java.util.logging.ConsoleHandler.level = FINE
  * }
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code MonolineFormatter} instance can be safely used by many threads without synchronization
  * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
  * from multiple threads.
@@ -298,7 +299,7 @@ public class MonolineFormatter extends Formatter {
     /**
      * Constructs a {@code MonolineFormatter} configured for the given handler.
      *
-     * <div class="section">Auto-configuration from the handler</div>
+     * <h4>Auto-configuration from the handler</h4>
      * Formatters are often associated to a particular handler. If this handler is known, giving it at
      * construction time can help this formatter to configure itself. This handler is only a hint - it
      * will not be modified, and no reference to that handler will be kept by this constructor.
@@ -1011,7 +1012,7 @@ loop:   for (int i=0; ; i++) {
      * The current implementation does not check for duplicated {@code ConsoleHandler} instances,
      * and does not check if any child logger has a {@code ConsoleHandler}.</div>
      *
-     * <div class="section">Specifying a log level</div>
+     * <h4>Specifying a log level</h4>
      * This method can opportunistically set the handler level. If the given level is non-null,
      * then the {@link ConsoleHandler} using the {@code MonolineFormatter} will be set to that level.
      * This is mostly a convenience for temporary increase of logging verbosity for debugging purpose.

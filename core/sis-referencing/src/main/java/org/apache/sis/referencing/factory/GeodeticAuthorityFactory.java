@@ -146,7 +146,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Returns a description of the object corresponding to a code.
      * The description can be used for example in a combo box in a graphical user interface.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation invokes {@link #createObject(String)} for the given code
      * and returns the {@linkplain AbstractIdentifiedObject#getName() object name}.
      * This may be costly since it involves a full object creation.
@@ -170,7 +170,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * But it is recommended to invoke the most specific {@code createFoo(String)} method when
      * the desired type is known, both for performance reason and for avoiding ambiguity.
      *
-     * <div class="section">Note for subclasses</div>
+     * <h4>Note for subclasses</h4>
      * In default {@code GeodeticAuthorityFactory} implementation, all {@code createFoo(String)} methods ultimately
      * delegate to this {@code createObject(String)} method and verify if the created object is of the desired type.
      * Overriding this method is sufficient for supporting the more specific {@code createFoo(String)} methods,
@@ -201,7 +201,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * Two frequently used authorities are "CRS" and "EPSG", which include the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>       <th>Type</th>         <th>Description</th></tr>
      *   <tr><td>CRS:84</td>     <td>Geographic</td>   <td>Like EPSG:4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
      *   <tr><td>EPSG:4326</td> <td>Geographic</td>    <td>World Geodetic System 1984</td></tr>
@@ -213,7 +214,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><td>EPSG:5800</td> <td>Engineering</td>   <td>Astra Minas Grid</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -241,7 +242,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * Two frequently used authorities are "CRS" and "EPSG", which include the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Type</th>          <th>Description</th></tr>
      *   <tr><td>CRS:27</td>    <td>Geographic</td>    <td>Like EPSG:4267 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
      *   <tr><td>CRS:83</td>    <td>Geographic</td>    <td>Like EPSG:4269 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
@@ -258,7 +260,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><td>EPSG:4047</td> <td>Geographic</td>    <td>GRS 1980 Authalic Sphere</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -285,14 +287,15 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th></tr>
      *   <tr><td>EPSG:4936</td> <td>European Terrestrial Reference Frame 1989</td></tr>
      *   <tr><td>EPSG:4978</td> <td>World Geodetic System 1984</td></tr>
      *   <tr><td>EPSG:4984</td> <td>World Geodetic System 1972</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -320,14 +323,15 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which contains more than 4000 codes for projected CRS.
      * Some of them are:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th></tr>
      *   <tr><td>EPSG:3034</td> <td>ETRS89 / Lambert Conic Conformal Europe</td></tr>
      *   <tr><td>EPSG:3395</td> <td>WGS 84 / World Mercator</td></tr>
      *   <tr><td>EPSG:6350</td> <td>NAD83(2011) / Conus Albers Equal Area</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -352,13 +356,14 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th></tr>
      *   <tr><td>EPSG:5715</td> <td>Mean Sea Level depth</td></tr>
      *   <tr><td>EPSG:5714</td> <td>Mean Sea Level height</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -377,7 +382,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     /**
      * Creates a 1-dimensional coordinate reference system used for the recording of time.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -396,7 +401,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     /**
      * Creates a 1-dimensional parametric coordinate reference system.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -419,13 +424,14 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th></tr>
      *   <tr><td>EPSG:6349</td> <td>NAD83(2011) + NAVD88 height</td></tr>
      *   <tr><td>EPSG:7423</td> <td>ETRS89 + EVRF2007 height</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -444,7 +450,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates a CRS that is defined by its coordinate conversion from another CRS (not by a datum).
      * {@code DerivedCRS} can not be {@code ProjectedCRS} themselves, but may be derived from a projected CRS.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -467,12 +473,13 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th></tr>
      *   <tr><td>EPSG:5800</td> <td>Astra Minas Grid</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -492,7 +499,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Image coordinate reference systems are treated as a separate sub-type because a separate
      * user community exists for images with its own terms of reference.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -517,7 +524,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which contains hundred of datum. Some of them are:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Type</th>        <th>Description</th></tr>
      *   <tr><td>EPSG:6326</td> <td>Geodetic</td>    <td>World Geodetic System 1984</td></tr>
      *   <tr><td>EPSG:6322</td> <td>Geodetic</td>    <td>World Geodetic System 1972</td></tr>
@@ -526,7 +534,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><td>EPSG:9315</td> <td>Engineering</td> <td>Seismic bin grid datum</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -551,7 +559,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which contains hundred of datum. Some of them are:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th></tr>
      *   <tr><td>EPSG:6326</td> <td>World Geodetic System 1984</td></tr>
      *   <tr><td>EPSG:6322</td> <td>World Geodetic System 1972</td></tr>
@@ -559,7 +568,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><td>EPSG:6258</td> <td>European Terrestrial Reference System 1989</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -585,7 +594,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th></tr>
      *   <tr><td>EPSG:5100</td> <td>Mean Sea Level</td></tr>
      *   <tr><td>EPSG:1027</td> <td>EGM2008 geoid</td></tr>
@@ -593,7 +603,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><td>EPSG:5215</td> <td>European Vertical Reference Frame 2007</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -612,7 +622,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     /**
      * Creates a datum defining the origin of a temporal coordinate reference system.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -631,7 +641,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     /**
      * Creates a datum defining the origin of a parametric coordinate reference system.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -656,13 +666,14 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th></tr>
      *   <tr><td>EPSG:9315</td> <td>Seismic bin grid datum</td></tr>
      *   <tr><td>EPSG:9300</td> <td>Astra Minas</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -682,7 +693,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * An image datum is used in a local context only.
      * For an image datum, the anchor point is usually either the centre of the image or the corner of the image.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -706,14 +717,15 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th></tr>
      *   <tr><td>EPSG:7030</td> <td>WGS 84</td></tr>
      *   <tr><td>EPSG:7034</td> <td>Clarke 1880</td></tr>
      *   <tr><td>EPSG:7048</td> <td>GRS 1980 Authalic Sphere</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -737,7 +749,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th></tr>
      *   <tr><td>EPSG:8901</td> <td>Greenwich</td></tr>
      *   <tr><td>EPSG:8903</td> <td>Paris</td></tr>
@@ -746,7 +759,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><td>EPSG:8906</td> <td>Rome</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -770,13 +783,14 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th></tr>
      *   <tr><td>EPSG:1262</td> <td>World</td></tr>
      *   <tr><td>EPSG:3391</td> <td>World - between 80°S and 84°N</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -802,7 +816,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Type</th>              <th>Axes</th>                                    <th>Orientations</th>    <th>Unit</th></tr>
      *   <tr><td>EPSG:4496</td> <td>Cartesian 2D CS</td>   <td>easting, northing (E,N)</td>                 <td>east, north</td>     <td>metre</td></tr>
      *   <tr><td>EPSG:6422</td> <td>Ellipsoidal 2D CS</td> <td>latitude, longitude</td>                     <td>north, east</td>     <td>degree</td></tr>
@@ -811,7 +826,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><td>EPSG:6499</td> <td>Vertical CS</td>       <td>height (H)</td>                              <td>up</td>              <td>metre</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -836,7 +851,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Axes</th>                                    <th>Orientations</th>    <th>Unit</th></tr>
      *   <tr><td>EPSG:6422</td> <td>latitude, longitude</td>                     <td>north, east</td>     <td>degree</td></tr>
      *   <tr><td>EPSG:6424</td> <td>longitude, latitude</td>                     <td>east, north</td>     <td>degree</td></tr>
@@ -844,7 +860,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><td>EPSG:6423</td> <td>latitude, longitude, ellipsoidal height</td> <td>north, east, up</td> <td>degree, degree, metre</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -867,13 +883,14 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Axes</th>       <th>Orientations</th> <th>Unit</th></tr>
      *   <tr><td>EPSG:6498</td> <td>depth (D)</td>  <td>down</td>         <td>metre</td></tr>
      *   <tr><td>EPSG:6499</td> <td>height (H)</td> <td>up</td>           <td>metre</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -892,7 +909,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates a 1-dimensional coordinate system for time elapsed in the specified time units
      * from a specified time origin.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -910,7 +927,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     /**
      * Creates a 1-dimensional parametric coordinate system.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -934,7 +951,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Axes</th>                    <th>Orientations</th> <th>Unit</th></tr>
      *   <tr><td>EPSG:4406</td> <td>easting, northing (E,N)</td> <td>east, north</td>  <td>kilometre</td></tr>
      *   <tr><td>EPSG:4496</td> <td>easting, northing (E,N)</td> <td>east, north</td>  <td>metre</td></tr>
@@ -942,7 +960,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><td>EPSG:4491</td> <td>westing, northing (W,N)</td> <td>west, north</td>  <td>metre</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -966,12 +984,13 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Axes</th>                        <th>Orientations</th>    <th>Unit</th></tr>
      *   <tr><td>EPSG:6404</td> <td>latitude, longitude, radius</td> <td>north, east, up</td> <td>degree, degree, metre</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -990,7 +1009,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates a 3-dimensional coordinate system made of a polar coordinate system
      * extended by a straight perpendicular axis.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -1009,7 +1028,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates a 2-dimensional coordinate system for coordinates represented by a distance from the origin
      * and an angle from a fixed direction.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -1032,7 +1051,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th>   <th>Unit</th></tr>
      *   <tr><td>EPSG:106</td>  <td>Latitude (φ)</td>  <td>degree</td></tr>
      *   <tr><td>EPSG:107</td>  <td>Longitude (λ)</td> <td>degree</td></tr>
@@ -1040,7 +1060,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><td>EPSG:2</td>    <td>Northing (N)</td>  <td>metre</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -1065,7 +1085,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="Authority codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th></tr>
      *   <tr><td>EPSG:9002</td> <td>decimal degree</td></tr>
      *   <tr><td>EPSG:9001</td> <td>metre</td></tr>
@@ -1076,7 +1097,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * See {@link org.apache.sis.measure.Units#valueOfEPSG(int)} for a more complete list of codes.</div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -1099,7 +1120,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th></tr>
      *   <tr><td>EPSG:8801</td> <td>Latitude of natural origin</td></tr>
      *   <tr><td>EPSG:8802</td> <td>Longitude of natural origin</td></tr>
@@ -1108,7 +1130,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><td>EPSG:8807</td> <td>False northing</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -1136,7 +1158,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * In order to be supported, an operation method must have its formulas coded in the Java programming language.
      * See {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} for more information.</p>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -1162,7 +1184,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>Authority codes examples</caption>
      *   <tr><th>Code</th>      <th>Description</th></tr>
      *   <tr><td>EPSG:1133</td> <td>ED50 to WGS 84 (1)</td></tr>
      *   <tr><td>EPSG:1241</td> <td>NAD27 to NAD83 (1)</td></tr>
@@ -1170,7 +1193,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><td>EPSG:6326</td> <td>NAD83(2011) to NAVD88 height (1)</td></tr>
      * </table></div>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -1192,7 +1215,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * This method should only extract the information explicitly declared in a database like EPSG.
      * This method should not attempt to infer by itself operations that are not explicitly recorded in the database.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation returns an empty set.
      *
      * @param  sourceCRS  coded value of source coordinate reference system.

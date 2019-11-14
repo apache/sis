@@ -24,6 +24,7 @@ import java.util.IllformedLocaleException;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.function.UnaryOperator;
+import java.util.logging.Filter;
 import javax.xml.validation.Schema;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
@@ -35,7 +36,6 @@ import org.apache.sis.util.Version;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.jaxb.Context;
@@ -52,7 +52,7 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -153,7 +153,7 @@ abstract class Pooled {
     /**
      * The object to inform about warnings, or {@code null} if none.
      */
-    private WarningListener<?> warningListener;
+    private Filter logFilter;
 
     /**
      * The {@link System#nanoTime()} value of the last call to {@link #reset(Pooled)}.
@@ -222,7 +222,7 @@ abstract class Pooled {
         resolver         = template.resolver;
         converter        = template.converter;
         rootAdapters     = template.rootAdapters;
-        warningListener  = template.warningListener;
+        logFilter        = template.logFilter;
         resetTime        = System.nanoTime();
         if (this instanceof Marshaller) {
             bitMasks |= Context.MARSHALLING;
@@ -378,8 +378,8 @@ abstract class Pooled {
                     }
                     return;
                 }
-                case XML.WARNING_LISTENER: {
-                    warningListener = (WarningListener<?>) value;
+                case XML.WARNING_FILTER: {
+                    logFilter = (Filter) value;
                     return;
                 }
                 case TypeRegistration.ROOT_ADAPTERS: {
@@ -420,7 +420,7 @@ abstract class Pooled {
             case XML.METADATA_VERSION:  return versionMetadata;
             case XML.RESOLVER:          return resolver;
             case XML.CONVERTER:         return converter;
-            case XML.WARNING_LISTENER:  return warningListener;
+            case XML.WARNING_FILTER:    return logFilter;
             case XML.LENIENT_UNMARSHAL: return (bitMasks & Context.LENIENT_UNMARSHAL) != 0;
             case XML.STRING_SUBSTITUTES: {
                 int n = 0;
@@ -557,6 +557,6 @@ abstract class Pooled {
      */
     final Context begin() {
         return new Context(bitMasks | specificBitMasks(), locale, timezone,
-                schemas, versionGML, versionMetadata, resolver, converter, warningListener);
+                schemas, versionGML, versionMetadata, resolver, converter, logFilter);
     }
 }

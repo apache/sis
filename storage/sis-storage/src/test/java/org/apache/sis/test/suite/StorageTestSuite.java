@@ -43,6 +43,7 @@ import org.junit.BeforeClass;
     org.apache.sis.storage.FeatureNamingTest.class,
     org.apache.sis.storage.ProbeResultTest.class,
     org.apache.sis.storage.StorageConnectorTest.class,
+    org.apache.sis.storage.event.StoreListenersTest.class,
     org.apache.sis.internal.storage.query.SimpleQueryTest.class,
     org.apache.sis.internal.storage.xml.MimeTypeDetectorTest.class,
     org.apache.sis.internal.storage.xml.StoreProviderTest.class,

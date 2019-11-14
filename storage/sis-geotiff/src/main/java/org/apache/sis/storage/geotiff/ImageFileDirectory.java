@@ -127,7 +127,7 @@ final class ImageFileDirectory extends AbstractGridResource {
      * <p><b>Note:</b>
      * the {@link #tileHeight} attribute is named {@code TileLength} in TIFF specification.</p>
      *
-     * <div class="section">Strips considered as tiles</div>
+     * <h4>Strips considered as tiles</h4>
      * The TIFF specification also defines a {@code RowsPerStrip} tag, which is equivalent to the
      * height of tiles having the same width than the image. While the TIFF specification handles
      * "tiles" and "strips" separately, Apache SIS handles strips as a special kind of tiles where
@@ -145,7 +145,7 @@ final class ImageFileDirectory extends AbstractGridResource {
      * component plane are stored first, followed by all the offsets for the second component plane,
      * and so on.</p>
      *
-     * <div class="section">Strips considered as tiles</div>
+     * <h4>Strips considered as tiles</h4>
      * The TIFF specification also defines a {@code StripOffsets} tag, which contains the byte offset
      * of each strip. In Apache SIS implementation, strips are considered as a special kind of tiles
      * having a width equals to {@link #imageWidth}.
@@ -156,7 +156,7 @@ final class ImageFileDirectory extends AbstractGridResource {
      * For each tile, the number of (compressed) bytes in that tile.
      * See {@link #tileOffsets} for a description of how the byte counts are ordered.
      *
-     * <div class="section">Strips considered as tiles</div>
+     * <h4>Strips considered as tiles</h4>
      * The TIFF specification also defines a {@code RowsPerStrip} tag, which is the number
      * of bytes in the strip after compression. In Apache SIS implementation, strips are
      * considered as a special kind of tiles having a width equals to {@link #imageWidth}.
@@ -364,7 +364,7 @@ final class ImageFileDirectory extends AbstractGridResource {
      * @param index   the image index as a sequence number starting with 0 for the first image.
      */
     ImageFileDirectory(final Reader reader, final int index) {
-        super(reader.owner);
+        super(reader.owner.listeners());
         this.reader = reader;
         identifier = reader.nameFactory.createLocalName(reader.owner.identifier, String.valueOf(index + 1));
     }

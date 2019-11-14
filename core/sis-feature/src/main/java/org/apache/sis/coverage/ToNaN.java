@@ -29,11 +29,11 @@ import org.apache.sis.internal.feature.Resources;
  * {@link Category} constructor.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
-@SuppressWarnings({"CloneableClassWithoutClone", "serial"})         // Not intended to be cloned or serialized.
+@SuppressWarnings({"CloneableImplementsClone", "serial"})           // Not intended to be cloned or serialized.
 final class ToNaN extends HashSet<Integer> implements DoubleToIntFunction {
     /**
      * The value which should be assigned ordinal 0 if that ordinal value is available.
@@ -102,7 +102,7 @@ search: if (!add(ordinal)) {
                 do if (add(--ordinal)) break search;
                 while (ordinal > MathFunctions.MIN_NAN_ORDINAL);
             }
-            throw new IllegalStateException(Resources.format(Resources.Keys.TooManyQualitatives));
+            throw new IllegalSampleDimensionException(Resources.format(Resources.Keys.TooManyQualitatives));
         }
         return ordinal;
     }

@@ -26,7 +26,7 @@ import org.junit.runners.Suite;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.5
  * @module
  */
@@ -49,12 +49,18 @@ import org.junit.runners.Suite;
     org.apache.sis.feature.EnvelopeOperationTest.class,
     org.apache.sis.feature.FeatureFormatTest.class,
     org.apache.sis.feature.FeaturesTest.class,
+    org.apache.sis.filter.CapabilitiesTest.class,
     org.apache.sis.filter.LeafExpressionTest.class,
     org.apache.sis.filter.LogicalFunctionTest.class,
     org.apache.sis.filter.UnaryFunctionTest.class,
     org.apache.sis.filter.DefaultObjectIdTest.class,
     org.apache.sis.filter.FilterByIdentifierTest.class,
     org.apache.sis.filter.ArithmeticFunctionTest.class,
+    org.apache.sis.filter.ComparisonFunctionTest.class,
+    org.apache.sis.filter.BetweenFunctionTest.class,
+    org.apache.sis.filter.LikeFunctionTest.class,
+    org.apache.sis.filter.SpatialFunctionTest.class,
+    org.apache.sis.filter.TemporalFunctionTest.class,
     org.apache.sis.filter.SQLMMTest.class,
     org.apache.sis.internal.feature.AttributeConventionTest.class,
     org.apache.sis.internal.feature.j2d.ShapePropertiesTest.class,
@@ -77,8 +83,10 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.CategoryTest.class,
     org.apache.sis.coverage.CategoryListTest.class,
     org.apache.sis.coverage.SampleDimensionTest.class,
+    org.apache.sis.coverage.SampleRangeFormatTest.class,
     org.apache.sis.internal.coverage.ScaledColorSpaceTest.class,
-    org.apache.sis.internal.coverage.BufferedGridCoverageTest.class
+    org.apache.sis.internal.coverage.BufferedGridCoverageTest.class,
+    org.apache.sis.internal.coverage.GridCoverage2DTest.class
 })
 public final strictfp class FeatureTestSuite extends TestSuite {
     /**

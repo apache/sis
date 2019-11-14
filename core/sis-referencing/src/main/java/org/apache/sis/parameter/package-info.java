@@ -55,10 +55,10 @@
  *   <li>Group may contain other groups.</li>
  * </ul>
  *
- * <div class="section">Usage</div>
+ * <h2>Usage</h2>
  * When using this {@code org.apache.sis.parameter} package, the starting point is usually to obtain a
  * {@linkplain org.apache.sis.parameter.DefaultParameterDescriptorGroup parameter group descriptor} for
- * the operation of interest. Those groups are provided by the operation implementors, so users do not
+ * the operation of interest. Those groups are provided by the operation implementers, so users do not
  * need to create their own.
  *
  * <p>Given a group descriptor, users can obtain a new instance of parameter values by a call to the
@@ -68,7 +68,7 @@
  * method is provided for fetching a parameter regardless of whether it was present or not — optional parameters
  * are created when first needed.</p>
  *
- * <div class="note"><b>Example:</b> the following code snippet assumes that the implementor of a Mercator projection
+ * <div class="note"><b>Example:</b> the following code snippet assumes that the implementer of a Mercator projection
  * provides a {@code ParameterDescriptorGroup} instance in a {@code PARAMETERS} static constant:
  *
  * {@preformat java

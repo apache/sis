@@ -41,16 +41,16 @@ import org.apache.sis.util.resources.Errors;
  *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
  * </ul>
  *
- * <div class="section">Null unit of measurement</div>
+ * <h2>Null unit of measurement</h2>
  * The unit of measurement should not be null, otherwise a {@link NumberRange} should be used
  * instead than {@code MeasurementRange}. Nevertheless this class is tolerant to {@code null}
  * units in order to support situations where a unit of measurement <em>should</em> be specified,
  * but for some reason is unavailable. If the unit of measurement become known at a later stage,
  * it can be specified by a call to {@link #convertTo(Unit)}.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus inherently thread-safe.
- * Subclasses may or may not be immutable, at implementation choice. But implementors are
+ * Subclasses may or may not be immutable, at implementation choice. But implementers are
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.
  *
  * @author  Martin Desruisseaux (IRD)

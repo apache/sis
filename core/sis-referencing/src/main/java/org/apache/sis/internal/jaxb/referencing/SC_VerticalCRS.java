@@ -44,7 +44,7 @@ public final class SC_VerticalCRS extends org.apache.sis.internal.jaxb.gml.SC_Ve
     /**
      * Wraps a Vertical CRS value in a {@code <gml:VerticalCRS>} element at marshalling-time.
      *
-     * @param  crs  the value to marshall.
+     * @param  crs  the value to marshal.
      */
     private SC_VerticalCRS(final VerticalCRS crs) {
         super(crs);

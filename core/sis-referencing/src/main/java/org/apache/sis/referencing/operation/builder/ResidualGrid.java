@@ -221,7 +221,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
             c2 = denormalization.getElement(dim, 2);
         }
 
-        @SuppressWarnings("CloneInNonCloneableClass")
+        @SuppressWarnings({"CloneInNonCloneableClass", "CloneDoesntCallSuperClone"})
         @Override public Matrix  clone()                            {return this;}
         @Override public boolean isIdentity()                       {return false;}
         @Override public int     getNumCol()                        {return nx;}

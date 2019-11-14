@@ -147,9 +147,9 @@ final class Features implements Spliterator<Feature> {
     private final Class<?> keyComponentClass;
 
     /**
-     * Estimated number of rows, or {@literal <= 0} if unknown.
+     * Estimated number of remaining rows, or {@literal <= 0} if unknown.
      */
-    private final long estimatedSize;
+    private long estimatedSize;
 
     private final FeatureAdapter.ResultSetAdapter adapter;
 
@@ -366,7 +366,7 @@ final class Features implements Spliterator<Feature> {
     }
 
     /**
-     * Returns the estimated number of features, or {@link Long#MAX_VALUE} if unknown.
+     * Returns the estimated number of remaining features, or {@link Long#MAX_VALUE} if unknown.
      */
     @Override
     public long estimateSize() {

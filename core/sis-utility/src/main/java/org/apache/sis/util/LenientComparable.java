@@ -23,7 +23,7 @@ package org.apache.sis.util;
  * compared ignoring some properties (remarks, <i>etc.</i>) that are not relevant to the
  * coordinates calculation.
  *
- * <div class="section">Conditions for equality</div>
+ * <h2>Conditions for equality</h2>
  * <ul>
  *   <li>{@link org.apache.sis.metadata.iso.ISOMetadata} subclasses
  *     <ol>
@@ -108,7 +108,8 @@ public interface LenientComparable {
      * The strictness level is controlled by the second argument,
      * from stricter to more permissive values:
      *
-     * <table class="compact" summary="Description of comparison modes.">
+     * <table class="compact">
+     *   <caption>Description of comparison modes</caption>
      *   <tr><td>{@link ComparisonMode#STRICT STRICT}:</td>
      *        <td>All attributes of the compared objects shall be strictly equal.</td></tr>
      *   <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:</td>
@@ -122,7 +123,7 @@ public interface LenientComparable {
      *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
      * </table>
      *
-     * <div class="section">Conformance to the {@code equals(Object)} method contract</div>
+     * <h4>Conformance to the {@code equals(Object)} method contract</h4>
      * {@link ComparisonMode#STRICT} is the only mode compliant with the {@link Object#equals(Object)} contract.
      * For all other modes <var>m</var>, the comparison is not guaranteed to be <cite>symmetric</cite> neither
      * <cite>transitive</cite>:
@@ -155,7 +156,7 @@ public interface LenientComparable {
      *     }
      * }
      *
-     * Implementors shall ensure that the following conditions hold. Unless the {@code equals}
+     * Implementers shall ensure that the following conditions hold. Unless the {@code equals}
      * behavior is clearly documented in the interface javadoc (as for example in the Java
      * collection framework), {@link ComparisonMode#STRICT} is the only reliable mode for
      * this method implementation.

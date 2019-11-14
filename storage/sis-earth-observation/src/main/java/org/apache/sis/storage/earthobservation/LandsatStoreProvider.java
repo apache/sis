@@ -32,7 +32,7 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  * The provider of {@link LandsatStore} instances. Given a {@link StorageConnector} input,
  * this class tries to instantiate a {@code LandsatStore}.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code LandsatStoreProvider} instance can be safely used by many threads without synchronization on
  * the part of the caller. However the {@link LandsatStore} instances created by this factory are not thread-safe.
  *

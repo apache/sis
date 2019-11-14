@@ -116,7 +116,7 @@ public final class CoordinateSystems extends Static {
      * {@code directionAlongMeridian(AxisDirection.SOUTH, -90)} returns an axis direction for
      * <cite>“South along 90°W”</cite>.</div>
      *
-     * <div class="section">Reference meridian</div>
+     * <h4>Reference meridian</h4>
      * The reference meridian depends on the context. It is usually the prime meridian of the
      * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum} of the
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} instance
@@ -139,7 +139,7 @@ public final class CoordinateSystems extends Static {
      * Returns the arithmetic (counterclockwise) angle from the first axis direction to the second direction.
      * This method returns a value between -180° and +180°, or {@code null} if no angle can be computed.
      *
-     * <div class="section">Horizontal directions</div>
+     * <h4>Horizontal directions</h4>
      * For any pair of compass directions which are not opposite directions, a positive angle denotes
      * a right-handed system while a negative angle denotes a left-handed system. Examples:
      *
@@ -154,7 +154,7 @@ public final class CoordinateSystems extends Static {
      * that the meridians are relative to the same prime meridian. This is the case if the axes are part of
      * the same {@code CoordinateSystem} instance.</div>
      *
-     * <div class="section">Horizontal and vertical directions</div>
+     * <h4>Horizontal and vertical directions</h4>
      * By convention this method defines the angle from any compass direction to the {@link AxisDirection#UP UP}
      * vertical direction as 90°, and the angle of any compass direction to the {@link AxisDirection#DOWN DOWN}
      * vertical direction as -90°. The sign of those angles gives no indication about whether the coordinate system
@@ -163,7 +163,7 @@ public final class CoordinateSystems extends Static {
      * <p>All angles are approximations since this method does not take the Earth ellipsoidal or geoidal shape in
      * account.</p>
      *
-     * <div class="section">Invariants</div>
+     * <h4>Invariants</h4>
      * For any non-null return value:
      * <ul>
      *   <li>{@code angle(A, A) = 0°}</li>
@@ -243,7 +243,7 @@ public final class CoordinateSystems extends Static {
      * ({@linkplain AxisDirection#EAST East}, {@linkplain AxisDirection#NORTH North})
      * are taken in account by this method.
      *
-     * <div class="section">Conditions</div>
+     * <h4>Conditions</h4>
      * The two coordinate systems must implement the same GeoAPI coordinate system interface.
      * For example if {@code sourceCS} is a {@link org.opengis.referencing.cs.CartesianCS},
      * then {@code targetCS} must be a {@code CartesianCS} too.
@@ -360,7 +360,7 @@ public final class CoordinateSystems extends Static {
      *     });
      * }</div>
      *
-     * <div class="section">Coordinate system normalization</div>
+     * <h4>Coordinate system normalization</h4>
      * This method is often used together with {@link #swapAndScaleAxes swapAndScaleAxes(…)} for normalizing the
      * coordinate values given to a {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform
      * math transform}.

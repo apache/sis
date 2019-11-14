@@ -24,7 +24,6 @@ import java.util.Locale;
 import java.util.Collections;
 import org.opengis.test.Validators;
 import org.opengis.metadata.Identifier;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.jaxb.Context;

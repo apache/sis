@@ -47,7 +47,7 @@ import org.opengis.feature.AttributeType;
  * Attribute characterization (discussed below) is similar to {@link java.lang.annotation.Annotation}.
  * </div>
  *
- * <div class="section">Value type</div>
+ * <h2>Value type</h2>
  * Attributes can be used for both spatial and non-spatial properties.
  * Some examples are:
  *
@@ -59,7 +59,7 @@ import org.opengis.feature.AttributeType;
  *   <tr><td>Horizontal accuracy</td> <td>{@link org.opengis.metadata.quality.PositionalAccuracy}</td></tr>
  * </table>
  *
- * <div class="section">Attribute characterization</div>
+ * <h2>Attribute characterization</h2>
  * An {@code Attribute} can be characterized by other attributes. For example an attribute that carries a measurement
  * (e.g. air temperature) may have another attribute that holds the measurement accuracy (e.g. ±0.1°C).
  * The accuracy value is often constant for all instances of that attribute
@@ -84,7 +84,7 @@ import org.opengis.feature.AttributeType;
  * It is still possible for any specific {@code Attribute} instance to specify their own value,
  * but {@linkplain DefaultFeatureType#isSimple() simple feature} usually don't do that.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
  * instances) and all arguments (e.g. {@code defaultValue}) given to the constructor are also immutable.
  * Such immutable instances can be shared by many objects and passed between threads without synchronization.
@@ -235,6 +235,8 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
      * Returns the type of attribute values.
      *
      * @return the type of attribute values.
+     *
+     * @see Features#getValueClass(PropertyType)
      */
     @Override
     public final Class<V> getValueClass() {

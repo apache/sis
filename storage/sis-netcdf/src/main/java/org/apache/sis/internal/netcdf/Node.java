@@ -22,6 +22,7 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -160,11 +161,9 @@ public abstract class Node extends NamedElement {
         }
         boolean hasValues = false;
         for (int i=0; i<array.length; i++) {
-            String e = array[i];
+            String e = Strings.trimOrNull(array[i]);
             if (e != null) {
-                e = e.trim();
-                if (e.isEmpty()) e = null;
-                else hasValues = true;
+                hasValues = true;
                 array[i] = e;
             }
         }

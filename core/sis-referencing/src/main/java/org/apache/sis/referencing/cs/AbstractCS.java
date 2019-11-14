@@ -66,7 +66,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * (e.g. in a {@code LOCAL_CS} element). In such exceptional situation, a plain {@code AbstractCS} object may be
  * instantiated.</p>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * and the {@link CoordinateSystemAxis} instances given to the constructor are also immutable. Most SIS subclasses and
  * related classes are immutable under similar conditions. This means that unless otherwise noted in the javadoc,
@@ -164,7 +164,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * @param  properties  the properties to be given to the identified object.
      * @param  axes        the sequence of axes.
      */
-    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public AbstractCS(final Map<String,?> properties, CoordinateSystemAxis... axes) {
         super(properties);
         ensureNonNull("axes", axes);
@@ -283,7 +283,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * with {@linkplain org.apache.sis.measure.Units#METRE metre} or
      * {@linkplain org.apache.sis.measure.Units#DEGREE degree} units.
      *
-     * <p><b>Note for implementors:</b> since this method is invoked at construction time, it shall not depend
+     * <p><b>Note for implementers:</b> since this method is invoked at construction time, it shall not depend
      * on this object's state. This method is not in public API for that reason.</p>
      *
      * @param  direction  the direction to test for compatibility (never {@code null}).
@@ -451,7 +451,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * @return {@code true} if both objects are equal.
      */
     @Override
-    @SuppressWarnings("fallthrough")
+    @SuppressWarnings({"AssertWithSideEffects", "fallthrough"})
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;                                            // Slight optimization.

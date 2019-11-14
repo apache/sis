@@ -30,7 +30,7 @@ import com.sun.source.doctree.DocTree;
  * HTML tags (e.g. JDK 8 javac). Fragment of the external files are inserted in the Javadoc
  * by the following tag:
  *
- * <blockquote><pre>{@include formulas.html#<var>title</var>}</pre></blockquote>
+ * <blockquote><pre>{&#64;include formulas.html#<var>title</var>}</pre></blockquote>
  *
  * where <var>title</var> is the text inside <code>&lt;h2&gt;…&lt;/h2&gt;</code> elements
  * just before the parts to copy in the javadoc.

@@ -24,8 +24,8 @@
             <name>Apache SIS on GeoAPI 4.0</name>
             <source-roots>
                 <root id="src.local-src.dir" name="Local sources (unversioned)"/>
+                <root id="src.javafx.dir" name="JavaFX application"/>
                 <root id="src.webapp.dir" name="Web application"/>
-                <root id="src.javafx.dir" name="JavaFX"/>
                 <root id="src.console.dir" name="Console"/>
                 <root id="src.portrayal.dir" name="Portrayal"/>
                 <root id="src.earth-obs.dir" name="Earth observation"/>
@@ -47,7 +47,6 @@
             </source-roots>
             <test-roots>
                 <root id="test.webapp.dir" name="Test web application"/>
-                <root id="test.javafx.dir" name="Test JavaFX"/>
                 <root id="test.console.dir" name="Test Console"/>
                 <root id="test.portrayal.dir" name="Test Portrayal"/>
                 <root id="test.earth-obs.dir" name="Test Earth observation"/>
@@ -113,6 +112,7 @@
             <word>marshalling</word>
             <word>metadata</word>
             <word>metres</word>
+            <word>millimetre</word>
             <word>monospaced</word>
             <word>namespace</word>
             <word>namespaces</word>
@@ -130,6 +130,7 @@
             <word>subsamplings</word>
             <word>timezone</word>
             <word>transitioning</word>
+            <word>unary</word>
             <word>Unicode</word>
             <word>uninstall</word>
             <word>unmarshal</word>

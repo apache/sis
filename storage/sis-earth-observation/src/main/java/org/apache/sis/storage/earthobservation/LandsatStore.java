@@ -20,6 +20,7 @@ import java.io.Reader;
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.IOException;
+import java.nio.file.StandardOpenOption;
 import java.net.URI;
 import java.util.Optional;
 import org.opengis.metadata.Metadata;
@@ -28,11 +29,13 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.storage.event.StoreEvent;
+import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.setup.OptionKey;
 
@@ -113,18 +116,18 @@ public class LandsatStore extends DataStore {
 
     /**
      * Returns the parameters used to open this Landsat data store.
-     * If non-null, the parameters are described by {@link LandsatStoreProvider#getOpenParameters()} and contains at
-     * least a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
-     * This method may return {@code null} if the storage input can not be described by a URI
+     * The parameters are described by {@link LandsatStoreProvider#getOpenParameters()} and contains at least
+     * a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
+     * The return value may be empty if the storage input can not be described by a URI
      * (for example a Landsat file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *
-     * @return parameters used for opening this data store, or {@code null} if not available.
+     * @return parameters used for opening this data store.
      *
      * @since 0.8
      */
     @Override
-    public ParameterValueGroup getOpenParameters() {
-        return URIDataStore.parameters(provider, location);
+    public Optional<ParameterValueGroup> getOpenParameters() {
+        return Optional.ofNullable(URIDataStore.parameters(provider, location));
     }
 
     /**
@@ -155,41 +158,35 @@ public class LandsatStore extends DataStore {
      */
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
-        if (metadata == null && source != null) try {
+        if (metadata == null) {
+            if (source == null) {
+                throw new DataStoreClosedException(getLocale(), LandsatStoreProvider.NAME, StandardOpenOption.READ);
+            }
             try (BufferedReader reader = (source instanceof BufferedReader) ? (BufferedReader) source : new LineNumberReader(source)) {
                 source = null;      // Will be closed at the end of this try-finally block.
                 final LandsatReader parser = new LandsatReader(getDisplayName(), listeners);
                 parser.read(reader);
                 metadata = parser.getMetadata();
+            } catch (IOException e) {
+                throw new DataStoreException(e);
+            } catch (FactoryException e) {
+                throw new DataStoreReferencingException(e);
             }
-        } catch (IOException e) {
-            throw new DataStoreException(e);
-        } catch (FactoryException e) {
-            throw new DataStoreReferencingException(e);
         }
         return metadata;
     }
 
     /**
-     * Ignored in current implementation, since this resource produces no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
+     * Registers a listener to notify when the specified kind of event occurs in this data store.
+     * The current implementation of this data store can emit only {@link WarningEvent}s;
+     * any listener specified for another kind of events will be ignored.
      */
     @Override
-    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
-    }
-
-    /**
-     * Ignored in current implementation, since this resource produces no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
-     */
-    @Override
-    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
+        // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
+        if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
+            super.addListener(eventType, listener);
+        }
     }
 
     /**

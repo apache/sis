@@ -39,8 +39,9 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.storage.event.StoreEvent;
+import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
 import ucar.nc2.constants.ACDD;
@@ -111,8 +112,8 @@ public class NetcdfStore extends DataStore implements Aggregate {
                     connector.getStorage(), connector.getOption(OptionKey.OPEN_OPTIONS));
         }
         decoder.location = path;
-        String id = decoder.stringValue(ACDD.id);
-        if (id == null || (id = id.trim()).isEmpty()) {
+        String id = Strings.trimOrNull(decoder.stringValue(ACDD.id));
+        if (id == null) {
             id = decoder.getFilename();
         }
         if (id != null) {
@@ -128,13 +129,13 @@ public class NetcdfStore extends DataStore implements Aggregate {
      * This method may return {@code null} if the storage input can not be described by a URI
      * (for example a netCDF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *
-     * @return parameters used for opening this data store, or {@code null} if not available.
+     * @return parameters used for opening this data store.
      *
      * @since 0.8
      */
     @Override
-    public ParameterValueGroup getOpenParameters() {
-        return URIDataStore.parameters(provider, location);
+    public Optional<ParameterValueGroup> getOpenParameters() {
+        return Optional.ofNullable(URIDataStore.parameters(provider, location));
     }
 
     /**
@@ -215,25 +216,16 @@ public class NetcdfStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Ignored in current implementation, since this resource produces no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
+     * Registers a listener to notify when the specified kind of event occurs in this data store.
+     * The current implementation of this data store can emit only {@link WarningEvent}s;
+     * any listener specified for another kind of events will be ignored.
      */
     @Override
-    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
-    }
-
-    /**
-     * Ignored in current implementation, since this resource produces no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
-     */
-    @Override
-    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
+        // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
+        if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
+            super.addListener(eventType, listener);
+        }
     }
 
     /**

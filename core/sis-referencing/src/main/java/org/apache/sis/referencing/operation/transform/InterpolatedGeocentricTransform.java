@@ -43,7 +43,7 @@ import org.apache.sis.util.ArgumentChecks;
  * This transform is used mainly for <cite>"France geocentric interpolation"</cite> (ESPG:9655) datum shifts,
  * but Apache SIS implementation allows the use for other regions.
  *
- * <div class="section">Algorithm</div>
+ * <h2>Algorithm</h2>
  * This class transforms two- or three- dimensional coordinates from a geographic CRS to another geographic CRS.
  * The changes between source and target coordinates are small (usually less than 400 metres), but vary for every
  * position. Those changes are provided in a {@linkplain DatumShiftGrid datum shift grid}, usually loaded from one
@@ -72,7 +72,7 @@ import org.apache.sis.util.ArgumentChecks;
  * because the {@code DatumShiftGrid} inputs are geographic coordinates even if the interpolated
  * grid values are in geocentric space.</p></div>
  *
- * <div class="section">Performance consideration</div>
+ * <h2>Performance consideration</h2>
  * {@link InterpolatedMolodenskyTransform} performs the same calculation more efficiently at the cost of
  * a few centimetres error. Both classes are instantiated in the same way and expect the same inputs.
  *

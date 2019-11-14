@@ -19,8 +19,8 @@ package org.apache.sis.storage;
 import java.util.Optional;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.storage.event.StoreEvent;
+import org.apache.sis.storage.event.StoreListener;
 
 
 /**
@@ -134,42 +134,52 @@ public interface Resource {
     Metadata getMetadata() throws DataStoreException;
 
     /**
-     * Registers a listener that is notified each time a change occurs in the resource content or structure.
-     * The resource will call the {@link ChangeListener#changeOccured(ChangeEvent)}
-     * method when a new event matching the {@code eventType} is produced.
+     * Registers a listener to notify when the specified kind of event occurs in this resource or in children.
+     * The resource will call the {@link StoreListener#eventOccured(StoreEvent)} method when new events matching
+     * the {@code eventType} occur. An event may be a change in resource content or structure, or a warning that
+     * occurred during a read or write operation.
      *
-     * <p>Registering a listener for a given {@code eventType} also register the listener for all sub-types.
-     * The same listener can be added multiple times for different even type.
-     * Adding many times the same listener with the same even type has no effect:
-     * the listener will only be called once per event.</p>
+     * <p>Registering a listener for a given {@code eventType} also register the listener for all event sub-types.
+     * The same listener can be registered many times, but its {@link StoreListener#eventOccured(StoreEvent)}
+     * method will be invoked only once per event. This filtering applies even if the listener is registered
+     * on different resources in the same tree, for example a parent and its children.</p>
      *
-     * @todo When adding a listener to an aggregate, should the listener be added to all components?
-     *       In other words, should listeners in a tree node also listen to events from all children?
+     * <p>If this resource may produce events of the given type, then the given listener is kept by strong reference;
+     * it will not be garbage collected unless {@linkplain #removeListener(Class, StoreListener) explicitly removed}
+     * or unless this {@code Resource} is itself garbage collected. However if the given type of events can never
+     * happen with this resource, then this method is not required to keep a reference to the given listener.</p>
      *
-     * <p>The resource is not required to keep a reference to the listener.
-     * For example the resource may discard a listener if no event of the given type happen on this resource.</p>
+     * <h4>Warning events</h4>
+     * If {@code eventType} is assignable from <code>{@linkplain org.apache.sis.storage.event.WarningEvent}.class</code>,
+     * then registering that listener turns off logging of warning messages for this resource.
+     * This side-effect is applied on the assumption that the registered listener will handle
+     * warnings in its own way, for example by showing warnings in a widget.
      *
      * @param  <T>        compile-time value of the {@code eventType} argument.
-     * @param  listener   listener to notify about changes.
-     * @param  eventType  type of {@linkplain ChangeEvent} to listen (can not be {@code null}).
+     * @param  listener   listener to notify about events.
+     * @param  eventType  type of {@link StoreEvent} to listen (can not be {@code null}).
      */
-    <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType);
+    <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener);
 
     /**
      * Unregisters a listener previously added to this resource for the given type of events.
-     * The {@code eventType} must be the exact same class than the one given to the {@code addListener(…)} method.
+     * The {@code eventType} must be the exact same class than the one given to the {@code addListener(…)} method;
+     * this method does not remove listeners registered for subclasses and does not remove listeners registered in
+     * parent resources.
      *
-     * <div class="note"><b>Example:</b>
-     * if the same listener has been added for {@code ChangeEvent} and {@code StructuralChangeEvent}, that listener
-     * will be notified only once for all {@code ChangeEvent}s. If that listener is removed for {@code ChangeEvent},
-     * then the listener will still receive {@code StructuralChangeEvent}s.</div>
+     * <p>If the same listener has been registered many times for the same even type, then this method removes only
+     * the most recent registration. In other words if {@code addListener(type, ls)} has been invoked twice, then
+     * {@code removeListener(type, ls)} needs to be invoked twice in order to remove all instances of that listener.
+     * If the given listener is not found, then this method does nothing (no exception is thrown).</p>
      *
-     * <p>Calling multiple times this method with the same listener and event type or a listener
-     * which is unknown to this resource will have no effect and will not raise an exception.</p>
+     * <h4>Warning events</h4>
+     * If {@code eventType} is <code>{@linkplain org.apache.sis.storage.event.WarningEvent}.class</code>
+     * and if, after this method invocation, there is no remaining listener for warning events,
+     * then this {@code Resource} will send future warnings to the loggers.
      *
      * @param  <T>        compile-time value of the {@code eventType} argument.
-     * @param  listener   listener to stop notifying about changes.
-     * @param  eventType  type of {@linkplain ChangeEvent} which were listened (can not be {@code null}).
+     * @param  listener   listener to stop notifying about events.
+     * @param  eventType  type of {@link StoreEvent} which were listened (can not be {@code null}).
      */
-    <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType);
+    <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener);
 }

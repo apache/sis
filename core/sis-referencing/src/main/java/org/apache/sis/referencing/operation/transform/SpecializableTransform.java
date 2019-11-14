@@ -69,7 +69,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
      * Contains also a chain of {@code SubArea}s fully included in this area.
      * Shall be unmodified after {@link SpecializableTransform} construction.
      */
-    @SuppressWarnings("CloneableClassWithoutClone")                             // We will not use clone().
+    @SuppressWarnings("CloneableImplementsClone")                               // We will not use clone().
     private static final class SubArea extends GeneralEnvelope {
         /**
          * For cross-version compatibility.

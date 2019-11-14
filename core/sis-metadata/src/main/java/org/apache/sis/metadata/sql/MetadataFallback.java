@@ -27,7 +27,6 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.xml.NilReason;
 
 import static java.util.Collections.singleton;
@@ -214,22 +213,8 @@ final class MetadataFallback extends MetadataSource {
         if (copyFrom != null) {
             c.setCitedResponsibleParties(createCitation(copyFrom).getCitedResponsibleParties());
         }
-        c.transition(DefaultCitation.State.FINAL);
+        c.transitionTo(DefaultCitation.State.FINAL);
         return c;
-    }
-
-    /**
-     * Ignored.
-     */
-    @Override
-    public void addWarningListener(WarningListener<? super MetadataSource> listener) {
-    }
-
-    /**
-     * Ignored.
-     */
-    @Override
-    public void removeWarningListener(WarningListener<? super MetadataSource> listener) {
     }
 
     /**

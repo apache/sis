@@ -53,7 +53,13 @@ import static org.junit.Assume.assumeTrue;
 /**
  * Tests {@link EPSGInstaller} indirectly, through {@link EPSGFactory#install(Connection)}.
  * We do not test {@code EPSGInstaller} directly because the EPSG database creation is costly,
- * and we want to use the {@code EPSGFactory} for creating a few CRS for testing purpose.
+ * so we want to opportunistically verify the result immediately after database creation
+ * by using the {@code EPSGFactory} for creating a few CRS.
+ *
+ * <p>This test requires that {@code $SIS_DATA/Databases/ExternalSources} directory contains
+ * the {@code EPSG_Tables.sql}, {@code EPSG_Data.sql} and {@code EPSG_FKeys.sql} files.
+ * Those files can be <a href="http://www.epsg.org/">downloaded from the source</a> or from
+ * <a href="http://sis.apache.org/source.html#non-free">SIS non-free directory</a>.</p>
  *
  * <p>Every databases created by this test suite exist only in memory.
  * This class does not write anything to disk (except maybe some temporary files).</p>
@@ -122,7 +128,9 @@ public final strictfp class EPSGInstallerTest extends TestCase {
 
     /**
      * Tests the creation of an EPSG database on Derby.
-     * This test is skipped if Derby is not found, or if the SQL scripts are not found.
+     * This test is skipped if the SQL scripts are not found.
+     *
+     * <p>See {@link TestDatabase} javadoc if there is a need to inspect content of that in-memory database.</p>
      *
      * @throws Exception if an error occurred while creating the database.
      */
@@ -157,6 +165,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
     /**
      * Tests the creation of an EPSG database on PostgreSQL. This test requires a PostgreSQL server
      * running on {@code "localhost"} with an empty database named {@code "SpatialMetadataTest"}.
+     * See {@linkplain TestDatabase#createOnPostgreSQL here} for more information.
      *
      * @throws Exception if an error occurred while creating the database.
      *

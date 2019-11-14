@@ -49,7 +49,7 @@ import org.apache.sis.measure.Angle;
  *   <td>unspecified</td>
  * </tr></table>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * and the {@link CoordinateSystemAxis} instances given to the constructor are also immutable. Unless otherwise
  * noted in the javadoc, this condition holds if all components were created using only SIS factories and static
@@ -208,9 +208,9 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code CartesianCS.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code CartesianCS}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
      * own set of interfaces.</div>
      *
      * @return {@code CartesianCS.class} or a user-defined sub-interface.

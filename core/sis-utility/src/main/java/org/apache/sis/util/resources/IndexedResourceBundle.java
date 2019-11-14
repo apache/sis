@@ -69,7 +69,7 @@ import org.apache.sis.measure.Range;
  *   <li>{@link Class} and {@link Throwable} instances are summarized.</li>
  * </ul>
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code IndexedResourceBundle} instance can be safely used by many threads without synchronization
  * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call from
  * multiple threads.
@@ -484,18 +484,6 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
         } else {
             toAppendTo.append(':');
         }
-    }
-
-    /**
-     * Gets a string for the given key and appends "…" to it.
-     * This method is typically used for creating menu items.
-     *
-     * @param  key  the key for the desired string.
-     * @return the string for the given key.
-     * @throws MissingResourceException if no object for the given key can be found.
-     */
-    public final String getMenuLabel(final short key) throws MissingResourceException {
-        return getString(key) + '…';
     }
 
     /**

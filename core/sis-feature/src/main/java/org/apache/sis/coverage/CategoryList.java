@@ -68,7 +68,7 @@ import static java.lang.Double.doubleToRawLongBits;
  * <p>Instances of {@link CategoryList} are immutable and thread-safe.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -162,7 +162,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * @param  categories  the list of categories. This array is not cloned and is modified in-place.
      * @param  converse    if we are creating the list of categories after conversion from samples to real values,
      *                     the original list before conversion. Otherwise {@code null}.
-     * @throws IllegalArgumentException if two or more categories have overlapping sample value range.
+     * @throws IllegalSampleDimensionException if two or more categories have overlapping sample value range.
      */
     private CategoryList(final Category[] categories, CategoryList converse) {
         this.categories = categories;
@@ -229,7 +229,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             final Category previous = categories[i-1];
             final double   minimum  = minimums[i];
             if (Category.compare(minimum, previous.range.getMaxDouble(true)) <= 0) {
-                throw new IllegalArgumentException(Resources.format(Resources.Keys.CategoryRangeOverlap_4,
+                throw new IllegalSampleDimensionException(Resources.format(Resources.Keys.CategoryRangeOverlap_4,
                             previous.name, previous.getRangeLabel(),
                             category.name, category.getRangeLabel()));
             }
@@ -313,7 +313,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * <p>This is defined as a static method for allowing the addition of a caching mechanism in the future if desired.</p>
      *
      * @param  categories  the list of categories. This array is not cloned and is modified in-place.
-     * @throws IllegalArgumentException if two or more categories have overlapping sample value range.
+     * @throws IllegalSampleDimensionException if two or more categories have overlapping sample value range.
      */
     static CategoryList create(final Category[] categories) {
         return new CategoryList(categories, null);

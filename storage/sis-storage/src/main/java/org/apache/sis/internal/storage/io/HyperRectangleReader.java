@@ -109,7 +109,7 @@ public final class HyperRectangleReader {
      *
      * @return number of bytes per value.
      */
-    public int dataSize() {
+    public final int sampleSize() {
         return 1 << reader.dataSizeShift();
     }
 
@@ -120,17 +120,18 @@ public final class HyperRectangleReader {
      * @param  region  the sub-area to read and the subsampling to use.
      * @return the data in an array of primitive type.
      * @throws IOException if an error occurred while transferring data from the channel.
+     * @throws ArithmeticException if the region to read is too large or too far from origin.
      */
     public Object read(final Region region) throws IOException {
         final int contiguousDataDimension = region.contiguousDataDimension();
         final int contiguousDataLength = region.targetLength(contiguousDataDimension);
         final long[] strides = new long[region.getDimension() - contiguousDataDimension];
         final int[]   cursor = new int[strides.length];
-        final int  sizeShift = reader.dataSizeShift();
-        long  streamPosition = origin + (region.startAt << sizeShift);
+        final int sampleSize = sampleSize();
+        long  streamPosition = Math.addExact(origin, Math.multiplyExact(region.startAt, sampleSize));
         int    arrayPosition = 0;
         for (int i=0; i<strides.length; i++) {
-            strides[i] = (region.skips[i + contiguousDataDimension] + contiguousDataLength) << sizeShift;
+            strides[i] = region.stride(i + contiguousDataDimension, contiguousDataLength, sampleSize);
             assert (strides[i] > 0) : i;
         }
         try {
@@ -149,8 +150,8 @@ loop:       do {
                      * skip.
                      */
                     if (++cursor[i] < region.targetSize[contiguousDataDimension + i]) {
-                        streamPosition += strides[i];
-                        arrayPosition  += contiguousDataLength;
+                        streamPosition = Math.addExact(streamPosition, strides[i]);
+                        arrayPosition  = Math.addExact(arrayPosition, contiguousDataLength);
                         continue loop;
                     }
                     cursor[i] = 0;

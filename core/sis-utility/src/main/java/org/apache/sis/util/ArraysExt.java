@@ -38,14 +38,14 @@ import java.lang.reflect.Array;
  *       if an array is sorted, strictly or not.</li>
  * </ul>
  *
- * <div class="section">Handling of null values</div>
+ * <h2>Handling of null values</h2>
  * Many (but not all) methods in this class are tolerant to null parameter values,
  * sometime under certain conditions. See the method javadoc for details.
  *
  * <p>All methods in this class are tolerant to null elements in arrays.
  * Null and {@linkplain Double#NaN NaN} elements are ignored.</p>
  *
- * <div class="section">Performance consideration</div>
+ * <h2>Performance consideration</h2>
  * The methods listed below are provided as convenience for <strong>casual</strong> use on
  * <strong>small</strong> arrays. For large arrays or for frequent use, consider using the
  * Java collection framework instead.
@@ -2199,7 +2199,7 @@ public final class ArraysExt extends Static {
      * The output array is the union of the input arrays without duplicated values,
      * with elements sorted in strictly increasing order.
      *
-     * <div class="section">Recommended assertions</div>
+     * <h4>Recommended assertions</h4>
      * Callers are encouraged to place the following assertions before calls to this method,
      * using the {@link #isSorted(int[], boolean)} and {@link Arrays#toString(int[])} methods:
      *

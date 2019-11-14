@@ -44,7 +44,7 @@ import org.apache.sis.util.Debug;
  * See {@link DefaultParameterValueGroup} javadoc for a description of the standard way to get and set a particular
  * parameter in a group. The remaining of this javadoc is specific to Apache SIS.
  *
- * <div class="section">Convenience methods</div>
+ * <h2>Convenience methods</h2>
  * This class provides the following convenience static methods:
  * <ul>
  *   <li>{@link #cast(ParameterValue, Class) cast(…, Class)} for type safety with parameterized types.</li>
@@ -70,13 +70,13 @@ import org.apache.sis.util.Debug;
  * </table>
  *
  *
- * <div class="section">Fetching parameter values despite different names, types or units</div>
+ * <h2>Fetching parameter values despite different names, types or units</h2>
  * The common way to get a parameter is to invoke the {@link #parameter(String)} method.
  * This {@code Parameters} class provides alternative ways, using a {@link ParameterDescriptor} argument
  * instead than a {@code String} argument. Those descriptors provide additional information like the various
  * {@linkplain DefaultParameterDescriptor#getAlias() aliases} under which the same parameter may be known.
  * By using this information, {@code Parameters} can choose the most appropriate parameter name or alias
- * (by searching for a common {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority() authority})
+ * (by searching for a common {@linkplain org.apache.sis.referencing.ImmutableIdentifier#getAuthority() authority})
  * when it delegates its work to the {@code parameter(String)} method.
  *
  * <div class="note"><b>Example:</b>
@@ -91,10 +91,10 @@ import org.apache.sis.util.Debug;
  * (i.e. returned values are converted to the units of measurement specified by the given parameter descriptor).
  *
  *
- * <div class="section">Note for subclass implementors</div>
+ * <h2>Note for subclass implementers</h2>
  * This class does not implement any method from the {@link ParameterValueGroup} interface
  * (this class is not named “{@code AbstractParameterValueGroup}” for that reason).
- * Extending this class or extending {@link Object} make almost no difference for implementors;
+ * Extending this class or extending {@link Object} make almost no difference for implementers;
  * {@code Parameters} purpose is mostly to extend the API for users convenience.
  * All methods in this class get their information from the {@link ParameterValueGroup} methods.
  * In addition, unless otherwise specified, methods in this class is isolated from all others:
@@ -390,7 +390,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
          * However we will not throw the exception if this method is invoked from the getParameter(…)
          * method of a Parameters instance wrapping a non-SIS implementation. The reason is that for
          * foreigner implementations, the package-private getParameter(…) method will conservatively
-         * delegate to the public parameter(…) method, in case the implementor overrides it. But for
+         * delegate to the public parameter(…) method, in case the implementer overrides it. But for
          * Apache SIS implementations in this package, we rely on the exception being thrown.
          *
          * Note that all classes in this package except UnmodifiableParameterValueGroup override this
@@ -467,7 +467,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      *       in this {@code ParameterValueGroup}, chosen as below:
      *     <ul>
      *       <li>a name or alias defined by the same
-     *           {@linkplain org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority() authority}, if any;</li>
+     *           {@linkplain org.apache.sis.referencing.ImmutableIdentifier#getAuthority() authority}, if any;</li>
      *       <li>an arbitrary name or alias otherwise.</li>
      *     </ul>
      *   </li>

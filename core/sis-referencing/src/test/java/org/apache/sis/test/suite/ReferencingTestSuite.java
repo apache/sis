@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-referencing} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -50,9 +50,9 @@ import org.junit.BeforeClass;
     org.apache.sis.io.wkt.ColorsTest.class,
     org.apache.sis.io.wkt.FormatterTest.class,
     org.apache.sis.io.wkt.ElementTest.class,
-    org.apache.sis.metadata.iso.ImmutableIdentifierTest.class,
 
     // Identification of objects, needed by large parts of sis-referencing.
+    org.apache.sis.referencing.ImmutableIdentifierTest.class,
     org.apache.sis.referencing.NamedIdentifierTest.class,
     org.apache.sis.referencing.IdentifiedObjectsTest.class,
     org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
@@ -191,6 +191,8 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.SinusoidalTest.class,
     org.apache.sis.referencing.operation.projection.PolyconicTest.class,
     org.apache.sis.referencing.operation.projection.MollweideTest.class,
+    org.apache.sis.referencing.operation.projection.OrthographicTest.class,
+    org.apache.sis.referencing.operation.projection.SatelliteTrackingTest.class,
 
     // Coordinate operation and derived Coordinate Reference Systems (cyclic dependency).
     org.apache.sis.referencing.operation.DefaultTransformationTest.class,
@@ -276,12 +278,10 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
     org.apache.sis.internal.referencing.EllipsoidalHeightCombinerTest.class,
     org.apache.sis.geometry.CoordinateFormatTest.class,
-
-    org.apache.sis.distance.LatLonPointRadiusTest.class,        // Pending refactoring in a geometry package.
-
     org.apache.sis.test.integration.CoordinateReferenceSystemTest.class,
     org.apache.sis.test.integration.CoordinateOperationTest.class,
     org.apache.sis.test.integration.DatumShiftTest.class,
+    org.apache.sis.test.integration.MetadataVerticalTest.class,
     org.apache.sis.test.integration.MetadataTest.class,
     org.apache.sis.test.integration.ConsistencyTest.class
 })

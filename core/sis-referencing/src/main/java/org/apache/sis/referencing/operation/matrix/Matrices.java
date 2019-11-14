@@ -29,6 +29,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.internal.util.Numerics;
@@ -322,13 +323,13 @@ public final class Matrices extends Static {
      * Actually this method is used more often for {@linkplain org.opengis.coverage.grid.GridEnvelope grid envelopes}
      * (which have no CRS) than geodetic envelopes.
      *
-     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
      * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
      * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
      * Furthermore the matrix created by this method will produce expected results only for source or destination
      * points before the date line, since the wrap around operation can not be represented by an affine transform.
      *
-     * <div class="section">Example</div>
+     * <h4>Example</h4>
      * Given a source envelope of size 100 × 200 (the units do not matter for this method) and a destination
      * envelope of size 300 × 500, and given {@linkplain Envelope#getLowerCorner() lower corner} translation
      * from (-20, -40) to (-10, -25), then the following method call:
@@ -407,7 +408,7 @@ public final class Matrices extends Static {
      * (<i>easting</i>, <i>northing</i>) — this is the first above case — but illegal
      * to transform (<i>easting</i>, <i>northing</i>) to (<i>easting</i>, <i>up</i>).</div>
      *
-     * <div class="section">Example</div>
+     * <h4>Example</h4>
      * The following method call:
      *
      * {@preformat java
@@ -463,7 +464,7 @@ public final class Matrices extends Static {
      * Actually this method is used more often for {@linkplain org.opengis.coverage.grid.GridEnvelope grid envelopes}
      * (which have no CRS) than geodetic envelopes.
      *
-     * <div class="section">Spanning the anti-meridian of a Geographic CRS</div>
+     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
      * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
      * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
      * Furthermore the matrix created by this method will produce expected results only for source or destination
@@ -1048,7 +1049,7 @@ public final class Matrices extends Static {
             case IGNORE_METADATA: return equals(m1, m2, 0, false);
             case DEBUG:           // Fall through
             case ALLOW_VARIANT:   // Fall through
-            case APPROXIMATE:   return equals(m1, m2, Numerics.COMPARISON_THRESHOLD, true);
+            case APPROXIMATE:     return equals(m1, m2, Numerics.COMPARISON_THRESHOLD, true);
             default: throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.UnknownEnumValue_2, ComparisonMode.class, mode));
         }
@@ -1187,10 +1188,8 @@ public final class Matrices extends Static {
                         s += 2;
                     } else {
                         int n = Math.min(s, maximumPaddingZeros[flatIndex]);
+                        StringBuilders.repeat(buffer, '0', n);
                         s -= n;
-                        while (--n >= 0) {
-                            buffer.append('0');
-                        }
                     }
                     buffer.append(CharSequences.spaces(s));
                 }

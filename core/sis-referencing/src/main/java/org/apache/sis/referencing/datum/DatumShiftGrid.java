@@ -98,7 +98,7 @@ import org.apache.sis.measure.Units;
  *
  * Implementations of this class shall be immutable and thread-safe.
  *
- * <div class="section">Number of dimensions</div>
+ * <h2>Number of dimensions</h2>
  * Input coordinates and translation vectors can have any number of dimensions. However in the current implementation,
  * only the two first dimensions are used for interpolating the translation vectors. This restriction appears in the
  * following field and method signatures:
@@ -117,7 +117,7 @@ import org.apache.sis.measure.Units;
  * in more than two dimensions. See the above <cite>datum shift by geocentric translations</cite> use case for
  * an example.
  *
- * <div class="section">Serialization</div>
+ * <h2>Serialization</h2>
  * Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
  * Serialization support is appropriate for short term storage or RMI between applications running the
  * same version of Apache SIS. But for long term storage, an established datum shift grid format like
@@ -369,7 +369,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * The output values are in the unit given by {@link #getTranslationUnit()}.
      * The length of the returned array is given by {@link #getTranslationDimensions()}.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation performs the following steps:
      * <ol>
      *   <li>Convert the given coordinate into grid indices using the transform given by {@link #getCoordinateToGrid()}.</li>
@@ -407,13 +407,13 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * the given {@code vector} array, which shall have a length of at least {@link #getTranslationDimensions()}.
      * The output unit of measurement is the same than the one documented in {@link #getCellValue(int, int, int)}.
      *
-     * <div class="section">Extrapolations</div>
+     * <h4>Extrapolations</h4>
      * If the given coordinates are outside this grid, then this method computes the translation vector at the
      * closest position in the grid. Applying translations on points outside the grid is a kind of extrapolation,
      * but some amount of extrapolations are necessary for operations like transforming an envelope before to compute
      * its intersection with another envelope.
      *
-     * <div class="section">Derivative (Jacobian matrix)</div>
+     * <h4>Derivative (Jacobian matrix)</h4>
      * If the length of the given array is at least <var>n</var> + 4 where <var>n</var> = {@link #getTranslationDimensions()},
      * then this method appends the derivative (approximated) at the given grid indices. This is the same derivative than the
      * one computed by {@link #derivativeInCell(double, double)}, opportunistically computed here for performance reasons.
@@ -426,7 +426,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *   └                   ┘         └                             ┘
      * }
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation performs the following steps for each dimension <var>dim</var>,
      * where the number of dimension is determined by {@link #getTranslationDimensions()}.
      *
@@ -516,7 +516,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *   └                   ┘         └                                                        ┘
      * }
      *
-     * <div class="section">Extrapolations</div>
+     * <h4>Extrapolations</h4>
      * Derivatives must be consistent with {@link #interpolateInCell(double, double, double[])} even when the
      * given coordinates are outside the grid. The {@code interpolateInCell(…)} contract in such cases is to
      * compute the translation vector at the closest position in the grid. A consequence of this contract is
@@ -596,7 +596,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * Those average values shall provide a good "first guess" before to interpolate the actual translation value
      * at the (<var>x</var>,<var>y</var>) coordinate. This "first guess" is needed for inverse transform.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation computes the average of all values returned by
      * {@link #getCellValue getCellValue(dim, …)}, but subclasses may override with more specific values.
      *

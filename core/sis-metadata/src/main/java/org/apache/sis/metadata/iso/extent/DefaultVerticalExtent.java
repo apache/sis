@@ -51,7 +51,7 @@ import org.apache.sis.xml.NilReason;
  *   <li>{@link #setBounds(Envelope)} for setting the extent from the given envelope.</li>
  * </ul>
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>
@@ -117,7 +117,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
     {
         if (!Double.isNaN(minimumValue)) this.minimumValue = minimumValue;
         if (!Double.isNaN(maximumValue)) this.maximumValue = maximumValue;
-        this.verticalCRS  = verticalCRS;
+        this.verticalCRS = verticalCRS;
     }
 
     /**

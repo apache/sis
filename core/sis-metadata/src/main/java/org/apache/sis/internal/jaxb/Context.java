@@ -26,10 +26,10 @@ import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
+import java.util.logging.Filter;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.IndexedResourceBundle;
@@ -181,7 +181,7 @@ public final class Context extends MarshalContext {
     /**
      * The object to inform about warnings, or {@code null} if none.
      */
-    private final WarningListener<?> warningListener;
+    private final Filter logFilter;
 
     /**
      * The {@code <gml:*PropertyType>} which is wrapping the {@code <gml:*Type>} object to (un)marshal, or
@@ -222,7 +222,7 @@ public final class Context extends MarshalContext {
      * @param  versionMetadata  the metadata version, or {@code null}.
      * @param  resolver         the resolver in use.
      * @param  converter        the converter in use.
-     * @param  warningListener  the object to inform about warnings.
+     * @param  logFilter        the object to inform about warnings.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     public Context(int                      bitMasks,
@@ -233,7 +233,7 @@ public final class Context extends MarshalContext {
                    final Version            versionMetadata,
                    final ReferenceResolver  resolver,
                    final ValueConverter     converter,
-                   final WarningListener<?> warningListener)
+                   final Filter             logFilter)
     {
         if (versionMetadata != null && versionMetadata.compareTo(LegacyNamespaces.VERSION_2014) < 0) {
             bitMasks |= LEGACY_METADATA;
@@ -244,7 +244,7 @@ public final class Context extends MarshalContext {
         this.versionGML        = versionGML;
         this.resolver          = resolver;
         this.converter         = converter;
-        this.warningListener   = warningListener;
+        this.logFilter         = logFilter;
         this.identifiers       = new HashMap<>();
         this.identifiedObjects = new IdentityHashMap<>();
         if (locale != null) {
@@ -330,7 +330,7 @@ public final class Context extends MarshalContext {
     /**
      * Sets the locale to the given value. The old locales are remembered and will
      * be restored by the next call to {@link #pull()}. This method can be invoked
-     * when marshalling object that need to marshall their children in a different
+     * when marshalling object that need to marshal their children in a different
      * locale, like below:
      *
      * {@preformat java
@@ -621,11 +621,12 @@ public final class Context extends MarshalContext {
         record.setSourceMethodName(method);
         record.setLoggerName(Loggers.XML);
         if (context != null) {
-            final WarningListener<?> warningListener = context.warningListener;
-            if (warningListener != null) {
+            final Filter logFilter = context.logFilter;
+            if (logFilter != null) {
                 record.setThrown(exception);
-                warningListener.warningOccured(null, record);
-                return;
+                if (!logFilter.isLoggable(record)) {
+                    return;
+                }
             }
         }
         /*

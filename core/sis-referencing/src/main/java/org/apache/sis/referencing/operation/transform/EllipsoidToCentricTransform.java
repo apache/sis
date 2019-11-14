@@ -49,7 +49,7 @@ import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -237,7 +237,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      *   <li>distance from Earth center on the Z axis (toward North pole).</li>
      * </ol>
      *
-     * <div class="section">Geographic to geocentric conversions</div>
+     * <h4>Geographic to geocentric conversions</h4>
      * For converting geographic coordinates to geocentric coordinates, {@code EllipsoidToCentricTransform}
      * instances need to be concatenated with the following affine transforms:
      *

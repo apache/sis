@@ -300,7 +300,8 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
      * the following content:
      *
      * <blockquote>
-     * <table class="compact" summary="x and y vector content">
+     * <table class="compact">
+     *   <caption><var>x</var> and <var>y</var> vectors content</caption>
      *   <tr>
      *     <th><var>x</var> vector</th>
      *     <th><var>y</var> vector</th>

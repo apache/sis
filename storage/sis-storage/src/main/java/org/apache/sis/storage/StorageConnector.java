@@ -86,7 +86,7 @@ import org.apache.sis.setup.OptionKey;
  * is serializable.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.3
  * @module
  */
@@ -225,8 +225,9 @@ public class StorageConnector implements Serializable {
     private Map<OptionKey<?>, Object> options;
 
     /**
-     * Views of {@link #storage} as instances of different types than the type of the object given to the constructor.
+     * Views of {@link #storage} as instances of types different than the type of the object given to the constructor.
      * The {@code null} reference can appear in various places:
+     *
      * <ul>
      *   <li>A non-existent entry (equivalent to an entry associated to the {@code null} value) means that the value
      *       has not yet been computed.</li>
@@ -235,6 +236,8 @@ public class StorageConnector implements Serializable {
      *       that type.</li>
      *   <li>By convention, the {@code null} key is associated to the {@link #storage} value.</li>
      * </ul>
+     *
+     * An empty map means that this {@code StorageConnector} has been closed.
      *
      * @see #addView(Class, Object, Class, byte)
      * @see #getView(Class)
@@ -757,6 +760,7 @@ public class StorageConnector implements Serializable {
      *         types listed in javadoc but no view can be created for the source given at construction time.
      * @throws IllegalArgumentException if the given {@code type} argument is not one of the supported types
      *         listed in this javadoc or in subclass javadoc.
+     * @throws IllegalStateException if this {@code StorageConnector} has been {@linkplain #closeAllExcept closed}.
      * @throws DataStoreException if an error occurred while opening a stream or database connection.
      *
      * @see #getStorage()
@@ -764,6 +768,9 @@ public class StorageConnector implements Serializable {
      */
     public <T> T getStorageAs(final Class<T> type) throws IllegalArgumentException, DataStoreException {
         ArgumentChecks.ensureNonNull("type", type);
+        if (views != null && views.isEmpty()) {
+            throw new IllegalStateException(Resources.format(Resources.Keys.ClosedStorageConnector));
+        }
         /*
          * Verify if the cache contains an instance created by a previous invocation of this method.
          * Note that InputStream may need to be reseted if it has been used indirectly by other kind
@@ -856,7 +863,7 @@ public class StorageConnector implements Serializable {
      * only for handling the cases where using a view has an indirect impact on another view.</p>
      *
      * <div class="note"><b>Rational:</b>
-     * {@link DataStoreProvider#probeContent(StorageConnector)} contract requires that implementors reset the
+     * {@link DataStoreProvider#probeContent(StorageConnector)} contract requires that implementers reset the
      * input stream themselves. However if {@link ChannelDataInput} or {@link InputStreamReader} has been used,
      * then the user performed a call to {@link ChannelDataInput#reset()} (for instance), which did not reseted
      * the underlying input stream. So we need to perform the missing {@link InputStream#reset()} here, then

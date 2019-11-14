@@ -59,7 +59,7 @@ import org.opengis.feature.PropertyType;
  *   <li>the CRS of the first non-empty geometry.</li>
  * </ol>
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * If a geometry contains other geometries, this operation queries only the envelope of the root geometry.
  * It is the root geometry responsibility to take in account the envelope of all its children.
  *

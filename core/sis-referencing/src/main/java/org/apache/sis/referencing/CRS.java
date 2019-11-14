@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 
 import org.opengis.geometry.Envelope;
@@ -86,12 +87,11 @@ import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.logging.WarningListener;
-import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
 
@@ -106,7 +106,7 @@ import org.apache.sis.util.resources.Errors;
  *   <li>Finding coordinate operations between a source and a target CRS.</li>
  * </ul>
  *
- * <div class="section">Usage example</div>
+ * <h2>Usage example</h2>
  * The most frequently used methods in this class are {@link #forCode forCode(…)}, {@link #fromWKT fromWKT(…)}
  * and {@link #findOperation findOperation(…)}. An usage example is like below
  * (see the <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">Apache SIS™ Coordinate
@@ -126,7 +126,7 @@ import org.apache.sis.util.resources.Errors;
  *   System.out.println(position);
  * }
  *
- * <div class="section">Note on kinds of CRS</div>
+ * <h2>Note on kinds of CRS</h2>
  * The {@link #getSingleComponents(CoordinateReferenceSystem)} method decomposes an arbitrary CRS into a flat
  * list of single components. In such flat list, vertical and temporal components can easily be identified by
  * {@code instanceof} checks. But identifying the horizontal component is not as easy. The list below suggests
@@ -140,7 +140,8 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -279,7 +280,7 @@ public final class CRS extends Static {
      * Should the WKT description and the authoritative description be in conflict, the WKT description prevails
      * as mandated by ISO 19162 standard (see {@link #fromAuthority fromAuthority(…)} if a different behavior is needed).
      *
-     * <div class="section">Usage and performance considerations</div>
+     * <h4>Usage and performance considerations</h4>
      * This convenience method delegates to
      * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)}
      * using a default factory instance. This is okay for occasional use, but has the following limitations:
@@ -394,34 +395,38 @@ public final class CRS extends Static {
      *   <li>Otherwise this method silently returns the given CRS as-is.</li>
      * </ul>
      *
-     * <b>Note:</b> the warnings emitted by this method are redundant with the warnings emitted by
-     * {@link #fromWKT(String)} and {@link #fromXML(String)}, so the {@code warnings} argument should be {@code null}
-     * when {@code fromAuthority(…)} is invoked for the CRS parsed by one of above-mentioned methods.
-     * A non-null {@code warnings} argument is more useful for CRS parsed by {@link org.apache.sis.io.wkt.WKTFormat}
-     * or {@link org.apache.sis.xml.XML#unmarshal(String)} for instance.
+     * <h4>Avoiding warning redundancies</h4>
+     * The warnings logged by this method are redundant with warnings logged by other methods in this class,
+     * in particular {@link #fromWKT(String)} and {@link #fromXML(String)} methods. For avoiding this annoyance,
+     * a {@code null} value for the {@code warningFilter} argument means to shut off those redundant loggings.
+     * A non-null {@code warningFilter} argument is more useful for CRS parsed by methods outside this class,
+     * for example {@link org.apache.sis.io.wkt.WKTFormat} or {@link org.apache.sis.xml.XML#unmarshal(String)}.
      *
-     * @param  crs       the CRS to replace by an authoritative CRS, or {@code null}.
-     * @param  factory   the factory where to search for authoritative definitions, or {@code null} for the default.
-     * @param  listener  where to send warnings, or {@code null} for ignoring warnings.
+     * @param  crs            the CRS to replace by an authoritative CRS, or {@code null}.
+     * @param  factory        the factory where to search for authoritative definitions, or {@code null} for the default.
+     * @param  warningFilter  whether to log warnings, or {@code null} for the default behavior (which is to filter out
+     *                        the warnings that are redundant with warnings emitted by other methods in this class).
      * @return the suggested CRS to use (may be the {@code crs} argument itself), or {@code null} if the given CRS was null.
      * @throws FactoryException if an error occurred while querying the authority factory.
      *
-     * @since 0.8
+     * @since 1.0
      */
     public static CoordinateReferenceSystem fromAuthority(CoordinateReferenceSystem crs,
-            final CRSAuthorityFactory factory, final WarningListener<?> listener) throws FactoryException
+            final CRSAuthorityFactory factory, final Filter warningFilter) throws FactoryException
     {
         if (crs != null) {
             final DefinitionVerifier verification = DefinitionVerifier.withAuthority(crs, factory, true);
             if (verification != null) {
                 crs = verification.authoritative;
-                if (listener != null) {
+                if (warningFilter != null) {
                     final LogRecord record = verification.warning(false);
                     if (record != null) {
                         record.setLoggerName(Modules.REFERENCING);
                         record.setSourceClassName(CRS.class.getName());
                         record.setSourceMethodName("fromAuthority");
-                        listener.warningOccured(null, record);
+                        if (warningFilter.isLoggable(record)) {
+                            Logging.getLogger(Modules.REFERENCING).log(record);
+                        }
                     }
                 }
             }
@@ -448,7 +453,7 @@ public final class CRS extends Static {
      * @param  regionOfInterest  the geographic area for which the coordinate operations will be applied,
      *                           or {@code null} if unknown. Will be intersected with CRS domains of validity.
      * @param  sourceCRS         the coordinate reference systems for which a common target CRS is desired.
-     *                           May contain {@code null} elements, in which case this method returns {@code null}.
+     *                           May contain {@code null} elements, which are ignored.
      * @return a CRS that may be used as a common target for all the given source CRS in the given region of interest,
      *         or {@code null} if this method did not find a common target CRS. The returned CRS may be different than
      *         all given CRS.
@@ -461,7 +466,7 @@ public final class CRS extends Static {
         CoordinateReferenceSystem bestCRS = null;
         /*
          * Compute the union of the domain of validity of all CRS. If a CRS does not specify a domain of validity,
-         * then assume that the CRS is valid for the whole world if the CRS is geodetic or return null otherwise.
+         * then assume that the CRS is valid for the whole world if the CRS is geodetic (otherwise ignore that CRS).
          * Opportunistically remember the domain of validity of each CRS in this loop since we will need them later.
          */
         boolean worldwide = false;
@@ -470,22 +475,7 @@ public final class CRS extends Static {
         for (int i=0; i < sourceCRS.length; i++) {
             final CoordinateReferenceSystem crs = sourceCRS[i];
             final GeographicBoundingBox bbox = getGeographicBoundingBox(crs);
-            if (bbox == null) {
-                /*
-                 * If no domain of validity is specified and we can not fallback
-                 * on some knowledge about what the CRS is, abandon.
-                 */
-                if (!(crs instanceof GeodeticCRS)) {
-                    return null;
-                }
-                /*
-                 * Geodetic CRS (geographic or geocentric) can generally be presumed valid in a worldwide area.
-                 * The 'worldwide' flag is a little optimization for remembering that we do not need to compute
-                 * the union anymore, but we still need to continue the loop for fetching all bounding boxes.
-                 */
-                bestCRS = crs;                      // Fallback to be used if we don't find anything better.
-                worldwide = true;
-            } else {
+            if (bbox != null) {
                 domains[i] = bbox;
                 if (!worldwide) {
                     if (domain == null) {
@@ -494,6 +484,14 @@ public final class CRS extends Static {
                         domain.add(bbox);
                     }
                 }
+            } else if (crs instanceof GeodeticCRS) {
+                /*
+                 * Geodetic CRS (geographic or geocentric) can generally be presumed valid in a worldwide area.
+                 * The 'worldwide' flag is a little optimization for remembering that we do not need to compute
+                 * the union anymore, but we still need to continue the loop for fetching all bounding boxes.
+                 */
+                bestCRS = crs;                      // Fallback to be used if we don't find anything better.
+                worldwide = true;
             }
         }
         /*
@@ -519,9 +517,9 @@ public final class CRS extends Static {
          * Example: given two source CRS, a geographic one and a projected one:
          *
          *   - If the projected CRS contains fully the region of interest, then it will be returned.
-         *     The preference is given to the projected CRS because geometric are likely to be more
-         *     accurate in that space. Furthermore forward conversions from geographic to projected
-         *     CRS are usually faster than inverse conversions.
+         *     The preference is given to the projected CRS because geometric operations are likely
+         *     to be more accurate in that space. Furthermore forward conversions from geographic to
+         *     projected CRS are usually faster than inverse conversions.
          *
          *   - Otherwise (i.e. if the region of interest is likely to be wider than the projected CRS
          *     domain of validity), then the geographic CRS will be returned.
@@ -559,7 +557,7 @@ public final class CRS extends Static {
              * but using base CRS instead. For example if the list of source CRS had some projected CRS, we
              * will try with the geographic CRS on which those projected CRS are based.
              */
-            if (maxInsideArea < roiArea) {
+            if (Double.isNaN(roiArea) || maxInsideArea < roiArea) {
                 if (tryDerivedCRS) break;                                               // Do not try twice.
                 final SingleCRS[] derivedCRS = new SingleCRS[sourceCRS.length];
                 for (int i=0; i < derivedCRS.length; i++) {
@@ -879,7 +877,7 @@ public final class CRS extends Static {
      * {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent#intersect intersection}
      * of the domain of validity of all components.
      *
-     * <div class="section">Ellipsoidal height</div>
+     * <h4>Ellipsoidal height</h4>
      * If a two-dimensional geographic or projected CRS if followed or preceded by a vertical CRS with ellipsoidal
      * {@linkplain org.apache.sis.referencing.datum.DefaultVerticalDatum#getVerticalDatumType() datum type}, then
      * this method combines them in a single three-dimensional geographic or projected CRS.  Note that standalone
@@ -887,7 +885,7 @@ public final class CRS extends Static {
      * the action described here fixes the issue. This is the reverse of <code>{@linkplain #getVerticalComponent
      * getVerticalComponent}(crs, true)</code>.
      *
-     * <div class="section">Components order</div>
+     * <h4>Components order</h4>
      * Apache SIS is permissive on the order of components that can be used in a compound CRS.
      * However for better inter-operability, users are encouraged to follow the order mandated by ISO 19162:
      *
@@ -929,7 +927,7 @@ public final class CRS extends Static {
      * This method can be used for dimensionality reduction, but not for changing axis order.
      * The specified dimensions are used as if they were in strictly increasing order without duplicated values.
      *
-     * <div class="section">Ellipsoidal height</div>
+     * <h4>Ellipsoidal height</h4>
      * This method can transform a three-dimensional geographic CRS into a two-dimensional geographic CRS.
      * In this aspect, this method is the converse of {@link #compound(CoordinateReferenceSystem...)}.
      * This method can also extract the {@linkplain CommonCRS.Vertical#ELLIPSOIDAL ellipsoidal height}
@@ -1163,7 +1161,7 @@ public final class CRS extends Static {
      * Otherwise if the given CRS is compound, then this method searches for the first vertical component
      * in the order of the {@linkplain #getSingleComponents(CoordinateReferenceSystem) single components list}.
      *
-     * <div class="section">Height in a three-dimensional geographic CRS</div>
+     * <h4>Height in a three-dimensional geographic CRS</h4>
      * In ISO 19111 model, ellipsoidal heights are indissociable from geographic CRS because such heights
      * without their (<var>latitude</var>, <var>longitude</var>) locations make little sense. Consequently
      * a standard-conformant library should return {@code null} when asked for the {@code VerticalCRS}
@@ -1266,21 +1264,23 @@ public final class CRS extends Static {
      * Apache SIS allows 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
      * coordinate reference system to be built in two different ways as shown below:
      *
-     * <table class="compact" summary="Illustration of a compound CRS.">
-     * <tr><th>Hierarchical structure</th><th>Flat list</th></tr>
-     * <tr><td><blockquote>
+     * <div class="horizontal-flow">
+     * <div><p><b>Hierarchical structure</b></p>
+     * <blockquote>
      *   <code>CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)<br>
      *   <code>  ├─CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>)<br>
      *   <code>  │   ├─ProjectedCRS</code> — (<var>x</var>, <var>y</var>)<br>
      *   <code>  │   └─VerticalCRS</code> — (<var>z</var>)<br>
      *   <code>  └─TemporalCRS</code> — (<var>t</var>)
-     * </blockquote></td><td><blockquote>
+     * </blockquote></div>
+     * <div><p><b>Flat list</b></p>
+     * <blockquote>
      *   <code>CompoundCRS</code> — (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)<br>
      *   <code>  ├─ProjectedCRS</code> — (<var>x</var>, <var>y</var>)<br>
      *   <code>  ├─VerticalCRS</code> — (<var>z</var>)<br>
      *   <code>  └─TemporalCRS</code> — (<var>t</var>)
      * </blockquote>
-     * </td></tr></table>
+     * </div></div>
      *
      * This method guaranteed that the returned list is a flat one as shown on the right side.
      * Note that such flat lists are the only one allowed by ISO/OGC standards for compound CRS.

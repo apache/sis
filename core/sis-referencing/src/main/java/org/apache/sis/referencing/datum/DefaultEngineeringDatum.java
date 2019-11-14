@@ -33,7 +33,7 @@ import org.apache.sis.io.wkt.Formatter;
  * This origin can be fixed with respect to the earth (such as a defined point at a construction site),
  * or be a defined point on a moving vehicle (such as on a ship or satellite).
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if all
  * components were created using only SIS factories and static constants.
@@ -151,9 +151,9 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code EngineeringDatum.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code EngineeringDatum}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
      * own set of interfaces.</div>
      *
      * @return {@code EngineeringDatum.class} or a user-defined sub-interface.

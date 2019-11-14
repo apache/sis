@@ -89,12 +89,12 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *   <li>An estimation of the {@linkplain #getCoordinateOperationAccuracy() operation accuracy}.</li>
  * </ul>
  *
- * <div class="section">Instantiation</div>
+ * <h2>Instantiation</h2>
  * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass prefixed by {@code Default} instead.
  * An exception to this rule may occur when it is not possible to identify the exact operation type.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
  * conditions. This means that unless otherwise noted in the javadoc, {@code CoordinateOperation} instances created
@@ -308,7 +308,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *   </tr>
      * </table>
      *
-     * <div class="section">Constraints</div>
+     * <h4>Constraints</h4>
      * All arguments except {@code properties} can be {@code null}.
      * If non-null, the dimension of CRS arguments shall be related to the {@code transform} argument as below:
      *
@@ -597,7 +597,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * The default implementation tries to infer a value from the metadata returned by
      * {@link #getCoordinateOperationAccuracy()} using SIS-specific heuristics.
      *
-     * <div class="section">Current implementation</div>
+     * <h4>Current implementation</h4>
      * The current implementation uses the heuristic rules listed below.
      * Note that those rules may change in any future SIS version.
      *
@@ -661,7 +661,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Returns the object for transforming coordinates in the {@linkplain #getSourceCRS() source CRS}
      * to coordinates in the {@linkplain #getTargetCRS() target CRS}.
      *
-     * <div class="section">Use with interpolation CRS</div>
+     * <h4>Use with interpolation CRS</h4>
      * If the {@linkplain #getInterpolationCRS() interpolation CRS} is non-null, then the math transform
      * input coordinates shall by (<var>interpolation</var>, <var>source</var>) tuples: for each value
      * to transform, the interpolation point coordinates shall be first, followed by the source coordinates.
@@ -780,7 +780,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * sometime the target dimensions returned by this method can be mapped directly to wraparound axes in source CRS,
      * but this is not always the case. For example consider the following operation chain:
      *
-     * <center>source projected CRS ⟶ base CRS ⟶ target geographic CRS</center>
+     * <div style="text-align:center">source projected CRS ⟶ base CRS ⟶ target geographic CRS</div>
      *
      * In this example, a wraparound axis in the target CRS (the longitude) can be mapped to a wraparound axis in
      * the {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS#getBaseCRS() base CRS}. But there is no

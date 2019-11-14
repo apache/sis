@@ -127,6 +127,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Names;
@@ -930,7 +931,8 @@ public class MetadataBuilder {
      */
     public final void addIdentifier(final CharSequence authority, String code, final Scope scope) {
         ArgumentChecks.ensureNonNull("scope", scope);
-        if (code != null && !(code = code.trim()).isEmpty()) {
+        code = Strings.trimOrNull(code);
+        if (code != null) {
             final Identifier id = sharedIdentifier(authority, code);
             if (scope != Scope.RESOURCE) metadata().setMetadataIdentifier(id);
             if (scope != Scope.METADATA) addIfNotPresent(citation().getIdentifiers(), id);
@@ -2330,7 +2332,8 @@ parse:      for (int i = 0; i < length;) {
      * @param  name       the band name, or {@code null} for no-operation.
      */
     public final void addBandName(final CharSequence authority, String name) {
-        if (name != null && !(name = name.trim()).isEmpty()) {
+        name = Strings.trimOrNull(name);
+        if (name != null) {
             addIfNotPresent(sampleDimension().getNames(), sharedIdentifier(authority, name));
         }
     }
@@ -2503,11 +2506,9 @@ parse:      for (int i = 0; i < length;) {
      *                          or {@code null} for no-operation.
      */
     public final void setProcessingLevelCode(final CharSequence authority, String processingLevel) {
+        processingLevel = Strings.trimOrNull(processingLevel);
         if (processingLevel != null) {
-            processingLevel = processingLevel.trim();
-            if (!processingLevel.isEmpty()) {
-                coverageDescription().setProcessingLevelCode(sharedIdentifier(authority, processingLevel));
-            }
+            coverageDescription().setProcessingLevelCode(sharedIdentifier(authority, processingLevel));
         }
     }
 
@@ -2587,7 +2588,8 @@ parse:      for (int i = 0; i < length;) {
      * @param  identifier  identifier of the platform to add, or {@code null} for no-operation.
      */
     public final void addPlatform(final CharSequence authority, String identifier) {
-        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+        identifier = Strings.trimOrNull(identifier);
+        if (identifier != null) {
             if (platform != null) {
                 final Identifier current = platform.getIdentifier();
                 if (current != null) {
@@ -2614,7 +2616,8 @@ parse:      for (int i = 0; i < length;) {
      * @param  identifier  identifier of the sensor to add, or {@code null} for no-operation.
      */
     public final void addInstrument(final CharSequence authority, String identifier) {
-        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+        identifier = Strings.trimOrNull(identifier);
+        if (identifier != null) {
             final DefaultInstrument instrument = new DefaultInstrument();
             instrument.setIdentifier(sharedIdentifier(authority, identifier));
             addIfNotPresent(platform().getInstruments(), instrument);
@@ -2659,7 +2662,8 @@ parse:      for (int i = 0; i < length;) {
      * @param  identifier  unique identification of the operation, or {@code null} for no-operation.
      */
     public final void addAcquisitionOperation(final CharSequence program, String identifier) {
-        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+        identifier = Strings.trimOrNull(identifier);
+        if (identifier != null) {
             final DefaultOperation r = new DefaultOperation();
             r.setIdentifier(sharedIdentifier(program, identifier));
             addIfNotPresent(acquisition().getOperations(), r);
@@ -2678,7 +2682,8 @@ parse:      for (int i = 0; i < length;) {
      * @param  identifier  unique name or code for the requirement, or {@code null} for no-operation.
      */
     public final void addAcquisitionRequirement(final CharSequence authority, String identifier) {
-        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+        identifier = Strings.trimOrNull(identifier);
+        if (identifier != null) {
             final DefaultRequirement r = new DefaultRequirement();
             r.setIdentifier(sharedIdentifier(authority, identifier));
             addIfNotPresent(acquisition().getAcquisitionRequirements(), r);
@@ -2810,7 +2815,8 @@ parse:      for (int i = 0; i < length;) {
      * @see #addSource(CharSequence, ScopeCode, CharSequence)
      */
     public final void addProcessing(final CharSequence authority, String identifier) {
-        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+        identifier = Strings.trimOrNull(identifier);
+        if (identifier != null) {
             if (processing != null) {
                 final Identifier current = processing.getIdentifier();
                 if (current != null) {
@@ -3039,7 +3045,7 @@ parse:      for (int i = 0; i < length;) {
                 md.setMetadataStandards(c);
             }
             if (freeze) {
-                md.transition(DefaultMetadata.State.FINAL);
+                md.transitionTo(DefaultMetadata.State.FINAL);
             }
         }
         return md;

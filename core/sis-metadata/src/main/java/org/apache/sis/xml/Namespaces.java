@@ -74,7 +74,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  *   <tr><td>xlink</td>  <td>Link</td>                                       <td>{@value #XLINK}</td> <td></td></tr>
  * </table>
  *
- * <div class="section">Profiles</div>
+ * <h2>Profiles</h2>
  * Some countries or organizations define profiles of international standards, which may contain
  * country-specific extensions. The namespace of such extensions are usually defined in a separated
  * class dedicated to the profile. Some of them are listed below:
@@ -450,28 +450,6 @@ public final class Namespaces extends Static {
      */
     @Deprecated
     public static final String GMD = LegacyNamespaces.GMD;
-
-    /**
-     * The <code>{@value}</code> URL.
-     * The usual prefix for this namespace is {@code "gmi"}.
-     *
-     * @category ISO
-     *
-     * @deprecated as of ISO 19115-4, splitted in many different namespaces.
-     */
-    @Deprecated
-    public static final String GMI = LegacyNamespaces.GMI;
-
-    /**
-     * The <code>{@value}</code> URL.
-     * The usual prefix for this namespace is {@code "gmx"}.
-     *
-     * @category ISO
-     *
-     * @deprecated as of ISO 19115-3, splitted in many different namespaces.
-     */
-    @Deprecated
-    public static final String GMX = LegacyNamespaces.GMX;
 
     /**
      * The <code>{@value}</code> URL.

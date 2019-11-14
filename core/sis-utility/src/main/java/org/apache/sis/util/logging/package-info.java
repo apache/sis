@@ -29,7 +29,7 @@
  *       records on single line with colors, for easier reading on the console output.</li>
  * </ul>
  *
- * <div class="section">Choosing a logging framework</div>
+ * <h2>Choosing a logging framework</h2>
  * The SIS project uses the standard {@link java.util.logging.Logger} API for its logging,
  * but this package allows redirection of logging messages to some other frameworks like
  * <a href="http://logging.apache.org/log4j/">Log4J</a>.
@@ -43,14 +43,14 @@
  *   <li>Any other JAR registering a {@link org.apache.sis.util.logging.LoggerFactory} implementation.</li>
  * </ul>
  *
- * <div class="section">Note for SIS developers</div>
+ * <h2>Note for SIS developers</h2>
  * All SIS code should fetch their logger through a call to our custom
  * {@link org.apache.sis.util.logging.Logging#getLogger(String)} method instead than
  * the standard {@link java.util.logging.Logger#getLogger(String)} method. This is necessary in
  * order to give SIS a chance to redirect log events to an other logging framework.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://download.oracle.com/javase/6/docs/technotes/guides/logging/overview.html">Java Logging Overview</a>
  *

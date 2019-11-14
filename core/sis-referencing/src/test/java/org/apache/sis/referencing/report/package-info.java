@@ -22,7 +22,7 @@
  * The reports are for example the list of all supported EPSG codes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  * @since   0.7
  * @module
  */

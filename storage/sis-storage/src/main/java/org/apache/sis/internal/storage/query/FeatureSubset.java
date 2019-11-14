@@ -17,13 +17,15 @@
 package org.apache.sis.internal.storage.query;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
-import org.opengis.util.GenericName;
 import org.apache.sis.internal.feature.FeatureUtilities;
 import org.apache.sis.internal.storage.AbstractFeatureSet;
+import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.filter.InvalidExpressionException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.event.StoreListeners;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -66,17 +68,9 @@ final class FeatureSubset extends AbstractFeatureSet {
      * Creates a new set of features by filtering the given set using the given query.
      */
     FeatureSubset(final FeatureSet source, final SimpleQuery query) {
-        super(source);
+        super(source instanceof StoreListeners ? (StoreListeners) source : null);
         this.source = source;
         this.query = query;
-    }
-
-    /**
-     * Returns an empty value since this resource is a computation result.
-     */
-    @Override
-    public Optional<GenericName> getIdentifier() {
-        return Optional.empty();
     }
 
     /**
@@ -85,7 +79,13 @@ final class FeatureSubset extends AbstractFeatureSet {
     @Override
     public synchronized FeatureType getType() throws DataStoreException {
         if (resultType == null) {
-            resultType = query.expectedType(source.getType());
+            final FeatureType type = source.getType();
+            try {
+                resultType = query.expectedType(type);
+            } catch (IllegalArgumentException | InvalidExpressionException e) {
+                throw new DataStoreContentException(Resources.forLocale(getLocale())
+                        .getString(Resources.Keys.CanNotDeriveTypeFromFeature_1, type.getName()), e);
+            }
         }
         return resultType;
     }

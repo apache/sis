@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Supplier;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.File;
@@ -34,7 +35,6 @@ import jdk.javadoc.doclet.Reporter;
 import jdk.javadoc.doclet.Doclet.Option;
 import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.StandardDoclet;
-import com.sun.source.util.DocTrees;
 
 
 /**
@@ -42,23 +42,15 @@ import com.sun.source.util.DocTrees;
  * The post-javadoc actions are:
  *
  * <ul>
- *   <li>Rename {@code "stylesheet.css"} as {@code "standarc.css"}.</li>
- *   <li>Copy {@code "src/main/javadoc/stylesheet.css"} (from the project root) to {@code "stylesheet.css"}.</li>
  *   <li>Copy additional resources.</li>
  * </ul>
- *
- * We do not use the standard {@code "-stylesheet"} Javadoc option because it replaces the standard
- * CSS by the specified one. Instead, we want to keep both the standard CSS and our customized one.
- * Our customized CSS shall contain an import statement for the standard stylesheet.
- *
- * <p>This class presumes that all CSS files are encoded in UTF-8.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
  * @module
  */
-public final class Doclet extends StandardDoclet {
+public final class Doclet extends StandardDoclet implements Supplier<Reporter> {
     /**
      * The name of the SIS-specific stylesheet file.
      */
@@ -71,25 +63,8 @@ public final class Doclet extends StandardDoclet {
 
     /**
      * Where to report warnings, or {@code null} if unknown.
-     *
-     * @todo make package-private after {@link #workaround8201817} has been removed.
      */
-    public Reporter reporter;
-
-    /**
-     * Utility methods for locating the path of elements, or {@code null} if unknown.
-     *
-     * @todo make package-private after {@link #workaround8201817} has been removed.
-     */
-    public DocTrees trees;
-
-    /**
-     * Temporary Workaround for https://bugs.openjdk.java.net/browse/JDK-8201817
-     *
-     * @deprecated to be removed after we upgraded Apache SIS build requirement to JDK 11.
-     */
-    @Deprecated
-    public static Doclet workaround8201817;
+    private Reporter reporter;
 
     /**
      * Invoked by the Javadoc tools for instantiating the custom doclet.
@@ -107,7 +82,18 @@ public final class Doclet extends StandardDoclet {
     public void init(final Locale locale, final Reporter reporter) {
         super.init(locale, reporter);
         this.reporter = reporter;
-        workaround8201817 = this;
+    }
+
+    /**
+     * Returns the {@link Reporter} associated to this doclet environment.
+     * This method is hack for giving that information to the taglets. We have to use a standard Java interfaces
+     * because the class loader of this {@code Doclet} will not be the same than the {@link Taglet} class loader.
+     *
+     * @return implementation-dependent information to give to taglets.
+     */
+    @Override
+    public Reporter get() {
+        return reporter;
     }
 
     /**
@@ -156,7 +142,6 @@ public final class Doclet extends StandardDoclet {
      */
     @Override
     public boolean run(final DocletEnvironment environment) {
-        trees = environment.getDocTrees();
         final boolean success = super.run(environment);
         if (success && outputDirectory != null) try {
             final Path output = Paths.get(outputDirectory);

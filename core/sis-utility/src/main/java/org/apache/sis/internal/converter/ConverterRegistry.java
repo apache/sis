@@ -38,12 +38,12 @@ import org.apache.sis.util.resources.Errors;
  * explicitly {@linkplain #register(ObjectConverter) registered}. However a system-wide registry
  * initialized with default converters is provided by the {@link SystemRegistry#INSTANCE} constant.</p>
  *
- * <div class="section">Note about conversions from interfaces</div>
+ * <h2>Note about conversions from interfaces</h2>
  * {@code ConverterRegistry} is primarily designed for handling converters from classes to other classes.
  * Handling of interfaces are not prohibited (and actually sometime supported), but their behavior may be
  * more ambiguous than in the case of classes because of multi-inheritance in interface hierarchy.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * This base class is thread-safe. Subclasses shall make sure that any overridden methods remain safe to call
  * from multiple threads.
  *
@@ -64,7 +64,7 @@ public class ConverterRegistry {
      * then the key and the value may be the same instance (in order to save object
      * allocations).</p>
      *
-     * <div class="section">Synchronization note</div>
+     * <h4>Synchronization note</h4>
      * Synchronization if performed by {@code synchronized(converters)} statements. We tried
      * {@code ReadWriteLock}, but this is not very convenient because read operations may be
      * followed by write operations at any time if the requested converter is not in the cache.
@@ -210,7 +210,7 @@ public class ConverterRegistry {
      * For example a converter producing {@link Double} can be used for clients that just ask
      * for a {@link Number}.</p>
      *
-     * <div class="section">Which super-classes of the target class are registered</div>
+     * <h4>Which super-classes of the target class are registered</h4>
      * Consider a converter from class {@code S} to class {@code T} where the two classes
      * are related in a hierarchy as below:
      *
@@ -233,7 +233,7 @@ public class ConverterRegistry {
      * No {@code S} → {@code C2} or {@code S} → {@code C1} converter will be registered,
      * because an identity converter would be sufficient for those cases.
      *
-     * <div class="section">Which sub-classes of the source class are registered</div>
+     * <h4>Which sub-classes of the source class are registered</h4>
      * Sub-classes of the source class will be registered on a case-by-case basis when the
      * {@link #find(Class, Class)} is invoked, because we can not know the set of all
      * sub-classes in advance (and would not necessarily want to register all of them anyway).
@@ -283,6 +283,13 @@ public class ConverterRegistry {
                     /*
                      * Target interface is already implemented by the source, so
                      * there is no reason to convert the source to that interface.
+                     */
+                    continue;
+                }
+                if (i.getName().startsWith("java.lang.constant")) {
+                    /*
+                     * The Constable and ConstantDesc interfaces (introduced in Java 12)
+                     * are internal mechanic for handling byte codes.
                      */
                     continue;
                 }

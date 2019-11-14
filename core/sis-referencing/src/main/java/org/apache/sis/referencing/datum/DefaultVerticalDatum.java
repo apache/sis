@@ -43,7 +43,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * {@linkplain org.opengis.referencing.cs.CoordinateSystemAxis coordinate system axis} with which
  * it is combined to create a {@linkplain org.opengis.referencing.crs.VerticalCRS vertical CRS}.
  *
- * <div class="section">Creating new vertical datum instances</div>
+ * <h2>Creating new vertical datum instances</h2>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
  * Choice 1 in the following list is the easiest but most restrictive way to get a vertical datum.
@@ -66,7 +66,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *     VerticalDatum datum = CommonCRS.Vertical.GEOID.datum();
  * }
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
  * all components were created using only SIS factories and static constants.
@@ -199,9 +199,9 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code VerticalDatum.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code VerticalDatum}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
      * own set of interfaces.</div>
      *
      * @return {@code VerticalDatum.class} or a user-defined sub-interface.

@@ -91,19 +91,15 @@ import static java.lang.Math.*;
  * sides of {@code NormalizedProjection} respectively. Those matrices show only the basic parameters common to most projections.
  * Some projections will put more elements in those matrices.
  *
- * <center>
- *   <table class="compact" style="td {vertical-align: middle}" summary="Decomposition of a map projection">
- *     <tr>
- *       <td>{@include ../transform/formulas.html#SwapAxes}</td>
- *       <td>→</td>
- *       <td>{@include ../transform/formulas.html#NormalizeGeographic}</td>
- *       <td>→</td>
- *       <td>{@code NormalizedProjection}</td>
- *       <td>→</td>
- *       <td>{@include ../transform/formulas.html#DenormalizeCartesian}</td>
- *     </tr>
- *   </table>
- * </center>
+ * <div class="horizontal-flow" style="align-items:center">
+ *   <div>{@include ../transform/formulas.html#SwapAxes}</div>
+ *   <div>→</div>
+ *   <div>{@include ../transform/formulas.html#NormalizeGeographic}</div>
+ *   <div>→</div>
+ *   <div>{@code NormalizedProjection}</div>
+ *   <div>→</div>
+ *   <div>{@include ../transform/formulas.html#DenormalizeCartesian}</div>
+ * </div>
  *
  * <div class="note"><b>Note:</b>
  * The first matrix on the left side is for {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes
@@ -122,7 +118,7 @@ import static java.lang.Math.*;
  * in radians. This is the opposite of {@link Parameters} where all angles are in CRS-dependent units,
  * typically decimal degrees.</p>
  *
- * <div class="section">Serialization</div>
+ * <h2>Serialization</h2>
  * Serialization of this class is appropriate for short-term storage or RMI use, but may not be compatible
  * with future versions. For long term storage, WKT (Well Know Text) or XML are more appropriate.
  *
@@ -277,7 +273,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          * sphere at latitude φ will be used instead than the semi-major axis length in the denormalisation matrix.
          * In other words, if provided then <var>a</var> is replaced by <var>R</var><sub>c</sub> below:
          *
-         * <center>{@include ../transform/formulas.html#DenormalizeCartesian}</center>
+         * <div style="text-align:center">{@include ../transform/formulas.html#DenormalizeCartesian}</div>
          *
          * <p>This enumeration shall be used <strong>only</strong> when the user requested explicitly spherical
          * formulas, for example the <cite>"Mercator (Spherical)"</cite> projection (EPSG:1026), but the figure
@@ -405,7 +401,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *   </tr>
      * </table>
      *
-     * <div class="section">Which parameters are considered</div>
+     * <h4>Which parameters are considered</h4>
      * The {@code roles} map specifies which parameters to look for <cite>central meridian</cite>,
      * <cite>scale factor</cite>, <cite>false easting</cite>, <cite>false northing</cite> and other values.
      * All entries in the {@code roles} map are optional.
@@ -655,7 +651,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * in {@code dstPts} at the given offset. In addition, opportunistically computes the
      * transform derivative if requested.
      *
-     * <div class="section">Normalization</div>
+     * <h4>Normalization</h4>
      * The input coordinates are (<var>λ</var>,<var>φ</var>) (the variable names for <var>longitude</var> and
      * <var>latitude</var> respectively) angles in radians, eventually pre-multiplied by projection-specific factors.
      * Input coordinate shall have the <cite>central meridian</cite> removed from the longitude by the caller
@@ -675,11 +671,11 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * <div class="note"><b>Note 2:</b> in <a href="https://proj4.org/">Proj.4</a>, the same standardization,
      * described above, is handled by {@code pj_fwd.c}, except for the projection-specific additional factors.</div>
      *
-     * <div class="section">Argument checks</div>
+     * <h4>Argument checks</h4>
      * The input longitude and latitude are usually (but not always) in the range [-π … π] and [-π/2 … π/2] respectively.
      * However values outside those ranges are accepted on the assumption that most implementations use those values
      * only in trigonometric functions like {@linkplain Math#sin(double) sine} and {@linkplain Math#cos(double) cosine}.
-     * If this assumption is not applicable to a particular subclass, then it is implementor's responsibility to check
+     * If this assumption is not applicable to a particular subclass, then it is implementer responsibility to check
      * the range.
      *
      * @param  srcPts    the array containing the source point coordinate, as (<var>longitude</var>, <var>latitude</var>)
@@ -702,7 +698,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * {@code ptDst} at the given offset. The output coordinates are (<var>longitude</var>, <var>latitude</var>)
      * angles in radians, usually (but not necessarily) in the range [-π … π] and [-π/2 … π/2] respectively.
      *
-     * <div class="section">Normalization</div>
+     * <h4>Normalization</h4>
      * Input coordinate shall have the (<cite>false easting</cite>, <cite>false northing</cite>) removed
      * by the caller and the result divided by the global <cite>scale factor</cite> before this method is invoked.
      * After this method is invoked, the caller will need to add the <cite>central meridian</cite> to the longitude

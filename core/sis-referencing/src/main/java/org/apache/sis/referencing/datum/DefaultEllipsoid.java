@@ -29,14 +29,12 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.Ellipsoid;
-import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.jaxb.referencing.SecondDefiningParameter;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -46,7 +44,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.measure.Units;
 
-import static java.lang.Math.*;
 import static java.lang.Double.*;
 import static org.apache.sis.util.ArgumentChecks.ensureStrictlyPositive;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -71,11 +68,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>{@linkplain #getEccentricity() eccentricity}</li>
  * </ul>
  *
- * <div class="section">Distance calculations</div>
- * This class contains an {@link #orthodromicDistance(double, double, double, double)} convenience method
- * for calculating distances on great circles.
- *
- * <div class="section">Creating new ellipsoid instances</div>
+ * <h2>Creating new ellipsoid instances</h2>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
  * In particular, the <a href="http://www.epsg.org">EPSG</a> database provides definitions for many ellipsoids,
@@ -104,7 +97,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *     Ellipsoid e = CommonCRS.WGS84.ellipsoid();
  * }
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructors are also immutable. Unless otherwise noted in the javadoc, this condition holds if all
  * components were created using only SIS factories and static constants.
@@ -129,16 +122,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -1149451543954764081L;
-
-    /**
-     * Maximum number of iterations in the {@link #orthodromicDistance(double, double, double, double)} method.
-     */
-    private static final int MAX_ITERATIONS = 100;
-
-    /**
-     * Small tolerance value for {@link #orthodromicDistance(double, double, double, double)}.
-     */
-    private static final double EPS = 0.5E-13;
 
     /**
      * Tolerance threshold for comparing floating point numbers.
@@ -347,9 +330,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code Ellipsoid.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code Ellipsoid}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with
      * their own set of interfaces.</div>
      *
      * @return {@code Ellipsoid.class} or a user-defined sub-interface.
@@ -520,108 +503,6 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     @Override
     public boolean isSphere() {
         return semiMajorAxis == semiMinorAxis;
-    }
-
-    /**
-     * Returns the orthodromic distance between two geographic coordinates.
-     * The orthodromic distance is the shortest distance between two points on a ellipsoid's surface.
-     * The orthodromic path is always on a great circle.
-     *
-     * <div class="note"><b>Note:</b>
-     * Orthodromic distances are different than the <cite>loxodromic distance</cite>.
-     * The later is a longer distance on a path with a constant direction on the compass.</div>
-     *
-     * @param  λ1  longitude of first  point (in decimal degrees).
-     * @param  φ1  latitude  of first  point (in decimal degrees).
-     * @param  λ2  longitude of second point (in decimal degrees).
-     * @param  φ2  latitude  of second point (in decimal degrees).
-     * @return the orthodromic distance (in the units of this ellipsoid's axis).
-     *
-     * @deprecated Replaced by {@link org.apache.sis.referencing.GeodeticCalculator}.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-386">SIS-386</a>
-     */
-    @Deprecated
-    public double orthodromicDistance(double λ1, double φ1, double λ2, double φ2) {
-        λ1 = toRadians(λ1);
-        φ1 = toRadians(φ1);
-        λ2 = toRadians(λ2);
-        φ2 = toRadians(φ2);
-        /*
-         * Solution of the geodetic inverse problem after T.Vincenty.
-         * Modified Rainsford's method with Helmert's elliptical terms.
-         * Effective in any azimuth and at any distance short of antipodal.
-         *
-         * Latitudes and longitudes in radians positive North and East.
-         * Forward azimuths at both points returned in radians from North.
-         *
-         * Programmed for CDC-6600 by LCDR L.Pfeifer NGS ROCKVILLE MD 18FEB75
-         * Modified for IBM SYSTEM 360 by John G.Gergen NGS ROCKVILLE MD 7507
-         * Ported from Fortran to Java by Martin Desruisseaux.
-         *
-         * Source: ftp://ftp.ngs.noaa.gov/pub/pcsoft/for_inv.3d/source/inverse.for
-         *         subroutine INVER1
-         */
-        final double F = 1 / getInverseFlattening();
-        final double R = 1 - F;
-
-        double tu1 = R * tan(φ1);
-        double tu2 = R * tan(φ2);
-        double cu1 = 1 / sqrt(tu1*tu1 + 1);
-        double cu2 = 1 / sqrt(tu2*tu2 + 1);
-        double su1 = cu1 * tu1;
-        double s   = cu1 * cu2;
-        double baz =   s * tu2;
-        double faz = baz * tu1;
-        double x   =  λ2 - λ1;
-        for (int i=0; i<MAX_ITERATIONS; i++) {
-            final double sx = sin(x);
-            final double cx = cos(x);
-            tu1 = cu2 * sx;
-            tu2 = baz - su1*cu2*cx;
-            final double sy = hypot(tu1, tu2);
-            final double cy = s*cx + faz;
-            final double y = atan2(sy, cy);
-            final double SA = s * (sx/sy);
-            final double c2a = 1 - SA*SA;
-            double cz = 2*faz;
-            if (c2a > 0) {
-                cz = -cz/c2a + cy;
-            }
-            double e = cz*cz*2 - 1;
-            double c = ((-3*c2a+4)*F + 4) * c2a * F/16;
-            double d = x;
-            x = ((e*cy*c+cz)*sy*c + y) * SA;
-            x = (1-c)*x*F + λ2-λ1;
-
-            if (abs(d-x) <= EPS) {
-                x = sqrt((1/(R*R) - 1) * c2a + 1) + 1;
-                x = (x-2)/x;
-                c = 1-x;
-                c = (x*x/4 + 1)/c;
-                d = (0.375*x*x - 1)*x;
-                x = e*cy;
-                s = 1 - 2*e;
-                s = ((((sy*sy*4 - 3)*s*cz*d/6-x)*d/4+cz)*sy*d+y)*c*R * getSemiMajorAxis();
-                return s;
-            }
-        }
-        // No convergence. It may be because coordinate points
-        // are equals or because they are at antipodes.
-        if (abs(λ1-λ2) <= COMPARISON_THRESHOLD && abs(φ1-φ2) <= COMPARISON_THRESHOLD) {
-            return 0; // Coordinate points are equals
-        }
-        if (abs(φ1) <= COMPARISON_THRESHOLD && abs(φ2) <= COMPARISON_THRESHOLD) {
-            return abs(λ1-λ2) * getSemiMajorAxis(); // Points are on the equator.
-        }
-        // At least one input coordinate is NaN.
-        if (isNaN(λ1) || isNaN(φ1) || isNaN(λ2) || isNaN(φ2)) {
-            return NaN;
-        }
-        // Other cases: no solution for this algorithm.
-        throw new ArithmeticException(Resources.format(Resources.Keys.NoConvergenceForPoints_2,
-                  new DirectPosition2D(toDegrees(λ1), toDegrees(φ1)),
-                  new DirectPosition2D(toDegrees(λ2), toDegrees(φ2))));
     }
 
     /**

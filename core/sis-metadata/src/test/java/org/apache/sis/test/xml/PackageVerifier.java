@@ -45,6 +45,8 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
 
+import static org.apache.sis.test.TestCase.PENDING_FUTURE_SIS_VERSION;
+
 
 /**
  * Verify JAXB annotations in a single package. A new instance of this class is created by
@@ -252,7 +254,7 @@ final strictfp class PackageVerifier {
          * Get the type name and namespace from the @XmlType or @XmlRootElement annotations.
          * If both of them are present, verify that they are consistent (same namespace and
          * same name with "_Type" suffix in @XmlType). If the type name is not declared, we
-         * assume that it is the same than the class name (this is what Apache SIS 0.8 does
+         * assume that it is the same than the class name (this is what Apache SIS 1.0 does
          * in its org.apache.sis.internal.jaxb.code package for CodeList adapters).
          */
         final String isoName;       // ISO class name (not the same than Java class name).
@@ -447,11 +449,11 @@ final strictfp class PackageVerifier {
              */
             if (isCollection) {
                 if (!info.isCollection) {
-                    if (false)  // Temporarily disabled because require GeoAPI modifications.
+                    if (PENDING_FUTURE_SIS_VERSION)  // Temporarily disabled because require GeoAPI modifications.
                     throw new SchemaException(errorInClassMember(javaName).append("Value should be a singleton.").toString());
                 }
             } else if (info.isCollection) {
-                if (false)  // Temporarily disabled because require GeoAPI modifications.
+                if (PENDING_FUTURE_SIS_VERSION)  // Temporarily disabled because require GeoAPI modifications.
                 throw new SchemaException(errorInClassMember(javaName).append("Value should be a collection.").toString());
             }
             if (valueType != null) {
@@ -462,7 +464,7 @@ final strictfp class PackageVerifier {
                     expected = TYPE_EQUIVALENCES.getOrDefault(expected, expected);
                     actual   = TYPE_EQUIVALENCES.getOrDefault(actual,   actual);
                     if (!expected.equals(actual)) {
-                        if (false)  // Temporarily disabled because require GeoAPI modifications.
+                        if (PENDING_FUTURE_SIS_VERSION)  // Temporarily disabled because require GeoAPI modifications.
                         throw new SchemaException(errorInClassMember(javaName)
                                 .append("Declared value type: ").append(actual).append(System.lineSeparator())
                                 .append("Expected value type: ").append(expected).toString());

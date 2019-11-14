@@ -109,7 +109,7 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
      * Returns a description of the condition to put in a {@code WHERE} clause for an object having
      * the given dependency.
      *
-     * <div class="section"><b>Implementation note:</b>
+     * <div class="note"><b>Implementation note:</b>
      * The {@code super.find(…)} method performs a check (not documented in public API) for detecting
      * when it is invoked recursively, which is the case here. Consequently the {@code super.find(…)}
      * behavior below is slightly different than usual: since invoked recursively, {@code super.find(…)}

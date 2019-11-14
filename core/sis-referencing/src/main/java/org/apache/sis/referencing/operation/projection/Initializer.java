@@ -56,7 +56,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -323,6 +323,20 @@ final class Initializer {
         t.negate();
         t.add(1);
         return t;
+    }
+
+    /**
+     * Returns the radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
+     * This is {@code 1/sqrt(rν2(sinφ))}.
+     *
+     * @param  sinφ  the sine of the φ latitude.
+     * @return radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
+     */
+    final double radiusOfCurvature(final double sinφ) {
+        final DoubleDouble rν2 = rν2(sinφ);
+        rν2.sqrt();
+        rν2.inverseDivide(1);
+        return rν2.doubleValue();
     }
 
     /**

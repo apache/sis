@@ -19,13 +19,11 @@ package org.apache.sis.referencing;
 import org.opengis.geometry.coordinate.Position;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.referencing.operation.GeodesicException;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.math.MathFunctions;
 
 import static java.lang.Math.*;
-import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
 
 
 /**
@@ -62,6 +60,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  *
  * <p><b>Limitations:</b>
  * Current implementation is still unable to compute the geodesics in some cases.
+ * In particular, calculation may fail for antipodal points.
  * See <a href="https://issues.apache.org/jira/browse/SIS-467">SIS-467</a>.</p>
  *
  * <p>If the following cases where more than one geodesics exist, current implementation returns an arbitrary one:</p>
@@ -80,12 +79,25 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  */
 class GeodesicsOnEllipsoid extends GeodeticCalculator {
     /**
-     * Whether to include code used for JUnit tests only.
-     * This value should be {@code false} in releases.
+     * Whether to include code used for JUnit tests only. This field should be
+     * set to {@code true} during development and to {@code false} in releases.
      *
      * @see #snapshot()
      */
-    static final boolean STORE_LOCAL_VARIABLES = true;
+    static final boolean STORE_LOCAL_VARIABLES = false;
+
+    /**
+     * Accuracy threshold iterative computations, in radians.
+     * We take a finer accuracy than default SIS configuration in order to met the accuracy of numbers
+     * published in Karney (2013). If this value is modified, the effect can be verified by executing
+     * the {@code GeodesicsOnEllipsoidTest} methods that compare computed values against Karney's tables.
+     * Remember to update {@link GeodeticCalculator} class javadoc if this value is changed.
+     *
+     * <p><b>Note:</b> when the iteration loop detects that it reached this requested accuracy, the loop
+     * completes the iteration step which was in progress. Consequently the final accuracy is one iteration
+     * better than the accuracy computed from this value.</p>
+     */
+    static final double ITERATION_TOLERANCE = Formulas.ANGULAR_TOLERANCE * (PI/180) / 20;
 
     /**
      * Difference between ending point and antipode of starting point for considering them as nearly antipodal.
@@ -93,37 +105,6 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * so it is okay if the antipodal approximation has some inaccuracy.
      */
     private static final double NEARLY_ANTIPODAL_Δλ = 0.25 * (PI/180);
-
-    /**
-     * Maximal difference (in radians) between two latitudes for enabling the use of simplified formulas.
-     * This is used in two contexts:
-     *
-     * <ul>
-     *   <li>Maximal difference between latitude φ₁ and equator for using the equatorial approximation.</li>
-     *   <li>Maximal difference between |β₁| and |β₂| for enabling the use of Karney's equation 47.</li>
-     * </ul>
-     *
-     * Those special cases are needed when general formulas produce indeterminations like 0/0.
-     * Current angular value corresponds to a distance of 1 millimetre on a planet of the size
-     * of Earth, which is about 1.57E-10 radians. This value is chosen empirically by trying to
-     * minimize the amount of "No convergence errors" reported by {@code GeodesicsOnEllipsoidTest}
-     * in the {@code compareAgainstDataset()} method.
-     *
-     * <p><b>Note:</b> this is an angular tolerance threshold, but is also used with sine and cosine values
-     * because sin(θ) ≈ θ for small angles.</p>
-     */
-    private static final double LATITUDE_THRESHOLD = 0.001 / (NAUTICAL_MILE*60) * (PI/180);
-
-    /**
-     * Desired accuracy in radians. We take a finer accuracy than default SIS configuration in order to met the
-     * accuracy of numbers published in Karney (2013). If this value is modified, the effect can be verified by
-     * executing the {@code GeodesicsOnEllipsoidTest} methods that compare computed values against Karney's tables.
-     *
-     * <p><b>Note:</b> when the iteration loop detects that it reached this accuracy, the loop completes the
-     * iteration step which was in progress. Consequently the final accuracy is one iteration better than this
-     * accuracy.</p>
-     */
-    private static final double ACCURACY = Formulas.ANGULAR_TOLERANCE * (PI/180) / 20;
 
     /**
      * The square of eccentricity: ℯ² = (a²-b²)/a² where
@@ -155,7 +136,9 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      *
      * @see org.opengis.referencing.datum.Ellipsoid#getSemiMinorAxis()
      */
-    private final double semiMinor;
+    private double semiMinorAxis() {
+        return semiMajorAxis * axisRatio;
+    }
 
     /**
      * The α value computed from the starting point and starting azimuth.
@@ -169,6 +152,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * Longitude angle from the equatorial point <var>E</var> to starting point P₁ on the ellipsoid.
      * This longitude is computed from the ω₁ longitude on auxiliary sphere, which is itself computed
      * from α₀, α₁, β₁ and ω₁ values computed from the starting point and starting azimuth.
+     * The {@link #COEFFICIENTS_FOR_START_POINT} flag specifies whether this field needs to be recomputed.
      *
      * @see #sphericalToGeodeticLongitude(double, double)
      */
@@ -179,6 +163,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * The <var>σ₁</var> value is an arc length on the auxiliary sphere between equatorial point <var>E</var>
      * (the point on equator with forward direction toward azimuth α₀) and starting point P₁. This is computed
      * by I₁(σ₁) in Karney equation 15 and is saved for reuse when the starting point and azimuth do not change.
+     * The {@link #COEFFICIENTS_FOR_START_POINT} flag specifies whether this field needs to be recomputed.
      *
      * @see #sphericalToEllipsoidalAngle(double, boolean)
      */
@@ -187,6 +172,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     /**
      * The term to be raised to powers (ε⁰, ε¹, ε², ε³, …) in series expansions. Defined in Karney equation 16 as
      * ε = (√[k²+1] - 1) / (√[k²+1] + 1) where k² = {@linkplain #secondEccentricitySquared ℯ′²}⋅cos²α₀ (Karney 9).
+     * The {@link #COEFFICIENTS_FOR_START_POINT} flag specifies whether this field needs to be recomputed.
      */
     private double ε;
 
@@ -202,6 +188,8 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      *
      * The <var>Cₓₓ</var> coefficients are hard-coded, except the <var>C₃ₓ</var> coefficients
      * (used together with <var>A₃</var>) which depend on {@link #sinα0} and {@link #cosα0}.
+     * Note that the <var>C</var> coefficients differ from the ones published by Karney because
+     * they have been combined using Clenshaw summation.
      *
      * <p>All those coefficients must be recomputed when the starting point or starting azimuth change.
      * The {@link #COEFFICIENTS_FOR_START_POINT} flag specifies whether those fields need to be recomputed.</p>
@@ -211,6 +199,11 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     private double A1, A2, A3, C31, C32, C33, C34, C35;
 
     /**
+     * Coefficients for Rhumb line calculation from Bennett (1996) equation 2, modified with Clenshaw summation.
+     */
+    private final double R0, R2, R4, R6;
+
+    /**
      * Constructs a new geodetic calculator expecting coordinates in the supplied CRS.
      *
      * @param  crs         the referencing system for the {@link Position} arguments and return values.
@@ -218,14 +211,21 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      */
     GeodesicsOnEllipsoid(final CoordinateReferenceSystem crs, final Ellipsoid ellipsoid) {
         super(crs, ellipsoid);
-        final double a = ellipsoid.getSemiMajorAxis();
+        final double a = semiMajorAxis;
         final double b = ellipsoid.getSemiMinorAxis();
         final double Δ2 = a*a - b*b;
         eccentricitySquared = Δ2 / (a*a);
         secondEccentricitySquared = Δ2 / (b*b);
         thirdFlattening = (a - b) / (a + b);
         axisRatio = b / a;
-        semiMinor = b;
+        /*
+         * For rhumb-line calculation from Bennett (1996) equation 2, modified with Clenshaw summation.
+         */
+        double fe;
+        R0 = 1  -  (eccentricitySquared)*(  1./4   + eccentricitySquared*( 3./64 + eccentricitySquared*( 5./256)));
+        R2 = (fe  = eccentricitySquared)*( -3./8   - eccentricitySquared*( 3./32 + eccentricitySquared*(25./768)));
+        R4 = (fe *= eccentricitySquared)*( 15./128 + eccentricitySquared*(45./512));
+        R6 = (fe *  eccentricitySquared)*(-35./768);
     }
 
     /**
@@ -269,27 +269,26 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                + ε*(3./64   +   n*(1./32)
                + ε*(3./128)))));
         /*
-         * Karney equation 25 with fε = εⁿ where n = 1, 2, 3, …
-         *
-         * TODO: combine using the technic described in sphericalToEllipsoidalAngle,
-         * then make constant positive.
+         * Karney equation 25 with fε = εⁿ where n = 1, 2, 3, …. The coefficients below differ from
+         * the ones published by Karney because they have been combined using Clenshaw summation
+         * (see sphericalToEllipsoidalAngle(…) below for a simpler example for Clenshaw summation).
          */
         double fε;
-        C31 = (fε  = ε) * ( 1./4     +   n*(-1./4)
-                   + ε  * ( 1./8     +   n*(             n*(-1./8 ))
-                   + ε  * ( 3./64    +   n*(3./64    +   n*(-1./64))
-                   + ε  * ( 5./128   +   n*(1./64)
-                   + ε  * ( 3./128)))));
-        C32 = (fε *= ε) * ( 1./16    +   n*(-3./32   +   n*( 1./32))
-                   + ε  * ( 3./64    +   n*(-1./32   +   n*(-3./64))
-                   + ε  * ( 3./128   +   n*( 1./128)
-                   + ε  * ( 5./256))));
-        C33 = (fε *= ε) * ( 5./192   +   n*(-3./64   +   n*( 5./192))
-                   + ε  * ( 3./128   +   n*(-5./192)
-                   + ε  * ( 7./512)));
-        C34 = (fε *= ε) * ( 7./512   +   n*(-7./256)
-                   + ε  * ( 7./512));
-        C35 = (fε *  ε) * (21./2560);
+        C31 = (fε  = ε) * ( 1./4     -   n*(1./4)
+                   + ε  * ( 1./8     -   n*(            n*(1./8 ))
+                   + ε  * ( 1./48    +   n*(3./32   -   n*(1./24))
+                   + ε  * ( 1./64    +   n*(1./24)
+                   + ε  * (23./1280)))));
+        C32 = (fε *= ε) * ( 1./8     -   n*(3./16   -   n*(1./16))
+                   + ε  * ( 3./32    -   n*(1./16   +   n*(3./32))
+                   + ε  * (-1./128   +   n*(1./8)
+                   + ε  * (-1./64))));
+        C33 = (fε *= ε) * ( 5./48    -   n*(3./16   -   n*(5./48))
+                   + ε  * ( 3./32    -   n*(5./48)
+                   + ε  * (-7./160)));
+        C34 = (fε *= ε) * ( 7./64    -   n*(7./32)
+                   + ε  * ( 7./64));
+        C35 = (fε *  ε) * (21./160);
         return k2;
     }
 
@@ -425,22 +424,30 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * @param  σ  spherical arc length from equatorial point E to point on auxiliary sphere
      *            along a geodesic with azimuth α₀ at equator.
      * @return geodetic longitude λ from the equatorial point E to the point.
-     *
-     * @todo combine using the technic described in sphericalToEllipsoidalAngle,
      */
     private double sphericalToGeodeticLongitude(final double ω, final double σ) {
         /*
-         * Derived from Karney (2013) equation 23.
+         * Derived from Karney (2013) equation 23:
          *
          *   I₃(σ) = A₃⋅(σ + ∑C₃ₓ⋅sin(x⋅θ))
+         *
+         * but with the sum of sine terms replaced by Clenshaw summation.
          */
-        final double I3 = A3*(C35 * sin(2 * 5 * σ)
-                            + C34 * sin(2 * 4 * σ)
-                            + C33 * sin(2 * 3 * σ)
-                            + C32 * sin(2 * 2 * σ)
-                            + C31 * sin(2 * 1 * σ) + σ);
+        final double θ    = σ * 2;
+        final double cosθ = cos(θ);
+        final double I3   = A3*(sin(θ)*(C31 + cosθ*(C32 + cosθ*(C33 + cosθ*(C34 + cosθ*C35)))) + σ);
         if (STORE_LOCAL_VARIABLES) store("I₃(σ)", I3);
         return ω - sinα0 * I3 * (1 - axisRatio);
+    }
+
+    /**
+     * Sets the {@link #sinα0} and {@link #cosα0} terms. Note that the {@link #msinα2} field is always set
+     * to the {@code sinα0} value in this class. But those two fields may nevertheless have different values
+     * if {@code msinα2} has been set independently, for example by {@link #createGeodesicPath2D(double)}.
+     */
+    private void α0(final double sinα1, final double cosα1, final double sinβ1, final double cosβ1) {
+        sinα0 = sinα1 * cosβ1;                  // Azimuth at equator (Karney 5) as geographic angle.
+        cosα0 = hypot(cosα1, sinα1*sinβ1);      // = sqrt(1 - sinα0*sinα0) with less rounding errors.
     }
 
     /**
@@ -458,14 +465,13 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     final void computeEndPoint() {
         canComputeEndPoint();                                       // May throw IllegalStateException.
         if (isInvalid(COEFFICIENTS_FOR_START_POINT)) {
-            final double vm    = hypot(dφ1, dλ1);
-            final double sinα1 = dλ1 / vm;                          // α is a geographic (not arithmetic) angle.
-            final double cosα1 = dφ1 / vm;
+            final double m     = hypot(msinα1, mcosα1);
+            final double sinα1 = msinα1 / m;                        // α is a geographic (not arithmetic) angle.
+            final double cosα1 = mcosα1 / m;
             final double tanβ1 = axisRatio * tan(φ1);               // β₁ is reduced latitude (Karney 6).
             final double cosβ1 = 1 / sqrt(1 + tanβ1*tanβ1);
             final double sinβ1 = tanβ1 * cosβ1;
-            sinα0 = sinα1 * cosβ1;                                  // Azimuth at equator (Karney 5) as geographic angle.
-            cosα0 = hypot(cosα1, sinα1*sinβ1);                      // = sqrt(1 - sinα0*sinα0) with less rounding errors.
+            α0(sinα1, cosα1, sinβ1, cosβ1);
             /*
              * Note:  Karney said that for equatorial geodesics (φ₁=0 and α₁=π/2), calculation of σ₁ is indeterminate
              * and σ₁=0 should be taken. The indetermination appears as atan2(0,0). However this expression evaluates
@@ -490,7 +496,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         /*
          * Distance from equatorial point E to ending point P₂ along the geodesic: s₂ = s₁ + ∆s.
          */
-        final double s2b = I1_σ1 + geodesicDistance / semiMinor;            // (Karney 18) + ∆s/b
+        final double s2b = I1_σ1 + geodesicDistance / semiMinorAxis();      // (Karney 18) + ∆s/b
         final double σ2  = ellipsoidalToSphericalAngle(s2b / A1);           // (Karney 21)
         final double sinσ2 = sin(σ2);
         final double cosσ2 = cos(σ2);
@@ -499,20 +505,20 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
          * We do not need atan2(y,x) because we keep x and y components separated. It is not necessary to
          * normalize to a vector of length 1.
          */
-        dλ2 = sinα0;                                // cos(π/2 − θ)  =  sin(θ)
-        dφ2 = cosα0 * cosσ2;                        // sin(π/2 − θ)  =  cos(θ)
+        msinα2 = sinα0;
+        mcosα2 = cosα0 * cosσ2;
         /*
          * Ending point coordinates on auxiliary sphere: Latitude β is given by Karney equation 13:
          *
          *   β₂ = atan2(cos(α₀)⋅sin(σ₂), hypot(cos(α₀)⋅cos(σ₂), sin(α₀))
          *
-         * We replace cos(α₀)⋅cos(σ₂) by dφ2 since we computed it above.  Then we avoid the call to
+         * We replace cos(α₀)⋅cos(σ₂) by mcosα2 since we computed it above. Then we avoid the call to
          * atan2(y,x) by storing directly the y and x values. Note that `sinβ2` and `cosβ2` are not
          * really sine and cosine since we do not normalize them to sin² + cos² = 1. We do not need
          * to normalize because we use either a ratio of those 2 quantities or give them to atan2(…).
          */
         final double sinβ2 = cosα0 * sinσ2;
-        final double cosβ2 = hypot(dφ2, sinα0);
+        final double cosβ2 = hypot(msinα2, mcosα2);                             // m⋅sin(α₂) = sin(α₀) in this class.
         final double ω2    = atan2(sinα0*sinσ2, cosσ2);                         // (Karney 12).
         /*
          * Convert reduced longitude ω and latitude β on auxiliary sphere
@@ -523,10 +529,10 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         φ2 = atan(sinβ2 / (cosβ2 * axisRatio));                                 // (Karney 6).
         setValid(END_POINT | ENDING_AZIMUTH);
         if (STORE_LOCAL_VARIABLES) {                // For comparing values with Karney table 2.
-            store("s₂", s2b * semiMinor);
+            store("s₂", s2b * semiMinorAxis());
             store("τ₂", s2b / A1);
             store("σ₂", σ2);
-            store("α₂", atan2(sinα0, cosα0*cosσ2));
+            store("α₂", atan2(msinα2, mcosα2));
             store("β₂", atan2(sinβ2, cosβ2));
             store("ω₂", ω2);
             store("λ₂", λ2E);
@@ -549,10 +555,10 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * </ul>
      *
      * @throws IllegalStateException if the distance or azimuth has not been set.
-     * @throws GeodesicException if an azimuth or the distance can not be computed.
+     * @throws GeodeticException if an azimuth or the distance can not be computed.
      */
     @Override
-    final void computeDistance() throws GeodesicException {
+    final void computeDistance() {
         canComputeDistance();
         /*
          * The algorithm in this method requires the following canonical configuration:
@@ -585,16 +591,6 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             Δλ = -Δλ;
         }
         /*
-         * Compute reduced latitudes β (Karney 6). Actually we don't need the β angles
-         * (except for a special case), but rather their sine and cosine values.
-         */
-        final double tanβ1 = axisRatio * tan(φ1);
-        final double tanβ2 = axisRatio * tan(φ2);
-        final double cosβ1 = 1 / sqrt(1 + tanβ1*tanβ1);
-        final double cosβ2 = 1 / sqrt(1 + tanβ2*tanβ2);
-        final double sinβ1 = tanβ1 * cosβ1;
-        final double sinβ2 = tanβ2 * cosβ2;
-        /*
          * Compute an approximation of the azimuth α₁ at starting point. This estimation will be refined by iteration
          * in the loop later, but that iteration will not converge if the first α₁ estimation is not good enough. The
          * general formula does not give good α₁ initial value for antipodal points, so we need to check for special
@@ -616,15 +612,21 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
              */
             if (Δλ > axisRatio * PI) {
                 // Karney's special case documented before equation 45.
-                throw new GeodesicException("Can not compute geodesics for antipodal points on equator.");
+                throw new GeodeticException("Can not compute geodesics for antipodal points on equator.");
             }
-            final double Δφ = φ2 - φ1;
-            geodesicDistance = hypot(Δλ, Δφ) * ellipsoid.getSemiMajorAxis();
-            dλ1 = dλ2 = (inverseLongitudeSigns ^ swapPoints) ? -Δλ : Δλ;
-            dφ1 = dφ2 = (inverseLatitudeSigns  ^ swapPoints) ? -Δφ : Δφ;
-            setValid(STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE);
+            super.computeDistance();
             return;
         }
+        /*
+         * Reduced latitudes β (Karney 6). Actually we don't need the β angles
+         * (except for a special case), but rather their sine and cosine values.
+         */
+        final double tanβ1 = axisRatio * tan(φ1);
+        final double tanβ2 = axisRatio * tan(φ2);
+        final double cosβ1 = 1 / sqrt(1 + tanβ1*tanβ1);
+        final double cosβ2 = 1 / sqrt(1 + tanβ2*tanβ2);
+        final double sinβ1 = tanβ1 * cosβ1;
+        final double sinβ2 = tanβ2 * cosβ2;
         double α1;
         if (Δλ >= PI - NEARLY_ANTIPODAL_Δλ && abs(φ1 + φ2) <= NEARLY_ANTIPODAL_Δλ) {
             /*
@@ -696,11 +698,9 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
          * implementation).
          */
         double σ1, σ2;
-        for (int nbIter = Formulas.MAXIMUM_ITERATIONS;;) {
-            final double sinα1 = sin(α1);
-            final double cosα1 = cos(α1);
-            sinα0 = sinα1 * cosβ1;
-            cosα0 = hypot(cosα1, sinα1*sinβ1);                  // = sqrt(1 - sinα0*sinα0) with less rounding errors.
+        int moreRefinements = Formulas.MAXIMUM_ITERATIONS;
+        do {
+            α0(msinα1 = sin(α1), mcosα1 = cos(α1), sinβ1, cosβ1);
             final double k2 = computeSeriesExpansionCoefficients();
             /*
              * Compute α₂ from Karney equation 5: sin(α₀) = sin(α₁)⋅cos(β₁) = sin(α₂)⋅cos(β₂)
@@ -714,10 +714,12 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
              * Actually we don't need α values directly, but instead cos(α)⋅cos(β).
              * Note that cos(α₁) can be negative because α₁ ∈ [0…2π].
              */
-            final double cosα1_cosβ1 = cosα1 * cosβ1;
+            final double cosα1_cosβ1 = mcosα1 * cosβ1;
             final double cosα2_cosβ2 = sqrt(cosα1_cosβ1*cosα1_cosβ1 +
                     (cosβ1 <= 1/MathFunctions.SQRT_2 ? (cosβ2 - cosβ1)*(cosβ2 + cosβ1)
                                                      : (sinβ1 - sinβ2)*(sinβ1 + sinβ2)));
+            msinα2 = sinα0;
+            mcosα2 = cosα2_cosβ2;
             /*
              * Karney gives the following formulas:
              *
@@ -746,9 +748,10 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             λ1E = sphericalToGeodeticLongitude(ω1, σ1);
             λ2E = sphericalToGeodeticLongitude(ω2, σ2);
             final double Δλ_error = IEEEremainder(λ2E - λ1E - Δλ, 2*PI);
-            final boolean done = (abs(Δλ_error) <= ACCURACY);
-            if (--nbIter < 0 && !done) {
-                throw new GeodesicException(Resources.format(Resources.Keys.NoConvergence));
+            if (abs(Δλ_error) <= ITERATION_TOLERANCE) {
+                moreRefinements = 0;
+            } else if (--moreRefinements == 0) {
+                throw new GeodeticException(Resources.format(Resources.Keys.NoConvergence));
             }
             /*
              * Special case for α₁ = π/2 and β₂ = ±β₁ (Karney's equation 47). We replace the β₂ = ±β₁
@@ -757,7 +760,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
              * Note that tanβ₁ ≦ 0 and |tanβ₂| ≦ |tanβ₁| in this method.
              */
             final double dΔλ_dα1;
-            if (abs(cosα1) < LATITUDE_THRESHOLD && (-tanβ1 - abs(tanβ2)) < (1 + abs(tanβ1*tanβ2)) * LATITUDE_THRESHOLD) {
+            if (abs(mcosα1) < LATITUDE_THRESHOLD && (-tanβ1 - abs(tanβ2)) < (1 + abs(tanβ1*tanβ2)) * LATITUDE_THRESHOLD) {
                 dΔλ_dα1 = -2 * sqrt(1 - eccentricitySquared * (cosβ1*cosβ1)) / sinβ1;
             } else {
                 /*
@@ -779,7 +782,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                 if (STORE_LOCAL_VARIABLES) {
                     store("J(σ₁)", J1);
                     store("J(σ₂)", J2);
-                    store("Δm",    Δm * semiMinor);
+                    store("Δm",    Δm * semiMinorAxis());
                 }
             }
             final double dα1 = Δλ_error / dΔλ_dα1;                  // Opposite sign of Karney δα₁ term.
@@ -794,43 +797,36 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
                 store("σ₂",    σ2);
                 store("ω₁",    ω1);
                 store("ω₂",    ω2);
-                store("α₂",    atan2(sinα0, cosα2_cosβ2));
+                store("α₂",    atan2(msinα2, mcosα2));
                 store("λ₂",    λ2E);
                 store("Δλ",    λ2E - λ1E);
                 store("δλ",    Δλ_error);
                 store("dλ/dα", dΔλ_dα1);
                 store("δσ₁",  -dα1);
                 store("α₁",    α1);
-                store("s₂",    I1_σ2 * semiMinor);
-                store("Δs",    (I1_σ2 - I1_σ1) * semiMinor);
+                store("s₂",    I1_σ2 * semiMinorAxis());
+                store("Δs",    (I1_σ2 - I1_σ1) * semiMinorAxis());
             }
-            if (done) {
-                dλ1 = sinα1;
-                dφ1 = cosα1;
-                dλ2 = sinα0;
-                dφ2 = cosα2_cosβ2;
-                break;
-            }
-        }
+        } while (moreRefinements != 0);
         final double I1_σ2;
         I1_σ1 = sphericalToEllipsoidalAngle(σ1, false);
         I1_σ2 = sphericalToEllipsoidalAngle(σ2, false);
-        geodesicDistance = (I1_σ2 - I1_σ1) * semiMinor;
+        geodesicDistance = (I1_σ2 - I1_σ1) * semiMinorAxis();
         /*
          * Restore the coordinate sign and order to the original configuration.
          */
         if (swapPoints) {
             double t;
-            t = dφ1; dφ1 = dφ2; dφ2 = t;
-            t = dλ1; dλ1 = dλ2; dλ2 = t;
+            t = msinα1; msinα1 = msinα2; msinα2 = t;
+            t = mcosα1; mcosα1 = mcosα2; mcosα2 = t;
         }
         if (inverseLongitudeSigns ^ swapPoints) {
-            dλ1 = -dλ1;
-            dλ2 = -dλ2;
+            msinα1 = -msinα1;
+            msinα2 = -msinα2;
         }
         if (inverseLatitudeSigns ^ swapPoints) {
-            dφ1 = -dφ1;
-            dφ2 = -dφ2;
+            mcosα1 = -mcosα1;
+            mcosα2 = -mcosα2;
         }
         setValid(STARTING_AZIMUTH | ENDING_AZIMUTH | GEODESIC_DISTANCE);
         if (!(swapPoints | inverseLongitudeSigns | inverseLatitudeSigns)) {
@@ -849,7 +845,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      *
      * The results should have only one positive root {@literal (μ > 0)}.
      *
-     * <div class="section">Condition on <var>y</var> value</div>
+     * <h4>Condition on <var>y</var> value</h4>
      * This method is indeterminate when <var>y</var> → 0 (it returns {@link Double#NaN}). For values too close to zero,
      * the result may be non-significative because of rounding errors. For choosing a threshold value for <var>y</var>,
      * {@code GeodesicsOnEllipsoidTest.Calculator} compares the value computed by this method against the value computed
@@ -877,6 +873,19 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     }
 
     /**
+     * Computes (∂y/∂φ)⁻¹ at the given latitude on an ellipsoid with semi-major axis length of 1.
+     * This derivative is close to cos(φ) for a slightly flattened sphere.
+     *
+     * @see org.apache.sis.referencing.operation.projection.ConformalProjection#dy_dφ
+     */
+    @Override
+    double dφ_dy(final double φ) {
+        final double sinφ = sin(φ);
+        final double cosφ = cos(φ);
+        return cosφ/(1  -  eccentricitySquared * (cosφ*cosφ) / (1 - eccentricitySquared * (sinφ*sinφ)));
+    }
+
+    /**
      * Takes a snapshot of the current fields in this class. This is used for JUnit tests only. During development phases,
      * {@link #STORE_LOCAL_VARIABLES} should be {@code true} for allowing {@code GeodesicsOnEllipsoidTest} to verify the
      * values of a large range of local variables. But when the storage of locale variables is disabled, this method allows
@@ -889,7 +898,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
         store("A₃",     A3);
         store("α₀",     atan2(sinα0, cosα0));
         store("I₁(σ₁)", I1_σ1);
-        store("s₁",     I1_σ1 * semiMinor);
+        store("s₁",     I1_σ1 * semiMinorAxis());
         store("λ₁",     λ1E);
     }
 
@@ -909,5 +918,79 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      */
     double computedToGiven(double α1) {
         return α1;
+    }
+
+    /**
+     * Computes rhumb line using series expansion.
+     *
+     * <p><b>Source:</b> G.G. Bennett, 1996. <a href="https://doi.org/10.1017/S0373463300013151">
+     * Practical Rhumb Line Calculations on the Spheroid</a>. J. Navigation 49(1), 112-119.</p>
+     */
+    @Override
+    final void computeRhumbLine() {
+        canComputeDistance();
+        /*
+         * Bennett (1996) equation 1 computes isometric latitudes Ψ for given geodetic latitudes φ:
+         *
+         *     Ψ(φ) = log(tan(PI/4 + φ/2) * pow((1 - ℯsinφ) / (1 + ℯsinφ), ℯ/2));
+         *
+         * (ℯ is the eccentricity, not squared). However we need only the isometric latitudes difference:
+         *
+         *     ΔΨ = Ψ(φ₂) - Ψ(φ₁)
+         *
+         * We rewrite the equation using log(Ψ₁) - log(Ψ₂) = log(Ψ₁/Ψ₂) and other identities:
+         *
+         *     ΔΨ = log(tan(PI/4 + φ₂/2)) + log(pow((1 - ℯsinφ₂) / (1 + ℯsinφ₂), ℯ/2))
+         *        - log(tan(PI/4 + φ₁/2)) - log(pow((1 - ℯsinφ₁) / (1 + ℯsinφ₁), ℯ/2))
+         *
+         *        = log(tan(PI/4 + φ₂/2) /
+         *              tan(PI/4 + φ₁/2) *
+         *              pow(((1 - ℯsinφ₂)*(1 + ℯsinφ₁)) /
+         *                  ((1 + ℯsinφ₂)*(1 - ℯsinφ₁)), ℯ/2))
+         *
+         * The code below combines ℯsinφ terms otherwise. Note that we could also use product-to-sum
+         * identities for rewriting the  tan(¼π + ½φ₂) / tan(¼π + ½φ₁)  expression as  (a + b) / (a - b)
+         * where  a = cos((φ₂+φ₁)/2)  and  b = sin((φ₂-φ₁)/2), but the amount of trigonometric method calls
+         * would be about the same and result may be less accurate.
+         */
+        final double eccentricity = sqrt(eccentricitySquared);      // TODO: avoid computing on each invocation.
+        final double sinφ1 = sin(φ1);
+        final double sinφ2 = sin(φ2);
+        final double sd = eccentricity * (sinφ1 - sinφ2);
+        final double sm = 1 - eccentricitySquared * (sinφ1 * sinφ2);
+        final double ΔΨ = log(tan(PI/4 + φ2/2) / tan(PI/4 + φ1/2) * pow((sm+sd)/(sm-sd), eccentricity/2));
+        final double Δλ = IEEEremainder(λ2 - λ1, 2*PI);
+        final double h  = hypot(Δλ, ΔΨ);
+        final double S;
+        if (abs(φ1 - φ2) < LATITUDE_THRESHOLD) {
+            final double φm = (φ1 + φ2)/2;
+            final double sinφ = sin(φm);
+            S = cos(φm) / sqrt(1 - eccentricitySquared*(sinφ*sinφ));        // Bennett equation 4 with sin(α) = Δλ/h.
+        } else {
+            final double m1 = m(φ1, sinφ1);
+            final double m2 = m(φ2, sinφ2);
+            S = (m2 - m1) / ΔΨ;                                             // Bennett (1996) with cos(α) = ΔΨ/h.
+            if (STORE_LOCAL_VARIABLES) {
+                store("m₁", m1);
+                store("m₂", m2);
+                store("Δm", m2 - m1);
+            }
+        }
+        rhumblineLength = S * h * semiMajorAxis;
+        rhumblineAzimuth = atan2(Δλ, ΔΨ);
+        if (STORE_LOCAL_VARIABLES) {
+            store("Δλ", Δλ);
+            store("ΔΨ", ΔΨ);
+        }
+    }
+
+    /**
+     * Computes Bennett (1996) equation 2 modified with Clenshaw summation.
+     */
+    private double m(final double φ, final double sinφ) {
+        final double cosφ = cos(φ);
+        final double sinθ = 2*sinφ*cosφ;                        // sin(2φ)
+        final double cosθ = (cosφ + sinφ) * (cosφ - sinφ);      // cos(2φ)  =  cos²φ - sin²φ
+        return R0*φ + sinθ*(R2 + cosθ*(R4 + cosθ*R6));
     }
 }

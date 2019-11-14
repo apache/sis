@@ -35,10 +35,10 @@ import org.apache.sis.util.ArraysExt;
  * be any other objects documented in the {@link StorageConnector} class.
  *
  * <div class="note"><b>API note:</b>
- * This class is package-private for now in order to get more experience about what could be a good API.
+ * this class is package-private for now in order to get more experience about what could be a good API.
  * This class may become public in a future SIS version.</div>
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code DataStoreRegistry} instance can be safely used by many threads without synchronization
  * on the part of the caller.
  *
@@ -249,7 +249,7 @@ search:     do {
             /*
              * If a provider has been found, or if a provider returned UNDETERMINED, use that one
              * for opening a DataStore. Note that if more than one provider returned UNDETERMINED,
-             * the selected one is arbitrary and may change in different execution. Implementors
+             * the selected one is arbitrary and may change in different execution. Implementers
              * shall avoid the UNDETERMINED value as much as possible (this value should be used
              * only for RAW image format).
              */

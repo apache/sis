@@ -62,7 +62,7 @@ import org.apache.sis.internal.storage.Resources;
  * can be established for the given name. This behavior allows {@code FeatureNaming} to produce an error message
  * telling why the operation can not succeed.
  *
- * <div class="section">Managing the list of generic names</div>
+ * <h2>Managing the list of generic names</h2>
  * This class does not memorize the list of {@linkplain #add added} {@code GenericName} instances. Instead this
  * class memorizes only their string representations, thus protecting the binding from any change in the original
  * {@code GenericName} instances. The list of feature names should instead be included in the ISO 19115 metadata
@@ -78,7 +78,7 @@ import org.apache.sis.internal.storage.Resources;
  * some feature information in different {@link org.opengis.metadata.content.FeatureCatalogueDescription} instances.
  * This is one reason why we let the data store manages {@code GenericName} lists itself.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * A {@code FeatureNaming} instance is thread-safe only if constructed once and never modified after publication.
  * For example it is safe to initialize a {@code FeatureNaming} in a {@link DataStore} or {@link DataStoreProvider}
  * constructor if the result is stored in a private final field with no public accessor

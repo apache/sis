@@ -50,10 +50,11 @@ import org.apache.sis.xml.Namespaces;
  * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis coordinate system axis},
  * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum},
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} and more
- * rather use the {@link ImmutableIdentifier} implementation, which is a class unrelated to the usual
- * {@code org.apache.metadata} hierarchy because of the immutable nature of referencing objects.</p>
+ * rather use the {@link org.apache.sis.referencing.ImmutableIdentifier} implementation,
+ * which is a class unrelated to the usual {@code org.apache.metadata} hierarchy
+ * because of the immutable nature of referencing objects.</p>
  *
- * <div class="section">Text, URN and XML representations</div>
+ * <h2>Text, URN and XML representations</h2>
  * The XML representation of {@link DefaultIdentifier} is as the following example:
  *
  * {@preformat xml
@@ -71,7 +72,7 @@ import org.apache.sis.xml.Namespaces;
  *   </mcc:MD_Identifier>
  * }
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>
@@ -86,7 +87,7 @@ import org.apache.sis.xml.Namespaces;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  *
- * @see ImmutableIdentifier
+ * @see org.apache.sis.referencing.ImmutableIdentifier
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
  *
  * @since 0.3
@@ -195,7 +196,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * @param authority  the the person or party responsible for maintenance of the namespace, or {@code null} if none.
      * @param code       the alphanumeric value identifying an instance in the namespace, or {@code null} if none.
      *
-     * @see org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)
+     * @see org.apache.sis.metadata.iso.citation.Citations#toCodeSpace(Citation)
      */
     public DefaultIdentifier(final Citation authority, final String code) {
         this.authority = authority;

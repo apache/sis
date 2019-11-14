@@ -61,7 +61,7 @@ public final class CS_PolarCS extends PropertyType<CS_PolarCS, PolarCS> {
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:PolarCS>} XML element.
      *
-     * @param  cs  the element to marshall.
+     * @param  cs  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

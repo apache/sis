@@ -25,23 +25,23 @@ import org.apache.sis.util.logging.Logging;
  * Their intent is to bring some order in debugger information, by grouping the threads created by SIS together
  * under the same parent tree node.
  *
- * <div class="section">Note on dependencies</div>
+ * <h2>Note on dependencies</h2>
  * This class shall not depend on {@link ReferenceQueueConsumer} or {@link DelayedExecutor},
  * because initialization of those classes create new threads. However it is okay to have
  * dependencies the other way around.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.3
  * @module
  */
-final class Threads extends Static {
+public final class Threads extends Static {
     /**
      * The parent of every threads declared in this class. This parent will be declared as close
      * as possible to the root of all thread groups (i.e. not as an application thread subgroup).
      * The intent is to separate the library thread groups from the user application thread groups.
      */
-    static final ThreadGroup SIS;
+    public static final ThreadGroup SIS;
     static {
         ThreadGroup parent = Thread.currentThread().getThreadGroup();
         try {

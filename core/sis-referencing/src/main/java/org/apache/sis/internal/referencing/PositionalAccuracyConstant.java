@@ -112,11 +112,14 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
         setMeasureDescription(measureDescription);
         setEvaluationMethodDescription(evaluationMethodDescription);
         setEvaluationMethodType(EvaluationMethodType.DIRECT_INTERNAL);
-        transition(State.FINAL);
+        transitionTo(State.FINAL);
     }
 
     /**
      * Invoked on deserialization. Replace this instance by one of the constants, if applicable.
+     *
+     * @return the object to use after deserialization.
+     * @throws ObjectStreamException if the serialized object defines an unknown data type.
      */
     private Object readResolve() throws ObjectStreamException {
         if (equals(DATUM_SHIFT_APPLIED)) return DATUM_SHIFT_APPLIED;

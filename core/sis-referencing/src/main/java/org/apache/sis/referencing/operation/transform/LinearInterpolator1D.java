@@ -39,7 +39,7 @@ import org.apache.sis.util.resources.Errors;
  * <p>If desired values in decreasing order can be supported by inverting the sign of all values,
  * then concatenating this transform with a transform that multiply all output values by -1.</p>
  *
- * <div class="section">Extrapolation</div>
+ * <h2>Extrapolation</h2>
  * If an input value is outside the expected range of values, this class extrapolates using the
  * slope defined by the two first points if the requested value is before, or the slope defined
  * by the two last points if the requested value is after.   In other words, extrapolations are

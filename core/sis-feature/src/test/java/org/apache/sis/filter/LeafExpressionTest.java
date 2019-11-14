@@ -33,8 +33,8 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link LeafExpression}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public final strictfp class LeafExpressionTest extends TestCase {

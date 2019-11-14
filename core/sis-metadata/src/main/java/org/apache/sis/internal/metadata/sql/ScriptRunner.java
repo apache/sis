@@ -110,14 +110,6 @@ public class ScriptRunner implements AutoCloseable {
     private final Map<String,String> replacements = new HashMap<>();
 
     /**
-     * A sentinel value for the {@linkplain #replacements} map meaning that {@code ScriptRunner}
-     * needs to look also at the word after the word associated to {@code MORE_WORDS}.
-     *
-     * @see #addReplacement(String, String)
-     */
-    protected static final String MORE_WORDS = "…";
-
-    /**
      * The quote character for identifiers actually used in the database,
      * as determined by {@link DatabaseMetaData#getIdentifierQuoteString()}.
      */
@@ -281,16 +273,18 @@ public class ScriptRunner implements AutoCloseable {
      * @param  maxRowsPerInsert  maximum number of rows per {@code "INSERT INTO"} statement.
      * @throws SQLException if an error occurred while creating a SQL statement.
      */
-    public ScriptRunner(final Connection connection, int maxRowsPerInsert) throws SQLException {
+    public ScriptRunner(final Connection connection, final int maxRowsPerInsert) throws SQLException {
         ArgumentChecks.ensureNonNull("connection", connection);
         ArgumentChecks.ensurePositive("maxRowsPerInsert", maxRowsPerInsert);
         final DatabaseMetaData metadata = connection.getMetaData();
+        this.maxRowsPerInsert   = maxRowsPerInsert;
         this.dialect            = Dialect.guess(metadata);
         this.identifierQuote    = metadata.getIdentifierQuoteString();
         this.isSchemaSupported  = metadata.supportsSchemasInTableDefinitions() &&
                                   metadata.supportsSchemasInDataManipulation();
         this.isCatalogSupported = metadata.supportsCatalogsInTableDefinitions() &&
                                   metadata.supportsCatalogsInDataManipulation();
+        this.statement          = connection.createStatement();
         switch (dialect) {
             default: {
                 isEnumTypeSupported      = false;
@@ -315,23 +309,17 @@ public class ScriptRunner implements AutoCloseable {
                 isGrantOnTableSupported  = false;
                 isCreateLanguageRequired = false;
                 isCommentSupported       = false;
-                if (maxRowsPerInsert != 0) {
-                    maxRowsPerInsert = 1;
-                }
                 /*
-                 * HSQLDB does not seem to support the {@code UNIQUE} keyword in {@code CREATE TABLE} statements.
-                 * In addition, we must declare explicitly that we want the tables to be cached on disk. Finally,
-                 * HSQL expects "CHR" to be spelled "CHAR".
+                 * HSQLDB stores tables in memory by default. For storing the tables on files, we have to
+                 * use "CREATE CACHED TABLE" statement, which is HSQL-specific. For avoiding SQL dialect,
+                 * the following statement change the default setting on current connection.
+                 *
+                 * Reference: http://hsqldb.org/doc/guide/dbproperties-chapt.html#dpc_db_props_url
                  */
-                addReplacement("UNIQUE", "");
-                addReplacement("CHR", "CHAR");
-                addReplacement("CREATE", MORE_WORDS);
-                addReplacement("CREATE TABLE", "CREATE CACHED TABLE");
+                statement.execute("SET DATABASE DEFAULT TABLE TYPE CACHED");
                 break;
             }
         }
-        this.maxRowsPerInsert = maxRowsPerInsert;
-        statement = connection.createStatement();
         /*
          * Now build the list of statements to skip, depending of which features are supported by the database.
          * WARNING: do not use capturing group here, because some subclasses (e.g. EPSGInstaller) will use their
@@ -398,16 +386,15 @@ public class ScriptRunner implements AutoCloseable {
      * <div class="note"><b>Example</b>
      * this is used for mapping the table names in the EPSG scripts to table names as they were in the MS-Access
      * flavor of EPSG database. It may also contains the mapping between SQL keywords used in the SQL scripts to
-     * SQL keywords understood by the database (for example Derby does not support the {@code TEXT} data type,
-     * which need to be replaced by {@code VARCHAR}).</div>
+     * SQL keywords understood by the database. For example if a database does not support the {@code "TEXT"}
+     * data type, it may be replaced by {@code "LONG VARCHAR"}.</div>
      *
-     * If a text to replace contains two or more words, then this map needs to contain an entry for the first word
-     * associated to the {@link #MORE_WORDS} value. For example if one needs to replace the {@code "CREATE TABLE"}
-     * words, then in addition to the {@code "CREATE TABLE"} entry this {@code replacements} map shall also contain
-     * a {@code "CREATE"} entry associated with the {@link #MORE_WORDS} value.
+     * <b>Limitation:</b> the {@code inScript} word to replace must be a single word with no space.
+     * If the text to replace contains two words (for example {@code "CREATE TABLE"}), then revert
+     * commit {@code bceb569558bfb7e3cf1a14aaf9261e786db06856} for bringing back this functionality.
      *
-     * @param  inScript     the word in the script which need to be replaced.
-     * @param  replacement  the word to use instead.
+     * @param  inScript     the single word in the script which need to be replaced.
+     * @param  replacement  the word(s) to use instead of {@code inScript} word.
      */
     protected final void addReplacement(final String inScript, final String replacement) {
         if (replacements.put(inScript, replacement) != null) {
@@ -544,19 +531,15 @@ parseLine:  while (pos < length) {
                             if (!Character.isUnicodeIdentifierPart(c)) break;
                         }
                         /*
-                         * Perform in-place replacement if the Unicode identifier is one of the keys in the listed
-                         * in the 'replacements' map. This operation may change the buffer length.  The 'pos' must
-                         * be updated if needed for staying the position after the Unicode identifier.
+                         * Perform in-place replacement if the Unicode identifier is one of the keys listed
+                         * in the 'replacements' map. This operation may change the buffer length. The 'pos'
+                         * must be updated if needed for staying at position after the Unicode identifier.
                          */
                         final String word = buffer.substring(start, pos);
                         final String replace = replacements.get(word);
-                        boolean moreWords = false;
                         if (replace != null) {
-                            moreWords = replace.equals(MORE_WORDS);
-                            if (!moreWords) {
-                                length = buffer.replace(start, pos, replace).length();
-                                pos = start + replace.length();
-                            }
+                            length = buffer.replace(start, pos, replace).length();
+                            pos = start + replace.length();
                         }
                         /*
                          * Skip whitespaces and set the 'c' variable to the next character, which may be either
@@ -569,9 +552,7 @@ parseLine:  while (pos < length) {
                             c = buffer.codePointAt(pos);
                             n = Character.charCount(c);
                         }
-                        if (!moreWords) {
-                            start = pos;
-                        }
+                        start = pos;
                     }
                 }
                 switch (c) {

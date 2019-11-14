@@ -78,7 +78,7 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * }
  * </div>
  *
- * <div class="section">Inheritance of property values</div>
+ * <h2>Inheritance of property values</h2>
  * According ISO 19112:2003, all properties except the collection of
  * {@linkplain #getParents() parents} and {@linkplain #getChildren() children} are mandatory.
  * Those mandatory properties are the {@linkplain #getName() name}, {@linkplain #getTheme() theme},
@@ -102,7 +102,7 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * Then, the towns and streets automatically inherit the same value for that property,
  * unless they are explicitly given another value.</div>
  *
- * <div class="section">Limitation</div>
+ * <h2>Limitation</h2>
  * This class is not serializable and is not thread-safe. For thread safety or for serialization,
  * a {@linkplain #snapshot snapshots} of this location type should be taken.
  *

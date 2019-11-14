@@ -32,7 +32,7 @@ import org.apache.sis.storage.ProbeResult;
  * be used as part of a multi-byte character.
  *
  * <p>This class tries to implement a lightweight detection mechanism. We can not for instance
- * unmarshall the whole document with JAXB and look at the class of unmarshalled object, since
+ * unmarshal the whole document with JAXB and look at the class of unmarshalled object, since
  * it would be way too heavy.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)

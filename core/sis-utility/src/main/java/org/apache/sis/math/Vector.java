@@ -47,7 +47,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  *   <li><var>y[i]</var> is the measurement of a phenomenon at time <var>x[i]</var>.</li>
  * </ul>
  *
- * <div class="section">Instantiation</div>
+ * <h2>Instantiation</h2>
  * Instances of {@code Vector} are usually created by calls to the {@link #create(Object, boolean)} static method.
  * The supplied array is not cloned – changes to the primitive array are reflected in the vector, and vice-versa.
  * Vectors can be a view over a subsection of the given array, or can provide a view of the elements in reverse order,
@@ -59,7 +59,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  *     // At this point, v.doubleValue(0) is equivalent to (double) array[20].
  * }
  *
- * <div class="section">Usage</div>
+ * <h2>Usage</h2>
  * The methods that are most often used after {@code Vector} creation are {@link #size()} and {@link #doubleValue(int)}
  * or {@link #intValue(int)}. Those methods make abstraction of the underlying data type. For example if the vector is
  * backed by an array of type {@code int[]}, then calls to {@code doubleValue(index)} will:
@@ -113,7 +113,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * The given argument is not cloned.
      * Consequently changes in the underlying array are reflected in this vector, and vice-versa.
      *
-     * <div class="section">Unsigned integers</div>
+     * <h4>Unsigned integers</h4>
      * Java has no primitive support for unsigned integers. But some file formats use unsigned integers,
      * which can be simulated in Java by the use of bit masks or methods like {@link Integer#toUnsignedLong(int)}.
      * This {@code Vector} class applies automatically those masks (unless otherwise noticed in method Javadoc)
@@ -178,7 +178,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * Note that despite the appearance, this is <strong>not</strong> more accurate than the normal cast,
      * because base 10 is not more privileged in nature than base 2.
      *
-     * <div class="section">When to use</div>
+     * <h4>When to use</h4>
      * This method can be used when there is good reasons to think that the {@code float} numbers were parsed
      * from decimal representations, for example an ASCII file. There is usually no reason to use this method
      * if the values are the result of some numerical computations.
@@ -1337,7 +1337,7 @@ search:     for (;;) {
      * or reference to the backing array after this method call (otherwise an unnecessary duplication of data may exist
      * in memory).
      *
-     * <div class="section">When to use</div>
+     * <h4>When to use</h4>
      * It is usually not worth to compress small arrays. Performance-critical arrays may not be compressed neither.
      * This method is best suited for vectors that may potentially be large and for which the cost of fetching
      * values in that vector is small compared to the calculation performed with the values.

@@ -95,6 +95,12 @@ table.sis tr td.sep {
  * Table without vertical space between rows and a little bit of space between columns.
  * This table has no border and text is left-aligned.
  */
+table.compact caption {
+  margin-top:    12px;
+  margin-bottom: 12px;
+  font-weight:   bold;
+}
+
 table.compact {
   margin:         6px 0px;
   width:          auto;
@@ -112,17 +118,42 @@ table.compact tr td {
 
 
 /*
+ * Layout two or more elements horizontally.
+ */
+div.horizontal-flow {
+  display:       flex;
+  margin-right:  40px;
+  margin-top:    12px;
+  margin-bottom: 12px;
+}
+
+div.horizontal-flow > div {
+  margin-left:  12px;
+  margin-right: 12px;
+}
+
+
+/*
  * Definition of <div class="note">
  *
  * Note or examples.
  */
 div.note {
-  color:     #353833;
-  font-size:   small;
-  margin-left:  40px;
-  margin-right: 40px;
-  margin-top:    9px;
-  margin-bottom: 9px;
+  color:      #353833;
+  margin-left:   40px;
+  margin-right:  40px;
+  margin-top:     9px;
+  margin-bottom:  9px;
+  text-align: justify;
+}
+
+div.note:before {
+  color:     green;
+  position:  relative;
+  float:     left;
+  left:      -28px;
+  width:     0;
+  content:   "🛈";
 }
 
 
@@ -149,21 +180,6 @@ div.warning:before {
   content:  url("warning.png");
 }
 
-
-/*
- * Formatting of section headers
- */
-div.section {
-  font-size:    15px;
-  font-weight:  bold;
-  margin-top:   21px;
-  margin-bottom: 3px;
-}
-
-div.description div.section {
-  font-size:  18px;
-  margin-top: 30px;
-}
 
 /*
  * Bullet and ordered lists. Put some space before and after the list.

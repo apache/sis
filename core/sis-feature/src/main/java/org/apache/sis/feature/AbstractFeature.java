@@ -59,14 +59,14 @@ import org.opengis.feature.Operation;
  *
  * {@code AbstractFeature} can be instantiated by calls to {@link DefaultFeatureType#newInstance()}.
  *
- * <div class="section">Simple features</div>
+ * <h2>Simple features</h2>
  * A feature is said “simple” if it complies to the following conditions:
  * <ul>
  *   <li>the feature allows only attributes and operations (no associations),</li>
  *   <li>the cardinality of all attributes is constrained to [1 … 1].</li>
  * </ul>
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li><b>Multi-threading:</b> {@code AbstractFeature} instances are <strong>not</strong> thread-safe.
  *       Synchronization, if needed, shall be done externally by the caller.</li>
@@ -136,7 +136,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * desired, then {@link #getPropertyValue(String)} is preferred since it gives to SIS a chance to
      * avoid the creation of {@link AbstractAttribute} or {@link AbstractAssociation} instances.</p>
      *
-     * <div class="note"><b>Note for subclass implementors:</b>
+     * <div class="note"><b>Note for subclass implementers:</b>
      * the default implementation returns an instance that redirect all read and write operations to
      * {@link #getPropertyValue(String)} and {@link #setPropertyValue(String, Object)} respectively.
      * That default implementation is intended to make easier for developers to create their own
@@ -144,7 +144,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * a new {@code Property} instance is created every time that this {@code getProperty(String)} method is invoked,
      * and the returned {@code Property} implementation is not very efficient
      * since it has to perform multiple lookups and type checks.
-     * Implementors are encouraged to override this method if they can provide a more efficient implementation.
+     * Implementers are encouraged to override this method if they can provide a more efficient implementation.
      * Note that this is already the case when using implementations created by {@link DefaultFeatureType#newInstance()}.</div>
      *
      * @param  name  the property name.
@@ -179,7 +179,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * in this feature. When default implementations are sufficient, the {@link #setPropertyValue(String, Object)}
      * method is preferred.
      *
-     * <div class="note"><b>Note for subclass implementors:</b>
+     * <div class="note"><b>Note for subclass implementers:</b>
      * the default implementation verifies that the given property has the expected type and a null or empty
      * {@linkplain AbstractAttribute#characteristics() map of characteristics}, then delegates to
      * {@link #setPropertyValue(String, Object)}.
@@ -187,7 +187,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * customized <code>AbstractFacture</code> implementations, but has drawbacks:
      * the given {@code Property} instance is not stored (only its {@linkplain AbstractAttribute#getValue() value}
      * is stored), and it can not have custom {@linkplain AbstractAttribute#characteristics() characteristics}.
-     * Implementors are encouraged to override this method if they can provide a better implementation.
+     * Implementers are encouraged to override this method if they can provide a better implementation.
      * Note that this is already the case when using implementations created by {@link DefaultFeatureType#newInstance()}.</div>
      *
      * @param  property  the property to set.
@@ -313,7 +313,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * number of occurrences} and does not depend on the actual number of values. If an attribute allows more than one
      * value, then this method will always return a collection for that attribute even if the collection is empty.</div>
      *
-     * <div class="section">Multi-valued properties and collections</div>
+     * <h4>Multi-valued properties and collections</h4>
      * In the case of multi-valued properties (“max. occurs” &gt; 1), the collection returned by this method may
      * or may not be modifiable, at implementation choice. Generally the caller can not add new elements into the
      * returned collection anyway since {@code Collection<?>} does not allow such operations, and more specific
@@ -337,7 +337,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
     /**
      * Sets the value for the property of the given name.
      *
-     * <div class="section">Validation</div>
+     * <h4>Validation</h4>
      * The amount of validation performed by this method is implementation dependent.
      * Usually, only the most basic constraints are verified. This is so for performance reasons
      * and also because some rules may be temporarily broken while constructing a feature.

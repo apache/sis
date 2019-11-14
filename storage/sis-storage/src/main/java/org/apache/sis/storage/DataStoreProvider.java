@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage;
 
+import java.util.logging.Logger;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.metadata.distribution.Format;
@@ -24,6 +25,7 @@ import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.measure.Range;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
 
@@ -40,7 +42,7 @@ import org.apache.sis.util.Version;
  *       to open a given {@link StorageConnector}.</li>
  * </ul>
  *
- * <div class="section">Packaging data stores</div>
+ * <h2>Packaging data stores</h2>
  * JAR files that provide implementations of this class shall contain an entry with exactly the following path:
  *
  * {@preformat text
@@ -51,7 +53,7 @@ import org.apache.sis.util.Version;
  * where each line is the fully qualified name of the implementation class.
  * See {@link java.util.ServiceLoader} for more general discussion about this lookup mechanism.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * All {@code DataStoreProvider} implementations shall be thread-safe.
  * However the {@code DataStore} instances created by the providers do not need to be thread-safe.
  *
@@ -67,7 +69,7 @@ public abstract class DataStoreProvider {
      * A parameter named {@value} should be included in the group of parameters returned by {@link #getOpenParameters()}.
      * The parameter value is often a {@link java.net.URI} or a {@link java.nio.file.Path}, but other types are allowed.
      *
-     * <p>Implementors are encouraged to define a parameter with this name
+     * <p>Implementers are encouraged to define a parameter with this name
      * to ensure a common and consistent definition among providers.
      * The parameter should be defined as mandatory and typed with a well-known Java class such as
      * {@link java.net.URI}, {@link java.nio.file.Path}, JDBC {@linkplain javax.sql.DataSource}, <i>etc</i>.
@@ -85,7 +87,7 @@ public abstract class DataStoreProvider {
      * {@link #getOpenParameters()} if the data store supports write operations. The parameter value is often a
      * {@link Boolean} and the default value should be {@link Boolean#FALSE} or equivalent.
      *
-     * <p>Implementors are encouraged to define an <em>optional</em> parameter with this name in complement to the
+     * <p>Implementers are encouraged to define an <em>optional</em> parameter with this name in complement to the
      * {@value #LOCATION} parameter <em>only if</em> write operations are supported. If this parameter value is not
      * set or is set to {@code false}, then the {@link #open(ParameterValueGroup)} method should fail if no file or
      * database exists at the URL or path given by the {@value #LOCATION} parameter. Otherwise if this parameter is
@@ -106,6 +108,16 @@ public abstract class DataStoreProvider {
      * @see #getOpenParameters()
      */
     public static final String CREATE = "create";
+
+    /**
+     * The logger where to reports warnings or change events. Created when first needed and kept
+     * by strong reference for avoiding configuration lost if the logger if garbage collected.
+     * This strategy assumes that {@code URIDataStore.Provider} instances are kept alive for
+     * the duration of JVM lifetime, which is the case with {@link DataStoreRegistry}.
+     *
+     * @see #getLogger()
+     */
+    private volatile Logger logger;
 
     /**
      * Creates a new provider.
@@ -184,10 +196,10 @@ public abstract class DataStoreProvider {
      * Those parameters provide an alternative to {@link StorageConnector} for opening a {@link DataStore}
      * from a path or URL, together with additional information like character encoding.
      *
-     * <p>Implementors are responsible for declaring all parameters and whether they are mandatory or optional.
+     * <p>Implementers are responsible for declaring all parameters and whether they are mandatory or optional.
      * It is recommended to define at least a parameter named {@value #LOCATION}, completed by {@value #CREATE}
      * if the data store supports write operations.
-     * That parameter will be recognized by the default {@code DataStoreProvider} methods and used whenever a
+     * Those parameters will be recognized by the default {@code DataStoreProvider} methods and used whenever a
      * {@link StorageConnector} is required.</p>
      *
      * <div class="note"><b>Alternative:</b>
@@ -228,13 +240,13 @@ public abstract class DataStoreProvider {
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
-     * <p>Implementors are responsible for restoring the input to its original stream position on return of this method.
-     * Implementors can use a mark/reset pair for this purpose. Marks are available as
+     * <p>Implementers are responsible for restoring the input to its original stream position on return of this method.
+     * Implementers can use a mark/reset pair for this purpose. Marks are available as
      * {@link java.nio.ByteBuffer#mark()}, {@link java.io.InputStream#mark(int)} and
      * {@link javax.imageio.stream.ImageInputStream#mark()}.</p>
      *
-     * <div class="note"><b>Implementation example</b><br>
-     * Implementations will typically check the first bytes of the stream for a "magic number" associated
+     * <div class="note"><b>Implementation example</b>:
+     * implementations will typically check the first bytes of the stream for a "magic number" associated
      * with the format, as in the following example:
      *
      * {@preformat java
@@ -276,8 +288,8 @@ public abstract class DataStoreProvider {
      * or when the input is not a type accepted by {@link #open(ParameterValueGroup)}
      * (for example an {@link java.io.InputStream}).
      *
-     * <div class="section">Implementation note</div>
-     * Implementors shall invoke {@link StorageConnector#closeAllExcept(Object)} after {@code DataStore}
+     * <h4>Implementation note</h4>
+     * Implementers shall invoke {@link StorageConnector#closeAllExcept(Object)} after {@code DataStore}
      * creation, keeping open only the needed resource.
      *
      * @param  connector  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
@@ -303,7 +315,7 @@ public abstract class DataStoreProvider {
      *     }
      * }
      *
-     * <div class="section">Implementation note</div>
+     * <h4>Implementation note</h4>
      * The default implementation gets the value of a parameter named {@value #LOCATION}.
      * That value (typically a path or URL) is given to {@link StorageConnector} constructor,
      * which is then passed to {@link #open(StorageConnector)}.
@@ -321,5 +333,26 @@ public abstract class DataStoreProvider {
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         ArgumentChecks.ensureNonNull("parameter", parameters);
         return open(URIDataStore.Provider.connector(this, parameters));
+    }
+
+    /**
+     * Returns the logger where to report warnings. This logger is used only if no
+     * {@link org.apache.sis.storage.event.StoreListener} has been registered for
+     * {@link org.apache.sis.storage.event.WarningEvent}.
+     *
+     * <p>The default implementation returns a logger with the same name as the package name
+     * of the subclass of this {@code DataStoreProvider} instance. Subclasses should override
+     * this method if they can provide a more specific logger.</p>
+     *
+     * @return the logger to use as a fallback (when there is no listeners) for warning messages.
+     *
+     * @since 1.0
+     */
+    public Logger getLogger() {
+        Logger lg = logger;
+        if (lg == null) {
+            logger = lg = Logging.getLogger(getClass());
+        }
+        return lg;
     }
 }

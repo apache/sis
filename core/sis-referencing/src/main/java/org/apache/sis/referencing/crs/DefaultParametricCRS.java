@@ -46,7 +46,7 @@ import org.opengis.referencing.datum.ParametricDatum;
  *   {@linkplain org.apache.sis.referencing.cs.DefaultParametricCS Parametric}.
  * </p>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
  * the coordinate system and the datum instances given to the constructor are also immutable. Unless otherwise noted
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
@@ -177,9 +177,9 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code ParametricCRS.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code ParametricCRS}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
      * own set of interfaces.</div>
      *
      * @return {@code ParametricCRS.class} or a user-defined sub-interface.

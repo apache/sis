@@ -54,11 +54,11 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * }
  * </div>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * {@code PassThroughTransform} is immutable and thread-safe if its {@linkplain #subTransform} is also
  * immutable and thread-safe.
  *
- * <div class="section">Serialization</div>
+ * <h2>Serialization</h2>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
@@ -149,19 +149,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @param  subTransform           the sub-transform to apply on modified coordinates.
      * @param  numTrailingCoordinates   number of trailing coordinates to pass through.
      * @return a pass-through transform, not necessarily a {@code PassThroughTransform} instance.
-     *
-     * @deprecated Moved to {@link MathTransforms#passThrough(int, MathTransform, int)}.
      */
-    @Deprecated
-    public static MathTransform create(final int firstAffectedCoordinate,
-                                       final MathTransform subTransform,
-                                       final int numTrailingCoordinates)
-    {
-        return MathTransforms.passThrough(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
-    }
-
-    /** TODO: rename create(…) and recycle above javadoc. */
-    static MathTransform create0(final int firstAffectedCoordinate, final MathTransform subTransform, final int numTrailingCoordinates) {
+    static MathTransform create(final int firstAffectedCoordinate, final MathTransform subTransform, final int numTrailingCoordinates) {
         Matrix matrix = MathTransforms.getMatrix(subTransform);
         if (matrix != null) {
             return newInstance(firstAffectedCoordinate, matrix, numTrailingCoordinates);

@@ -1,5 +1,5 @@
 Apache Spatial Information System (SIS)
-Copyright 2010-2018 The Apache Software Foundation
+Copyright 2010-2019 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
@@ -14,15 +14,18 @@ http://www.opengeospatial.org/ogc/software
 Apache SIS depends on JSR-363 (API only) published under BSD license.
 https://www.jcp.org/aboutJava/communityprocess/final/jsr363/index.html
 
-The 'org.apache.sis.referencing.operation.matrix' package contains code
+Apache SIS depends on JAXB (API only) published under Eclipse Distribution License license.
+http://www.eclipse.org/org/documents/edl-v10.php
+
+The `org.apache.sis.referencing.operation.matrix` package contains code
 adapted from JAMA Java Matrix Package in public domain.
 http://math.nist.gov/javanumerics/jama/
 
-The 'sis-feature' module can optionally use the Esri Geometry API
+The `sis-feature` module can optionally use the Esri Geometry API
 developed by ESRI under Apache license 2.
 http://github.com/Esri/geometry-api-java/
 
-The 'sis-netcdf' module can optionally use the UCAR netCDF library
+The `sis-netcdf` module can optionally use the UCAR netCDF library
 developed by Unidata under MIT-style license.
 http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/
 
@@ -30,6 +33,6 @@ The test suite uses software developed by the JUnit community
 under Eclipse public license version 2.
 http://junit.org/junit4/
 
-The 'non-free' group of modules contain geodetic data collected
+The `non-free` group of modules contain geodetic data collected
 by the International Association of Oil and Gas Producers.
 http://www.epsg.org/TermsOfUse.aspx

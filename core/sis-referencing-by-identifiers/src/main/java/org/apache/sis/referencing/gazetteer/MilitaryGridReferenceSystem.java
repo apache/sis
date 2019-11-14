@@ -127,7 +127,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  * }
  * </div>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe.
  * However the {@link Coder Coder} instances performing conversions between references and coordinates
  * are not thread-safe; it is recommended to create a new {@code Coder} instance for each thread.
@@ -349,7 +349,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      *
      * <p>See the {@link MilitaryGridReferenceSystem} enclosing class for usage example.</p>
      *
-     * <div class="section">Immutability and thread safety</div>
+     * <h2>Immutability and thread safety</h2>
      * This class is <strong>not</strong> thread-safe. A new instance must be created for each thread,
      * or synchronization must be applied by the caller.
      *
@@ -807,6 +807,9 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             /**
              * Guess the number of elements to be returned. The value returned by this method is very rough,
              * and likely greater than the real amount of elements that will actually be returned.
+             *
+             * <p><b>Note:</b> returned value should be the number of <em>remaining</em> elements, but
+             * current implementation does not compute how many elements we have already traversed.</p>
              */
             @Override
             public long estimateSize() {
@@ -1141,6 +1144,9 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * Returns an estimation of the number of cells in the area covered by this iterator. The returned value
          * may be greater than the real amount since we do not take in account the fact that the number of cells
          * in a row become lower as we approach poles.
+         *
+         * <p><b>Note:</b> returned value should be the number of <em>remaining</em> elements, but
+         * current implementation does not compute how many elements we have already traversed.</p>
          */
         @Override
         public long estimateSize() {
@@ -1297,7 +1303,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * Each {@code Encoder} instance is configured for one {@code DirectPosition} CRS.
      * If a position is given in another CRS, another {@code Encoder} instance must be created.
      *
-     * <div class="section">Immutability and thread safety</div>
+     * <h4>Immutability and thread safety</h4>
      * This class is <strong>not</strong> thread-safe. A new instance must be created for each thread,
      * or synchronization must be applied by the caller.
      *

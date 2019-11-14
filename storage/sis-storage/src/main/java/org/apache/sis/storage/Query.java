@@ -21,7 +21,8 @@ import org.opengis.feature.Feature;
 
 /**
  * Definition of filtering to apply for fetching a resource subset.
- * Filtering can happen in two domains:
+ * Filtering can be applied on {@link FeatureSet} or on {@link GridCoverageResource}.
+ * When applied on {@link FeatureSet}, filtering can happen in two domains:
  *
  * <ol>
  *   <li>By filtering the {@link Feature} instances.</li>
@@ -49,6 +50,7 @@ import org.opengis.feature.Feature;
  * @version 1.0
  *
  * @see FeatureSet#subset(Query)
+ * @see GridCoverageResource#subset(Query)
  *
  * @since 0.8
  * @module

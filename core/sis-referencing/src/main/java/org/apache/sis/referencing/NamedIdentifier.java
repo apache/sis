@@ -36,7 +36,6 @@ import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -57,7 +56,7 @@ import org.apache.sis.util.ArgumentChecks;
  * {@linkplain AbstractIdentifiedObject#getAlias() aliases} and have those names used in contexts
  * where {@code Identifier} instances are required, like GML marshalling time.
  *
- * <div class="section">Name ↔ Identifier mapping</div>
+ * <h2>Name ↔ Identifier mapping</h2>
  * The {@code GenericName} attributes will be inferred from {@code Identifier} attributes as below:
  *
  * <ul>
@@ -76,11 +75,11 @@ import org.apache.sis.util.ArgumentChecks;
  * Note that the scope does not appear in the string representation of names.</div>
  *
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus inherently thread-safe if the {@link Citation} and {@link InternationalString}
  * arguments given to the constructor are also immutable. It is caller's responsibility to ensure that those
- * conditions hold, for example by invoking {@link org.apache.sis.metadata.iso.citation.DefaultCitation#transition
- * DefaultCitation.transition(DefaultCitation.State.FINAL)} before passing the arguments to the constructor.
+ * conditions hold, for example by invoking {@link org.apache.sis.metadata.iso.citation.DefaultCitation#transitionTo
+ * DefaultCitation.transitionTo(DefaultCitation.State.FINAL)} before passing the arguments to the constructor.
  * Subclasses shall make sure that any overridden methods remain safe to call from multiple threads and do not change
  * any public {@code NamedIdentifier} state.
  *

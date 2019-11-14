@@ -43,7 +43,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  * unmodifiable lists are extensively used in SIS) and implements the {@link CheckedContainer}
  * interface.
  *
- * <div class="section">WARNING! Type safety hole</div>
+ * <h2>WARNING! Type safety hole</h2>
  * The {@link #getElementType()} return type is {@code Class<E>}, but its implementation actually
  * returns {@code Class<? extends E>}. This contract violation is possible because Java arrays are
  * covariant (at the contrary of collections). In order to avoid such contract violation, callers
@@ -85,7 +85,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      * the caller to instantiate the array explicitly, in order to make sure that the array type is
      * the intended one.</p>
      *
-     * <div class="section">WARNING! Type safety hole</div>
+     * <h4>WARNING! Type safety hole</h4>
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. See class javadoc for more information.
      *
@@ -100,7 +100,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      * retained (i.e. the array is <strong>not</strong> cloned). Consequently the given array
      * shall not be modified after construction if the returned list is intended to be immutable.
      *
-     * <div class="section">WARNING! Type safety hole</div>
+     * <h4>WARNING! Type safety hole</h4>
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
      * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])} instead.
@@ -127,7 +127,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      * <p>This method does not check the validity of the given index.
      * The check must be done by the caller.</p>
      *
-     * <div class="section">WARNING! Type safety hole</div>
+     * <h4>WARNING! Type safety hole</h4>
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
      * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])} instead.

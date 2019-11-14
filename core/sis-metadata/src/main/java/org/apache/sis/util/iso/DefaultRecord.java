@@ -33,6 +33,7 @@ import org.opengis.util.RecordType;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.AbstractMapEntry;
 import org.apache.sis.internal.metadata.RecordSchemaSIS;
 
@@ -44,7 +45,7 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
  * Since all members are expected to be assigned a value, the initial values on {@code DefaultRecord}
  * instantiation are unspecified. Some may be null, or some may be zero.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li><b>Multi-threading:</b> {@code DefaultRecord} instances are <strong>not</strong> thread-safe.
  *       Synchronization, if needed, shall be done externally by the caller.</li>
@@ -448,7 +449,8 @@ public class DefaultRecord implements Record, Serializable {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-419">SIS-419</a>
      */
     private void setValue(String value) {
-        if (value != null && !(value = value.trim()).isEmpty()) {
+        value = Strings.trimOrNull(value);
+        if (value != null) {
             values = new String[] {value};
         }
     }

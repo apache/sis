@@ -77,7 +77,7 @@ import org.apache.sis.util.resources.Errors;
  *       {@link org.apache.sis.measure.Units#ensureScale    ensureScale}.</li>
  * </ul>
  *
- * <div class="section">Method Arguments</div>
+ * <h2>Method Arguments</h2>
  * By convention, the value to check is always the last parameter given to every methods
  * in this class. The other parameters may include the programmatic name of the argument
  * being checked. This programmatic name is used for building an error message localized
@@ -263,6 +263,31 @@ public final class ArgumentChecks extends Static {
                 }
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedNumber_1, index));
             }
+        }
+    }
+
+    /**
+     * Ensures that a method receiving a variable number of arguments got the expected count.
+     * If {@code actual} = {@code expected}, then this method does nothing.
+     * Otherwise a message saying "Too few" or "Too many arguments" is thrown.
+     *
+     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expected  expected number of arguments.
+     * @param  actual    actual number of arguments.
+     *
+     * @since 1.0
+     */
+    public static void ensureExpectedCount(final String name, final int expected, final int actual) {
+        if (actual != expected) {
+            final String message;
+            if (actual == 0) {
+                message = Errors.format(Errors.Keys.EmptyArgument_1, name);
+            } else if (actual < expected) {
+                message = Errors.format(Errors.Keys.TooFewArguments_2, expected, actual);
+            } else {
+                message = Errors.format(Errors.Keys.TooManyArguments_2, expected, actual);
+            }
+            throw new IllegalArgumentException(message);
         }
     }
 

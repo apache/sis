@@ -49,17 +49,17 @@ import org.apache.sis.util.CharSequences;
  *     pool.recycle(marshaller);
  * }
  *
- * <div class="section">Configuring (un)marshallers</div>
+ * <h2>Configuring (un)marshallers</h2>
  * The (un)marshallers created by this class can optionally by configured with the SIS-specific
  * properties defined in the {@link XML} class, in addition to JAXB standard properties.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code MarshallerPool} instance can be safely used by many threads without synchronization
  * on the part of the caller. Subclasses should make sure that any overridden methods remain safe to call
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see XML
  * @see <a href="http://jaxb.java.net/guide/Performance_and_thread_safety.html">JAXB Performance and thread-safety</a>
@@ -89,11 +89,6 @@ public class MarshallerPool {
      * {@code null} if unknown.
      */
     private final Implementation implementation;
-
-    /**
-     * The mapper between namespaces and prefix.
-     */
-    private final Object mapper;
 
     /**
      * The provider of {@code AdapterReplacement} instances.
@@ -192,22 +187,7 @@ public class MarshallerPool {
          * Prepares a copy of the property map (if any), then removes the
          * properties which are handled especially by this constructor.
          */
-        template = new PooledTemplate(properties, implementation);
-        final Object rootNamespace = template.remove(XML.DEFAULT_NAMESPACE, "");
-        /*
-         * Instantiates the OGCNamespacePrefixMapper appropriate for the implementation
-         * we just detected. Note that we may get NoClassDefFoundError instead than the
-         * usual ClassNotFoundException if the class was found but its parent class has
-         * not been found.
-         */
-        final String classname = implementation.mapper;
-        if (classname == null) {
-            mapper = null;
-        } else try {
-            mapper = Class.forName(classname).getConstructor(String.class).newInstance(rootNamespace);
-        } catch (ReflectiveOperationException | NoClassDefFoundError exception) {
-            throw new JAXBException(exception);
-        }
+        template           = new PooledTemplate(properties, implementation);
         marshallers        = new ConcurrentLinkedDeque<>();
         unmarshallers      = new ConcurrentLinkedDeque<>();
         isRemovalScheduled = new AtomicBoolean();
@@ -374,7 +354,7 @@ public class MarshallerPool {
      * The caller should not use anymore the given marshaller after this method call,
      * since the marshaller may be re-used by another thread at any time after recycle.
      *
-     * <div class="section">Cautions</div>
+     * <h4>Cautions</h4>
      * <ul>
      *   <li>Do not invoke this method if the marshaller threw an exception, since the
      *       marshaller may be in an invalid state. In particular, this method should not
@@ -398,7 +378,7 @@ public class MarshallerPool {
      * The caller should not use anymore the given unmarshaller after this method call,
      * since the unmarshaller may be re-used by another thread at any time after recycle.
      *
-     * <div class="section">Cautions</div>
+     * <h4>Cautions</h4>
      * <ul>
      *   <li>Do not invoke this method if the unmarshaller threw an exception, since the
      *       unmarshaller may be in an invalid state. In particular, this method should not
@@ -436,9 +416,6 @@ public class MarshallerPool {
          * said that the default value is "UTF-8", which is what we want.
          */
         String key;
-        if ((key = implementation.mapperKey) != null) {
-            marshaller.setProperty(key, mapper);
-        }
         if ((key = implementation.indentKey) != null) {
             marshaller.setProperty(key, CharSequences.spaces(Constants.DEFAULT_INDENTATION));
         }

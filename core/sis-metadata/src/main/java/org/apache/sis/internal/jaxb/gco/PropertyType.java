@@ -30,6 +30,7 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.ReferenceResolver;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
@@ -67,7 +68,7 @@ import org.apache.sis.util.resources.Errors;
  *       ISO 19139 schemas.</li>
  * </ul>
  *
- * <div class="section">Guidlines for subclasses</div>
+ * <h2>Guidlines for subclasses</h2>
  * Subclasses shall provide a method returning the SIS implementation class for the metadata value.
  * This method will be systematically called at marshalling time by JAXB. Typical implementation
  * ({@code BoundType} and {@code ValueType} need to be replaced by the concrete class):
@@ -184,11 +185,11 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
             }
         }
         /*
-         * Verifies if the object to marshall can be replaced by a xlink or uuidref.
+         * Verifies if the object to marshal can be replaced by a xlink or uuidref.
          * First, check if we can use a xlink:href="#foo" reference to a gml:id="foo".
          * Only if no gml:id was found, check for user-defined xlink or uuidref.
          */
-        @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
+        @SuppressWarnings("OverridableMethodCallInConstructor")
         final Class<BoundType>  type     = getBoundType();
         final Context           context  = Context.current();
         final ReferenceResolver resolver = Context.resolver(context);
@@ -306,7 +307,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
 
     /**
      * Sets the {@code nilReason} attribute value. This method does nothing if a
-     * non-null {@linkplaih #reference} exists, since in such case the object can
+     * non-null {@linkplain #reference} exists, since in such case the object can
      * not be nil.
      *
      * @param nilReason the new attribute value.
@@ -453,7 +454,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @category xlink
      */
     public final void setTitle(String title) {
-        if (title != null && !(title = title.trim()).isEmpty()) {
+        title = Strings.trimOrNull(title);
+        if (title != null) {
             xlink(true).setTitle(new SimpleInternationalString(title));
         }
     }

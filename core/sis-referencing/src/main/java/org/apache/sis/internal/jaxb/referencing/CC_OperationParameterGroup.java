@@ -69,7 +69,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:OperationParameterGroup>} XML element.
      *
-     * @param  parameter  the element to marshall.
+     * @param  parameter  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

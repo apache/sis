@@ -28,7 +28,7 @@ import org.opengis.feature.AttributeType;
  * While {@link MultiValuedAttribute} would be suitable to all cases, this {@code SingletonAttribute}
  * consumes less memory.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li><b>Multi-threading:</b> {@code SingletonAttribute} instances are <strong>not</strong> thread-safe.
  *       Synchronization, if needed, shall be done externally by the caller.</li>
@@ -47,7 +47,7 @@ import org.opengis.feature.AttributeType;
  * @since 0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")     // Nothing to add compared to subclass.
+@SuppressWarnings("CloneableImplementsClone")       // Nothing to add compared to subclass.
 final class SingletonAttribute<V> extends AbstractAttribute<V> implements Cloneable {
     /**
      * For cross-version compatibility.

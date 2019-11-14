@@ -16,11 +16,11 @@
  */
 package org.apache.sis.storage.earthobservation;
 
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import org.apache.sis.internal.storage.AbstractResource;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.acquisition.Context;
 import org.opengis.metadata.acquisition.OperationType;
@@ -34,8 +34,6 @@ import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.FactoryException;
 import org.opengis.test.dataset.ContentVerifier;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.logging.EmptyWarningListeners;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -96,8 +94,7 @@ public class LandsatReaderTest extends TestCase {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 LandsatReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
         {
-            final LandsatReader reader = new LandsatReader("LandsatTest.txt",
-                    new EmptyWarningListeners<>(Locale.ENGLISH, Modules.EARTH_OBSERVATION));
+            final LandsatReader reader = new LandsatReader("LandsatTest.txt", new AbstractResource(null));
             reader.read(in);
             actual = reader.getMetadata();
         }

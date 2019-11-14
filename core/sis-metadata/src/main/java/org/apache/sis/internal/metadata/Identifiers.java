@@ -17,7 +17,6 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Locale;
-import java.util.Iterator;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
@@ -33,9 +32,9 @@ import org.apache.sis.util.Static;
 /**
  * Methods working on {@link Identifier} instances.
  *
- * @author Martin Desruisseaux (Geomatys)
- * @since  1.0
- * @versio 1.0
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   1.1
+ * @version 1.0
  * @module
  */
 public final class Identifiers extends Static {
@@ -91,10 +90,10 @@ public final class Identifiers extends Static {
      * <ul>
      *   <li>For information purpose (e.g. some {@code toString()} methods), use {@code getIdentifier(…, false)}.</li>
      *   <li>For WKT formatting, use {@code getIdentifier(…, true)} in order to preserve formatting characters.</li>
-     *   <li>For assigning a value to a {@code codeSpace} field, use {@link Citations#getUnicodeIdentifier(Citation)}.</li>
+     *   <li>For assigning a value to a {@code codeSpace} field, use {@link Citations#toCodeSpace(Citation)}.</li>
      * </ul>
      *
-     * Use {@code getUnicodeIdentifier(…)} method when assigning values to be returned by methods like
+     * Use {@code toCodeSpace(…)} method when assigning values to be returned by methods like
      * {@link Identifier#getCodeSpace()}, since those values are likely to be compared without special
      * care about ignorable identifier characters. But if the intent is to format a more complex string
      * like WKT or {@code toString()}, then we suggest to use {@code getIdentifier(citation, true)} instead,
@@ -113,9 +112,7 @@ public final class Identifiers extends Static {
             boolean isUnicode = false;      // Whether 'identifier' is a Unicode identifier.
             String identifier = null;       // The best identifier found so far.
             String codeSpace  = null;       // Code space of the identifier, or null if none.
-            final Iterator<? extends Identifier> it = CollectionsExt.nonEmptyIterator(citation.getIdentifiers());
-            if (it != null) while (it.hasNext()) {
-                final Identifier id = it.next();
+            for (final Identifier id : CollectionsExt.nonNull(citation.getIdentifiers())) {
                 if (id != null && !isDeprecated(id)) {
                     final String candidate = CharSequences.trimWhitespaces(id.getCode());
                     if (candidate != null && !candidate.isEmpty()) {
@@ -173,9 +170,8 @@ public final class Identifiers extends Static {
                     }
                 }
                 if (!isUnicode) {
-                    final Iterator<? extends InternationalString> iterator = CollectionsExt.nonEmptyIterator(citation.getAlternateTitles());
-                    if (iterator != null) while (iterator.hasNext()) {
-                        final String candidate = toString(iterator.next());
+                    for (final InternationalString i18n : CollectionsExt.nonNull(citation.getAlternateTitles())) {
+                        final String candidate = toString(i18n);
                         if (candidate != null && !candidate.isEmpty()) {
                             isUnicode = CharSequences.isUnicodeIdentifier(candidate);
                             if (identifier == null || isUnicode) {

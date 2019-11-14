@@ -28,7 +28,7 @@ import org.apache.sis.util.resources.Errors;
  * Base class of all converters defined in the {@code org.apache.sis.internal} package.
  * Those converters are returned by system-wide {@link ConverterRegistry}, and cached for reuse.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This base class is immutable, and thus inherently thread-safe. Subclasses should be immutable
  * and thread-safe too if they are intended to be cached in {@link ConverterRegistry}.
  *
@@ -102,7 +102,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * requires the two objects to be of the same class. We do that in order to differentiate the
      * "ordinary" converters from the {@link FallbackConverter}.
      *
-     * <div class="section">Implementation note</div>
+     * <h4>Implementation note</h4>
      * This is admittedly a little bit convolved. A cleaner approach would have been to not allow
      * the {@code ConverterRegister} hash map to contain anything else than {@code ClassPair} keys,
      * but the current strategy of using the same instance for keys and values reduces a little bit
@@ -163,6 +163,9 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
     /**
      * Returns the singleton instance on deserialization, if any. If no instance already exist
      * in the virtual machine, we do not cache the instance (for now) for security reasons.
+     *
+     * @return the object to use after deserialization.
+     * @throws ObjectStreamException if the serialized object defines an unknown data type.
      */
     protected final Object readResolve() throws ObjectStreamException {
         return unique();

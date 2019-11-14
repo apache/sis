@@ -34,7 +34,7 @@ import org.apache.sis.internal.xml.XmlUtilities;
  * At marshalling time, the choice is performed depending on whatever the given date contains
  * hour, minute or seconds information different than zero.
  *
- * <div class="section">Difference between ISO 19139:2007 and ISO 19115-3:2016</div>
+ * <h2>Difference between ISO 19139:2007 and ISO 19115-3:2016</h2>
  * The ISO {@code baseTypes.xsd} files define two kinds of date property:
  * <ul>
  *   <li>{@code gco:Date_PropertyType} accepts either {@code gco:Date} or {@code gco:DateTime}.</li>

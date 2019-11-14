@@ -34,7 +34,13 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * The two constants defined in this class, namely {@link #SQUARE_BRACKETS} and {@link #CURLY_BRACKETS},
  * define the symbols for ISO 19162 compliant WKT formatting. Their properties are:
  *
- * <blockquote><table class="compact" summary="Standard WKT symbols.">
+ * <table class="sis">
+ *   <caption>Standard WKT symbols</caption>
+ *   <tr>
+ *     <th>WKT aspect</th>
+ *     <th>Standard value</th>
+ *     <th>Comment</th>
+ *   </tr>
  *   <tr>
  *     <td>Locale for number format:</td>
  *     <td>{@link Locale#ROOT}</td>
@@ -62,7 +68,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *     <td>{@code ,}</td>
  *     <td></td>
  *   </tr>
- * </table></blockquote>
+ * </table>
  *
  * Users can create their own {@code Symbols} instance for parsing or formatting a WKT with different symbols.
  *
@@ -253,7 +259,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Returns the locale for formatting dates and numbers.
      * The default value is {@link Locale#ROOT}.
      *
-     * <div class="section">Relationship between {@code Symbols} locale and {@code WKTFormat} locale</div>
+     * <h4>Relationship between {@code Symbols} locale and {@code WKTFormat} locale</h4>
      * The {@code WKTFormat.getLocale(Locale.DISPLAY)} property specifies the language to use when
      * formatting {@link org.opengis.util.InternationalString} instances and can be set to any value.
      * On the contrary, the {@code Locale} property of this {@code Symbols} class controls
@@ -557,7 +563,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Creates a new number format to use for parsing and formatting. Each {@link WKTFormat} will
      * create its own instance, since {@link NumberFormat}s are not guaranteed to be thread-safe.
      *
-     * <div class="section">Scientific notation</div>
+     * <h4>Scientific notation</h4>
      * The {@link NumberFormat} created here does not use scientific notation. This is okay for many
      * WKT formatting purpose since Earth ellipsoid axis lengths in metres are large enough for trigging
      * scientific notation, while we want to express them as normal numbers with centimetre precision.
@@ -621,7 +627,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Invoking this method is equivalent to invoking
      * <code>{@linkplain #containsElement(CharSequence, String) containsElement}(wkt, "AXIS")</code>.
      *
-     * <div class="section">Use case</div>
+     * <h4>Use case</h4>
      * The check for axis elements is of particular interest because the axis order is a frequent cause
      * of confusion when processing geographic data. Some applications just ignore any declared axis order
      * in favor of their own hard-coded (<var>longitude</var>, <var>latitude</var>) axis order.

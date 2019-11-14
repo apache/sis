@@ -44,7 +44,7 @@ import static org.junit.Assume.assumeTrue;
  * Utility methods for creating temporary databases for testing purpose.
  * The databases are in-memory when the database engine supports this mode.
  *
- * <div class="section">Inspecting the Derby database content in a debugger</div>
+ * <h2>Inspecting the Derby database content in a debugger</h2>
  * Make sure that the classpath contains the {@code derbynet.jar} file in addition to {@code derby.jar}.
  * Then, specify the following options to the JVM (replace the 1527 port number by something else if needed):
  *
@@ -64,7 +64,7 @@ import static org.junit.Assume.assumeTrue;
  *
  * <p><b>References:</b>
  * <ul>
- *   <li><a href="https://db.apache.org/derby/docs/10.13/adminguide/radminembeddedserverex.html">Embedded server example</a></li>
+ *   <li><a href="http://db.apache.org/derby/docs/10.15/adminguide/radminembeddedserverex.html">Embedded server example</a></li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -106,6 +106,8 @@ public strictfp class TestDatabase implements AutoCloseable {
      * Creates a temporary database. This method creates a Derby in-memory database by default,
      * but this default can be changed by setting the {@link #TEST_DATABASE} hard-coded value.
      *
+     * <p>See class javadoc if there is a need to inspect content of that in-memory database.</p>
+     *
      * @param  name  the database name (without {@code "memory:"} prefix).
      * @return connection to the test database (usually on Apache Derby).
      * @throws SQLException if an error occurred while creating the database.
@@ -144,6 +146,8 @@ public strictfp class TestDatabase implements AutoCloseable {
      * @return connection to the test database.
      * @throws SQLException if an error occurred while creating the database.
      *
+     * @see <a href="http://hsqldb.org/doc/apidocs/org/hsqldb/jdbc/JDBCDataSource.html">JDBC data source for HSQL</a>
+     *
      * @since 1.0
      */
     public static TestDatabase createOnHSQLDB(final String name, final boolean pooled) throws SQLException {
@@ -152,12 +156,10 @@ public strictfp class TestDatabase implements AutoCloseable {
         final String url = "jdbc:hsqldb:mem:".concat(name);
         if (pooled) {
             pool = new JDBCPool();
-            pool.setDatabaseName("Apache SIS test database");
             pool.setURL(url);
             ds = pool;
         } else {
             final JDBCDataSource simple = new JDBCDataSource();
-            simple.setDatabaseName("Apache SIS test database");
             simple.setURL(url);
             ds = simple;
             pool = null;
@@ -182,6 +184,7 @@ public strictfp class TestDatabase implements AutoCloseable {
      *   <li>{@link TestCase#RUN_EXTENSIVE_TESTS} is {@code true} (for reducing the risk of messing with user installation).</li>
      *   <li>A PostgreSQL server is running on the local host and listening to the default port.</li>
      *   <li>A database named {@value #NAME} exists.</li>
+     *   <li>A role with Unix user name exists and can connect to the database without password.</li>
      *   <li>The database does not contain any schema of the given name.</li>
      * </ol>
      *
@@ -192,6 +195,8 @@ public strictfp class TestDatabase implements AutoCloseable {
      * @param  create  whether the schema should be created by this method.
      * @return connection to a PostgreSQL database
      * @throws SQLException if an error occurred while connecting to the database or creating the schema.
+     *
+     * @see <a href="http://sis.apache.org/source.html#postgres">Configuring PostgreSQL for Apache SIS tests</a>
      *
      * @since 1.0
      */

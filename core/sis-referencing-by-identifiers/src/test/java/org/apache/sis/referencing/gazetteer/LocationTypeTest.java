@@ -33,7 +33,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  * Tests {@link AbstractLocationType}, {@link FinalLocationType} and {@link ModifiableLocationType}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */

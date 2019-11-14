@@ -72,13 +72,13 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  *   <tr><td>{@link Class}</td>           <td>(internal)</td>                                       <td></td></tr>
  * </table>
  *
- * <div class="section">Sources and destinations</div>
+ * <h2>Sources and destinations</h2>
  * Since {@code CompoundFormat} may work on larger texts than the usual {@code Format} classes,
  * it defines {@code parse} and {@code format} methods working with arbitrary {@link CharSequence}
  * and {@link Appendable} instances. The standard {@code Format} methods redirect to the above-cited
  * methods.
  *
- * <div class="section">Sub-classing</div>
+ * <h2>Sub-classing</h2>
  * The abstract methods to be defined by subclasses are:
  * <ul>
  *   <li>{@link #getValueType()}</li>
@@ -348,7 +348,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * <div class="note"><b>Note:</b>
      * Strictly speaking, an {@link IOException} could still occur if a subclass overrides the above {@code format}
      * method and performs some I/O operation outside the given {@link StringBuffer}. However this is not the intended
-     * usage of this class and implementors should avoid such unexpected I/O operation.</div>
+     * usage of this class and implementers should avoid such unexpected I/O operation.</div>
      *
      * @param  object      the object to format.
      * @param  toAppendTo  where to format the object.

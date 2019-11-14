@@ -88,6 +88,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotConcatenateTransforms_2 = 3;
 
         /**
+         * Can not convert a point {0,choice,0#from|1#to} coordinate reference system “{1}”.
+         */
+        public static final short CanNotConvertCoordinates_2 = 89;
+
+        /**
          * Can not create an object of type “{1}” as an instance of class ‘{0}’.
          */
         public static final short CanNotCreateObjectAsInstanceOf_2 = 4;

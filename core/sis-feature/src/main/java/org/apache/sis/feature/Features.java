@@ -140,6 +140,41 @@ public final class Features extends Static {
     }
 
     /**
+     * Returns the type of values provided by the given property. For {@linkplain AttributeType attributes}
+     * (which is the most common case), the value type is given by {@link AttributeType#getValueClass()}.
+     * For {@linkplain FeatureAssociationRole feature associations}, the value type is {@link Feature}.
+     * For {@linkplain Operation operations}, the value type is determined recursively from the
+     * {@linkplain Operation#getResult() operation result}.
+     * If the value type can not be determined, then this method returns {@code null}.
+     *
+     * @param  type  the property for which to get the type of values, or {@code null}.
+     * @return the type of values provided by the given property, or {@code null} if unknown.
+     *
+     * @see AttributeType#getValueClass()
+     *
+     * @since 1.0
+     */
+    public static Class<?> getValueClass(PropertyType type) {
+        while (type instanceof Operation) {
+            final IdentifiedType result = ((Operation) type).getResult();
+            if (result != type && result instanceof PropertyType) {
+                type = (PropertyType) result;
+            } else if (result instanceof FeatureType) {
+                return Feature.class;
+            } else {
+                break;
+            }
+        }
+        if (type instanceof AttributeType<?>) {
+            return ((AttributeType<?>) type).getValueClass();
+        } else if (type instanceof FeatureAssociationRole) {
+            return Feature.class;
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Returns the name of the type of values that the given property can take.
      * The type of value can be a {@link Class}, a {@link org.opengis.feature.FeatureType}
      * or another {@code PropertyType} depending on given argument:

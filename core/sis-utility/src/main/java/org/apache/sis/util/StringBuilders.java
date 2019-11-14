@@ -28,13 +28,13 @@ import static java.lang.Character.*;
  * modify directly the content of the provided {@code StringBuilder} instead than creating
  * new objects.
  *
- * <div class="section">Unicode support</div>
+ * <h2>Unicode support</h2>
  * Every methods defined in this class work on <cite>code points</cite> instead than characters
  * when appropriate. Consequently those methods should behave correctly with characters outside
  * the <cite>Basic Multilingual Plane</cite> (BMP).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see CharSequences
  *
@@ -162,13 +162,38 @@ public final class StringBuilders extends Static {
     }
 
     /**
-     * Inserts the given character <var>n</var> time at the given position.
+     * Appends the given character <var>n</var> times.
+     * This method does nothing if the given {@code count} is zero.
+     *
+     * @param  buffer  the buffer where to append the character.
+     * @param  c       the character to repeat.
+     * @param  count   number of times to repeat the given character.
+     * @throws NullPointerException if the given buffer is null.
+     * @throws IllegalArgumentException if the given count is negative.
+     *
+     * @since 1.0
+     */
+    public static void repeat(final StringBuilder buffer, final char c, final int count) {
+        ArgumentChecks.ensureNonNull("buffer", buffer);
+        switch (count) {
+            case 0:  break;
+            case 1:  buffer.append(c); break;
+            default: {
+                ArgumentChecks.ensurePositive("count", count);
+                buffer.append(c == ' ' ? CharSequences.spaces(count) : new Repeat(c, count));
+                break;
+            }
+        }
+    }
+
+    /**
+     * Inserts the given character <var>n</var> times at the given position.
      * This method does nothing if the given {@code count} is zero.
      *
      * @param  buffer  the buffer where to insert the character.
      * @param  offset  position where to insert the characters.
      * @param  c       the character to repeat.
-     * @param  count   number of time to repeat the given character.
+     * @param  count   number of times to repeat the given character.
      * @throws NullPointerException if the given buffer is null.
      * @throws IndexOutOfBoundsException if the given index is invalid.
      * @throws IllegalArgumentException if the given count is negative.
@@ -237,7 +262,7 @@ public final class StringBuilders extends Static {
      * method does nothing. This is a <cite>"all or nothing"</cite> method: either the fractional
      * part is completely removed, or either it is left unchanged.</p>
      *
-     * <div class="section">Use case</div>
+     * <h4>Use case</h4>
      * This method is useful after a {@linkplain StringBuilder#append(double) double value has
      * been appended to the buffer}, in order to make it appears like an integer when possible.
      *

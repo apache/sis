@@ -62,13 +62,13 @@ import org.apache.sis.util.Debug;
  * In this example, sample values in range [10…210] define a quantitative category, while all others categories are qualitative.
  * </div>
  *
- * <div class="section">Relationship with metadata</div>
+ * <h2>Relationship with metadata</h2>
  * This class provides the same information than ISO 19115 {@link org.opengis.metadata.content.SampleDimension},
  * but organized in a different way. The use of the same name may seem a risk, but those two types are typically
  * not used in same time.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see org.opengis.metadata.content.SampleDimension
  *
@@ -160,6 +160,7 @@ public class SampleDimension implements Serializable {
      * @param name        an identification for the sample dimension.
      * @param background  the background value, or {@code null} if none.
      * @param categories  the list of categories. May be empty if none.
+     * @throws IllegalSampleDimensionException if two or more categories have overlapping sample value range.
      */
     public SampleDimension(final GenericName name, final Number background, final Collection<? extends Category> categories) {
         ArgumentChecks.ensureNonNull("name", name);
@@ -976,13 +977,15 @@ public class SampleDimension implements Serializable {
          * Creates a new sample with the properties defined to this builder.
          *
          * @return the sample dimension.
+         * @throws IllegalSampleDimensionException if there is overlapping {@linkplain Category#getSampleRange()
+         *         ranges of sample values} or other problems that prevent the construction of sample dimensions.
          */
         public SampleDimension build() {
             GenericName name = dimensionName;
 defName:    if (name == null) {
-                for (final Category category : categories) {
-                    if (category.isQuantitative()) {
-                        name = createLocalName(category.name);
+                for (int i = 0; i < count; i++) {
+                    if (categories[i].isQuantitative()) {
+                        name = createLocalName(categories[i].name);
                         break defName;
                     }
                 }

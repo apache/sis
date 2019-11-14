@@ -30,7 +30,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.DeprecatedCode;
@@ -79,7 +78,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *       {@link #setRemarks(CharSequence) code setRemarks(…)} method.</li>
  * </ul>
  *
- * <div class="section">Namespaces and scopes</div>
+ * <h2>Namespaces and scopes</h2>
  * The {@code addName(…)} and {@code addIdentifier(…)} methods come in three flavors:
  *
  * <ul class="verbose">
@@ -117,7 +116,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * <code>"<b>OGC:</b>Mercator_1SP"</code> respectively.</div>
  *
  *
- * <div class="section">Builder property lifetimes</div>
+ * <h2>Builder property lifetimes</h2>
  * Some complex objects require the creation of many components. For example constructing a
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (CRS) may require constructing a
  * {@linkplain org.apache.sis.referencing.cs.AbstractCS coordinate system}, a
@@ -143,11 +142,11 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *   </li>
  * </ul>
  *
- * <div class="section">Usage examples</div>
+ * <h2>Usage examples</h2>
  * See {@link org.apache.sis.parameter.ParameterBuilder} class javadoc for more examples with the
  * <cite>Mercator</cite> projection parameters.
  *
- * <div class="section">Note for subclass implementors</div>
+ * <h2>Note for subclass implementers</h2>
  * <ul>
  *   <li>The type {@code <B>} shall be exactly the subclass type.
  *       For performance reasons, this is verified only if Java assertions are enabled.</li>
@@ -169,7 +168,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @param <B>  the builder subclass.
  *
@@ -188,7 +187,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY} and
      * {@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY} keys.
      *
-     * <p>See <cite>Notes for subclass implementors</cite> in class javadoc for usage conditions.</p>
+     * <p>See <cite>Notes for subclass implementers</cite> in class javadoc for usage conditions.</p>
      *
      * @see #onCreate(boolean)
      */
@@ -479,12 +478,12 @@ public abstract class Builder<B extends Builder<B>> {
      * code space} and {@linkplain #setVersion(String) version} information for creating the
      * {@link Identifier} or {@link GenericName} object.
      *
-     * <div class="section">Name and aliases</div>
+     * <h4>Name and aliases</h4>
      * This method can be invoked many times. The first invocation sets the
      * {@linkplain AbstractIdentifiedObject#getName() primary name}, and
      * all subsequent invocations add an {@linkplain AbstractIdentifiedObject#getAlias() alias}.
      *
-     * <div class="section">Deprecated names</div>
+     * <h4>Deprecated names</h4>
      * Some names may exist for historical reasons but have their use discouraged.
      * If <code>{@linkplain #setDeprecated(boolean) setDeprecated}(true)</code> has been invoked, then this
      * method creates a deprecated alias with the current {@linkplain #setRemarks(CharSequence) remarks}.
@@ -571,7 +570,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@linkplain #setVersion(String) version} and {@linkplain #setDescription(CharSequence) description}
      * specified to this builder (if any), since the given identifier may already contain those information.
      *
-     * <div class="section">Name and aliases</div>
+     * <h4>Name and aliases</h4>
      * This method can be invoked many times. The first invocation sets the
      * {@linkplain AbstractIdentifiedObject#getName() primary name} to the given value, and
      * all subsequent invocations add an {@linkplain AbstractIdentifiedObject#getAlias() alias}.
@@ -597,7 +596,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@linkplain #setVersion(String) version} and {@linkplain #setDescription(CharSequence) description}
      * specified to this builder (if any), since the given generic name may already contain those information.
      *
-     * <div class="section">Name and aliases</div>
+     * <h4>Name and aliases</h4>
      * This method can be invoked many times. The first invocation sets the
      * {@linkplain AbstractIdentifiedObject#getName() primary name} to the given value, and
      * all subsequent invocations add an {@linkplain AbstractIdentifiedObject#getAlias() alias}.
@@ -624,7 +623,7 @@ public abstract class Builder<B extends Builder<B>> {
      * {@linkplain #setVersion(String) version} and {@linkplain #setDescription(CharSequence) description} information
      * for creating the {@link Identifier} object.
      *
-     * <div class="section">Deprecated identifiers</div>
+     * <h4>Deprecated identifiers</h4>
      * Some identifiers may exist for historical reasons but have their use discouraged.
      * If <code>{@linkplain #setDeprecated(boolean) setDeprecated}(true)</code> has been invoked, then this
      * method creates a deprecated identifier with the current {@linkplain #setRemarks(CharSequence) remarks}.
@@ -682,12 +681,12 @@ public abstract class Builder<B extends Builder<B>> {
 
 
     /**
-     * Returns {@code true} if the given name or identifier is deprecated.
+     * Returns {@code true} if the given name or identifier is non-null and non-deprecated.
      *
      * @see #isDeprecated()
      */
-    private static boolean isDeprecated(final Object object) {
-        return (object instanceof Deprecable) && ((Deprecable) object).isDeprecated();
+    private static boolean isValid(final Object object) {
+        return (object != null) && !((object instanceof Deprecable) && ((Deprecable) object).isDeprecated());
     }
 
     /**
@@ -697,7 +696,7 @@ public abstract class Builder<B extends Builder<B>> {
      * <p>This is a convenience method for using an existing object as a template, before to modify
      * some names by calls to {@link #rename(Citation, CharSequence[])}.</p>
      *
-     * @param  object  the object from which to copy the references to names and identifiers.
+     * @param  object  the object from which to copy the names and identifiers.
      * @return {@code this}, for method call chaining.
      *
      * @since 0.6
@@ -705,16 +704,46 @@ public abstract class Builder<B extends Builder<B>> {
     public B addNamesAndIdentifiers(final IdentifiedObject object) {
         ensureNonNull("object", object);
         for (final Identifier id : object.getIdentifiers()) {
-            if (!isDeprecated(id)) {
+            if (isValid(id)) {
                 addIdentifier(id);
             }
         }
         Identifier id = object.getName();
-        if (!isDeprecated(id)) {
+        if (isValid(id)) {
             addName(id);
         }
         for (final GenericName alias : object.getAlias()) {
-            if (!isDeprecated(alias)) {
+            if (isValid(alias)) {
+                addName(alias);
+            }
+        }
+        return self();
+    }
+
+    /**
+     * Adds the non-deprecated names and identifiers from the given object for the specified authority.
+     * This is a convenience method for reusing name and identifier already declared for another object.
+     *
+     * @param  authority  the authority for which to copy the name and identifier.
+     * @param  object     the object from which to copy the name and identifier.
+     * @return {@code this}, for method call chaining.
+     *
+     * @since 1.1
+     */
+    public B addNameAndIdentifier(final Citation authority, final IdentifiedObject object) {
+        ensureNonNull("authority", authority);
+        ensureNonNull("object", object);
+        for (final Identifier id : object.getIdentifiers()) {
+            if (isValid(id) && authority.equals(id.getAuthority())) {
+                addIdentifier(id);
+            }
+        }
+        Identifier id = object.getName();
+        if (isValid(id) && authority.equals(id.getAuthority())) {
+            addName(id);
+        }
+        for (final GenericName alias : object.getAlias()) {
+            if (isValid(alias) && (alias instanceof Identifier) && authority.equals(((Identifier) alias).getAuthority())) {
                 addName(alias);
             }
         }

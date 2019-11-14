@@ -22,10 +22,8 @@ import java.util.List;
 
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.distance.LatLonPointRadius;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.GeodeticCalculator;
-import org.apache.sis.referencing.operation.GeodesicException;
 
 /**
  * Implementation of Quad Tree Index. Insertion algorithm implemented based on
@@ -353,11 +351,7 @@ public class QuadTree {
                     synchronized (calculator) {
                         calculator.setStartGeographicPoint(latLon.y, latLon.x);
                         calculator.setEndGeographicPoint(point.y, point.x);
-                        try {
-                            distance = calculator.getGeodesicDistance();
-                        } catch (GeodesicException e) {
-                            throw new RuntimeException(e);
-                        }
+                        distance = calculator.getGeodesicDistance();
                     }
                     if (distance <= radiusKM) {
                         matches.add(data[i]);

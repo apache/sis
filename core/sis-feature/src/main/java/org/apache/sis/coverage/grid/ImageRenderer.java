@@ -74,7 +74,7 @@ import org.apache.sis.math.Vector;
  * }
  * </div>
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * Current implementation constructs only images made of a single tile.
  * Support for tiled images will be added in a future version.
  *

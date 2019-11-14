@@ -34,7 +34,8 @@ import org.apache.sis.util.logging.MonolineFormatter;
 /**
  * Command line interface for Apache SIS. The {@link #main(String[])} method accepts the following actions:
  *
- * <blockquote><table class="compact" summary="Supported command-line actions.">
+ * <blockquote><table class="compact">
+ * <caption>Supported command-line actions</caption>
  * <tr><td>{@code help}       </td><td>Show a help overview.</td></tr>
  * <tr><td>{@code about}      </td><td>Show information about Apache SIS and system configuration.</td></tr>
  * <tr><td>{@code mime-type}  </td><td>Show MIME type for the given file.</td></tr>
@@ -46,7 +47,8 @@ import org.apache.sis.util.logging.MonolineFormatter;
  *
  * Each command can accepts some of the following options:
  *
- * <blockquote><table class="compact" summary="Supported command-line options.">
+ * <blockquote><table class="compact">
+ * <caption>Supported command-line options</caption>
  * <tr><td>{@code --sourceCRS} </td><td>The Coordinate Reference System of input data.</td></tr>
  * <tr><td>{@code --targetCRS} </td><td>The Coordinate Reference System of output data.</td></tr>
  * <tr><td>{@code --format}    </td><td>The output format: {@code xml}, {@code wkt}, {@code wkt1} or {@code text}.</td></tr>
@@ -65,7 +67,7 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * to the {@linkplain System#err standard error stream}. The reason is that command output may be targeted to
  * a client, while the error messages are usually for the operator.
  *
- * <div class="section">SIS installation on remote machines</div>
+ * <h2>SIS installation on remote machines</h2>
  * Some sub-commands can operate on SIS installation on remote machines, provided that remote access has been enabled
  * at the Java Virtual Machine startup time. See {@linkplain org.apache.sis.console package javadoc} for more information.
  *

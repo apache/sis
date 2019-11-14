@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.opengis.util.FactoryException;
@@ -97,6 +98,11 @@ public final class DefinitionVerifier {
      * The arguments to use together with {@link #resourceKey} for producing the warning message.
      */
     private Object[] arguments;
+
+    /**
+     * The locale, fixed for now but may become configurable in a future version.
+     */
+    private static final Locale locale = null;
 
     /**
      * Creates the result of a call to {@code withAuthority(…)}.
@@ -228,7 +234,7 @@ public final class DefinitionVerifier {
             }
         }
         if (verifier.arguments != null) {
-            verifier.arguments[0] = IdentifiedObjects.getName(crs, null);
+            verifier.arguments[0] = IdentifiedObjects.getDisplayName(crs, locale);
             verifier.arguments[1] = IdentifiedObjects.getIdentifierOrName(authoritative);
         }
         return verifier;
@@ -288,7 +294,7 @@ public final class DefinitionVerifier {
     public LogRecord warning(final boolean fine) {
         if (arguments != null) {
             if (resourceKey != 0) {
-                return Resources.forLocale(null).getLogRecord(Level.WARNING, resourceKey, arguments);
+                return Resources.forLocale(locale).getLogRecord(Level.WARNING, resourceKey, arguments);
             } else if (fine) {
                 return new LogRecord(Level.FINE, (String) arguments[0]);
             }

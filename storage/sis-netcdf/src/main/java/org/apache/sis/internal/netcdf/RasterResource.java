@@ -40,10 +40,13 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridRoundingMode;
+import org.apache.sis.coverage.grid.DisjointExtentException;
+import org.apache.sis.coverage.IllegalSampleDimensionException;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.MeasurementRange;
@@ -63,7 +66,7 @@ import org.apache.sis.internal.jdk9.JDK9;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -375,14 +378,16 @@ public final class RasterResource extends AbstractGridResource implements Resour
             synchronized (lock) {
                 for (int i=0; i<ranges.length; i++) {
                     if (ranges[i] == null) {
-                        if (builder == null) builder = new SampleDimension.Builder();
+                        if (builder == null) {
+                            builder = new SampleDimension.Builder();
+                        }
                         ranges[i] = createSampleDimension(builder, getVariable(i), i);
                         builder.clear();
                     }
                 }
             }
-        } catch (TransformException e) {
-            throw new DataStoreReferencingException(e);
+        } catch (RuntimeException e) {
+            throw new DataStoreContentException(e);
         }
         return UnmodifiableArrayList.wrap(ranges);
     }
@@ -393,18 +398,15 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * @param  builder  the builder to use for creating the sample dimension.
      * @param  band     the data for which to create a sample dimension.
      * @param  index    index in the variable dimension identified by {@link #bandDimension}.
-     * @throws TransformException if an error occurred while using the transfer function.
      */
-    private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable band, final int index)
-            throws TransformException
-    {
+    private SampleDimension createSampleDimension(final SampleDimension.Builder builder, final Variable band, final int index) {
         /*
          * Take the minimum and maximum values as determined by Apache SIS through the Convention class.  The UCAR library
          * is used only as a fallback. We give precedence to the range computed by Apache SIS instead than the range given
          * by UCAR because we need the range of packed values instead than the range of converted values.
          */
         NumberRange<?> range;
-        if (!createEnumeration(builder, band, index) && (range = band.getValidRange()) != null) {
+        if (!createEnumeration(builder, band, index) && (range = band.getValidRange()) != null) try {
             final MathTransform1D mt = band.getTransferFunction().getTransform();
             if (!mt.isIdentity() && range instanceof MeasurementRange<?>) {
                 /*
@@ -445,6 +447,14 @@ public final class RasterResource extends AbstractGridResource implements Resour
                 if (name == null) name = band.getName();
                 builder.addQuantitative(name, range, mt, band.getUnit());
             }
+        } catch (TransformException e) {
+            /*
+             * This exception may happen in the call to `inverse.transform`, when we tried to convert
+             * a range of measurement values (in the unit of measurement) to a range of sample values.
+             * If we failed to do that, we will not add quantitative category. But we still can add
+             * qualitative categories for "no data" sample values in the rest of this method.
+             */
+            warning(e);
         }
         /*
          * Adds the "missing value" or "fill value" as qualitative categories.  If a value has both roles, use "missing value"
@@ -491,7 +501,21 @@ public final class RasterResource extends AbstractGridResource implements Resour
         if (bandDimension >= 0) {
             name = Strings.toIndexed(name, index);
         }
-        return builder.setName(name).build();
+        builder.setName(name);
+        SampleDimension sd;
+        try {
+            sd = builder.build();
+        } catch (IllegalSampleDimensionException e) {
+            /*
+             * This error may happen if we have overlapping ranges of sample values.
+             * Abandon all categories. We do not keep the quantitative category because
+             * using it without taking in account the "no data" values may be dangerous.
+             */
+            builder.categories().clear();
+            sd = builder.build();
+            warning(e);
+        }
+        return sd;
     }
 
     /**
@@ -570,7 +594,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
             GridExtent areaOfInterest = targetGeometry.getIntersection();           // Pixel indices of data to read.
             int[]      subsamplings   = targetGeometry.getSubsamplings();           // Slice to read or subsampling to apply.
             int        numBuffers     = bands.length;                               // By default, one variable per band.
-            domain = targetGeometry.subsample(subsamplings).build();                // Adjust user-specified domain to data geometry.
+            domain = targetGeometry.build();                                        // Adjust user-specified domain to data geometry.
             if (bandDimension >= 0) {
                 areaOfInterest = rangeIndices.insertBandDimension(areaOfInterest, bandDimension);
                 subsamplings   = rangeIndices.insertSubsampling  (subsamplings,   bandDimension);
@@ -600,9 +624,11 @@ public final class RasterResource extends AbstractGridResource implements Resour
                         bandOffsets[indexInRaster] = i;
                         indexInRaster = 0;                  // Pixels interleaved in one bank: sampleValues.length = 1.
                     }
-                    if (i < numBuffers) {
+                    if (i < numBuffers) try {
                         // Optional.orElseThrow() below should never fail since Variable.read(…) wraps primitive array.
                         sampleValues[indexInRaster] = variable.read(areaOfInterest, subsamplings).buffer().get();
+                    } catch (ArithmeticException e) {
+                        throw variable.canNotComputePosition(e);
                     }
                 }
             }
@@ -630,15 +656,15 @@ public final class RasterResource extends AbstractGridResource implements Resour
              */
             imageBuffer = RasterFactory.wrap(dataType.rasterDataType, sampleValues);
         } catch (IOException e) {
-            throw new DataStoreException(e);
-        } catch (TransformException e) {
-            throw new DataStoreReferencingException(e);
+            throw new DataStoreException(canNotReadFile(), e);
+        } catch (DisjointExtentException e) {
+            throw new NoSuchDataException(canNotReadFile(), e);
         } catch (RuntimeException e) {                          // Many exceptions thrown by RasterFactory.wrap(…).
-            final Throwable cause = e.getCause();
-            if (cause instanceof TransformException) {
-                throw new DataStoreReferencingException(cause);
+            final Exception cause = getReferencingCause(e);
+            if (cause != null) {
+                throw new DataStoreReferencingException(canNotReadFile(), cause);
             } else {
-                throw new DataStoreContentException(e);
+                throw new DataStoreContentException(canNotReadFile(), e);
             }
         }
         if (imageBuffer == null) {
@@ -649,14 +675,19 @@ public final class RasterResource extends AbstractGridResource implements Resour
     }
 
     /**
+     * Returns the error message for a file that can not be read.
+     *
+     * @return default error message to use in exceptions.
+     */
+    private String canNotReadFile() {
+        return Errors.getResources(getLocale()).getString(Errors.Keys.CanNotRead_1, getFilename());
+    }
+
+    /**
      * Returns the name of the netCDF file. This is used for error messages.
      */
     private String getFilename() {
-        if (location != null) {
-            return location.getFileName().toString();
-        } else {
-            return Vocabulary.getResources(getLocale()).getString(Vocabulary.Keys.Unnamed);
-        }
+        return (location != null) ? location.getFileName().toString() : getSourceName();
     }
 
     /**

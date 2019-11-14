@@ -47,7 +47,7 @@
  * specifications; they are used only for consistency with current practice in
  * {@link org.apache.sis.internal.jaxb.metadata} and similar packages.
  *
- * <div class="section">Object identification and reference</div>
+ * <h2>Object identification and reference</h2>
  * <ul class="verbose">
  *   <li><code>org.apache.sis.<b>metadata.iso</b></code> public packages:
  *   <ul>
@@ -86,8 +86,9 @@
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GCO, xmlns = {
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "gcx", namespaceURI = Namespaces.GCX)
+    @XmlNs(prefix = "gco",   namespaceURI = Namespaces.GCO),
+    @XmlNs(prefix = "gcx",   namespaceURI = Namespaces.GCX),
+    @XmlNs(prefix = "xlink", namespaceURI = Namespaces.XLINK)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 /*

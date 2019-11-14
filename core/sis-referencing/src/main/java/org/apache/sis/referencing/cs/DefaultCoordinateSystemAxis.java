@@ -75,7 +75,7 @@ import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
 /**
  * Coordinate system axis name, direction, unit and range of values.
  *
- * <div class="section">Axis names</div>
+ * <h2>Axis names</h2>
  * In some case, the axis name is constrained by ISO 19111 depending on the
  * {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system} type.
  * This constraint works in two directions. For example the names <cite>"geodetic latitude"</cite> and
@@ -83,7 +83,7 @@ import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
  * with a {@link org.opengis.referencing.crs.GeographicCRS}. Conversely, these names shall not be used
  * in any other context. See the GeoAPI {@link CoordinateSystemAxis} javadoc for more information.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if all
  * components were created using only SIS factories and static constants.
@@ -388,9 +388,9 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code CoordinateSystemAxis.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code CoordinateSystemAxis}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their own
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their own
      * set of interfaces.</div>
      *
      * @return {@code CoordinateSystemAxis.class} or a user-defined sub-interface.
@@ -512,7 +512,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * OGC 01-009 (where version 1 of the WKT format is defined) said that the default values shall be
      * <cite>"Lat"</cite> and <cite>"Lon"</cite>.
      *
-     * <div class="section">Future evolutions</div>
+     * <h4>Future evolutions</h4>
      * This method implements heuristic rules learned from experience while trying to provide inter-operability
      * with different data producers. Those rules may be adjusted in any future SIS version according experience
      * gained while working with more data producers.
@@ -641,7 +641,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
              * Checking the abbreviation is not sufficient. For example the polar angle and the
              * spherical latitude have the same abbreviation (θ). Legacy names like "Longitude"
              * (in addition to ISO 19111 "Geodetic longitude") bring more potential confusion.
-             * Furthermore, not all implementors use the greek letters. For example most CRS in
+             * Furthermore, not all implementers use the greek letters. For example most CRS in
              * WKT format use the "Lat" abbreviation instead of the greek letter φ.
              * For comparisons without metadata, we ignore the unreliable abbreviation and check
              * the axis name instead. These names are constrained by ISO 19111 specification
@@ -709,7 +709,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     /**
      * Formats this axis as a <cite>Well Known Text</cite> {@code Axis[…]} element.
      *
-     * <div class="section">Constraints for WKT validity</div>
+     * <h4>Constraints for WKT validity</h4>
      * The ISO 19162 specification puts many constraints on axis names, abbreviations and directions allowed in WKT.
      * Most of those constraints are inherited from ISO 19111 — see {@link CoordinateSystemAxis} javadoc for some of
      * those. The current Apache SIS implementation does not verify whether this axis name and abbreviation are

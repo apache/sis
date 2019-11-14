@@ -40,7 +40,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * context only. For an image datum, the anchor point is usually either the centre of the image
  * or the corner of the image.
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
  * all components were created using only SIS factories and static constants.
@@ -172,9 +172,9 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code ImageDatum.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code ImageDatum}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with
      * their own set of interfaces.</div>
      *
      * @return {@code ImageDatum.class} or a user-defined sub-interface.

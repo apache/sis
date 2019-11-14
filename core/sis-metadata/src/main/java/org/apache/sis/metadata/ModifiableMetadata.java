@@ -50,7 +50,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.valueIfDefined;
  * The metadata can be populated using the setter methods provided by subclasses, then transition to the
  * {@linkplain State#FINAL final} state for making it safe to share by many consumers.
  *
- * <div class="section">Tip for subclass implementations</div>
+ * <h2>Tip for subclass implementations</h2>
  * Subclasses can follow the pattern below for every {@code get} and {@code set} methods,
  * with a different processing for singleton value or for {@linkplain Collection collections}.
  *
@@ -104,7 +104,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     private static final byte STAGED = 1;
 
     /**
-     * A value for {@link #state} meaning that execution of {@code transition(…)} is in progress.
+     * A value for {@link #state} meaning that execution of {@code transitionTo(…)} is in progress.
      * Must be greater than all other values except {@link #COMPLETABLE} and {@link #FINAL}.
      */
     private static final byte FREEZING = 2;
@@ -117,7 +117,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     private static final byte COMPLETABLE = 3;
 
     /**
-     * A value for {@link #state} meaning that {@code transition(State.FINAL)} has been invoked.
+     * A value for {@link #state} meaning that {@code transitionTo(State.FINAL)} has been invoked.
      * Must be greater than all other values.
      */
     private static final byte FINAL = 4;
@@ -133,16 +133,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     private transient byte state;
 
     /**
-     * An unmodifiable copy of this metadata, created only when first needed.
-     * If {@code null}, then no unmodifiable entity is available.
-     * If {@code this}, then this entity is itself unmodifiable.
-     *
-     * @deprecated to be deleted after the removal of {@link #unmodifiable()}.
-     */
-    @Deprecated
-    private transient ModifiableMetadata unmodifiable;
-
-    /**
      * Constructs an initially empty metadata.
      * The initial state is {@link State#EDITABLE}.
      */
@@ -152,7 +142,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     /**
      * Whether the metadata is still editable or has been made final.
      * New {@link ModifiableMetadata} instances are initially {@link #EDITABLE}
-     * and can be made {@link #FINAL} after construction by a call to {@link ModifiableMetadata#transition(State)}.
+     * and can be made {@link #FINAL} after construction by a call to {@link ModifiableMetadata#transitionTo(State)}.
      *
      * <div class="note"><b>Note:</b>
      * more states may be added in future Apache SIS versions. On possible candidate is {@code STAGED}.
@@ -218,7 +208,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     /**
      * Tells whether this instance of metadata is editable.
      * This is initially {@link State#EDITABLE} for new {@code ModifiableMetadata} instances,
-     * but can be changed by a call to {@link #transition(State)}.
+     * but can be changed by a call to {@link #transitionTo(State)}.
      *
      * <p>{@link State#FINAL} implies that all properties are also final.
      * This recursivity does not necessarily apply to other states. For example {@link State#EDITABLE}
@@ -278,7 +268,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * @since 1.0
      */
-    public boolean transition(final State target) {
+    public boolean transitionTo(final State target) {
         if (target.code < state) {
             throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.UnmodifiableMetadata));
         }
@@ -297,112 +287,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
     }
 
     /**
-     * Returns {@code true} if this metadata is modifiable. This method returns
-     * {@code false} if {@link #freeze()} has been invoked on this object.
-     *
-     * @return {@code true} if this metadata is modifiable.
-     *
-     * @see #freeze()
-     * @see #checkWritePermission()
-     *
-     * @deprecated Replaced by <code>{@linkplain #state()} != State.FINAL</code>.
-     *             See <a href="https://issues.apache.org/jira/browse/SIS-81">SIS-81</a>.
-     */
-    @Deprecated
-    public final boolean isModifiable() {
-        return state <= STAGED;
-    }
-
-    /**
-     * Returns an unmodifiable copy of this metadata. Any attempt to modify a property of the
-     * returned object will throw an {@link UnmodifiableMetadataException}. The state of this
-     * object is not modified.
-     *
-     * <p>This method is useful for reusing the same metadata object as a template.
-     * For example:</p>
-     *
-     * {@preformat java
-     *     DefaultCitation myCitation = new DefaultCitation();
-     *     myCitation.setTitle(new SimpleInternationalString("The title of my book"));
-     *     myCitation.setEdition(new SimpleInternationalString("First edition"));
-     *     final Citation firstEdition = (Citation) myCitation.unmodifiable();
-     *
-     *     myCitation.setEdition(new SimpleInternationalString("Second edition"));
-     *     final Citation secondEdition = (Citation) myCitation.unmodifiable();
-     *     // The title of the second edition is unchanged compared to the first edition.
-     * }
-     *
-     * The default implementation makes the following choice:
-     *
-     * <ul>
-     *   <li>If this metadata is itself unmodifiable, then this method returns {@code this} unchanged.</li>
-     *   <li>Otherwise this method {@linkplain #clone() clone} this metadata and
-     *       {@linkplain #freeze() freeze} the clone before to return it.</li>
-     * </ul>
-     *
-     * @return an unmodifiable copy of this metadata.
-     *
-     * @see MetadataCopier
-     *
-     * @deprecated Replaced by {@code MetadataCopier.forModifiable(getStandard()).copy(this).transition(State.FINAL)}.
-     */
-    @Deprecated
-    public AbstractMetadata unmodifiable() {
-        if (!isModifiable()) {
-            unmodifiable = this;
-        }
-        /*
-         * The 'unmodifiable' field is reset to null by checkWritePermission().
-         * However this is not sufficient since the setter method of some child
-         * could have been invoked without invoking any setter method on 'this'.
-         * So we also need to perform an equality check.
-         */
-        if (unmodifiable == null || !equals(unmodifiable)) {
-            final ModifiableMetadata candidate = (ModifiableMetadata) MetadataCopier.forModifiable(getStandard()).copy(this);
-            candidate.freeze();
-            /*
-             * Set the field only after success. The 'unmodifiable' field must
-             * stay null if an exception occurred during clone() or freeze().
-             */
-            unmodifiable = candidate;
-        }
-        assert !unmodifiable.isModifiable();
-        return unmodifiable;
-    }
-
-    /**
-     * Declares this metadata and all its properties as unmodifiable. Any attempt to modify a
-     * property after this method call will throw an {@link UnmodifiableMetadataException}.
-     * If this metadata is already unmodifiable, then this method does nothing.
-     *
-     * <p>Subclasses usually do not need to override this method since the default implementation
-     * performs its work using Java reflection.</p>
-     *
-     * @see #state()
-     * @see #checkWritePermission()
-     *
-     * @deprecated Replaced by {@code transition(State.FINAL)}.
-     */
-    @Deprecated
-    public void freeze() {
-        transition(State.FINAL);
-    }
-
-    /**
-     * @deprecated Replaced by {@link #checkWritePermission(Object)}.
-     *
-     * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
-     */
-    @Deprecated
-    protected void checkWritePermission() throws UnmodifiableMetadataException {
-        if (state == FINAL) {
-            throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.UnmodifiableMetadata));
-        } else {
-            unmodifiable = null;                    // Discard since this metadata is going to change.
-        }
-    }
-
-    /**
      * Checks if changes in the metadata are allowed. All {@code setFoo(…)} methods in subclasses
      * shall invoke this method (directly or indirectly) before to apply any change.
      * The current property value should be specified in argument.
@@ -416,7 +300,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      */
     protected void checkWritePermission(Object current) throws UnmodifiableMetadataException {
         if (state != COMPLETABLE) {
-            checkWritePermission();
+            if (state == FINAL) {
+                throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.UnmodifiableMetadata));
+            }
         } else if (current != null) {
             final MetadataStandard standard;
             if (current instanceof AbstractMetadata) {
@@ -500,11 +386,11 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
      *
-     * <div class="section">Choosing a collection type</div>
+     * <h4>Choosing a collection type</h4>
      * Implementations shall invoke {@link #writeList writeList} or {@link #writeSet writeSet} methods
      * instead than this method when the collection type is enforced by ISO specification.
      * When the type is not enforced by the specification, some freedom are allowed at
-     * implementor choice. The default implementation invokes {@link #collectionType(Class)}
+     * implementer choice. The default implementation invokes {@link #collectionType(Class)}
      * in order to get a hint about whether a {@link List} or a {@link Set} should be used.
      *
      * @param  <E>          the type represented by the {@code Class} argument.
@@ -541,7 +427,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
         if (source != target) {
             if (state == FREEZING) {
                 /*
-                 * transition(State.FINAL) is under progress. The source collection is already
+                 * transitionTo(State.FINAL) is under progress. The source collection is already
                  * an unmodifiable instance created by StateChanger.
                  */
                 assert (useSet != null) || collectionType(elementType).isInstance(source) : elementType;
@@ -812,10 +698,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * Returns the specified collection, or a new one if {@code current} is null.
      * This is a convenience method for implementation of {@code getFoo()} methods.
      *
-     * <div class="section">Choosing a collection type</div>
+     * <h4>Choosing a collection type</h4>
      * Implementations shall invoke {@link #nonNullList nonNullList(…)} or {@link #nonNullSet nonNullSet(…)}
      * instead than this method when the collection type is enforced by ISO specification.
-     * When the type is not enforced by the specification, some freedom are allowed at implementor choice.
+     * When the type is not enforced by the specification, some freedom are allowed at implementer choice.
      * The default implementation invokes {@link #collectionType(Class)} in order to get a hint about whether
      * a {@link List} or a {@link Set} should be used.
      *

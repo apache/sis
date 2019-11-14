@@ -376,7 +376,7 @@ public final class IOUtilities extends Static {
      * the URL is converted to a {@link File} object using the given {@code encoding} for decoding
      * the {@code "%XX"} sequences, if any.
      *
-     * <div class="section">Rational</div>
+     * <h4>Rational</h4>
      * A URL can represent a file, but {@link URL#openStream()} appears to return a {@code BufferedInputStream}
      * wrapping the {@link FileInputStream}, which is not a desirable feature when we want to obtain a channel.
      *

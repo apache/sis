@@ -27,7 +27,7 @@ import org.apache.sis.util.Workaround;
 /**
  * Thrown when a {@link DataStore} can not complete a read or write operation.
  *
- * <div class="section">Localization</div>
+ * <h2>Localization</h2>
  * The {@link #getMessage()} and {@link #getLocalizedMessage()} methods return the same message,
  * but sometime in different languages. The general policy is that {@link #getMessage()} returns
  * the message in the JVM {@linkplain Locale#getDefault() default locale} while {@link #getLocalizedMessage()}
@@ -160,7 +160,7 @@ public class DataStoreException extends Exception implements LocalizedException 
      * but may in some occasions be different if {@link DataStore#setLocale(Locale)}
      * has been invoked with a different locale.
      *
-     * <div class="section">{@code getMessage()} versus {@code getLocalizedMessage()}</div>
+     * <h4>{@code getMessage()} versus {@code getLocalizedMessage()}</h4>
      * When {@code getMessage()} and {@code getLocalizedMessage()} are not equivalent, the Apache SIS policy
      * is that {@code getMessage()} returns the message in the {@linkplain Locale#getDefault() default locale}
      * while {@code getLocalizedMessage()} returns the message in a locale that depends on the context in which

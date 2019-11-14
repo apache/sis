@@ -58,7 +58,7 @@ import static java.lang.Double.doubleToLongBits;
  * The statistics are updated every time an {@link #accept(double)} method is invoked with a non-NaN
  * value.</p>
  *
- * <div class="section">Examples</div>
+ * <h2>Examples</h2>
  * The following examples assume that a <var>y</var>=<var>f</var>(<var>x</var>) function
  * is defined. A simple usage is:
  *
@@ -456,7 +456,8 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * assuming that the distribution is Gaussian (first column) or assuming that the
      * distribution is uniform (second column).</p>
      *
-     * <table class="sis" summary="Propability values for some standard deviations.">
+     * <table class="sis">
+     *   <caption>Probability values for some standard deviations</caption>
      *   <tr><th>n</th><th>Gaussian</th><th>uniform</th>
      *   <tr><td>0.5</td><td>69.1%</td><td>28.9%</td></tr>
      *   <tr><td>1.0</td><td>84.2%</td><td>57.7%</td></tr>

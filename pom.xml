@@ -20,10 +20,10 @@
 -->
 
 <!-- =============================================================================================
-     Maven 2 project configuration file
-     http://maven.apache.org/maven2/
+     Maven project configuration file
+     http://maven.apache.org/
 
-     Apache SIS build requires Java 10, but compilation result can be executed on Java 8.
+     Apache SIS build requires Java 11 or higher, but compiled files can be executed on Java 8.
      Setting the SIS_DATA environment variable before build is optional but recommended.
 
      Build development snapshot:    mvn clean install
@@ -55,16 +55,13 @@
   <name>Apache SIS</name>
   <url>http://sis.apache.org</url>
   <description>
-    Apache SIS is a free software, Java language library for developing geospatial applications.
-    SIS provides data structures for geographic data and associated metadata along with methods
-    to manipulate those data structures. The SIS metadata module forms the base of the library
-    and enables the creation of metadata objects which comply with the ISO 19115 metadata model
-    and which can be read from or written to ISO 19115-3 compliant XML documents.
-    The SIS referencing module will enable the construction of geodetic data structures for
-    geospatial referencing based on the ISO 19111 model such as axis, projection and coordinate
-    reference system definitions, along with the associated operations which enable the mathematical
-    conversion of coordinates between different systems of reference.
-    The SIS storage modules will provide a common approach to the reading and writing of grid coverages
+    Apache Spatial Information System (SIS) is a free software, Java language library for developing geospatial applications.
+    SIS provides data structures for geographic features and associated metadata along with methods to manipulate those data structures.
+    The library is an implementation of GeoAPI 3.0.1 interfaces and can be used for desktop or server applications.
+    The SIS metadata module forms the base of the library and enables the creation of metadata objects which comply with the ISO 19115 international standard.
+    The SIS referencing module enable the construction of geodetic data structures for geospatial referencing as defined by ISO 19111 standard,
+    along with the associated operations which enable the transformation of coordinates between different reference systems.
+    The SIS storage modules provide a common approach to the reading and writing of metadata, features and coverages
     applicable to simple imagery as to many dimensional data structures.
   </description>
   <inceptionYear>2010</inceptionYear>
@@ -86,7 +83,7 @@
 
   <ciManagement>
     <system>jenkins</system>
-    <url>https://builds.apache.org/job/sis-dev</url>
+    <url>https://builds.apache.org/job/sis</url>
   </ciManagement>
 
   <issueManagement>
@@ -448,7 +445,7 @@
       <dependency>
         <groupId>com.esri.geometry</groupId>
         <artifactId>esri-geometry-api</artifactId>
-        <version>2.2.2</version>
+        <version>2.2.3</version>
         <optional>true</optional>
       </dependency>
       <dependency>
@@ -466,38 +463,50 @@
       <dependency>
         <groupId>net.sf.geographiclib</groupId>
         <artifactId>GeographicLib-Java</artifactId>
-        <version>1.49</version>
+        <version>1.50</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>javax</groupId>
         <artifactId>javaee-api</artifactId>
-        <version>8.0</version>
+        <version>8.0.1</version>
         <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>${jaxb.version}</version>
+        <scope>provided</scope>             <!-- Because available in JDK8. -->
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>${jaxb.version}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.18</version>
+        <version>1.19</version>
       </dependency>
 
       <!-- Databases -->
       <dependency>
         <groupId>org.apache.derby</groupId>
         <artifactId>derby</artifactId>
-        <version>10.14.2.0</version>
+        <version>10.14.2.0</version>        <!-- 10.14 is the last series compatible with JDK 8. -->
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.hsqldb</groupId>
         <artifactId>hsqldb</artifactId>
-        <version>2.4.1</version>
+        <version>2.5.0</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
-        <version>42.2.5</version>
+        <version>42.2.8</version>
         <scope>test</scope>
       </dependency>
 
@@ -518,7 +527,7 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-jdk14</artifactId>
         <version>1.7.22</version>               <!-- Must matches the version used by netCDF. -->
-        <scope>runtime</scope>                  <!-- Should never be needed at compile time.  -->
+        <scope>test</scope>                     <!-- Should never be needed at compile time.  -->
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -545,6 +554,11 @@
 			<version>${junit.jupiter.version}</version>
 			<scope>test</scope>
 		</dependency>
+    <dependency>   <!-- To be removed after https://issues.apache.org/jira/browse/SIS-469 is done. -->
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 
@@ -554,7 +568,7 @@
          The last properties in this list depend on the Apache SIS branch.
        =================================================================== -->
   <properties>
-    <netcdf.version>4.6.13</netcdf.version>
+    <netcdf.version>4.6.14</netcdf.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
     <website.locale>en</website.locale>
@@ -563,8 +577,9 @@
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
-    <sis.non-free.version>1.0-M1</sis.non-free.version>                 <!-- Used only if "non-free" profile is enabled. -->
-    <geoapi.version>4.0-M11</geoapi.version>
+    <sis.non-free.version>1.0</sis.non-free.version>                 <!-- Used only if "non-free" profile is enabled. -->
+    <geoapi.version>4.0-SNAPSHOT</geoapi.version>
+    <jaxb.version>2.3.2</jaxb.version>
 		<junit.jupiter.version>5.5.2</junit.jupiter.version>
   </properties>
 
@@ -627,7 +642,7 @@
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <version>10</version>
+                  <version>13</version>
                 </requireJavaVersion>
               </rules>
             </configuration>
@@ -684,7 +699,6 @@
               <value>${project.build.directory}/derby.log</value>
             </property>
           </systemProperties>
-          <argLine>--add-modules java.xml.bind,java.xml.ws.annotation,javafx.graphics</argLine>
         </configuration>
       </plugin>
 
@@ -695,7 +709,7 @@
            INDEX.LIST file is incomplete (which seem to happen in practice). -->
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.1.1</version>
+        <version>3.2.0</version>
         <configuration>
           <archive>
             <addMavenDescriptor>false</addMavenDescriptor>
@@ -746,12 +760,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <dependencies>
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>8.20</version>
+            <version>8.23</version>
           </dependency>
         </dependencies>
         <executions>
@@ -855,7 +869,7 @@
       <!-- JavaDoc configuration. -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.1.1</version>
         <configuration>
           <source>${maven.compiler.source}</source>             <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
@@ -869,7 +883,9 @@
           <keywords>true</keywords>                             <!-- Adds HTML meta keyword tags to the generated files. -->
           <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
           <validateLinks>true</validateLinks>                   <!-- Validates content of package-list resources. -->
+          <detectJavaApiLink>false</detectJavaApiLink>          <!-- Let us declare link to Java API. -->
           <links>
+            <link>https://docs.oracle.com/javase/8/docs/api</link>
             <link>http://unitsofmeasurement.github.io/unit-api/site/apidocs</link>
             <link>http://www.geoapi.org/snapshot/pending</link>
             <link>http://www.unidata.ucar.edu/software/thredds/current/netcdf-java/javadoc</link>
@@ -920,12 +936,10 @@
           </groups>
 
           <!-- Internal packages to hide from javadoc. -->
-          <excludePackageNames>org.apache.sis.internal:org.apache.sis.util.resources:org.apache.sis.referencing.operation.provider:com</excludePackageNames>
+          <excludePackageNames>org.apache.sis.internal.*:org.apache.sis.util.resources:org.apache.sis.referencing.operation.provider</excludePackageNames>
 
           <!-- Custom taglets, some of them implemented in Java. -->
           <tags>
-            <tag><placement>t</placement> <name>goal</name>     <head>Maven goal:</head></tag>
-            <tag><placement>t</placement> <name>phase</name>    <head>Maven phase:</head></tag>
             <tag><placement>X</placement> <name>category</name> <head>Category:</head></tag>
             <tag><placement>a</placement> <name>todo</name>     <head>TODO:</head></tag>
           </tags>
@@ -972,7 +986,7 @@
         <plugin>
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
-          <version>9.4.15.v20190215</version>
+          <version>9.4.20.v20190813</version>
         </plugin>
       </plugins>
     </pluginManagement>

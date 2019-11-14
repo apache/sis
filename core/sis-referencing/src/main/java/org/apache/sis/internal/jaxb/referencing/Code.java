@@ -47,7 +47,7 @@ public final class Code {
      * The identifier code.
      *
      * <p><b>Note:</b> GML (the target of this class) represents that code as an XML value, while
-     * {@link org.apache.sis.metadata.iso.ImmutableIdentifier} represents it as an XML element.</p>
+     * {@link org.apache.sis.metadata.iso.DefaultIdentifier} represents it as an XML element.</p>
      */
     @XmlValue
     String code;
@@ -56,7 +56,7 @@ public final class Code {
      * The code space, which is often {@code "EPSG"} with the version in use.
      *
      * <p><b>Note:</b> GML (the target of this class) represents that code as an XML attribute, while
-     * {@link org.apache.sis.metadata.iso.ImmutableIdentifier} represents it as an XML element.</p>
+     * {@link org.apache.sis.metadata.iso.DefaultIdentifier} represents it as an XML element.</p>
      */
     @XmlAttribute
     String codeSpace;

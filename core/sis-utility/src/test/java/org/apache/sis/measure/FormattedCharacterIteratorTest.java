@@ -130,7 +130,7 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
      * with attributes. Built in a sub-class of {@link SimpleCharacterIterator} in
      * order to have access to the protected {@link #upper} field.
      */
-    @SuppressWarnings({"serial", "CloneableClassWithoutClone"})
+    @SuppressWarnings({"serial", "CloneableImplementsClone"})
     private static class LatitudeString extends SimpleCharacterIterator {
         LatitudeString() {
             super(LATITUDE_STRING);

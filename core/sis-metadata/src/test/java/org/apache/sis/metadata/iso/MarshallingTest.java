@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.util.MissingResourceException;
 import java.net.URI;
@@ -54,7 +55,6 @@ import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.util.iso.DefaultRecordSchema;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultInternationalString;
-import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.NilReason;
@@ -82,7 +82,7 @@ import static org.junit.Assert.*;
  * @since 1.0
  * @module
  */
-public final class MarshallingTest extends TestUsingFile implements WarningListener<Object> {
+public final class MarshallingTest extends TestUsingFile implements Filter {
     /**
      * The marshaller used to handle marshalling the created DefaultMetadata object.
      */
@@ -113,7 +113,7 @@ public final class MarshallingTest extends TestUsingFile implements WarningListe
         output     = new StringWriter();
         pool       = getMarshallerPool();
         marshaller = pool.acquireMarshaller();
-        marshaller.setProperty(XML.WARNING_LISTENER, this);
+        marshaller.setProperty(XML.WARNING_FILTER, this);
     }
 
     /**
@@ -643,28 +643,17 @@ public final class MarshallingTest extends TestUsingFile implements WarningListe
     }
 
     /**
-     * For internal {@code DefaultMetadata} usage.
-     *
-     * @return {@code Object.class}.
-     */
-    @Override
-    public Class<Object> getSourceClass() {
-        return Object.class;
-    }
-
-    /**
      * Invoked when a warning occurred while marshalling a test XML fragment. Expected warnings are
      * "Can't find resource for bundle {@code java.util.PropertyResourceBundle}, key <cite>Foo</cite>".
      * When marshalling legacy XML only, additional warnings may occur.
      *
-     * @param source  ignored.
-     * @param warning the warning.
+     * @param  warning  the warning.
      */
     @Override
-    public void warningOccured(final Object source, final LogRecord warning) {
+    public boolean isLoggable(final LogRecord warning) {
         if (warning.getThrown() instanceof MissingResourceException) {
             assertNull("Expected a warning message without parameters.", warning.getParameters());
-            return;
+            return false;
         }
         final String message = warning.getMessage();
         if (legacyXML) {
@@ -673,5 +662,6 @@ public final class MarshallingTest extends TestUsingFile implements WarningListe
         } else {
             fail("Unexpected logging message: " + message);
         }
+        return false;
     }
 }

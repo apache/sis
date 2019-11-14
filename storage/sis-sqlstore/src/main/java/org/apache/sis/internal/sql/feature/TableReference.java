@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.apache.sis.storage.sql.SQLStoreProvider;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -52,17 +53,11 @@ class TableReference {
     /**
      * Creates a new tuple with the give names.
      */
-    TableReference(final String catalog, final String schema, final String table, String freeText) {
-        if (freeText != null) {
-            freeText = freeText.trim();
-            if (freeText.isEmpty()) {
-                freeText = null;
-            }
-        }
+    TableReference(final String catalog, final String schema, final String table, final String freeText) {
         this.catalog  = catalog;
         this.schema   = schema;
         this.table    = table;
-        this.freeText = freeText;
+        this.freeText = Strings.trimOrNull(freeText);
     }
 
     /**

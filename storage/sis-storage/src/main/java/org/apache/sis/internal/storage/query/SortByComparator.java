@@ -78,8 +78,8 @@ final class SortByComparator implements Comparator<Feature> {
             if (f2 == null) return -1;
             for (int i=0; i<properties.length; i++) {
                 final Expression property = properties[i];
-                Comparable<?> o1 = (Comparable<?>) property.evaluate(f1);
-                Comparable<?> o2 = (Comparable<?>) property.evaluate(f2);
+                Object o1 = property.evaluate(f1);
+                Object o2 = property.evaluate(f2);
                 if (o1 != o2) {
                     if (o1 == null) return +1;
                     if (o2 == null) return -1;

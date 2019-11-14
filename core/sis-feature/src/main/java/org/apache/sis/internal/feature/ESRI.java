@@ -20,6 +20,20 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+import com.esri.core.geometry.Geometry;
+import com.esri.core.geometry.Envelope2D;
+import com.esri.core.geometry.MultiPath;
+import com.esri.core.geometry.Polyline;
+import com.esri.core.geometry.Polygon;
+import com.esri.core.geometry.Point;
+import com.esri.core.geometry.Point2D;
+import com.esri.core.geometry.Point3D;
+import com.esri.core.geometry.WktImportFlags;
+import com.esri.core.geometry.WktExportFlags;
+import com.esri.core.geometry.OperatorImportFromWkt;
+import com.esri.core.geometry.OperatorExportToWkt;
+import com.esri.core.geometry.OperatorCentroid2D;
+
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
@@ -109,6 +123,17 @@ final class ESRI extends Geometries<Geometry> {
     }
 
     /**
+     * If the given object is an ESRI geometry, returns its centroid. Otherwise returns {@code null}.
+     */
+    @Override
+    final Object tryGetCentroid(final Object geometry) {
+        if (geometry instanceof Geometry) {
+            return OperatorCentroid2D.local().execute((Geometry) geometry, null);
+        }
+        return null;
+    }
+
+    /**
      * Creates a two-dimensional point from the given coordinate.
      */
     @Override
@@ -120,11 +145,14 @@ final class ESRI extends Geometries<Geometry> {
     /**
      * Creates a polyline from the given coordinate values.
      * Each {@link Double#NaN} coordinate value starts a new path.
+     *
+     * @param  dimension  the number of dimensions (2 or 3).
+     * @throws UnsupportedOperationException if this operation is not implemented for the given number of dimensions.
      */
     @Override
     public Geometry createPolyline(final int dimension, final Vector... coordinates) {
         if (dimension != 2) {
-            throw unsupported(dimension);
+            throw new UnsupportedOperationException(unsupported(dimension));
         }
         boolean lineTo = false;
         final Polyline path = new Polyline();

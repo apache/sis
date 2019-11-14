@@ -36,11 +36,11 @@ import javax.measure.Unit;
  * For example excluding the <var>z</var> axis of a {@linkplain DefaultCylindricalCS cylindrical} coordinate system
  * results in a {@linkplain DefaultPolarCS polar} coordinate system.</p>
  *
- * <div class="section">Default implementation</div>
+ * <h2>Default implementation</h2>
  * All methods in this interface have a default implementation equivalent to <i>no-operation</i>.
- * Implementors need to override only the methods for the aspects to change.
+ * Implementers need to override only the methods for the aspects to change.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * This interface is not for changing axis order.
  * For changing axis order in addition to axis directions or units, see {@link AxesConvention}.
  *

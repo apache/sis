@@ -64,7 +64,7 @@ public class MI_Georeferenceable  extends DefaultGeoreferenceable {
      * using the {@code "gmi"} namespace if necessary.
      *
      * @param  original  the original metadata provided by the user.
-     * @return the metadata to marshall.
+     * @return the metadata to marshal.
      */
     public static DefaultGeoreferenceable castOrCopy(final Georeferenceable original) {
         if (original != null && !(original instanceof MI_Georeferenceable)) {

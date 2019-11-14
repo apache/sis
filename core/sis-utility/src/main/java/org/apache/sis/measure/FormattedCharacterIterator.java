@@ -35,7 +35,7 @@ import org.apache.sis.internal.simple.SimpleCharacterIterator;
  * The attributed character iterator to be returned by {@link Format}
  * implementations in the {@code org.apache.sis.measure} package.
  *
- * <div class="section">Implementation assumption</div>
+ * <h2>Implementation assumption</h2>
  * Every {@code getRunStart(…)} and {@code getRunLimit(…)} methods defined in this class check
  * only for attribute existence, ignoring the actual attribute value. This is a departure from
  * the {@link java.text.AttributedCharacterIterator} contract, but should be invisible to the
@@ -51,7 +51,7 @@ import org.apache.sis.internal.simple.SimpleCharacterIterator;
  * @since   0.3
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")     // Not needed - see comment about clone() at the end of this file.
+@SuppressWarnings("CloneableImplementsClone")     // Not needed - see comment about clone() at the end of this file.
 final class FormattedCharacterIterator extends SimpleCharacterIterator implements AttributedCharacterIterator {
     /**
      * For cross-version compatibility.

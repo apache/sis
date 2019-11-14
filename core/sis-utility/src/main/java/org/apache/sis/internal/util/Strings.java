@@ -30,7 +30,7 @@ import org.apache.sis.util.CharSequences;
  * Most of those methods are for {@link Object#toString()} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -54,11 +54,41 @@ public final class Strings extends Static {
     }
 
     /**
+     * Trims the leading and trailing spaces of the given string.
+     * If the string is null, empty or contains only spaces, then this method returns {@code null}.
+     *
+     * <p>Note that this method strips white spaces too, including no-break spaces.
+     * In some cases this is not wanted, for example if the text is a programmatic identifier
+     * (maybe the developer really wanted no-break spaces). To preserve no-break spaces, the
+     * following can be used instead:</p>
+     *
+     * {@preformat java
+     *     if (text != null && !(text = text.trim()).isEmpty()) {
+     *         // Use text here.
+     *     }
+     * }
+     *
+     * @param  text  the text to trim, or {@code null}.
+     * @return the trimmed text, or {@code null} if the given text was null or blank.
+     *
+     * @since 1.1
+     */
+    public static String trimOrNull(String text) {
+        if (text != null) {
+            text = CharSequences.trimWhitespaces(text.trim());
+            if (text.isEmpty()) {
+                return null;
+            }
+        }
+        return text;
+    }
+
+    /**
      * Appends to the given buffer only the characters that are valid for a Unicode identifier.
      * The given separator character is append before the given {@code text} only if the buffer
      * is not empty and at least one {@code text} character is valid.
      *
-     * <div class="section">Relationship with {@code gml:id}</div>
+     * <h4>Relationship with {@code gml:id}</h4>
      * This method may be invoked for building {@code gml:id} values. Strictly speaking this is not appropriate
      * since the {@code xs:ID} type defines valid identifiers as containing only letters, digits, underscores,
      * hyphens, and periods. This differ from Unicode identifier in two ways:
@@ -277,14 +307,20 @@ public final class Strings extends Static {
      * @param value      the text to format.
      */
     public static void formatTo(final Formatter formatter, final int flags, int width, int precision, String value) {
-        final String format;
-        final Object[] args;
+        /*
+         * Converting to upper cases may change the string length in some locales.
+         * So we need to perform this conversion before to check the length.
+         */
         boolean isUpperCase = (flags & FormattableFlags.UPPERCASE) != 0;
-        if (isUpperCase && width > 0) {
-            // May change the string length in some locales.
+        if (isUpperCase && (width > 0 || precision >= 0)) {
             value = value.toUpperCase(formatter.locale());
             isUpperCase = false;                            // Because conversion has already been done.
         }
+        /*
+         * If the string is longer than the specified "precision", truncate
+         * and add "…" for letting user know that there is missing characters.
+         * This loop counts the number of Unicode code points rather than characters.
+         */
         int length = value.length();
         if (precision >= 0) {
             for (int i=0,n=0; i<length; i += n) {
@@ -305,7 +341,12 @@ public final class Strings extends Static {
                 n = Character.charCount(value.codePointAt(i));
             }
         }
-        // Double check since length() is faster than codePointCount(…).
+        /*
+         * If the string is shorter than the minimal width, add spaces on the left or right side.
+         * We double check with `width > length` since it is faster than codePointCount(…).
+         */
+        final String format;
+        final Object[] args;
         if (width > length && (width -= value.codePointCount(0, length)) > 0) {
             format = "%s%s";
             args = new Object[] {value, value};

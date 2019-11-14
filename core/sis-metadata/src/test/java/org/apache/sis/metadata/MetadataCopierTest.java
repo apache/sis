@@ -16,8 +16,11 @@
  */
 package org.apache.sis.metadata;
 
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.extent.GeographicExtent;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -31,7 +34,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.0
  *
  * @see org.apache.sis.internal.metadata.MergerTest
  *
@@ -52,5 +55,48 @@ public final strictfp class MetadataCopierTest extends TestCase {
         assertNotSame(getSingleton(original.getCitedResponsibleParties()),
                       getSingleton(copy.getCitedResponsibleParties()));
         assertEquals(original, copy);
+    }
+
+    /**
+     * Tests {@link MetadataCopier#copy(Class, Object)}.
+     */
+    @Test
+    public void testCopyWithType() {
+        final MetadataCopier copier = new MetadataCopier(MetadataStandard.ISO_19115);
+        final DefaultCitation original = HardCodedCitations.EPSG;
+        final Citation copy = copier.copy(Citation.class, original);
+        assertNotSame(original, copy);
+        assertNotSame(getSingleton(original.getCitedResponsibleParties()),
+                      getSingleton(copy.getCitedResponsibleParties()));
+        assertEquals(original, copy);
+    }
+
+    /**
+     * Tests {@link MetadataCopier#copy(Class, Object)} when the given type is a parent
+     * of the interface implemented by the given argument.
+     */
+    @Test
+    public void testCopyWithSuperType() {
+        final MetadataCopier copier = new MetadataCopier(MetadataStandard.ISO_19115);
+        final DefaultGeographicDescription original = new DefaultGeographicDescription("Some area.");
+        final GeographicExtent copy = copier.copy(GeographicExtent.class, original);
+        assertNotSame(original, copy);
+        assertEquals (original, copy);
+    }
+
+    /**
+     * Tests {@link MetadataCopier#copy(Class, Object)} with an implementation class specified instead of an interface.
+     */
+    @Test
+    public void testWrongArgument() {
+        final MetadataCopier copier = new MetadataCopier(MetadataStandard.ISO_19115);
+        final DefaultCitation original = HardCodedCitations.EPSG;
+        try {
+            copier.copy(DefaultCitation.class, original);
+            fail("Should not have accepted implementation class argument.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("DefaultCitation"));
+        }
     }
 }

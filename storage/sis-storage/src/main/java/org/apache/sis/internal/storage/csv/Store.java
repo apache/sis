@@ -646,7 +646,7 @@ final class Store extends URIDataStore implements FeatureSet {
                 builder.setFormat(format);
             } catch (MetadataStoreException e) {
                 builder.addFormatName(format);
-                listeners.warning(null, e);
+                listeners.warning(e);
             }
             builder.addEncoding(encoding, MetadataBuilder.Scope.ALL);
             builder.addResourceScope(ScopeCode.DATASET, null);
@@ -659,7 +659,7 @@ final class Store extends URIDataStore implements FeatureSet {
                  * Failed to set the temporal components if the sis-temporal module was
                  * not on the classpath, but the other dimensions still have been set.
                  */
-                listeners.warning(null, e);
+                listeners.warning(e);
             }
             builder.addFeatureType(featureType, -1);
             addTitleOrIdentifier(builder);
@@ -766,7 +766,7 @@ final class Store extends URIDataStore implements FeatureSet {
     /**
      * Extracts a substring from the given line and replaces double quotes by single quotes.
      *
-     * <div class="section">Departure from Moving Features specification</div>
+     * <h4>Departure from Moving Features specification</h4>
      * The Moving Features specification said:
      *
      *   <blockquote>Some characters may need to be escaped here. {@literal <} (less than), {@literal >}

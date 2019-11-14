@@ -27,9 +27,9 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * This enumeration specifies whether to use the <cite>Well Known Text</cite> format defined by ISO 19162
  * (also known as “WKT 2”), or whether to use the format previously defined in OGC 01-009 (referenced as “WKT 1”).
  *
- * <div class="section">WKT 1 variants</div>
+ * <h2>WKT 1 variants</h2>
  * The WKT 2 format should be parsed and formatted consistently by all software products.
- * But the WKT 1 format has been interpreted differently by various implementors.
+ * But the WKT 1 format has been interpreted differently by various implementers.
  * Apache SIS can adapt itself to different WKT variants, sometime automatically. But some aspects can not be guessed.
  * One noticeable source of confusion is the unit of measurement of {@code PRIMEM[…]} and {@code PARAMETER[…]} elements:
  *
@@ -114,7 +114,7 @@ public enum Convention {
      * and parameters formatted with this convention will use the {@linkplain Citations#OGC OGC}
      * names when available.</p>
      *
-     * <div class="section">Differences compared to WKT 2</div>
+     * <h4>Differences compared to WKT 2</h4>
      * WKT 1 and WKT 2 differ in their keywords and syntax, but also in more subtle ways regarding axis names,
      * parameter and code list values. For example in  {@link GeocentricCRS}, WKT 1 uses a legacy set of Cartesian axes
      * which were defined in OGC 01-009. Those axes use the <var>Other</var>, <var>Easting</var> and <var>Northing</var>
@@ -122,7 +122,8 @@ public enum Convention {
      * For more uniform handling of CRS objects in client code, SIS parser replaces some WKT 1 conventions by
      * the ISO ones when possible.
      *
-     * <table class="compact" summary="Differences between current and legacy specifications"><tr><td>
+     * <div class="horizontal-flow">
+     * <div>
      * <table class="sis">
      *   <caption>Geocentric axis directions</caption>
      *   <tr><th>ISO 19111</th>    <th>OGC 01-009</th> <th>Description</th></tr>
@@ -130,7 +131,7 @@ public enum Convention {
      *   <tr><td>Geocentric Y</td> <td>Easting</td>    <td>Toward 90°E longitude</td></tr>
      *   <tr><td>Geocentric Z</td> <td>Northing</td>   <td>Toward north pole</td></tr>
      * </table>
-     * </td><td>
+     * </div><div>
      * <table class="sis">
      *   <caption>Coordinate system axis names</caption>
      *   <tr><th>CRS type</th>   <th>WKT1 names</th>                               <th>ISO abbreviations</th></tr>
@@ -139,7 +140,7 @@ public enum Convention {
      *   <tr><td>Projected</td>  <td><var>X</var>, <var>Y</var></td>               <td><var>E</var>, <var>N</var></td></tr>
      *   <tr><td>Geocentric</td> <td><var>X</var>, <var>Y</var>, <var>Z</var></td> <td><var>X</var>, <var>Y</var>, <var>Z</var></td></tr>
      * </table>
-     * </td></tr></table>
+     * </div></div>
      *
      * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
      */

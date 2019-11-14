@@ -71,24 +71,20 @@ import org.apache.sis.util.ArgumentChecks;
  * only normalized parameters (e.g. a map projection on an ellipsoid having a <cite>semi-major</cite> axis length of 1),
  * Apache SIS needs contextual information for reconstructing the parameters of the complete transforms chain.</p>
  *
- * <div class="section">Usage in map projections</div>
+ * <h2>Usage in map projections</h2>
  * This object is used mostly for Apache SIS implementation of map projections, where the non-linear kernel is a
  * {@linkplain org.apache.sis.referencing.operation.projection.NormalizedProjection normalized projection}.
  * The {@linkplain #completeTransform(MathTransformFactory, MathTransform) complete map projection}
  * (ignoring {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes changes of axis order})
  * is a chain of 3 transforms as shown below:
  *
- * <center>
- *   <table class="compact" style="td {vertical-align: middle}" summary="Decomposition of a map projection">
- *     <tr>
- *       <td>{@include formulas.html#NormalizeGeographic}</td>
- *       <td>→</td>
- *       <td>Map projection on a normalized ellipsoid</td>
- *       <td>→</td>
- *       <td>{@include formulas.html#DenormalizeCartesian}</td>
- *     </tr>
- *   </table>
- * </center>
+ * <div class="horizontal-flow" style="align-items:center">
+ *   <div>{@include formulas.html#NormalizeGeographic}</div>
+ *   <div>→</div>
+ *   <div>Map projection on a normalized ellipsoid</div>
+ *   <div>→</div>
+ *   <div>{@include formulas.html#DenormalizeCartesian}</div>
+ * </div>
  *
  * {@code ContextualParameters} is typically created and used as below:
  *
@@ -120,7 +116,7 @@ import org.apache.sis.util.ArgumentChecks;
  *   </li>
  * </ol>
  *
- * <div class="section">Serialization</div>
+ * <h2>Serialization</h2>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
@@ -152,7 +148,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * before to apply a non-linear operation. For example in a map projection, this matrix is
          * typically (but not necessarily) as below:
          *
-         * <center>{@include formulas.html#NormalizeGeographic}</center>
+         * <div style="text-align:center">{@include formulas.html#NormalizeGeographic}</div>
          */
         NORMALIZATION,
 
@@ -160,7 +156,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * Inverse of the {@link #NORMALIZATION} matrix.
          * For example in a map projection, this matrix is typically (but not necessarily) as below:
          *
-         * <center>{@include formulas.html#DenormalizeGeographic}</center>
+         * <div style="text-align:center">{@include formulas.html#DenormalizeGeographic}</div>
          */
         INVERSE_NORMALIZATION,
 
@@ -169,7 +165,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * after execution of a non-linear operation. For example in a map projection, this matrix is typically
          * (but not necessarily) as below:
          *
-         * <center>{@include formulas.html#DenormalizeCartesian}</center>
+         * <div style="text-align:center">{@include formulas.html#DenormalizeCartesian}</div>
          */
         DENORMALIZATION,
 
@@ -328,7 +324,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * the {@linkplain #getMatrix(MatrixRole) normalization / denormalization} transforms, in the kernel, or both.</p>
      *
      * <div class="note"><b>Note:</b>
-     * The definition of "kernel" is left to implementors.
+     * The definition of "kernel" is left to implementers.
      * In the particular case of Apache SIS implementation of map projections,
      * kernels are instances of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}.
      * Other "kernels" in SIS are {@link EllipsoidToCentricTransform} and {@link MolodenskyTransform}.</div>
@@ -437,7 +433,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * the normalization matrix with the following matrix. This will have the effect of applying the conversion
      * described above before any other operation:</p>
      *
-     * <center>{@include formulas.html#NormalizeGeographic}</center>
+     * <div style="text-align:center">{@include formulas.html#NormalizeGeographic}</div>
      *
      * @param  λ0  longitude of the central meridian, in degrees.
      * @return the normalization affine transform as a matrix.
@@ -471,7 +467,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * the denormalization matrix with the following matrix. This will have the effect of applying the conversion
      * described above after the non-linear kernel operation:</p>
      *
-     * <center>{@include formulas.html#DenormalizeGeographic}</center>
+     * <div style="text-align:center">{@include formulas.html#DenormalizeGeographic}</div>
      *
      * @param  λ0  longitude of the central meridian, in degrees.
      * @return the denormalization affine transform as a matrix.

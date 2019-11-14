@@ -18,7 +18,7 @@
 /**
  * Map projection implementations.
  * This package is mostly for documentation purpose (each projection documents its name and parameters)
- * and for implementors who want to extend a map projection. This package should usually not be used directly.
+ * and for implementers who want to extend a map projection. This package should usually not be used directly.
  *
  * <p>The best way to get a projection is to use the
  * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory coordinate operation factory}
@@ -40,7 +40,7 @@
  * Only users interested in the <em>implementation</em> of those projections should look at this package.</p>
  *
  *
- * <div class="section">Definition of terms</div>
+ * <h2>Definition of terms</h2>
  * <ul class="verbose">
  *   <li><b>Coordinate operation</b><br>
  *       In the particular case of this package, the conversion of geographic coordinates in any
@@ -58,7 +58,7 @@
  * </ul>
  *
  *
- * <div class="section">Axis units and orientation</div>
+ * <h2>Axis units and orientation</h2>
  * Many {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic coordinate reference systems}
  * use axis in (<var>latitude</var>, <var>longitude</var>) order, but not all. Axis order, orientation and units
  * are CRS-dependent. For example some CRS use longitude values increasing toward
@@ -96,7 +96,7 @@
  * must be ({@linkplain org.opengis.referencing.cs.AxisDirection#EAST East},
  * {@linkplain org.opengis.referencing.cs.AxisDirection#NORTH North}) oriented.
  *
- * <div class="note"><b>Implications on South oriented projections</b><br>
+ * <h3>Implications on South oriented projections</h3>
  * The above rule implies a non-intuitive behavior for the <cite>Transverse Mercator (South Orientated)</cite>
  * projection, which still projects coordinates with <var>y</var> values increasing toward North.
  * The real axis flip is performed outside this projection package, upon
@@ -106,15 +106,14 @@
  * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createBaseToDerived
  * createBaseToDerived(…)} method defined in the {@code MathTransformFactory} interface.
  * The same rule applies to the <cite>Krovak</cite> projection as well (at the opposite of what ESRI does).
- * </div>
  *
- * In order to reduce the risk of confusion, this package never defines south oriented map projection.
+ * <p>In order to reduce the risk of confusion, this package never defines south oriented map projection.
  * This rule removes ambiguity when reading a transform in <cite>Well Known Text</cite> (WKT) format,
  * since only the north-oriented variant is used and the affine transform coefficients tell exactly
- * which axis flips are applied.
+ * which axis flips are applied.</p>
  *
  *
- * <div class="section">Projection on unit ellipse</div>
+ * <h2>Projection on unit ellipse</h2>
  * A map projection in this package is actually the concatenation of the following transforms, in that order
  * (ignoring {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis order changes}
  * and conversions from/to units other then degrees and metres, which are not the purpose of this package):
@@ -148,18 +147,19 @@
  * This normalization makes the equations closer to the ones published in Snyder's book, where the
  * <cite>false easting</cite>, <cite>false northing</cite> and <cite>scale factor</cite> are usually not given.</div>
  *
- * <div class="section">References</div>
+ * <h2>References</h2>
  * <ul>
- *   <li>"Coordinate Conversions and Transformations including Formulas",<br>
+ *   <li>IOGP. <u>Coordinate Conversions and Transformations including Formulas.</u><br>
  *       Geomatics Guidance Note Number 7, part 2, Version 49.</li>
- *   <li>John P. Snyder (Map Projections - A Working Manual,<br>
- *       U.S. Geological Survey Professional Paper 1395, 1987)</li>
+ *   <li>Snyder, John P. <u>Map Projections - A Working Manual.</u><br>
+ *       U.S. Geological Survey Professional Paper 1395, 1987.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Adrian Custer (Geomatys)
- * @version 1.0
+ * @author  Matthieu Bastianelli (Geomatys)
+ * @version 1.1
  *
  * @see <a href="http://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
  *

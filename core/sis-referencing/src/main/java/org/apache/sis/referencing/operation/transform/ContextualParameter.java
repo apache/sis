@@ -50,7 +50,7 @@ import org.apache.sis.parameter.DefaultParameterValue;
  * @since 0.7
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")                         // No additional fields compared to parent.
+@SuppressWarnings("CloneableImplementsClone")                           // No additional fields compared to parent.
 final class ContextualParameter<T> extends DefaultParameterValue<T> {
     /**
      * For cross-version compatibility.

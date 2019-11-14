@@ -101,7 +101,7 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
  * }
  *
  *
- * <div class="section">Eviction of eldest values</div>
+ * <h2>Eviction of eldest values</h2>
  *
  * <ul>
  *   <li>The <cite>cost</cite> of a value is the value returned by {@link #cost}. The default
@@ -120,7 +120,7 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
  * overridden, then the total cost is the maximal amount of values to keep by strong references.
  *
  *
- * <div class="section">Circular dependencies</div>
+ * <h2>Circular dependencies</h2>
  *
  * This implementation assumes that there is no circular dependencies (or cyclic graph) between
  * the values in the cache. For example if creating <var>A</var> implies creating <var>B</var>,
@@ -1279,7 +1279,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     /**
      * Returns the set of entries in this cache. The returned set is subjects to the same caution
      * than the ones documented in the {@link ConcurrentHashMap#entrySet()} method, except that
-     * it doesn't support removal of elements (including through the {@link Iterator#remove}
+     * it does not support removal of elements (including through the {@link Iterator#remove}
      * method call).
      *
      * @return a view of the entries contained in this map.

@@ -179,6 +179,9 @@ final class GroupAsPolylineOperation extends AbstractOperation {
 
         /**
          * Computes the geometry from all points or polylines found in the associated feature.
+         *
+         * @throws ClassCastException if a feature, a property value or a geometry is not of the expected class.
+         *         This exception should not happen since we use {@link #feature} in contexts where types are known.
          */
         @Override
         public G getValue() {

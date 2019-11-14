@@ -60,11 +60,15 @@
  *         for systems with nearly equal parameters (see {@link org.apache.sis.util.Utilities#equalsApproximately(java.lang.Object, java.lang.Object)}.
  *     </li>
  * </ul>
- * extra-information for
- * the operator, as well as hints from the user to allow sac
+ *
+ * <div class="section">Thread-safety</div>
+ * <p>All filter and expression implementations provided by Apache SIS are thread-safe.
+ * They are not necessarily stateless however; for example a filter may remember which
+ * warnings have been reported in order to avoid to report the same warning twice.</p>
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @since 1.0
  * @module

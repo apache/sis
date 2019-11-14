@@ -178,7 +178,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      *   </tr>
      * </table>
      *
-     * <div class="section">Localization</div>
+     * <h4>Localization</h4>
      * All localizable attributes like {@code "definition"} may have a language and country code suffix.
      * For example the {@code "definition_fr"} property stands for remarks in {@linkplain Locale#FRENCH French} and
      * the {@code "definition_fr_CA"} property stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
@@ -191,7 +191,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      * @param  identification  the name and other information to be given to this identified type.
      * @throws IllegalArgumentException if a property has an invalid value.
      */
-    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     protected AbstractIdentifiedType(final Map<String,?> identification) throws IllegalArgumentException {
         ensureNonNull("identification", identification);
         Object value = identification.get(NAME_KEY);

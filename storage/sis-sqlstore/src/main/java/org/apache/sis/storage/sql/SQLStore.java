@@ -37,8 +37,10 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.storage.event.StoreEvent;
+import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.storage.event.WarningEvent;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Exceptions;
 
@@ -136,14 +138,14 @@ public class SQLStore extends DataStore implements Aggregate {
      * @return parameters used for opening this data store.
      */
     @Override
-    public ParameterValueGroup getOpenParameters() {
+    public Optional<ParameterValueGroup> getOpenParameters() {
         if (provider == null) {
-            return null;
+            return Optional.empty();
         }
         final ParameterValueGroup pg = provider.getOpenParameters().createValue();
         pg.parameter(SQLStoreProvider.LOCATION).setValue(source);
         pg.parameter(SQLStoreProvider.TABLES).setValue(tableNames);
-        return pg;
+        return Optional.of(pg);
     }
 
     /**
@@ -212,8 +214,8 @@ public class SQLStore extends DataStore implements Aggregate {
                 try {
                     final Method method = source.getClass().getMethod(c);
                     if (method.getReturnType() == String.class) {
-                        String name = (String) method.invoke(source);
-                        if (name != null && !(name = name.trim()).isEmpty()) {
+                        final String name = Strings.trimOrNull((String) method.invoke(source));
+                        if (name != null) {
                             builder.addTitle(name);
                             break;
                         }
@@ -258,25 +260,16 @@ public class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Ignored in current implementation, since this resource produces no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
+     * Registers a listener to notify when the specified kind of event occurs in this data store.
+     * The current implementation of this data store can emit only {@link WarningEvent}s;
+     * any listener specified for another kind of events will be ignored.
      */
     @Override
-    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
-    }
-
-    /**
-     * Ignored in current implementation, since this resource produces no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
-     */
-    @Override
-    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
+        // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
+        if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
+            super.addListener(eventType, listener);
+        }
     }
 
     /**

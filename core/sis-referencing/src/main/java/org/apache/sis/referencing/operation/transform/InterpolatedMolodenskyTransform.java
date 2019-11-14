@@ -48,7 +48,7 @@ import org.apache.sis.util.Debug;
  * Errors are less than 3 centimetres for the <cite>"France geocentric interpolation"</cite> (ESPG:9655).
  * By comparison, the finest accuracy reported in the grid file for France is 5 centimetres.
  *
- * <div class="section">Algorithm</div>
+ * <h2>Algorithm</h2>
  * This class transforms two- or three- dimensional coordinates from a geographic CRS to another geographic CRS.
  * The changes between source and target coordinates are small (usually less than 400 metres), but vary for every
  * position. Those changes are provided in a {@linkplain DatumShiftGrid datum shift grid}, usually loaded from one

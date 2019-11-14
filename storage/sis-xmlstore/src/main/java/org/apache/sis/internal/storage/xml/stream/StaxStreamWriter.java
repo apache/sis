@@ -79,7 +79,7 @@ import org.opengis.feature.Feature;
  *     }
  * }
  *
- * <div class="section">Multi-threading</div>
+ * <h2>Multi-threading</h2>
  * This class and subclasses are not tread-safe. Synchronization shall be done by the {@code DataStore}
  * that contains the {@code StaxStreamIO} instances.
  *
@@ -259,7 +259,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      * Delegates to JAXB the marshalling of a part of XML document.
      * The XML content will be written in an element of the given name with no namespace (see below).
      *
-     * <div class="section">Hiding namespace</div>
+     * <h4>Hiding namespace</h4>
      * The {@code hideNS} argument, if non-null, gives a namespace to remove in the marshalling result.
      * There is two reasons why we may want to hide a namespace. The most straightforward reason is to
      * simplify the XML document when the {@linkplain javax.xml.bind.annotation.XmlElement#namespace()

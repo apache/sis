@@ -84,7 +84,7 @@ import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -92,6 +92,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
@@ -102,6 +103,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -126,7 +128,7 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
  * The EPSG database is freely available at <a href="http://www.epsg.org">http://www.epsg.org</a>.
  * Current version of this class requires EPSG database version 6.6 or above.
  *
- * <div class="section">Object identifier (code or name)</div>
+ * <h2>Object identifier (code or name)</h2>
  * EPSG codes are numerical identifiers. For example code 3395 stands for <cite>"WGS 84 / World Mercator"</cite>.
  * Coordinate Reference Objects are normally created from their numerical codes, but this factory accepts also names.
  * For example {@code createProjectedCRS("3395")} and {@code createProjectedCRS("WGS 84 / World Mercator")} both fetch
@@ -135,7 +137,7 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
  * This is the case of <cite>"WGS 84"</cite> for instance.
  * If such an ambiguity is found, an exception will be thrown.
  *
- * <div class="section">Life cycle and caching</div>
+ * <h2>Life cycle and caching</h2>
  * {@code EPSGDataAccess} instances should be short-lived since they may hold a significant amount of JDBC resources.
  * {@code EPSGDataAccess} instances are created on the fly by {@link EPSGFactory} and closed after a relatively short
  * {@linkplain EPSGFactory#getTimeout timeout}.
@@ -144,7 +146,7 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
  * in the common case where only a few EPSG codes are used by an application.
  * {@code EPSGDataAccess.createFoo(String)} methods do not cache by themselves and query the database on every invocation.
  *
- * <div class="section">SQL dialects</div>
+ * <h2>SQL dialects</h2>
  * Because the primary distribution format for the EPSG dataset is MS-Access, this class uses SQL statements formatted
  * for the MS-Access dialect. For usage with other database software products like PostgreSQL or Derby,
  * a {@link SQLTranslator} instance is provided to the constructor.
@@ -155,7 +157,7 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
  * @author  Matthias Basler
  * @author  Andrea Aime (TOPP)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
@@ -487,7 +489,7 @@ addURIs:    for (int i=0; ; i++) {
         } catch (SQLException exception) {
             unexpectedException("getAuthority", exception);
         } finally {
-            c.transition(DefaultCitation.State.FINAL);
+            c.transitionTo(DefaultCitation.State.FINAL);
         }
         return c;
     }
@@ -505,7 +507,7 @@ addURIs:    for (int i=0; ; i++) {
      * JDBC resources. If the set of codes is needed for a long time, their values should be copied in another
      * collection object.
      *
-     * <div class="section">Handling of deprecated objects</div>
+     * <h4>Handling of deprecated objects</h4>
      * The collection returned by this method gives an enumeration of EPSG codes for valid objects only.
      * The EPSG codes of deprecated objects are not included in iterations, computation of {@code Set.size()} value,
      * {@code Set.toString()} result, <i>etc.</i> with one exception:
@@ -528,6 +530,14 @@ addURIs:    for (int i=0; ; i++) {
 
     /**
      * Returns a map of EPSG authority codes as keys and object names as values.
+     * The cautions documented in {@link #getAuthorityCodes(Class)} apply also to this map.
+     *
+     * @todo We may need to give some public access to this map if callers need descriptions
+     *       for other kinds of object than CRS. Current {@link #getDescriptionText(String)}
+     *       implementation selects CRS if the same code is used by many kinds of objects.
+     *
+     * @see #getAuthorityCodes(Class)
+     * @see #getDescriptionText(String)
      */
     private synchronized Map<String,String> getCodeMap(final Class<?> type) throws SQLException {
         CloseableReference<AuthorityCodes> reference = authorityCodes.get(type);
@@ -624,6 +634,8 @@ addURIs:    for (int i=0; ; i++) {
             }
         } catch (SQLException exception) {
             throw new FactoryException(exception.getLocalizedMessage(), exception);
+        } catch (BackingStoreException exception) {       // Cause is SQLException.
+            throw new FactoryException(exception.getLocalizedMessage(), exception.getCause());
         }
         throw noSuchAuthorityCode(IdentifiedObject.class, code);
     }
@@ -642,7 +654,7 @@ addURIs:    for (int i=0; ; i++) {
      * In such case, an appropriate exception will be thrown in {@code createFoo(String)} methods
      * if the code is not found in the primary key column.</p>
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * The default implementation returns {@code true} if all characters are decimal digits 0 to 9.
      *
      * @param  code  the code the inspect.
@@ -842,8 +854,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * @throws SQLException if an error occurred while querying the database.
      */
     private static String getOptionalString(final ResultSet result, final int columnIndex) throws SQLException {
-        String value = result.getString(columnIndex);
-        return (value != null) && !(value = value.trim()).isEmpty() && !result.wasNull() ? value : null;
+        final String value = Strings.trimOrNull(result.getString(columnIndex));
+        return (value == null) || result.wasNull() ? null : value;
     }
 
     /**
@@ -903,8 +915,8 @@ codes:  for (int i=0; i<codes.length; i++) {
     private String getString(final String code, final ResultSet result, final int columnIndex, final int columnFault)
             throws SQLException, FactoryDataException
     {
-        String value = result.getString(columnIndex);
-        if (value == null || (value = value.trim()).isEmpty() || result.wasNull()) {
+        final String value = Strings.trimOrNull(result.getString(columnIndex));
+        if (value == null || result.wasNull()) {
             throw new FactoryDataException(nullValue(result, columnFault, code));
         }
         return value;
@@ -924,8 +936,8 @@ codes:  for (int i=0; i<codes.length; i++) {
     private String getString(final Comparable<?> code, final ResultSet result, final int columnIndex)
             throws SQLException, FactoryDataException
     {
-        String value = result.getString(columnIndex);
-        if (value == null || (value = value.trim()).isEmpty() || result.wasNull()) {
+        final String value = Strings.trimOrNull(result.getString(columnIndex));
+        if (value == null || result.wasNull()) {
             throw new FactoryDataException(nullValue(result, columnIndex, code));
         }
         return value;
@@ -1310,7 +1322,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for coordinate reference systems are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Type</th>          <th>Description</th></tr>
      *   <tr><td>4326</td> <td>Geographic</td>    <td>World Geodetic System 1984</td></tr>
      *   <tr><td>4979</td> <td>Geographic 3D</td> <td>World Geodetic System 1984</td></tr>
@@ -1591,7 +1604,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for datums are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Type</th>        <th>Description</th></tr>
      *   <tr><td>6326</td> <td>Geodetic</td>    <td>World Geodetic System 1984</td></tr>
      *   <tr><td>6322</td> <td>Geodetic</td>    <td>World Geodetic System 1972</td></tr>
@@ -1871,7 +1885,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for ellipsoids are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>7030</td> <td>WGS 84</td></tr>
      *   <tr><td>7034</td> <td>Clarke 1880</td></tr>
@@ -1959,7 +1974,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for prime meridians are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>8901</td> <td>Greenwich</td></tr>
      *   <tr><td>8903</td> <td>Paris</td></tr>
@@ -2019,7 +2035,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for extents are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>1262</td> <td>World</td></tr>
      *   <tr><td>3391</td> <td>World - between 80°S and 84°N</td></tr>
@@ -2073,7 +2090,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 }
                 if (description != null || bbox != null) {
                     DefaultExtent extent = new DefaultExtent(description, bbox, null, null);
-                    extent.transition(DefaultExtent.State.FINAL);
+                    extent.transitionTo(DefaultExtent.State.FINAL);
                     returnValue = ensureSingleton(extent, returnValue, code);
                 }
             }
@@ -2093,7 +2110,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for coordinate systems are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Type</th>              <th>Axes</th>                                    <th>Orientations</th> <th>Unit</th></tr>
      *   <tr><td>4406</td> <td>Cartesian 2D CS</td>   <td>easting, northing (E,N)</td>                 <td>east, north</td>     <td>kilometre</td></tr>
      *   <tr><td>4496</td> <td>Cartesian 2D CS</td>   <td>easting, northing (E,N)</td>                 <td>east, north</td>     <td>metre</td></tr>
@@ -2298,7 +2316,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for axes are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th>   <th>Unit</th></tr>
      *   <tr><td>106</td>  <td>Latitude (φ)</td>  <td>degree</td></tr>
      *   <tr><td>107</td>  <td>Longitude (λ)</td> <td>degree</td></tr>
@@ -2400,7 +2419,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for units are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>9002</td> <td>decimal degree</td></tr>
      *   <tr><td>9001</td> <td>metre</td></tr>
@@ -2471,7 +2491,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for parameters are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>8801</td> <td>Latitude of natural origin</td></tr>
      *   <tr><td>8802</td> <td>Longitude of natural origin</td></tr>
@@ -2710,7 +2731,8 @@ next:               while (r.next()) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for operation methods are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>9804</td> <td>Mercator (variant A)</td></tr>
      *   <tr><td>9802</td> <td>Lambert Conic Conformal (2SP)</td></tr>
@@ -2766,7 +2788,8 @@ next:               while (r.next()) {
      * <div class="note"><b>Example:</b>
      * some EPSG codes for coordinate transformations are:
      *
-     * <table class="sis" summary="EPSG codes examples">
+     * <table class="sis">
+     * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>1133</td> <td>ED50 to WGS 84 (1)</td></tr>
      *   <tr><td>1241</td> <td>NAD27 to NAD83 (1)</td></tr>

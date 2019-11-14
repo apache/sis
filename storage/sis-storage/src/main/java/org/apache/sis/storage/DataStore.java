@@ -19,7 +19,6 @@ package org.apache.sis.storage;
 import java.util.Locale;
 import java.util.Map;
 import java.util.IdentityHashMap;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
@@ -30,12 +29,13 @@ import org.opengis.metadata.identification.Identification;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.logging.WarningListener;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.storage.event.StoreEvent;
+import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.storage.event.StoreListeners;
 
 
 /**
@@ -48,7 +48,7 @@ import org.apache.sis.referencing.NamedIdentifier;
  * For example a {@code DataStore} for ShapeFiles will implement the {@link FeatureSet} interface,
  * while a {@code DataStore} for netCDF files will implement the {@link Aggregate} interface.</p>
  *
- * <div class="section">Thread safety policy</div>
+ * <h2>Thread safety policy</h2>
  * Data stores should be thread-safe, but their synchronization lock is implementation-dependent.
  * This base class uses only the {@code synchronized} keyword, applied on the following methods:
  *
@@ -100,9 +100,9 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     private Locale locale;
 
     /**
-     * The set of registered {@link WarningListener}s for this data store.
+     * The set of registered {@link StoreListener}s for this data store.
      */
-    protected final WarningListeners<DataStore> listeners;
+    protected final StoreListeners listeners;
 
     /**
      * Creates a new instance with no provider and initially no listener.
@@ -111,12 +111,12 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
         provider  = null;
         name      = null;
         locale    = Locale.getDefault(Locale.Category.DISPLAY);
-        listeners = new WarningListeners<>(this);
+        listeners = new StoreListeners(null, this);
     }
 
     /**
      * Creates a new instance for the given storage (typically file or database).
-     * The {@code provider} argument is an optional information.
+     * The {@code provider} argument is an optional but recommended information.
      * The {@code connector} argument is mandatory.
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
@@ -130,7 +130,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
         this.provider  = provider;
         this.name      = connector.getStorageName();
         this.locale    = Locale.getDefault(Locale.Category.DISPLAY);
-        this.listeners = new WarningListeners<>(this);
+        this.listeners = new StoreListeners(null, this);
         /*
          * Above locale is NOT OptionKey.LOCALE because we are not talking about the same locale.
          * The one in this DataStore is for warning and exception messages, not for parsing data.
@@ -140,8 +140,8 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     /**
      * Creates a new instance as a child of another data store instance.
      * The new instance inherits the parent {@linkplain #getProvider() provider}.
-     * The parent and the child share the same listeners: adding or removing a listener to a parent
-     * adds or removes the same listeners to all children, and conversely.
+     * Events created by this {@code DataStore} are forwarded to listeners registered
+     * into the parent data store too.
      *
      * @param  parent     the parent data store, or {@code null} if none.
      * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
@@ -151,15 +151,17 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      */
     protected DataStore(final DataStore parent, final StorageConnector connector) throws DataStoreException {
         ArgumentChecks.ensureNonNull("connector", connector);
+        final StoreListeners forwardTo;
         if (parent != null) {
+            forwardTo = parent.listeners;
             provider  = parent.provider;
             locale    = parent.locale;
-            listeners = parent.listeners;
         } else {
+            forwardTo = null;
             provider  = null;
             locale    = Locale.getDefault(Locale.Category.DISPLAY);
-            listeners = new WarningListeners<>(this);
         }
+        listeners = new StoreListeners(forwardTo, this);
         name = connector.getStorageName();
     }
 
@@ -167,6 +169,10 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * Returns the factory that created this {@code DataStore} instance.
      * The provider gives additional information on this {@code DataStore} such as a format description
      * and a list of parameters that can be used for opening data stores of the same class.
+     *
+     * <p>The return value should never be null if this {@code DataStore} has been created by
+     * {@link DataStores#open(Object)} or by a {@link DataStoreProvider} {@code open(…)} method.
+     * However it may be null if this object has been instantiated by a direct call to its constructor.</p>
      *
      * @return the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      *
@@ -191,15 +197,15 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      *
      * <p>In some cases, for stores reading in-memory data or other inputs that can not fit with
      * {@code ParameterDescriptorGroup} requirements (for example an {@link java.io.InputStream}
-     * connected to unknown or no {@link java.net.URL}), this method may return null.</p>
+     * connected to unknown or no {@link java.net.URL}), this method may return an empty value.</p>
      *
-     * @return parameters used for opening this {@code DataStore}, or {@code null} if not available.
+     * @return parameters used for opening this {@code DataStore}.
      *
      * @see DataStoreProvider#getOpenParameters()
      *
      * @since 0.8
      */
-    public abstract ParameterValueGroup getOpenParameters();
+    public abstract Optional<ParameterValueGroup> getOpenParameters();
 
     /**
      * Sets the locale to use for formatting warnings and other messages.
@@ -225,6 +231,8 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * only – it has no effect on the data to be read or written from/to the data store.
      *
      * <p>The default value is the {@linkplain Locale#getDefault() system default locale}.</p>
+     *
+     * @see org.apache.sis.storage.event.StoreEvent#getLocale()
      */
     @Override
     public synchronized Locale getLocale() {
@@ -276,7 +284,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * Note that this identifier is not guaranteed to be unique between different {@code DataStore} instances;
      * it only needs to be unique among the resources provided by this data store instance.
      *
-     * <div class="section">Default implementation</div>
+     * <h4>Default implementation</h4>
      * <p>The default implementation searches for an identifier in the metadata,
      * at the location shown below, provided that conditions are met:</p>
      *
@@ -342,7 +350,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * contact information about the creator or distributor, data quality, update frequency, usage constraints,
      * file format and more.
      *
-     * @return information about resources in the data store, or {@code null} if none.
+     * @return information about resources in the data store. Should not be {@code null}.
      * @throws DataStoreException if an error occurred while reading the data.
      *
      * @see #getIdentifier()
@@ -420,51 +428,74 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     }
 
     /**
-     * Adds a listener to be notified when a warning occurred while reading from or writing to the storage.
-     * When a warning occurs, there is a choice:
+     * Registers a listener to notify when the specified kind of event occurs in this data store or in a resource.
+     * The data store will call the {@link StoreListener#eventOccured(StoreEvent)} method when new events matching
+     * the {@code eventType} occur. An event may be a change in data store content or structure, or a warning that
+     * occurred during a read or write operation.
      *
-     * <ul>
-     *   <li>If this data store has no warning listener, then the warning is logged at
-     *       {@link java.util.logging.Level#WARNING}.</li>
-     *   <li>If this data store has at least one warning listener, then all listeners are notified
-     *       and the warning is <strong>not</strong> logged by this data store instance.</li>
-     * </ul>
+     * <p>Registering a listener for a given {@code eventType} also register the listener for all event sub-types.
+     * The same listener can be registered many times, but its {@link StoreListener#eventOccured(StoreEvent)}
+     * method will be invoked only once per event. This filtering applies even if the listener is registered
+     * on individual resources of this data store.</p>
      *
-     * Consider invoking this method in a {@code try} … {@code finally} block if the {@code DataStore}
-     * lifetime is longer than the listener lifetime, as below:
+     * <p>If this data store may produce events of the given type, then the given listener is kept by strong reference;
+     * it will not be garbage collected unless {@linkplain #removeListener(Class, StoreListener) explicitly removed}
+     * or unless this {@code DataStore} is itself garbage collected. However if the given type of events can never
+     * happen with this data store, then this method is not required to keep a reference to the given listener.</p>
      *
-     * {@preformat java
-     *     datastore.addWarningListener(listener);
-     *     try {
-     *         // Do some work...
-     *     } finally {
-     *         datastore.removeWarningListener(listener);
-     *     }
-     * }
+     * <h4>Warning events</h4>
+     * If {@code eventType} is assignable from <code>{@linkplain org.apache.sis.storage.event.WarningEvent}.class</code>,
+     * then registering that listener turns off logging of warning messages for this data store.
+     * This side-effect is applied on the assumption that the registered listener will handle
+     * warnings in its own way, for example by showing warnings in a widget.
      *
-     * @param  listener  the listener to add.
-     * @throws IllegalArgumentException if the given listener is already registered in this data store.
+     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  eventType  type of {@link StoreEvent} to listen (can not be {@code null}).
+     * @param  listener   listener to notify about events.
+     *
+     * @since 1.0
      */
-    public void addWarningListener(final WarningListener<? super DataStore> listener)
-            throws IllegalArgumentException
-    {
-        listeners.addWarningListener(listener);
+    @Override
+    public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
+        listeners.addListener(eventType, listener);
     }
 
     /**
-     * Removes a previously registered listener.
+     * Unregisters a listener previously added to this data store for the given type of events.
+     * The {@code eventType} must be the exact same class than the one given to the {@code addListener(…)} method;
+     * this method does not remove listeners registered for subclasses and does not remove listeners registered in
+     * children resources.
      *
-     * @param  listener  the listener to remove.
-     * @throws NoSuchElementException if the given listener is not registered in this data store.
+     * <p>If the same listener has been registered many times for the same even type, then this method removes only
+     * the most recent registration. In other words if {@code addListener(type, ls)} has been invoked twice, then
+     * {@code removeListener(type, ls)} needs to be invoked twice in order to remove all instances of that listener.
+     * If the given listener is not found, then this method does nothing (no exception is thrown).</p>
+     *
+     * <h4>Warning events</h4>
+     * If {@code eventType} is <code>{@linkplain org.apache.sis.storage.event.WarningEvent}.class</code>
+     * and if, after this method invocation, there is no remaining listener for warning events,
+     * then this {@code DataStore} will send future warnings to the loggers.
+     *
+     * @param  <T>        compile-time value of the {@code eventType} argument.
+     * @param  eventType  type of {@link StoreEvent} which were listened (can not be {@code null}).
+     * @param  listener   listener to stop notifying about events.
+     *
+     * @since 1.0
      */
-    public void removeWarningListener(final WarningListener<? super DataStore> listener)
-            throws NoSuchElementException
-    {
-        listeners.removeWarningListener(listener);
+    @Override
+    public <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {
+        listeners.removeListener(eventType, listener);
     }
 
     /**
      * Closes this data store and releases any underlying resources.
+     *
+     * <h4>Note for implementers</h4>
+     * Data stores having resources to release should <em>not</em> override the {@link Object#equals(Object)}
+     * and {@link #hashCode()} methods, since comparisons other than identity comparisons may confuse some
+     * cache mechanisms (e.g. they may think that a data store has already been closed).
+     * Conversely data stores for which {@code addListener(…)}, {@code removeListener(…)} and {@code close()}
+     * methods perform no operation can override {@code equals(…)} and {@code hashCode()} if desired.
      *
      * @throws DataStoreException if an error occurred while closing this data store.
      */

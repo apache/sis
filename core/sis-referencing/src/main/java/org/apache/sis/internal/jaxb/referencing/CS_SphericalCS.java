@@ -61,7 +61,7 @@ public final class CS_SphericalCS extends PropertyType<CS_SphericalCS, Spherical
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:SphericalCS>} XML element.
      *
-     * @param  cs  the element to marshall.
+     * @param  cs  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

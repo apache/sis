@@ -32,7 +32,7 @@ package org.apache.sis.internal.system;
  * Each constant should be the name of the main package of its corresponding module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -91,6 +91,16 @@ public final class Modules {
      * The {@value} module name.
      */
     public static final String SQL = "org.apache.sis.sql";
+
+    /**
+     * The {@value} module name.
+     */
+    public static final String CONSOLE = "org.apache.sis.console";
+
+    /**
+     * The {@value} module name.
+     */
+    public static final String APPLICATION = "org.apache.sis.gui";
 
     /**
      * The major version number of all Apache SIS modules.

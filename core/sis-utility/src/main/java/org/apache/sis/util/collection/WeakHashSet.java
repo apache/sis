@@ -43,7 +43,7 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * the static {@code hashCode(a)} and {@code equals(a1, a2)} methods defined in the {@link Arrays}
  * class.</p>
  *
- * <div class="section">Optimizing memory use in factory implementations</div>
+ * <h2>Optimizing memory use in factory implementations</h2>
  * The {@code WeakHashSet} class has a {@link #get(Object)} method that is not part of the
  * {@link java.util.Set} interface. This {@code get} method retrieves an entry from this set
  * that is equals to the supplied object. The {@link #unique(Object)} method combines a
@@ -62,7 +62,7 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  *
  * Thus, {@code WeakHashSet} can be used inside a factory to prevent creating duplicate immutable objects.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code WeakHashSet} instance can be safely used by many threads without synchronization on the part of
  * the caller. But if a sequence of two or more method calls need to appear atomic from other threads perspective,
  * then the caller can synchronize on {@code this}.
@@ -107,7 +107,8 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
     private Entry[] table;
 
     /**
-     * Number of non-null elements in {@link #table}.
+     * Number of non-null elements in {@link #table}. This is used for determining
+     * when {@link WeakEntry#rehash(WeakEntry[], int, String)} needs to be invoked.
      */
     private int count;
 
@@ -161,6 +162,8 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
     /**
      * Invoked by {@link Entry} when an element has been collected by the garbage
      * collector. This method removes the weak reference from the {@link #table}.
+     *
+     * @param  toRemove  the entry to remove from this map.
      */
     private synchronized void removeEntry(final Entry toRemove) {
         assert isValid();
@@ -182,6 +185,8 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
     /**
      * Checks if this {@code WeakHashSet} is valid. This method counts the number of elements and
      * compares it to {@link #count}. This method is invoked in assertions only.
+     *
+     * @return whether {@link #count} matches the expected value.
      */
     @Debug
     private boolean isValid() {

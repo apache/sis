@@ -17,6 +17,7 @@
 package org.apache.sis.internal.storage;
 
 import java.net.URI;
+import java.util.Optional;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.FileSystemNotFoundException;
@@ -31,8 +32,9 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalOpenParameterException;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.storage.event.StoreEvent;
+import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.internal.storage.io.IOUtilities;
 
 
@@ -102,11 +104,11 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     /**
      * Returns the parameters used to open this data store.
      *
-     * @return parameters used for opening this {@code DataStore}, or {@code null} if not available.
+     * @return parameters used for opening this {@code DataStore}.
      */
     @Override
-    public ParameterValueGroup getOpenParameters() {
-        return parameters(provider, location);
+    public Optional<ParameterValueGroup> getOpenParameters() {
+        return Optional.ofNullable(parameters(provider, location));
     }
 
     /**
@@ -268,26 +270,14 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     }
 
     /**
-     * Ignored in current implementation, on the assumption that most data stores
-     * (at least the read-only ones) produce no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
+     * Registers only listeners for {@link WarningEvent}s on the assumption that most data stores
+     * (at least the read-only ones) produce no change events.
      */
     @Override
-    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
-    }
-
-    /**
-     * Ignored in current implementation, on the assumption that most data stores
-     * (at least the read-only ones) produce no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
-     */
-    @Override
-    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
+        // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
+        if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
+            super.addListener(eventType, listener);
+        }
     }
 }

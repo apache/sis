@@ -51,7 +51,7 @@ import org.apache.sis.util.Debug;
  * More complex methods are subclasses of this {@code DatumShiftTransform} base class, but users should not assume
  * that this is the case of every transforms performing a datum shift.</p>
  *
- * <div class="section">Datum shift methods overview</div>
+ * <h2>Datum shift methods overview</h2>
  * The two CRS's ellipsoids have slightly different scale and rotation in space, and their center are located in
  * a slightly different position. Consequently geodetic datum shifts are often approximated by a constant scale,
  * rotation and translation applied on geocentric coordinates. Those approximations are handled in SIS
@@ -249,26 +249,19 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
      * It may be conversions between degrees and radians units, or conversions from geodetic coordinates to grid indices.
      *
      * <div class="note"><b>Example:</b>
-     * The chain of transforms of an {@link InterpolatedGeocentricTransform} is:
-     * <center>
-     *   <table class="compact" style="td {vertical-align: middle}" summary="Decomposition of a datum shift">
-     *     <tr style="text-align: center">
-     *       <th>Degrees to radians</th><th></th>
-     *       <th>{@code DatumShiftTransform} work</th><th></th>
-     *       <th>Radians to degrees</th>
-     *     </tr><tr>
-     *       <td>{@include formulas.html#NormalizeGeographic}</td>
-     *       <td>→</td>
-     *       <td style="vertical-align: top"><ol style="padding-left: 15px">
-     *         <li>Geographic to geocentric conversion</li>
-     *         <li>Geocentric interpolation</li>
-     *         <li>Geocentric to geographic conversion</li>
-     *       </ol></td>
-     *       <td>→</td>
-     *       <td>{@include formulas.html#DenormalizeGeographic}</td>
-     *     </tr>
-     *   </table>
-     * </center></div>
+     *   The chain of transforms of an {@link InterpolatedGeocentricTransform} is:
+     *   <div class="horizontal-flow" style="align-items:center">
+     *     <div>{@include formulas.html#NormalizeGeographic}</div>
+     *     <div>→</div>
+     *     <div><ol style="padding-left: 15px">
+     *       <li>Geographic to geocentric conversion</li>
+     *       <li>Geocentric interpolation</li>
+     *       <li>Geocentric to geographic conversion</li>
+     *     </ol></div>
+     *     <div>→</div>
+     *     <div>{@include formulas.html#DenormalizeGeographic}</div>
+     *   </div>
+     * </div>
      *
      * This method returns the parameters for the part in the middle of above example.
      * The content of this part is highly implementation-dependent and used mostly for

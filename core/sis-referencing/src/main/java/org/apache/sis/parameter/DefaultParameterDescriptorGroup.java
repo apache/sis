@@ -46,7 +46,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * The definition of a group of related parameters used by an operation method.
  * {@code DefaultParameterDescriptorGroup} instances are immutable and thus thread-safe.
  *
- * <div class="section">Instantiation</div>
+ * <h2>Instantiation</h2>
  * Parameter descriptors are usually pre-defined by the SIS library and available through the following methods:
  *
  * <ul>
@@ -307,9 +307,9 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code ParameterDescriptorGroup.class}.
      *
-     * <div class="note"><b>Note for implementors:</b>
+     * <div class="note"><b>Note for implementers:</b>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code ParameterDescriptorGroup}
-     * sub-interface. Overriding possibility is left mostly for implementors who wish to extend GeoAPI with their own
+     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their own
      * set of interfaces.</div>
      *
      * @return {@code ParameterDescriptorGroup.class} or a user-defined sub-interface.

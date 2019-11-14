@@ -50,9 +50,8 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.logging.WarningListeners;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.identification.*;
@@ -67,6 +66,7 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.wkt.StoreFormat;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.referencing.CRS;
@@ -100,7 +100,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * {@linkplain AttributeNames#LONGITUDE longitude} and {@linkplain AttributeNames#LATITUDE latitude}
  * resolutions are often more accurate in that group.
  *
- * <div class="section">Known limitations</div>
+ * <h2>Known limitations</h2>
  * <ul>
  *   <li>{@code "degrees_west"} and {@code "degrees_south"} units not correctly handled.</li>
  *   <li>Units of measurement not yet declared in the {@link Band} elements.</li>
@@ -198,17 +198,17 @@ final class MetadataReader extends MetadataBuilder {
      * or logs the record otherwise.
      */
     private void warning(final Exception e) {
-        decoder.listeners.warning(null, e);
+        decoder.listeners.warning(e);
     }
 
     /**
      * Logs a warning using the localized error resource bundle for the locale given by
-     * {@link WarningListeners#getLocale()}.
+     * {@link StoreListeners#getLocale()}.
      *
      * @param  key  one of {@link Errors.Keys} values.
      */
     private void warning(final short key, final Object p1, final Object p2, final Exception e) {
-        final WarningListeners<DataStore> listeners = decoder.listeners;
+        final StoreListeners listeners = decoder.listeners;
         listeners.warning(Errors.getResources(listeners.getLocale()).getString(key, p1, p2), e);
     }
 
@@ -252,25 +252,11 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     }
 
     /**
-     * Trims the leading and trailing spaces of the given string.
-     * If the string is null, empty or contains only spaces, then this method returns {@code null}.
-     */
-    private static String trim(String value) {
-        if (value != null) {
-            value = value.trim();
-            if (value.isEmpty()) {
-                value = null;
-            }
-        }
-        return value;
-    }
-
-    /**
      * Reads the attribute value for the given name, then trims the leading and trailing spaces.
      * If the value is null, empty or contains only spaces, then this method returns {@code null}.
      */
     private String stringValue(final String name) {
-        return trim(decoder.stringValue(name));
+        return Strings.trimOrNull(decoder.stringValue(name));
     }
 
     /**
@@ -945,7 +931,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      */
     private void addSampleDimension(final Variable variable) {
         newSampleDimension();
-        final String name = trim(variable.getName());
+        final String name = Strings.trimOrNull(variable.getName());
         if (name != null) {
             final NameFactory f = decoder.nameFactory;
             final StringBuilder buffer = new StringBuilder(20);
@@ -956,7 +942,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         if (id != null && !id.equals(name)) {
             addBandName(variable.getAttributeAsString(ACDD.standard_name_vocabulary), id);
         }
-        final String description = trim(variable.getDescription());
+        final String description = Strings.trimOrNull(variable.getDescription());
         if (description != null && !description.equals(name) && !description.equals(id)) {
             addBandDescription(description);
         }
@@ -1075,7 +1061,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         decoder.setSearchPath(searchPath);
         final DefaultMetadata metadata = build(false);
         addCompleteMetadata(createURI(stringValue(METADATA_LINK)));
-        metadata.transition(DefaultMetadata.State.FINAL);
+        metadata.transitionTo(DefaultMetadata.State.FINAL);
         return metadata;
     }
 }

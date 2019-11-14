@@ -37,6 +37,7 @@ import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
@@ -46,7 +47,6 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
@@ -257,7 +257,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
             if (release != null) {
                 final DefaultCitation df = new DefaultCitation(c);
                 df.setEdition(new SimpleInternationalString(release));
-                df.transition(DefaultCitation.State.FINAL);
+                df.transitionTo(DefaultCitation.State.FINAL);
                 c = df;
             }
             authority = c;
@@ -530,7 +530,7 @@ public class Proj4Factory extends GeodeticAuthorityFactory implements CRSAuthori
      * Creates a new CRS from the given {@literal Proj.4} definition.
      * The {@code "Proj4:"} prefix (ignoring case), if present, is ignored.
      *
-     * <div class="section">Apache SIS extension</div>
+     * <h4>Apache SIS extension</h4>
      * Proj.4 unconditionally requires 3 letters for the {@code "+axis="} parameter — for example {@code "neu"} for
      * <cite>North</cite>, <cite>East</cite> and <cite>Up</cite> respectively — regardless the number of dimensions
      * in the CRS to create. Apache SIS makes the vertical direction optional:

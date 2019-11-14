@@ -30,7 +30,7 @@ import org.opengis.feature.InvalidPropertyValueException;
  * While {@link MultiValuedAssociation} would be suitable to all cases, this {@code SingletonAssociation}
  * consumes less memory.
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li><b>Multi-threading:</b> {@code SingletonAssociation} instances are <strong>not</strong> thread-safe.
  *       Synchronization, if needed, shall be done externally by the caller.</li>
@@ -44,7 +44,7 @@ import org.opengis.feature.InvalidPropertyValueException;
  * @since 0.5
  * @module
  */
-@SuppressWarnings("CloneableClassWithoutClone")     // AbstractAssociation.clone() contract is to return a shallow copy.
+@SuppressWarnings("CloneableImplementsClone")     // AbstractAssociation.clone() contract is to return a shallow copy.
 final class SingletonAssociation extends AbstractAssociation {
     /**
      * For cross-version compatibility.

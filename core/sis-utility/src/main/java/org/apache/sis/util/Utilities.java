@@ -60,7 +60,7 @@ public final class Utilities extends Static {
      * If a more lenient comparison allowing slight differences in numerical values is wanted,
      * then {@link #equalsApproximately(Object, Object)} can be used instead.
      *
-     * <div class="section">Implementation note</div>
+     * <h4>Implementation note</h4>
      * This is a convenience method for the following method call:
      *
      * {@preformat java
@@ -94,7 +94,7 @@ public final class Utilities extends Static {
      *       will return an operation close to identity.</li>
      * </ul>
      *
-     * <div class="section">Implementation note</div>
+     * <h4>Implementation note</h4>
      * This is a convenience method for the following method call:
      *
      * {@preformat java
@@ -110,16 +110,6 @@ public final class Utilities extends Static {
      */
     public static boolean equalsApproximately(final Object object1, final Object object2) {
         return deepEquals(object1, object2, ComparisonMode.APPROXIMATE);
-    }
-
-    /**
-     * @deprecated Renamed {@link #equalsApproximately(Object, Object)}.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-440">SIS-440</a>
-     */
-    @Deprecated
-    public static boolean equalsApproximatively(final Object object1, final Object object2) {
-        return equalsApproximately(object1, object2);
     }
 
     /**

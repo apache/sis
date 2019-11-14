@@ -33,8 +33,8 @@ import org.opengis.filter.expression.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 abstract class UnaryFunction extends Node implements Serializable {
@@ -112,8 +112,8 @@ abstract class UnaryFunction extends Node implements Serializable {
         }
 
         /** Identification of this operation. */
-        @Override protected String name() {return NAME;}
-        @Override protected char symbol() {return '∅';}
+        @Override protected String getName() {return NAME;}
+        @Override protected char   symbol()  {return '∅';}
 
         /** Returns {@code true} if the given value evaluates to {@code null}. */
         @Override public boolean evaluate(final Object object) {
@@ -144,8 +144,8 @@ abstract class UnaryFunction extends Node implements Serializable {
         }
 
         /** Identification of this operation. */
-        @Override protected String name() {return "Not";}
-        @Override protected char symbol() {return '¬';}
+        @Override protected String getName() {return "Not";}
+        @Override protected char   symbol()  {return '¬';}
 
         /** Returns the singleton filter used by this operation. */
         @Override protected Collection<Filter> getChildren() {

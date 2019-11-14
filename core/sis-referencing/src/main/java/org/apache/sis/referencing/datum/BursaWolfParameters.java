@@ -63,8 +63,8 @@ import java.util.Objects;
  * while the <cite>legacy</cite> column lists the identifiers used in the legacy OGC 01-009 specification
  * (still used in some <cite>Well Known Texts</cite>).
  *
- * <table summary="Parameters and formula"><tr><td>
- * <table class="sis">
+ * <div class="horizontal-flow">
+ * <div><table class="sis">
  *   <caption>Parameters defined by EPSG</caption>
  *   <tr><th>Code</th> <th>Name</th>               <th>Abbr.</th>       <th>Legacy</th></tr>
  *   <tr><td>8605</td> <td>X-axis translation</td> <td>{@link #tX}</td> <td>{@code dx}</td></tr>
@@ -74,16 +74,14 @@ import java.util.Objects;
  *   <tr><td>8609</td> <td>Y-axis rotation</td>    <td>{@link #rY}</td> <td>{@code ey}</td></tr>
  *   <tr><td>8610</td> <td>Z-axis rotation</td>    <td>{@link #rZ}</td> <td>{@code ez}</td></tr>
  *   <tr><td>8611</td> <td>Scale difference</td>   <td>{@link #dS}</td> <td>{@code ppm}</td></tr>
- * </table>
- *
- * </td><td style="padding-left: 40pt; white-space: nowrap">
- * <center><b>Geocentric coordinates transformation</b></center>
- * <center>from (<var>X</var><sub>s</sub>, <var>Y</var><sub>s</sub>, <var>Z</var><sub>s</sub>)
- *           to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)
- * <br><span style="font-size:small">(ignoring unit conversions)</span></center>
+ * </table></div>
+ * <div><p><b>Geocentric coordinates transformation</b></p>
+ * <p>from (<var>X</var><sub>s</sub>, <var>Y</var><sub>s</sub>, <var>Z</var><sub>s</sub>)
+ *      to (<var>X</var><sub>t</sub>, <var>Y</var><sub>t</sub>, <var>Z</var><sub>t</sub>)
+ * <br><span style="font-size:small">(ignoring unit conversions)</span></p>
  *
  * <p>{@include formulas.html#Bursa-Wolf}</p>
- * </td></tr></table>
+ * </div></div>
  *
  * The numerical fields in this {@code BursaWolfParameters} class use the EPSG abbreviations
  * with 4 additional constraints compared to the EPSG definitions:
@@ -97,7 +95,7 @@ import java.util.Objects;
  *       The Position Vector convention is used by IAG and recommended by ISO 19111.</li>
  * </ul>
  *
- * <div class="section">Source and target geodetic datum</div>
+ * <h2>Source and target geodetic datum</h2>
  * The <var>source datum</var> in above coordinates transformation is the {@link DefaultGeodeticDatum} instance
  * that contain this {@code BursaWolfParameters}. It can be any datum, including datum that are valid only locally.
  * The <var>{@linkplain #getTargetDatum() target datum}</var> is specified at construction time and is often,
@@ -107,7 +105,7 @@ import java.util.Objects;
  * prime meridian}, then it is user's responsibility to apply longitude rotation before to use the Bursa-Wolf
  * parameters.</p>
  *
- * <div class="section">When Bursa-Wolf parameters are used</div>
+ * <h2>When Bursa-Wolf parameters are used</h2>
  * {@code BursaWolfParameters} are used in three contexts:
  * <ol>
  *   <li>Created as a step while creating a {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation
@@ -251,7 +249,8 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
             final PrimeMeridian actual = targetDatum.getPrimeMeridian();
             if (actual.getGreenwichLongitude() != 0 && !Utilities.equalsIgnoreMetadata(pm, actual)) {
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedPrimeMeridian_2,
-                        IdentifiedObjects.getName(pm, null), IdentifiedObjects.getName(actual, null)));
+                        IdentifiedObjects.getDisplayName(pm, null),
+                        IdentifiedObjects.getDisplayName(actual, null)));
             }
         }
         ensureFinite("tX", tX);
@@ -456,14 +455,14 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * {@linkplain DefaultGeodeticDatum#getPrimeMeridian() prime meridian}, then it is caller's responsibility
      * to apply longitude rotation before to use the matrix returned by this method.</p>
      *
-     * <div class="section">Time-dependent transformation</div>
+     * <h4>Time-dependent transformation</h4>
      * Some transformations use parameters that vary with time (e.g. operation method EPSG:1053).
      * Users can optionally specify a date for which the transformation is desired.
      * For transformations that do not depends on time, this date is ignored and can be null.
      * For time-dependent transformations, {@code null} values default to the transformation's
      * {@linkplain TimeDependentBWP#getTimeReference() reference time}.
      *
-     * <div class="section">Inverse transformation</div>
+     * <h4>Inverse transformation</h4>
      * The inverse transformation can be approximated by reversing the sign of the 7 parameters before to use them
      * in the above matrix. This is often considered sufficient since <cite>position vector transformations</cite>
      * are themselves approximations. However Apache SIS will rather use

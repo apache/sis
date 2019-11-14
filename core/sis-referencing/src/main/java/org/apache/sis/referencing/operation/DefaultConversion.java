@@ -54,7 +54,7 @@ import org.apache.sis.util.Utilities;
  * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transform}
  * or explicitly provided at construction time in a <cite>defining conversion</cite> (see below).</p>
  *
- * <div class="section">Defining conversions</div>
+ * <h2>Defining conversions</h2>
  * {@code OperationMethod} instances are generally created for a pair of existing {@linkplain #getSourceCRS() source}
  * and {@linkplain #getTargetCRS() target CRS}. But {@code Conversion} instances without those information may exist
  * temporarily while creating a {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived} or
@@ -71,7 +71,7 @@ import org.apache.sis.util.Utilities;
  *  {@link org.opengis.referencing.operation.PlanarProjection}) if possible,
  * and assign the source and target CRS to it.</p>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. This means that unless otherwise noted in the javadoc,
  * {@code Conversion} instances created using only SIS factories and static constants can be shared
@@ -124,7 +124,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *   </tr>
      * </table>
      *
-     * <div class="section">Relationship between datum</div>
+     * <h4>Relationship between datum</h4>
      * By definition, coordinate <b>conversions</b> do not change the datum. Consequently the given {@code sourceCRS}
      * and {@code targetCRS} should use the same datum. If the datum is not the same, then the coordinate operation
      * should probably be a {@linkplain DefaultTransformation transformation} instead.
@@ -178,7 +178,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * {@linkplain #DefaultConversion(Map, CoordinateReferenceSystem, CoordinateReferenceSystem,
      * CoordinateReferenceSystem, OperationMethod, MathTransform) above constructor}.</p>
      *
-     * <div class="section">Transform and parameters arguments</div>
+     * <h4>Transform and parameters arguments</h4>
      * At least one of the {@code transform} or {@code parameters} argument must be non-null.
      * If the caller supplies a {@code transform} argument, then it shall be a transform expecting
      * {@linkplain org.apache.sis.referencing.cs.AxesConvention#NORMALIZED normalized} input coordinates

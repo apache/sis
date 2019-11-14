@@ -64,7 +64,7 @@ import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
  *   <li>The indentation.</li>
  * </ul>
  *
- * <div class="section">String expansion</div>
+ * <h2>String expansion</h2>
  * Because the strings to be parsed by this class are long and tend to contain repetitive substrings,
  * {@code WKTFormat} provides a mechanism for performing string substitutions before the parsing take place.
  * Long strings can be assigned short names by calls to the {@link #addFragment(String, String)} method.
@@ -90,7 +90,7 @@ import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
  * In particular, the default linear and angular units depend on the context in which the WKT fragment appears.
  * </div>
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li><strong>The WKT format is not lossless!</strong>
  *       Objects formatted by {@code WKTFormat} are not guaranteed to be identical after parsing.
@@ -638,7 +638,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *   <li><code>{@linkplain CoordinateOperationFactory}.class</code></li>
      * </ul>
      *
-     * <div class="section">Limitation</div>
+     * <h4>Limitation</h4>
      * The current implementation does not serialize the given factories, because they are usually not
      * {@link java.io.Serializable}. The factories used by {@code WKTFormat} instances after deserialization
      * are the default ones.
@@ -837,24 +837,31 @@ public class WKTFormat extends CompoundFormat<Object> {
             updateFormatter(formatter);
             this.formatter = formatter;
         }
-        final boolean valid;
-        try {
-            formatter.setBuffer(buffer);
-            valid = formatter.appendElement(object) || formatter.appendValue(object);
-        } finally {
-            warnings = formatter.getWarnings();     // Must be saved before formatter.clear() is invoked.
-            formatter.setBuffer(null);
-            formatter.clear();
-        }
-        if (warnings != null) {
-            warnings.setRoot(object);
-        }
-        if (!valid) {
-            throw new ClassCastException(Errors.getResources(getLocale()).getString(
-                    Errors.Keys.IllegalArgumentClass_2, "object", object.getClass()));
-        }
-        if (buffer != toAppendTo) {
-            toAppendTo.append(buffer);
+        /*
+         * Since each operation on `buffer` is synchronized, this synchronization block allow the lock
+         * to be obtained only one time instead than many times for each `StringBuffer` method invoked.
+         * As a bonus, it ensures a consistent result if the given `StringBuffer` is used concurrently.
+         */
+        synchronized (buffer) {
+            final boolean valid;
+            try {
+                formatter.setBuffer(buffer);
+                valid = formatter.appendElement(object) || formatter.appendValue(object);
+            } finally {
+                warnings = formatter.getWarnings();     // Must be saved before formatter.clear() is invoked.
+                formatter.setBuffer(null);
+                formatter.clear();
+            }
+            if (warnings != null) {
+                warnings.setRoot(object);
+            }
+            if (!valid) {
+                throw new ClassCastException(Errors.getResources(getLocale()).getString(
+                        Errors.Keys.IllegalArgumentClass_2, "object", object.getClass()));
+            }
+            if (buffer != toAppendTo) {
+                toAppendTo.append(buffer);
+            }
         }
     }
 

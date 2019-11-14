@@ -32,7 +32,6 @@
  * <ul>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()}</li>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#getEccentricity()}</li>
- *   <li>{@link org.apache.sis.referencing.datum.DefaultEllipsoid#orthodromicDistance(double, double, double, double)}</li>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultPrimeMeridian#getGreenwichLongitude(javax.measure.Unit)
  *       DefaultPrimeMeridian.getGreenwichLongitude(Unit)}</li>
  *   <li>{@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#getBursaWolfParameters()}</li>
@@ -40,7 +39,7 @@
  *       DefaultGeodeticDatum.getPositionVectorTransformation(GeodeticDatum, Extent)}</li>
  * </ul>
  *
- * <div class="section">Datum shifts</div>
+ * <h2>Datum shifts</h2>
  * Three classes are provided in support of coordinate transformations between different datums:
  * <ul>
  *   <li>{@link org.apache.sis.referencing.datum.BursaWolfParameters} performs an approximation
@@ -54,7 +53,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.4
  * @module
  */

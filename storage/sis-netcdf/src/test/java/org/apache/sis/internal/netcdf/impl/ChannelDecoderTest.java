@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DecoderTest;
+import org.apache.sis.internal.storage.AbstractResource;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.setup.GeometryLibrary;
@@ -70,6 +71,6 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
         final InputStream in = file.open();
         final ChannelDataInput input = new ChannelDataInput(file.name(),
                 Channels.newChannel(in), ByteBuffer.allocate(4096), false);
-        return new ChannelDecoder(input, null, GeometryLibrary.JAVA2D, LISTENERS);
+        return new ChannelDecoder(input, null, GeometryLibrary.JAVA2D, new AbstractResource(null));
     }
 }

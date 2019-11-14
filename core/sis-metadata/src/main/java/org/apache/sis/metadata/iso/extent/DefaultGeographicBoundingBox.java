@@ -62,7 +62,7 @@ import static java.lang.Double.doubleToLongBits;
  *   <li>{@link #intersect(GeographicBoundingBox)} for the intersection between the two bounding boxes.</li>
  * </ul>
  *
- * <div class="section">Validation and normalization</div>
+ * <h2>Validation and normalization</h2>
  * All constructors and setter methods in this class perform the following argument validation or normalization:
  *
  * <ul>
@@ -81,7 +81,7 @@ import static java.lang.Double.doubleToLongBits;
  * {@linkplain #getEastBoundLongitude() east bound longitude}, then the box spans the anti-meridian.
  * See {@linkplain org.apache.sis.geometry.GeneralEnvelope} for more information on anti-meridian spanning.
  *
- * <div class="note"><b>Note: relationship with Envelope classes</b><br>
+ * <h2>Relationship with Envelope classes</h2>
  * The {@link org.apache.sis.geometry} package provides various {@code Envelope} classes serving a simular purpose.
  * The main difference is that envelopes can be expressed in any {@linkplain org.apache.sis.referencing.crs.AbstractCRS
  * Coordinate Reference System} (for example using any map projection), may have any number of dimensions, axes may have
@@ -94,9 +94,8 @@ import static java.lang.Double.doubleToLongBits;
  * box should be used only as a convenient way to give an <em>approximate</em> description of a location.
  * Users can assume a precision of about 0.01° for the latitude and longitude values in this class.
  * If more precision is desired, an {@code Envelope} should be considered instead.
- * </div>
  *
- * <div class="section">Limitations</div>
+ * <h2>Limitations</h2>
  * <ul>
  *   <li>Instances of this class are not synchronized for multi-threading.
  *       Synchronization, if needed, is caller's responsibility.</li>

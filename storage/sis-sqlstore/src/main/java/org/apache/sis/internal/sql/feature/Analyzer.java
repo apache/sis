@@ -41,14 +41,13 @@ import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.sql.feature.FeatureAdapter.PropertyMapper;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.iso.Names;
-import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.resources.ResourceInternationalString;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -131,7 +130,7 @@ final class Analyzer {
     /**
      * Where to send warnings after we finished to collect them, or when reading the feature instances.
      */
-    final WarningListeners<DataStore> listeners;
+    final StoreListeners listeners;
 
     /**
      * The locale for warning messages.
@@ -159,7 +158,7 @@ final class Analyzer {
      * @param  listeners  Value of {@code SQLStore.listeners}.
      * @param  locale     Value of {@code SQLStore.getLocale()}.
      */
-    Analyzer(final DataSource source, final Connection databaseConnection, final WarningListeners<DataStore> listeners,
+    Analyzer(final DataSource source, final Connection databaseConnection, final StoreListeners listeners,
              final Locale locale) throws SQLException
     {
         ensureNonNull("Database connection provider", source);

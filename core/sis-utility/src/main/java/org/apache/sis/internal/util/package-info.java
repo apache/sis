@@ -23,14 +23,14 @@
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
  *
- * <div class="section">Note on serialization</div>
+ * <h2>Note on serialization</h2>
  * Developers should avoid putting serializable classes in this package as much as possible,
  * since the serialization forms may be considered as a kind of API contract (depending how
  * much strict we want to be regarding compatibility). This is not always practical however,
  * so some serialized classes still exist in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */

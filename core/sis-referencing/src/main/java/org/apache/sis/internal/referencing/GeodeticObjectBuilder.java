@@ -572,6 +572,6 @@ public final class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> 
             }
         }
         throw new IllegalArgumentException(Resources.forLocale(locale).getString(
-                Resources.Keys.CanNotSeparateCRS_1, IdentifiedObjects.getName(source, null)));
+                Resources.Keys.CanNotSeparateCRS_1, IdentifiedObjects.getDisplayName(source, locale)));
     }
 }

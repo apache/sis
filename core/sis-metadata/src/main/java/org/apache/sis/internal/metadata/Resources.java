@@ -66,6 +66,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short BoxCrossesAntiMeridian = 3;
 
         /**
+         * Connection to “{0}” database is already initialized.
+         */
+        public static final short ConnectionAlreadyInitialized_1 = 6;
+
+        /**
          * This metadata element is already initialized with value “{0}”.
          */
         public static final short ElementAlreadyInitialized_1 = 2;
@@ -74,6 +79,11 @@ public final class Resources extends IndexedResourceBundle {
          * … {0} elements omitted …
          */
         public static final short ElementsOmitted_1 = 4;
+
+        /**
+         * Illegal class `{1}`. Specify the `{0}` interface instead.
+         */
+        public static final short ExpectedInterface_2 = 5;
 
         /**
          * This metadata is not modifiable.
@@ -136,6 +146,23 @@ public final class Resources extends IndexedResourceBundle {
                                 final Object arg0) throws MissingResourceException
     {
         return forLocale(null).getString(key, arg0);
+    }
+
+    /**
+     * Gets a string for the given key and replaces all occurrences of "{0}",
+     * "{1}", with values of {@code arg0}, {@code arg1}, etc.
+     *
+     * @param  key   the key for the desired string.
+     * @param  arg0  value to substitute to "{0}".
+     * @param  arg1  value to substitute to "{1}".
+     * @return the formatted string for the given key.
+     * @throws MissingResourceException if no object for the given key can be found.
+     */
+    public static String format(final short  key,
+                                final Object arg0,
+                                final Object arg1) throws MissingResourceException
+    {
+        return forLocale(null).getString(key, arg0, arg1);
     }
 
     /**

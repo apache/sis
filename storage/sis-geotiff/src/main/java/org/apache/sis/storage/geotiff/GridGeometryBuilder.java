@@ -45,7 +45,7 @@ import org.apache.sis.math.Vector;
  * Helper class for creating a {@link GridGeometry} from GeoTIFF data.
  * The coordinate reference system part is built by {@link CRSBuilder}.
  *
- * <div class="section">Pixel center versus pixel corner</div>
+ * <h2>Pixel center versus pixel corner</h2>
  * The policy about whether the conversion map pixel corner or pixel center if GeoTIFF files does not seem
  * totally clear. But the practice at least with GDAL seems to consider the following as equivalent:
  *

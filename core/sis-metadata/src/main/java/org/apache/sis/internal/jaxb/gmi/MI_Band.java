@@ -62,7 +62,7 @@ public class MI_Band extends DefaultBand {
      * using the {@code "gmi"} namespace if necessary.
      *
      * @param  original  the original metadata provided by the user.
-     * @return the metadata to marshall.
+     * @return the metadata to marshal.
      */
     public static DefaultBand castOrCopy(final Band original) {
         if (original != null && !(original instanceof MI_Band)) {

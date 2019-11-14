@@ -168,7 +168,7 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
      * @param isAbridged  {@code true} for the abridged formula, or {@code false} for the complete one.
      * @param descriptor  the contextual parameter descriptor.
      */
-    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     MolodenskyFormula(final Ellipsoid source, final boolean isSource3D,
                       final Ellipsoid target, final boolean isTarget3D,
                       final double tX, final double tY, final double tZ,

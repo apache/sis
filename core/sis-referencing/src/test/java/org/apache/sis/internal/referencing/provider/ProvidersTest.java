@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * Tests {@link Providers} and some consistency rules of all providers defined in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -103,7 +103,9 @@ public final strictfp class ProvidersTest extends TestCase {
             ObliqueMercatorCenter.class,
             ObliqueMercatorTwoPoints.class,
             ObliqueMercatorTwoPointsCenter.class,
+            Orthographic.class,
             ZonedTransverseMercator.class,
+            SatelliteTracking.class,
             Sinusoidal.class,
             Polyconic.class,
             Mollweide.class,
@@ -152,7 +154,7 @@ public final strictfp class ProvidersTest extends TestCase {
         final Map<GeneralParameterDescriptor, GeneralParameterDescriptor> parameters = new HashMap<>();
         final Map<Object, Object> namesAndIdentifiers = new HashMap<>();
         for (final Class<?> c : methods()) {
-            final OperationMethod method = (OperationMethod) c.newInstance();
+            final OperationMethod method = (OperationMethod) c.getConstructor((Class[]) null).newInstance((Object[]) null);
             final ParameterDescriptorGroup group = method.getParameters();
             final String operationName = group.getName().getCode();
             for (final GeneralParameterDescriptor param : group.descriptors()) {
@@ -247,5 +249,15 @@ public final strictfp class ProvidersTest extends TestCase {
                 assertTrue(message, message.contains(method.getName().getCode()));
             }
         }
+    }
+
+    /**
+     * Tests the description provided in some parameters.
+     */
+    @Test
+    public void testDescription() {
+        assertFalse(SatelliteTracking.SATELLITE_ORBIT_INCLINATION.getDescription().length() == 0);
+        assertFalse(SatelliteTracking.SATELLITE_ORBITAL_PERIOD   .getDescription().length() == 0);
+        assertFalse(SatelliteTracking.ASCENDING_NODE_PERIOD      .getDescription().length() == 0);
     }
 }

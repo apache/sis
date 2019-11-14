@@ -29,26 +29,27 @@ import org.apache.sis.util.Static;
  */
 public final strictfp class TestConfiguration extends Static {
     /**
-     * The {@value} system property for enabling more extensive tests.
+     * The {@systemProperty org.apache.sis.test.extensive} system property for enabling more extensive tests.
      * If this {@linkplain System#getProperties() system property} is set to {@code true},
      * then Apache SIS will run some tests which were normally skipped because they are slow.
      */
     public static final String EXTENSIVE_TESTS_KEY = "org.apache.sis.test.extensive";
 
     /**
-     * The {@value} system property for enabling verbose outputs.
+     * The {@systemProperty org.apache.sis.test.verbose} system property for enabling verbose outputs.
      * If this {@linkplain System#getProperties() system property} is set to {@code true},
      * then the content sent to the {@link TestCase#out} field will be printed after each test.
      */
     public static final String VERBOSE_OUTPUT_KEY = "org.apache.sis.test.verbose";
 
     /**
-     * The {@value} system property for enabling display of test images or widgets.
+     * The {@systemProperty org.apache.sis.test.gui.show} system property
+     * for enabling display of test images or widgets.
      */
     public static final String SHOW_WIDGET_KEY = "org.apache.sis.test.gui.show";
 
     /**
-     * The {@value} system property for setting the output encoding.
+     * The {@systemProperty org.apache.sis.test.encoding} system property for setting the output encoding.
      * This property is used only if the {@link #VERBOSE_OUTPUT_KEY} property
      * is set to "{@code true}". If this property is not set, then the system
      * encoding will be used.

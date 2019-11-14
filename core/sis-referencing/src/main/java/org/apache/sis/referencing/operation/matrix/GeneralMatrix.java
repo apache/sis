@@ -29,7 +29,7 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 /**
  * A two dimensional array of numbers. Row and column numbering begins with zero.
  *
- * <div class="section">Support for extended precision</div>
+ * <h2>Support for extended precision</h2>
  * This class can optionally support extended precision using the <cite>double-double arithmetic</cite>.
  * In extended precision mode, the {@link #elements} array have twice its normal length. The first half
  * of the array contains the same value than in normal precision mode, while the second half contains

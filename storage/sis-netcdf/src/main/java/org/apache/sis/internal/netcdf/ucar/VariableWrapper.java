@@ -43,6 +43,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
@@ -142,8 +143,7 @@ final class VariableWrapper extends Variable {
      */
     @Override
     protected String getUnitsString() {
-        String symbol = variable.getUnitsString();
-        return (symbol != null && (symbol = symbol.trim()).isEmpty()) ? null : symbol;
+        return Strings.trimOrNull(variable.getUnitsString());
         // Do not replace "N/A" by null since it is a valid unit symbol.
     }
 

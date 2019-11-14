@@ -32,6 +32,7 @@ import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -39,18 +40,19 @@ import org.apache.sis.util.ArgumentChecks;
  * The provider of {@link Store} instances. Given a {@link StorageConnector} input,
  * this class tries to instantiate a CSV {@code Store}.
  *
- * <div class="section">Thread safety</div>
+ * <h2>Thread safety</h2>
  * The same {@code StoreProvider} instance can be safely used by many threads without synchronization on
  * the part of the caller. However the {@link Store} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
-@StoreMetadata(formatName   = StoreProvider.NAME,
-               fileSuffixes = "csv",
-               capabilities = Capability.READ)
+@StoreMetadata(formatName    = StoreProvider.NAME,
+               fileSuffixes  = "csv",
+               capabilities  = Capability.READ,
+               resourceTypes = FeatureSet.class)
 public final class StoreProvider extends URIDataStore.Provider {
     /**
      * The format names for static features and moving features.

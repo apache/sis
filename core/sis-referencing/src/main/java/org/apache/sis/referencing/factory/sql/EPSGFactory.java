@@ -63,14 +63,14 @@ import org.apache.sis.util.Localized;
  * or in the directory given by the {@code "derby​.system​.home"} property, in that order.
  * See the {@linkplain org.apache.sis.referencing.factory.sql package documentation} for more information.</p>
  *
- * <div class="section">EPSG dataset installation</div>
+ * <h2>EPSG dataset installation</h2>
  * This class tries to automatically detect the schema that contains the EPSG tables
  * (see {@link SQLTranslator} for examples of tables to look for). If the tables are not found,
  * then the {@link #install(Connection)} method will be invoked for creating the EPSG schema.
  * The {@code install(…)} method can perform its work only if the definition files are reachable
  * on the classpath, or if the directory containing the files have been specified.
  *
- * <div class="section">Data Access Object (DAO)</div>
+ * <h2>Data Access Object (DAO)</h2>
  * If there is no cached object for a given code, then {@code EPSGFactory} creates an {@link EPSGDataAccess} instance
  * for performing the actual creation work. Developers who need to customize the geodetic object creation can override
  * the {@link #newDataAccess(Connection, SQLTranslator)} method in order to return their own {@link EPSGDataAccess}

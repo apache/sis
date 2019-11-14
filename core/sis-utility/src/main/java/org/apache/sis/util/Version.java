@@ -34,9 +34,9 @@ import static org.apache.sis.internal.system.Modules.MINOR_VERSION;
  * <p>This class provides methods for performing comparisons of {@code Version} objects where major,
  * minor and revision parts are compared as numbers when possible, or as strings otherwise.</p>
  *
- * <div class="section">Immutability and thread safety</div>
+ * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus inherently thread-safe.
- * Subclasses may or may not be immutable, at implementation choice. But implementors are
+ * Subclasses may or may not be immutable, at implementation choice. But implementers are
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -266,7 +266,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
                  * One value is a text while the other value is a number.  We could be tempted to
                  * force a comparison by converting the number to a String and then invoking the
                  * String.compareTo(String) method, but this strategy would violate the following
-                 * contract from Comparable.compareTo(Object):  "The implementor must also ensure
+                 * contract from Comparable.compareTo(Object):  "The implementer must also ensure
                  * that the relation is transitive". Use case:
                  *
                  *    A is the integer 10

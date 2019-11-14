@@ -18,13 +18,13 @@
 /**
  * Root package for various metadata implementations.
  *
- * <div class="section">Foreword</div>
+ * <h2>Foreword</h2>
  * Many metadata standards exist, including <cite>Dublin core</cite>, <cite>ISO 19115</cite> and the Image I/O
  * metadata defined in {@link javax.imageio.metadata}. The SIS implementation focuses on ISO 19115 (including
  * its ISO 19115-2 extension), but the classes are designed in a way that allow the usage of different standards.
  * This genericity goal should be keep in mind in the discussion below.
  *
- * <div class="section">How Metadata are defined</div>
+ * <h2>How Metadata are defined</h2>
  * A metadata standard is defined by a set of Java interfaces belonging to a specific package and its sub-packages.
  * For example the ISO 19115 standard is defined by the <a href="http://www.geoapi.org">GeoAPI</a> interfaces
  * defined in the {@link org.opengis.metadata} package and sub-packages. That standard is identified in SIS by the
@@ -59,7 +59,7 @@
  *       package for generating metadata implementations backed by the content of a database.</li>
  * </ul>
  *
- * <div class="section">How Metadata are handled</div>
+ * <h2>How Metadata are handled</h2>
  * Metadata objects in SIS are mostly containers: they provide getter and setter methods for manipulating the values
  * associated to properties (for example the {@code title} property of a {@code Citation} object), but provide few logic.
  * The package {@link org.apache.sis.metadata.iso} and its sub-packages are the main examples of such containers.
@@ -102,7 +102,7 @@
  *       where each call to a getter method is translated into a SQL query for the above database.</li>
  * </ul>
  *
- * <div class="section">How Metadata are marshalled</div>
+ * <h2>How Metadata are marshalled</h2>
  * The ISO 19115-3 standard defines how ISO 19115-1 metadata shall be represented in XML.
  * The SIS library supports XML marshalling and unmarshalling with JAXB annotations.
  *

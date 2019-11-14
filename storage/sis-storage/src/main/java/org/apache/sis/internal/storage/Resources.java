@@ -72,9 +72,19 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotCreateFolderStore_1 = 43;
 
         /**
+         * Can not infer the feature type resulting from “{0}” filtering.
+         */
+        public static final short CanNotDeriveTypeFromFeature_1 = 55;
+
+        /**
          * Can not get metadata common to “{0}” files. The reason is: {1}
          */
         public static final short CanNotGetCommonMetadata_2 = 39;
+
+        /**
+         * Can not intersect “{0}” data with specified query.
+         */
+        public static final short CanNotIntersectDataWithQuery_1 = 57;
 
         /**
          * Can not read the Coordinate Reference System (CRS) Well Known Text (WKT) in “{0}”.
@@ -115,6 +125,11 @@ public final class Resources extends IndexedResourceBundle {
          * This {0} reader is closed.
          */
         public static final short ClosedReader_1 = 4;
+
+        /**
+         * This storage connector is closed.
+         */
+        public static final short ClosedStorageConnector = 56;
 
         /**
          * This {0} writer is closed.
@@ -165,6 +180,11 @@ public final class Resources extends IndexedResourceBundle {
          * Content of “{0}” directory.
          */
         public static final short DirectoryContent_1 = 35;
+
+        /**
+         * Query property “{0}” is duplicated at indices {1} and {2}.
+         */
+        public static final short DuplicatedQueryProperty_3 = 54;
 
         /**
          * Sample dimension index {0} is duplicated.

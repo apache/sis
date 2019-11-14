@@ -61,7 +61,7 @@ public final class CS_CylindricalCS extends PropertyType<CS_CylindricalCS, Cylin
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:CylindricalCS>} XML element.
      *
-     * @param  cs  the element to marshall.
+     * @param  cs  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override

@@ -21,6 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.storage.Resource;
 
 
 /**
@@ -30,7 +31,8 @@ import org.apache.sis.storage.DataStoreProvider;
  * <p>This is not a committed API since the way to represent data store capabilities is likely to change.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -79,4 +81,15 @@ public @interface StoreMetadata {
      * @return the filename suffixes, case insensitive. Never null but can be empty.
      */
     String[] fileSuffixes() default {};
+
+    /**
+     * Returns the types of resource that the {@link DataStoreProvider} may be able to produce.
+     * Values in this array may be
+     * {@link org.apache.sis.storage.Aggregate},
+     * {@link org.apache.sis.storage.FeatureSet} or
+     * {@link org.apache.sis.storage.GridCoverageResource}.
+     *
+     * @return information about the expected resource types which might be encounter with this format.
+     */
+    Class<? extends Resource>[] resourceTypes() default {};
 }

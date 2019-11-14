@@ -41,14 +41,14 @@ import java.sql.SQLException;
  *     }
  * }
  *
- * <div class="section">Relationship with {@code java.io.UncheckedIOException}</div>
+ * <h2>Relationship with {@code java.io.UncheckedIOException}</h2>
  * JDK8 provides a {@link java.io.UncheckedIOException} which partially overlaps
  * the purpose of this {@code BackingStoreException}. While Apache SIS still uses
  * {@code BackingStoreException} as a general mechanism for any kind of checked exceptions,
  * client code would be well advised to catch both kind of exceptions for robustness.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -115,6 +115,10 @@ public class BackingStoreException extends RuntimeException {
      *     }
      * }
      *
+     * If this exception has {@linkplain #getSuppressed() suppressed exceptions} and this method decided
+     * that this exception should be discarded in favor of {@code <E>} or {@link RuntimeException} cause,
+     * then this method copies the suppressed exceptions into the cause before to throw the cause.
+     *
      * @param  <E>   the type of the exception to unwrap.
      * @param  type  the type of the exception to unwrap.
      * @return the cause as an exception of the given type (never {@code null}).
@@ -129,11 +133,27 @@ public class BackingStoreException extends RuntimeException {
     {
         final Throwable cause = getCause();
         if (type.isInstance(cause)) {
+            copySuppressed(cause);
             return (E) cause;
         } else if (cause instanceof RuntimeException) {
+            copySuppressed(cause);
             throw (RuntimeException) cause;
         } else {
             throw this;
+        }
+    }
+
+    /**
+     * Copies suppressed exceptions to the given target. This method is invoked before the cause is re-thrown.
+     * Current version does not verify that this copy operation does not create duplicated values.
+     * Most of the time, this exception has no suppressed exceptions and this method does nothing.
+     *
+     * <p>This copy operation is useful if a {@link BackingStoreException} was thrown inside a try-with-resource
+     * block, especially when the {@link AutoCloseable} is a {@link java.util.stream.Stream}.</p>
+     */
+    private void copySuppressed(final Throwable cause) {
+        for (final Throwable s : getSuppressed()) {
+            cause.addSuppressed(s);
         }
     }
 }

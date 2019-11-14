@@ -42,8 +42,10 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.IllegalNameException;
-import org.apache.sis.storage.event.ChangeEvent;
-import org.apache.sis.storage.event.ChangeListener;
+import org.apache.sis.storage.event.StoreEvent;
+import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -144,17 +146,24 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Opens access to listeners for {@link ImageFileDirectory}.
+     */
+    final StoreListeners listeners() {
+        return listeners;
+    }
+
+    /**
      * Returns the parameters used to open this GeoTIFF data store.
-     * If non-null, the parameters are described by {@link GeoTiffStoreProvider#getOpenParameters()} and contains at
-     * least a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
-     * This method may return {@code null} if the storage input can not be described by a URI
+     * The parameters are described by {@link GeoTiffStoreProvider#getOpenParameters()} and contains at least
+     * a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
+     * The return value may be empty if the storage input can not be described by a URI
      * (for example a GeoTIFF file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *
-     * @return parameters used for opening this data store, or {@code null} if not available.
+     * @return parameters used for opening this data store.
      */
     @Override
-    public ParameterValueGroup getOpenParameters() {
-        return URIDataStore.parameters(provider, location);
+    public Optional<ParameterValueGroup> getOpenParameters() {
+        return Optional.ofNullable(URIDataStore.parameters(provider, location));
     }
 
     /**
@@ -189,7 +198,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
                 builder.setFormat(Constants.GEOTIFF);
             } catch (MetadataStoreException e) {
                 builder.addFormatName(Constants.GEOTIFF);
-                warning(null, e);
+                listeners.warning(e);
             }
             builder.addEncoding(encoding, MetadataBuilder.Scope.METADATA);
             builder.addResourceScope(ScopeCode.COVERAGE, null);
@@ -333,25 +342,16 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Ignored in current implementation, since this resource produces no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
+     * Registers a listener to notify when the specified kind of event occurs in this data store.
+     * The current implementation of this data store can emit only {@link WarningEvent}s;
+     * any listener specified for another kind of events will be ignored.
      */
     @Override
-    public <T extends ChangeEvent> void addListener(ChangeListener<? super T> listener, Class<T> eventType) {
-    }
-
-    /**
-     * Ignored in current implementation, since this resource produces no events.
-     *
-     * @param  <T>        {@inheritDoc}
-     * @param  listener   {@inheritDoc}
-     * @param  eventType  {@inheritDoc}
-     */
-    @Override
-    public <T extends ChangeEvent> void removeListener(ChangeListener<? super T> listener, Class<T> eventType) {
+    public <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener) {
+        // If an argument is null, we let the parent class throws (indirectly) NullArgumentException.
+        if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
+            super.addListener(eventType, listener);
+        }
     }
 
     /**

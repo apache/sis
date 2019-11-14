@@ -635,6 +635,8 @@ public abstract class PixelIterator {
     /**
      * Returns a moving window over the sample values in a rectangular region starting at iterator position.
      * The <cite>window size</cite> must have been specified at {@code PixelIterator} construction time.
+     * The current iterator position is the window corner having the smallest <var>x</var> and <var>y</var> coordinates.
+     * This is typically, but not necessarily (depending on axis orientations) the window upper-left corner.
      * Sample values are stored in a sequence of length
      * <var>(number of bands)</var> × <var>(window width)</var> × <var>(window height)</var>.
      * Values are always stored with band index varying fastest, then column index, then row index.
@@ -651,6 +653,11 @@ public abstract class PixelIterator {
      * Calls to {@link #next()} or {@link #moveTo(int,int)} followed by {@link Window#update()}
      * replaces the window content with values starting at the new iterator position.
      * Before the first {@link Window#update()} invocation, the window is filled with zero values.
+     *
+     * <p>If this iterator is used for
+     * {@linkplain WritablePixelIterator#setPixel(int[]) writing pixel values at current position},
+     * those write operations may change the content of windows at {@linkplain #next() next positions}
+     * unless the iteration order of this iterator is {@link SequenceType#LINEAR}.</p>
      *
      * <div class="note"><b>Usage example:</b>
      * following code creates an iterator over the full area of given image, then a window of 5×5 pixels.

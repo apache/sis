@@ -117,7 +117,7 @@ public final class MathFunctions extends Static {
      * <blockquote>
      *    There are actually two types of NaNs, signaling NaNs and quiet NaNs. Java doesn't support the features necessary
      *    to reliably distinguish the two. However, the relevant point is that copying a signaling NaN may (or may not, at
-     *    the implementors discretion) yield a quiet NaN — a NaN with a different bit pattern (IEEE 754 6.2). Therefore, on
+     *    the implementers discretion) yield a quiet NaN — a NaN with a different bit pattern (IEEE 754 6.2). Therefore, on
      *    IEEE 754 compliant platforms it may be impossible to find a signaling NaN stored in an array since a signaling NaN
      *    passed as an argument to binarySearch may get replaced by a quiet NaN.
      * </blockquote>
@@ -203,7 +203,7 @@ public final class MathFunctions extends Static {
      *
      * If the given vector contains a NaN value, then the result is NaN.
      *
-     * <div class="section">Implementation note</div>
+     * <h4>Implementation note</h4>
      * In the special case where only one element is different than zero, this method
      * returns directly the {@linkplain Math#abs(double) absolute value} of that element
      * without computing {@code sqrt(v²)}, in order to avoid rounding error. This special case
@@ -271,7 +271,7 @@ public final class MathFunctions extends Static {
      *   <li>If the argument is zero, then the result is -1075.</li>
      * </ul>
      *
-     * <div class="section">Identities</div>
+     * <h4>Identities</h4>
      * For any <var>p</var> values in the [-1075 … 1024] range and <var>value</var> = 2<sup>p</sup>:
      * <ul>
      *   <li><code>getExponent(Math.scalb(1.0, p)) == p</code></li>
