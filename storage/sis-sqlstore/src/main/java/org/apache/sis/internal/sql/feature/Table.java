@@ -46,7 +46,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.storage.Query;
-import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.WeakValueHashMap;
@@ -206,7 +205,7 @@ final class Table extends AbstractFeatureSet {
     }
 
     @Override
-    public FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
+    public FeatureSet subset(Query query) throws DataStoreException {
         if (query instanceof SimpleQuery) {
             final SubsetAdapter subsetAdapter = new SubsetAdapter(fs -> new SQLQueryAdapter.Table(this));
             return subsetAdapter.subset(this, (SimpleQuery) query);

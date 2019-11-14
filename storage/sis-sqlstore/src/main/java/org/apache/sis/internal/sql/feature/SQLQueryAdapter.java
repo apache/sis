@@ -13,6 +13,9 @@ import org.apache.sis.internal.storage.SubsetAdapter;
 import org.apache.sis.internal.storage.query.SimpleQuery;
 import org.apache.sis.storage.FeatureSet;
 
+/**
+ *
+ */
 abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
 
     private ColumnRef[] columns;
@@ -116,7 +119,15 @@ abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
         }
     }
 
-    public static Supplier<ANSIInterpreter> forDialect(final Dialect dialect) {
+    /**
+     * Give back a filter/expression interpreter for a given database dialect.
+     * TODO: unify with {@link DialectMapping}.
+     *
+     * @param dialect Database dialect that must be produced by the interpreter. If null, {@link Dialect#ANSI} is used
+     *                as a fallback.
+     * @return A function able to give a fresh interpreter on demaind.
+     */
+    static Supplier<ANSIInterpreter> forDialect(final Dialect dialect) {
         switch (dialect) {
             case POSTGRESQL: return () -> new PostGISInterpreter();
             default: return () -> new ANSIInterpreter();

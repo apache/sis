@@ -40,7 +40,7 @@ final class OGC06104r4 implements DialectMapping {
     private OGC06104r4(final OGC06104r4.Spi spi, Connection c) throws SQLException {
         this.spi = spi;
         sessionCache = new Cache<>(7, 0, true);
-        this.identifyGeometries = new GeometryIdentification(c, "geometry_columns", "f_geometry_column", "type", sessionCache);
+        this.identifyGeometries = new GeometryIdentification(c, sessionCache);
 
         this.library = Geometries.implementation(null);
     }

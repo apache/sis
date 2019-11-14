@@ -110,7 +110,7 @@ class GeometryIdentification implements SQLCloseable {
         final String name = cursor.getString(1);
         final int dimension = cursor.getInt(2);
         final int pgSrid = cursor.getInt(3);
-        final String type = cursor.getString(4);
+        final String type = typeIncluded ? cursor.getString(4) : null;
         // Note: we make a query per entry, which could impact performance. However, 99% of defined tables
         // will have only one geometry column. Moreover, even with more than one, with prepared statement, the
         // performance impact should stay low.

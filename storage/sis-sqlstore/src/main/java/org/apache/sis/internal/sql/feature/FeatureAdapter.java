@@ -13,12 +13,27 @@ import org.opengis.feature.FeatureType;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
+/**
+ * Convert data from a specific query into Feature entities. This object can be prepared once for a specific statement,
+ * and reused each time it is executed.
+ *
+ * @implNote For now, only attributes (values) are converted. Associations are delegated to the specific table reading
+ * case, through {@link Features} class.
+ *
+ * This object has an initialization phase, to prepare it for a specific ResultSet, through {@link #prepare(Connection)}
+ * method. It allows mappers to fetch specific information from the database when needed.
+ */
 class FeatureAdapter {
 
     final FeatureType type;
 
     private final List<PropertyMapper> attributeMappers;
 
+    /**
+     * Creates an adapter producing features of the given type, and populating its attributes with input mappers.
+     * @param type The data type to produce as output. Cannot be null.
+     * @param attributeMappers Attribute mappers to use to decode SQL values. Mandatory (can be empty, though)
+     */
     FeatureAdapter(FeatureType type, List<PropertyMapper> attributeMappers) {
         ensureNonNull("Target feature type", type);
         ensureNonNull("Attribute mappers", attributeMappers);
@@ -26,6 +41,12 @@ class FeatureAdapter {
         this.attributeMappers = Collections.unmodifiableList(new ArrayList<>(attributeMappers));
     }
 
+    /**
+     * Get a worker for a specific connection. Note that any number of result sets can be parsed with this, as long as
+     * the connection is open.
+     * @param target Connection usable by the mapper all along its lifecycle.
+     * @return A mapper ready-to-read SQL result set.
+     */
     ResultSetAdapter prepare(final Connection target) {
         final List<ReadyMapper> rtu = attributeMappers.stream()
                 .map(mapper -> mapper.prepare(target))
@@ -33,6 +54,10 @@ class FeatureAdapter {
         return new ResultSetAdapter(rtu);
     }
 
+    /**
+     * Specialization of {@link FeatureAdapter} as a short-live object, able to use a database connection to load third-
+     * party data.
+     */
     final class ResultSetAdapter {
         final List<ReadyMapper> mappers;
 
@@ -40,6 +65,15 @@ class FeatureAdapter {
             this.mappers = mappers;
         }
 
+        /**
+         * Read current row as a Feature. For repeated calls, please consider using {@link #prefetch(int, ResultSet)}
+         * instead.
+         *
+         * @param cursor The result set containing query result. It must be positioned on the row you want to read. It
+         *               is also your responsability to move on cursor to another row after this call.
+         * @return A feature holding values of the current row of input result set. Never null.
+         * @throws SQLException If an error occurs while querying a column value.
+         */
         Feature read(final ResultSet cursor) throws SQLException {
             final Feature result = readAttributes(cursor);
             addImports(result, cursor);
@@ -53,7 +87,19 @@ class FeatureAdapter {
             return result;
         }
 
-        //final SQLBiFunction<ResultSet, Integer, ?>[] adapters;
+        /**
+         * Load a number of rows in one go. Beware, behavior of this method is different from {@link #read(ResultSet)},
+         * as it WON'T read currentl row. It wil start by moving to next row, and then read sequentially all rows until
+         * given count is done, or the given result set is over.
+         *
+         * @param size Maximum number of elements to read from given result set. If negative or zero, this function is a
+         *            no-op.
+         * @param cursor Result set to extract data from. To read first entry of it, you must NOT have called {@link ResultSet#next()}
+         *               on it.
+         * @return A modifiable list of read elements. Never null, can be empty. It can contain less elements than asked
+         * but never more.
+         * @throws SQLException If extracting values from input result set fails.
+         */
         List<Feature> prefetch(final int size, final ResultSet cursor) throws SQLException {
             // TODO: optimize by resolving import associations by  batch import fetching.
             final ArrayList<Feature> features = new ArrayList<>(size);

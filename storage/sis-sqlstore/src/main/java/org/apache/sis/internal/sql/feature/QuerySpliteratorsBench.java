@@ -108,42 +108,7 @@ public class QuerySpliteratorsBench {
         final int sum = input.fs.features(input.parallel).mapToInt(f -> 1).sum();
         if (sum != input.numRows) throw new AssertionError("..." + sum + "..." + "WTF ?!");
     }
-/*
-    @Test
-    public void benchmark() throws Exception {
-        System.out.println("COMMON POOL: "+ ForkJoinPool.getCommonPoolParallelism());
-        final DatabaseInput db = new DatabaseInput();
-        db.numRows = 100000;
-        db.parallel = true;
 
-        long start = System.nanoTime();
-        db.setup();
-        System.out.println("Insertion time: "+((System.nanoTime()-start)/1e6)+" ms");
-
-        // warmup
-        for (int i = 0 ;  i < 5 ; i++) {
-            test(db);
-            test(db);
-        }
-
-        // go
-        long prefetch = 0, noprefetch = 0;
-        for (int i = 0 ; i < 100 ; i++) {
-            start = System.nanoTime();
-            test(db);
-            prefetch += System.nanoTime()-start;
-
-            start = System.nanoTime();
-            test(db);
-            noprefetch += System.nanoTime()-start;
-        }
-
-        System.out.println(String.format(
-                "Performances:%nP: %d%nI: %d",
-                (long) (prefetch / 1e7), (long) (noprefetch / 1e8)
-        ));
-    }
-*/
     public static void main(String... args) throws Exception {
         org.openjdk.jmh.Main.main(args);
     }
