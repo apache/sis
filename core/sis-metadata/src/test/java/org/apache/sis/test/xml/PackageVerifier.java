@@ -42,6 +42,7 @@ import org.opengis.geoapi.SchemaException;
 import org.opengis.geoapi.SchemaInformation;
 import org.apache.sis.util.Classes;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
 
@@ -172,8 +173,9 @@ final strictfp class PackageVerifier {
                 String location = schema.location();
                 if (!XmlSchema.NO_LOCATION.equals(location)) {
                     String expected = location;
-                    if (expected.startsWith("https:")) {
-                        expected = "http:" + expected.substring(6);
+                    if (expected.startsWith(Constants.HTTPS)) {
+                        // Replace "https" (used for schema location) by "http" (used for namespace).
+                        expected = Constants.HTTP + expected.substring(Constants.HTTPS.length());
                     }
                     if (!expected.startsWith(schema.namespace())) {
                         throw new SchemaException("XML schema location inconsistent with namespace in package " + name);

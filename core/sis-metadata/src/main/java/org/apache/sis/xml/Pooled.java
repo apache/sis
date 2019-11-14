@@ -324,7 +324,7 @@ abstract class Pooled {
                             if (schema != null) {
                                 if (!(schema instanceof String)) {
                                     throw new PropertyException(Errors.format(Errors.Keys.IllegalPropertyValueClass_2,
-                                            Strings.bracket(name, key), value.getClass()));
+                                            Strings.bracket(name, key), schema.getClass()));
                                 }
                                 copy.put(key, (String) schema);
                             }
@@ -351,7 +351,9 @@ abstract class Pooled {
                     return;
                 }
                 case XML.LENIENT_UNMARSHAL: {
-                    if ((value instanceof CharSequence) ? Boolean.parseBoolean(value.toString()) : (Boolean) value) {
+                    if (value != null && ((value instanceof CharSequence) ?
+                            Boolean.parseBoolean(value.toString()) : (Boolean) value))
+                    {
                         bitMasks |= Context.LENIENT_UNMARSHAL;
                     } else {
                         bitMasks &= ~Context.LENIENT_UNMARSHAL;
