@@ -72,7 +72,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
 
     /**
      * The table view which use this list, or {@code null} if we don't need this information anymore.
-     * See {@link #describedCodes} for an explanation about its purpose.
+     * See {@link #describedCount} for an explanation about its purpose.
      */
     TableView<Code> owner;
 
@@ -94,7 +94,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
      * This is used for notifying the {@linkplain #owner} when we do not expect more information to be loaded.
      * This notification is only indicative and may not be fully accurate. Effect should be only visual.
      */
-    private int describedCodes;
+    private int describedCount;
 
     /**
      * The preferred locale of CRS descriptions.
@@ -220,14 +220,14 @@ final class AuthorityCodes extends ObservableListBase<Code>
                 final String name = updated.remove(value);
                 if (name != null) {
                     ((Code) value).name().set(name);            // The name needs to be set in JavaFX thread.
-                    describedCodes++;
+                    describedCount++;
                     nextUpdate(i);
                 }
             }
         }
         nextAdd(s, n);
         endChange();
-        if (describedCodes >= n) {
+        if (describedCount >= n) {
             removeHourglass();
         }
     }
