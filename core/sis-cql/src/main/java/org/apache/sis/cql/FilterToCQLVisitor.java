@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.apache.sis.internal.util.StandardDateFormat;
+
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTWriter;
 import org.opengis.filter.And;
@@ -287,27 +289,49 @@ final class FilterToCQLVisitor implements FilterVisitor, ExpressionVisitor {
     public Object visit(final BBOX filter, final Object o) {
         final StringBuilder sb = toStringBuilder(o);
 
-        if (filter.getExpression1() instanceof PropertyName
-                && filter.getExpression2() instanceof Literal) {
+        final Expression left = filter.getExpression1();
+        final Expression right = filter.getExpression2();
+
+        final PropertyName pName = left instanceof PropertyName ? (PropertyName) left :
+                right instanceof PropertyName ? (PropertyName) right : null;
+        final Literal lit = left instanceof Literal ? (Literal) left :
+                right instanceof Literal ? (Literal) right : null;
+        final Envelope jtsEnv = lit.getValue() instanceof Envelope ? (Envelope) lit.getValue() : null;
+        org.opengis.geometry.Envelope gisEnv = lit.getValue() instanceof org.opengis.geometry.Envelope ?
+                (org.opengis.geometry.Envelope) lit.getValue() : null;
+        if (pName != null && gisEnv != null || jtsEnv != null) {
             //use writing : BBOX(att,v1,v2,v3,v4)
             sb.append("BBOX(");
-            sb.append(filter.getPropertyName());
+            sb.append(pName.getPropertyName());
             sb.append(',');
-            sb.append(filter.getMinX());
+            final double minX, minY, maxX, maxY;
+            if (gisEnv != null) {
+                if (gisEnv.getDimension() > 2) throw new UnsupportedOperationException("Only 2D envelopes accepted");
+                minX = gisEnv.getMinimum(0);
+                maxX = gisEnv.getMaximum(0);
+                minY = gisEnv.getMinimum(1);
+                maxY = gisEnv.getMaximum(1);
+            } else {
+                minX = jtsEnv.getMinX();
+                maxX = jtsEnv.getMaxX();
+                minY = jtsEnv.getMinY();
+                maxY = jtsEnv.getMaxY();
+            }
+            sb.append(minX);
             sb.append(',');
-            sb.append(filter.getMaxX());
+            sb.append(maxX);
             sb.append(',');
-            sb.append(filter.getMinY());
+            sb.append(minY);
             sb.append(',');
-            sb.append(filter.getMaxY());
+            sb.append(maxY);
             sb.append(')');
 
         } else {
             //use writing BBOX(exp1,exp2)
             sb.append("BBOX(");
-            filter.getExpression1().accept(this, sb);
+            left.accept(this, sb);
             sb.append(',');
-            filter.getExpression2().accept(this, sb);
+            right.accept(this, sb);
             sb.append(')');
         }
 
