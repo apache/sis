@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.coverage;
 
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.util.Collection;
@@ -26,14 +25,10 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.image.TranslatedRenderedImage;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ArgumentChecks;
 import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 
@@ -60,8 +55,7 @@ public final class GridCoverage2D extends GridCoverage {
 
     /**
      * The given RenderedImage may not start at 0,0, so does the gridExtent of the grid geometry.
-     * Image minX/MinY coordinate is expected to be located grid extent lower corner.
-     *
+     * Image 0/0 coordinate is expected to match grid extent lower corner.
      *
      * @param grid  the grid extent, CRS and conversion from cell indices to CRS.
      * @param bands sample dimensions for each image band.
@@ -84,7 +78,6 @@ public final class GridCoverage2D extends GridCoverage {
         if (image.getHeight()!= extent.getSize(imageAxes[1])) {
             throw new IllegalArgumentException("Image height " + image.getHeight()+ "does not match grid extent height "+ extent.getSize(imageAxes[1]));
         }
-
     }
 
     /**
@@ -136,67 +129,20 @@ public final class GridCoverage2D extends GridCoverage {
         }
     }
 
+    /**
+     * {@inheritDoc }
+     */
+    @Override
     public double[] evaluate(DirectPosition position, double[] buffer) throws CannotEvaluateException {
-
         try {
             position = toGridCoord(position);
-
-            int x = 0;
-            int y = 0;
-            for (int i = 0, n = position.getDimension(); i < n; i++) {
-                final double dv = position.getOrdinate(i);
-                if (Double.isFinite(dv)) {
-                    throw new PointOutsideCoverageException("Position outside coverage, axis " + i + " value " + dv);
-                }
-
-                final int v = Math.toIntExact(Math.round(dv));
-                if (i == imageAxes[0]) {
-                    x = v;
-                } else if (i == imageAxes[1]) {
-                    y = v;
-                } else if (v != 0) {
-                    //coverage is a slice, all other indices must be zero, otherwise we are outside coverage
-                    throw new PointOutsideCoverageException("Position outside coverage, axis " + i + " value " + v);
-                }
-            }
-
-            if (getBounds().contains(x,y)) {
-                return image.getTile(XToTileX(x), YToTileY(y)).getPixel(x, y, buffer);
-            }
-            throw new PointOutsideCoverageException("");
+            long[] coord = toLongExact(position);
+            int x = Math.toIntExact(Math.round(coord[imageAxes[0]]));
+            int y = Math.toIntExact(Math.round(coord[imageAxes[1]]));
+            return image.getTile(XToTileX(x), YToTileY(y)).getPixel(x, y, buffer);
         } catch (FactoryException | TransformException ex) {
             throw new CannotEvaluateException(ex.getMessage(), ex);
         }
-    }
-
-    /**
-     * Converts the specified point to grid coordinate.
-     *
-     * @param point point to transform to grid coordinate
-     * @return point in grid coordinate
-     * @throws org.opengis.util.FactoryException if creating transformation fails
-     * @throws org.opengis.referencing.operation.TransformException if transformation fails
-     */
-    protected DirectPosition toGridCoord(final DirectPosition point)
-            throws FactoryException, TransformException
-    {
-        final CoordinateReferenceSystem sourceCRS = point.getCoordinateReferenceSystem();
-        final MathTransform trs;
-        if (sourceCRS != null) {
-            MathTransform toCrs = CRS.findOperation(sourceCRS, getCoordinateReferenceSystem(), null).getMathTransform();
-            trs = MathTransforms.concatenate(toCrs, getGridGeometry().getGridToCRS(PixelInCell.CELL_CENTER).inverse());
-        } else {
-            trs = getGridGeometry().getGridToCRS(PixelInCell.CELL_CENTER);
-        }
-        return trs.transform(point, null);
-    }
-
-    /**
-     * Utility method to convert image bounds as {@link java.awt.Rectangle}.
-     * @return {@link java.awt.Rectangle} bounds.
-     */
-    private Rectangle getBounds() {
-        return new Rectangle(image.getMinX(), image.getMinY(), image.getWidth(), image.getHeight());
     }
 
     /**

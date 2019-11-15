@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.coverage;
 
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
@@ -125,14 +126,16 @@ final class ConvertedGridCoverage extends GridCoverage {
             return render;
         }
         final Raster raster;
-        if (render.getNumXTiles() == 1 && render.getNumYTiles() == 1) {
+        if (render.getNumXTiles() == 1 && render.getNumYTiles() == 1 && render.getTileGridXOffset() == 0 && render.getTileGridYOffset() == 0) {
             raster = render.getTile(render.getMinTileX(), render.getMinTileY());
         } else {
             /*
              * This fallback is very inefficient since it copies all data in one big raster.
              * We will replace this class by tiles management in a future Apache SIS version.
+             *
+             * Note : we need to specify the Rectangle to reset raster location at 0,0
              */
-            raster = render.getData();
+            raster = render.getData(new Rectangle(render.getMinX(), render.getMinY(), render.getWidth(), render.getHeight()));
         }
         final SampleModel baseSm = raster.getSampleModel();
         final DataBuffer dataBuffer = raster.getDataBuffer();
