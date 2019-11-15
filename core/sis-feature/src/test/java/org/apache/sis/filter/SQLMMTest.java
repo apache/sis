@@ -25,9 +25,13 @@ import org.opengis.filter.expression.Literal;
 import org.opengis.filter.expression.PropertyName;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.feature.jts.JTS;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.TestCase;
@@ -38,7 +42,6 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
@@ -269,7 +272,7 @@ public final strictfp class SQLMMTest extends TestCase {
     }
 
     @Test
-    public void ST_Intersects() {
+    public void ST_Intersects() throws Exception {
         try {
             new ST_Intersects(null, null);
             fail("ST_Intersects operator should not accept null parameters");
@@ -286,7 +289,7 @@ public final strictfp class SQLMMTest extends TestCase {
 
         final Coordinate start = new Coordinate(0, 0.1);
         final Coordinate second = new Coordinate(1.2, 0.2);
-        final LinearRing ring = geometryFactory.createLinearRing(new Coordinate[]{
+        final Polygon ring = geometryFactory.createPolygon(new Coordinate[]{
                 start, second, new Coordinate(0.7, 0.8), start
         });
 
@@ -298,7 +301,7 @@ public final strictfp class SQLMMTest extends TestCase {
 
         // Border should intersect
         final Feature f = mock();
-        final Point point = geometryFactory.createPoint(second);
+        Point point = geometryFactory.createPoint(second);
         f.setPropertyValue(P_NAME, point);
         final PropertyName geomName = factory.property(P_NAME);
         st = new ST_Intersects(geomName, lring);
@@ -309,25 +312,30 @@ public final strictfp class SQLMMTest extends TestCase {
 
         // Ensure CRS conversion works as expected (see package-info).
         // Missing
-        point.setUserData(CommonCRS.defaultGeographic());
+        final GeographicCRS crs84 = CommonCRS.defaultGeographic();
+        point.setUserData(crs84);
         expectFailFast(() -> new ST_Intersects(geomName, lring).evaluate(f), IllegalArgumentException.class);
         final Literal lPoint = factory.literal(point);
         expectFailFast(() -> new ST_Intersects(lPoint, lring).evaluate(null), IllegalArgumentException.class);
 
         // utm domain contained in CRS:84
-        /* TODO: this is broken. We have to reproject geometries each time we change CRS.
         final ProjectedCRS nadUtm = CommonCRS.NAD27.universal(32, 37);
-        point.setUserData(nadUtm);
-        ring.setUserData(CommonCRS.defaultGeographic());
-        assertTrue("Intersection should be found when CRS are compatible", intersects(geomName, lring).evaluate(f));
-        assertTrue("Intersection should be found when CRS are compatible", intersects(lPoint, lring).evaluate(null));
+        // slightly move point, because edge test is likely to fail due to transform roundings.
+        point = geometryFactory.createPoint(new Coordinate(0.8, 0.3));
+        final Geometry nadPoint = JTS.transform(point, CRS.findOperation(crs84, nadUtm, null));
+        f.setPropertyValue(P_NAME, nadPoint);
+        ring.setUserData(crs84);
+        assertTrue("Intersection should be found when CRS are compatible", new ST_Intersects(geomName, lring).evaluate(f));
+        assertTrue("Intersection should be found when CRS are compatible", new ST_Intersects(factory.literal(nadPoint), lring).evaluate(null));
 
         // Common base CRS
-        ring.setUserData(CommonCRS.WGS84.universal(0, 0));
-        point.setUserData(CommonCRS.WGS84.universal(7, 8));
-        assertTrue("Intersection should be found when CRS are compatible", intersects(geomName, lring).evaluate(f));
-        assertTrue("Intersection should be found when CRS are compatible", intersects(lPoint, lring).evaluate(null));
-        */
+        final ProjectedCRS utm00 = CommonCRS.WGS84.universal(0, 0);
+        final Geometry ringUtm00 = JTS.transform(ring, CRS.findOperation(crs84, utm00, null));
+        final ProjectedCRS utm78 = CommonCRS.WGS84.universal(7, 8);
+        final Geometry pointUtm78 = JTS.transform(ring, CRS.findOperation(crs84, utm78, null));
+        f.setPropertyValue(P_NAME, pointUtm78);
+        assertTrue("Intersection should be found when CRS are compatible", new ST_Intersects(geomName, factory.literal(ringUtm00)).evaluate(f));
+        assertTrue("Intersection should be found when CRS are compatible", new ST_Intersects(factory.literal(pointUtm78), factory.literal(ringUtm00)).evaluate(null));
     }
 
     @Test
