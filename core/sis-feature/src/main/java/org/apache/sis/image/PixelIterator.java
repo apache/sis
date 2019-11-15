@@ -22,6 +22,7 @@ import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -163,8 +164,31 @@ public abstract class PixelIterator {
         numBands        = data.getSampleModel().getNumBands();
         tileWidth       = data.getTileWidth();
         tileHeight      = data.getTileHeight();
-        tileGridXOffset = data.getTileGridXOffset();
-        tileGridYOffset = data.getTileGridYOffset();
+
+        if (data instanceof BufferedImage) {
+            /**
+             * BufferedImage.getSubImage produces an image which raster has a SampleModelTranslateX
+             * which concatenate the offset requested in getSubImage.
+             * This means each tile raster may have a unique offset and that
+             * we can't compute the real tile pixels bounds until we have read the tile raster.
+             *
+             * This PixelIterator assume each tile has a deterministic position in the image
+             * which allows to fetch the exact tiles when required.
+             *
+             * To compensate the raster offset we cheat on the tileGridOffset in this special case.
+             * We can apply this trick only because we assume BufferedImage is the only implementation
+             * to behave this way and because a BufferedImage only has one raster tile.
+             */
+            final Raster rasterTemplate = data.getTile(data.getMinTileX(), data.getMinTileY());
+            final int innerRasterTranslationX = rasterTemplate.getSampleModelTranslateX() - data.getMinX();
+            final int innerRasterTranslationY = rasterTemplate.getSampleModelTranslateY() - data.getMinY();
+            tileGridXOffset = data.getTileGridXOffset() - innerRasterTranslationX;
+            tileGridYOffset = data.getTileGridYOffset() - innerRasterTranslationY;
+        } else {
+            tileGridXOffset = data.getTileGridXOffset();
+            tileGridYOffset = data.getTileGridYOffset();
+        }
+
         bounds          = intersection(data.getMinX(), data.getMinY(), data.getWidth(), data.getHeight(), subArea, window);
         lowerX          = bounds.x;
         lowerY          = bounds.y;

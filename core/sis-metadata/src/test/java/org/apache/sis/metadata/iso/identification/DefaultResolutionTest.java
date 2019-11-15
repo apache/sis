@@ -110,7 +110,7 @@ public final strictfp class DefaultResolutionTest extends TestCase {
      * {@preformat xml
      *   <mri:MD_Resolution>
      *     <mri:distance>
-     *       <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
+     *       <gco:Distance uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
      *     </mri:distance>
      *   </mri:MD_Resolution>
      * }
@@ -141,7 +141,7 @@ public final strictfp class DefaultResolutionTest extends TestCase {
      * {@preformat xml
      *   <gmd:MD_Resolution>
      *     <gmd:distance>
-     *       <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
+     *       <gco:Distance uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
      *     </gmd:distance>
      *   </gmd:MD_Resolution>
      * }

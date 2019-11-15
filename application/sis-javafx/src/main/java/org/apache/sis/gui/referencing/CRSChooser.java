@@ -121,7 +121,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         table.getColumns().setAll(codes, names);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         final Label clock = new Label("\u23F3");      // Unicode U+23F3: Hourglass With Flowing Sand.
-        clock.setFont(Font.font(40));
+        clock.setFont(Font.font(30));
         table.setPlaceholder(clock);
         /*
          * Text field for filtering the list of CRS codes using keywords.

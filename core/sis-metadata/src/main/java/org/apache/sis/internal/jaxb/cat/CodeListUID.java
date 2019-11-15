@@ -58,9 +58,9 @@ public final class CodeListUID {
      *
      * <ul>
      *   <li>{@code "http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#LanguageCode"}</li>
-     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode"}</li>
-     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"}</li>
-     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"}</li>
+     *   <li>{@code "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#LanguageCode"}</li>
+     *   <li>{@code "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"}</li>
+     *   <li>{@code "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"}</li>
      * </ul>
      *
      * @param  context     the current (un)marshalling context, or {@code null} if none.

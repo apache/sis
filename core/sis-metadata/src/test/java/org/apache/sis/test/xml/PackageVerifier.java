@@ -42,6 +42,7 @@ import org.opengis.geoapi.SchemaException;
 import org.opengis.geoapi.SchemaInformation;
 import org.apache.sis.util.Classes;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.xml.Namespaces;
 
@@ -49,11 +50,11 @@ import static org.apache.sis.test.TestCase.PENDING_FUTURE_SIS_VERSION;
 
 
 /**
- * Verify JAXB annotations in a single package. A new instance of this class is created by
+ * Verifies JAXB annotations in a single package. A new instance of this class is created by
  * {@link SchemaCompliance#verify(java.nio.file.Path)} for each Java package to be verified.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -171,7 +172,12 @@ final strictfp class PackageVerifier {
                 namespace = schema.namespace();
                 String location = schema.location();
                 if (!XmlSchema.NO_LOCATION.equals(location)) {
-                    if (!location.startsWith(schema.namespace())) {
+                    String expected = location;
+                    if (expected.startsWith(Constants.HTTPS)) {
+                        // Replace "https" (used for schema location) by "http" (used for namespace).
+                        expected = Constants.HTTP + expected.substring(Constants.HTTPS.length());
+                    }
+                    if (!expected.startsWith(schema.namespace())) {
                         throw new SchemaException("XML schema location inconsistent with namespace in package " + name);
                     }
                     schemas.loadSchema(location);

@@ -26,8 +26,8 @@
     xmlns:srv   = "http://www.isotc211.org/2005/srv"
     xmlns:xsi   = "http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xlink = "http://www.w3.org/1999/xlink"
-    xsi:schemaLocation = "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd
-                          http://www.isotc211.org/2005/gmx http://schemas.opengis.net/iso/19139/20070417/gmx/gmx.xsd">
+    xsi:schemaLocation = "http://www.isotc211.org/2005/gmd https://www.isotc211.org/2005/gmd/gmd.xsd
+                          http://www.isotc211.org/2005/gmx https://www.isotc211.org/2005/gmx/gmx.xsd">
 
   <!--
     WARNING: this file is not yet compliant with ISO schema.
@@ -37,16 +37,16 @@
     <gco:CharacterString>a-metadata-identifier</gco:CharacterString>
   </gmd:fileIdentifier>
   <gmd:language>
-    <gmd:LanguageCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="eng" codeSpace="eng">English</gmd:LanguageCode>
+    <gmd:LanguageCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="eng" codeSpace="eng">English</gmd:LanguageCode>
   </gmd:language>
   <gmd:characterSet>
-    <gmd:MD_CharacterSetCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="8859part1">ISO-8859-1</gmd:MD_CharacterSetCode>
+    <gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="8859part1">ISO-8859-1</gmd:MD_CharacterSetCode>
   </gmd:characterSet>
   <gmd:parentIdentifier>
     <gco:CharacterString>A parent metadata</gco:CharacterString>
   </gmd:parentIdentifier>
   <gmd:hierarchyLevel>
-    <gmd:MD_ScopeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset" codeSpace="eng">Dataset</gmd:MD_ScopeCode>
+    <gmd:MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset" codeSpace="eng">Dataset</gmd:MD_ScopeCode>
   </gmd:hierarchyLevel>
   <gmd:hierarchyLevelName>
     <gco:CharacterString>Metadata for an imaginary data set</gco:CharacterString>
@@ -122,7 +122,7 @@
                 </gmd:PT_FreeText>
               </gmd:description>
               <gmd:function>
-                <gmd:CI_OnLineFunctionCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="search" codeSpace="eng">Search</gmd:CI_OnLineFunctionCode>
+                <gmd:CI_OnLineFunctionCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="search" codeSpace="eng">Search</gmd:CI_OnLineFunctionCode>
               </gmd:function>
             </gmd:CI_OnlineResource>
           </gmd:onlineResource>
@@ -135,7 +135,7 @@
         </gmd:CI_Contact>
       </gmd:contactInfo>
       <gmd:role>
-        <gmd:CI_RoleCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact" codeSpace="eng">Point of contact</gmd:CI_RoleCode>
+        <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact" codeSpace="eng">Point of contact</gmd:CI_RoleCode>
       </gmd:role>
     </gmd:CI_ResponsibleParty>
   </gmd:contact>
@@ -149,7 +149,7 @@
       </gmd:positionName>
       <gmd:contactInfo xlink:href="#thought"></gmd:contactInfo>
       <gmd:role>
-        <gmd:CI_RoleCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact" codeSpace="eng">Point of contact</gmd:CI_RoleCode>
+        <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="pointOfContact" codeSpace="eng">Point of contact</gmd:CI_RoleCode>
       </gmd:role>
     </gmd:CI_ResponsibleParty>
   </gmd:contact>
@@ -165,13 +165,13 @@
   <gmd:locale>
     <gmd:PT_Locale>
       <gmd:languageCode>
-        <gmd:LanguageCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="fra" codeSpace="eng">French</gmd:LanguageCode>
+        <gmd:LanguageCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="fra" codeSpace="eng">French</gmd:LanguageCode>
       </gmd:languageCode>
       <gmd:country>
-        <gmd:Country codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#Country" codeListValue="CA" codeSpace="eng">Canada</gmd:Country>
+        <gmd:Country codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#Country" codeListValue="CA" codeSpace="eng">Canada</gmd:Country>
       </gmd:country>
       <gmd:characterEncoding>
-        <gmd:MD_CharacterSetCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="eng">UTF-8</gmd:MD_CharacterSetCode>
+        <gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8" codeSpace="eng">UTF-8</gmd:MD_CharacterSetCode>
       </gmd:characterEncoding>
     </gmd:PT_Locale>
   </gmd:locale>
@@ -183,31 +183,31 @@
       <gmd:axisDimensionProperties>
         <gmd:MD_Dimension>
           <gmd:dimensionName>
-            <gmd:MD_DimensionNameTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_DimensionNameTypeCode" codeListValue="row">Row</gmd:MD_DimensionNameTypeCode>
+            <gmd:MD_DimensionNameTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DimensionNameTypeCode" codeListValue="row">Row</gmd:MD_DimensionNameTypeCode>
           </gmd:dimensionName>
           <gmd:dimensionSize>
             <gco:Integer>7777</gco:Integer>
           </gmd:dimensionSize>
           <gmd:resolution>
-            <gco:Measure uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">10.0</gco:Measure>
+            <gco:Measure uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">10.0</gco:Measure>
           </gmd:resolution>
         </gmd:MD_Dimension>
       </gmd:axisDimensionProperties>
       <gmd:axisDimensionProperties>
         <gmd:MD_Dimension>
           <gmd:dimensionName>
-            <gmd:MD_DimensionNameTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_DimensionNameTypeCode" codeListValue="column">Column</gmd:MD_DimensionNameTypeCode>
+            <gmd:MD_DimensionNameTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DimensionNameTypeCode" codeListValue="column">Column</gmd:MD_DimensionNameTypeCode>
           </gmd:dimensionName>
           <gmd:dimensionSize>
             <gco:Integer>2233</gco:Integer>
           </gmd:dimensionSize>
           <gmd:resolution>
-            <gco:Measure uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">5.0</gco:Measure>
+            <gco:Measure uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">5.0</gco:Measure>
           </gmd:resolution>
         </gmd:MD_Dimension>
       </gmd:axisDimensionProperties>
       <gmd:cellGeometry>
-        <gmd:MD_CellGeometryCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CellGeometryCode" codeListValue="area" codeSpace="eng">Area</gmd:MD_CellGeometryCode>
+        <gmd:MD_CellGeometryCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CellGeometryCode" codeListValue="area" codeSpace="eng">Area</gmd:MD_CellGeometryCode>
       </gmd:cellGeometry>
       <gmd:transformationParameterAvailability>
         <gco:Boolean>false</gco:Boolean>
@@ -235,7 +235,7 @@
                     <gco:DateTime>2009-12-16T12:00:29.580+01:00</gco:DateTime>
                   </gmd:date>
                   <gmd:dateType>
-                    <gmd:CI_DateTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation" codeSpace="eng">Creation</gmd:CI_DateTypeCode>
+                    <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation" codeSpace="eng">Creation</gmd:CI_DateTypeCode>
                   </gmd:dateType>
                 </gmd:CI_Date>
               </gmd:date>
@@ -245,7 +245,7 @@
                     <gco:CharacterString>Atlantis national mapping agency</gco:CharacterString>
                   </gmd:organisationName>
                   <gmd:role>
-                    <gmd:CI_RoleCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="publisher" codeSpace="eng">Publisher</gmd:CI_RoleCode>
+                    <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="publisher" codeSpace="eng">Publisher</gmd:CI_RoleCode>
                   </gmd:role>
                 </gmd:CI_ResponsibleParty>
               </gmd:citedResponsibleParty>
@@ -288,7 +288,7 @@
             <gco:CharacterString>Presents in “Imaginary work” profile.</gco:CharacterString>
           </gmd:condition>
           <gmd:dataType>
-            <gmd:MD_DatatypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode" codeListValue="metaClass">Meta class</gmd:MD_DatatypeCode>
+            <gmd:MD_DatatypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_DatatypeCode" codeListValue="metaClass">Meta class</gmd:MD_DatatypeCode>
           </gmd:dataType>
           <gmd:maximumOccurrence>
             <gco:CharacterString>3</gco:CharacterString>
@@ -329,7 +329,7 @@
                 <gco:Date>2018-04-09</gco:Date>
               </gmd:date>
               <gmd:dateType>
-                <gmd:CI_DateTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation" codeSpace="eng">Creation</gmd:CI_DateTypeCode>
+                <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation" codeSpace="eng">Creation</gmd:CI_DateTypeCode>
               </gmd:dateType>
             </gmd:CI_Date>
           </gmd:date>
@@ -359,15 +359,15 @@
         <gco:CharacterString>For XML (un)marshalling tests.</gco:CharacterString>
       </gmd:purpose>
       <gmd:status>
-        <gmd:MD_ProgressCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="historicalArchive" codeSpace="eng">Historical archive</gmd:MD_ProgressCode>
+        <gmd:MD_ProgressCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="historicalArchive" codeSpace="eng">Historical archive</gmd:MD_ProgressCode>
       </gmd:status>
       <gmd:spatialRepresentationType>
-        <gmd:MD_SpatialRepresentationTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="grid">Grid</gmd:MD_SpatialRepresentationTypeCode>
+        <gmd:MD_SpatialRepresentationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="grid">Grid</gmd:MD_SpatialRepresentationTypeCode>
       </gmd:spatialRepresentationType>
       <gmd:spatialResolution>
         <gmd:MD_Resolution>
           <gmd:distance>
-            <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">56777.0</gco:Distance>
+            <gco:Distance uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">56777.0</gco:Distance>
           </gmd:distance>
         </gmd:MD_Resolution>
       </gmd:spatialResolution>
@@ -380,10 +380,10 @@
       <gmd:resourceMaintenance>
         <gmd:MD_MaintenanceInformation id="not-planned">
           <gmd:maintenanceAndUpdateFrequency>
-            <gmd:MD_MaintenanceFrequencyCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode" codeListValue="notPlanned" codeSpace="eng">Not planned</gmd:MD_MaintenanceFrequencyCode>
+            <gmd:MD_MaintenanceFrequencyCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode" codeListValue="notPlanned" codeSpace="eng">Not planned</gmd:MD_MaintenanceFrequencyCode>
           </gmd:maintenanceAndUpdateFrequency>
           <gmd:updateScope>
-            <gmd:MD_ScopeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="model" codeSpace="eng">Model</gmd:MD_ScopeCode>
+            <gmd:MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="model" codeSpace="eng">Model</gmd:MD_ScopeCode>
           </gmd:updateScope>
           <gmd:updateScopeDescription>
             <gmd:MD_ScopeDescription>
@@ -422,7 +422,7 @@
             <gco:CharacterString>Aether</gco:CharacterString>
           </gmd:keyword>
           <gmd:type>
-            <gmd:MD_KeywordTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme" codeSpace="eng">Theme</gmd:MD_KeywordTypeCode>
+            <gmd:MD_KeywordTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode" codeListValue="theme" codeSpace="eng">Theme</gmd:MD_KeywordTypeCode>
           </gmd:type>
           <gmd:thesaurusName>
             <gmd:CI_Citation>
@@ -456,21 +456,21 @@
       <gmd:aggregationInfo>
         <gmd:MD_AggregateInformation>
           <gmd:associationType>
-            <gmd:DS_AssociationTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="dependency" codeSpace="eng">Dependency</gmd:DS_AssociationTypeCode>
+            <gmd:DS_AssociationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="dependency" codeSpace="eng">Dependency</gmd:DS_AssociationTypeCode>
           </gmd:associationType>
           <gmd:initiativeType>
-            <gmd:DS_InitiativeTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DS_InitiativeTypeCode" codeListValue="experiment">Experiment</gmd:DS_InitiativeTypeCode>
+            <gmd:DS_InitiativeTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_InitiativeTypeCode" codeListValue="experiment">Experiment</gmd:DS_InitiativeTypeCode>
           </gmd:initiativeType>
         </gmd:MD_AggregateInformation>
       </gmd:aggregationInfo>
       <gmd:language>
-        <gmd:LanguageCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="eng" codeSpace="eng">English</gmd:LanguageCode>
+        <gmd:LanguageCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="eng" codeSpace="eng">English</gmd:LanguageCode>
       </gmd:language>
       <gmd:language>
-        <gmd:LanguageCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="fra" codeSpace="eng">French</gmd:LanguageCode>
+        <gmd:LanguageCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="fra" codeSpace="eng">French</gmd:LanguageCode>
       </gmd:language>
       <gmd:characterSet>
-        <gmd:MD_CharacterSetCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="8859part1" codeSpace="eng">ISO-8859-1</gmd:MD_CharacterSetCode>
+        <gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="8859part1" codeSpace="eng">ISO-8859-1</gmd:MD_CharacterSetCode>
       </gmd:characterSet>
       <gmd:environmentDescription>
         <gco:CharacterString>High humidity.</gco:CharacterString>
@@ -521,10 +521,10 @@
       <gmd:aggregationInfo>
         <gmd:MD_AggregateInformation>
           <gmd:associationType>
-            <gmd:DS_AssociationTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="dependency" codeSpace="eng">Dependency</gmd:DS_AssociationTypeCode>
+            <gmd:DS_AssociationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="dependency" codeSpace="eng">Dependency</gmd:DS_AssociationTypeCode>
           </gmd:associationType>
           <gmd:initiativeType>
-            <gmd:DS_InitiativeTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DS_InitiativeTypeCode" codeListValue="experiment">Experiment</gmd:DS_InitiativeTypeCode>
+            <gmd:DS_InitiativeTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_InitiativeTypeCode" codeListValue="experiment">Experiment</gmd:DS_InitiativeTypeCode>
           </gmd:initiativeType>
         </gmd:MD_AggregateInformation>
       </gmd:aggregationInfo>
@@ -536,7 +536,7 @@
         <srv:SV_CoupledResource></srv:SV_CoupledResource>
       </srv:coupledResource>
       <srv:couplingType>
-        <srv:SV_CouplingType codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#SV_CouplingType" codeListValue="loose" codeSpace="eng">Loose</srv:SV_CouplingType>
+        <srv:SV_CouplingType codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#SV_CouplingType" codeListValue="loose" codeSpace="eng">Loose</srv:SV_CouplingType>
       </srv:couplingType>
       <srv:containsOperations>
         <srv:SV_OperationMetadata>
@@ -544,7 +544,7 @@
             <gco:CharacterString>Authoring</gco:CharacterString>
           </srv:operationName>
           <srv:DCP>
-            <srv:DCPList codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DCPList" codeListValue="JAVA" codeSpace="eng">Java</srv:DCPList>
+            <srv:DCPList codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DCPList" codeListValue="JAVA" codeSpace="eng">Java</srv:DCPList>
           </srv:DCP>
           <srv:operationDescription>
             <gco:CharacterString>Write a book.</gco:CharacterString>
@@ -572,15 +572,15 @@
             <gco:CharacterString>For XML (un)marshalling tests.</gco:CharacterString>
           </gmd:purpose>
           <gmd:status>
-            <gmd:MD_ProgressCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="historicalArchive" codeSpace="eng">Historical archive</gmd:MD_ProgressCode>
+            <gmd:MD_ProgressCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="historicalArchive" codeSpace="eng">Historical archive</gmd:MD_ProgressCode>
           </gmd:status>
           <gmd:spatialRepresentationType>
-            <gmd:MD_SpatialRepresentationTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="grid">Grid</gmd:MD_SpatialRepresentationTypeCode>
+            <gmd:MD_SpatialRepresentationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode" codeListValue="grid">Grid</gmd:MD_SpatialRepresentationTypeCode>
           </gmd:spatialRepresentationType>
           <gmd:spatialResolution>
             <gmd:MD_Resolution>
               <gmd:distance>
-                <gco:Distance uom="http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">56777.0</gco:Distance>
+                <gco:Distance uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">56777.0</gco:Distance>
               </gmd:distance>
             </gmd:MD_Resolution>
           </gmd:spatialResolution>
@@ -628,21 +628,21 @@
           <gmd:aggregationInfo>
             <gmd:MD_AggregateInformation>
               <gmd:associationType>
-                <gmd:DS_AssociationTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="dependency" codeSpace="eng">Dependency</gmd:DS_AssociationTypeCode>
+                <gmd:DS_AssociationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="dependency" codeSpace="eng">Dependency</gmd:DS_AssociationTypeCode>
               </gmd:associationType>
               <gmd:initiativeType>
-                <gmd:DS_InitiativeTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#DS_InitiativeTypeCode" codeListValue="experiment">Experiment</gmd:DS_InitiativeTypeCode>
+                <gmd:DS_InitiativeTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_InitiativeTypeCode" codeListValue="experiment">Experiment</gmd:DS_InitiativeTypeCode>
               </gmd:initiativeType>
             </gmd:MD_AggregateInformation>
           </gmd:aggregationInfo>
           <gmd:language>
-            <gmd:LanguageCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="eng" codeSpace="eng">English</gmd:LanguageCode>
+            <gmd:LanguageCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="eng" codeSpace="eng">English</gmd:LanguageCode>
           </gmd:language>
           <gmd:language>
-            <gmd:LanguageCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="fra" codeSpace="eng">French</gmd:LanguageCode>
+            <gmd:LanguageCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#LanguageCode" codeListValue="fra" codeSpace="eng">French</gmd:LanguageCode>
           </gmd:language>
           <gmd:characterSet>
-            <gmd:MD_CharacterSetCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="8859part1" codeSpace="eng">ISO-8859-1</gmd:MD_CharacterSetCode>
+            <gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="8859part1" codeSpace="eng">ISO-8859-1</gmd:MD_CharacterSetCode>
           </gmd:characterSet>
           <gmd:environmentDescription>
             <gco:CharacterString>High humidity.</gco:CharacterString>
@@ -661,7 +661,7 @@
         <gco:RecordType></gco:RecordType>
       </gmd:attributeDescription>
       <gmd:contentType>
-        <gmd:MD_CoverageContentTypeCode codeList="http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CoverageContentTypeCode" codeListValue="auxillaryInformation" codeSpace="eng">Auxilliary information</gmd:MD_CoverageContentTypeCode>
+        <gmd:MD_CoverageContentTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CoverageContentTypeCode" codeListValue="auxillaryInformation" codeSpace="eng">Auxilliary information</gmd:MD_CoverageContentTypeCode>
       </gmd:contentType>
       <gmd:dimension>
         <gmd:MD_RangeDimension>

@@ -17,16 +17,20 @@
 package org.apache.sis.internal.coverage;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.util.Collection;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.internal.image.TranslatedRenderedImage;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
 import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 
 /**
  * A {@link GridCoverage} with data stored in a {@link RenderedImage}.
@@ -36,11 +40,13 @@ import org.opengis.coverage.CannotEvaluateException;
  * @since   2.0
  * @module
  */
-public class GridCoverage2D extends GridCoverage {
+public final class GridCoverage2D extends GridCoverage {
     /**
      * The sample values, stored as a RenderedImage.
      */
-    protected final RenderedImage image;
+    private final RenderedImage image;
+    private final int[] imageAxes;
+    private final CoordinateReferenceSystem crs2d;
 
     /**
      * Result of the call to {@link #forConvertedValues(boolean)}, created when first needed.
@@ -48,15 +54,30 @@ public class GridCoverage2D extends GridCoverage {
     private GridCoverage converted;
 
     /**
+     * The given RenderedImage may not start at 0,0, so does the gridExtent of the grid geometry.
+     * Image 0/0 coordinate is expected to match grid extent lower corner.
      *
      * @param grid  the grid extent, CRS and conversion from cell indices to CRS.
      * @param bands sample dimensions for each image band.
      * @param image the sample values as a RenderedImage, potentially multi-banded in packed view.
      */
-    public GridCoverage2D(final GridGeometry grid, final Collection<? extends SampleDimension> bands, final RenderedImage image) {
+    public GridCoverage2D(final GridGeometry grid, final Collection<? extends SampleDimension> bands, final RenderedImage image) throws FactoryException {
         super(grid, bands);
         this.image = image;
         ArgumentChecks.ensureNonNull("image", image);
+
+        //extract the 2D Coordinater
+        GridExtent extent = grid.getExtent();
+        imageAxes = extent.getSubspaceDimensions(2);
+        crs2d = CRS.reduce(grid.getCoordinateReferenceSystem(), imageAxes);
+
+        //check image is coherent with grid geometry
+        if (image.getWidth() != extent.getSize(imageAxes[0])) {
+            throw new IllegalArgumentException("Image width " + image.getWidth() + "does not match grid extent width "+ extent.getSize(imageAxes[0]));
+        }
+        if (image.getHeight()!= extent.getSize(imageAxes[1])) {
+            throw new IllegalArgumentException("Image height " + image.getHeight()+ "does not match grid extent height "+ extent.getSize(imageAxes[1]));
+        }
     }
 
     /**
@@ -94,24 +115,62 @@ public class GridCoverage2D extends GridCoverage {
         if (sliceExtent == null || sliceExtent.equals(getGridGeometry().getExtent())) {
             return image;
         } else {
-            final int[] imgAxes = sliceExtent.getSubspaceDimensions(2);
-            final int subX = Math.toIntExact(sliceExtent.getLow(imgAxes[0]));
-            final int subY = Math.toIntExact(sliceExtent.getLow(imgAxes[1]));
-            final int subWidth = Math.toIntExact(Math.round(sliceExtent.getSize(imgAxes[0])));
-            final int subHeight = Math.toIntExact(Math.round(sliceExtent.getSize(imgAxes[1])));
+            final int subX = Math.toIntExact(sliceExtent.getLow(imageAxes[0]));
+            final int subY = Math.toIntExact(sliceExtent.getLow(imageAxes[1]));
+            final int subWidth = Math.toIntExact(Math.round(sliceExtent.getSize(imageAxes[0])));
+            final int subHeight = Math.toIntExact(Math.round(sliceExtent.getSize(imageAxes[1])));
 
             if (image instanceof BufferedImage) {
                 final BufferedImage bi = (BufferedImage) image;
                 return bi.getSubimage(subX, subY, subWidth, subHeight);
             } else {
-                //todo : current approach makes a copy of the datas, a better solution should be found
-                final WritableRaster raster = image.getTile(image.getMinTileX(), image.getMinTileY()).createCompatibleWritableRaster(subWidth, subHeight);
-                final WritableRaster derivate = raster.createWritableTranslatedChild(subX, subY);
-                image.copyData(derivate);
-                ColorModel cm = image.getColorModel();
-                return new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
+                return new TranslatedRenderedImage(image, subX, subY);
             }
         }
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public double[] evaluate(DirectPosition position, double[] buffer) throws CannotEvaluateException {
+        try {
+            position = toGridCoord(position);
+            long[] coord = toLongExact(position);
+            int x = Math.toIntExact(Math.round(coord[imageAxes[0]]));
+            int y = Math.toIntExact(Math.round(coord[imageAxes[1]]));
+            return image.getTile(XToTileX(x), YToTileY(y)).getPixel(x, y, buffer);
+        } catch (FactoryException | TransformException ex) {
+            throw new CannotEvaluateException(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Converts a pixel's X coordinate into a horizontal tile index.
+     * @param x pixel x coordinate
+     * @return tile x coordinate
+     */
+    private int XToTileX(int x) {
+        int tileWidth = image.getTileWidth();
+        x -= image.getTileGridXOffset();
+        if (x < 0) {
+            x += 1 - tileWidth;
+        }
+        return x/tileWidth;
+    }
+
+    /**
+     * Converts a pixel's Y coordinate into a vertical tile index.
+     * @param y pixel x coordinate
+     * @return tile y coordinate
+     */
+    private int YToTileY(int y) {
+        int tileHeight = image.getTileHeight();
+        y -= image.getTileGridYOffset();
+        if (y < 0) {
+            y += 1 - tileHeight;
+        }
+        return y/tileHeight;
     }
 
 }

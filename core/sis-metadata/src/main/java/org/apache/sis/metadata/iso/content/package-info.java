@@ -85,7 +85,7 @@
  * @since   0.3
  * @module
  */
-@XmlSchema(location="http://standards.iso.org/iso/19115/-3/mrc/1.0/mrc.xsd",
+@XmlSchema(location="https://standards.iso.org/iso/19115/-3/mrc/1.0/mrc.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRC,
            xmlns = {
                 @XmlNs(prefix = "mrc", namespaceURI = Namespaces.MRC),      // Metadata for Resource Content

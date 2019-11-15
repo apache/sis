@@ -25,6 +25,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -34,6 +35,7 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.junit.Assert;
 import org.junit.Test;
+import org.opengis.coverage.PointOutsideCoverageException;
 
 
 /**
@@ -100,6 +102,30 @@ public class BufferedGridCoverageTest extends TestCase {
             { -60, -195},
             {-216, -380}
         });
+
+        /**
+         * Test evaluation
+         */
+        Assert.assertArrayEquals(new double[]{ 70.0}, coverage.evaluate(new DirectPosition2D(0, 0), null), STRICT);
+        Assert.assertArrayEquals(new double[]{  2.5}, coverage.evaluate(new DirectPosition2D(1, 0), null), STRICT);
+        Assert.assertArrayEquals(new double[]{- 8.0}, coverage.evaluate(new DirectPosition2D(0, 1), null), STRICT);
+        Assert.assertArrayEquals(new double[]{-90.0}, coverage.evaluate(new DirectPosition2D(1, 1), null), STRICT);
+        //test nearest neighor rounding
+        Assert.assertArrayEquals(new double[]{70.0}, coverage.evaluate(new DirectPosition2D(-0.499, -0.499), null), STRICT);
+        Assert.assertArrayEquals(new double[]{70.0}, coverage.evaluate(new DirectPosition2D( 0.499,  0.499), null), STRICT);
+        //test out of coverage
+        try {
+            coverage.evaluate(new DirectPosition2D(-0.51, 0), null);
+            Assert.fail("Point ouside coverage evalue must fail");
+        } catch (PointOutsideCoverageException ex) {
+            //ok
+        }
+        try {
+            coverage.evaluate(new DirectPosition2D(1.51, 0), null);
+            Assert.fail("Point ouside coverage evalue must fail");
+        } catch (PointOutsideCoverageException ex) {
+            //ok
+        }
     }
 
     /**

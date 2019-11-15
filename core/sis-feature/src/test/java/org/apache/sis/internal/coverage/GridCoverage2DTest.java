@@ -31,6 +31,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -38,8 +39,10 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.test.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
+import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -55,7 +58,7 @@ public class GridCoverage2DTest extends TestCase {
      * Tests with a two-dimensional coverage.
      */
     @Test
-    public void testCoverage2D() {
+    public void testCoverage2D() throws FactoryException {
         /*
          * Create coverage of 2×2 pixels with an identity "grid to CRS" transform.
          * The range of sample values will be [-10 … +10]°C.
@@ -109,6 +112,30 @@ public class GridCoverage2DTest extends TestCase {
             { -60, -195},
             {-216, -380}
         });
+
+        /**
+         * Test evaluation
+         */
+        Assert.assertArrayEquals(new double[]{ 70.0}, coverage.evaluate(new DirectPosition2D(0, 0), null), STRICT);
+        Assert.assertArrayEquals(new double[]{  2.5}, coverage.evaluate(new DirectPosition2D(1, 0), null), STRICT);
+        Assert.assertArrayEquals(new double[]{- 8.0}, coverage.evaluate(new DirectPosition2D(0, 1), null), STRICT);
+        Assert.assertArrayEquals(new double[]{-90.0}, coverage.evaluate(new DirectPosition2D(1, 1), null), STRICT);
+        //test nearest neighor rounding
+        Assert.assertArrayEquals(new double[]{70.0}, coverage.evaluate(new DirectPosition2D(-0.499, -0.499), null), STRICT);
+        Assert.assertArrayEquals(new double[]{70.0}, coverage.evaluate(new DirectPosition2D( 0.499,  0.499), null), STRICT);
+        //test out of coverage
+        try {
+            coverage.evaluate(new DirectPosition2D(-0.51, 0), null);
+            Assert.fail("Point ouside coverage evalue must fail");
+        } catch (PointOutsideCoverageException ex) {
+            //ok
+        }
+        try {
+            coverage.evaluate(new DirectPosition2D(1.51, 0), null);
+            Assert.fail("Point ouside coverage evalue must fail");
+        } catch (PointOutsideCoverageException ex) {
+            //ok
+        }
     }
 
     /**

@@ -42,7 +42,7 @@ package org.apache.sis.internal.xml;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -59,11 +59,11 @@ public final class Schemas {
      * Some alternatives to this URL are:
      *
      * <ul>
+     *   <li>http://schemas.opengis.net/iso/19139/20070417/</li>
      *   <li>http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/</li>
-     *   <li>http://www.isotc211.org/2005/</li>
      * </ul>
      */
-    public static final String METADATA_ROOT_LEGACY = "http://schemas.opengis.net/iso/19139/20070417/";
+    public static final String METADATA_ROOT_LEGACY = "http://www.isotc211.org/2005/";
 
     /**
      * The string to append to {@link #METADATA_ROOT} for obtaining the path to the definitions of code lists.

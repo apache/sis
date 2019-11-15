@@ -695,7 +695,7 @@ public final class DefinitionURI {
         if (isGML) {
             final String path = PATHS.get(type);
             if (path != null) {
-                return "http:" + path + authority + ".xml#" + code;
+                return Constants.HTTP + path + authority + ".xml#" + code;
             }
         }
         final StringBuilder buffer = new StringBuilder(40);
