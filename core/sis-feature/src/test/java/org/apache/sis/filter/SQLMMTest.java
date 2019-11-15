@@ -271,16 +271,16 @@ public final strictfp class SQLMMTest extends TestCase {
     @Test
     public void ST_Intersects() {
         try {
-            new ST_Intersects(null);
-            fail("ST_Intersects operator should accept exactly 2 parameters");
+            new ST_Intersects(null, null);
+            fail("ST_Intersects operator should not accept null parameters");
         } catch (NullArgumentException e) {
             // expected behavior
         }
 
         try {
-            new ST_Intersects(new Expression[3]);
-            fail("ST_Intersects operator should accept exactly 2 parameters");
-        } catch (IllegalArgumentException e) {
+            new ST_Intersects(null, factory.literal(new GeneralEnvelope(2)));
+            fail("ST_Intersects operator should not accept null parameters");
+        } catch (NullArgumentException e) {
             // expected behavior
         }
 
@@ -291,7 +291,7 @@ public final strictfp class SQLMMTest extends TestCase {
         });
 
         final Literal lring = factory.literal(ring);
-        ST_Intersects st = intersects(factory.literal(geometryFactory.createPoint(new Coordinate(2, 4))), lring);
+        ST_Intersects st = new ST_Intersects(factory.literal(geometryFactory.createPoint(new Coordinate(2, 4))), lring);
         // Ensure argument nullity does not modify behavior
         assertFalse("Unexpected intersection", st.evaluate(null));
         assertFalse("Unexpected intersection", st.evaluate(new Object()));
@@ -301,18 +301,18 @@ public final strictfp class SQLMMTest extends TestCase {
         final Point point = geometryFactory.createPoint(second);
         f.setPropertyValue(P_NAME, point);
         final PropertyName geomName = factory.property(P_NAME);
-        st = intersects(geomName, lring);
+        st = new ST_Intersects(geomName, lring);
         assertTrue("Border point should intersect triangle", st.evaluate(f));
         // Ensure inverting expression does not modify behavior.
-        st = intersects(lring, geomName);
+        st = new ST_Intersects(lring, geomName);
         assertTrue("Border point should intersect triangle", st.evaluate(f));
 
         // Ensure CRS conversion works as expected (see package-info).
         // Missing
         point.setUserData(CommonCRS.defaultGeographic());
-        expectFailFast(() -> intersects(geomName, lring).evaluate(f), IllegalArgumentException.class);
+        expectFailFast(() -> new ST_Intersects(geomName, lring).evaluate(f), IllegalArgumentException.class);
         final Literal lPoint = factory.literal(point);
-        expectFailFast(() -> intersects(lPoint, lring).evaluate(null), IllegalArgumentException.class);
+        expectFailFast(() -> new ST_Intersects(lPoint, lring).evaluate(null), IllegalArgumentException.class);
 
         // utm domain contained in CRS:84
         /* TODO: this is broken. We have to reproject geometries each time we change CRS.
@@ -328,10 +328,6 @@ public final strictfp class SQLMMTest extends TestCase {
         assertTrue("Intersection should be found when CRS are compatible", intersects(geomName, lring).evaluate(f));
         assertTrue("Intersection should be found when CRS are compatible", intersects(lPoint, lring).evaluate(null));
         */
-    }
-
-    private static ST_Intersects intersects(final Expression left, Expression right) {
-        return new ST_Intersects(new Expression[]{left, right});
     }
 
     @Test

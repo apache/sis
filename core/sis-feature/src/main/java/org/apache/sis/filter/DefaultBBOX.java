@@ -55,7 +55,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  *
  *     TODO: CRS check.
  */
-final class DefaultBBOX implements BBOX, Serializable {
+final class DefaultBBOX extends SpatialFunction implements BBOX, Serializable {
 
     private static final long serialVersionUID = 3068335120981348484L;
 
@@ -65,8 +65,9 @@ final class DefaultBBOX implements BBOX, Serializable {
     private transient Predicate intersects;
 
     DefaultBBOX(Expression left, Expression right) {
-        this.left = left;
-        this.right = right;
+        super(left == null ? Expression.NIL : left, right == null ? Expression.NIL : right);
+        this.left = left == Expression.NIL ? null : left;
+        this.right = right == Expression.NIL ? null : right;
         init();
     }
 
@@ -86,16 +87,6 @@ final class DefaultBBOX implements BBOX, Serializable {
         } else if (right instanceof Literal) {
             intersects = asOptimizedTest((Literal) right, left);
         } else intersects = this::nonOptimizedIntersect;
-    }
-
-    @Override
-    public Expression getExpression1() {
-        return left;
-    }
-
-    @Override
-    public Expression getExpression2() {
-        return right;
     }
 
     @Override
@@ -227,6 +218,11 @@ final class DefaultBBOX implements BBOX, Serializable {
         DefaultBBOX that = (DefaultBBOX) o;
         return Objects.equals(left, that.left) &&
                 Objects.equals(right, that.right);
+    }
+
+    @Override
+    protected String getName() {
+        return BBOX.NAME;
     }
 
     @Override

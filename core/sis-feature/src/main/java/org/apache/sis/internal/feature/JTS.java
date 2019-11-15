@@ -433,7 +433,7 @@ add:    for (;;) {
      * @see #tryGetCoordinateReferenceSystem(Object)
      */
     @Override
-    Geometry tryTransform(final Object geometry, final CoordinateOperation operation, final CoordinateReferenceSystem targetCRS)
+    public Geometry tryTransform(final Object geometry, final CoordinateOperation operation, final CoordinateReferenceSystem targetCRS)
             throws FactoryException, TransformException
     {
         if (geometry instanceof Geometry) {

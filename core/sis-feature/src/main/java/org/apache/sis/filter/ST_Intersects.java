@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Predicate;
 
 import org.opengis.filter.FilterVisitor;
@@ -40,27 +39,24 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 
-import static org.apache.sis.util.ArgumentChecks.ensureNonEmpty;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 /**
  * TODO: refine once Geometry API is stable.
  */
-public final class ST_Intersects implements Intersects, Serializable {
+public final class ST_Intersects extends SpatialFunction implements Intersects, Serializable {
 
-    public static final String NAME = "ST_Intersect";
+    public static final String NAME = "ST_Intersects";
 
     final Expression left;
     final Expression right;
 
     private transient Predicate intersects;
 
-    public ST_Intersects(Expression[] parameters) {
-        ensureNonEmpty("Parameters", parameters);
-        if (parameters.length != 2) throw new IllegalArgumentException("2 parameters are expected for intersection, but "+parameters.length+" are provided");
-
-        left = parameters[0];
-        right = parameters[1];
+    public ST_Intersects(Expression left, Expression right) {
+        super(left, right);
+        this.left = left;
+        this.right = right;
         init();
     }
 
@@ -161,16 +157,6 @@ public final class ST_Intersects implements Intersects, Serializable {
     }
 
     @Override
-    public Expression getExpression1() {
-        return left;
-    }
-
-    @Override
-    public Expression getExpression2() {
-        return right;
-    }
-
-    @Override
     public boolean evaluate(Object object) {
         return intersects.test(object);
     }
@@ -181,17 +167,8 @@ public final class ST_Intersects implements Intersects, Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ST_Intersects that = (ST_Intersects) o;
-        return left.equals(that.left) &&
-                right.equals(that.right);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(left, right);
+    protected String getName() {
+        return org.opengis.filter.spatial.Intersects.NAME;
     }
 
     /**

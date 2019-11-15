@@ -322,7 +322,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Intersects intersects(final Expression left, final Expression right) {
-        return new ST_Intersects(new Expression[]{left, right});
+        return new ST_Intersects(left, right);
     }
 
     /**

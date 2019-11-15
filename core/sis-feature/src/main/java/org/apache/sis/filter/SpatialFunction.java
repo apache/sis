@@ -18,42 +18,34 @@ package org.apache.sis.filter;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
-import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.math.Fraction;
-import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.ObjectConverters;
-import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.util.Utilities;
-import org.apache.sis.util.collection.BackingStoreException;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LinearRing;
-import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.geom.prep.PreparedGeometry;
-import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+
 import org.opengis.feature.Feature;
 import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.FilterVisitor;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.PropertyName;
 import org.opengis.filter.spatial.BinarySpatialOperator;
-import org.opengis.geometry.Envelope;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+
+import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.WrapResolution;
+import org.apache.sis.math.Fraction;
+import org.apache.sis.measure.Units;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.util.ObjectConverters;
+import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.Utilities;
+
+import org.locationtech.jts.geom.Geometry;
 
 /**
  *
@@ -64,11 +56,12 @@ import org.opengis.util.FactoryException;
  */
 abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOperator {
 
-    private static final LinearRing[] EMPTY_RINGS = new LinearRing[0];
-    private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
-    private static final PreparedGeometryFactory PREPARED_FACTORY = new PreparedGeometryFactory();
-
     private static CoordinateReferenceSystem MERCATOR;
+
+    /**
+     * TODO: We should generify this. But too much code already depends on JTS, so for now I hack this
+     */
+    private static final Geometries<Geometry> SIS_GEOMETRY_FACTORY = (Geometries<Geometry>) Geometries.implementation(GeometryLibrary.JTS);
 
     private static CoordinateReferenceSystem getMercator() throws FactoryException {
         if (MERCATOR == null) {
@@ -121,11 +114,9 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
 
         Geometry candidate;
         if (value instanceof GridCoverage) {
-            candidate = (Geometry) value;
-        } else if (value instanceof GridCoverage) {
             //use the coverage envelope
             final GridCoverage coverage = (GridCoverage) value;
-            candidate = toGeometry(coverage.getGridGeometry().getEnvelope());
+            candidate = SIS_GEOMETRY_FACTORY.tryConvertToGeometry(coverage.getGridGeometry().getEnvelope(), WrapResolution.SPLIT);
         } else {
             try {
                 candidate = ObjectConverters.convert(value, Geometry.class);
@@ -138,69 +129,23 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
     }
 
     /**
-     * Envelope to geometry.
-     */
-    private static Polygon toGeometry(final Envelope env) {
-        final Coordinate[] coordinates = new Coordinate[]{
-            new Coordinate(env.getMinimum(0), env.getMinimum(1)),
-            new Coordinate(env.getMinimum(0), env.getMaximum(1)),
-            new Coordinate(env.getMaximum(0), env.getMaximum(1)),
-            new Coordinate(env.getMaximum(0), env.getMinimum(1)),
-            new Coordinate(env.getMinimum(0), env.getMinimum(1))};
-        final LinearRing ring = GEOMETRY_FACTORY.createLinearRing(coordinates);
-        Polygon polygon = GEOMETRY_FACTORY.createPolygon(ring, new LinearRing[0]);
-        polygon.setUserData(env.getCoordinateReferenceSystem());
-        return polygon;
-    }
-
-    /**
-     * Envelope to prepared geometry.
-     */
-    private static PreparedGeometry toPreparedGeometry(final Envelope env){
-        double minX = env.getMinimum(0);
-        double minY = env.getMinimum(1);
-        double maxX = env.getMaximum(0);
-        double maxY = env.getMaximum(1);
-        if (Double.isNaN(minX) || Double.isInfinite(minX)) minX = Double.MIN_VALUE;
-        if (Double.isNaN(minY) || Double.isInfinite(minY)) minY = Double.MIN_VALUE;
-        if (Double.isNaN(maxX) || Double.isInfinite(maxX)) maxX = Double.MAX_VALUE;
-        if (Double.isNaN(maxY) || Double.isInfinite(maxY)) maxY = Double.MAX_VALUE;
-
-        final Coordinate[] coords = new Coordinate[5];
-        coords[0] = new Coordinate(minX, minY);
-        coords[1] = new Coordinate(minX, maxY);
-        coords[2] = new Coordinate(maxX, maxY);
-        coords[3] = new Coordinate(maxX, minY);
-        coords[4] = new Coordinate(minX, minY);
-        final LinearRing ring = GEOMETRY_FACTORY.createLinearRing(coords);
-        Geometry geom = GEOMETRY_FACTORY.createPolygon(ring, EMPTY_RINGS);
-        return PREPARED_FACTORY.create(geom);
-    }
-
-    /**
      * Reproject geometries to the same CRS if needed and if possible.
      */
     private static Geometry[] toSameCRS(final Geometry leftGeom, final Geometry rightGeom)
-            throws NoSuchAuthorityCodeException, FactoryException, TransformException {
+            throws FactoryException, TransformException {
 
         final CoordinateReferenceSystem leftCRS = Geometries.getCoordinateReferenceSystem(leftGeom);
         final CoordinateReferenceSystem rightCRS = Geometries.getCoordinateReferenceSystem(rightGeom);
 
-        if (leftCRS == null || rightCRS == null) {
-            //one or both geometries doesn't have a defined CRS, we assume that both
-            //are in the same CRS
-            return new Geometry[]{leftGeom, rightGeom};
-        } else if (Utilities.equalsIgnoreMetadata(leftCRS, rightCRS)) {
-            //both are in the same CRS, nothing to reproject
-            return new Geometry[]{leftGeom, rightGeom};
-        }
+        final CRSMatching.Match match = CRSMatching
+                .left(leftCRS)
+                .right(rightCRS);
 
-        //we choose to reproject the right operand.
-        //there is no special reason to make this choice but we must make one.
-        //perhaps there could be a way to determine a best crs ?
-        final CoordinateOperation trs = CRS.findOperation(rightCRS, leftCRS, null);
-
-        return new Geometry[]{leftGeom, (Geometry) Geometries.transform(rightGeom, trs)};
+        final CRSMatching.Transformer<Geometry> projectGeom = (g, op) -> SIS_GEOMETRY_FACTORY.tryTransform(g, op, null);
+        return new Geometry[]{
+                match.transformLeftToCommon(leftGeom, projectGeom),
+                match.transformRightToCommon(rightGeom, projectGeom)
+        };
     }
 
     /**
@@ -279,133 +224,6 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
             }
 
             return new Object[]{leftMatch, rightMatch, matchingCRS};
-        }
-    }
-
-
-    /**
-     * The {@value #NAME} filter.
-     */
-    static final class BBOX extends SpatialFunction implements org.opengis.filter.spatial.BBOX {
-
-        /**
-         * For cross-version compatibility.
-         */
-        private static final long serialVersionUID = -4806881904891000892L;
-
-        //cache the bbox geometry
-        private transient PreparedGeometry boundingGeometry;
-        private final org.locationtech.jts.geom.Envelope boundingEnv;
-        private final CoordinateReferenceSystem crs;
-
-        private final Envelope env;
-
-        BBOX(Expression expression, Envelope env) {
-            super(expression, new LeafExpression.Literal(env));
-            this.env = env;
-            boundingGeometry = toPreparedGeometry(env);
-            boundingEnv = boundingGeometry.getGeometry().getEnvelopeInternal();
-            final CoordinateReferenceSystem crsFilter = env.getCoordinateReferenceSystem();
-            if (crsFilter != null) {
-                this.crs = crsFilter;
-            } else {
-                // In CQL if crs is not specified, it is EPSG:4326
-                this.crs = CommonCRS.WGS84.normalizedGeographic();
-            }
-        }
-
-        private PreparedGeometry getPreparedGeometry(){
-            if (boundingGeometry == null) {
-                boundingGeometry = toPreparedGeometry(env);
-            }
-            return boundingGeometry;
-        }
-
-        @Override
-        protected String getName() {
-            return NAME;
-        }
-
-        @Override
-        public String getPropertyName() {
-            if (expression1 instanceof PropertyName) {
-                return ((PropertyName) expression1).getPropertyName();
-            }
-            return null;
-        }
-
-        @Override
-        public String getSRS() {
-            try {
-                return IdentifiedObjects.lookupURN(env.getCoordinateReferenceSystem(), null);
-            } catch (FactoryException ex) {
-                throw new BackingStoreException(ex.getMessage(), ex);
-            }
-        }
-
-        @Override
-        public double getMinX() {
-            return env.getMinimum(0);
-        }
-
-        @Override
-        public double getMinY() {
-            return env.getMinimum(1);
-        }
-
-        @Override
-        public double getMaxX() {
-            return env.getMaximum(0);
-        }
-
-        @Override
-        public double getMaxY() {
-            return env.getMaximum(1);
-        }
-
-        @Override
-        public boolean evaluate(Object object) {
-            Geometry candidate = toGeometry(object, expression1);
-
-            if (candidate == null) {
-                return false;
-            }
-
-            //we don't know in which crs it is, try to find it
-            CoordinateReferenceSystem candidateCrs = null;
-            try {
-                candidateCrs = Geometries.getCoordinateReferenceSystem(candidate);
-            } catch (FactoryException ex) {
-                warning(ex);
-            }
-
-            //if we don't know the crs, we will assume it's the objective crs already
-            if (candidateCrs != null) {
-                //reproject in objective crs if needed
-                if (!Utilities.equalsIgnoreMetadata(this.crs, candidateCrs)) {
-                    try {
-                        candidate = (Geometry) Geometries.transform(candidate, CRS.findOperation(candidateCrs, this.crs, null));
-                    } catch (MismatchedDimensionException | TransformException | FactoryException ex) {
-                        warning(ex);
-                        return false;
-                    }
-                }
-            }
-
-            final org.locationtech.jts.geom.Envelope candidateEnv = candidate.getEnvelopeInternal();
-
-            if (boundingEnv.contains(candidateEnv) || candidateEnv.contains(boundingEnv)) {
-                return true;
-            } else if (boundingEnv.intersects(candidateEnv)) {
-                return getPreparedGeometry().intersects(candidate);
-            } else {
-                return false;
-            }
-        }
-
-        @Override
-        public Object accept(FilterVisitor visitor, Object extraData) {
-            return visitor.visit(this, extraData);
         }
     }
 

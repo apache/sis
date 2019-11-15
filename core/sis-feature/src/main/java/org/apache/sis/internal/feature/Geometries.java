@@ -475,7 +475,7 @@ public abstract class Geometries<G> {
      *
      * @see #tryGetCoordinateReferenceSystem(Object)
      */
-    Object tryTransform(Object geometry, CoordinateOperation operation, CoordinateReferenceSystem targetCRS)
+    public G tryTransform(Object geometry, CoordinateOperation operation, CoordinateReferenceSystem targetCRS)
             throws FactoryException, TransformException
     {
         if (rootClass.isInstance(geometry)) {
@@ -595,7 +595,7 @@ public abstract class Geometries<G> {
     /**
      * See {@link Geometries#toGeometry(Envelope, WrapResolution)}.
      */
-    Object tryConvertToGeometry(final Envelope env, WrapResolution resolution) {
+    public G tryConvertToGeometry(final Envelope env, WrapResolution resolution) {
         // Ensure that we can isolate an horizontal part in the given envelope.
         final int x;
         if (env.getDimension() == 2) {
