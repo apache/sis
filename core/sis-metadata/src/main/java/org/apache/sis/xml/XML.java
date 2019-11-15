@@ -137,11 +137,11 @@ public final class XML extends Static {
     public static final String TIMEZONE = "org.apache.sis.xml.timezone";
 
     /**
-     * Specifies the root URL of schemas. This property specifies only the schema locations;
-     * it does not change the content of marshalled XML documents (for content schemas, see
-     * {@link #METADATA_VERSION}). The value for this property shall be an instance of
-     * {@link Map Map&lt;String,String&gt;}.
-     * This property controls the URL to be used when marshalling the following elements:
+     * Specifies the root URLs of some schemas.
+     * This property modifies only the URL strings; it does not change the structure of
+     * marshalled XML documents (for content structure, see {@link #METADATA_VERSION}).
+     * The value for this property shall be an instance of {@link Map Map&lt;String,String&gt;}.
+     * This property controls the URLs to be used when marshalling the following elements:
      *
      * <ul>
      *   <li>The value of the {@code codeList} attribute when marshalling subclasses of
@@ -150,6 +150,15 @@ public final class XML extends Static {
      *       (for example {@code <gco:Distance>}).</li>
      * </ul>
      *
+     * <div class="note"><b>Examples:</b>
+     * URLs in code lists and is units of measurement may appear as below.
+     * The underlined fragment is the part that can be replaced by {@code SCHEMAS} values:
+     * <ul>
+     *   <li><code><u>http://standards.iso.org/iso/19115/</u>resources/Codelist/cat/codelists.xml#LanguageCode</code></li>
+     *   <li><code><u>http://www.isotc211.org/2005/</u>resources/Codelist/gmxCodelists.xml#LanguageCode</code></li>
+     *   <li><code><u>http://www.isotc211.org/2005/</u>resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])</code></li>
+     * </ul></div>
+     *
      * The currently recognized keys are listed below.
      * The entries to be used depend on the {@linkplain #METADATA_VERSION metadata version} to be marshalled.
      * For example the {@code "cat"} entry is used when marshalling ISO 19115-3:2016 document, while the
@@ -157,24 +166,20 @@ public final class XML extends Static {
      * The following table gives some typical URLs, with the default URL in bold characters:
      *
      * <table class="sis">
-     *   <caption>Supported schemas</caption>
-     *   <tr><th>Map key</th> <th>Typical values (choose only one)</th></tr>
-     *   <tr><td><b>cat</b></td><td>
-     *     <b>http://standards.iso.org/iso/19115/</b>
-     *   </td></tr>
-     *   <tr><td class="hsep"><b>gmd</b></td><td class="hsep">
-     *     <b>http://www.isotc211.org/2005/</b><br>
-     *        http://schemas.opengis.net/iso/19139/20070417/<br>
-     *        http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/
-     *   </td></tr>
-     *   <tr><td class="hsep"><b>gmi</b></td><td class="hsep">
-     *        http://www.isotc211.org/2005/<br>
-     *     <b>http://standards.iso.org/iso/19115/-2/gmi/1.0/</b>
-     *   </td></tr>
-     *   <tr><td class="hsep"><b>gml</b></td><td class="hsep">
-     *     <b>http://schemas.opengis.net/gml/3.2.1/</b><br>
-     *        https://www.isotc211.org/2005/gml/
-     *   </td></tr>
+     *   <caption>Supported root URLs</caption>
+     *   <tr>
+     *     <th>Map key</th>
+     *     <th>Typical values (choose only one)</th>
+     *   </tr><tr>
+     *     <td><b>cat</b></td>
+     *     <td><b>http://standards.iso.org/iso/19115/</b></td>
+     *   </tr><tr>
+     *     <td class="hsep"><b>gmd</b></td>
+     *     <td class="hsep">
+     *         <b>http://www.isotc211.org/2005/</b><br>
+     *            http://schemas.opengis.net/iso/19139/20070417/<br>
+     *            http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/</td>
+     *   </tr>
      * </table>
      *
      * Additional keys, if any, are ignored. Future SIS versions may recognize more keys.

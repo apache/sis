@@ -25,6 +25,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 
 /**
  * The target version of standards for {@link Transformer}.
+ * This is used only for versions different than the native versions declared in JAXB annotations.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
