@@ -24,17 +24,22 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.image.TranslatedRenderedImage;
+import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.util.ArgumentChecks;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 
 /**
  * A {@link GridCoverage} with data stored in a {@link RenderedImage}.
  *
+ * @author Martin Desruisseaux (Geomatys)
  * @author Johann Sorel (Geomatys)
  * @version 2.0
  * @since   2.0
@@ -78,6 +83,34 @@ public final class GridCoverage2D extends GridCoverage {
         if (image.getHeight()!= extent.getSize(imageAxes[1])) {
             throw new IllegalArgumentException("Image height " + image.getHeight()+ "does not match grid extent height "+ extent.getSize(imageAxes[1]));
         }
+    }
+
+    /**
+     * Returns the two-dimensional part of this grid coverage CRS. If the
+     * {@linkplain #getCoordinateReferenceSystem complete CRS} is two-dimensional, then this
+     * method returns the same CRS. Otherwise it returns a CRS for the two first axis having
+     * a {@linkplain GridExtent#getSize span} greater than 1 in the grid envelope. Note that
+     * those axis are guaranteed to appears in the same order than in the complete CRS.
+     *
+     * @return The two-dimensional part of the grid coverage CRS.
+     *
+     * @see #getCoordinateReferenceSystem
+     */
+    public CoordinateReferenceSystem getCoordinateReferenceSystem2D() {
+        return crs2d;
+    }
+
+    /**
+     * Returns the grid to CRS 2D transform in pixel center.
+     *
+     * @return MathTransform grid to CRS 2D transform
+     * @throws FactoryException if separating 2d transform fails.
+     */
+    public MathTransform getGridToCrs2D() throws FactoryException {
+        TransformSeparator sep = new TransformSeparator(getGridGeometry().getGridToCRS(PixelInCell.CELL_CENTER));
+        int idx = AxisDirections.indexOfColinear(getCoordinateReferenceSystem().getCoordinateSystem(), crs2d.getCoordinateSystem());
+        sep.addSourceDimensionRange(idx, idx+2);
+        return sep.separate();
     }
 
     /**
