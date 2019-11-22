@@ -29,6 +29,10 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @param <T> Type of the first arguement of the function.
  * @param <U> Type of the second argument of the function.
  * @param <R> Type of the function result.
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 @FunctionalInterface
 interface SQLBiFunction<T, U, R> {

@@ -31,6 +31,10 @@ import org.apache.sis.storage.FeatureSet;
 
 /**
  *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 abstract class SQLQueryAdapter implements SubsetAdapter.AdapterBuilder {
 

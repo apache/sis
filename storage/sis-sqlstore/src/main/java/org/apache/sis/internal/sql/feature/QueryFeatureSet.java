@@ -53,6 +53,11 @@ import org.apache.sis.util.collection.BackingStoreException;
  * association).
  *
  * TODO: move query analysis in a dedicated class.
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 public class QueryFeatureSet extends AbstractFeatureSet {
 

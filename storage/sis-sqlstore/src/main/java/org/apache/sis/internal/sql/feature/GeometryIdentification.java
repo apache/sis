@@ -39,6 +39,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonEmpty;
  * <a href="https://www.opengeospatial.org/standards/sfs">OGC 06-104r4 (Simple feature access - Part 2: SQL option)</a>).
  *
  * @implNote <a href="https://www.jooq.org/doc/3.12/manual/sql-execution/fetching/pojos/#N5EFC1">I miss JOOQ...</a>
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 class GeometryIdentification implements SQLCloseable {
 

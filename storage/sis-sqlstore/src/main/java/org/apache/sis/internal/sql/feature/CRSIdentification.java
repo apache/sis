@@ -31,6 +31,13 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Cache;
 
+/**
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
+ */
 final class CRSIdentification implements SQLCloseable {
 
     final PreparedStatement wktFromSrid;

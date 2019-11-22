@@ -44,6 +44,11 @@ import static org.apache.sis.internal.sql.feature.OGC06104r4.getGeometricClass;
  *     <li><a href="http://postgis.refractions.net/documentation/manual-1.3/ch04.html#id2571020">PostGIS manual, section 4.1.2</a></li>
  *     <li><a href="https://www.ibm.com/support/knowledgecenter/SSGU8G_14.1.0/com.ibm.spatial.doc/ids_spat_285.htm">IBM WKB description</a></li>
  * </ul>
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 public final class PostGISMapping implements DialectMapping {
 

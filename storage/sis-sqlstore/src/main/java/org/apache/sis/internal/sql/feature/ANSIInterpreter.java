@@ -23,7 +23,11 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.WrapResolution;
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import org.apache.sis.util.iso.Names;
 import org.opengis.filter.*;
 import org.opengis.filter.expression.Add;
 import org.opengis.filter.expression.BinaryExpression;
@@ -55,13 +59,6 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.util.GenericName;
 import org.opengis.util.LocalName;
 
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.WrapResolution;
-import org.apache.sis.util.iso.Names;
-
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
 /**
  * Port of Geotk FilterToSQL for an ANSI compliant query builder.
  *
@@ -74,6 +71,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * filter refering to non pure SQL property (like relations) will cause a failure.
  *
  * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
 

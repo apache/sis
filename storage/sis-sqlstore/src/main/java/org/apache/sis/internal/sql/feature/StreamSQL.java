@@ -60,9 +60,10 @@ import static org.apache.sis.util.ArgumentChecks.ensurePositive;
  * {@link #filter(Predicate)} or {@link #flatMap(Function)} operations are called, as they modify volumetry (the count
  * of stream elements is not bound 1 to 1 to query result rows).
  *
- * @since 1.0
- *
  * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   1.0
+ * @module
  *
  */
 class StreamSQL extends StreamDecoration<Feature> {

@@ -33,6 +33,11 @@ import org.apache.sis.setup.GeometryLibrary;
  *     <li>{@link PostGISMapping PostGIS (geographic) specific mapping}</li>
  *     <li>{@link ANSIMapping Default mapping for simple types (text, numbers, temporal, etc.)}</li>
  * </ul>
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 public interface DialectMapping extends SQLCloseable {
 

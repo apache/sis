@@ -32,6 +32,11 @@ import java.util.Optional;
 
 /**
  * Default JDBC mapping type, used as a fallback when no other database-specific mapping can handle value binding.
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 class ANSIMapping implements DialectMapping {
 

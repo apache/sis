@@ -27,6 +27,11 @@ import org.apache.sis.storage.DataStoreException;
 /**
  * Simple abstraction to describe a component capable of loading data from an SQL connection. Used for subsetting SQL
  * related feature sets.
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 interface Connector {
     /**

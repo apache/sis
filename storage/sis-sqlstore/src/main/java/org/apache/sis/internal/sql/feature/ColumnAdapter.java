@@ -29,6 +29,10 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * placed on row of interest, and an index specifying which column defines the cell to read on this line.
  *
  * @param <T> Type of object decoded from cell.
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 public interface ColumnAdapter<T> {
 

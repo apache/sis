@@ -28,6 +28,11 @@ import org.apache.sis.internal.metadata.sql.Reflection;
  * Note that for now, only a few selected information are represented. If needed, new fields could be added if needed.
  * The aim is to describe as well as possible all SQL related information about a column, to allow mapping to feature
  * model as accurate as possible.
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 class SQLColumn {
 

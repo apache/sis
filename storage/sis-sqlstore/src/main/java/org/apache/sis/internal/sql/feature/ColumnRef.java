@@ -25,6 +25,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 /**
  * A column reference. Specify name of the column, and optionally an alias to use for public visibility.
  * By default, column has no alias. To create a column with an alias, use {@code ColumnRef myCol = new ColumnRef("colName).as("myAlias");}
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 final class ColumnRef {
     private final String name;

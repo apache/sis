@@ -38,6 +38,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * This object has an initialization phase, to prepare it for a specific ResultSet, through {@link #prepare(Connection)}
  * method. It allows mappers to fetch specific information from the database when needed.
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 class FeatureAdapter {
 

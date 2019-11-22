@@ -29,7 +29,10 @@ import org.apache.sis.util.ArgumentChecks;
  * @implNote For now, only list of columns composing the key are returned. However, in the future it would be possible
  * to add other information, as a value type to describe how to expose primary key value.
  *
- * @author "Alexis Manin (Geomatys)"
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 interface PrimaryKey {
 

@@ -18,6 +18,13 @@ package org.apache.sis.internal.sql.feature;
 
 import org.opengis.filter.spatial.BBOX;
 
+/**
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
+ */
 public class PostGISInterpreter extends ANSIInterpreter {
 
     /**

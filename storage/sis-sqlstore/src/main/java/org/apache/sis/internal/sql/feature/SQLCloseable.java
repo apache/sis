@@ -20,6 +20,11 @@ import java.sql.SQLException;
 
 /**
  * Specialisation of {@link AutoCloseable standard closeable objects} for SQL related resources.
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 interface SQLCloseable extends AutoCloseable {
     @Override

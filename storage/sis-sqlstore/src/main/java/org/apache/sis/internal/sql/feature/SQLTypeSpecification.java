@@ -33,6 +33,11 @@ import org.apache.sis.storage.DataStoreContentException;
  * {@link Analyzer} to create an {@link FeatureAdapter adaptation layer to the feature model}. Default implementations
  * can be retrieved for tables and queries respectively through {@link Analyzer#create(TableReference, TableReference)}
  * and {@link Analyzer#create(PreparedStatement, String, GenericName)} methods.
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 interface SQLTypeSpecification {
     /**

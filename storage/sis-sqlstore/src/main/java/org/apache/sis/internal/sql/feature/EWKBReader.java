@@ -45,6 +45,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonEmpty;
  *
  * @author Johann Sorel (Geomatys)
  * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 class EWKBReader {
 

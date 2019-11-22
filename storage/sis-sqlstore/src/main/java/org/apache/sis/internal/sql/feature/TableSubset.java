@@ -35,6 +35,11 @@ import org.apache.sis.storage.event.StoreListener;
 /**
  * A {@link Table} feature set on which a query has been applied.
  * TODO: Override {@link #subset(Query)} method to allow stacking of SQL filter and sorting.
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 public class TableSubset implements FeatureSet {
 

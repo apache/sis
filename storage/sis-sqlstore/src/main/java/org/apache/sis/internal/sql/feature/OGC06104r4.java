@@ -37,6 +37,11 @@ import org.apache.sis.util.collection.Cache;
  * access on any SQL simple feature compliant database, but the standard does not specify precisely what mode of
  * representation is the default (WKB or WKT). The aim is to base specific drivers on this class (see {@link PostGISMapping}
  * for an example).
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 final class OGC06104r4 implements DialectMapping {
 

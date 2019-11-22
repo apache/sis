@@ -40,6 +40,13 @@ import org.openjdk.jmh.annotations.Warmup;
 
 import static org.apache.sis.util.ArgumentChecks.ensureStrictlyPositive;
 
+/**
+ *
+ * @author Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
+ */
 @Fork(value = 2, jvmArgs = {"-server", "-Xmx2g"} )
 @Warmup(iterations = 2, time = 4, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 2, time = 4, timeUnit = TimeUnit.SECONDS)
