@@ -65,7 +65,7 @@ import static org.opengis.test.Assert.assertInstanceOf;
 public final strictfp class SQLMMTest extends TestCase {
 
     private static final String P_NAME = "geom";
-    
+
     /**
      * The factory to use for creating the objects to test.
      */
@@ -166,32 +166,6 @@ public final strictfp class SQLMMTest extends TestCase {
     }
 
     /**
-     * Test SQL/MM {@link ST_Centroid} function.
-     */
-    @Test
-    public void testCentroid() {
-        assertRequireArguments("ST_Centroid");
-        /*
-         * Creates a single linestring for testing the centroid function. The CRS is not used by this computation,
-         * but we declare it in order to verify that the information is propagated to the result.
-         */
-        final LineString geometry = geometryFactory.createLineString(new Coordinate[] {
-            new Coordinate(10, 20),
-            new Coordinate(30, 20)
-        });
-        geometry.setSRID(4326);
-        geometry.setUserData(HardCodedCRS.WGS84_φλ);
-        /*
-         * Execute the function and check the result.
-         */
-        final Point result = evaluate(Point.class, null, factory.function("ST_Centroid", factory.literal(geometry)));
-        assertEquals("userData", HardCodedCRS.WGS84_φλ, result.getUserData());
-        assertEquals("SRID", 4326, result.getSRID());
-        assertEquals(20, result.getX(), STRICT);
-        assertEquals(20, result.getY(), STRICT);
-    }
-
-    /**
      * Test SQL/MM {@link ST_Buffer} function.
      */
     @Test
@@ -218,57 +192,66 @@ public final strictfp class SQLMMTest extends TestCase {
     }
 
     /**
-     * Test SQL/MM {@link ST_Simplify} function.
+     * Test SQL/MM {@link ST_Centroid} function.
      */
     @Test
-    public void ST_SimplifyTest() {
-        assertRequireArguments("ST_Simplify");
+    public void testCentroid() {
+        assertRequireArguments("ST_Centroid");
         /*
-         * Creates a single line for testing the simplify function. The CRS is not used by this computation,
+         * Creates a single linestring for testing the centroid function. The CRS is not used by this computation,
          * but we declare it in order to verify that the information is propagated to the result.
          */
-        final LineString geometry = geometryFactory.createLineString(new Coordinate[]{new Coordinate(10, 20), new Coordinate(15, 20), new Coordinate(20, 20)});
-        geometry.setUserData(HardCodedCRS.WGS84_φλ);
+        final LineString geometry = geometryFactory.createLineString(new Coordinate[] {
+            new Coordinate(10, 20),
+            new Coordinate(30, 20)
+        });
         geometry.setSRID(4326);
+        geometry.setUserData(HardCodedCRS.WGS84_φλ);
         /*
          * Execute the function and check the result.
          */
-        final LineString result = evaluate(LineString.class, null, factory.function("ST_Simplify", factory.literal(geometry), factory.literal(10)));
+        final Point result = evaluate(Point.class, null, factory.function("ST_Centroid", factory.literal(geometry)));
         assertEquals("userData", HardCodedCRS.WGS84_φλ, result.getUserData());
         assertEquals("SRID", 4326, result.getSRID());
-        Coordinate[] coordinates = result.getCoordinates();
-        assertEquals(2, coordinates.length);
-        assertEquals(10, coordinates[0].x, STRICT);
-        assertEquals(20, coordinates[0].y, STRICT);
-        assertEquals(20, coordinates[1].x, STRICT);
-        assertEquals(20, coordinates[1].y, STRICT);
+        assertEquals(20, result.getX(), STRICT);
+        assertEquals(20, result.getY(), STRICT);
     }
 
-    /**
-     * Test SQL/MM {@link ST_SimplifyPreserveTopology} function.
-     */
     @Test
-    public void ST_SimplifyPreserveTopologyTest() {
-        assertRequireArguments("ST_SimplifyPreserveTopology");
-        /*
-         * Creates a single line for testing the simplify function. The CRS is not used by this computation,
-         * but we declare it in order to verify that the information is propagated to the result.
-         */
-        final LineString geometry = geometryFactory.createLineString(new Coordinate[]{new Coordinate(10, 20), new Coordinate(15, 20), new Coordinate(20, 20)});
-        geometry.setUserData(HardCodedCRS.WGS84_φλ);
-        geometry.setSRID(4326);
-        /*
-         * Execute the function and check the result.
-         */
-        final LineString result = evaluate(LineString.class, null, factory.function("ST_SimplifyPreserveTopology", factory.literal(geometry), factory.literal(10)));
-        assertEquals("userData", HardCodedCRS.WGS84_φλ, result.getUserData());
-        assertEquals("SRID", 4326, result.getSRID());
-        Coordinate[] coordinates = result.getCoordinates();
-        assertEquals(2, coordinates.length);
-        assertEquals(10, coordinates[0].x, STRICT);
-        assertEquals(20, coordinates[0].y, STRICT);
-        assertEquals(20, coordinates[1].x, STRICT);
-        assertEquals(20, coordinates[1].y, STRICT);
+    public void ST_Envelope() {
+        try {
+            new ST_Envelope(new Expression[2]);
+            fail("ST_Envelope operator should accept a single parameter");
+        } catch (IllegalArgumentException e) {
+            // expected behavior
+        }
+
+        try {
+            new ST_Envelope(null);
+            fail("ST_Envelope operator should accept a single parameter");
+        } catch (IllegalArgumentException e) {
+            // expected behavior
+        }
+
+        final LineString pt = geometryFactory.createLineString(new Coordinate[]{
+                new Coordinate(12, 3.3),
+                new Coordinate(13.1, 4.4),
+                new Coordinate(12.02, 5.7)
+        });
+        ST_Envelope operator = new ST_Envelope(new Expression[]{factory.literal(pt)});
+        final GeneralEnvelope expectedEnv = new GeneralEnvelope(2);
+        expectedEnv.setEnvelope(12, 3.3, 13.1, 5.7);
+        Envelope evaluated = (Envelope) operator.evaluate(null);
+        assertTrue(String.format("Bad result:%nExpected: %s%nBut got: %s", expectedEnv.toString(), evaluated.toString()), expectedEnv.equals(evaluated, 1e-10, false));
+        evaluated = (Envelope) operator.evaluate(null);
+        assertTrue(String.format("Bad result:%nExpected: %s%nBut got: %s", expectedEnv.toString(), evaluated.toString()), expectedEnv.equals(evaluated, 1e-10, false));
+
+        // After testing literal data, we'll now try to extract data from a feature.
+        final Feature f = mock();
+        f.setPropertyValue(P_NAME, pt);
+        operator = new ST_Envelope(new Expression[]{factory.property(P_NAME)});
+        evaluated = (Envelope) operator.evaluate(f);
+        assertTrue(String.format("Bad result:%nExpected: %s%nBut got: %s", expectedEnv.toString(), evaluated.toString()), expectedEnv.equals(evaluated, 1e-10, false));
     }
 
     @Test
@@ -338,41 +321,76 @@ public final strictfp class SQLMMTest extends TestCase {
         assertTrue("Intersection should be found when CRS are compatible", new ST_Intersects(factory.literal(pointUtm78), factory.literal(ringUtm00)).evaluate(null));
     }
 
+    /**
+     * Test SQL/MM {@link ST_Point} function.
+     */
     @Test
-    public void ST_Envelope() {
-        try {
-            new ST_Envelope(new Expression[2]);
-            fail("ST_Envelope operator should accept a single parameter");
-        } catch (IllegalArgumentException e) {
-            // expected behavior
-        }
+    public void ST_PointTest() {
+        assertRequireArguments("ST_Point");
+        /*
+         * Execute the function and check the result.
+         */
+        final Point result = evaluate(Point.class, null, factory.function("ST_Point",
+                factory.literal(10.0),
+                factory.literal(20.0),
+                factory.literal(HardCodedCRS.WGS84)));
+        assertEquals("userData", HardCodedCRS.WGS84, result.getUserData());
+        assertEquals(10.0, result.getX(), STRICT);
+        assertEquals(20.0, result.getY(), STRICT);
+    }
 
-        try {
-            new ST_Envelope(null);
-            fail("ST_Envelope operator should accept a single parameter");
-        } catch (IllegalArgumentException e) {
-            // expected behavior
-        }
+    /**
+     * Test SQL/MM {@link ST_Simplify} function.
+     */
+    @Test
+    public void ST_SimplifyTest() {
+        assertRequireArguments("ST_Simplify");
+        /*
+         * Creates a single line for testing the simplify function. The CRS is not used by this computation,
+         * but we declare it in order to verify that the information is propagated to the result.
+         */
+        final LineString geometry = geometryFactory.createLineString(new Coordinate[]{new Coordinate(10, 20), new Coordinate(15, 20), new Coordinate(20, 20)});
+        geometry.setUserData(HardCodedCRS.WGS84_φλ);
+        geometry.setSRID(4326);
+        /*
+         * Execute the function and check the result.
+         */
+        final LineString result = evaluate(LineString.class, null, factory.function("ST_Simplify", factory.literal(geometry), factory.literal(10)));
+        assertEquals("userData", HardCodedCRS.WGS84_φλ, result.getUserData());
+        assertEquals("SRID", 4326, result.getSRID());
+        Coordinate[] coordinates = result.getCoordinates();
+        assertEquals(2, coordinates.length);
+        assertEquals(10, coordinates[0].x, STRICT);
+        assertEquals(20, coordinates[0].y, STRICT);
+        assertEquals(20, coordinates[1].x, STRICT);
+        assertEquals(20, coordinates[1].y, STRICT);
+    }
 
-        final LineString pt = geometryFactory.createLineString(new Coordinate[]{
-                new Coordinate(12, 3.3),
-                new Coordinate(13.1, 4.4),
-                new Coordinate(12.02, 5.7)
-        });
-        ST_Envelope operator = new ST_Envelope(new Expression[]{factory.literal(pt)});
-        final GeneralEnvelope expectedEnv = new GeneralEnvelope(2);
-        expectedEnv.setEnvelope(12, 3.3, 13.1, 5.7);
-        Envelope evaluated = (Envelope) operator.evaluate(null);
-        assertTrue(String.format("Bad result:%nExpected: %s%nBut got: %s", expectedEnv.toString(), evaluated.toString()), expectedEnv.equals(evaluated, 1e-10, false));
-        evaluated = (Envelope) operator.evaluate(null);
-        assertTrue(String.format("Bad result:%nExpected: %s%nBut got: %s", expectedEnv.toString(), evaluated.toString()), expectedEnv.equals(evaluated, 1e-10, false));
-
-        // After testing literal data, we'll now try to extract data from a feature.
-        final Feature f = mock();
-        f.setPropertyValue(P_NAME, pt);
-        operator = new ST_Envelope(new Expression[]{factory.property(P_NAME)});
-        evaluated = (Envelope) operator.evaluate(f);
-        assertTrue(String.format("Bad result:%nExpected: %s%nBut got: %s", expectedEnv.toString(), evaluated.toString()), expectedEnv.equals(evaluated, 1e-10, false));
+    /**
+     * Test SQL/MM {@link ST_SimplifyPreserveTopology} function.
+     */
+    @Test
+    public void ST_SimplifyPreserveTopologyTest() {
+        assertRequireArguments("ST_SimplifyPreserveTopology");
+        /*
+         * Creates a single line for testing the simplify function. The CRS is not used by this computation,
+         * but we declare it in order to verify that the information is propagated to the result.
+         */
+        final LineString geometry = geometryFactory.createLineString(new Coordinate[]{new Coordinate(10, 20), new Coordinate(15, 20), new Coordinate(20, 20)});
+        geometry.setUserData(HardCodedCRS.WGS84_φλ);
+        geometry.setSRID(4326);
+        /*
+         * Execute the function and check the result.
+         */
+        final LineString result = evaluate(LineString.class, null, factory.function("ST_SimplifyPreserveTopology", factory.literal(geometry), factory.literal(10)));
+        assertEquals("userData", HardCodedCRS.WGS84_φλ, result.getUserData());
+        assertEquals("SRID", 4326, result.getSRID());
+        Coordinate[] coordinates = result.getCoordinates();
+        assertEquals(2, coordinates.length);
+        assertEquals(10, coordinates[0].x, STRICT);
+        assertEquals(20, coordinates[0].y, STRICT);
+        assertEquals(20, coordinates[1].x, STRICT);
+        assertEquals(20, coordinates[1].y, STRICT);
     }
 
     /**

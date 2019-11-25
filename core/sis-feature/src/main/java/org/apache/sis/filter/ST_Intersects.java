@@ -43,6 +43,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 /**
  * TODO: refine once Geometry API is stable.
+ *
+ * @author  Alexis Manin (Geomatys)
+ * @version 2.0
+ * @since   2.0
+ * @module
  */
 public final class ST_Intersects extends SpatialFunction implements Intersects, Serializable {
 

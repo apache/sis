@@ -24,6 +24,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.internal.feature.FunctionRegister;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.ArgumentChecks;
+import org.locationtech.jts.geom.GeometryFactory;
 
 
 /**
@@ -39,6 +40,12 @@ import org.apache.sis.util.ArgumentChecks;
  * @module
  */
 final class SQLMM implements FunctionRegister {
+
+    /**
+     * JTS factory used by multiple functions.
+     */
+    static final GeometryFactory GF = new GeometryFactory();
+
     /**
      * Creates the default register.
      */
@@ -58,8 +65,15 @@ final class SQLMM implements FunctionRegister {
      */
     @Override
     public Collection<String> getNames() {
-        return Arrays.asList(ST_Transform.NAME, ST_Centroid.NAME, ST_Buffer.NAME,
-                ST_Simplify.NAME, ST_SimplifyPreserveTopology.NAME);
+        return Arrays.asList(
+                ST_Buffer.NAME,
+                ST_Centroid.NAME,
+                ST_Envelope.NAME,
+                //ST_Intersects.NAME, TODO fixme, this class is not a proper function
+                ST_Point.NAME,
+                ST_Simplify.NAME,
+                ST_SimplifyPreserveTopology.NAME,
+                ST_Transform.NAME);
     }
 
     /**
@@ -80,11 +94,14 @@ final class SQLMM implements FunctionRegister {
         }
         try {
             switch (name) {
-                case ST_Transform.NAME:                 return new ST_Transform(parameters);
-                case ST_Centroid.NAME:                  return new ST_Centroid(parameters);
                 case ST_Buffer.NAME:                    return new ST_Buffer(parameters);
+                case ST_Centroid.NAME:                  return new ST_Centroid(parameters);
+                case ST_Envelope.NAME:                  return new ST_Envelope(parameters);
+                //case ST_Intersects.NAME:                return new ST_Intersects(parameters);
+                case ST_Point.NAME:                     return new ST_Point(parameters);
                 case ST_Simplify.NAME:                  return new ST_Simplify(parameters);
                 case ST_SimplifyPreserveTopology.NAME:  return new ST_SimplifyPreserveTopology(parameters);
+                case ST_Transform.NAME:                 return new ST_Transform(parameters);
                 default: throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownFunction_1, name));
             }
         } catch (FactoryException e) {
