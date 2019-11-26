@@ -71,6 +71,7 @@ final class SQLMM implements FunctionRegister {
                 ST_Envelope.NAME,
                 //ST_Intersects.NAME, TODO fixme, this class is not a proper function
                 ST_Point.NAME,
+                ST_LineString.NAME,
                 ST_Simplify.NAME,
                 ST_SimplifyPreserveTopology.NAME,
                 ST_Transform.NAME);
@@ -99,6 +100,7 @@ final class SQLMM implements FunctionRegister {
                 case ST_Envelope.NAME:                  return new ST_Envelope(parameters);
                 //case ST_Intersects.NAME:                return new ST_Intersects(parameters);
                 case ST_Point.NAME:                     return new ST_Point(parameters);
+                case ST_LineString.NAME:                return new ST_LineString(parameters);
                 case ST_Simplify.NAME:                  return new ST_Simplify(parameters);
                 case ST_SimplifyPreserveTopology.NAME:  return new ST_SimplifyPreserveTopology(parameters);
                 case ST_Transform.NAME:                 return new ST_Transform(parameters);

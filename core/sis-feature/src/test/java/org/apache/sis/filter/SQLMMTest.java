@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+import java.util.Arrays;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.FilterFactory;
@@ -337,6 +338,25 @@ public final strictfp class SQLMMTest extends TestCase {
         assertEquals("userData", HardCodedCRS.WGS84, result.getUserData());
         assertEquals(10.0, result.getX(), STRICT);
         assertEquals(20.0, result.getY(), STRICT);
+    }
+
+    /**
+     * Test SQL/MM {@link ST_Point} function.
+     */
+    @Test
+    public void ST_LineStringTest() {
+        assertRequireArguments("ST_LineString");
+        /*
+         * Execute the function and check the result.
+         */
+        final LineString result = evaluate(LineString.class, null, factory.function("ST_LineString",
+                factory.literal(Arrays.asList(new Coordinate(10.0, 20.0), new Coordinate(30.0, 40.0))),
+                factory.literal(HardCodedCRS.WGS84)));
+        assertEquals("userData", HardCodedCRS.WGS84, result.getUserData());
+        assertEquals(10.0, result.getCoordinates()[0].x, STRICT);
+        assertEquals(20.0, result.getCoordinates()[0].y, STRICT);
+        assertEquals(30.0, result.getCoordinates()[1].x, STRICT);
+        assertEquals(40.0, result.getCoordinates()[1].y, STRICT);
     }
 
     /**
