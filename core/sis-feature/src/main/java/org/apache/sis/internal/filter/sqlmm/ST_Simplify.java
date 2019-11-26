@@ -14,22 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter;
+package org.apache.sis.internal.filter.sqlmm;
 
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.internal.filter.NamedFunction;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.util.ArgumentChecks;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
+import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.expression.Expression;
 
 
 /**
- * An expression which computes a geometry simplification preserving topology.
+ * An expression which computes a geometry simplification.
  * This expression expects two arguments:
  *
  * <ol class="verbose">
@@ -49,16 +50,16 @@ import org.opengis.filter.expression.Expression;
  * @since   2.0
  * @module
  */
-final class ST_SimplifyPreserveTopology extends NamedFunction implements FeatureExpression {
+final class ST_Simplify extends NamedFunction implements FeatureExpression {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 6614108500745749460L;
+    private static final long serialVersionUID = -7007942414561048416L;
 
     /**
      * Name of this function as defined by SQL/MM standard.
      */
-    static final String NAME = "ST_SimplifyPreserveTopology";
+    static final String NAME = "ST_Simplify";
 
     /**
      * Creates a new function with the given parameters. It is caller's responsibility to ensure
@@ -66,7 +67,7 @@ final class ST_SimplifyPreserveTopology extends NamedFunction implements Feature
      *
      * @throws IllegalArgumentException if the number of arguments is not equal to 2.
      */
-    ST_SimplifyPreserveTopology(final Expression[] parameters) {
+    ST_Simplify(final Expression[] parameters) {
         super(parameters);
         ArgumentChecks.ensureExpectedCount("parameters", 2, parameters.length);
     }
@@ -88,7 +89,7 @@ final class ST_SimplifyPreserveTopology extends NamedFunction implements Feature
         Object geometry = parameters.get(0).evaluate(value);
         double distanceTolerance = parameters.get(1).evaluate(value, Number.class).doubleValue();
         if (geometry instanceof Geometry) {
-            Geometry geom = TopologyPreservingSimplifier.simplify((Geometry) geometry, distanceTolerance);
+            Geometry geom = DouglasPeuckerSimplifier.simplify((Geometry) geometry, distanceTolerance);
             geom.setSRID(((Geometry) geometry).getSRID());
             geom.setUserData(((Geometry) geometry).getUserData());
             return geom;

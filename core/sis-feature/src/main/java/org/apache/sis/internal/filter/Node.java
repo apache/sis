@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter;
+package org.apache.sis.internal.filter;
 
 import java.util.Map;
 import java.util.IdentityHashMap;
@@ -45,7 +45,7 @@ import org.opengis.filter.BinaryLogicOperator;
  * @since   1.1
  * @module
  */
-abstract class Node implements Serializable {
+public abstract class Node implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -65,7 +65,7 @@ abstract class Node implements Serializable {
      * @param  name  name of the attribute to create.
      * @return an attribute of the given type and name.
      */
-    static <T> AttributeType<T> createType(final Class<T> type, final Object name) {
+    protected static <T> AttributeType<T> createType(final Class<T> type, final Object name) {
         return new DefaultAttributeType<>(Collections.singletonMap(DefaultAttributeType.NAME_KEY, name),
                                           type, 1, 1, null, (AttributeType<?>[]) null);
     }
@@ -87,7 +87,7 @@ abstract class Node implements Serializable {
      *
      * @return the name of this node.
      */
-    protected abstract String getName();
+    public abstract String getName();
 
     /**
      * Returns the children of this node, or an empty collection if none. This is used
@@ -168,7 +168,7 @@ abstract class Node implements Serializable {
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-460">SIS-460</a>
      */
-    final void warning(final Exception e) {
+    public final void warning(final Exception e) {
         Logging.recoverableException(Logging.getLogger(Loggers.FILTER), getClass(), "evaluate", e);
     }
 }

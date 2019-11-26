@@ -23,6 +23,7 @@ import java.util.Collection;
 
 import org.opengis.filter.expression.Expression;
 
+import org.apache.sis.internal.filter.Node;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;

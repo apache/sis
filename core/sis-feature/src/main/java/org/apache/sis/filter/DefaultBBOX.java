@@ -221,7 +221,7 @@ final class DefaultBBOX extends SpatialFunction implements BBOX, Serializable {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return BBOX.NAME;
     }
 

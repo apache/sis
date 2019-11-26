@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.filter.Node;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -69,7 +70,7 @@ final class FilterByIdentifier extends Node implements Id {
      * Returns a name identifying this kind of filter.
      */
     @Override
-    protected String getName() {
+    public String getName() {
         return "Id";
     }
 

@@ -18,6 +18,7 @@ package org.apache.sis.filter;
 
 import java.util.Arrays;
 import java.util.Collection;
+import org.apache.sis.internal.filter.Node;
 import org.opengis.filter.FilterVisitor;
 import org.opengis.filter.PropertyIsLike;
 import org.opengis.filter.expression.Expression;
@@ -49,7 +50,7 @@ final class DefaultLike extends Node implements PropertyIsLike {
     }
 
     @Override
-    protected String getName() {
+    public String getName() {
         return NAME;
     }
 

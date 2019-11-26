@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter;
+package org.apache.sis.internal.filter.sqlmm;
 
 import java.util.Objects;
 import java.io.IOException;
@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.internal.filter.NamedFunction;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.util.Constants;

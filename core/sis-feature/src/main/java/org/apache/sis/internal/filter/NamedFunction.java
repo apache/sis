@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter;
+package org.apache.sis.internal.filter;
 
 import java.util.List;
 import java.util.Collection;
@@ -33,6 +33,7 @@ import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
+import org.apache.sis.filter.InvalidExpressionException;
 
 
 /**
@@ -55,7 +56,7 @@ import org.apache.sis.feature.builder.AttributeTypeBuilder;
  * @since   1.1
  * @module
  */
-abstract class NamedFunction extends Node implements Function {
+public abstract class NamedFunction extends Node implements Function {
     /**
      * For cross-version compatibility.
      */
@@ -76,7 +77,7 @@ abstract class NamedFunction extends Node implements Function {
      *
      * @param  parameters  the sub-expressions that will be evaluated to provide the parameters to the function.
      */
-    NamedFunction(final Expression[] parameters) {
+    public NamedFunction(final Expression[] parameters) {
         this.parameters = UnmodifiableArrayList.wrap(parameters);
     }
 
@@ -188,7 +189,7 @@ abstract class NamedFunction extends Node implements Function {
      * @throws InvalidExpressionException if this method can not determine the result type of the expression
      *         at given index. It may be because that expression is backed by an unsupported implementation.
      */
-    final AttributeTypeBuilder<?> copyGeometryType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
+    public final AttributeTypeBuilder<?> copyGeometryType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
         final PropertyTypeBuilder type = copyType(0, valueType, addTo);
         if (type instanceof AttributeTypeBuilder<?>) {
             AttributeTypeBuilder<?> att = (AttributeTypeBuilder<?>) type;

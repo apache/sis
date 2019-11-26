@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter;
+package org.apache.sis.internal.filter;
 
 import java.util.Arrays;
 import org.opengis.feature.Feature;
@@ -30,8 +30,10 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.jts.JTS;
+import org.apache.sis.internal.filter.sqlmm.ST_Envelope;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;

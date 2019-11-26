@@ -146,7 +146,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '+';}
 
         /** Applies this expression to the given operands. */
@@ -180,7 +180,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '−';}
 
         /** Applies this expression to the given operands. */
@@ -214,7 +214,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '×';}
 
         /** Applies this expression to the given operands. */
@@ -248,7 +248,7 @@ abstract class ArithmeticFunction extends BinaryFunction implements BinaryExpres
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '÷';}
 
         /** Applies this expression to the given operands. */

@@ -18,6 +18,7 @@ package org.apache.sis.filter;
 
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.expression.Literal;
+import org.apache.sis.internal.filter.Node;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 

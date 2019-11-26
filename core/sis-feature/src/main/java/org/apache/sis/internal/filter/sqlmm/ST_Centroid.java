@@ -14,61 +14,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter;
+package org.apache.sis.internal.filter.sqlmm;
 
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.internal.filter.NamedFunction;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.util.ArgumentChecks;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.expression.Expression;
 
 
 /**
- * An expression which computes a geometry simplification.
- * This expression expects two arguments:
+ * An expression which computes the centroid of a geometry.
+ * This expression expects one argument:
  *
  * <ol class="verbose">
  *   <li>An expression returning a geometry object. The evaluated value shall be an instance of
  *       one of the implementations enumerated in {@link org.apache.sis.setup.GeometryLibrary}.</li>
- *   <li>An expression returning a distance tolerance. The evaluated value shall be an instance of {@link Number}.
- *       Distance is expressed in units of the geometry Coordinate Reference System.</li>
  * </ol>
  *
- * <p>
- * Note : this function is defined in PostGIS and H2GIS but not in SQL/MM 13249-3 2011.
- * Likely in a newer version.
- * </p>
- *
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
-final class ST_Simplify extends NamedFunction implements FeatureExpression {
+final class ST_Centroid extends NamedFunction implements FeatureExpression {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -7007942414561048416L;
+    private static final long serialVersionUID = -3993074123019061170L;
 
     /**
      * Name of this function as defined by SQL/MM standard.
      */
-    static final String NAME = "ST_Simplify";
+    static final String NAME = "ST_Centroid";
 
     /**
      * Creates a new function with the given parameters. It is caller's responsibility to ensure
      * that the given array is non-null, has been cloned and does not contain null elements.
      *
-     * @throws IllegalArgumentException if the number of arguments is not equal to 2.
+     * @throws IllegalArgumentException if the number of arguments is not equal to 1.
      */
-    ST_Simplify(final Expression[] parameters) {
+    ST_Centroid(final Expression[] parameters) {
         super(parameters);
-        ArgumentChecks.ensureExpectedCount("parameters", 2, parameters.length);
+        ArgumentChecks.ensureExpectedCount("parameters", 1, parameters.length);
     }
 
     /**
@@ -80,20 +73,12 @@ final class ST_Simplify extends NamedFunction implements FeatureExpression {
     }
 
     /**
-     * Evaluates the first expression as a geometry object, gets the buffer of that geometry and
+     * Evaluates the first expression as a geometry object, gets the centroid of that geometry and
      * returns the result. If the geometry is not a supported implementation, returns {@code null}.
      */
     @Override
     public Object evaluate(final Object value) {
-        Object geometry = parameters.get(0).evaluate(value);
-        double distanceTolerance = parameters.get(1).evaluate(value, Number.class).doubleValue();
-        if (geometry instanceof Geometry) {
-            Geometry geom = DouglasPeuckerSimplifier.simplify((Geometry) geometry, distanceTolerance);
-            geom.setSRID(((Geometry) geometry).getSRID());
-            geom.setUserData(((Geometry) geometry).getUserData());
-            return geom;
-        }
-        return null;
+        return Geometries.getCentroid(parameters.get(0).evaluate(value));
     }
 
     /**
@@ -107,6 +92,6 @@ final class ST_Simplify extends NamedFunction implements FeatureExpression {
     @Override
     public PropertyTypeBuilder expectedType(final FeatureType valueType, final FeatureTypeBuilder addTo) {
         final AttributeTypeBuilder<?> pt = copyGeometryType(valueType, addTo);
-        return pt.setValueClass(Geometries.implementation(pt.getValueClass()).rootClass);
+        return pt.setValueClass(Geometries.implementation(pt.getValueClass()).pointClass);
     }
 }

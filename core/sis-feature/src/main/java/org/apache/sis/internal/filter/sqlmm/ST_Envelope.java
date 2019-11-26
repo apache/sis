@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter;
+package org.apache.sis.internal.filter.sqlmm;
 
 import java.util.Collections;
 import java.util.function.Function;
@@ -33,6 +33,7 @@ import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.Features;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.internal.filter.NamedFunction;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.internal.feature.AttributeConvention;

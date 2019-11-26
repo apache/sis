@@ -34,6 +34,7 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.Collection;
+import org.apache.sis.internal.filter.Node;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -522,7 +523,7 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '<';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
@@ -557,7 +558,7 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '≤';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
@@ -592,7 +593,7 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '>';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
@@ -627,7 +628,7 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '≥';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
@@ -662,7 +663,7 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '=';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
@@ -697,7 +698,7 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '≠';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
@@ -735,7 +736,7 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
 
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
 
         @Override
         protected Collection<?> getChildren() {

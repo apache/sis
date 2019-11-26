@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Collection;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.filter.Node;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 // Branch-dependent imports
@@ -104,7 +105,7 @@ abstract class LogicalFunction extends Node {
         }
 
         /** Returns a name for this filter. */
-        @Override protected String getName() {return "And";}
+        @Override public String getName() {return "And";}
         @Override protected char   symbol()  {return filters.length <= 2 ? '∧' : '⋀';}
 
         /** Implementation of the visitor pattern. */
@@ -137,7 +138,7 @@ abstract class LogicalFunction extends Node {
         }
 
         /** Returns a name for this filter. */
-        @Override protected String getName() {return "Or";}
+        @Override public String getName() {return "Or";}
         @Override protected char   symbol()  {return filters.length <= 2 ? '∨' : '⋁';}
 
         /** Implementation of the visitor pattern. */

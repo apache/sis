@@ -36,6 +36,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.feature.WrapResolution;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.measure.Units;
@@ -111,6 +112,8 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
         } else {
             value = exp.evaluate(object);
         }
+
+        if (value instanceof GeometryWrapper) value = ((GeometryWrapper) value).geometry;
 
         Geometry candidate;
         if (value instanceof GridCoverage) {
@@ -249,7 +252,7 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
         }
 
         @Override
-        protected String getName() {
+        public String getName() {
             return NAME;
         }
 
@@ -314,7 +317,7 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
         }
 
         @Override
-        protected String getName() {
+        public String getName() {
             return NAME;
         }
 
@@ -367,7 +370,7 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
         }
 
         @Override
-        protected String getName() {
+        public String getName() {
             return NAME;
         }
 
@@ -421,7 +424,7 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
         }
 
         @Override
-        protected String getName() {
+        public String getName() {
             return NAME;
         }
 
@@ -482,7 +485,7 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
         }
 
         @Override
-        protected String getName() {
+        public String getName() {
             return NAME;
         }
 
@@ -547,7 +550,7 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
         }
 
         @Override
-        protected String getName() {
+        public String getName() {
             return NAME;
         }
 
@@ -594,7 +597,7 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
         }
 
         @Override
-        protected String getName() {
+        public String getName() {
             return NAME;
         }
 
@@ -647,7 +650,7 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
         }
 
         @Override
-        protected String getName() {
+        public String getName() {
             return NAME;
         }
 
@@ -700,7 +703,7 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
         }
 
         @Override
-        protected String getName() {
+        public String getName() {
             return NAME;
         }
 
@@ -746,7 +749,7 @@ abstract class SpatialFunction extends BinaryFunction implements BinarySpatialOp
         }
 
         @Override
-        protected String getName() {
+        public String getName() {
             return NAME;
         }
 

@@ -221,7 +221,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '=';}
 
         /** Condition defined by ISO 19108:2002 §5.2.3.5. */
@@ -266,7 +266,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '<';}
 
         /** Condition defined by ISO 19108:2002 §5.2.3.5. */
@@ -309,7 +309,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '>';}
 
         /** Condition defined by ISO 19108:2002 §5.2.3.5. */
@@ -350,7 +350,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
@@ -381,7 +381,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
@@ -413,7 +413,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Instant other) {
@@ -450,7 +450,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Instant other) {
@@ -486,7 +486,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
 
         /** Extension to ISO 19108: handle instant as a tiny period. */
         @Override public boolean evaluate(final Instant self, final Instant other) {
@@ -526,7 +526,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
 
         /** Extension to ISO 19108: handle instant as a tiny period. */
         @Override public boolean evaluate(final Instant self, final Instant other) {
@@ -566,7 +566,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '⊊';}      // `self` is a proper (or strict) subset of `other`.
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
@@ -599,7 +599,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
         @Override protected char   symbol()  {return '⊋';}      // `self` is a proper (or strict) superset of `other`.
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
@@ -637,7 +637,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
@@ -671,7 +671,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
 
         /** Implementation of the visitor pattern (not used by Apache SIS). */
         @Override public Object accept(FilterVisitor visitor, Object extraData) {
@@ -703,7 +703,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override protected String getName() {return NAME;}
+        @Override public String getName() {return NAME;}
 
         /** Condition defined by OGC filter specification. */
         @Override public boolean evaluate(final Period self, final Period other) {

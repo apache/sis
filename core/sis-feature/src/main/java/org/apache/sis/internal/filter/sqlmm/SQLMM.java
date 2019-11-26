@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter;
+package org.apache.sis.internal.filter.sqlmm;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,7 +39,7 @@ import org.locationtech.jts.geom.GeometryFactory;
  * @since   1.1
  * @module
  */
-final class SQLMM implements FunctionRegister {
+public final class SQLMM implements FunctionRegister {
 
     /**
      * JTS factory used by multiple functions.
@@ -49,7 +49,7 @@ final class SQLMM implements FunctionRegister {
     /**
      * Creates the default register.
      */
-    SQLMM() {
+    public SQLMM() {
     }
 
     /**
@@ -69,7 +69,6 @@ final class SQLMM implements FunctionRegister {
                 ST_Buffer.NAME,
                 ST_Centroid.NAME,
                 ST_Envelope.NAME,
-                //ST_Intersects.NAME, TODO fixme, this class is not a proper function
                 ST_Point.NAME,
                 ST_LineString.NAME,
                 ST_Simplify.NAME,
@@ -98,7 +97,6 @@ final class SQLMM implements FunctionRegister {
                 case ST_Buffer.NAME:                    return new ST_Buffer(parameters);
                 case ST_Centroid.NAME:                  return new ST_Centroid(parameters);
                 case ST_Envelope.NAME:                  return new ST_Envelope(parameters);
-                //case ST_Intersects.NAME:                return new ST_Intersects(parameters);
                 case ST_Point.NAME:                     return new ST_Point(parameters);
                 case ST_LineString.NAME:                return new ST_LineString(parameters);
                 case ST_Simplify.NAME:                  return new ST_Simplify(parameters);

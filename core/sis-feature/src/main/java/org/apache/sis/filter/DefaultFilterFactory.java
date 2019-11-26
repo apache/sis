@@ -60,6 +60,7 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.feature.FunctionRegister;
 import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.filter.sqlmm.SQLMM;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.collection.BackingStoreException;
 
@@ -322,7 +323,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Intersects intersects(final Expression left, final Expression right) {
-        return new ST_Intersects(left, right);
+        return new SpatialFunction.Intersects(left, right);
     }
 
     /**
