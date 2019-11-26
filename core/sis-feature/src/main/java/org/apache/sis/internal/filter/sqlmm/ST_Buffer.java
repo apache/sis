@@ -28,8 +28,17 @@ import org.opengis.filter.expression.Expression;
 
 
 /**
+ * SQL/MM, ISO/IEC 13249-3:2011, ST_Buffer. <br>
+ * <p>
+ * Return the ST_Geometry value that represents all points whose distance from any point of an ST_Geometry
+ * value is less than or equal to a specified distance, ignoring z and m coordinate values in the calculations and
+ * not including them in the resultant geometry.
+ * </p>
+ *
+ * <p>
  * An expression which computes a geometry buffer.
  * This expression expects two arguments:
+ * </p>
  *
  * <ol class="verbose">
  *   <li>An expression returning a geometry object. The evaluated value shall be an instance of
@@ -61,7 +70,7 @@ final class ST_Buffer extends NamedFunction implements FeatureExpression {
      *
      * @throws IllegalArgumentException if the number of arguments is not equal to 2.
      */
-    ST_Buffer(final Expression[] parameters) {
+    ST_Buffer(final Expression... parameters) {
         super(parameters);
         ArgumentChecks.ensureExpectedCount("parameters", 2, parameters.length);
     }

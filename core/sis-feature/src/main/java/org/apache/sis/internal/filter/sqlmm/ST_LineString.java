@@ -26,10 +26,14 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.filter.NamedFunction;
 import org.apache.sis.internal.feature.FeatureExpression;
+import org.apache.sis.internal.filter.FilterGeometryUtils;
+import static org.apache.sis.internal.filter.FilterGeometryUtils.getWKBReader;
+import static org.apache.sis.internal.filter.FilterGeometryUtils.getWKTReader;
 import org.apache.sis.referencing.CRS;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.io.ParseException;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.expression.Expression;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -53,6 +57,10 @@ import org.opengis.util.FactoryException;
  * @module
  */
 final class ST_LineString extends NamedFunction implements FeatureExpression {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 3654052127628404584L;
 
     /**
      * Name of this function as defined by SQL/MM standard.
@@ -67,7 +75,7 @@ final class ST_LineString extends NamedFunction implements FeatureExpression {
      *
      * @throws IllegalArgumentException if the number of arguments is less then one.
      */
-    ST_LineString(final Expression[] parameters) {
+    ST_LineString(final Expression... parameters) {
         super(parameters);
         if (parameters.length < 1) {
             throw new IllegalArgumentException("ST_LineString function expect 2 or more parameters");
@@ -94,30 +102,53 @@ final class ST_LineString extends NamedFunction implements FeatureExpression {
         }
 
         Object x = parameters.get(0).evaluate(object);
-        if (x == null) {
-          x = Collections.EMPTY_LIST;
-        } else if (x instanceof Point) {
-            x = Arrays.asList(x);
-        } else if (!(x instanceof Iterable)) {
-            warning(new Exception("ST_LineString called with an object which is not a iterable"));
-            return null;
-        }
-
-        Iterator i = ((Iterable) x).iterator();
-        final List<Coordinate> coords = new ArrayList<>();
-        while (i.hasNext()) {
-            Object cdt = i.next();
-            if (cdt instanceof Point) {
-                coords.add(((Point) cdt).getCoordinate());
-            } else if (cdt instanceof Coordinate) {
-                coords.add(((Coordinate) cdt));
-            } else {
-                //what should we do ?
+        LineString geometry = null;
+        if (x instanceof byte[]) {
+            //wkb
+            try {
+                //try to convert from WKB
+                geometry = (LineString) getWKBReader().read((byte[]) x);
+            } catch (ParseException | ClassCastException ex) {
+                //we have try
+                warning(ex);
             }
+        } else if (x instanceof String) {
+            //wkt
+            //todo handle gml
+            try {
+                //try to convert from WKT
+                geometry = (LineString) getWKTReader().read(x.toString());
+            } catch (ParseException | ClassCastException ex) {
+                //we have try
+                warning(ex);
+            }
+        } else {
+            if (x == null) {
+              x = Collections.EMPTY_LIST;
+            } else if (x instanceof Point) {
+                x = Arrays.asList(x);
+            } else if (!(x instanceof Iterable)) {
+                warning(new Exception("ST_LineString called with an object which is not a iterable"));
+                return null;
+            }
+
+            Iterator i = ((Iterable) x).iterator();
+            final List<Coordinate> coords = new ArrayList<>();
+            while (i.hasNext()) {
+                Object cdt = i.next();
+                if (cdt instanceof Point) {
+                    coords.add(((Point) cdt).getCoordinate());
+                } else if (cdt instanceof Coordinate) {
+                    coords.add(((Coordinate) cdt));
+                } else {
+                    //what should we do ?
+                }
+            }
+
+            geometry = FilterGeometryUtils.GF.createLineString(coords.toArray(new Coordinate[coords.size()]));
         }
 
-        final LineString geometry = SQLMM.GF.createLineString(coords.toArray(new Coordinate[coords.size()]));
-        geometry.setUserData(crs);
+        if (geometry != null) geometry.setUserData(crs);
         return geometry;
     }
 

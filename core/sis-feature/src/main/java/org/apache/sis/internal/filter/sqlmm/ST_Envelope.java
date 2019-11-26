@@ -52,11 +52,15 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @module
  */
 public class ST_Envelope extends NamedFunction implements FeatureExpression {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 677890922998031096L;
 
     public static final String NAME = "ST_Envelope";
 
     private final Worker worker;
-    public ST_Envelope(Expression[] parameters) {
+    public ST_Envelope(Expression... parameters) {
         super(parameters);
         if (parameters == null || parameters.length != 1) throw new MismatchedDimensionException(
                 String.format(

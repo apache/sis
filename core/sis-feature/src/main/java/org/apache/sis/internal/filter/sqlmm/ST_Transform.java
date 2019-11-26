@@ -39,8 +39,16 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
+ * SQL/MM, ISO/IEC 13249-3:2011, ST_Transform. <br>
+ * <p>
+ * Return an ST_Geometry value transformed to the specified spatial reference system, considering z and m
+ * coordinate values in the calculations and including them in the resultant geometry.
+ * </p>
+ *
+ * <p>
  * An expression which transforms a geometry from one CRS to another CRS.
  * This expression expects two arguments:
+ * </p>
  *
  * <ol class="verbose">
  *   <li>An expression returning a geometry object. The evaluated value shall be an instance of
@@ -99,7 +107,7 @@ final class ST_Transform extends NamedFunction implements FeatureExpression {
      * @throws IllegalArgumentException if the number of arguments is not equal to 2.
      * @throws FactoryException if CRS can not be constructed from the second expression.
      */
-    ST_Transform(final Expression[] parameters) throws FactoryException {
+    ST_Transform(final Expression... parameters) throws FactoryException {
         super(parameters);
         ArgumentChecks.ensureExpectedCount("parameters", 2, parameters.length);
         final Expression crs = parameters[1];

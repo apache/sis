@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.filter;
+package org.apache.sis.internal.filter.sqlmm;
 
 import java.util.Arrays;
 import org.opengis.feature.Feature;
@@ -259,19 +259,6 @@ public final strictfp class SQLMMTest extends TestCase {
 
     @Test
     public void ST_Intersects() throws Exception {
-        try {
-            new ST_Intersects(null, null);
-            fail("ST_Intersects operator should not accept null parameters");
-        } catch (NullArgumentException e) {
-            // expected behavior
-        }
-
-        try {
-            new ST_Intersects(null, factory.literal(new GeneralEnvelope(2)));
-            fail("ST_Intersects operator should not accept null parameters");
-        } catch (NullArgumentException e) {
-            // expected behavior
-        }
 
         final Coordinate start = new Coordinate(0, 0.1);
         final Coordinate second = new Coordinate(1.2, 0.2);
@@ -282,8 +269,8 @@ public final strictfp class SQLMMTest extends TestCase {
         final Literal lring = factory.literal(ring);
         ST_Intersects st = new ST_Intersects(factory.literal(geometryFactory.createPoint(new Coordinate(2, 4))), lring);
         // Ensure argument nullity does not modify behavior
-        assertFalse("Unexpected intersection", st.evaluate(null));
-        assertFalse("Unexpected intersection", st.evaluate(new Object()));
+        assertFalse("Unexpected intersection", (Boolean) st.evaluate(null));
+        assertFalse("Unexpected intersection", (Boolean) st.evaluate(new Object()));
 
         // Border should intersect
         final Feature f = mock();
@@ -291,10 +278,10 @@ public final strictfp class SQLMMTest extends TestCase {
         f.setPropertyValue(P_NAME, point);
         final PropertyName geomName = factory.property(P_NAME);
         st = new ST_Intersects(geomName, lring);
-        assertTrue("Border point should intersect triangle", st.evaluate(f));
+        assertTrue("Border point should intersect triangle", (Boolean) st.evaluate(f));
         // Ensure inverting expression does not modify behavior.
         st = new ST_Intersects(lring, geomName);
-        assertTrue("Border point should intersect triangle", st.evaluate(f));
+        assertTrue("Border point should intersect triangle", (Boolean) st.evaluate(f));
 
         // Ensure CRS conversion works as expected (see package-info).
         // Missing
@@ -311,8 +298,8 @@ public final strictfp class SQLMMTest extends TestCase {
         final Geometry nadPoint = JTS.transform(point, CRS.findOperation(crs84, nadUtm, null));
         f.setPropertyValue(P_NAME, nadPoint);
         ring.setUserData(crs84);
-        assertTrue("Intersection should be found when CRS are compatible", new ST_Intersects(geomName, lring).evaluate(f));
-        assertTrue("Intersection should be found when CRS are compatible", new ST_Intersects(factory.literal(nadPoint), lring).evaluate(null));
+        assertTrue("Intersection should be found when CRS are compatible", (Boolean) new ST_Intersects(geomName, lring).evaluate(f));
+        assertTrue("Intersection should be found when CRS are compatible", (Boolean) new ST_Intersects(factory.literal(nadPoint), lring).evaluate(null));
 
         // Common base CRS
         final ProjectedCRS utm00 = CommonCRS.WGS84.universal(0, 0);
@@ -320,8 +307,8 @@ public final strictfp class SQLMMTest extends TestCase {
         final ProjectedCRS utm78 = CommonCRS.WGS84.universal(7, 8);
         final Geometry pointUtm78 = JTS.transform(ring, CRS.findOperation(crs84, utm78, null));
         f.setPropertyValue(P_NAME, pointUtm78);
-        assertTrue("Intersection should be found when CRS are compatible", new ST_Intersects(geomName, factory.literal(ringUtm00)).evaluate(f));
-        assertTrue("Intersection should be found when CRS are compatible", new ST_Intersects(factory.literal(pointUtm78), factory.literal(ringUtm00)).evaluate(null));
+        assertTrue("Intersection should be found when CRS are compatible", (Boolean) new ST_Intersects(geomName, factory.literal(ringUtm00)).evaluate(f));
+        assertTrue("Intersection should be found when CRS are compatible", (Boolean) new ST_Intersects(factory.literal(pointUtm78), factory.literal(ringUtm00)).evaluate(null));
     }
 
     /**

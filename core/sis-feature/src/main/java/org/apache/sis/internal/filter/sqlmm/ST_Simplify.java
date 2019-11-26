@@ -67,7 +67,7 @@ final class ST_Simplify extends NamedFunction implements FeatureExpression {
      *
      * @throws IllegalArgumentException if the number of arguments is not equal to 2.
      */
-    ST_Simplify(final Expression[] parameters) {
+    ST_Simplify(final Expression... parameters) {
         super(parameters);
         ArgumentChecks.ensureExpectedCount("parameters", 2, parameters.length);
     }

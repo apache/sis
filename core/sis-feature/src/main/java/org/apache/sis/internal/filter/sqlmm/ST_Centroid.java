@@ -28,8 +28,20 @@ import org.opengis.filter.expression.Expression;
 
 
 /**
+ * SQL/MM, ISO/IEC 13249-3:2011, ST_Centroid. <br>
+ * <p>
+ * Return the 2D ST_Point value that is the mathematical centroid of the ST_Surface value, ignoring z and m
+ * coordinate values in the calculations and not including them in the resultant geometry.
+ * </p>
+ *
+ * <p>
+ * This class should be for all surface types, but JTS only has Polygon and MultiPolygon.
+ * </p>
+ *
+ * <p>
  * An expression which computes the centroid of a geometry.
  * This expression expects one argument:
+ * </p>
  *
  * <ol class="verbose">
  *   <li>An expression returning a geometry object. The evaluated value shall be an instance of
@@ -59,7 +71,7 @@ final class ST_Centroid extends NamedFunction implements FeatureExpression {
      *
      * @throws IllegalArgumentException if the number of arguments is not equal to 1.
      */
-    ST_Centroid(final Expression[] parameters) {
+    ST_Centroid(final Expression... parameters) {
         super(parameters);
         ArgumentChecks.ensureExpectedCount("parameters", 1, parameters.length);
     }

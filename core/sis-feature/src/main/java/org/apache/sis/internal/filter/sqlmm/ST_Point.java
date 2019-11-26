@@ -16,13 +16,16 @@
  */
 package org.apache.sis.internal.filter.sqlmm;
 
+import java.math.BigDecimal;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.filter.NamedFunction;
 import org.apache.sis.internal.feature.FeatureExpression;
+import org.apache.sis.internal.filter.FilterGeometryUtils;
 import org.apache.sis.referencing.CRS;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.expression.Expression;
@@ -47,6 +50,10 @@ import org.opengis.util.FactoryException;
  * @module
  */
 final class ST_Point extends NamedFunction implements FeatureExpression {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -6280773709322350835L;
 
     /**
      * Name of this function as defined by SQL/MM standard.
@@ -61,23 +68,25 @@ final class ST_Point extends NamedFunction implements FeatureExpression {
      *
      * @throws IllegalArgumentException if the number of arguments is less then two.
      */
-    ST_Point(final Expression[] parameters) {
+    ST_Point(final Expression... parameters) {
         super(parameters);
-        if (parameters.length < 2) {
-            throw new IllegalArgumentException("ST_Point function expect 2 or more parameters");
+        if (parameters.length < 1 || parameters.length > 4) {
+            throw new IllegalArgumentException("ST_Point function expect 1 to 4 parameters");
         }
 
-        if (this.parameters.size() > 2) {
-            Object cdt = this.parameters.get(2).evaluate(null);
-            if (cdt instanceof Number) {
-                try {
-                    constantCrs = CRS.forCode("EPSG:" + ((Number) cdt).intValue());
-                } catch (FactoryException ex) {
-                    warning(ex);
-                }
-            } else if (cdt instanceof CoordinateReferenceSystem) {
-                constantCrs = (CoordinateReferenceSystem) cdt;
-            }
+        int nbarg = this.parameters.size();
+        switch (nbarg) {
+            case 2:
+                constantCrs = toCrs(null, this.parameters.get(1));
+                break;
+            case 3:
+                constantCrs = toCrs(null, this.parameters.get(2));
+                break;
+            case 4:
+                constantCrs = toCrs(null, this.parameters.get(3));
+                break;
+            default:
+                break;
         }
     }
 
@@ -90,26 +99,59 @@ final class ST_Point extends NamedFunction implements FeatureExpression {
     }
 
     @Override
-    public Object evaluate(Object object) {
-        Number x = parameters.get(0).evaluate(object, Number.class);
-        Number y = parameters.get(1).evaluate(object, Number.class);
+    public Object evaluate(Object candidate) {
+
         CoordinateReferenceSystem crs = constantCrs;
-        if (crs == null && parameters.size() > 2) {
-            Object cdt = parameters.get(2).evaluate(object);
-            if (cdt instanceof Number) {
-                try {
-                    crs = CRS.forCode("EPSG:" + ((Number) cdt).intValue());
-                } catch (FactoryException ex) {
-                    warning(ex);
+        final int nbarg = parameters.size();
+        Geometry geom;
+        if (nbarg == 1) {
+            //WKB or WKT
+            geom = FilterGeometryUtils.toGeometry(candidate, parameters.get(0));
+
+        } else if (nbarg == 2) {
+            final Object arg0 = parameters.get(0).evaluate(candidate);
+            final Object arg1 = parameters.get(1).evaluate(candidate);
+            if (arg0 instanceof Number) {
+                // X,Y
+                final Number obj1 = (Number) arg0;
+                final Number obj2 = (Number) arg1;
+                geom = FilterGeometryUtils.GF.createPoint(new Coordinate(obj1.doubleValue(), obj2.doubleValue()));
+            } else {
+                //WKT/WKB + srid
+                geom = FilterGeometryUtils.toGeometry(candidate, parameters.get(0));
+                if (crs == null) {
+                    crs = toCrs(candidate, parameters.get(1));
                 }
-            } else if (cdt instanceof CoordinateReferenceSystem) {
-                crs = (CoordinateReferenceSystem) cdt;
             }
+        } else if (nbarg == 3) {
+            final Number obj1 = parameters.get(0).evaluate(candidate, Number.class);
+            final Number obj2 = parameters.get(1).evaluate(candidate, Number.class);
+            final Object obj3 = parameters.get(2).evaluate(candidate);
+            geom = FilterGeometryUtils.GF.createPoint(new Coordinate(obj1.doubleValue(), obj2.doubleValue()));
+            if (obj3 instanceof Float || obj3 instanceof Double || obj3 instanceof BigDecimal) {
+                // Z
+                geom.getCoordinate().z = ((Number) obj3).doubleValue();
+            } else {
+                // srid
+                if (crs == null) {
+                    crs = toCrs(candidate, parameters.get(2));
+                }
+            }
+        } else if (nbarg == 4) {
+            final Number obj1 = parameters.get(0).evaluate(candidate, Number.class);
+            final Number obj2 = parameters.get(1).evaluate(candidate, Number.class);
+            final Number obj3 = parameters.get(2).evaluate(candidate, Number.class);
+            geom = FilterGeometryUtils.GF.createPoint(new Coordinate(obj1.doubleValue(), obj2.doubleValue(), obj3.doubleValue()));
+            if (crs == null) {
+                crs = toCrs(candidate, parameters.get(3));
+            }
+        } else {
+            //should not happen,constructor prevents it
+            geom = null;
         }
 
-        final Point point = SQLMM.GF.createPoint(new Coordinate(x.doubleValue(), y.doubleValue()));
-        point.setUserData(crs);
-        return point;
+        if (geom != null) geom.setUserData(crs);
+        return geom;
     }
 
     @Override
@@ -122,6 +164,20 @@ final class ST_Point extends NamedFunction implements FeatureExpression {
             atb.setCRS(constantCrs);
         }
         return atb;
+    }
+
+    private CoordinateReferenceSystem toCrs(Object candidate, Expression exp) {
+        Object cdt = exp.evaluate(candidate);
+        if (cdt instanceof Number) {
+            try {
+                cdt = CRS.forCode("EPSG:" + ((Number) cdt).intValue());
+            } catch (FactoryException ex) {
+                warning(ex);
+            }
+        } else if (cdt instanceof CoordinateReferenceSystem) {
+            return (CoordinateReferenceSystem) cdt;
+        }
+        return null;
     }
 
 }
