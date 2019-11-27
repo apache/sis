@@ -26,6 +26,7 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.internal.feature.FeatureExpression;
+import org.apache.sis.internal.filter.Node;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 
@@ -107,7 +108,7 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
         }
 
         /** Identification of this expression. */
-        @Override protected String getName() {
+        @Override public String getName() {
             return "PropertyName";
         }
 
@@ -196,7 +197,7 @@ abstract class LeafExpression extends Node implements Expression, FeatureExpress
         }
 
         /** Identification of this expression. */
-        @Override protected String getName() {
+        @Override public String getName() {
             return "Literal";
         }
 

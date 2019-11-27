@@ -61,7 +61,7 @@ import org.junit.runners.Suite;
     org.apache.sis.filter.LikeFunctionTest.class,
     org.apache.sis.filter.SpatialFunctionTest.class,
     org.apache.sis.filter.TemporalFunctionTest.class,
-    org.apache.sis.filter.SQLMMTest.class,
+    org.apache.sis.internal.filter.sqlmm.SQLMMTest.class,
     org.apache.sis.internal.feature.AttributeConventionTest.class,
     org.apache.sis.internal.feature.j2d.ShapePropertiesTest.class,
     org.apache.sis.internal.feature.Java2DTest.class,
