@@ -487,7 +487,7 @@ final class Analyzer {
                     final boolean isNullable = Boolean.TRUE.equals(SQLUtilities.parseBoolean(reflect.getString(Reflection.IS_NULLABLE)));
                     final ColumnRef name = new ColumnRef(getUniqueString(reflect, Reflection.COLUMN_NAME));
                     final int precision = reflect.getInt(Reflection.COLUMN_SIZE);
-                    final SQLColumn col = new SQLColumn(type, typeName, isNullable, name, precision);
+                    final SQLColumn col = new SQLColumn(type, typeName, isNullable, name, precision, source);
                     tmpList.add(col);
                 }
 
