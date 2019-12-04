@@ -78,10 +78,13 @@ public final class GridCoverage2D extends GridCoverage {
 
         //check image is coherent with grid geometry
         if (image.getWidth() != extent.getSize(imageAxes[0])) {
-            throw new IllegalArgumentException("Image width " + image.getWidth() + "does not match grid extent width "+ extent.getSize(imageAxes[0]));
+            throw new IllegalArgumentException("Image width " + image.getWidth() + " does not match grid extent width "+ extent.getSize(imageAxes[0]));
         }
-        if (image.getHeight()!= extent.getSize(imageAxes[1])) {
-            throw new IllegalArgumentException("Image height " + image.getHeight()+ "does not match grid extent height "+ extent.getSize(imageAxes[1]));
+        if (image.getHeight() != extent.getSize(imageAxes[1])) {
+            throw new IllegalArgumentException("Image height " + image.getHeight()+ " does not match grid extent height "+ extent.getSize(imageAxes[1]));
+        }
+        if (image.getSampleModel().getNumBands() != bands.size()) {
+            throw new IllegalArgumentException("Image sample model number of bands " + image.getSampleModel().getNumBands()+ " does not match number of sample dimensions "+ bands.size());
         }
     }
 
