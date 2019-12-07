@@ -644,7 +644,6 @@ final class Features implements Spliterator<Feature> {
          * Warning : This does not work with relations. It is only a rough estimation of the parameterized query.
          * @param count True if a count query must be generated. False for a simple selection.
          * @return A text representing (roughly) the SQL query which will be posted.
-         * @throws SQLException If we cannot initialize an sql statement builder.
          */
         public String estimateStatement(final boolean count) {
             final SQLBuilder sql = source.parent.createStatement().append("SELECT ");

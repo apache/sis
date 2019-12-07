@@ -38,7 +38,8 @@ import org.apache.sis.filter.InvalidExpressionException;
 
 /**
  * Base class of functions having a name and receiving an arbitrary amount of parameters.
- * This class differs from {@link UnaryFunction} and {@link BinaryFunction} in two ways:
+ * This class differs from {@link org.apache.sis.filter.UnaryFunction} and
+ * {@link org.apache.sis.filter.BinaryFunction} in two ways:
  *
  * <ul>
  *   <li>It has a name used for invoking this function. By contrast, the unary and binary functions
@@ -73,7 +74,8 @@ public abstract class NamedFunction extends Node implements Function {
     /**
      * Creates a new function with the given parameters. This constructor wraps the given array in a list directly
      * (without defensive copy). it is caller's responsibility to ensure that the given array is non-null, has been
-     * cloned and does not contain null elements. Those steps are done by {@link SQLMM#create(String, Expression...)}.
+     * cloned and does not contain null elements. Those steps are done by
+     * {@link org.apache.sis.internal.filter.sqlmm.SQLMM#create(String, Expression...)}.
      *
      * @param  parameters  the sub-expressions that will be evaluated to provide the parameters to the function.
      */

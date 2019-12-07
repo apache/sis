@@ -29,8 +29,6 @@ import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Numbers;
 
-// Branch-dependent imports
-
 
 /**
  * Base class for expressions, comparators or filters performing operations on two expressions.

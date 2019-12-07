@@ -366,8 +366,9 @@ public class QueryFeatureSet extends AbstractFeatureSet {
      *     <li>Parallelizable batch  streaming: {@link PrefetchSpliterator}</li>
      * </ul>
      *
-     * {@link QuerySpliteratorsBench A benchmark is available} to compare both implementations, which could be useful in
+     * A benchmark is available in the test directory to compare both implementations, which could be useful in
      * the future to determine which implementation to priorize. For now results does not show much difference.
+     * The benchmark class is {@code QuerySpliteratorsBench}.
      */
     private abstract class QuerySpliterator  implements java.util.Spliterator<Feature> {
 
