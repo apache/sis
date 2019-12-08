@@ -36,7 +36,7 @@ import org.opengis.util.InternationalString;
  * as they want.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -124,11 +124,6 @@ public final class Errors extends IndexedResourceBundle {
          * Can not open “{0}”.
          */
         public static final short CanNotOpen_1 = 9;
-
-        /**
-         * Can not parse “{1}” as a file in the {0} format.
-         */
-        public static final short CanNotParseFile_2 = 10;
 
         /**
          * Can not parse “{0}”.
@@ -491,7 +486,7 @@ public final class Errors extends IndexedResourceBundle {
         /**
          * Integer overflow during {0} bits arithmetic operation.
          */
-        public static final short IntegerOverflow_1 = 188;
+        public static final short IntegerOverflow_1 = 10;
 
         /**
          * “{0}” is an invalid version identifier.

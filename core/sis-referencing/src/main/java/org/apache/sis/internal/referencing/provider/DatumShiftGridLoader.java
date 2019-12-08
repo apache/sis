@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing.provider;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -28,6 +29,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.MissingFactoryResourceException;
@@ -37,7 +39,7 @@ import org.apache.sis.referencing.factory.MissingFactoryResourceException;
  * Base class of datum shift grid loaders.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -78,6 +80,12 @@ class DatumShiftGridLoader {
      * The buffer to use for transferring data from the channel.
      */
     final ByteBuffer buffer;
+
+    /**
+     * Whether the tip about the location of datum shift files has been logged.
+     * We log this tip only once, and only if we failed to load at least one grid.
+     */
+    private static final AtomicBoolean datumDirectoryLogged = new AtomicBoolean();
 
     /**
      * Creates a new loader for the given channel and an existing buffer.
@@ -157,8 +165,19 @@ class DatumShiftGridLoader {
      * @param  cause   the cause of the failure to load the grid file.
      */
     static FactoryException canNotLoad(final String format, final Path file, final Exception cause) {
-        final String message = Errors.format(Errors.Keys.CanNotParseFile_2, format, file);
-        if (cause instanceof NoSuchFileException) {
+        if (!datumDirectoryLogged.get()) {
+            final Path directory = DataDirectory.DATUM_CHANGES.getDirectory();
+            if (directory != null && !datumDirectoryLogged.getAndSet(true)) {
+                final LogRecord record = Resources.forLocale(null).getLogRecord(
+                        Level.INFO, Resources.Keys.DatumChangesDirectory_1, directory);
+                record.setLoggerName(Loggers.COORDINATE_OPERATION);
+                Logging.log(DatumShiftGridLoader.class, "readGrid", record);        // "readGrid" is actually defined by subclasses.
+            }
+        }
+        final boolean notFound = (cause instanceof NoSuchFileException);
+        final String message = Resources.format(notFound ? Resources.Keys.FileNotFound_2
+                                                         : Resources.Keys.FileNotReadable_2, format, file);
+        if (notFound) {
             return new MissingFactoryResourceException(message, cause);
         } else {
             return new FactoryDataException(message, cause);

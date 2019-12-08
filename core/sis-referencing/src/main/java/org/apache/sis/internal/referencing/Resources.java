@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * by all modules in the Apache SIS project, see {@link org.apache.sis.util.resources} package.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -180,6 +180,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CoordinateOperationNotFound_2 = 13;
 
         /**
+         * Datum shift files are searched in the “{0}” directory.
+         */
+        public static final short DatumChangesDirectory_1 = 92;
+
+        /**
          * Origin of temporal datum shall be a date.
          */
         public static final short DatumOriginShallBeDate = 14;
@@ -211,6 +216,16 @@ public final class Resources extends IndexedResourceBundle {
          * for objects creation.
          */
         public static final short FallbackDefaultFactoryVersion_2 = 17;
+
+        /**
+         * Can not find {0} file named “{1}”.
+         */
+        public static final short FileNotFound_2 = 90;
+
+        /**
+         * Can not parse “{1}” as a file in the {0} format.
+         */
+        public static final short FileNotReadable_2 = 91;
 
         /**
          * {0} geodetic dataset version {1} on “{2}” version {3}.
