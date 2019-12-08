@@ -2964,6 +2964,7 @@ next:               while (r.next()) {
                          * to GeoAPI. Actually GeoAPI has a method doing part of the job, but incomplete (e.g. the pure
                          * GeoAPI method can not handle Molodensky transform because it does not give the target datum).
                          */
+                        opProperties = new HashMap<>(opProperties);             // Because this class uses a shared map.
                         final MathTransform mt;
                         final MathTransformFactory mtFactory = owner.mtFactory;
                         if (mtFactory instanceof DefaultMathTransformFactory) {
