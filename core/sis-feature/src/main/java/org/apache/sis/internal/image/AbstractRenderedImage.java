@@ -60,8 +60,8 @@ public abstract class AbstractRenderedImage implements RenderedImage {
             }
         }
 
-        for (int y = 0; y < this.getNumYTiles(); y++) {
-            for (int x = 0; x < this.getNumYTiles(); x++) {
+        for (int y = 0, yn = this.getNumYTiles(); y < yn; y++) {
+            for (int x = 0, xn = this.getNumXTiles(); x < xn; x++) {
                 final Raster rasterIn = getTile(x, y);
                 rasterOut.getSampleModel()
                         .setDataElements(
