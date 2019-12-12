@@ -80,7 +80,7 @@ public abstract class AbstractRenderedImage implements RenderedImage {
     @Override
     public Raster getData(Rectangle rect) {
         final SampleModel sm = getSampleModel().createCompatibleSampleModel(rect.width, rect.height);
-        final Raster rasterOut = Raster.createWritableRaster(sm, null);
+        Raster rasterOut = Raster.createWritableRaster(sm, null);
 
         // Clear dataBuffer to 0 value for all bank
         for (int s = 0; s < rasterOut.getDataBuffer().getSize(); s++) {
@@ -119,6 +119,9 @@ public abstract class AbstractRenderedImage implements RenderedImage {
             }
         }
 
+        if (rect.x != 0 && rect.y != 0) {
+            rasterOut = rasterOut.createTranslatedChild(rect.x, rect.y);
+        }
         return rasterOut;
     }
 
