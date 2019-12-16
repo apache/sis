@@ -433,11 +433,11 @@
         <artifactId>geoapi-conformance</artifactId>
         <version>${geoapi.version}</version>
         <scope>test</scope>
-        <exclusions>
-            <exclusion>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-            </exclusion>
+        <exclusions>            <!-- TODO: remove this exclusion after migration to JUnit 5. -->
+          <exclusion>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
 
@@ -538,22 +538,24 @@
            Dependencies to be inherited by all modules.
        =========================================================== -->
   <dependencies>
-    <!-- 
-      Unit test declaration. Embed aggregator dependency + retrocompatibility artifact ('vintage'). 
+    <!--
+      Unit test declaration. Embed aggregator dependency + retrocompatibility artifact ('vintage').
       The later won't be needed anymore once all JUnit tests have been upgraded to new JUnit version.
+      TODO: remove <version>5.5.2</version> after complete migration to JUnit 5 (dependency version
+      will be inherited from GeoAPI).
     -->
     <dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<version>${junit.jupiter.version}</version>
-			<scope>test</scope>
-		</dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.5.2</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
-			<groupId>org.junit.vintage</groupId>
-			<artifactId>junit-vintage-engine</artifactId>
-			<version>${junit.jupiter.version}</version>
-			<scope>test</scope>
-		</dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>5.5.2</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>   <!-- To be removed after https://issues.apache.org/jira/browse/SIS-469 is done. -->
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
@@ -580,7 +582,6 @@
     <sis.non-free.version>1.0</sis.non-free.version>                 <!-- Used only if "non-free" profile is enabled. -->
     <geoapi.version>4.0-SNAPSHOT</geoapi.version>
     <jaxb.version>2.3.2</jaxb.version>
-		<junit.jupiter.version>5.5.2</junit.jupiter.version>
   </properties>
 
   <profiles>
@@ -688,7 +689,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
+        <version>3.0.0-M4</version>
         <configuration>
           <includes>
             <include>**/*TestSuite.java</include>
@@ -774,11 +775,10 @@
               <goal>check</goal>
             </goals>
             <configuration>
-              <skip>${skipTests}</skip> <!-- When skipping tests, skip also checkstyle verification. -->
+              <skip>${skipTests}</skip>                 <!-- When skipping tests, skip also checkstyle verification.  -->
+              <excludes>**/generated/**/*</excludes>    <!-- Skip generated source code, e.g. classes created by JMH. -->
               <encoding>${project.build.sourceEncoding}</encoding>
               <consoleOutput>true</consoleOutput>
-              <!-- This flag asks to ignore generated source packages, like JMH compilation artifacts -->
-              <excludes>**/generated/**/*</excludes>
               <checkstyleRules>
                 <module name="Checker">
                   <!--
