@@ -80,6 +80,7 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.grid.GridExtentTest.class,
     org.apache.sis.coverage.grid.GridGeometryTest.class,
     org.apache.sis.coverage.grid.GridDerivationTest.class,
+    org.apache.sis.coverage.grid.FractionalGridCoordinates.class,
     org.apache.sis.coverage.CategoryTest.class,
     org.apache.sis.coverage.CategoryListTest.class,
     org.apache.sis.coverage.SampleDimensionTest.class,

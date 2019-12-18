@@ -112,8 +112,7 @@ public class GridCoverage2DTest extends TestCase {
             { -60, -195},
             {-216, -380}
         });
-
-        /**
+        /*
          * Test evaluation
          */
         Assert.assertArrayEquals(new double[]{ 70.0}, coverage.evaluate(new DirectPosition2D(0, 0), null), STRICT);

@@ -27,7 +27,7 @@ import org.apache.sis.util.ArgumentChecks;
  * This is not a general-purpose grid coordinates since it assumes a {@link GridExtent} coordinates layout.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -89,7 +89,13 @@ final class GridCoordinatesView implements GridCoordinates {
      */
     @Override
     public final String toString() {
-        return "GridCoordinates".concat(Arrays.toString(getCoordinateValues()));
+        final StringBuilder buffer = new StringBuilder("GridCoordinates[");
+        final int dimension = getDimension();
+        for (int i=0; i<dimension; i++) {
+            if (i != 0) buffer.append(' ');
+            buffer.append(coordinates[i + offset]);
+        }
+        return buffer.append(']').toString();
     }
 
     /**

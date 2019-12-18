@@ -299,6 +299,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short UnavailableGeometryLibrary_1 = 21;
 
         /**
+         * Can not convert grid coordinate {1} to type ‘{0}’.
+         */
+        public static final short UnconvertibleGridCoordinate_2 = 59;
+
+        /**
          * Expected {0} bands but got {1}.
          */
         public static final short UnexpectedNumberOfBands_2 = 49;

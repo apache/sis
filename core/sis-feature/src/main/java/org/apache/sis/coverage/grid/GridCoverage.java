@@ -19,6 +19,7 @@ package org.apache.sis.coverage.grid;
 import java.util.List;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Objects;
 import java.awt.image.RenderedImage;
 import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.geometry.DirectPosition;
@@ -26,13 +27,10 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.image.PixelIterator;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -53,7 +51,7 @@ import org.opengis.coverage.CannotEvaluateException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -75,18 +73,27 @@ public abstract class GridCoverage {
     private final SampleDimension[] sampleDimensions;
 
     /**
-     * Constructs a grid coverage using the specified grid geometry and sample dimensions.
-     *
-     * @param grid   the grid extent, CRS and conversion from cell indices to CRS.
-     * @param bands  sample dimensions for each image band.
+     * The last coordinate operation used by {@link #toGridCoordinates(DirectPosition)}.
+     * This is cached for avoiding the costly process of fetching a coordinate operation
+     * in the common case where the coordinate reference systems did not changed.
      */
-    protected GridCoverage(final GridGeometry grid, final Collection<? extends SampleDimension> bands) {
-        ArgumentChecks.ensureNonNull("grid",  grid);
-        ArgumentChecks.ensureNonNull("bands", bands);
-        gridGeometry = grid;
-        sampleDimensions = bands.toArray(new SampleDimension[bands.size()]);
+    private transient volatile PointToGridCoordinates lastConverter;
+
+    /**
+     * Constructs a grid coverage using the specified grid geometry and sample dimensions.
+     * The grid geometry defines the "domain" (inputs) of the coverage function,
+     * and the sample dimensions define the "range" (output) of that function.
+     *
+     * @param  domain  the grid extent, CRS and conversion from cell indices to CRS.
+     * @param  range   sample dimensions for each image band.
+     */
+    protected GridCoverage(final GridGeometry domain, final Collection<? extends SampleDimension> range) {
+        ArgumentChecks.ensureNonNull("domain", domain);
+        ArgumentChecks.ensureNonNull("range",  range);
+        gridGeometry = domain;
+        sampleDimensions = range.toArray(new SampleDimension[range.size()]);
         for (int i=0; i<sampleDimensions.length; i++) {
-            ArgumentChecks.ensureNonNullElement("bands", i, sampleDimensions[i]);
+            ArgumentChecks.ensureNonNullElement("range", i, sampleDimensions[i]);
         }
     }
 
@@ -157,6 +164,85 @@ public abstract class GridCoverage {
      * @see SampleDimension#forConvertedValues(boolean)
      */
     public abstract GridCoverage forConvertedValues(boolean converted);
+
+    /**
+     * Returns a sequence of double values for a given point in the coverage.
+     * The CRS of the given point may be any coordinate reference system;
+     * coordinate transformations will be applied as needed.
+     * If the CRS of the point is undefined, then it is assumed to be the same as this coverage.
+     * The returned sequence includes a value for each {@linkplain SampleDimension sample dimension}.
+     *
+     * <p>The default interpolation type used when accessing grid values for points which fall between
+     * grid cells is nearest neighbor. This default interpolation method may change in future version.</p>
+     *
+     * <p>The default implementation invokes {@link #render(GridExtent)} for a small region around the point.
+     * Subclasses should override with more efficient implementation.</p>
+     *
+     * <p>Warning: this method may change. See <a href="https://issues.apache.org/jira/browse/SIS-485">SIS-485</a>.</p>
+     *
+     * @param  point   the coordinate point where to evaluate.
+     * @param  buffer  an array in which to store values, or {@code null} to create a new array.
+     * @return the {@code buffer} array, or a newly created array if {@code buffer} was null.
+     * @throws PointOutsideCoverageException if the evaluation failed because the input point
+     *         has invalid coordinates.
+     * @throws CannotEvaluateException if the values can not be computed at the specified coordinate
+     *         for an other reason. It may be thrown if the coverage data type can not be converted
+     *         to {@code double} by an identity or widening conversion. Subclasses may relax this
+     *         constraint if appropriate.
+     *
+     * @since 1.1
+     */
+    public double[] evaluate(final DirectPosition point, double[] buffer) throws CannotEvaluateException {
+        /*
+         * TODO: instead of restricting to a single point, keep the automatic size (1 or 2),
+         * invoke render for each plan, then interpolate. We would keep a value of 1 in the
+         * size array if we want to disable interpolation in some particular axis (e.g. time).
+         */
+        final long[] size = new long[gridGeometry.getDimension()];
+        java.util.Arrays.fill(size, 1);
+        try {
+            final GridExtent subExtent = toGridCoordinates(point).toExtent(gridGeometry.extent, size);
+            final RenderedImage image = render(subExtent);
+            final PixelIterator ite = PixelIterator.create(image);  // TODO: avoid costly creation of PixelIterator here.
+            ite.moveTo(0, 0);
+            return ite.getPixel(buffer);
+        } catch (ArithmeticException | DisjointExtentException ex) {
+            throw (PointOutsideCoverageException) new PointOutsideCoverageException(ex.getMessage(), point).initCause(ex);
+        } catch (IllegalArgumentException | TransformException ex) {
+            throw new CannotEvaluateException(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Converts the specified geospatial position to grid coordinates. If the given position
+     * is associated to a non-null coordinate reference system (CRS) different than the CRS
+     * of this coverage, then this method automatically transforms that position to the
+     * {@linkplain #getCoordinateReferenceSystem() coverage CRS} before to compute grid coordinates.
+     *
+     * <p>This method does not put any restriction on the grid coordinates result.
+     * The result may be outside the {@linkplain GridGeometry#getExtent() grid extent}
+     * if the {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform allows it.</p>
+     *
+     * @param  point  geospatial coordinates (in arbitrary CRS) to transform to grid coordinates.
+     * @return the grid coordinates for the given geospatial coordinates.
+     * @throws IncompleteGridGeometryException if the {@linkplain #getGridGeometry() grid geometry}
+     *         does not define a "grid to CRS" transform, or if the given point has a non-null CRS
+     *         but this coverage does not {@linkplain #getCoordinateReferenceSystem() have a CRS}.
+     * @throws TransformException if the given coordinates can not be transformed.
+     *
+     * @see FractionalGridCoordinates#toPosition(MathTransform)
+     *
+     * @since 1.1
+     */
+    public FractionalGridCoordinates toGridCoordinates(final DirectPosition point) throws TransformException {
+        final CoordinateReferenceSystem sourceCRS = point.getCoordinateReferenceSystem();
+        PointToGridCoordinates converter = lastConverter;
+        if (converter == null || !Objects.equals(converter.sourceCRS, sourceCRS)) {
+            converter = new PointToGridCoordinates(sourceCRS, this, getGridGeometry());
+            lastConverter = converter;
+        }
+        return FractionalGridCoordinates.fromPosition(point, converter.crsToGrid);
+    }
 
     /**
      * Returns a two-dimensional slice of grid data as a rendered image. The given {@code sliceExtent} argument specifies
@@ -234,38 +320,6 @@ public abstract class GridCoverage {
     public abstract RenderedImage render(GridExtent sliceExtent) throws CannotEvaluateException;
 
     /**
-     * Returns a sequence of double values for a given point in the coverage. A value for each
-     * {@linkplain SampleDimension sample dimension} is included in the sequence. The default
-     * interpolation type used when accessing grid values for points which fall between grid cells
-     * is nearest neighbor.
-     * The CRS of the point may be in any coordinate reference system.
-     * If the CRS of the point is undefined, it is assumed to be the same as the coverage.
-     *
-     * @param  coord The coordinate point where to evaluate.
-     * @param  dest An array in which to store values, or {@code null} to create a new array.
-     * @return The {@code dest} array, or a newly created array if {@code dest} was null.
-     * @throws PointOutsideCoverageException if the evaluation failed because the input point
-     *         has invalid coordinates.
-     * @throws CannotEvaluateException if the values can't be computed at the specified coordinate
-     *         for an other reason. It may be thrown if the coverage data type can't be converted
-     *         to {@code double} by an identity or widening conversion. Subclasses may relax this
-     *         constraint if appropriate.
-     */
-    public double[] evaluate(DirectPosition coord, double[] dest) throws CannotEvaluateException {
-        try {
-            coord = toGridCoord(coord);
-            final long[] coordl = toLongExact(coord);
-            final GridExtent subExtent = new GridExtent(null, coordl, coordl, true);
-            final RenderedImage image = render(subExtent);
-            final PixelIterator ite = PixelIterator.create(image);
-            ite.moveTo(0, 0);
-            return ite.getPixel(dest);
-        } catch (FactoryException | TransformException ex) {
-            throw new CannotEvaluateException(ex.getMessage(), ex);
-        }
-    }
-
-    /**
      * Returns a string representation of this grid coverage for debugging purpose.
      * The returned string is implementation dependent and may change in any future version.
      * Current implementation is equivalent to the following, where {@code <default flags>}
@@ -308,54 +362,5 @@ public abstract class GridCoverage {
         branch.setValue(column, vocabulary.getString(Vocabulary.Keys.SampleDimensions));
         branch.newChild().setValue(column, SampleDimension.toString(locale, sampleDimensions));
         return tree;
-    }
-
-    /**
-     * Converts the specified point to grid coordinate.
-     *
-     * @param point point to transform to grid coordinate
-     * @return point in grid coordinate
-     * @throws org.opengis.util.FactoryException if creating transformation fails
-     * @throws org.opengis.referencing.operation.TransformException if transformation fails
-     */
-    protected DirectPosition toGridCoord(final DirectPosition point)
-            throws FactoryException, TransformException
-    {
-        final CoordinateReferenceSystem sourceCRS = point.getCoordinateReferenceSystem();
-        MathTransform trs = getGridGeometry().getGridToCRS(PixelInCell.CELL_CENTER).inverse();
-        if (sourceCRS != null) {
-            MathTransform toCrs = CRS.findOperation(sourceCRS, getCoordinateReferenceSystem(), null).getMathTransform();
-            if (!toCrs.isIdentity()) {
-                trs = MathTransforms.concatenate(toCrs, trs);
-            }
-        }
-        return trs.transform(point, null);
-    }
-
-    /**
-     * Converts given grid coordinate to long values and ensure coordinate
-     * is inside grid geometry extent.
-     *
-     * @param position in grid coordinate
-     * @return position as long type in grid coordinate
-     * @throws PointOutsideCoverageException
-     */
-    protected long[] toLongExact(DirectPosition position) throws PointOutsideCoverageException {
-        final long[] coord = new long[position.getDimension()];
-        final GridExtent extent = getGridGeometry().getExtent();
-        final long[] low = extent.getLow().getCoordinateValues();
-        final long[] high = extent.getHigh().getCoordinateValues();
-
-        for (int i = 0; i < coord.length; i++) {
-            final double dv = position.getOrdinate(i);
-            if (!Double.isFinite(dv)) {
-                throw new PointOutsideCoverageException("Position outside coverage, axis " + i + " value " + dv);
-            }
-            coord[i] = Math.round(dv);
-            if (coord[i] < low[i] || coord[i] > high[i]) {
-                throw new PointOutsideCoverageException("Position outside coverage, axis " + i + " value " + coord[i]);
-            }
-        }
-        return coord;
     }
 }

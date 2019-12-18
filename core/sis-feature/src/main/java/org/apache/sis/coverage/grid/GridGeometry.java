@@ -106,7 +106,7 @@ import org.apache.sis.xml.NilReason;
  * The same instance can be shared by different {@link GridCoverage} instances.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -843,7 +843,7 @@ public class GridGeometry implements Serializable {
      * Returns the {@link #geographicBBox} value or {@code null} if none.
      * This method computes the box when first needed.
      */
-    private GeographicBoundingBox geographicBBox() {
+    final GeographicBoundingBox geographicBBox() {
         GeographicBoundingBox bbox = geographicBBox;
         if (bbox == null) {
             if (getCoordinateReferenceSystem(envelope) != null && !envelope.isAllNaN()) {

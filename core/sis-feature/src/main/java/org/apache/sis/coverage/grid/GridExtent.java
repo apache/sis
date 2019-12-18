@@ -78,7 +78,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * The same instance can be shared by different {@link GridGeometry} instances.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -140,7 +140,7 @@ public class GridExtent implements GridEnvelope, Serializable {
      *
      * @throws IllegalArgumentException if the given number of dimensions is excessive.
      */
-    private static long[] allocate(final int dimension) throws IllegalArgumentException {
+    static long[] allocate(final int dimension) throws IllegalArgumentException {
         if (dimension >= Numerics.MAXIMUM_MATRIX_SIZE) {
             // Actually the real limit is Integer.MAX_VALUE / 2, but a value too high is likely to be an error.
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension));
@@ -323,6 +323,33 @@ public class GridExtent implements GridEnvelope, Serializable {
     {
         final int dimension = envelope.getDimension();
         coordinates = (enclosing != null) ? enclosing.coordinates.clone() : allocate(dimension);
+        /*
+         * Assign the `types` field before we try to compute the grid extent coordinates
+         * because if the coordinate computation fail, `getAxisIdentification(…)` uses
+         * that information for producing a more informative error message if possible.
+         */
+        if (enclosing != null && enclosing.types != null) {
+            types = enclosing.types;
+        } else {
+            DimensionNameType[] axisTypes = null;
+            final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
+            if (crs != null) {
+                final CoordinateSystem cs = crs.getCoordinateSystem();
+                for (int i=0; i<dimension; i++) {
+                    final DimensionNameType type = AXIS_DIRECTIONS.get(AxisDirections.absolute(cs.getAxis(i).getDirection()));
+                    if (type != null) {
+                        if (axisTypes == null) {
+                            axisTypes = new DimensionNameType[dimension];
+                        }
+                        axisTypes[i] = type;
+                    }
+                }
+            }
+            types = validateAxisTypes(axisTypes);
+        }
+        /*
+         * Now computes the grid extent coordinates.
+         */
         for (int i=0; i<dimension; i++) {
             double min = envelope.getLower(i);
             double max = envelope.getUpper(i);
@@ -418,37 +445,27 @@ public class GridExtent implements GridEnvelope, Serializable {
                 if (lower > validMin) coordinates[lo] = lower;
                 if (upper < validMax) coordinates[hi] = upper;
                 if (lower > validMax || upper < validMin) {
-                    throw new DisjointExtentException(enclosing.getAxisIdentification(lo, i), validMin, validMax, lower, upper);
+                    throw new DisjointExtentException(getAxisIdentification(lo, i), validMin, validMax, lower, upper);
                 }
             } else {
                 coordinates[i]   = lower;
                 coordinates[i+m] = upper;
             }
         }
-        /*
-         * At this point we finished to compute coordinate values.
-         * Now try to infer dimension types from the CRS axes.
-         * This is only for information purpose.
-         */
-        if (enclosing != null) {
-            types = enclosing.types;
-        } else {
-            DimensionNameType[] axisTypes = null;
-            final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
-            if (crs != null) {
-                final CoordinateSystem cs = crs.getCoordinateSystem();
-                for (int i=0; i<dimension; i++) {
-                    final DimensionNameType type = AXIS_DIRECTIONS.get(AxisDirections.absolute(cs.getAxis(i).getDirection()));
-                    if (type != null) {
-                        if (axisTypes == null) {
-                            axisTypes = new DimensionNameType[dimension];
-                        }
-                        axisTypes[i] = type;
-                    }
-                }
-            }
-            types = validateAxisTypes(axisTypes);
-        }
+    }
+
+    /**
+     * Creates a new grid extent with the same axes than the given extent, but different coordinates.
+     * This constructor does not invoke {@link #validateCoordinates()}; we presume that the caller's
+     * computation is correct.
+     *
+     * @param enclosing    the extent from which to copy axes, or {@code null} if none.
+     * @param coordinates  the coordinates. This array is not cloned.
+     */
+    GridExtent(final GridExtent enclosing, final long[] coordinates) {
+        this.coordinates = coordinates;
+        types = (enclosing != null) ? enclosing.types : null;
+        assert (types == null) || types.length == getDimension();
     }
 
     /**
