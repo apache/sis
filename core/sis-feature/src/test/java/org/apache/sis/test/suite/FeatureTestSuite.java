@@ -85,6 +85,7 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.CategoryListTest.class,
     org.apache.sis.coverage.SampleDimensionTest.class,
     org.apache.sis.coverage.SampleRangeFormatTest.class,
+    org.apache.sis.internal.coverage.ImageUtilitiesTest.class,
     org.apache.sis.internal.coverage.ScaledColorSpaceTest.class,
     org.apache.sis.internal.coverage.BufferedGridCoverageTest.class,
     org.apache.sis.internal.coverage.GridCoverage2DTest.class,

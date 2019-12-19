@@ -122,6 +122,16 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short BarometricAltitude = 13;
 
         /**
+         * Black
+         */
+        public static final short Black = 175;
+
+        /**
+         * Blue
+         */
+        public static final short Blue = 176;
+
+        /**
          * Cardinality
          */
         public static final short Cardinality = 14;
@@ -215,6 +225,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Current directory
          */
         public static final short CurrentDirectory = 32;
+
+        /**
+         * Cyan
+         */
+        public static final short Cyan = 177;
 
         /**
          * Cycle omitted
@@ -407,6 +422,16 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short GeographicIdentifier = 70;
 
         /**
+         * Gray
+         */
+        public static final short Gray = 178;
+
+        /**
+         * Green
+         */
+        public static final short Green = 179;
+
+        /**
          * Grid extent
          */
         public static final short GridExtent = 71;
@@ -525,6 +550,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Lower bound
          */
         public static final short LowerBound = 94;
+
+        /**
+         * Magenta
+         */
+        public static final short Magenta = 180;
 
         /**
          * Mandatory
@@ -692,6 +722,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Read = 127;
 
         /**
+         * Red
+         */
+        public static final short Red = 181;
+
+        /**
          * Remarks
          */
         public static final short Remarks = 128;
@@ -822,6 +857,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short TransformationAccuracy = 152;
 
         /**
+         * Transparency
+         */
+        public static final short Transparency = 183;
+
+        /**
          * Truncated Julian
          */
         public static final short TruncatedJulian = 153;
@@ -925,6 +965,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Write
          */
         public static final short Write = 173;
+
+        /**
+         * Yellow
+         */
+        public static final short Yellow = 182;
     }
 
     /**
