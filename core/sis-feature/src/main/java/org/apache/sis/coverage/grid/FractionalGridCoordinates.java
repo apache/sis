@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.coverage.grid.GridCoordinates;
+import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -205,9 +206,10 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
      * If non-null, then this method enforces the following additional rules:</p>
      *
      * <ul>
-     *   <li>Coordinates must be inside the given bounds, otherwise an {@link DisjointExtentException} is thrown.</li>
+     *   <li>Coordinates rounded to nearest integers must be inside the given bounds,
+     *       otherwise a {@link PointOutsideCoverageException} is thrown.</li>
      *   <li>If the computed extent overlaps an area outside the bounds, then the extent will be shifted (if an explicit
-     *       size was given) or clipped (if default size is used) in order to be be fully contained inside the bounds.</li>
+     *       size was given) or clipped (if automatic size is used) in order to be be fully contained inside the bounds.</li>
      *   <li>If a given size is larger than the corresponding bounds {@linkplain GridExtent#getSize(int) size},
      *       then the returned extent will be clipped to the bounds.</li>
      * </ul>
@@ -216,7 +218,7 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
      * A shift may exist if necessary for keeping the extent inside the {@code bounds} argument, but will never
      * move the grid coordinates outside the [<var>low</var> … <var>high</var>+1) range of returned extent.</p>
      *
-     * @param  bounds  if the coordinates shall be contained inside a grid, that grid. Otherwise {@code null}.
+     * @param  bounds  if the coordinates shall be contained inside a grid, that grid extent. Otherwise {@code null}.
      * @param  size    the desired extent sizes as strictly positive numbers, or 0 sentinel values for automatic
      *                 sizes (1 or 2 depending on bounds and coordinate values). This array may have any length;
      *                 if shorter than the number of dimensions, missing values default to 0.
@@ -224,7 +226,8 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
      * @throws IllegalArgumentException if a {@code size} value is negative.
      * @throws ArithmeticException if a coordinate value is outside the range of {@code long} values.
      * @throws MismatchedDimensionException if {@code bounds} dimension is not equal to grid coordinates dimension.
-     * @throws DisjointExtentException if the returned extent would not intersect the given bounds.
+     * @throws PointOutsideCoverageException if the grid coordinates (rounded to nearest integers) are outside the
+     *         given bounds.
      * @return a grid extent of the given size (if possible) containing those grid coordinates.
      */
     public GridExtent toExtent(final GridExtent bounds, final long... size) {
@@ -257,24 +260,24 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
              * In such case we can no longer enforce the `lower ≤ value ≤ upper` rule. The best
              * we can do is to take the nearest neighbor.
              */
+            final long nearest = Math.round(value);
             long lower, upper;
             if (margin == 1) {
-                lower = upper = Math.round(value);
+                lower = upper = nearest;
             } else {
-                final double base = Math.floor(value);
-                lower = (long) base;                    // Inclusive.
-                upper = (long) Math.ceil(value);        // Inclusive too (lower == upper if value is an integer).
+                lower = (long) Math.floor(value);       // Inclusive.
+                upper = (long) Math.ceil (value);       // Inclusive too (lower == upper if value is an integer).
                 if (margin != 0) {
-                    margin -= (upper - lower + 1);
+                    margin -= (upper - lower + 1);      // Total number of cells to add.
                     assert margin >= 0 : margin;        // Because (upper - lower + 1) ≤ 2
                     if ((margin & 1) != 0) {
-                        if (value - base >= 0.5) {
+                        if (nearest >= upper) {
                             upper = Math.incrementExact(upper);
                         } else {
                             lower = Math.decrementExact(lower);
                         }
                     }
-                    margin /= 2;
+                    margin >>= 1;     // Number of cells to add on each side.
                     lower  = Math.subtractExact(lower, margin);
                     upper  = Math.addExact(upper, margin);
                     margin = 2;       // Any value different than 0 for remembering that it was explicitly specified.
@@ -287,8 +290,12 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
             if (bounds != null) {
                 final long validMin = bounds.getLow(i);
                 final long validMax = bounds.getHigh(i);
-                if (lower > validMax || upper < validMin) {
-                    throw new DisjointExtentException(bounds.getAxisIdentification(i,i), validMin, validMax, lower, upper);
+                if (nearest > validMax || nearest < validMin) {
+                    final StringBuilder b = new StringBuilder();
+                    writeCoordinates(b);
+                    throw new PointOutsideCoverageException(
+                            Resources.format(Resources.Keys.GridCoordinateOutsideCoverage_4,
+                            bounds.getAxisIdentification(i,i), validMin, validMax, b.toString()));
                 }
                 if (upper > validMax) {
                     if (margin != 0) {      // In automatic mode (margin = 0) just clip, don't shift.
@@ -439,11 +446,18 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder("GridCoordinates[");
+        writeCoordinates(buffer);
+        return buffer.append(']').toString();
+    }
+
+    /**
+     * Writes coordinates in the given buffer.
+     */
+    private void writeCoordinates(final StringBuilder buffer) {
         for (int i=0; i<coordinates.length; i++) {
             if (i != 0) buffer.append(' ');
             StringBuilders.trimFractionalPart(buffer.append(coordinates[i]));
         }
-        return buffer.append(']').toString();
     }
 
     /**

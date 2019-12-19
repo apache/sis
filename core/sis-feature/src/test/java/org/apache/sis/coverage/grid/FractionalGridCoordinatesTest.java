@@ -92,10 +92,10 @@ public final strictfp class FractionalGridCoordinatesTest extends TestCase {
      */
     @Test
     public void testToExtentBounded() {
-        final GridExtent bounds = new GridExtent(null, null, new long[] {4, 2, 7}, true);
+        final GridExtent bounds = new GridExtent(null, new long[] {0, -1, 0}, new long[] {4, 2, 8}, true);
         final GridExtent extent = instance().toExtent(bounds, 3, 5, 4);
         GridExtentTest.assertExtentEquals(extent, 0,  2,  4);
-        GridExtentTest.assertExtentEquals(extent, 1,  0,  2);
-        GridExtentTest.assertExtentEquals(extent, 2,  4,  7);
+        GridExtentTest.assertExtentEquals(extent, 1, -1,  2);
+        GridExtentTest.assertExtentEquals(extent, 2,  5,  8);
     }
 }
