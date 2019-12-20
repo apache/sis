@@ -16,6 +16,11 @@
  */
 package org.apache.sis.internal.map;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Objects;
+import javax.swing.event.EventListenerList;
+
 /**
  * Parent class of all map elements.
  *
@@ -29,6 +34,14 @@ package org.apache.sis.internal.map;
  * @module
  */
 public abstract class MapItem {
+
+    /** Identifies a change in the map item title. */
+    public static final String TITLE_PROPERTY = "title";
+    /** Identifies a change in the map item visibility state. */
+    public static final String VISIBLE_PROPERTY = "visible";
+
+    private final EventListenerList listeners = new EventListenerList();
+
     /**
      * The title of this map item, for display to the user.
      */
@@ -62,7 +75,11 @@ public abstract class MapItem {
      * @param  title  title to be shown to the user, or {@code null} if none.
      */
     public void setTitle(CharSequence title) {
-        this.title = title;
+        if (!Objects.equals(this.title, title)) {
+            CharSequence old = this.title;
+            this.title = title;
+            firePropertyChange(TITLE_PROPERTY, old, title);
+        }
     }
 
     /**
@@ -81,6 +98,37 @@ public abstract class MapItem {
      * @param visible {@code false} to hide this item and all it's components.
      */
     public void setVisible(boolean visible) {
-        this.visible = visible;
+        if (this.visible != visible) {
+            this.visible = visible;
+            firePropertyChange(VISIBLE_PROPERTY, !visible, visible);
+        }
+    }
+
+    /**
+     * Register a property listener.
+     *
+     * @param listener property listener to register
+     */
+    public final void addPropertyChangeListener(PropertyChangeListener listener) {
+        listeners.add(PropertyChangeListener.class, listener);
+    }
+
+    /**
+     * Unregister a property listener.
+     *
+     * @param listener property listener to register
+     */
+    public final void removePropertyChangeListener(PropertyChangeListener listener) {
+        listeners.remove(PropertyChangeListener.class, listener);
+    }
+
+    protected void firePropertyChange(final String propertyName, final Object oldValue, final Object newValue) {
+        final PropertyChangeListener[] listPs = listeners.getListeners(PropertyChangeListener.class);
+        if (listPs.length == 0) return;
+
+        final PropertyChangeEvent event = new PropertyChangeEvent(this,propertyName,oldValue,newValue);
+        for (PropertyChangeListener listener : listPs) {
+            listener.propertyChange(event);
+        }
     }
 }

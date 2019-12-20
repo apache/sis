@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.map;
 
+import java.util.Objects;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.Resource;
 import org.opengis.style.Style;
@@ -41,6 +42,14 @@ import org.opengis.style.Style;
  * @module
  */
 public class MapLayer extends MapItem {
+
+    /** Identifies a change in the layer resource. */
+    public static final String RESOURCE_PROPERTY = "resource";
+    /** Identifies a change in the layer style. */
+    public static final String STYLE_PROPERTY = "style";
+    /** Identifies a change in the layer query. */
+    public static final String QUERY_PROPERTY = "query";
+
     /**
      * Data to be rendered.
      */
@@ -86,7 +95,11 @@ public class MapLayer extends MapItem {
      * @param  resource  the new data, or {@code null} if unavailable.
      */
     public void setResource(Resource resource) {
-        this.resource = resource;
+        if (!Objects.equals(this.resource, resource)) {
+            Resource old = this.resource;
+            this.resource = resource;
+            firePropertyChange(RESOURCE_PROPERTY, old, resource);
+        }
     }
 
     /**
@@ -106,7 +119,11 @@ public class MapLayer extends MapItem {
      * @param  style  description of data visual appearance, or {@code null} if unspecified.
      */
     public void setStyle(Style style) {
-        this.style = style;
+        if (!Objects.equals(this.style, style)) {
+            Style old = this.style;
+            this.style = style;
+            firePropertyChange(STYLE_PROPERTY, old, style);
+        }
     }
 
     /**
@@ -129,6 +146,10 @@ public class MapLayer extends MapItem {
      * @param query the query for this layer, or {@code null} if unavailable.
      */
     public void setQuery(Query query) {
-        this.query = query;
+        if (!Objects.equals(this.query, query)) {
+            Query old = this.query;
+            this.query = query;
+            firePropertyChange(QUERY_PROPERTY, old, query);
+        }
     }
 }

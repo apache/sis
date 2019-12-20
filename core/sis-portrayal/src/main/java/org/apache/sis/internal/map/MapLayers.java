@@ -16,19 +16,27 @@
  */
 package org.apache.sis.internal.map;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
- * Root node of a map.
+ * A collection of layers.
+ * Layers are used to regroup similar layers under a same node.
+ * This allows global actions, like {@linkplain #setVisible(boolean) hiding}
+ * background layers in one call.
  *
- * The map context contains all layers to display (given by the {@link #getComponents() group components})
+ * A map context which is the name given to the root map item node contains
+ * all layers to display (given by the {@link #getComponents() group components})
  * and defines the {@linkplain #getAreaOfInterest() area of interest} which should be zoomed by default
  * when the map is rendered.
  *
  * <p>
  * NOTE: this class is a first draft subject to modifications.
+ * TODO : components events
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
@@ -36,16 +44,42 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @since   1.0
  * @module
  */
-public class MapContext extends MapGroup {
+public class MapLayers extends MapItem {
+
+    /** Identifies a change in the map context area of interest. */
+    public static final String AREAOFINTEREST_PROPERTY = "areaOfInterest";
+
+    /**
+     * The components in this group.
+     */
+    private final List<MapItem> components;
+
     /**
      * The area of interest.
      */
     private Envelope areaOfInterest;
 
     /**
-     * Creates an initially empty map context.
+     * Creates an initially empty map layers.
      */
-    public MapContext() {
+    public MapLayers() {
+        components = new ArrayList<>();
+    }
+
+    /**
+     * Gets the modifiable list of components contained in this group.
+     * The components in the list are presented in rendering order.
+     * This means that the first rendered component, which will be below
+     * all other components on the rendered map, is located at index zero.
+     *
+     * <p>The returned list is modifiable: changes in the returned list will
+     * be immediately reflected in this {@code MapGroup}, and conversely.</p>
+     *
+     * @return modifiable list of components in this group.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public List<MapItem> getComponents() {
+        return components;
     }
 
     /**
@@ -74,6 +108,10 @@ public class MapContext extends MapGroup {
      * @param  aoi  new map area to show by default, or {@code null} is unspecified.
      */
     public void setAreaOfInterest(Envelope aoi) {
-        areaOfInterest = aoi;
+        if (!Objects.equals(areaOfInterest, aoi)) {
+            Envelope old = areaOfInterest;
+            areaOfInterest = aoi;
+            firePropertyChange(AREAOFINTEREST_PROPERTY, old, aoi);
+        }
     }
 }
