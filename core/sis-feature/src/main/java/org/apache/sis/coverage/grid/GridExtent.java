@@ -241,6 +241,24 @@ public class GridExtent implements GridEnvelope, Serializable {
     }
 
     /**
+     * Creates a new grid extent for an image of the given size and location. This constructor
+     * is for {@link GridCoverage2D} internal usage: it does not check for overflow (arguments
+     * are assumed small enough, which is the case when they are converted from {@code int}s),
+     * and argument meanings differ from conventions in public constructors.
+     *
+     * @param  xmin    column index of the first cell.
+     * @param  ymin    row index of the first cell.
+     * @param  width   number of pixels in each row.
+     * @param  height  number of pixels in each column.
+     */
+    GridExtent(final long xmin, final long ymin, final long width, final long height) {
+        this(width, height);
+        for (int i=coordinates.length; --i >= 0;) {
+            coordinates[i] += ((i & 1) == 0) ? xmin : ymin;
+        }
+    }
+
+    /**
      * Constructs a new grid envelope set to the specified coordinates.
      * The given arrays contain a minimum (inclusive) and maximum value for each dimension of the grid coverage.
      * The lowest valid grid coordinates are often zero, but this is not mandatory.
@@ -295,6 +313,29 @@ public class GridExtent implements GridEnvelope, Serializable {
     }
 
     /**
+     * Infers the axis types from the given coordinate reference system.
+     *
+     * @param  crs        the coordinate reference system, or {@code null}.
+     * @param  dimension  number of name type to infer. Shall not be greater than the CRS dimension.
+     */
+    static DimensionNameType[] typeFromAxes(final CoordinateReferenceSystem crs, final int dimension) {
+        DimensionNameType[] axisTypes = null;
+        if (crs != null) {
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            for (int i=0; i<dimension; i++) {
+                final DimensionNameType type = AXIS_DIRECTIONS.get(AxisDirections.absolute(cs.getAxis(i).getDirection()));
+                if (type != null) {
+                    if (axisTypes == null) {
+                        axisTypes = new DimensionNameType[dimension];
+                    }
+                    axisTypes[i] = type;
+                }
+            }
+        }
+        return axisTypes;
+    }
+
+    /**
      * Creates a new grid extent by rounding the given envelope to (usually) nearest integers.
      * The envelope coordinates shall be cell indices with lower values inclusive and upper values exclusive.
      * {@link Double#NaN} envelope coordinates will be set to the corresponding {@code enclosing} coordinates
@@ -331,21 +372,7 @@ public class GridExtent implements GridEnvelope, Serializable {
         if (enclosing != null && enclosing.types != null) {
             types = enclosing.types;
         } else {
-            DimensionNameType[] axisTypes = null;
-            final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
-            if (crs != null) {
-                final CoordinateSystem cs = crs.getCoordinateSystem();
-                for (int i=0; i<dimension; i++) {
-                    final DimensionNameType type = AXIS_DIRECTIONS.get(AxisDirections.absolute(cs.getAxis(i).getDirection()));
-                    if (type != null) {
-                        if (axisTypes == null) {
-                            axisTypes = new DimensionNameType[dimension];
-                        }
-                        axisTypes[i] = type;
-                    }
-                }
-            }
-            types = validateAxisTypes(axisTypes);
+            types = validateAxisTypes(typeFromAxes(envelope.getCoordinateReferenceSystem(), dimension));
         }
         /*
          * Now computes the grid extent coordinates.
@@ -693,8 +720,8 @@ public class GridExtent implements GridEnvelope, Serializable {
      * {@linkplain #getSize(int) size} greater than 1, then a {@link SubspaceNotSpecifiedException} is thrown.
      * If there is less than <var>s</var> dimensions having a size greater than 1, then the returned list of
      * dimensions is completed with some dimensions of size 1, starting with the first dimensions in this grid
-     * extent, until there is exactly <var>s</var> dimensions. This this grid extent does not have <var>s</var>
-     * dimensions, then a {@link CannotEvaluateException} is thrown.
+     * extent, until there is exactly <var>s</var> dimensions. If this grid extent does not have at least
+     * <var>s</var> dimensions, then a {@link CannotEvaluateException} is thrown.
      *
      * @param  s  number of dimensions of the sub-space.
      * @return indices of sub-space dimensions, in increasing order in an array of length <var>s</var>.

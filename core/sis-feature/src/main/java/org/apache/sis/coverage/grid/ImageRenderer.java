@@ -79,7 +79,7 @@ import org.apache.sis.math.Vector;
  * Support for tiled images will be added in a future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see GridCoverage#render(GridExtent)
  *
@@ -240,8 +240,7 @@ public class ImageRenderer {
         final long ymax = Math.min(sliceExtent.getHigh(yd), source.getHigh(yd));
         if (xmax < xmin || ymax < ymin) {                                           // max are inclusive.
             final int d = (xmax < xmin) ? xd : yd;
-            throw new DisjointExtentException(source.getAxisIdentification(d, d),
-                    source.getLow(d), source.getHigh(d), sliceExtent.getLow(d), sliceExtent.getHigh(d));
+            throw new DisjointExtentException(source, sliceExtent, d);
         }
         width   = Math.incrementExact(Math.toIntExact(xmax - xmin));
         height  = Math.incrementExact(Math.toIntExact(ymax - ymin));

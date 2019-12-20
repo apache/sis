@@ -22,12 +22,13 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.util.Vector;
 
+
 /**
  * Translated RenderedImage implementation.
  *
- * @author Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public final class TranslatedRenderedImage extends AbstractRenderedImage {
@@ -81,12 +82,12 @@ public final class TranslatedRenderedImage extends AbstractRenderedImage {
 
     @Override
     public int getMinX() {
-        return image.getMinX() + offsetX;
+        return Math.addExact(image.getMinX(), offsetX);
     }
 
     @Override
     public int getMinY() {
-        return image.getMinY() + offsetY;
+        return Math.addExact(image.getMinY(), offsetY);
     }
 
     @Override
@@ -121,18 +122,19 @@ public final class TranslatedRenderedImage extends AbstractRenderedImage {
 
     @Override
     public int getTileGridXOffset() {
-        return image.getTileGridXOffset() + offsetX;
+        return Math.addExact(image.getTileGridXOffset(), offsetX);
     }
 
     @Override
     public int getTileGridYOffset() {
-        return image.getTileGridYOffset() + offsetY;
+        return Math.addExact(image.getTileGridYOffset(), offsetY);
     }
 
     @Override
     public Raster getTile(int tileX, int tileY) {
         final Raster tile = image.getTile(tileX, tileY);
-        return tile.createTranslatedChild(offsetX, offsetY);
+        return tile.createTranslatedChild(
+                Math.addExact(tile.getMinX(), offsetX),
+                Math.addExact(tile.getMinY(), offsetY));
     }
-
 }

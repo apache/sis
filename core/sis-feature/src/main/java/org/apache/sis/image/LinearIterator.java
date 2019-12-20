@@ -30,7 +30,7 @@ import org.apache.sis.internal.feature.Resources;
 
 /**
  * Iterator for the {@link SequenceType#LINEAR} traversal order.
- * This iterator behaves as is the while image was a single tile.
+ * This iterator behaves as is the whole image was a single tile.
  * Calls to {@link #next()} move the current position by increasing the following values, in order:
  *
  * <ol>

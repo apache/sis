@@ -48,25 +48,33 @@ import org.opengis.referencing.operation.TransformException;
  * directly. This class may be replaced by another mechanism (creating new tiles) in a future SIS version.</p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
-final class ConvertedGridCoverage extends GridCoverage {
+public final class ConvertedGridCoverage extends GridCoverage {
     /**
-     * Returns a coverage for converted values. If the given coverage is already converted,
+     * Returns a coverage for converted values computed from a coverage of package values.
+     * If the given coverage is already converted,
      * then this method returns the given {@code coverage} unchanged.
      *
      * @param  packed  the coverage containing packed values to convert.
      * @return the converted coverage. May be {@code coverage}.
      */
-    public static GridCoverage create(final GridCoverage packed) {
+    public static GridCoverage createFromPacked(final GridCoverage packed) {
         final List<SampleDimension> sds = packed.getSampleDimensions();
         final List<SampleDimension> cfs = new ArrayList<>(sds.size());
         for (SampleDimension sd : sds) {
             cfs.add(sd.forConvertedValues(true));
         }
         return cfs.equals(sds) ? packed : new ConvertedGridCoverage(packed, sds, cfs);
+    }
+
+    /**
+     * @todo Placeholder for future evolution.
+     */
+    public static GridCoverage createFromConverted(final GridCoverage converted) {
+        throw new UnsupportedOperationException("\"Converted to packed\" not yet implemented.");
     }
 
     /**

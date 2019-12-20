@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage;
+package org.apache.sis.coverage.grid;
 
 import java.awt.Point;
 import java.awt.Transparency;
@@ -27,11 +27,13 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.util.Arrays;
 import java.util.Hashtable;
+import org.opengis.util.FactoryException;
+import org.opengis.coverage.PointOutsideCoverageException;
+import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.internal.coverage.ColorModelFactory;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -39,18 +41,14 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.test.TestCase;
 import org.junit.Assert;
 import org.junit.Test;
-import org.opengis.coverage.PointOutsideCoverageException;
-import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.operation.MathTransform1D;
-import org.opengis.util.FactoryException;
 
 
 /**
  * Tests the {@link GridCoverage2D} implementation.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public class GridCoverage2DTest extends TestCase {
@@ -77,7 +75,7 @@ public class GridCoverage2DTest extends TestCase {
         final ColorSpace colors = ColorModelFactory.createColorSpace(1, 0, -10, 10);
         final ColorModel cm = new ComponentColorModel(colors, false, false, Transparency.OPAQUE, DataBuffer.TYPE_INT);
         BufferedImage image = new BufferedImage(cm, raster, false, new Hashtable<>());
-        GridCoverage   coverage = new GridCoverage2D(grid, Arrays.asList(sd), image);
+        GridCoverage coverage = new GridCoverage2D(grid, Arrays.asList(sd), image);
         raster.setSample(0, 0, 0,   0);
         raster.setSample(1, 0, 0,   5);
         raster.setSample(0, 1, 0,  -5);

@@ -27,7 +27,7 @@ import org.apache.sis.internal.feature.Resources;
  * linear (or affine) "grid to CRS" transform.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -50,6 +50,17 @@ public class IllegalGridGeometryException extends IllegalArgumentException {
      */
     public IllegalGridGeometryException(final String message) {
         super(message);
+    }
+
+    /**
+     * Constructs an exception with the specified cause.
+     *
+     * @param  cause  the cause for this exception.
+     *
+     * @since 1.1
+     */
+    public IllegalGridGeometryException(final Throwable cause) {
+        super(cause);
     }
 
     /**

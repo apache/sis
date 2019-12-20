@@ -17,10 +17,12 @@
 package org.apache.sis.internal.coverage;
 
 import java.util.Arrays;
+import java.awt.Rectangle;
 import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
 import java.awt.image.PackedColorModel;
 import java.awt.image.RenderedImage;
+import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import org.apache.sis.internal.system.Modules;
@@ -41,6 +43,18 @@ public final class ImageUtilities {
      * Do not allow instantiation of this class.
      */
     private ImageUtilities() {
+    }
+
+    /**
+     * Returns the bounds of the given image as a new rectangle.
+     *
+     * @param  image  the image for which to get the bounds.
+     * @return the bounds of the given image.
+     *
+     * @see Raster#getBounds()
+     */
+    public static Rectangle getBounds(final RenderedImage image) {
+        return new Rectangle(image.getMinX(), image.getMinY(), image.getWidth(), image.getHeight());
     }
 
     /**

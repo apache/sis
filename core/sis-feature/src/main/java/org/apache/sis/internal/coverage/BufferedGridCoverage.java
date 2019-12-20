@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.coverage;
 
+import java.util.Collection;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferDouble;
@@ -25,8 +26,6 @@ import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.RasterFormatException;
 import java.awt.image.RenderedImage;
-import java.awt.image.SampleModel;
-import java.util.Collection;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -44,7 +43,7 @@ import org.opengis.coverage.CannotEvaluateException;
  * Those data can be shown as {@link RenderedImage}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -125,7 +124,7 @@ public class BufferedGridCoverage extends GridCoverage {
      * Returns a grid coverage that contains real values or sample values, depending if {@code converted} is {@code true}
      * or {@code false} respectively.
      *
-     * If the given value is {@code false}, then the default implementation returns a grid coverage which produces
+     * If the given value is {@code true}, then the default implementation returns a grid coverage which produces
      * {@link RenderedImage} views. Those views convert each sample value on the fly. This is known to be very slow
      * if an entire raster needs to be processed, but this is temporary until another implementation is provided in
      * a future SIS release.
@@ -137,28 +136,11 @@ public class BufferedGridCoverage extends GridCoverage {
         if (converted) {
             synchronized (this) {
                 if (this.converted == null) {
-                    this.converted = convert(this);
+                    this.converted = ConvertedGridCoverage.createFromPacked(this);
                 }
                 return this.converted;
             }
         }
         return this;
-    }
-
-    /**
-     * Returns a coverage for converted values. If the given coverage is already converted,
-     * then this method returns the given {@code coverage} unchanged.
-     *
-     * <p><b>WARNING: this is a temporary implementation.</b>
-     * This method uses a special {@link SampleModel} in departure with the contract documented in JDK javadoc.
-     * That sample model does not only define the sample layout (pixel stride, scanline stride, <i>etc.</i>), but
-     * also converts the sample values. This may be an issue for optimized pipelines accessing {@link DataBuffer}
-     * directly. This method may be replaced by another mechanism (creating new tiles) in a future SIS version.</p>
-     *
-     * @param  packed  the coverage containing packed values to convert.
-     * @return the converted coverage. May be {@code coverage}.
-     */
-    public static GridCoverage convert(final GridCoverage packed) {
-        return ConvertedGridCoverage.create(packed);
     }
 }

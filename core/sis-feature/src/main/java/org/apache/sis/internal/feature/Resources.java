@@ -43,7 +43,7 @@ public final class Resources extends IndexedResourceBundle {
      * pools of compiled classes.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @since   0.8
+     * @since   1.1
      * @module
      */
     @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
@@ -68,6 +68,11 @@ public final class Resources extends IndexedResourceBundle {
          * Can not assign characteristics to the “{0}” property.
          */
         public static final short CanNotAssignCharacteristics_1 = 2;
+
+        /**
+         * Can not create a two-dimensional reference system from the “{0}” system.
+         */
+        public static final short CanNotCreateTwoDimensionalCRS_1 = 60;
 
         /**
          * Can not enumerate values in the {0} range.
@@ -199,6 +204,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IterationNotStarted = 37;
 
         /**
+         * Image number of bands {0,number} does not match the number of sample dimensions
+         * ({1,number}).
+         */
+        public static final short MismatchedBandCount_2 = 61;
+
+        /**
          * The bands have different number of sample values.
          */
         public static final short MismatchedBandSize = 38;
@@ -212,6 +223,12 @@ public final class Resources extends IndexedResourceBundle {
          * The two images have different size or pixel coordinates.
          */
         public static final short MismatchedImageLocation = 40;
+
+        /**
+         * Image {0,choice,0#width|1#height} ({1,number} pixels) does not match the grid extent size
+         * ({2,number} cells).
+         */
+        public static final short MismatchedImageSize_3 = 62;
 
         /**
          * Mismatched type for “{0}” property.
