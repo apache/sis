@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.map;
 
+import org.apache.sis.storage.Query;
 import org.apache.sis.storage.Resource;
 import org.opengis.style.Style;
 
@@ -31,6 +32,7 @@ import org.opengis.style.Style;
  *
  * <p>
  * NOTE: this class is a first draft subject to modifications.
+ * TODO : missing events
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
@@ -48,6 +50,11 @@ public class MapLayer extends MapItem {
      * Visual representation of data.
      */
     private Style style;
+
+    /**
+     * User defined query.
+     */
+    private Query query;
 
     /**
      * Constructs an initially empty map layer.
@@ -100,5 +107,28 @@ public class MapLayer extends MapItem {
      */
     public void setStyle(Style style) {
         this.style = style;
+    }
+
+    /**
+     * Returns the definition query for this layer.If no definition
+     * query has been defined {@code null} is returned.
+     * @return query, or {@code null} if unspecified.
+     */
+    public Query getQuery() {
+        return query;
+    }
+
+    /**
+     * Sets a filter query for this layer.
+     *
+     * <p>
+     * Query filters should be used to reduce searched or displayed resource
+     * when rendering or analyzing this layer.
+     * </p>
+     *
+     * @param query the query for this layer, or {@code null} if unavailable.
+     */
+    public void setQuery(Query query) {
+        this.query = query;
     }
 }

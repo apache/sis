@@ -23,8 +23,6 @@ package org.apache.sis.internal.map;
  * NOTE: this class is a first draft subject to modifications.
  * </p>
  *
- * @todo Rename {@code MapElement} or {@code Element}?
- *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
