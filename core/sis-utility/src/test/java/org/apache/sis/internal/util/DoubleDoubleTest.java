@@ -37,7 +37,7 @@ import static java.lang.StrictMath.*;
  * Those tests need {@link DoubleDouble#DISABLED} to be set to {@code false}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -444,9 +444,10 @@ public final strictfp class DoubleDoubleTest extends TestCase {
         for (int i=0; ; i++) {
             final DoubleDouble dd;
             switch (i) {
-                case 0:  dd = DoubleDouble.createRadiansToDegrees(); break;
-                case 1:  dd = DoubleDouble.createDegreesToRadians(); break;
-                case 2:  dd = DoubleDouble.createSecondsToRadians(); break;
+                case 0:  dd = DoubleDouble.createPi();               break;
+                case 1:  dd = DoubleDouble.createRadiansToDegrees(); break;
+                case 2:  dd = DoubleDouble.createDegreesToRadians(); break;
+                case 3:  dd = DoubleDouble.createSecondsToRadians(); break;
                 default: return;                                             // Test done.
             }
             assertEquals(DoubleDouble.errorForWellKnownValue(dd.value), dd.error, STRICT);

@@ -56,7 +56,7 @@ import org.apache.sis.math.DecimalFunctions;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
  *
@@ -306,6 +306,15 @@ public final class DoubleDouble extends Number {
      */
     public static DoubleDouble createAndGuessError(final double value) {
         return new DoubleDouble(value, errorForWellKnownValue(value));
+    }
+
+    /**
+     * Returns a new {@code DoubleDouble} instance initialized to the PI value.
+     *
+     * @return an instance initialized to the 3.14159265358979323846264338327950 value.
+     */
+    public static DoubleDouble createPi() {
+        return new DoubleDouble(3.14159265358979323846264338327950, 1.2246467991473532E-16);
     }
 
     /**
