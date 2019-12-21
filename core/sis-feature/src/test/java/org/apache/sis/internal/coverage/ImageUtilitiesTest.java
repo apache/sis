@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.coverage;
 
+import java.awt.image.ColorModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import org.apache.sis.util.resources.Vocabulary;
@@ -35,43 +36,95 @@ import static org.junit.Assert.*;
  */
 public final strictfp class ImageUtilitiesTest extends TestCase {
     /**
-     * Tests {@link ImageUtilities#bandNames(RenderedImage)}.
+     * Verifies that {@link ImageUtilities#bandNames(RenderedImage)} returns expected band names.
+     *
+     * @param  nde    expected number of data elements. This number categorizes the tests in this class.
+     * @param  type   one of the {@link BufferedImage} {@code TYPE_*} constants.
+     * @param  names  vocabulary keys of expected names.
+     */
+    private static void assertBandNamesEqual(final int nde, final int type, final short... names) {
+        final BufferedImage image = new BufferedImage(1, 1, type);
+        assertEquals("numDataElements", nde, image.getSampleModel().getNumDataElements());
+        assertArrayEquals("bandNames", names, ImageUtilities.bandNames(image));
+        /*
+         * The following is more for testing our understanding of the way BufferedImage works.
+         * We want to verify that no matter which BufferedImage.TYPE_* constant we used, values
+         * managed by the sample model are in RGBA order.
+         */
+        image.getRaster().setPixel(0, 0, new int[] {10, 20, 30, 40});       // Always RGBA order for this test.
+        final Object data = image.getRaster().getDataElements(0, 0, null);
+        final ColorModel cm = image.getColorModel();
+        for (final short k : names) {
+            final int expected, actual;
+            switch (k) {
+                case Vocabulary.Keys.Gray:         continue;
+                case Vocabulary.Keys.Red:          expected = 10; actual = cm.getRed  (data); break;
+                case Vocabulary.Keys.Green:        expected = 20; actual = cm.getGreen(data); break;
+                case Vocabulary.Keys.Blue:         expected = 30; actual = cm.getBlue (data); break;
+                case Vocabulary.Keys.Transparency: expected = 40; actual = cm.getAlpha(data); break;
+                case Vocabulary.Keys.ColorIndex:   continue;
+                default: throw new AssertionError(k);
+            }
+            assertEquals(expected, actual);
+        }
+    }
+
+    /**
+     * Tests {@link ImageUtilities#bandNames(RenderedImage)} with {@link BufferedImage} instances
+     * created from the {@code BufferedImage.TYPE_*} constants.
      */
     @Test
-    public void testBandNames() {
-        RenderedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-        assertArrayEquals(new short[] {
-            Vocabulary.Keys.Red,
-            Vocabulary.Keys.Green,
-            Vocabulary.Keys.Blue,
-            Vocabulary.Keys.Transparency
-        }, ImageUtilities.bandNames(image));
+    public void testBandNameOfBufferedImages() {
         /*
-         * Same as above, but without alpha channel.
+         * Images having a single data element.
          */
-        image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-        assertArrayEquals(new short[] {
-            Vocabulary.Keys.Red,
-            Vocabulary.Keys.Green,
-            Vocabulary.Keys.Blue
-        }, ImageUtilities.bandNames(image));
+        assertBandNamesEqual(1, BufferedImage.TYPE_BYTE_GRAY,    Vocabulary.Keys.Gray);
+        assertBandNamesEqual(1, BufferedImage.TYPE_USHORT_GRAY,  Vocabulary.Keys.Gray);
+        assertBandNamesEqual(1, BufferedImage.TYPE_BYTE_BINARY,  Vocabulary.Keys.ColorIndex);
+        assertBandNamesEqual(1, BufferedImage.TYPE_BYTE_INDEXED, Vocabulary.Keys.ColorIndex);
         /*
-         * Same as above but in sample values packed in reverse order. Note that while values
+         * Image having a pixel packed in a single data element. The red color uses high
+         * order bits (00FF0000 mask) and the blue color uses low order bits (000000FF).
+         */
+        assertBandNamesEqual(1, BufferedImage.TYPE_INT_RGB,
+                Vocabulary.Keys.Red,
+                Vocabulary.Keys.Green,
+                Vocabulary.Keys.Blue);
+        /*
+         * Same as above, but with alpha channel. The alpha value uses highest order bits
+         * (FF000000) mask but despite that fact, that value is ordered last by SampleModel.
+         */
+        assertBandNamesEqual(1, BufferedImage.TYPE_INT_ARGB,
+                Vocabulary.Keys.Red,
+                Vocabulary.Keys.Green,
+                Vocabulary.Keys.Blue,
+                Vocabulary.Keys.Transparency);
+        /*
+         * Same as above but with sample values packed in reverse order. Note that while values
          * are packed in BGR order, the sample model is still providing the values in RGB order.
          * For that reason, the band order below is the same than in above test.
          */
-        image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_BGR);
-        assertArrayEquals(new short[] {
-            Vocabulary.Keys.Red,
-            Vocabulary.Keys.Green,
-            Vocabulary.Keys.Blue
-        }, ImageUtilities.bandNames(image));
+        assertBandNamesEqual(1, BufferedImage.TYPE_INT_BGR,
+                Vocabulary.Keys.Red,
+                Vocabulary.Keys.Green,
+                Vocabulary.Keys.Blue);
         /*
-         * One-banded image.
+         * Image having pixel stored in many data elements. BufferedImage still use a single bank,
+         * but values are stored in 3 consecutive bytes with blue first, then green, then red.
+         * Despite this storage order, SampleModel exposes those data in red, green, blue order.
          */
-        image = new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY);
-        assertArrayEquals(new short[] {
-            Vocabulary.Keys.Gray
-        }, ImageUtilities.bandNames(image));
+        assertBandNamesEqual(3, BufferedImage.TYPE_3BYTE_BGR,
+                Vocabulary.Keys.Red,
+                Vocabulary.Keys.Green,
+                Vocabulary.Keys.Blue);
+        /*
+         * Add an alpha channel, which appears first in sequence of bytes. Despite this internal
+         * order, SampleModel still exposes the alpha channel as the last sample value.
+         */
+        assertBandNamesEqual(4, BufferedImage.TYPE_4BYTE_ABGR,
+                Vocabulary.Keys.Red,
+                Vocabulary.Keys.Green,
+                Vocabulary.Keys.Blue,
+                Vocabulary.Keys.Transparency);
     }
 }

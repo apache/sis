@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.awt.Rectangle;
 import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
+import java.awt.image.IndexColorModel;
 import java.awt.image.PackedColorModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
@@ -78,7 +79,19 @@ public final class ImageUtilities {
         }
         final short[] keys = new short[n];
         final ColorModel cm = image.getColorModel();
-        if (cm != null) {
+        if (cm instanceof IndexColorModel) {
+            /*
+             * IndexColorModel normally uses exactly one band. But SIS has a custom subtype which
+             * allows to use an arbitrary band for displaying purpose and ignore all other bands.
+             */
+            int visibleBand = 0;
+            if (cm instanceof MultiBandsIndexColorModel) {
+                visibleBand = ((MultiBandsIndexColorModel) cm).visibleBand;
+            }
+            if (visibleBand < n) {
+                keys[visibleBand] = Vocabulary.Keys.ColorIndex;
+            }
+        } else if (cm != null) {
             final ColorSpace cs = cm.getColorSpace();
             if (cs != null) {
                 /*

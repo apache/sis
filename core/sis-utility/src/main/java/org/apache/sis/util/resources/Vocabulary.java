@@ -172,6 +172,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Code_1 = 21;
 
         /**
+         * Color index
+         */
+        public static final short ColorIndex = 184;
+
+        /**
          * Commands
          */
         public static final short Commands = 22;
