@@ -60,7 +60,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -68,7 +68,7 @@ public class LambertConicConformal extends ConformalProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 2067358524298002016L;
+    private static final long serialVersionUID = -8971522854919443706L;
 
     /**
      * Codes for variants of Lambert Conical Conformal projection. Those variants modify the way the projections are
@@ -139,6 +139,14 @@ public class LambertConicConformal extends ConformalProjection {
      * </ul>
      */
     final double n;
+
+    /**
+     * Size of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
+     * We need to ensure that θ values are inside that range before to use it in trigonometric functions.
+     *
+     * @see Initializer#spanOfScaledLongitude(DoubleDouble)
+     */
+    final double θ_span;
 
     /**
      * Creates a Lambert projection from the given parameters.
@@ -339,6 +347,7 @@ public class LambertConicConformal extends ConformalProjection {
         normalize  .convertAfter(1, sφ, null);
         denormalize.convertBefore(0, F, null); F.negate();
         denormalize.convertBefore(1, F, rF);
+        θ_span = Initializer.spanOfScaledLongitude(sλ);
     }
 
     /**
@@ -346,7 +355,8 @@ public class LambertConicConformal extends ConformalProjection {
      */
     LambertConicConformal(final LambertConicConformal other) {
         super(other);
-        n = other.n;
+        n      = other.n;
+        θ_span = other.θ_span;
     }
 
     /**
@@ -406,8 +416,8 @@ public class LambertConicConformal extends ConformalProjection {
          * the first non-linear one moved to the "normalize" affine transform, and the linear operations
          * applied after the last non-linear one moved to the "denormalize" affine transform.
          */
-        final double θ    = srcPts[srcOff  ];     // θ = λ⋅n  (ignoring longitude of origin)
-        final double φ    = srcPts[srcOff+1];     // Sign may be reversed
+        final double θ    = IEEEremainder(srcPts[srcOff], θ_span);      // θ = λ⋅n  (ignoring longitude of origin)
+        final double φ    = srcPts[srcOff + 1];                         // Sign may be reversed
         final double absφ = abs(φ);
         final double sinθ = sin(θ);
         final double cosθ = cos(θ);
@@ -490,7 +500,7 @@ public class LambertConicConformal extends ConformalProjection {
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
      * @author  André Gosselin (MPO)
      * @author  Rueben Schulz (UBC)
-     * @version 0.6
+     * @version 1.1
      * @since   0.6
      * @module
      */
@@ -498,7 +508,7 @@ public class LambertConicConformal extends ConformalProjection {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = -7005092237343502956L;
+        private static final long serialVersionUID = -8077690516096472987L;
 
         /**
          * Constructs a new map projection from the parameters of the given projection.
@@ -517,8 +527,8 @@ public class LambertConicConformal extends ConformalProjection {
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate)
         {
-            final double θ    = srcPts[srcOff  ];       // θ = λ⋅n
-            final double φ    = srcPts[srcOff+1];       // Sign may be reversed
+            final double θ    = IEEEremainder(srcPts[srcOff], θ_span);      // θ = λ⋅n  (ignoring longitude of origin)
+            final double φ    = srcPts[srcOff + 1];                         // Sign may be reversed
             final double absφ = abs(φ);
             final double sinθ = sin(θ);
             final double cosθ = cos(θ);

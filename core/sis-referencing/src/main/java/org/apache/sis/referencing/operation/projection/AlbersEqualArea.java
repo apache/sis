@@ -58,7 +58,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -3024658742514888646L;
+    private static final long serialVersionUID = -3466040922402982480L;
 
     /**
      * Internal coefficients for computation, depending only on eccentricity and values of standards parallels.
@@ -82,12 +82,12 @@ public class AlbersEqualArea extends EqualAreaProjection {
     final double C;
 
     /**
-     * The valid range of θ = n⋅λ values, which is [−n⋅π … n⋅π]. We need to ensure that θ values
-     * are inside that range before to use it in trigonometric functions.
+     * Size of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
+     * We need to ensure that θ values are inside that range before to use it in trigonometric functions.
      *
-     * <a href="https://issues.apache.org/jira/browse/SIS-486">SIS-486</a>
+     * @see Initializer#spanOfScaledLongitude(DoubleDouble)
      */
-    final double rangeOfθ;
+    final double θ_span;
 
     /**
      * Creates an Albers Equal Area projection from the given parameters.
@@ -172,8 +172,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         denormalize.convertBefore(0, rn, null); rn.negate();
         denormalize.convertBefore(1, rn, ρ0);   rn.inverseDivide(-1);
         normalize.convertAfter(0, rn, null);    // On this line, `rn` became `n`.
-        rn.multiply(DoubleDouble.createPi());
-        rangeOfθ = rn.doubleValue();
+        θ_span = Initializer.spanOfScaledLongitude(rn);
     }
 
     /**
@@ -181,9 +180,9 @@ public class AlbersEqualArea extends EqualAreaProjection {
      */
     AlbersEqualArea(final AlbersEqualArea other) {
         super(other);
-        nm       = other.nm;
-        C        = other.C;
-        rangeOfθ = other.rangeOfθ;
+        nm     = other.nm;
+        C      = other.C;
+        θ_span = other.θ_span;
     }
 
     /**
@@ -239,8 +238,8 @@ public class AlbersEqualArea extends EqualAreaProjection {
                             final boolean derivate) throws ProjectionException
     {
         // θ = n⋅λ  reduced to  [−n⋅π … n⋅π]  range.
-        final double θ = IEEEremainder(srcPts[srcOff], rangeOfθ);
-        final double φ = srcPts[srcOff+1];
+        final double θ = IEEEremainder(srcPts[srcOff], θ_span);
+        final double φ = srcPts[srcOff + 1];
         final double cosθ = cos(θ);
         final double sinθ = sin(θ);
         final double sinφ = sin(φ);
@@ -300,7 +299,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @author  Rémi Maréchal (Geomatys)
-     * @version 0.8
+     * @version 1.1
      * @since   0.8
      * @module
      */
@@ -308,7 +307,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = 9090765015127854096L;
+        private static final long serialVersionUID = -7238296545347764989L;
 
         /**
          * Constructs a new map projection from the parameters of the given projection.
@@ -328,8 +327,8 @@ public class AlbersEqualArea extends EqualAreaProjection {
                                 final boolean derivate)
         {
             // θ = n⋅λ  reduced to  [−n⋅π … n⋅π]  range.
-            final double θ = IEEEremainder(srcPts[srcOff], rangeOfθ);
-            final double φ = srcPts[srcOff+1];
+            final double θ = IEEEremainder(srcPts[srcOff], θ_span);
+            final double φ = srcPts[srcOff + 1];
             final double cosθ = cos(θ);
             final double sinθ = sin(θ);
             final double sinφ = sin(φ);

@@ -379,4 +379,29 @@ final class Initializer {
         s.inverseDivide(cosφ);
         return s.doubleValue();
     }
+
+    /**
+     * Returns the size of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
+     * This method is invoked by map projections that multiply the longitude values by some scale factor before
+     * to use them in trigonometric functions. Usually we do not explicitly wraparound the longitude values,
+     * because trigonometric functions do that automatically for us. However if the longitude is multiplied
+     * by some factor before to be used in trigonometric functions, them that implicit wraparound is not the
+     * one we expect. The map projection code needs to perform explicit wraparound in such cases.
+     * Example:
+     *
+     * {@preformat java
+     *   double spanθ = spanOfScaledLongitude(n);       // Should be computed only once.
+     *   double θ = Math.IEEEremainder(λn, spanθ);      // λ without n is typically unknown.
+     * }
+     *
+     * @param  n  the factor by which longitude values are multiplied before use in trigonometry.
+     * @return size of the [−n⋅π … n⋅π] range, for use in {@link Math#IEEEremainder(double, double)}.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-486">SIS-486</a>
+     */
+    static double spanOfScaledLongitude(final DoubleDouble n) {
+        final DoubleDouble r = DoubleDouble.createTwicePi();
+        r.multiply(n);
+        return abs(r.doubleValue());
+    }
 }

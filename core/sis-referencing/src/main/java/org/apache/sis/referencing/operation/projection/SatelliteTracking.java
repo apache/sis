@@ -69,7 +69,7 @@ public class SatelliteTracking extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 859940667477896653L;
+    private static final long serialVersionUID = -209787336760184649L;
 
     /**
      * Sines and cosines of inclination between the plane of the Earth's Equator and the plane
@@ -97,6 +97,14 @@ public class SatelliteTracking extends NormalizedProjection {
      * {@code true} if this projection is conic, or {@code false} if cylindrical or unknown.
      */
     private final boolean isConic;
+
+    /**
+     * Size of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
+     * We need to ensure that θ values are inside that range before to use it in trigonometric functions.
+     *
+     * @see Initializer#spanOfScaledLongitude(DoubleDouble)
+     */
+    private final double θ_span;
 
     /**
      * Work around for RFE #4093999 in Sun's bug database ("Relax constraint on
@@ -194,6 +202,7 @@ public class SatelliteTracking extends NormalizedProjection {
             normalize  .convertAfter (0,  n,  null);
             denormalize.convertBefore(0, +ρf, null);
             denormalize.convertBefore(1, -ρf, ρ0);
+            θ_span = n * (2*PI);
         } else {
             /*
              * Cylindrical projection case. The equations are (ignoring R and λ₀):
@@ -205,6 +214,7 @@ public class SatelliteTracking extends NormalizedProjection {
              * The cosφ₁ (for x at dimension 0) and cosφ₁/F₁′ (for y at dimension 1) factors are computed
              * in advance and stored below. The remaining factor to compute in transform(…) method is L.
              */
+            θ_span = 2*PI;
             n = s0 = Double.NaN;
             final double cotF = sqrt(cos2_φ1 - cos2_i) / (p2_on_p1*cos2_φ1 - cos_i);    // Cotangente of F₁.
             denormalize.convertBefore(0, cosφ1,      null);
@@ -298,6 +308,7 @@ public class SatelliteTracking extends NormalizedProjection {
         double x = srcPts[srcOff];
         double y = λt - p2_on_p1 * λpm;
         if (isConic) {
+            x = IEEEremainder(x, θ_span);
             λpm = n*y + s0;                     // Use this variable for a new purpose. Needed for derivative.
             if ((Double.doubleToRawLongBits(λpm) ^ Double.doubleToRawLongBits(n)) < 0) {
                 /*
