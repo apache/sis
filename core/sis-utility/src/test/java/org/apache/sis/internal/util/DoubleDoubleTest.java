@@ -444,7 +444,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
         for (int i=0; ; i++) {
             final DoubleDouble dd;
             switch (i) {
-                case 0:  dd = DoubleDouble.createTwicePi();          break;
+                case 0:  dd = DoubleDouble.createPi();               break;
                 case 1:  dd = DoubleDouble.createRadiansToDegrees(); break;
                 case 2:  dd = DoubleDouble.createDegreesToRadians(); break;
                 case 3:  dd = DoubleDouble.createSecondsToRadians(); break;

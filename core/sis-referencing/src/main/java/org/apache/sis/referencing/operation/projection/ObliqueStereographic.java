@@ -93,12 +93,13 @@ public class ObliqueStereographic extends NormalizedProjection {
     private final double g, h;
 
     /**
-     * Size of the [−n⋅π … n⋅π] range, which is the valid range of  Λ = n⋅λ  values.
-     * We need to ensure that Λ values are inside that range before to use it in trigonometric functions.
+     * A bound of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
+     * Some (not all) θ values need to be shifted inside that range before to use them
+     * in trigonometric functions.
      *
-     * @see Initializer#spanOfScaledLongitude(DoubleDouble)
+     * @see Initializer#boundOfScaledLongitude(DoubleDouble)
      */
-    private final double θ_span;
+    private final double θ_bound;
 
     /**
      * Creates an Oblique Stereographic projection from the given parameters.
@@ -181,7 +182,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         final double R2 = 2 * initializer.radiusOfConformalSphere(sinφ0);
         denormalize.convertBefore(0, R2, null);
         denormalize.convertBefore(1, R2, null);
-        θ_span = n * (2*PI);
+        θ_bound = initializer.boundOfScaledLongitude(n);
     }
 
     /**
@@ -189,14 +190,14 @@ public class ObliqueStereographic extends NormalizedProjection {
      */
     ObliqueStereographic(final ObliqueStereographic other) {
         super(other);
-        χ0     = other.χ0;
-        sinχ0  = other.sinχ0;
-        cosχ0  = other.cosχ0;
-        c      = other.c;
-        n      = other.n;
-        g      = other.g;
-        h      = other.h;
-        θ_span = other.θ_span;
+        χ0      = other.χ0;
+        sinχ0   = other.sinχ0;
+        cosχ0   = other.cosχ0;
+        c       = other.c;
+        n       = other.n;
+        g       = other.g;
+        h       = other.h;
+        θ_bound = other.θ_bound;
     }
 
     /**
@@ -267,7 +268,7 @@ public class ObliqueStereographic extends NormalizedProjection {
                             final boolean derivate) throws ProjectionException
     {
         // Λ = λ⋅n  (see below), ignoring longitude of origin.
-        final double Λ     = IEEEremainder(srcPts[srcOff], θ_span);
+        final double Λ     = wraparoundScaledLongitude(srcPts[srcOff], θ_bound);
         final double φ     = srcPts[srcOff + 1];
         final double sinφ  = sin(φ);
         final double ℯsinφ = eccentricity * sinφ;

@@ -88,6 +88,11 @@ final class Initializer {
     final DoubleDouble eccentricitySquared;
 
     /**
+     * Sign of central meridian: -1 if negative, 0 if zero, +1 if positive.
+     */
+    private final byte signum_λ0;
+
+    /**
      * Map projection variant.
      * Values from 0 to 127 inclusive are convenience values at the discretion of {@link NormalizedProjection} subclasses.
      * Values from 128 to 255 inclusive are values handled in a special way by {@link Initializer} constructor.
@@ -143,6 +148,8 @@ final class Initializer {
         final double fn = getAndStore(roles.get(ParameterRole.FALSE_NORTHING))
                         - getAndStore(roles.get(ParameterRole.FALSE_SOUTHING));
 
+        signum_λ0 = (λ0 > 0) ? (byte) +1 :
+                    (λ0 < 0) ? (byte) -1 : 0;
         eccentricitySquared = new DoubleDouble();
         DoubleDouble k = DoubleDouble.createAndGuessError(a);  // The value by which to multiply all results of normalized projection.
         if (a != b) {
@@ -381,27 +388,37 @@ final class Initializer {
     }
 
     /**
-     * Returns the size of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
+     * Returns a bound of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
      * This method is invoked by map projections that multiply the longitude values by some scale factor before
      * to use them in trigonometric functions. Usually we do not explicitly wraparound the longitude values,
      * because trigonometric functions do that automatically for us. However if the longitude is multiplied
-     * by some factor before to be used in trigonometric functions, them that implicit wraparound is not the
+     * by some factor before to be used in trigonometric functions, then that implicit wraparound is not the
      * one we expect. The map projection code needs to perform explicit wraparound in such cases.
-     * Example:
-     *
-     * {@preformat java
-     *   double spanθ = spanOfScaledLongitude(n);       // Should be computed only once.
-     *   double θ = Math.IEEEremainder(λn, spanθ);      // λ without n is typically unknown.
-     * }
      *
      * @param  n  the factor by which longitude values are multiplied before use in trigonometry.
-     * @return size of the [−n⋅π … n⋅π] range, for use in {@link Math#IEEEremainder(double, double)}.
+     * @return a bound of the [−n⋅π … n⋅π] range.
      *
+     * @see NormalizedProjection#wraparoundScaledLongitude(double, double)
      * @see <a href="https://issues.apache.org/jira/browse/SIS-486">SIS-486</a>
      */
-    static double spanOfScaledLongitude(final DoubleDouble n) {
-        final DoubleDouble r = DoubleDouble.createTwicePi();
+    final double boundOfScaledLongitude(final double n) {
+        return boundOfScaledLongitude(new DoubleDouble(n));
+    }
+
+    /**
+     * Same as {@link #boundOfScaledLongitude(double)} with opportunistic use of double-double precision.
+     * This is used when than object is available anyway.
+     *
+     * @param  n  the factor by which longitude values are multiplied before use in trigonometry.
+     * @return a bound of the [−n⋅π … n⋅π] range.
+     */
+    final double boundOfScaledLongitude(final DoubleDouble n) {
+        if (signum_λ0 == 0 || n.doubleValue() >= 1) {
+            return Double.NaN;                          // Do not apply any wraparound.
+        }
+        final DoubleDouble r = DoubleDouble.createPi();
         r.multiply(n);
-        return abs(r.doubleValue());
+        final double θ_bound = abs(r.doubleValue());
+        return (signum_λ0 < 0) ? θ_bound : -θ_bound;
     }
 }

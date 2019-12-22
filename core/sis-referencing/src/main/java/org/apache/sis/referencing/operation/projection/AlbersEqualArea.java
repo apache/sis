@@ -82,12 +82,13 @@ public class AlbersEqualArea extends EqualAreaProjection {
     final double C;
 
     /**
-     * Size of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
-     * We need to ensure that θ values are inside that range before to use it in trigonometric functions.
+     * A bound of the [−n⋅π … n⋅π] range, which is the valid range of  θ = n⋅λ  values.
+     * Some (not all) θ values need to be shifted inside that range before to use them
+     * in trigonometric functions.
      *
-     * @see Initializer#spanOfScaledLongitude(DoubleDouble)
+     * @see Initializer#boundOfScaledLongitude(DoubleDouble)
      */
-    final double θ_span;
+    final double θ_bound;
 
     /**
      * Creates an Albers Equal Area projection from the given parameters.
@@ -172,7 +173,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
         denormalize.convertBefore(0, rn, null); rn.negate();
         denormalize.convertBefore(1, rn, ρ0);   rn.inverseDivide(-1);
         normalize.convertAfter(0, rn, null);    // On this line, `rn` became `n`.
-        θ_span = Initializer.spanOfScaledLongitude(rn);
+        θ_bound = initializer.boundOfScaledLongitude(rn);
     }
 
     /**
@@ -180,9 +181,9 @@ public class AlbersEqualArea extends EqualAreaProjection {
      */
     AlbersEqualArea(final AlbersEqualArea other) {
         super(other);
-        nm     = other.nm;
-        C      = other.C;
-        θ_span = other.θ_span;
+        nm      = other.nm;
+        C       = other.C;
+        θ_bound = other.θ_bound;
     }
 
     /**
@@ -238,7 +239,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
                             final boolean derivate) throws ProjectionException
     {
         // θ = n⋅λ  reduced to  [−n⋅π … n⋅π]  range.
-        final double θ = IEEEremainder(srcPts[srcOff], θ_span);
+        final double θ = wraparoundScaledLongitude(srcPts[srcOff], θ_bound);
         final double φ = srcPts[srcOff + 1];
         final double cosθ = cos(θ);
         final double sinθ = sin(θ);
@@ -327,7 +328,7 @@ public class AlbersEqualArea extends EqualAreaProjection {
                                 final boolean derivate)
         {
             // θ = n⋅λ  reduced to  [−n⋅π … n⋅π]  range.
-            final double θ = IEEEremainder(srcPts[srcOff], θ_span);
+            final double θ = wraparoundScaledLongitude(srcPts[srcOff], θ_bound);
             final double φ = srcPts[srcOff + 1];
             final double cosθ = cos(θ);
             final double sinθ = sin(θ);

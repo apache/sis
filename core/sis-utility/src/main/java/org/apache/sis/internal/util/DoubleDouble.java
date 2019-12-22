@@ -309,12 +309,12 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Returns a new {@code DoubleDouble} instance initialized to the 2π value.
+     * Returns a new {@code DoubleDouble} instance initialized to the π value.
      *
-     * @return an instance initialized to the 6.28318530717958647692528676655901 value.
+     * @return an instance initialized to the 3.14159265358979323846264338327950 value.
      */
-    public static DoubleDouble createTwicePi() {
-        return new DoubleDouble(6.28318530717958647692528676655901, 2.4492935982947064E-16);
+    public static DoubleDouble createPi() {
+        return new DoubleDouble(3.14159265358979323846264338327950, 1.2246467991473532E-16);
     }
 
     /**

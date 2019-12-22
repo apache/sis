@@ -126,7 +126,7 @@ import static java.lang.Math.*;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.8
+ * @version 1.1
  *
  * @see ContextualParameters
  * @see <a href="http://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
@@ -644,6 +644,40 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     double[] getInternalParameterValues() {
         return null;
+    }
+
+    /**
+     * If the given scaled longitude θ=n⋅λ is outside the [−n⋅π … n⋅π] range, maybe shifts θ to that range.
+     * This method intentionally does <strong>not</strong> force θ to be inside that range in all cases.
+     * We avoid explicit wraparounds as much as possible (as opposed to implicit wraparounds performed by
+     * trigonometric functions) because they tend to introduce discontinuities. We perform wraparounds only
+     * when necessary for the problem of area spanning the anti-meridian (±180°).
+     *
+     * <div class="note"><b>Example:</b>
+     * a CRS for Alaska may have the central meridian at λ₀=−154° of longitude. If the point to project is
+     * at λ=177° of longitude, calculations will be performed with Δλ=331° while the correct value that we
+     * need to use is Δλ=−29°.</div>
+     *
+     * In order to avoid wraparound operations as much as possible, we test only the bound where anti-meridian
+     * problem may happen; no wraparound will be applied for the opposite bound. Furthermore we add or subtract
+     * 360° only once. Even if the point did many turns around the Earth, the 360° shift will still be applied
+     * at most once. The desire to apply the minimal amount of shifts is the reason why we do not use
+     * {@link Math#IEEEremainder(double, double)}.
+     *
+     * @param  θ        the scaled longitude value θ=n⋅λ where <var>n</var> is a projection-dependent factor.
+     * @param  θ_bound  minimal (if negative) or maximal (if positive) value of θ before to apply the shift.
+     *                  This is computed by <code>{@linkplain Initializer#boundOfScaledLongitude(double)
+     *                  Initializer.boundOfScaledLongitude}(n)</code>
+     * @return θ or shifted θ.
+     *
+     * @see Initializer#boundOfScaledLongitude(double)
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-486">SIS-486</a>
+     */
+    static double wraparoundScaledLongitude(double θ, final double θ_bound) {
+        if (θ_bound < 0 ? θ < θ_bound : θ > θ_bound) {
+            θ -= 2*θ_bound;
+        }
+        return θ;
     }
 
     /**
