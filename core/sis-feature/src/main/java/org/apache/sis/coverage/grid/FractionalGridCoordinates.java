@@ -441,6 +441,45 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
     }
 
     /**
+     * Creates an error message for a grid coordinates out of bounds.
+     * This method tries to detect the dimension of the out-of-bounds
+     * coordinate by searching for the dimension with largest error.
+     *
+     * @param  bounds  the expected bounds, or {@code null} if unknown.
+     * @return message to provide to {@link PointOutsideCoverageException},
+     *         or {@code null} if the given bounds were null.
+     */
+    final String pointOutsideCoverage(final GridExtent bounds) {
+        if (bounds == null) {
+            return null;
+        }
+        int    axis     = 0;
+        long   validMin = 0;
+        long   validMax = 0;
+        double distance = 0;
+        for (int i=bounds.getDimension(); --i >= 0;) {
+            final long low  = bounds.getLow(i);
+            final long high = bounds.getHigh(i);
+            final double c  = coordinates[i];
+            double d = low - c;
+            if (!(d > distance)) {              // Use '!' for entering in this block if `d` is NaN.
+                d = c - high;
+                if (!(d > distance)) {          // Use '!' for skipping this coordinate if `d` is NaN.
+                    continue;
+                }
+            }
+            axis     = i;
+            validMin = low;
+            validMax = high;
+            distance = d;
+        }
+        final StringBuilder b = new StringBuilder();
+        writeCoordinates(b);
+        return Resources.format(Resources.Keys.GridCoordinateOutsideCoverage_4,
+                bounds.getAxisIdentification(axis, axis), validMin, validMax, b.toString());
+    }
+
+    /**
      * Returns a string representation of this grid coordinates for debugging purpose.
      */
     @Override

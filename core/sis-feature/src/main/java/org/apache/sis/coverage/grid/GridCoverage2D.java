@@ -31,8 +31,6 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.coverage.PointOutsideCoverageException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.ImageUtilities;
 import org.apache.sis.internal.coverage.ConvertedGridCoverage;
@@ -43,6 +41,10 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Workaround;
+
+// Branch-specific imports
+import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.coverage.PointOutsideCoverageException;
 
 
 /**
@@ -107,8 +109,8 @@ public class GridCoverage2D extends GridCoverage {
 
     /**
      * The two-dimensional components of the coordinate reference system and "grid to CRS" transform.
-     * This is derived from {@link #getGridGeometry()} when first needed, retaining only the components
-     * at dimension indices {@link #xDimension} and {@link #yDimension}.
+     * This is derived from {@link #gridGeometry} when first needed, retaining only the components at
+     * dimension indices {@link #xDimension} and {@link #yDimension}.
      *
      * @see #getGridGeometry2D()
      */
@@ -362,7 +364,7 @@ public class GridCoverage2D extends GridCoverage {
      */
     public synchronized GridGeometry getGridGeometry2D() {
         if (gridGeometry2D == null) {
-            gridGeometry2D = getGridGeometry().reduce(xDimension, yDimension);
+            gridGeometry2D = gridGeometry.reduce(xDimension, yDimension);
         }
         return gridGeometry2D;
     }
@@ -416,6 +418,40 @@ public class GridCoverage2D extends GridCoverage {
     }
 
     /**
+     * Returns a sequence of double values for a given point in the coverage.
+     * The CRS of the given point may be any coordinate reference system,
+     * or {@code null} for the same CRS than this coverage.
+     * The returned sequence contains a value for each {@linkplain SampleDimension sample dimension}.
+     *
+     * @param  point   the coordinate point where to evaluate.
+     * @param  buffer  an array in which to store values, or {@code null} to create a new array.
+     * @return the {@code buffer} array, or a newly created array if {@code buffer} was null.
+     * @throws PointOutsideCoverageException if the evaluation failed because the input point
+     *         has invalid coordinates.
+     * @throws CannotEvaluateException if the values can not be computed at the specified coordinate
+     *         for another reason.
+     */
+    @Override
+    public double[] evaluate(final DirectPosition point, final double[] buffer) throws CannotEvaluateException {
+        try {
+            final FractionalGridCoordinates gc = toGridCoordinates(point);
+            try {
+                final int x = Math.toIntExact(Math.addExact(gc.getCoordinateValue(xDimension), gridToImageX));
+                final int y = Math.toIntExact(Math.addExact(gc.getCoordinateValue(yDimension), gridToImageY));
+                return evaluate(data, x, y, buffer);
+            } catch (ArithmeticException | IndexOutOfBoundsException | DisjointExtentException ex) {
+                throw (PointOutsideCoverageException) new PointOutsideCoverageException(
+                        gc.pointOutsideCoverage(gridGeometry.extent), point).initCause(ex);
+            }
+        } catch (PointOutsideCoverageException ex) {
+            ex.setOffendingLocation(point);
+            throw ex;
+        } catch (RuntimeException | TransformException ex) {
+            throw new CannotEvaluateException(ex.getMessage(), ex);
+        }
+    }
+
+    /**
      * Returns a grid data region as a rendered image. The {@code sliceExtent} argument
      * specifies the area of interest and may be {@code null} for requesting the whole image.
      * The coordinates given by {@link RenderedImage#getMinX()} and {@link RenderedImage#getMinY() getMinY()}
@@ -438,7 +474,7 @@ public class GridCoverage2D extends GridCoverage {
         if (sliceExtent == null) {
             return data;
         }
-        final GridExtent extent = getGridGeometry().extent;
+        final GridExtent extent = gridGeometry.extent;
         if (extent != null) {
             for (int i = Math.min(sliceExtent.getDimension(), extent.getDimension()); --i >= 0;) {
                 if (i != xDimension && i != yDimension) {
@@ -476,42 +512,5 @@ public class GridCoverage2D extends GridCoverage {
         } catch (ArithmeticException e) {
             throw new CannotEvaluateException(e.getMessage(), e);
         }
-    }
-
-    /**
-     * Returns a sequence of double values for a given point in the coverage.
-     * The CRS of the given point may be any coordinate reference system,
-     * or {@code null} for the same CRS than this coverage.
-     * The returned sequence contains a value for each {@linkplain SampleDimension sample dimension}.
-     *
-     * @param  point   the coordinate point where to evaluate.
-     * @param  buffer  an array in which to store values, or {@code null} to create a new array.
-     * @return the {@code buffer} array, or a newly created array if {@code buffer} was null.
-     * @throws PointOutsideCoverageException if the evaluation failed because the input point
-     *         has invalid coordinates.
-     * @throws CannotEvaluateException if the values can not be computed at the specified coordinate
-     *         for an other reason.
-     */
-    @Override
-    public double[] evaluate(final DirectPosition point, double[] buffer) throws CannotEvaluateException {
-        try {
-            final FractionalGridCoordinates gc = toGridCoordinates(point);
-            final int x = Math.toIntExact(gc.getCoordinateValue(xDimension));
-            final int y = Math.toIntExact(gc.getCoordinateValue(yDimension));
-            final int xmin = data.getMinX();
-            final int ymin = data.getMinY();
-            if (x >= xmin && x < xmin + (long) data.getWidth() &&
-                y >= ymin && y < ymin + (long) data.getHeight())
-            {
-                final int tx = Math.floorDiv(x - data.getTileGridXOffset(), data.getTileWidth());
-                final int ty = Math.floorDiv(y - data.getTileGridYOffset(), data.getTileHeight());
-                return data.getTile(tx, ty).getPixel(x, y, buffer);
-            }
-        } catch (ArithmeticException | DisjointExtentException ex) {
-            throw (PointOutsideCoverageException) new PointOutsideCoverageException(ex.getMessage(), point).initCause(ex);
-        } catch (IllegalArgumentException | TransformException ex) {
-            throw new CannotEvaluateException(ex.getMessage(), ex);
-        }
-        throw new PointOutsideCoverageException(null, point);
     }
 }

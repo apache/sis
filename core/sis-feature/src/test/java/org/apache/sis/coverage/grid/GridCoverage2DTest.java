@@ -16,7 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.awt.Point;
+import java.util.Collections;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
@@ -25,9 +25,7 @@ import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import java.util.Arrays;
-import java.util.Hashtable;
-import org.opengis.util.FactoryException;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.datum.PixelInCell;
@@ -39,8 +37,9 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.test.TestCase;
-import org.junit.Assert;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 
 /**
@@ -51,40 +50,52 @@ import org.junit.Test;
  * @since   1.1
  * @module
  */
-public class GridCoverage2DTest extends TestCase {
+public final strictfp class GridCoverage2DTest extends TestCase {
     /**
-     * Tests with a two-dimensional coverage.
+     * Creates a {@link GridCoverage2D} instance with arbitrary sample values.
+     * The image size is 2×2 pixels, the "grid to CRS" transform is identity,
+     * the range of sample values is [-97.5 … 105] metres and the packed values are:
+     *
+     * {@preformat text
+     *    2    5
+     *   -5  -10
+     * }
      */
-    @Test
-    public void testCoverage2D() throws FactoryException {
-        /*
-         * Create coverage of 2×2 pixels with an identity "grid to CRS" transform.
-         * The range of sample values will be [-10 … +10]°C.
-         */
-        final GridGeometry grid = new GridGeometry(new GridExtent(2, 2),
+    private static GridCoverage2D createTestCoverage() {
+        final int size = 2;
+        final GridGeometry grid = new GridGeometry(new GridExtent(size, size),
                 PixelInCell.CELL_CENTER, MathTransforms.identity(2), HardCodedCRS.WGS84);
 
         final MathTransform1D toUnits = (MathTransform1D) MathTransforms.linear(0.5, 100);
-        final SampleDimension sd = new SampleDimension.Builder().setName("t")
-                .addQuantitative("data", NumberRange.create(-10, true, 10, true), toUnits, Units.CELSIUS)
+        final SampleDimension sd = new SampleDimension.Builder().setName("Some kind of height")
+                .addQuantitative("data", NumberRange.create(-10, true, 10, true), toUnits, Units.METRE)
                 .build();
         /*
-         * Create the grid coverage, make an image and set values directly as integers.
+         * Create an image and set values directly as integers. We do not use one of the
+         * BufferedImage.TYPE_* constant because this test uses some negative values.
          */
-        WritableRaster raster = WritableRaster.createBandedRaster(DataBuffer.TYPE_INT, 2, 2, 1, new Point(0,0));
-        final ColorSpace colors = ColorModelFactory.createColorSpace(1, 0, -10, 10);
-        final ColorModel cm = new ComponentColorModel(colors, false, false, Transparency.OPAQUE, DataBuffer.TYPE_INT);
-        BufferedImage image = new BufferedImage(cm, raster, false, new Hashtable<>());
-        GridCoverage coverage = new GridCoverage2D(grid, Arrays.asList(sd), image);
-        raster.setSample(0, 0, 0,   0);
+        final WritableRaster raster = WritableRaster.createBandedRaster(DataBuffer.TYPE_INT, size, size, 1, null);
+        raster.setSample(0, 0, 0,   2);
         raster.setSample(1, 0, 0,   5);
         raster.setSample(0, 1, 0,  -5);
         raster.setSample(1, 1, 0, -10);
+        final ColorSpace    colors = ColorModelFactory.createColorSpace(1, 0, -10, 10);
+        final ColorModel    cm     = new ComponentColorModel(colors, false, false, Transparency.OPAQUE, DataBuffer.TYPE_INT);
+        final BufferedImage image  = new BufferedImage(cm, raster, false, null);
+        return new GridCoverage2D(grid, Collections.singleton(sd), image);
+    }
+
+    /**
+     * Tests {@link GridCoverage2D#forConvertedValues(boolean)}.
+     */
+    @Test
+    public void testForConvertedValues() {
+        GridCoverage coverage = createTestCoverage();
         /*
          * Verify packed values.
          */
         assertSamplesEqual(coverage, new double[][] {
-            { 0,   5},
+            { 2,   5},
             {-5, -10}
         });
         /*
@@ -92,16 +103,16 @@ public class GridCoverage2DTest extends TestCase {
          */
         coverage = coverage.forConvertedValues(true);
         assertSamplesEqual(coverage, new double[][] {
-            {100.0, 102.5},
+            {101.0, 102.5},
             { 97.5,  95.0}
         });
         /*
          * Test writing converted values and verify the result in the packed coverage.
-         * For example for the sample value at (0,0), we have (x is the packed value):
+         * For example for the sample value at (0,0), we have (p is the packed value):
          *
-         *   70 = x * 0.5 + 100   →   (70-100)/0.5 = x   →   x = -60
+         *   70 = p * 0.5 + 100   →   (70-100)/0.5 = p   →   p = -60
          */
-        raster = ((BufferedImage) coverage.render(null)).getRaster();
+        final WritableRaster raster = ((BufferedImage) coverage.render(null)).getRaster();
         raster.setSample(0, 0, 0,  70);
         raster.setSample(1, 0, 0,   2.5);
         raster.setSample(0, 1, 0,  -8);
@@ -110,40 +121,56 @@ public class GridCoverage2DTest extends TestCase {
             { -60, -195},
             {-216, -380}
         });
+    }
+
+    /**
+     * Tests {@link GridCoverage2D#evaluate(DirectPosition, double[])}.
+     */
+    @Test
+    public void testEvaluate() {
+        final GridCoverage coverage = createTestCoverage();
         /*
-         * Test evaluation
+         * Test evaluation at indeger indices. No interpolation should be applied.
          */
-        Assert.assertArrayEquals(new double[]{ 70.0}, coverage.evaluate(new DirectPosition2D(0, 0), null), STRICT);
-        Assert.assertArrayEquals(new double[]{  2.5}, coverage.evaluate(new DirectPosition2D(1, 0), null), STRICT);
-        Assert.assertArrayEquals(new double[]{- 8.0}, coverage.evaluate(new DirectPosition2D(0, 1), null), STRICT);
-        Assert.assertArrayEquals(new double[]{-90.0}, coverage.evaluate(new DirectPosition2D(1, 1), null), STRICT);
-        //test nearest neighor rounding
-        Assert.assertArrayEquals(new double[]{70.0}, coverage.evaluate(new DirectPosition2D(-0.499, -0.499), null), STRICT);
-        Assert.assertArrayEquals(new double[]{70.0}, coverage.evaluate(new DirectPosition2D( 0.499,  0.499), null), STRICT);
-        //test out of coverage
+        assertArrayEquals(new double[] {  2}, coverage.evaluate(new DirectPosition2D(0, 0), null), STRICT);
+        assertArrayEquals(new double[] {  5}, coverage.evaluate(new DirectPosition2D(1, 0), null), STRICT);
+        assertArrayEquals(new double[] { -5}, coverage.evaluate(new DirectPosition2D(0, 1), null), STRICT);
+        assertArrayEquals(new double[] {-10}, coverage.evaluate(new DirectPosition2D(1, 1), null), STRICT);
+        /*
+         * Test evaluation at fractional indices. Current interpolation is nearest neighor rounding,
+         * but future version may do a bilinear interpolation.
+         */
+        assertArrayEquals(new double[] {2}, coverage.evaluate(new DirectPosition2D(-0.499, -0.499), null), STRICT);
+        assertArrayEquals(new double[] {2}, coverage.evaluate(new DirectPosition2D( 0.499,  0.499), null), STRICT);
+        /*
+         * Test some points that are outside the coverage extent.
+         */
         try {
             coverage.evaluate(new DirectPosition2D(-0.51, 0), null);
-            Assert.fail("Point ouside coverage evalue must fail");
+            fail("Expected PointOutsideCoverageException.");
         } catch (PointOutsideCoverageException ex) {
-            //ok
+            assertNotNull(ex.getMessage());
         }
         try {
             coverage.evaluate(new DirectPosition2D(1.51, 0), null);
-            Assert.fail("Point ouside coverage evalue must fail");
+            fail("Expected PointOutsideCoverageException.");
         } catch (PointOutsideCoverageException ex) {
-            //ok
+            assertNotNull(ex.getMessage());
         }
     }
 
     /**
-     * assert that the sample values in the given coverage are equal to the expected values.
+     * Asserts that the sample values in the given coverage are equal to the expected values.
+     *
+     * @param  coverage  the coverage containing the sample values to check.
+     * @param  expected  the expected sample values.
      */
     private static void assertSamplesEqual(final GridCoverage coverage, final double[][] expected) {
         final Raster raster = coverage.render(null).getData();
         for (int y=0; y<expected.length; y++) {
             for (int x=0; x<expected[y].length; x++) {
                 double value = raster.getSampleDouble(x, y, 0);
-                Assert.assertEquals(expected[y][x], value, STRICT);
+                assertEquals(expected[y][x], value, STRICT);
             }
         }
     }

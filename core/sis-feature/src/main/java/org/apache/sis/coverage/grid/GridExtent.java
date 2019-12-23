@@ -1182,7 +1182,8 @@ public class GridExtent implements GridEnvelope, Serializable {
                         if (Double.isNaN(p)) b.append("NaN");
                         else b.append(Math.round(p));
                     }
-                    throw new PointOutsideCoverageException(Resources.format(Resources.Keys.GridCoordinateOutsideCoverage_4,
+                    throw new PointOutsideCoverageException(Resources.format(
+                            Resources.Keys.GridCoordinateOutsideCoverage_4,
                             getAxisIdentification(i,k), low, high, b.toString()));
                 }
             }

@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.Objects;
 import java.awt.image.RenderedImage;
-import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
@@ -30,7 +29,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
-import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -41,6 +39,7 @@ import org.apache.sis.util.Debug;
 
 // Branch-specific imports
 import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.coverage.PointOutsideCoverageException;
 
 
 /**
@@ -61,7 +60,7 @@ public abstract class GridCoverage {
      *
      * @see #getGridGeometry()
      */
-    private final GridGeometry gridGeometry;
+    final GridGeometry gridGeometry;
 
     /**
      * List of sample dimension (band) information for the grid coverage. Information include such things
@@ -186,13 +185,13 @@ public abstract class GridCoverage {
      * @throws PointOutsideCoverageException if the evaluation failed because the input point
      *         has invalid coordinates.
      * @throws CannotEvaluateException if the values can not be computed at the specified coordinate
-     *         for an other reason. It may be thrown if the coverage data type can not be converted
+     *         for another reason. It may be thrown if the coverage data type can not be converted
      *         to {@code double} by an identity or widening conversion. Subclasses may relax this
      *         constraint if appropriate.
      *
      * @since 1.1
      */
-    public double[] evaluate(final DirectPosition point, double[] buffer) throws CannotEvaluateException {
+    public double[] evaluate(final DirectPosition point, final double[] buffer) throws CannotEvaluateException {
         /*
          * TODO: instead of restricting to a single point, keep the automatic size (1 or 2),
          * invoke render for each plan, then interpolate. We would keep a value of 1 in the
@@ -201,16 +200,39 @@ public abstract class GridCoverage {
         final long[] size = new long[gridGeometry.getDimension()];
         java.util.Arrays.fill(size, 1);
         try {
-            final GridExtent subExtent = toGridCoordinates(point).toExtent(gridGeometry.extent, size);
-            final RenderedImage image = render(subExtent);
-            final PixelIterator ite = PixelIterator.create(image);  // TODO: avoid costly creation of PixelIterator here.
-            ite.moveTo(0, 0);
-            return ite.getPixel(buffer);
-        } catch (ArithmeticException | DisjointExtentException ex) {
-            throw (PointOutsideCoverageException) new PointOutsideCoverageException(ex.getMessage(), point).initCause(ex);
-        } catch (IllegalArgumentException | TransformException ex) {
+            final FractionalGridCoordinates gc = toGridCoordinates(point);
+            try {
+                final GridExtent subExtent = gc.toExtent(gridGeometry.extent, size);
+                return evaluate(render(subExtent), 0, 0, buffer);
+            } catch (ArithmeticException | IndexOutOfBoundsException | DisjointExtentException ex) {
+                throw (PointOutsideCoverageException) new PointOutsideCoverageException(
+                        gc.pointOutsideCoverage(gridGeometry.extent), point).initCause(ex);
+            }
+        } catch (PointOutsideCoverageException ex) {
+            ex.setOffendingLocation(point);
+            throw ex;
+        } catch (RuntimeException | TransformException ex) {
             throw new CannotEvaluateException(ex.getMessage(), ex);
         }
+    }
+
+    /**
+     * Gets sample values from the given image at the given index. This method does not verify
+     * explicitly if the coordinates are out of bounds; we rely on the checks performed by the
+     * image and sample model implementations.
+     *
+     * @param  data    the data from which to get the sample values.
+     * @param  x       column index of the value to get.
+     * @param  y       row index of the value to get.
+     * @param  buffer  an array in which to store values, or {@code null} to create a new array.
+     * @return the {@code buffer} array, or a newly created array if {@code buffer} was null.
+     * @throws ArithmeticException if an integer overflow occurred while computing indices.
+     * @throws IndexOutOfBoundsException if a coordinate is out of bounds.
+     */
+    static double[] evaluate(final RenderedImage data, final int x, final int y, final double[] buffer) {
+        final int tx = Math.floorDiv(Math.subtractExact(x, data.getTileGridXOffset()), data.getTileWidth());
+        final int ty = Math.floorDiv(Math.subtractExact(y, data.getTileGridYOffset()), data.getTileHeight());
+        return data.getTile(tx, ty).getPixel(x, y, buffer);
     }
 
     /**
