@@ -43,7 +43,7 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -358,10 +358,10 @@ public final class ColorModelFactory {
      * <p>This methods caches previously created instances using weak references,
      * because index color model may be big (up to 256 kb).</p>
      *
-     * @param  ARGB        An array of ARGB values.
-     * @param  numBands    The number of bands.
-     * @param  visibleBand The band to display.
-     * @param  transparent The transparent pixel, or -1 for auto-detection.
+     * @param  ARGB         an array of ARGB values.
+     * @param  numBands     the number of bands.
+     * @param  visibleBand  the band to display.
+     * @param  transparent  the transparent pixel, or -1 for auto-detection.
      * @return An index color model for the specified array.
      */
     public static IndexColorModel createIndexColorModel(final int[] ARGB, final int numBands, final int visibleBand, int transparent) {
@@ -380,6 +380,29 @@ public final class ColorModelFactory {
                                                type, numBands, visibleBand);
         }
         return unique(cm);
+    }
+
+    /**
+     * Creates a color model for opaque images storing pixels as real numbers.
+     * The color model can have an arbitrary number of bands, but in current implementation only one band is used.
+     *
+     * <p><b>Warning:</b> the use of this color model is very slow.
+     * It should be used only when no standard color model can be used.</p>
+     *
+     * @param  dataType       the color model type as one of {@code DataBuffer.TYPE_*} constants.
+     * @param  numComponents  the number of components.
+     * @param  visibleBand    the band to use for computing colors.
+     * @param  minimum        the minimal sample value expected.
+     * @param  maximum        the maximal sample value expected.
+     * @return the color space for the given range of values.
+     *
+     * @see ImageUtilities#createGrayScale(int, int, int, int, int, double, double)
+     */
+    public static ColorModel createGrayScale(final int dataType, final int numComponents,
+            final int visibleBand, final double minimum, final double maximum)
+    {
+        final ColorSpace cs = createColorSpace(numComponents, visibleBand, minimum, maximum);
+        return new ComponentColorModel(cs, false, false, Transparency.OPAQUE, dataType);
     }
 
     /**

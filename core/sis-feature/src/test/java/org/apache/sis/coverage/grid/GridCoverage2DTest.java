@@ -17,11 +17,7 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Collections;
-import java.awt.Transparency;
-import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
@@ -31,7 +27,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -74,14 +70,12 @@ public final strictfp class GridCoverage2DTest extends TestCase {
          * Create an image and set values directly as integers. We do not use one of the
          * BufferedImage.TYPE_* constant because this test uses some negative values.
          */
-        final WritableRaster raster = WritableRaster.createBandedRaster(DataBuffer.TYPE_INT, size, size, 1, null);
+        final BufferedImage  image  = ImageUtilities.createGrayScale(DataBuffer.TYPE_INT, size, size, 1, 0, -10, 10);
+        final WritableRaster raster = image.getRaster();
         raster.setSample(0, 0, 0,   2);
         raster.setSample(1, 0, 0,   5);
         raster.setSample(0, 1, 0,  -5);
         raster.setSample(1, 1, 0, -10);
-        final ColorSpace    colors = ColorModelFactory.createColorSpace(1, 0, -10, 10);
-        final ColorModel    cm     = new ComponentColorModel(colors, false, false, Transparency.OPAQUE, DataBuffer.TYPE_INT);
-        final BufferedImage image  = new BufferedImage(cm, raster, false, null);
         return new GridCoverage2D(grid, Collections.singleton(sd), image);
     }
 
