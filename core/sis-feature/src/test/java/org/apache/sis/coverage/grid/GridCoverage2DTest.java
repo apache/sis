@@ -31,7 +31,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.internal.coverage.ColorModelFactory;
+import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.crs.HardCodedCRS;

@@ -16,7 +16,10 @@
  */
 
 /**
- * A set of helper classes for the SIS implementation.
+ * A set of helper classes for the SIS implementation backed by Java2D.
+ * This package centralizes all {@link java.awt.image} dependencies used
+ * by {@link org.apache.sis.coverage} packages, except the dependencies
+ * in public API (e.g. {@link org.apache.sis.coverage.grid.GridCoverage2D}).
  *
  * <p><strong>Do not use!</strong></p>
  *
@@ -28,4 +31,4 @@
  * @since   1.0
  * @module
  */
-package org.apache.sis.internal.coverage;
+package org.apache.sis.internal.coverage.j2d;

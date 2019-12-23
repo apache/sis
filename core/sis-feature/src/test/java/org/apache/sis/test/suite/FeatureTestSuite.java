@@ -86,10 +86,10 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.grid.GridDerivationTest.class,
     org.apache.sis.coverage.grid.FractionalGridCoordinates.class,
     org.apache.sis.coverage.grid.GridCoverage2DTest.class,
-    org.apache.sis.internal.coverage.ImageUtilitiesTest.class,
-    org.apache.sis.internal.coverage.ScaledColorSpaceTest.class,
-    org.apache.sis.internal.coverage.BufferedGridCoverageTest.class,
-    org.apache.sis.internal.image.TranslatedRenderedImageTest.class
+    org.apache.sis.internal.coverage.j2d.ImageUtilitiesTest.class,
+    org.apache.sis.internal.coverage.j2d.ScaledColorSpaceTest.class,
+    org.apache.sis.internal.coverage.j2d.BufferedGridCoverageTest.class,
+    org.apache.sis.internal.coverage.j2d.TranslatedRenderedImageTest.class
 })
 public final strictfp class FeatureTestSuite extends TestSuite {
     /**

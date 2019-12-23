@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage;
+package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Map;
 import java.util.Arrays;

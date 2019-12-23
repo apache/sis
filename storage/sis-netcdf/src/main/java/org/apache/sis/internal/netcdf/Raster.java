@@ -25,7 +25,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.ImageRenderer;
-import org.apache.sis.internal.coverage.BufferedGridCoverage;
+import org.apache.sis.internal.coverage.j2d.BufferedGridCoverage;
 
 
 /**

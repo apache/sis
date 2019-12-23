@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage;
+package org.apache.sis.internal.coverage.j2d;
 
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -395,7 +395,7 @@ public final class ConvertedGridCoverage extends GridCoverage {
      * of {@link SampleConverter}. This class may be replaced by another mechanism (creating new tiles) in
      * a future SIS version.</p>
      *
-     * @see org.apache.sis.internal.coverage.ScaledColorSpace
+     * @see ScaledColorSpace
      */
     private static final class ScaledColorModel extends ColorModel {
 
