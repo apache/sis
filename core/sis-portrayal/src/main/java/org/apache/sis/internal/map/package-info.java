@@ -18,7 +18,7 @@
 
 /**
  * Symbology and map representations, together with a rendering engine for display.
- * The {@linkplain org.apache.sis.internal.map.MapContext map context} is the root node of a map.
+ * The {@linkplain org.apache.sis.internal.map.MapItem map item} is the root node of a map.
  *
  * <p><b>WARNING:</b> this package is work in progress and is not yet part of public API.
  * Some classes in this package will move to public API after we gained enough confidence

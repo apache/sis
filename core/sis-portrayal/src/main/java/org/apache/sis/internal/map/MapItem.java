@@ -93,7 +93,7 @@ public abstract class MapItem {
 
     /**
      * Sets whether this item should be shown on the map.
-     * If this item is a {@link MapGroup}, then hiding this group should hide all components in this group.
+     * If this item is a {@code MapGroup}, then hiding this group should hide all components in this group.
      *
      * @param visible {@code false} to hide this item and all it's components.
      */
