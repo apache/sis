@@ -88,6 +88,7 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.grid.GridCoverage2DTest.class,
     org.apache.sis.internal.coverage.j2d.ImageUtilitiesTest.class,
     org.apache.sis.internal.coverage.j2d.ScaledColorSpaceTest.class,
+    org.apache.sis.internal.coverage.j2d.AbstractRenderedImageTest.class,
     org.apache.sis.internal.coverage.j2d.BufferedGridCoverageTest.class,
     org.apache.sis.internal.coverage.j2d.TranslatedRenderedImageTest.class
 })

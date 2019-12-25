@@ -17,7 +17,6 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.awt.color.ColorSpace;
-import org.apache.sis.internal.util.Strings;
 
 
 /**
@@ -29,7 +28,7 @@ import org.apache.sis.internal.util.Strings;
  * It should be used only when no standard color space can be used.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -166,6 +165,17 @@ final class ScaledColorSpace extends ColorSpace {
      */
     @Override
     public String toString() {
-        return Strings.range(getClass(), getMinValue(visibleBand), getMaxValue(visibleBand));
+        final StringBuilder buffer = new StringBuilder(20).append(getClass().getSimpleName());
+        formatRange(buffer);
+        return buffer.toString();
+    }
+
+    /**
+     * Formats the range of values in the given buffer.
+     */
+    final void formatRange(final StringBuilder buffer) {
+        buffer.append('[').append(getMinValue(visibleBand))
+            .append(" … ").append(getMaxValue(visibleBand))
+            .append(" in band ").append(visibleBand).append(']');
     }
 }

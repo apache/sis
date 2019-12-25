@@ -230,8 +230,8 @@ public abstract class GridCoverage {
      * @throws IndexOutOfBoundsException if a coordinate is out of bounds.
      */
     static double[] evaluate(final RenderedImage data, final int x, final int y, final double[] buffer) {
-        final int tx = Math.floorDiv(Math.subtractExact(x, data.getTileGridXOffset()), data.getTileWidth());
-        final int ty = Math.floorDiv(Math.subtractExact(y, data.getTileGridYOffset()), data.getTileHeight());
+        final int tx = Math.toIntExact(Math.floorDiv(x - (long) data.getTileGridXOffset(), data.getTileWidth()));
+        final int ty = Math.toIntExact(Math.floorDiv(y - (long) data.getTileGridYOffset(), data.getTileHeight()));
         return data.getTile(tx, ty).getPixel(x, y, buffer);
     }
 

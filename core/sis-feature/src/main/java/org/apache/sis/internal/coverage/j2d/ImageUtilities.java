@@ -98,6 +98,29 @@ public final class ImageUtilities {
     }
 
     /**
+     * Names of {@link DataBuffer} types.
+     */
+    private static final String[] TYPE_NAMES = new String[DataBuffer.TYPE_DOUBLE + 1];
+    static {
+        TYPE_NAMES[DataBuffer.TYPE_BYTE]   = "byte";
+        TYPE_NAMES[DataBuffer.TYPE_SHORT]  = "short";
+        TYPE_NAMES[DataBuffer.TYPE_USHORT] = "ushort";
+        TYPE_NAMES[DataBuffer.TYPE_INT]    = "int";
+        TYPE_NAMES[DataBuffer.TYPE_FLOAT]  = "float";
+        TYPE_NAMES[DataBuffer.TYPE_DOUBLE] = "double";
+    }
+
+    /**
+     * Returns the name of a {@link DataBuffer} type.
+     *
+     * @param  type  one of {@link DataBuffer} constants.
+     * @return name of the given constant, or {@code null} if unknown.
+     */
+    public static String dataTypeName(final int type) {
+        return (type >= 0 && type < TYPE_NAMES.length) ? TYPE_NAMES[type] : null;
+    }
+
+    /**
      * Returns names of bands based on inspection of the color model.
      * The bands are identified by {@link Vocabulary.Keys} values for
      * red, green, blue, cyan, magenta, yellow, black, gray, <i>etc</i>.

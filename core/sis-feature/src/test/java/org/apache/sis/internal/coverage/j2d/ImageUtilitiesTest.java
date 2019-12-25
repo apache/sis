@@ -18,6 +18,7 @@ package org.apache.sis.internal.coverage.j2d;
 
 import java.awt.image.ColorModel;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.test.TestCase;
@@ -35,6 +36,19 @@ import static org.junit.Assert.*;
  * @module
  */
 public final strictfp class ImageUtilitiesTest extends TestCase {
+    /**
+     * Tests {@link ImageUtilities#dataTypeName(int)}.
+     */
+    @Test
+    public void testDataTypeName() {
+        assertEquals("byte",   ImageUtilities.dataTypeName(DataBuffer.TYPE_BYTE));
+        assertEquals("short",  ImageUtilities.dataTypeName(DataBuffer.TYPE_SHORT));
+        assertEquals("ushort", ImageUtilities.dataTypeName(DataBuffer.TYPE_USHORT));
+        assertEquals("int",    ImageUtilities.dataTypeName(DataBuffer.TYPE_INT));
+        assertEquals("float",  ImageUtilities.dataTypeName(DataBuffer.TYPE_FLOAT));
+        assertEquals("double", ImageUtilities.dataTypeName(DataBuffer.TYPE_DOUBLE));
+    }
+
     /**
      * Verifies that {@link ImageUtilities#bandNames(RenderedImage)} returns expected band names.
      *
