@@ -18,6 +18,7 @@ package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Random;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
@@ -127,22 +128,18 @@ public final strictfp class AbstractRenderedImageTest extends TestCase {
         }
 
         /*
-         * No source, no property, no color model since this test images is not for rendering on screen.
-         */
-        @Override public ColorModel  getColorModel()  {return null;}
-        @Override public SampleModel getSampleModel() {return tiles[0].getSampleModel();}
-
-        /*
          * Size and tiling information.
          */
-        @Override public int getMinX()            {return minX;}
-        @Override public int getMinY()            {return minY;}
-        @Override public int getWidth()           {return WIDTH;}
-        @Override public int getHeight()          {return HEIGHT;}
-        @Override public int getTileWidth()       {return TILE_WIDTH;}
-        @Override public int getTileHeight()      {return TILE_HEIGHT;}
-        @Override public int getMinTileX()        {return minTileX;}
-        @Override public int getMinTileY()        {return minTileY;}
+        @Override public int         getMinX()        {return minX;}
+        @Override public int         getMinY()        {return minY;}
+        @Override public int         getWidth()       {return WIDTH;}
+        @Override public int         getHeight()      {return HEIGHT;}
+        @Override public int         getTileWidth()   {return TILE_WIDTH;}
+        @Override public int         getTileHeight()  {return TILE_HEIGHT;}
+        @Override public int         getMinTileX()    {return minTileX;}
+        @Override public int         getMinTileY()    {return minTileY;}
+        @Override public ColorModel  getColorModel()  {return null;}
+        @Override public SampleModel getSampleModel() {return tiles[0].getSampleModel();}
 
         /**
          * Returns the tile at the given location in tile coordinates.
@@ -170,6 +167,24 @@ public final strictfp class AbstractRenderedImageTest extends TestCase {
             { 510,  511,  512  ,   610,  611,  612  ,   710,  711,  712  ,   810,  811,  812},
             { 900,  901,  902  ,  1000, 1001, 1002  ,  1100, 1101, 1102  ,  1200, 1201, 1202},
             { 910,  911,  912  ,  1010, 1011, 1012  ,  1110, 1111, 1112  ,  1210, 1211, 1212}
+        });
+    }
+
+    /**
+     * Tests {@link AbstractRenderedImage#getData(Rectangle)} on a tiled image.
+     */
+    @Test
+    public void testGetDataRegion() {
+        final AbstractRenderedImage image = new TiledImage(random);
+        final Rectangle region = ImageUtilities.getBounds(image);
+        region.x      += 4;     // Exclude 4 columns on left side.
+        region.width  -= 6;     // Exclude 2 columns on right side.
+        region.y      += 1;     // Exclude 1 row on top.
+        region.height -= 3;     // Exclude 2 rows on bottom.
+        assertValuesEqual(image.getData(region), 0, new int[][] {
+            { 211,  212  ,   310,  311,  312  ,   410},
+            { 601,  602  ,   700,  701,  702  ,   800},
+            { 611,  612  ,   710,  711,  712  ,   810}
         });
     }
 }

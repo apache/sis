@@ -262,7 +262,7 @@ public abstract class AbstractRenderedImage implements RenderedImage {
                 final Rectangle tb = aoi.intersection(tile.getBounds());        // Bounds of transfer buffer.
                 if (tb.isEmpty()) {
                     /*
-                     * Should never happen since we iterate only on the tiles
+                     * Should never happen since we iterate only over the tiles
                      * that intersect the given area of interest.
                      */
                     throw new RasterFormatException("Inconsistent tile matrix.");
