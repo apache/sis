@@ -179,7 +179,7 @@ public abstract class AbstractRenderedImage implements RenderedImage {
 
     /**
      * Returns a copy of this image as one large tile.
-     * The returned raster will not be updated if the image is changed.
+     * The returned raster will not be updated if this image is changed.
      *
      * @return a copy of this image as one large tile.
      */
@@ -193,7 +193,7 @@ public abstract class AbstractRenderedImage implements RenderedImage {
 
     /**
      * Returns a copy of an arbitrary region of this image.
-     * The returned raster will not be updated if the image is changed.
+     * The returned raster will not be updated if this image is changed.
      *
      * @param  aoi  the region of this image to copy.
      * @return a copy of this image in the given area of interest.

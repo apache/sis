@@ -18,21 +18,24 @@ package org.apache.sis.internal.coverage.j2d;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.test.TestCase;
-import org.junit.Assert;
 import org.junit.Test;
-import org.opengis.coverage.grid.SequenceType;
+
+import static org.junit.Assert.*;
+
 
 /**
- * Tests the {@link TranslatedRenderedImage} implementation.
+ * Tests the {@link RelocatedImage} implementation.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
-public class TranslatedRenderedImageTest extends TestCase {
+public final strictfp class RelocatedImageTest extends TestCase {
 
     @Test
     public void iteratorTest() {
@@ -42,23 +45,21 @@ public class TranslatedRenderedImageTest extends TestCase {
         image.getRaster().setSample(0, 1, 0, 3);
         image.getRaster().setSample(1, 1, 0, 4);
 
-        final TranslatedRenderedImage trs = new TranslatedRenderedImage(image, -10, -20);
+        final RenderedImage trs = RelocatedImage.moveTo(image, -10, -20);
 
         final PixelIterator ite = new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR).create(trs);
-        Assert.assertTrue(ite.next());
-        Assert.assertEquals(new Point(-10, -20), ite.getPosition());
-        Assert.assertEquals(1, ite.getSample(0));
-        Assert.assertTrue(ite.next());
-        Assert.assertEquals(new Point(-9, -20), ite.getPosition());
-        Assert.assertEquals(2, ite.getSample(0));
-        Assert.assertTrue(ite.next());
-        Assert.assertEquals(new Point(-10, -19), ite.getPosition());
-        Assert.assertEquals(3, ite.getSample(0));
-        Assert.assertTrue(ite.next());
-        Assert.assertEquals(new Point(-9, -19), ite.getPosition());
-        Assert.assertEquals(4, ite.getSample(0));
-        Assert.assertFalse(ite.next());
-
+        assertTrue(ite.next());
+        assertEquals(new Point(-10, -20), ite.getPosition());
+        assertEquals(1, ite.getSample(0));
+        assertTrue(ite.next());
+        assertEquals(new Point(-9, -20), ite.getPosition());
+        assertEquals(2, ite.getSample(0));
+        assertTrue(ite.next());
+        assertEquals(new Point(-10, -19), ite.getPosition());
+        assertEquals(3, ite.getSample(0));
+        assertTrue(ite.next());
+        assertEquals(new Point(-9, -19), ite.getPosition());
+        assertEquals(4, ite.getSample(0));
+        assertFalse(ite.next());
     }
-
 }

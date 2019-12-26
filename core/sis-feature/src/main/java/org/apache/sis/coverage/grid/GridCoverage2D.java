@@ -38,7 +38,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.ConvertedGridCoverage;
-import org.apache.sis.internal.coverage.j2d.TranslatedRenderedImage;
+import org.apache.sis.internal.coverage.j2d.RelocatedImage;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.collection.TableColumn;
@@ -498,11 +498,11 @@ public class GridCoverage2D extends GridCoverage {
             /*
              * The following code clamp values to 32 bits integers without throwing ArithmeticException
              * because any value that overflow 32 bits are sure to be outside the RenderedImage bounds.
-             * In such case, clamping changes nothing to the result.
+             * In such case, clamping should not change the result.
              */
             final Rectangle request = bounds.intersection(new Rectangle(
-                    (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, x)),
-                    (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, y)),
+                    (int) Math.min(Integer.MAX_VALUE, Math.max(Integer.MIN_VALUE, x)),
+                    (int) Math.min(Integer.MAX_VALUE, Math.max(Integer.MIN_VALUE, y)),
                     (int) Math.min(Integer.MAX_VALUE, sliceExtent.getSize(xDimension)),
                     (int) Math.min(Integer.MAX_VALUE, sliceExtent.getSize(yDimension))));
             /*
@@ -513,7 +513,13 @@ public class GridCoverage2D extends GridCoverage {
                 final BufferedImage image = (BufferedImage) data;
                 return image.getSubimage(request.x, request.y, request.width, request.height);
             }
-            return new TranslatedRenderedImage(data,
+            /*
+             * Return the backing image almost as-is (with potentially just a wrapper) for avoiding to copy data.
+             * As per method contract, we shall set the (x,y) location to the difference between requested region
+             * and actual region of the returned image. For example if the user requested an image starting at
+             * (5,5) but the image to return starts at (1,1), then we need to set its location to (-4,-4).
+             */
+            return RelocatedImage.moveTo(data,
                     Math.toIntExact(Math.subtractExact(bounds.x, x)),
                     Math.toIntExact(Math.subtractExact(bounds.y, y)));
         } catch (ArithmeticException e) {
