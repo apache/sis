@@ -14,15 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage.j2d;
+package org.apache.sis.image;
 
+import java.util.Vector;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
-import java.util.Vector;
+import org.apache.sis.internal.coverage.j2d.PlanarImage;
 
 
 /**
@@ -36,7 +37,7 @@ import java.util.Vector;
  * @since   1.1
  * @module
  */
-public final class RelocatedImage extends AbstractRenderedImage {
+final class RelocatedImage extends PlanarImage {
     /**
      * The image to translate.
      */
@@ -49,7 +50,7 @@ public final class RelocatedImage extends AbstractRenderedImage {
     private final int minX, minY;
 
     /**
-     * Creates a new image with the same data then the given image but located at the given coordinates.
+     * Creates a new image with the same data than the given image but located at given coordinates.
      *
      * @param  image  the image to move.
      * @param  minX   <var>x</var> coordinate of upper-left pixel.
@@ -62,18 +63,15 @@ public final class RelocatedImage extends AbstractRenderedImage {
     }
 
     /**
-     * Returns an image with the same data then the given image but located at the given coordinates.
-     * This method may return the given image unchanged if it is already located at the given position.
+     * Returns an image with the same data than the given image but located at given coordinates.
+     * Caller should verify that the given image is not null and not already at the given location.
      *
      * @param  image  the image to move.
      * @param  minX   <var>x</var> coordinate of upper-left pixel.
      * @param  minY   <var>y</var> coordinate of upper-left pixel.
      * @return image with the same data but at the given coordinates.
      */
-    public static RenderedImage moveTo(RenderedImage image, final int minX, final int minY) {
-        if (minX == image.getMinX() && minY == image.getMinY()) {
-            return image;
-        }
+    static RenderedImage moveTo(RenderedImage image, final int minX, final int minY) {
         if (image instanceof RelocatedImage) {
             image = (RelocatedImage) image;
             if (minX == image.getMinX() && minY == image.getMinY()) {

@@ -35,8 +35,16 @@ import org.apache.sis.util.Classes;
 
 
 /**
- * Skeleton implementation of {@link RenderedImage}.
+ * Base class of {@link RenderedImage} implementations in Apache SIS.
  * Current implementation does not hold any state.
+ *
+ * <div class="note"><b>Note: inspirational source</b>
+ * <p>This class takes some inspiration from the {@code javax.media.jai.PlanarImage} class
+ * defined in <cite>Java Advanced Imaging</cite> (JAI).
+ * That excellent library was maybe 20 years in advance over common imaging frameworks,
+ * but unfortunately does not seems to be maintained anymore.
+ * We do not try to reproduce the full set of JAI functionalities here, but we progressively
+ * reproduce some little bits of functionalities as they are needed by Apache SIS.</p></div>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -44,7 +52,7 @@ import org.apache.sis.util.Classes;
  * @since   1.1
  * @module
  */
-public abstract class AbstractRenderedImage implements RenderedImage {
+public abstract class PlanarImage implements RenderedImage {
     /**
      * Approximate size of the buffer to use for copying data from the image to a raster, in bits.
      * The actual buffer size may be smaller or larger, depending on the actual tile size.
@@ -54,7 +62,7 @@ public abstract class AbstractRenderedImage implements RenderedImage {
     /**
      * Creates a new rendered image.
      */
-    protected AbstractRenderedImage() {
+    protected PlanarImage() {
     }
 
     /**

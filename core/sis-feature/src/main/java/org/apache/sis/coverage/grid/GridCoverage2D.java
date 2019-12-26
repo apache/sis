@@ -36,9 +36,9 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.image.ImageOperations;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.ConvertedGridCoverage;
-import org.apache.sis.internal.coverage.j2d.RelocatedImage;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.collection.TableColumn;
@@ -519,7 +519,7 @@ public class GridCoverage2D extends GridCoverage {
              * and actual region of the returned image. For example if the user requested an image starting at
              * (5,5) but the image to return starts at (1,1), then we need to set its location to (-4,-4).
              */
-            return RelocatedImage.moveTo(data,
+            return ImageOperations.moveTo(data,
                     Math.toIntExact(Math.subtractExact(bounds.x, x)),
                     Math.toIntExact(Math.subtractExact(bounds.y, y)));
         } catch (ArithmeticException e) {

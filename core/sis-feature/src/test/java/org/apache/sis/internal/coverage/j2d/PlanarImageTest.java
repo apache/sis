@@ -33,14 +33,14 @@ import static org.apache.sis.test.FeatureAssert.assertValuesEqual;
 
 
 /**
- * Tests {@link AbstractRenderedImage}.
+ * Tests {@link PlanarImage}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-public final strictfp class AbstractRenderedImageTest extends TestCase {
+public final strictfp class PlanarImageTest extends TestCase {
     /**
      * Size of tiles in this test. The width should be different than the height
      * for increasing the chances to detect errors in index calculations.
@@ -61,7 +61,7 @@ public final strictfp class AbstractRenderedImageTest extends TestCase {
     /**
      * Creates a new test.
      */
-    public AbstractRenderedImageTest() {
+    public PlanarImageTest() {
         random = TestUtilities.createRandomNumberGenerator();
     }
 
@@ -70,7 +70,7 @@ public final strictfp class AbstractRenderedImageTest extends TestCase {
      * We use this class for testing purpose only because tiled images in production need a more
      * sophisticated implementation capable to store some tiles on disk (for memory consumption reasons).
      */
-    private static final class TiledImage extends AbstractRenderedImage {
+    private static final class TiledImage extends PlanarImage {
         /**
          * Index of the first tile in the image. Should be a non-trivial value
          * for increasing the chances to detect error in index calculation.
@@ -155,11 +155,11 @@ public final strictfp class AbstractRenderedImageTest extends TestCase {
     }
 
     /**
-     * Tests {@link AbstractRenderedImage#getData()} on a tiled image.
+     * Tests {@link PlanarImage#getData()} on a tiled image.
      */
     @Test
     public void testGetData() {
-        final AbstractRenderedImage image = new TiledImage(random);
+        final PlanarImage image = new TiledImage(random);
         assertValuesEqual(image.getData(), 0, new int[][] {
             { 100,  101,  102  ,   200,  201,  202  ,   300,  301,  302  ,   400,  401,  402},
             { 110,  111,  112  ,   210,  211,  212  ,   310,  311,  312  ,   410,  411,  412},
@@ -171,11 +171,11 @@ public final strictfp class AbstractRenderedImageTest extends TestCase {
     }
 
     /**
-     * Tests {@link AbstractRenderedImage#getData(Rectangle)} on a tiled image.
+     * Tests {@link PlanarImage#getData(Rectangle)} on a tiled image.
      */
     @Test
     public void testGetDataRegion() {
-        final AbstractRenderedImage image = new TiledImage(random);
+        final PlanarImage image = new TiledImage(random);
         final Rectangle region = ImageUtilities.getBounds(image);
         region.x      += 4;     // Exclude 4 columns on left side.
         region.width  -= 6;     // Exclude 2 columns on right side.

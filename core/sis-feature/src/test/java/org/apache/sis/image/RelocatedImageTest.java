@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage.j2d;
+package org.apache.sis.image;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import org.opengis.coverage.grid.SequenceType;
-import org.apache.sis.image.PixelIterator;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
