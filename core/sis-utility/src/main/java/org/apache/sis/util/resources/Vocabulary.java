@@ -257,6 +257,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short DataFormats = 36;
 
         /**
+         * Data type
+         */
+        public static final short DataType = 185;
+
+        /**
          * Datum
          */
         public static final short Datum = 37;
@@ -455,6 +460,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Identity
          */
         public static final short Identity = 74;
+
+        /**
+         * Image layout
+         */
+        public static final short ImageLayout = 186;
 
         /**
          * Implementation
@@ -682,6 +692,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Options = 118;
 
         /**
+         * Origin
+         */
+        public static final short Origin = 188;
+
+        /**
          * Origin in a cell center
          */
         public static final short OriginInCellCenter = 119;
@@ -835,6 +850,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Temporary files
          */
         public static final short TemporaryFiles = 147;
+
+        /**
+         * Tile size
+         */
+        public static final short TileSize = 187;
 
         /**
          * Time

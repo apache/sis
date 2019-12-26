@@ -380,9 +380,23 @@ public abstract class GridCoverage {
         TreeTable.Node branch = root.newChild();
         branch.setValue(column, vocabulary.getString(Vocabulary.Keys.CoverageDomain));
         gridGeometry.formatTo(locale, vocabulary, bitmask, branch);
+        appendDataLayout(root, vocabulary, column);
         branch = root.newChild();
         branch.setValue(column, vocabulary.getString(Vocabulary.Keys.SampleDimensions));
         branch.newChild().setValue(column, SampleDimension.toString(locale, sampleDimensions));
         return tree;
+    }
+
+    /**
+     * Appends a "data layout" branch (if it exists) to the tree representation of this coverage.
+     * That branch will be inserted between "coverage domain" and "sample dimensions" branches.
+     * The default implementation does nothing.
+     *
+     * @param  root        root of the tree where to add a branch.
+     * @param  vocabulary  localized resources for vocabulary.
+     * @param  column      the single column where to write texts.
+     */
+    @Debug
+    void appendDataLayout(TreeTable.Node root, Vocabulary vocabulary, TableColumn<CharSequence> column) {
     }
 }

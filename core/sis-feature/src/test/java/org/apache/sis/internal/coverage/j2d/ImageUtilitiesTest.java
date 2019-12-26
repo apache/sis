@@ -17,9 +17,11 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.awt.image.ColorModel;
-import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
+import java.awt.image.BufferedImage;
+import java.awt.image.SampleModel;
+import java.awt.image.BandedSampleModel;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -37,16 +39,16 @@ import static org.junit.Assert.*;
  */
 public final strictfp class ImageUtilitiesTest extends TestCase {
     /**
-     * Tests {@link ImageUtilities#dataTypeName(int)}.
+     * Tests {@link ImageUtilities#getDataTypeName(SampleModel)}.
      */
     @Test
-    public void testDataTypeName() {
-        assertEquals("byte",   ImageUtilities.dataTypeName(DataBuffer.TYPE_BYTE));
-        assertEquals("short",  ImageUtilities.dataTypeName(DataBuffer.TYPE_SHORT));
-        assertEquals("ushort", ImageUtilities.dataTypeName(DataBuffer.TYPE_USHORT));
-        assertEquals("int",    ImageUtilities.dataTypeName(DataBuffer.TYPE_INT));
-        assertEquals("float",  ImageUtilities.dataTypeName(DataBuffer.TYPE_FLOAT));
-        assertEquals("double", ImageUtilities.dataTypeName(DataBuffer.TYPE_DOUBLE));
+    public void testGetDataTypeName() {
+        assertEquals("byte",   ImageUtilities.getDataTypeName(new BandedSampleModel(DataBuffer.TYPE_BYTE,   1, 1, 1)));
+        assertEquals("short",  ImageUtilities.getDataTypeName(new BandedSampleModel(DataBuffer.TYPE_SHORT,  1, 1, 1)));
+        assertEquals("ushort", ImageUtilities.getDataTypeName(new BandedSampleModel(DataBuffer.TYPE_USHORT, 1, 1, 1)));
+        assertEquals("int",    ImageUtilities.getDataTypeName(new BandedSampleModel(DataBuffer.TYPE_INT,    1, 1, 1)));
+        assertEquals("float",  ImageUtilities.getDataTypeName(new BandedSampleModel(DataBuffer.TYPE_FLOAT,  1, 1, 1)));
+        assertEquals("double", ImageUtilities.getDataTypeName(new BandedSampleModel(DataBuffer.TYPE_DOUBLE, 1, 1, 1)));
     }
 
     /**

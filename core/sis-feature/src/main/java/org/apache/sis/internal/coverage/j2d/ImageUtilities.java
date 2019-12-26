@@ -28,6 +28,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
@@ -111,13 +112,46 @@ public final class ImageUtilities {
     }
 
     /**
-     * Returns the name of a {@link DataBuffer} type.
+     * Returns the name of the {@link DataBuffer} type used by the given sample model.
      *
-     * @param  type  one of {@link DataBuffer} constants.
+     * @param  sm  the sample model for which to get the data type name, or {@code null}.
      * @return name of the given constant, or {@code null} if unknown.
      */
-    public static String dataTypeName(final int type) {
-        return (type >= 0 && type < TYPE_NAMES.length) ? TYPE_NAMES[type] : null;
+    public static String getDataTypeName(final SampleModel sm) {
+        if (sm != null) {
+            final int type = sm.getDataType();
+            if (type >= 0 && type < TYPE_NAMES.length) {
+                return TYPE_NAMES[type];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the key of a localizable text that describes the transparency.
+     * This method returns one of the following values:
+     * <ul>
+     *   <li>{@link Resources.Keys#ImageAllowsTransparency}</li>
+     *   <li>{@link Resources.Keys#ImageHasAlphaChannel}</li>
+     *   <li>{@link Resources.Keys#ImageIsOpaque}</li>
+     *   <li>0 if the transparency is unknown.</li>
+     * </ul>
+     *
+     * @param  cm  the color model from which to get the transparency, or {@code null}.
+     * @return a {@link Resources.Keys} value for the transparency, or 0 if unknown.
+     */
+    public static short getTransparencyDescription(final ColorModel cm) {
+        if (cm != null) {
+            if (cm.hasAlpha()) {
+                return Resources.Keys.ImageHasAlphaChannel;
+            }
+            switch (cm.getTransparency()) {
+                case ColorModel.TRANSLUCENT:
+                case ColorModel.BITMASK: return Resources.Keys.ImageAllowsTransparency;
+                case ColorModel.OPAQUE:  return Resources.Keys.ImageIsOpaque;
+            }
+        }
+        return 0;
     }
 
     /**

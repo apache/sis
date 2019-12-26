@@ -295,7 +295,7 @@ public abstract class AbstractRenderedImage implements RenderedImage {
         final SampleModel sm = getSampleModel();
         if (sm != null) {
             buffer.append(" × ").append(sm.getNumBands()).append(" bands");
-            final String type = ImageUtilities.dataTypeName(sm.getDataType());
+            final String type = ImageUtilities.getDataTypeName(sm);
             if (type != null) {
                 buffer.append(" of type ").append(type);
             }

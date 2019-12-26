@@ -184,6 +184,21 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IllegalTransferFunction_1 = 34;
 
         /**
+         * Image allows transparency.
+         */
+        public static final short ImageAllowsTransparency = 63;
+
+        /**
+         * Image has alpha channel.
+         */
+        public static final short ImageHasAlphaChannel = 64;
+
+        /**
+         * Image is opaque.
+         */
+        public static final short ImageIsOpaque = 65;
+
+        /**
          * The ({0}, {1}) tile has an unexpected size, number of bands or sample layout.
          */
         public static final short IncompatibleTile_2 = 35;

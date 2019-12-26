@@ -19,6 +19,10 @@ package org.apache.sis.coverage.grid;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.text.NumberFormat;
+import java.text.FieldPosition;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -37,10 +41,13 @@ import org.apache.sis.internal.coverage.j2d.ConvertedGridCoverage;
 import org.apache.sis.internal.coverage.j2d.TranslatedRenderedImage;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.Debug;
 
 // Branch-specific imports
 import org.opengis.coverage.CannotEvaluateException;
@@ -511,6 +518,63 @@ public class GridCoverage2D extends GridCoverage {
                     Math.toIntExact(Math.subtractExact(bounds.y, y)));
         } catch (ArithmeticException e) {
             throw new CannotEvaluateException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Appends a "data layout" branch (if it exists) to the tree representation of this coverage.
+     * That branch will be inserted between "coverage domain" and "sample dimensions" branches.
+     *
+     * @param  root        root of the tree where to add a branch.
+     * @param  vocabulary  localized resources for vocabulary.
+     * @param  column      the single column where to write texts.
+     */
+    @Debug
+    @Override
+    void appendDataLayout(final TreeTable.Node root, final Vocabulary vocabulary, final TableColumn<CharSequence> column) {
+        final TreeTable.Node branch = root.newChild();
+        branch.setValue(column, vocabulary.getString(Vocabulary.Keys.ImageLayout));
+        final NumberFormat nf = NumberFormat.getIntegerInstance(vocabulary.getLocale());
+        final FieldPosition pos = new FieldPosition(0);
+        final StringBuffer buffer = new StringBuffer();
+write:  for (int item=0; ; item++) try {
+            switch (item) {
+                case 0: {
+                    vocabulary.appendLabel(Vocabulary.Keys.Origin, buffer);
+                    nf.format(data.getMinX(), buffer.append(' '),  pos);
+                    nf.format(data.getMinY(), buffer.append(", "), pos);
+                    break;
+                }
+                case 1: {
+                    final int tx = data.getTileWidth();
+                    final int ty = data.getTileHeight();
+                    if (tx == data.getWidth() && ty == data.getHeight()) continue;
+                    vocabulary.appendLabel(Vocabulary.Keys.TileSize, buffer);
+                    nf.format(tx, buffer.append( ' ' ), pos);
+                    nf.format(ty, buffer.append(" × "), pos);
+                    break;
+                }
+                case 2: {
+                    final String type = ImageUtilities.getDataTypeName(data.getSampleModel());
+                    if (type == null) continue;
+                    vocabulary.appendLabel(Vocabulary.Keys.DataType, buffer);
+                    buffer.append(' ').append(type);
+                    break;
+                }
+                case 3: {
+                    final short t = ImageUtilities.getTransparencyDescription(data.getColorModel());
+                    if (t != 0) {
+                        final String desc = Resources.forLocale(vocabulary.getLocale()).getString(t);
+                        branch.newChild().setValue(column, desc);
+                    }
+                    continue;
+                }
+                default: break write;
+            }
+            branch.newChild().setValue(column, buffer.toString());
+            buffer.setLength(0);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);      // Should never happen since we are writing to StringBuilder.
         }
     }
 }
