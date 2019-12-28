@@ -23,7 +23,6 @@ import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
@@ -36,7 +35,6 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.image.ImageOperations;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.ConvertedGridCoverage;
 import org.apache.sis.internal.feature.Resources;
@@ -48,6 +46,11 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.Debug;
+
+import static java.lang.Math.min;
+import static java.lang.Math.addExact;
+import static java.lang.Math.subtractExact;
+import static java.lang.Math.toIntExact;
 
 // Branch-specific imports
 import org.opengis.coverage.CannotEvaluateException;
@@ -184,8 +187,8 @@ public class GridCoverage2D extends GridCoverage {
         }
         xDimension   = imageAxes[0];
         yDimension   = imageAxes[1];
-        gridToImageX = Math.subtractExact(data.getMinX(), extent.getLow(xDimension));
-        gridToImageY = Math.subtractExact(data.getMinY(), extent.getLow(yDimension));
+        gridToImageX = subtractExact(data.getMinX(), extent.getLow(xDimension));
+        gridToImageY = subtractExact(data.getMinY(), extent.getLow(yDimension));
         /*
          * Verifiy that the domain is consistent with image size.
          * We do not verify image location; it can be anywhere.
@@ -443,8 +446,8 @@ public class GridCoverage2D extends GridCoverage {
         try {
             final FractionalGridCoordinates gc = toGridCoordinates(point);
             try {
-                final int x = Math.toIntExact(Math.addExact(gc.getCoordinateValue(xDimension), gridToImageX));
-                final int y = Math.toIntExact(Math.addExact(gc.getCoordinateValue(yDimension), gridToImageY));
+                final int x = toIntExact(addExact(gc.getCoordinateValue(xDimension), gridToImageX));
+                final int y = toIntExact(addExact(gc.getCoordinateValue(yDimension), gridToImageY));
                 return evaluate(data, x, y, buffer);
             } catch (ArithmeticException | IndexOutOfBoundsException | DisjointExtentException ex) {
                 throw (PointOutsideCoverageException) new PointOutsideCoverageException(
@@ -483,35 +486,37 @@ public class GridCoverage2D extends GridCoverage {
         }
         final GridExtent extent = gridGeometry.extent;
         if (extent != null) {
-            for (int i = Math.min(sliceExtent.getDimension(), extent.getDimension()); --i >= 0;) {
+            for (int i = min(sliceExtent.getDimension(), extent.getDimension()); --i >= 0;) {
                 if (i != xDimension && i != yDimension) {
-                    if (sliceExtent.getLow(i) < extent.getLow(i) || sliceExtent.getHigh(i) > extent.getHigh(i)) {
+                    if (sliceExtent.getHigh(i) < extent.getLow(i) || sliceExtent.getLow(i) > extent.getHigh(i)) {
                         throw new DisjointExtentException(extent, sliceExtent, i);
                     }
                 }
             }
         }
         try {
-            final Rectangle bounds = ImageUtilities.getBounds(data);
-            final long x = Math.addExact(sliceExtent.getLow(xDimension), gridToImageX);
-            final long y = Math.addExact(sliceExtent.getLow(yDimension), gridToImageY);
             /*
-             * The following code clamp values to 32 bits integers without throwing ArithmeticException
-             * because any value that overflow 32 bits are sure to be outside the RenderedImage bounds.
-             * In such case, clamping should not change the result.
+             * Convert the coordinates from this grid coverage coordinate system to the image coordinate system.
+             * The coverage coordinates may require 64 bits integers, but after translation the (x,y) coordinates
+             * should be in 32 bits integers range. Do not cast to 32 bits now however; this will be done later.
              */
-            final Rectangle request = bounds.intersection(new Rectangle(
-                    (int) Math.min(Integer.MAX_VALUE, Math.max(Integer.MIN_VALUE, x)),
-                    (int) Math.min(Integer.MAX_VALUE, Math.max(Integer.MIN_VALUE, y)),
-                    (int) Math.min(Integer.MAX_VALUE, sliceExtent.getSize(xDimension)),
-                    (int) Math.min(Integer.MAX_VALUE, sliceExtent.getSize(yDimension))));
+            final long xmin = addExact(sliceExtent.getLow (xDimension), gridToImageX);
+            final long ymin = addExact(sliceExtent.getLow (yDimension), gridToImageY);
+            final long xmax = addExact(sliceExtent.getHigh(xDimension), gridToImageX);
+            final long ymax = addExact(sliceExtent.getHigh(yDimension), gridToImageY);
             /*
              * BufferedImage.getSubimage() returns a new image with upper-left coordinate at (0,0),
-             * which is exactly what this method contract is requesting.
+             * which is exactly what this method contract is requesting provided that the requested
+             * upper-left point is inside the image.
              */
             if (data instanceof BufferedImage) {
-                final BufferedImage image = (BufferedImage) data;
-                return image.getSubimage(request.x, request.y, request.width, request.height);
+                final long ix = data.getMinX();
+                final long iy = data.getMinY();
+                if (xmin >= ix && ymin >= iy) {
+                    return ((BufferedImage) data).getSubimage(toIntExact(xmin), toIntExact(ymin),
+                            toIntExact(min(xmax + 1, ix + data.getWidth()  - 1) - xmin),
+                            toIntExact(min(ymax + 1, iy + data.getHeight() - 1) - ymin));
+                }
             }
             /*
              * Return the backing image almost as-is (with potentially just a wrapper) for avoiding to copy data.
@@ -519,9 +524,8 @@ public class GridCoverage2D extends GridCoverage {
              * and actual region of the returned image. For example if the user requested an image starting at
              * (5,5) but the image to return starts at (1,1), then we need to set its location to (-4,-4).
              */
-            return ImageOperations.moveTo(data,
-                    Math.toIntExact(Math.subtractExact(bounds.x, x)),
-                    Math.toIntExact(Math.subtractExact(bounds.y, y)));
+            final RelocatedImage r = new RelocatedImage(data, xmin, ymin, xmax, ymax);
+            return r.isIdentity() ? data : r;
         } catch (ArithmeticException e) {
             throw new CannotEvaluateException(e.getMessage(), e);
         }

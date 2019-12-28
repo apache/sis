@@ -36,15 +36,30 @@ import org.apache.sis.util.Classes;
 
 /**
  * Base class of {@link RenderedImage} implementations in Apache SIS.
- * Current implementation does not hold any state.
+ * The "Planar" part in the class name emphases that this image is a representation
+ * of two-dimensional data and should not represent three-dimensional effects.
+ * Planar images can be used as data storage for {@link org.apache.sis.coverage.grid.GridCoverage2D}.
  *
  * <div class="note"><b>Note: inspirational source</b>
- * <p>This class takes some inspiration from the {@code javax.media.jai.PlanarImage} class
- * defined in <cite>Java Advanced Imaging</cite> (JAI).
+ * <p>This class takes some inspiration from the {@code javax.media.jai.PlanarImage}
+ * class defined in the <cite>Java Advanced Imaging</cite> (<abbr>JAI</abbr>) library.
  * That excellent library was maybe 20 years in advance over common imaging frameworks,
  * but unfortunately does not seems to be maintained anymore.
  * We do not try to reproduce the full set of JAI functionalities here, but we progressively
  * reproduce some little bits of functionalities as they are needed by Apache SIS.</p></div>
+ *
+ * <p>Subclasses need to implement the following methods:</p>
+ * <ul>
+ *   <li>{@link #getMinX()}        — the minimum <var>x</var> coordinate (inclusive) of the image.</li>
+ *   <li>{@link #getMinY()}        — the minimum <var>y</var> coordinate (inclusive) of the image.</li>
+ *   <li>{@link #getWidth()}       — the image width in pixels.</li>
+ *   <li>{@link #getHeight()}      — the image height in pixels.</li>
+ *   <li>{@link #getMinTileX()}    — the minimum tile index in the <var>x</var> direction.</li>
+ *   <li>{@link #getMinTileY()}    — the minimum tile index in the <var>y</var> direction.</li>
+ *   <li>{@link #getTileWidth()}   — the tile width in pixels.</li>
+ *   <li>{@link #getTileHeight()}  — the tile height in pixels.</li>
+ *   <li>{@link #getTile(int,int)} — the tile at given tile indices.</li>
+ * </ul>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -109,23 +124,31 @@ public abstract class PlanarImage implements RenderedImage {
     }
 
     /**
-     * Returns the number of tiles in the X direction.
+     * Returns the number of tiles in the <var>x</var> direction.
      *
-     * <p>The default implementation computes this value from {@link #getWidth()} and {@link #getTileWidth()}.</p>
+     * <p>The default implementation computes this value from {@link #getWidth()} and {@link #getTileWidth()}
+     * on the assumption that {@link #getMinX()} is the coordinate of the leftmost pixels of tiles located at
+     * {@link #getMinTileX()} index. This assumption can be verified by {@link #verify()}.</p>
      *
-     * @return returns the number of tiles in the X direction.
+     * @return returns the number of tiles in the <var>x</var> direction.
      */
     @Override
     public int getNumXTiles() {
+        /*
+         * If assumption documented in javadoc does not hold, the calculation performed here would need to be
+         * more complicated: compute tile index of minX, compute tile index of maxX, return difference plus 1.
+         */
         return Numerics.ceilDiv(getWidth(), getTileWidth());
     }
 
     /**
-     * Returns the number of tiles in the Y direction.
+     * Returns the number of tiles in the <var>y</var> direction.
      *
-     * <p>The default implementation computes this value from {@link #getHeight()} and {@link #getTileHeight()}.</p>
+     * <p>The default implementation computes this value from {@link #getHeight()} and {@link #getTileHeight()}
+     * on the assumption that {@link #getMinY()} is the coordinate of the uppermost pixels of tiles located at
+     * {@link #getMinTileY()} index. This assumption can be verified by {@link #verify()}.</p>
      *
-     * @return returns the number of tiles in the Y direction.
+     * @return returns the number of tiles in the <var>y</var> direction.
      */
     @Override
     public int getNumYTiles() {
@@ -133,31 +156,32 @@ public abstract class PlanarImage implements RenderedImage {
     }
 
     /**
-     * Returns the X coordinate of the upper-left pixel of tile (0, 0).
+     * Returns the <var>x</var> coordinate of the upper-left pixel of tile (0, 0).
      * That tile (0, 0) may not actually exist.
      *
      * <p>The default implementation computes this value from {@link #getMinX()},
      * {@link #getMinTileX()} and {@link #getTileWidth()}.</p>
      *
-     * @return the X offset of the tile grid relative to the origin.
+     * @return the <var>x</var> offset of the tile grid relative to the origin.
      */
     @Override
     public int getTileGridXOffset() {
-        return Math.subtractExact(getMinX(), Math.multiplyExact(getMinTileX(), getTileWidth()));
+        // We may have temporary `int` overflow after multiplication but exact result after addition.
+        return Math.toIntExact(getMinX() - getMinTileX() * ((long) getTileWidth()));
     }
 
     /**
-     * Returns the Y coordinate of the upper-left pixel of tile (0, 0).
+     * Returns the <var>y</var> coordinate of the upper-left pixel of tile (0, 0).
      * That tile (0, 0) may not actually exist.
      *
      * <p>The default implementation computes this value from {@link #getMinY()},
      * {@link #getMinTileY()} and {@link #getTileHeight()}.</p>
      *
-     * @return the Y offset of the tile grid relative to the origin.
+     * @return the <var>y</var> offset of the tile grid relative to the origin.
      */
     @Override
     public int getTileGridYOffset() {
-        return Math.subtractExact(getMinY(), Math.multiplyExact(getMinTileY(), getTileHeight()));
+        return Math.toIntExact(getMinY() - getMinTileY() * ((long) getTileHeight()));
     }
 
     /**
@@ -293,8 +317,38 @@ public abstract class PlanarImage implements RenderedImage {
     }
 
     /**
+     * Verifies whether image layout information are consistent. This method verifies that the coordinates
+     * of image upper-left corner are equal to the coordinates of the upper-left corner of the tile in the
+     * upper-left corner, and that image size is equal to the sum of the sizes of all tiles. Compatibility
+     * of sample model and color model is also verified.
+     *
+     * @return {@code null} if image layout information are consistent, or name of inconsistent property
+     *         if a problem is found.
+     */
+    public String verify() {
+        final int tileWidth  = getTileWidth();
+        final int tileHeight = getTileHeight();
+        final SampleModel sm = getSampleModel();
+        if (sm != null) {
+            if (sm.getWidth()  != tileWidth)  return "tileWidth";
+            if (sm.getHeight() != tileHeight) return "tileHeight";
+            final ColorModel cm = getColorModel();
+            if (cm != null) {
+                if (!cm.isCompatibleSampleModel(sm)) return "SampleModel";
+            }
+        }
+        if (((long) getMinTileX())  * tileWidth  + getTileGridXOffset() != getMinX()) return "tileX";
+        if (((long) getMinTileY())  * tileHeight + getTileGridYOffset() != getMinY()) return "tileY";
+        if (((long) getNumXTiles()) * tileWidth  != getWidth())  return "numXTiles";
+        if (((long) getNumYTiles()) * tileHeight != getHeight()) return "numYTiles";
+        return null;
+    }
+
+    /**
      * Returns a string representation of this image for debugging purpose.
      * This string representation may change in any future SIS version.
+     *
+     * @return a string representation of this image for debugging purpose only.
      */
     @Override
     public String toString() {
@@ -338,13 +392,17 @@ colors: if (cm != null) {
             buffer.append("; ").append(transparency);
         }
         /*
-         * Tiling information last because it is usually a secondary aspect compared
-         * to above information.
+         * Tiling information last because it is usually a secondary aspect compared to above information.
+         * If a warning is emitted, it will usually be a tiling problem so it is useful to keep it close.
          */
         final int tx = getNumXTiles();
         final int ty = getNumYTiles();
         if (tx != 1 || ty != 1) {
             buffer.append("; ").append(tx).append(" × ").append(ty).append(" tiles");
+        }
+        final String error = verify();
+        if (error != null) {
+            buffer.append("; ⚠ mismatched ").append(error);
         }
         return buffer.append(']').toString();
     }

@@ -14,51 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.image;
+package org.apache.sis.coverage.grid;
 
-import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
-import org.opengis.coverage.grid.SequenceType;
+import java.awt.image.WritableRaster;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.apache.sis.test.FeatureAssert.assertValuesEqual;
 
 
 /**
  * Tests the {@link RelocatedImage} implementation.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
 public final strictfp class RelocatedImageTest extends TestCase {
-
+    /**
+     * Tests with a request starting on the left and on top of data.
+     */
     @Test
-    public void iteratorTest() {
+    public void testRequestBefore() {
         final BufferedImage image = new BufferedImage(2, 2, BufferedImage.TYPE_BYTE_GRAY);
-        image.getRaster().setSample(0, 0, 0, 1);
-        image.getRaster().setSample(1, 0, 0, 2);
-        image.getRaster().setSample(0, 1, 0, 3);
-        image.getRaster().setSample(1, 1, 0, 4);
+        final WritableRaster raster = image.getRaster();
+        raster.setSample(0, 0, 0, 1);
+        raster.setSample(1, 0, 0, 2);
+        raster.setSample(0, 1, 0, 3);
+        raster.setSample(1, 1, 0, 4);
 
-        final RenderedImage trs = RelocatedImage.moveTo(image, -10, -20);
-
-        final PixelIterator ite = new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR).create(trs);
-        assertTrue(ite.next());
-        assertEquals(new Point(-10, -20), ite.getPosition());
-        assertEquals(1, ite.getSample(0));
-        assertTrue(ite.next());
-        assertEquals(new Point(-9, -20), ite.getPosition());
-        assertEquals(2, ite.getSample(0));
-        assertTrue(ite.next());
-        assertEquals(new Point(-10, -19), ite.getPosition());
-        assertEquals(3, ite.getSample(0));
-        assertTrue(ite.next());
-        assertEquals(new Point(-9, -19), ite.getPosition());
-        assertEquals(4, ite.getSample(0));
-        assertFalse(ite.next());
+        final RelocatedImage trs = new RelocatedImage(image, -1, -2, 4, 4);
+        assertEquals(1, trs.getMinX());
+        assertEquals(2, trs.getMinY());
+        assertValuesEqual(trs.getData(), 0, new int[][] {
+            {1, 2},
+            {3, 4}
+        });
     }
 }

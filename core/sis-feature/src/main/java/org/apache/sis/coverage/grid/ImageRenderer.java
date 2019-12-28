@@ -208,10 +208,10 @@ public class ImageRenderer {
     /**
      * Creates a new image renderer for the given slice extent.
      *
-     * @param  coverage     the grid coverage for which to build an image.
-     * @param  sliceExtent  the grid geometry from which to create an image, or {@code null} for the {@code coverage} extent.
+     * @param  coverage     the source coverage for which to build an image.
+     * @param  sliceExtent  the domain from which to create an image, or {@code null} for the {@code coverage} extent.
      * @throws SubspaceNotSpecifiedException if this method can not infer a two-dimensional slice from {@code sliceExtent}.
-     * @throws DisjointExtentException if the given extent does not intersect this grid coverage.
+     * @throws DisjointExtentException if the given extent does not intersect the given coverage.
      * @throws ArithmeticException if a stride calculation overflows the 32 bits integer capacity.
      */
     public ImageRenderer(final GridCoverage coverage, GridExtent sliceExtent) {

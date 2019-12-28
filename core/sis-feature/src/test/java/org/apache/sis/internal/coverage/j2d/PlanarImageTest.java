@@ -108,6 +108,7 @@ public final strictfp class PlanarImageTest extends TestCase {
                 }
             }
             assertEquals(tiles.length, i);
+            assertNull(verify());
         }
 
         /**

@@ -76,7 +76,6 @@ import org.junit.runners.Suite;
     // Rasters
     org.apache.sis.image.DefaultIteratorTest.class,
     org.apache.sis.image.LinearIteratorTest.class,
-    org.apache.sis.image.RelocatedImageTest.class,
     org.apache.sis.coverage.CategoryTest.class,
     org.apache.sis.coverage.CategoryListTest.class,
     org.apache.sis.coverage.SampleDimensionTest.class,
@@ -86,6 +85,7 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.grid.GridGeometryTest.class,
     org.apache.sis.coverage.grid.GridDerivationTest.class,
     org.apache.sis.coverage.grid.FractionalGridCoordinates.class,
+    org.apache.sis.coverage.grid.RelocatedImageTest.class,
     org.apache.sis.coverage.grid.GridCoverage2DTest.class,
     org.apache.sis.internal.coverage.j2d.ImageUtilitiesTest.class,
     org.apache.sis.internal.coverage.j2d.ScaledColorSpaceTest.class,
