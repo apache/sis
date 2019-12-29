@@ -74,6 +74,9 @@ import org.junit.runners.Suite;
     org.apache.sis.feature.builder.FeatureTypeBuilderTest.class,
 
     // Rasters
+    org.apache.sis.internal.coverage.j2d.ImageUtilitiesTest.class,
+    org.apache.sis.internal.coverage.j2d.ScaledColorSpaceTest.class,
+    org.apache.sis.internal.coverage.j2d.PlanarImageTest.class,
     org.apache.sis.image.DefaultIteratorTest.class,
     org.apache.sis.image.LinearIteratorTest.class,
     org.apache.sis.coverage.CategoryTest.class,
@@ -87,9 +90,6 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.grid.FractionalGridCoordinatesTest.class,
     org.apache.sis.coverage.grid.ReshapedImageTest.class,
     org.apache.sis.coverage.grid.GridCoverage2DTest.class,
-    org.apache.sis.internal.coverage.j2d.ImageUtilitiesTest.class,
-    org.apache.sis.internal.coverage.j2d.ScaledColorSpaceTest.class,
-    org.apache.sis.internal.coverage.j2d.PlanarImageTest.class,
     org.apache.sis.internal.coverage.j2d.BufferedGridCoverageTest.class
 })
 public final strictfp class FeatureTestSuite extends TestSuite {

@@ -66,7 +66,7 @@ public final strictfp class PlanarImageTest extends TestCase {
                 TILE_HEIGHT * 3,                // height
                 TILE_WIDTH,
                 TILE_HEIGHT,
-                random.nextInt(20) - 10,        // minTileX,
+                random.nextInt(20) - 10,        // minTileX
                 random.nextInt(20) - 10);       // minTileY
         image.validate();
         image.initializeAllTiles(0);

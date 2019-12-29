@@ -24,6 +24,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import org.apache.sis.internal.coverage.j2d.PlanarImage;
+import org.apache.sis.util.ArgumentChecks;
 
 import static java.lang.Math.min;
 import static java.lang.Math.max;
@@ -131,8 +132,8 @@ final class ReshapedImage extends PlanarImage {
         minY     = toIntExact(y);
         width    = toIntExact(min(upperX, (maxTX + 1) * tw + xo) - sx);
         height   = toIntExact(min(upperY, (maxTY + 1) * th + yo) - sy);
-        offsetX  = toIntExact(x - lowerX);
-        offsetY  = toIntExact(y - lowerY);
+        offsetX  = toIntExact(x - sx);
+        offsetY  = toIntExact(y - sy);
         minTileX = toIntExact(minTX);
         minTileY = toIntExact(minTY);
     }
@@ -224,7 +225,15 @@ final class ReshapedImage extends PlanarImage {
      */
     @Override
     public Raster getData() {
-        return offset(image.getData());
+        /*
+         * If this image contains all data, delegate to RenderedImage.getData()
+         * in case some implementations provide an optimized method. Otherwise
+         * ask only the sub-region covered by this image.
+         */
+        if (width >= image.getWidth() && height >= image.getHeight()) {
+            return offset(image.getData());
+        }
+        return copyData(new Rectangle(minX, minY, width, height));
     }
 
     /**
@@ -235,8 +244,16 @@ final class ReshapedImage extends PlanarImage {
      * @return a copy of this image in the given area of interest.
      */
     @Override
-    public Raster getData(Rectangle aoi) {
-        aoi = new Rectangle(aoi);
+    public Raster getData(final Rectangle aoi) {
+        ArgumentChecks.ensureNonNull("aoi", aoi);
+        return copyData(new Rectangle(aoi));
+    }
+
+    /**
+     * Implementation of {@link #getData(Rectangle)}. This implementation will modify the given {@code aoi}
+     * argument. If that argument was supplied by user, then it should first be copied by the caller.
+     */
+    private Raster copyData(final Rectangle aoi) {
         aoi.x = subtractExact(aoi.x, offsetX);      // Convert coordinate from this image to wrapped image.
         aoi.y = subtractExact(aoi.y, offsetY);
         final Raster data = image.getData(aoi);
@@ -276,8 +293,8 @@ final class ReshapedImage extends PlanarImage {
     public String verify() {
         final String error = super.verify();
         if (error == null) {
-            if (getMinX() != image.getMinX() + offsetX) return "minX";
-            if (getMinY() != image.getMinY() + offsetY) return "minY";
+            if (getMinX() != image.getMinX() + (minTileX - image.getMinTileX()) * getTileWidth()  + offsetX) return "minX";
+            if (getMinY() != image.getMinY() + (minTileY - image.getMinTileY()) * getTileHeight() + offsetY) return "minY";
             if (getTileGridXOffset() != super.getTileGridXOffset()) return "tileGridXOffset";
             if (getTileGridYOffset() != super.getTileGridYOffset()) return "tileGridYOffset";
         }
