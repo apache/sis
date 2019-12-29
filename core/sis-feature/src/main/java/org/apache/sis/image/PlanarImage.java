@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage.j2d;
+package org.apache.sis.image;
 
 import java.awt.Image;
 import java.awt.Rectangle;
@@ -32,23 +32,27 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.coverage.j2d.ScaledColorSpace;
 
 
 /**
  * Base class of {@link RenderedImage} implementations in Apache SIS.
  * The "Planar" part in the class name emphases that this image is a representation
- * of two-dimensional data and should not represent three-dimensional effects.
+ * of two-dimensional data and should not contain an image with three-dimensional effects.
  * Planar images can be used as data storage for {@link org.apache.sis.coverage.grid.GridCoverage2D}.
  *
  * <div class="note"><b>Note: inspirational source</b>
  * <p>This class takes some inspiration from the {@code javax.media.jai.PlanarImage}
  * class defined in the <cite>Java Advanced Imaging</cite> (<abbr>JAI</abbr>) library.
- * That excellent library was maybe 20 years in advance over common imaging frameworks,
- * but unfortunately does not seems to be maintained anymore.
+ * That excellent library was 20 years in advance on thematic like defining a chain of image operations,
+ * multi-threaded execution, distribution over a computer network, <i>etc.</i>
+ * But unfortunately the <abbr>JAI</abbr> library does not seems to be maintained anymore.
  * We do not try to reproduce the full set of JAI functionalities here, but we progressively
  * reproduce some little bits of functionalities as they are needed by Apache SIS.</p></div>
  *
- * <p>Subclasses need to implement the following methods:</p>
+ * <p>This base class does not store any state and does not assume any tile layout.
+ * Subclasses need to implement at least the following methods:</p>
  * <ul>
  *   <li>{@link #getMinX()}        — the minimum <var>x</var> coordinate (inclusive) of the image.</li>
  *   <li>{@link #getMinY()}        — the minimum <var>y</var> coordinate (inclusive) of the image.</li>
@@ -60,6 +64,11 @@ import org.apache.sis.util.Classes;
  *   <li>{@link #getTileHeight()}  — the tile height in pixels.</li>
  *   <li>{@link #getTile(int,int)} — the tile at given tile indices.</li>
  * </ul>
+ *
+ * Default implementations are provided for {@link #getNumXTiles()}, {@link #getNumYTiles()},
+ * {@link #getTileGridXOffset()}, {@link #getTileGridYOffset()}, {@link #getData()},
+ * {@link #getData(Rectangle)} and {@link #copyData(WritableRaster)}
+ * in terms of above methods.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -322,29 +331,44 @@ public abstract class PlanarImage implements RenderedImage {
      * upper-left corner, and that image size is equal to the sum of the sizes of all tiles. Compatibility
      * of sample model and color model is also verified.
      *
-     * @return {@code null} if image layout information are consistent, or name of inconsistent property
-     *         if a problem is found.
+     * <p>The default implementation may return the following identifiers, in that order
+     * (i.e. this method returns the identifier of the first test that fail):</p>
+     * <ul>
+     *   <li>{@code "SampleModel"} — Sample model is incompatible with color model.</li>
+     *   <li>{@code "tileWidth"}   — tile width is greater than sample model width.</li>
+     *   <li>{@code "tileHeight"}  — tile height is greater than sample model height.</li>
+     *   <li>{@code "numXTiles"}   — number of tiles on the X axis is inconsistent with image width.</li>
+     *   <li>{@code "numYTiles"}   — number of tiles on the Y axis is inconsistent with image height.</li>
+     *   <li>{@code "tileX"}       — {@ode minTileX} and/or {@code tileGridXOffset} is inconsistent.</li>
+     *   <li>{@code "tileY"}       — {@ode minTileY} and/or {@code tileGridYOffset} is inconsistent.</li>
+     * </ul>
+     *
+     * Subclasses may perform additional checks. For example some subclasses also check specifically
+     * for {@code "minX"}, {@code "minY"}, {@code "tileGridXOffset"} and {@code "tileGridYOffset"}.
+     *
+     * @return {@code null} if image layout information are consistent,
+     *         or the name of inconsistent attribute if a problem is found.
      */
     public String verify() {
         final int tileWidth  = getTileWidth();
         final int tileHeight = getTileHeight();
         final SampleModel sm = getSampleModel();
         if (sm != null) {
+            final ColorModel cm = getColorModel();
+            if (cm != null) {
+                if (!cm.isCompatibleSampleModel(sm)) return "SampleModel";
+            }
             /*
              * The SampleModel size represents the physical layout of pixels in the data buffer,
              * while the Raster may be a virtual view over a sub-region of a parent raster.
              */
             if (sm.getWidth()  < tileWidth)  return "tileWidth";
             if (sm.getHeight() < tileHeight) return "tileHeight";
-            final ColorModel cm = getColorModel();
-            if (cm != null) {
-                if (!cm.isCompatibleSampleModel(sm)) return "SampleModel";
-            }
         }
-        if (((long) getMinTileX())  * tileWidth  + getTileGridXOffset() != getMinX()) return "tileX";
-        if (((long) getMinTileY())  * tileHeight + getTileGridYOffset() != getMinY()) return "tileY";
         if (((long) getNumXTiles()) * tileWidth  != getWidth())  return "numXTiles";
         if (((long) getNumYTiles()) * tileHeight != getHeight()) return "numYTiles";
+        if (((long) getMinTileX())  * tileWidth  + getTileGridXOffset() != getMinX()) return "tileX";
+        if (((long) getMinTileY())  * tileHeight + getTileGridYOffset() != getMinY()) return "tileY";
         return null;
     }
 
@@ -382,7 +406,7 @@ colors: if (cm != null) {
                     if (cs instanceof ScaledColorSpace) {
                         ((ScaledColorSpace) cs).formatRange(buffer.append("showing "));
                     } else if (cs.getType() == ColorSpace.TYPE_GRAY) {
-                        buffer.append("; grayscale");
+                        buffer.append("grayscale");
                     }
                 }
             }

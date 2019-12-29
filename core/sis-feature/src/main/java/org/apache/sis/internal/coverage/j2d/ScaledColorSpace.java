@@ -17,6 +17,7 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.awt.color.ColorSpace;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -29,10 +30,13 @@ import java.awt.color.ColorSpace;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
- * @since   1.0
+ *
+ * @see ColorModelFactory#createColorSpace(int, int, double, double)
+ *
+ * @since 1.0
  * @module
  */
-final class ScaledColorSpace extends ColorSpace {
+public final class ScaledColorSpace extends ColorSpace {
     /**
      * For cross-version compatibility.
      */
@@ -172,8 +176,12 @@ final class ScaledColorSpace extends ColorSpace {
 
     /**
      * Formats the range of values in the given buffer.
+     * This method is used for {@link #toString()} implementation and may change in any future version.
+     *
+     * @param  buffer  where to append the range of values.
      */
-    final void formatRange(final StringBuilder buffer) {
+    @Debug
+    public final void formatRange(final StringBuilder buffer) {
         buffer.append('[').append(getMinValue(visibleBand))
             .append(" … ").append(getMaxValue(visibleBand))
             .append(" in band ").append(visibleBand).append(']');

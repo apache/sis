@@ -23,7 +23,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
-import org.apache.sis.internal.coverage.j2d.PlanarImage;
+import org.apache.sis.image.PlanarImage;
 import org.apache.sis.util.ArgumentChecks;
 
 import static java.lang.Math.min;

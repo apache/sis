@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage.j2d;
+package org.apache.sis.image;
 
 import java.util.Random;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
-import org.apache.sis.image.TiledImageMock;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;

@@ -25,7 +25,6 @@ import java.awt.image.SampleModel;
 import java.awt.image.TileObserver;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import org.apache.sis.internal.coverage.j2d.PlanarImage;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
 

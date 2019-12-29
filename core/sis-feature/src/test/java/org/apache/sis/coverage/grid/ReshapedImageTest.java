@@ -38,7 +38,7 @@ import static org.apache.sis.test.FeatureAssert.assertValuesEqual;
  * @since   1.1
  * @module
  */
-@DependsOn(org.apache.sis.internal.coverage.j2d.PlanarImageTest.class)
+@DependsOn(org.apache.sis.image.PlanarImageTest.class)
 public final strictfp class ReshapedImageTest extends TestCase {
     /**
      * Size of tiles used in this test.
