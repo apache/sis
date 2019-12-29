@@ -209,8 +209,8 @@ public class GridCoverage2D extends GridCoverage {
      */
     @Workaround(library="JDK", version="1.8")
     private static RenderedImage unwrapIfSameSize(RenderedImage data) {
-        if (data instanceof RelocatedImage) {
-            final RenderedImage image = ((RelocatedImage) data).image;
+        if (data instanceof ReshapedImage) {
+            final RenderedImage image = ((ReshapedImage) data).image;
             if (image.getWidth() == data.getWidth() && image.getHeight() == data.getHeight()) {
                 data = image;
             }
@@ -540,7 +540,7 @@ public class GridCoverage2D extends GridCoverage {
              * and actual region of the returned image. For example if the user requested an image starting at
              * (5,5) but the image to return starts at (1,1), then we need to set its location to (-4,-4).
              */
-            final RelocatedImage r = new RelocatedImage(data, xmin, ymin, xmax, ymax);
+            final ReshapedImage r = new ReshapedImage(data, xmin, ymin, xmax, ymax);
             String error; assert (error = r.verify()) != null : error;
             return r.isIdentity() ? data : r;
         } catch (ArithmeticException e) {

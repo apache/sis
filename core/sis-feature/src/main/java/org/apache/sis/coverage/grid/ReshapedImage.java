@@ -45,7 +45,7 @@ import static java.lang.Math.toIntExact;
  * @since   1.1
  * @module
  */
-final class RelocatedImage extends PlanarImage {
+final class ReshapedImage extends PlanarImage {
     /**
      * The image to translate.
      */
@@ -93,7 +93,7 @@ final class RelocatedImage extends PlanarImage {
      * @param  ymax   maximal <var>y</var> coordinate of the requested region, inclusive.
      * @throws ArithmeticException if image indices would overflow 32 bits integer capacity.
      */
-    RelocatedImage(final RenderedImage image, final long xmin, final long ymin, final long xmax, final long ymax) {
+    ReshapedImage(final RenderedImage image, final long xmin, final long ymin, final long xmax, final long ymax) {
         this.image = image;
         /*
          * Compute indices of all tiles to retain in this image. All local fields are `long` in order to force

@@ -26,7 +26,7 @@ import static org.apache.sis.test.FeatureAssert.assertValuesEqual;
 
 
 /**
- * Tests the {@link RelocatedImage} implementation.
+ * Tests the {@link ReshapedImage} implementation.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -34,7 +34,7 @@ import static org.apache.sis.test.FeatureAssert.assertValuesEqual;
  * @since   1.1
  * @module
  */
-public final strictfp class RelocatedImageTest extends TestCase {
+public final strictfp class ReshapedImageTest extends TestCase {
     /**
      * Tests with a request starting on the left and on top of data.
      */
@@ -47,7 +47,7 @@ public final strictfp class RelocatedImageTest extends TestCase {
         raster.setSample(0, 1, 0, 3);
         raster.setSample(1, 1, 0, 4);
 
-        final RelocatedImage trs = new RelocatedImage(image, -1, -2, 4, 4);
+        final ReshapedImage trs = new ReshapedImage(image, -1, -2, 4, 4);
         assertEquals(1, trs.getMinX());
         assertEquals(2, trs.getMinY());
         assertValuesEqual(trs.getData(), 0, new int[][] {
