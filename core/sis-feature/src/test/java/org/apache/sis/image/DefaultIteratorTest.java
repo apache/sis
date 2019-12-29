@@ -211,6 +211,7 @@ public strictfp class DefaultIteratorTest extends TestCase {
         }
         expected = new float[StrictMath.max(subMaxX - subMinX, 0) * StrictMath.max(subMaxY - subMinY, 0) * numBands];
         final TiledImageMock image = new TiledImageMock(dataType, numBands, xmin, ymin, width, height, tileWidth, tileHeight, minTileX, minTileY);
+        image.validate();
         /*
          * At this point, all data structures have been created an initialized to zero sample values.
          * Now fill the data structures with arbitrary values. We fill them tile-by-tile by default,

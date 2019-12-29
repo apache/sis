@@ -16,18 +16,17 @@
  */
 package org.apache.sis.image;
 
-import java.awt.Image;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
+import java.awt.image.RasterFormatException;
 import java.awt.image.SampleModel;
 import java.awt.image.TileObserver;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import java.util.Vector;
+import org.apache.sis.internal.coverage.j2d.PlanarImage;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
 
 import static org.junit.Assert.*;
@@ -35,18 +34,19 @@ import static org.junit.Assert.*;
 
 /**
  * A rendered image which can contain an arbitrary number of tiles. Tiles are stored in memory.
- * We use this class for testing purpose only because tiled images in production need a more
+ * We use this class for testing purpose only because tiled images in production use need a more
  * sophisticated implementation capable to store some tiles on disk (for memory consumption reasons).
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
-final class TiledImageMock implements WritableRenderedImage {
+public final strictfp class TiledImageMock extends PlanarImage implements WritableRenderedImage {
     /**
-     * The minimum X or Y coordinate (inclusive) of the rendered image.
+     * Location of the upper-left pixel of the image. Should be a non-trivial
+     * value for increasing the chances to detect error in index calculation.
      */
     private final int minX, minY;
 
@@ -67,7 +67,8 @@ final class TiledImageMock implements WritableRenderedImage {
     private final int numXTiles, numYTiles;
 
     /**
-     * The minimum tile index in the X or Y direction.
+     * Index of the first tile in the image. Should be a non-trivial value
+     * for increasing the chances to detect error in index calculation.
      */
     private final int minTileX, minTileY;
 
@@ -92,16 +93,24 @@ final class TiledImageMock implements WritableRenderedImage {
     private boolean isTileAcquired;
 
     /**
-     * Creates a new tiled image.
+     * Creates a new tiled image. Testers should invoke {@link #validate()} after construction.
      *
-     * @param dataType  sample data type as one of the {@link java.awt.image.DataBuffer} constants.
-     * @param numBands  number of bands in the sample model to create.
+     * @param dataType     sample data type as one of the {@link java.awt.image.DataBuffer} constants.
+     * @param numBands     number of bands in the sample model to create.
+     * @param minX         minimum X coordinate (inclusive) of the rendered image.
+     * @param minY         minimum Y coordinate (inclusive) of the rendered image.
+     * @param width        number of pixels along X axis in the whole rendered image.
+     * @param height       number of pixels along Y axis in the whole rendered image.
+     * @param tileWidth    number of pixels along X axis in a single tile of the image.
+     * @param tileHeight   number of pixels along Y axis in a single tile of the image.
+     * @param minTileX     minimum tile index in the X direction.
+     * @param minTileY     minimum tile index in the Y direction.
      */
-    TiledImageMock(final int dataType,  final int numBands,
-                   final int minX,      final int minY,
-                   final int width,     final int height,
-                   final int tileWidth, final int tileHeight,
-                   final int minTileX,  final int minTileY)
+    public TiledImageMock(final int dataType,  final int numBands,
+                          final int minX,      final int minY,
+                          final int width,     final int height,
+                          final int tileWidth, final int tileHeight,
+                          final int minTileX,  final int minTileY)
     {
         this.minX        = minX;
         this.minY        = minY;
@@ -111,37 +120,42 @@ final class TiledImageMock implements WritableRenderedImage {
         this.tileHeight  = tileHeight;
         this.minTileX    = minTileX;
         this.minTileY    = minTileY;
-        this.numXTiles   = (width  + tileWidth  - 1) / tileWidth;      // Round toward upper integer value.
-        this.numYTiles   = (height + tileHeight - 1) / tileHeight;
+        this.numXTiles   = Numerics.ceilDiv(width,  tileWidth);
+        this.numYTiles   = Numerics.ceilDiv(height, tileHeight);
         this.tiles       = new WritableRaster[numXTiles * numYTiles];
         this.sampleModel = new PixelInterleavedSampleModel(dataType, tileWidth, tileHeight,
                                 numBands, tileWidth * numBands, ArraysExt.range(0, numBands));
     }
 
-    /*
-     * No source, no property, no color model since this test images is not for rendering on screen.
+    /**
+     * No color model since this test images is not for rendering on screen.
      */
-    @Override public Vector<RenderedImage> getSources()             {return null;}
-    @Override public Object                getProperty(String name) {return Image.UndefinedProperty;}
-    @Override public String[]              getPropertyNames()       {return null;}
-    @Override public ColorModel            getColorModel()          {return null;}
-    @Override public SampleModel           getSampleModel()         {return sampleModel;}
+    @Override public ColorModel  getColorModel()  {return null;}
+    @Override public SampleModel getSampleModel() {return sampleModel;}
 
     /*
      * Information specified to the constructor.
      */
-    @Override public int getMinX()            {return minX;}
-    @Override public int getMinY()            {return minY;}
-    @Override public int getWidth()           {return width;}
-    @Override public int getHeight()          {return height;}
-    @Override public int getTileWidth()       {return tileWidth;}
-    @Override public int getTileHeight()      {return tileHeight;}
-    @Override public int getNumXTiles()       {return numXTiles;}
-    @Override public int getNumYTiles()       {return numYTiles;}
-    @Override public int getMinTileX()        {return minTileX;}
-    @Override public int getMinTileY()        {return minTileY;}
-    @Override public int getTileGridXOffset() {return minX - (minTileX * tileWidth);}
-    @Override public int getTileGridYOffset() {return minY - (minTileY * tileHeight);}
+    @Override public int getMinX()       {return minX;}
+    @Override public int getMinY()       {return minY;}
+    @Override public int getWidth()      {return width;}
+    @Override public int getHeight()     {return height;}
+    @Override public int getTileWidth()  {return tileWidth;}
+    @Override public int getTileHeight() {return tileHeight;}
+    @Override public int getNumXTiles()  {return numXTiles;}
+    @Override public int getNumYTiles()  {return numYTiles;}
+    @Override public int getMinTileX()   {return minTileX;}
+    @Override public int getMinTileY()   {return minTileY;}
+
+    /**
+     * Verifies that image and tile layouts are consistent.
+     * This method should be invoked after construction.
+     *
+     * @see #verify()
+     */
+    public void validate() {
+        assertNull(verify());
+    }
 
     /**
      * Sets a sample value at the given location in pixel coordinates.
@@ -154,8 +168,38 @@ final class TiledImageMock implements WritableRenderedImage {
         if (ox < 0 || ox >= width || oy < 0 || oy >= height) {
             throw new IndexOutOfBoundsException();
         }
-        tile(ox / tileWidth  + minTileX,
-             oy / tileHeight + minTileY).setSample(x, y, b, value);
+        tile(StrictMath.floorDiv(ox, tileWidth)  + minTileX,
+             StrictMath.floorDiv(oy, tileHeight) + minTileY, true).setSample(x, y, b, value);
+    }
+
+    /**
+     * Initializes the sample values of all tiles to testing values.
+     * The sample values will be 3 digits numbers of the form "TXY" where:
+     * <ul>
+     *   <li><var>T</var> is the tile index starting with 1 for the first tile and increasing in a row-major fashion.</li>
+     *   <li><var>X</var> is the <var>x</var> coordinate (column index) of the sample value relative to current tile.</li>
+     *   <li><var>Y</var> is the <var>y</var> coordinate (row index) of the sample value relative to current tile.</li>
+     * </ul>
+     *
+     * @param  band  band index where to set values. Other bands will be unmodified.
+     */
+    public void initializeAllTiles(final int band) {
+        int ti = 0;
+        for (int ty=0; ty<numYTiles; ty++) {
+            for (int tx=0; tx<numXTiles; tx++) {
+                final int value = (ti + 1) * 100;
+                final int x = tx * tileWidth  + minX;
+                final int y = ty * tileHeight + minY;
+                final WritableRaster raster = Raster.createWritableRaster(sampleModel, new Point(x, y));
+                for (int j=0; j<tileHeight; j++) {
+                    for (int i=0; i<tileWidth; i++) {
+                        raster.setSample(x+i, y+j, band, value + 10*j + i);
+                    }
+                }
+                tiles[ti++] = raster;
+            }
+        }
+        assertEquals(tiles.length, ti);
     }
 
     /**
@@ -169,7 +213,7 @@ final class TiledImageMock implements WritableRenderedImage {
     @Override
     public Raster getTile(final int tileX, final int tileY) {
         assertFalse("isTileAcquired", isTileAcquired);              // See javadoc.
-        return tile(tileX, tileY);
+        return tile(tileX, tileY, false);
     }
 
     /**
@@ -178,17 +222,18 @@ final class TiledImageMock implements WritableRenderedImage {
     @Override
     public WritableRaster getWritableTile(final int tileX, final int tileY) {
         assertFalse("isTileAcquired", isTileAcquired);
+        final WritableRaster raster = tile(tileX, tileY, true);
         isTileAcquired = true;
         acquiredTileX  = tileX;
         acquiredTileY  = tileY;
-        return tile(tileX, tileY);
+        return raster;
     }
 
     /**
      * Returns the tile at the given index without any verification. It is caller responsibility to verify if this
      * method is invoked in a consistent context (for example after a writable raster has been properly acquired).
      */
-    private WritableRaster tile(int tileX, int tileY) {
+    private WritableRaster tile(int tileX, int tileY, final boolean allowCreate) {
         if ((tileX -= minTileX) < 0 || tileX >= numXTiles ||
             (tileY -= minTileY) < 0 || tileY >= numYTiles)
         {
@@ -197,9 +242,12 @@ final class TiledImageMock implements WritableRenderedImage {
         final int i = tileY * numXTiles + tileX;
         WritableRaster raster = tiles[i];
         if (raster == null) {
-            tiles[i] = raster = Raster.createWritableRaster(sampleModel,
-                    new Point(tileX * tileWidth  + minX,
-                              tileY * tileHeight + minY));
+            if (!allowCreate) {
+                throw new RasterFormatException("Requested tile has not yet been defined.");
+            }
+            final int x = tileX * tileWidth  + minX;
+            final int y = tileY * tileHeight + minY;
+            tiles[i] = raster = Raster.createWritableRaster(sampleModel, new Point(x, y));
         }
         return raster;
     }
@@ -255,11 +303,11 @@ final class TiledImageMock implements WritableRenderedImage {
     public void removeTileObserver(TileObserver to) {
     }
 
-    /*
+    /**
      * Not needed for the tests.
      */
-    @Override public Raster         getData()                       {throw new UnsupportedOperationException();}
-    @Override public Raster         getData(Rectangle rect)         {throw new UnsupportedOperationException();}
-    @Override public void           setData(Raster r)               {throw new UnsupportedOperationException();}
-    @Override public WritableRaster copyData(WritableRaster raster) {throw new UnsupportedOperationException();}
+    @Override
+    public void setData(Raster r) {
+        throw new UnsupportedOperationException();
+    }
 }
