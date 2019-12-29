@@ -171,8 +171,8 @@ public class GridCoverage2D extends GridCoverage {
      * @throws IllegalArgumentException if the image number of bands is not the same than the number of sample dimensions.
      * @throws ArithmeticException if the distance between grid location and image location exceeds the {@code long} capacity.
      */
-    public GridCoverage2D(GridGeometry domain, final Collection<? extends SampleDimension> range, final RenderedImage data) {
-        super(domain = addExtentIfAbsent(domain, data), defaultIfAbsent(range,  data));
+    public GridCoverage2D(GridGeometry domain, final Collection<? extends SampleDimension> range, RenderedImage data) {
+        super(domain = addExtentIfAbsent(domain, data = unwrapIfSameSize(data)), defaultIfAbsent(range, data));
         this.data = data;           // Non-null verified by addExtentIfAbsent(…, data).
         /*
          * Find indices of the two dimensions of the slice. Those dimensions are usually 0 for x and 1 for y,
@@ -201,6 +201,21 @@ public class GridCoverage2D extends GridCoverage {
             }
         }
         verifyBandCount(range, data);
+    }
+
+    /**
+     * Returns the wrapped image if the only difference is a translation, or {@code data} otherwise.
+     * Workaround for RFE #4093999 ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.8")
+    private static RenderedImage unwrapIfSameSize(RenderedImage data) {
+        if (data instanceof RelocatedImage) {
+            final RenderedImage image = ((RelocatedImage) data).image;
+            if (image.getWidth() == data.getWidth() && image.getHeight() == data.getHeight()) {
+                data = image;
+            }
+        }
+        return data;
     }
 
     /**
@@ -480,6 +495,7 @@ public class GridCoverage2D extends GridCoverage {
      * @see BufferedImage#getSubimage(int, int, int, int)
      */
     @Override
+    @SuppressWarnings("AssertWithSideEffects")
     public RenderedImage render(final GridExtent sliceExtent) throws CannotEvaluateException {
         if (sliceExtent == null) {
             return data;
@@ -525,6 +541,7 @@ public class GridCoverage2D extends GridCoverage {
              * (5,5) but the image to return starts at (1,1), then we need to set its location to (-4,-4).
              */
             final RelocatedImage r = new RelocatedImage(data, xmin, ymin, xmax, ymax);
+            String error; assert (error = r.verify()) != null : error;
             return r.isIdentity() ? data : r;
         } catch (ArithmeticException e) {
             throw new CannotEvaluateException(e.getMessage(), e);

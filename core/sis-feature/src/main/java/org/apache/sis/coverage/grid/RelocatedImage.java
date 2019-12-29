@@ -49,7 +49,7 @@ final class RelocatedImage extends PlanarImage {
     /**
      * The image to translate.
      */
-    private final RenderedImage image;
+    final RenderedImage image;
 
     /**
      * Value to add for converting a column index from the coordinate system of the wrapped image
@@ -141,9 +141,8 @@ final class RelocatedImage extends PlanarImage {
      * Returns {@code true} if this image does not move and does not subset the wrapped image.
      */
     final boolean isIdentity() {
-        return offsetX == 0 && offsetY == 0 &&
-               minX == image.getMinX() && width  == image.getWidth() &&
-               minY == image.getMinY() && height == image.getHeight();
+        // The use of >= is a paranoiac check, but the > case should never happen actually.
+        return offsetX == 0 && offsetY == 0 && width >= image.getWidth() && height >= image.getHeight();
     }
 
     /**

@@ -330,8 +330,12 @@ public abstract class PlanarImage implements RenderedImage {
         final int tileHeight = getTileHeight();
         final SampleModel sm = getSampleModel();
         if (sm != null) {
-            if (sm.getWidth()  != tileWidth)  return "tileWidth";
-            if (sm.getHeight() != tileHeight) return "tileHeight";
+            /*
+             * The SampleModel size represents the physical layout of pixels in the data buffer,
+             * while the Raster may be a virtual view over a sub-region of a parent raster.
+             */
+            if (sm.getWidth()  < tileWidth)  return "tileWidth";
+            if (sm.getHeight() < tileHeight) return "tileHeight";
             final ColorModel cm = getColorModel();
             if (cm != null) {
                 if (!cm.isCompatibleSampleModel(sm)) return "SampleModel";
