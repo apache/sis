@@ -51,18 +51,24 @@ import org.apache.sis.internal.coverage.j2d.ScaledColorSpace;
  * We do not try to reproduce the full set of JAI functionalities here, but we progressively
  * reproduce some little bits of functionalities as they are needed by Apache SIS.</p></div>
  *
- * <p>This base class does not store any state and does not assume any tile layout.
+ * <p>This base class does not store any state,
+ * but assumes that numbering of pixel coordinates and tile indices start at zero.
  * Subclasses need to implement at least the following methods:</p>
  * <ul>
- *   <li>{@link #getMinX()}        — the minimum <var>x</var> coordinate (inclusive) of the image.</li>
- *   <li>{@link #getMinY()}        — the minimum <var>y</var> coordinate (inclusive) of the image.</li>
  *   <li>{@link #getWidth()}       — the image width in pixels.</li>
  *   <li>{@link #getHeight()}      — the image height in pixels.</li>
- *   <li>{@link #getMinTileX()}    — the minimum tile index in the <var>x</var> direction.</li>
- *   <li>{@link #getMinTileY()}    — the minimum tile index in the <var>y</var> direction.</li>
  *   <li>{@link #getTileWidth()}   — the tile width in pixels.</li>
  *   <li>{@link #getTileHeight()}  — the tile height in pixels.</li>
  *   <li>{@link #getTile(int,int)} — the tile at given tile indices.</li>
+ * </ul>
+ *
+ * <p>If pixel coordinates or tile indices do not start at zero,
+ * then subclasses shall also override the following methods:</p>
+ * <ul>
+ *   <li>{@link #getMinX()}        — the minimum <var>x</var> coordinate (inclusive) of the image.</li>
+ *   <li>{@link #getMinY()}        — the minimum <var>y</var> coordinate (inclusive) of the image.</li>
+ *   <li>{@link #getMinTileX()}    — the minimum tile index in the <var>x</var> direction.</li>
+ *   <li>{@link #getMinTileY()}    — the minimum tile index in the <var>y</var> direction.</li>
  * </ul>
  *
  * Default implementations are provided for {@link #getNumXTiles()}, {@link #getNumYTiles()},
@@ -130,6 +136,58 @@ public abstract class PlanarImage implements RenderedImage {
     @Override
     public String[] getPropertyNames() {
         return null;
+    }
+
+    /**
+     * Returns the minimum <var>x</var> coordinate (inclusive) of this image.
+     *
+     * <p>Default implementation returns zero.
+     * Subclasses shall override this method if the image starts at another coordinate.</p>
+     *
+     * @return the minimum <var>x</var> coordinate (column) of this image.
+     */
+    @Override
+    public int getMinX() {
+        return 0;
+    }
+
+    /**
+     * Returns the minimum <var>y</var> coordinate (inclusive) of this image.
+     *
+     * <p>The default implementation returns zero.
+     * Subclasses shall override this method if the image starts at another coordinate.</p>
+     *
+     * @return the minimum <var>y</var> coordinate (row) of this image.
+     */
+    @Override
+    public int getMinY() {
+        return 0;
+    }
+
+    /**
+     * Returns the minimum tile index in the <var>x</var> direction.
+     *
+     * <p>The default implementation returns zero.
+     * Subclasses shall override this method if the tile grid starts at another index.</p>
+     *
+     * @return the minimum tile index in the <var>x</var> direction.
+     */
+    @Override
+    public int getMinTileX() {
+        return 0;
+    }
+
+    /**
+     * Returns the minimum tile index in the <var>y</var> direction.
+     *
+     * <p>The default implementation returns zero.
+     * Subclasses shall override this method if the tile grid starts at another index.</p>
+     *
+     * @return the minimum tile index in the <var>y</var> direction.
+     */
+    @Override
+    public int getMinTileY() {
+        return 0;
     }
 
     /**

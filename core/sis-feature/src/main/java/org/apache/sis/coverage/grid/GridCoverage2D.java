@@ -539,6 +539,10 @@ public class GridCoverage2D extends GridCoverage {
              * As per method contract, we shall set the (x,y) location to the difference between requested region
              * and actual region of the returned image. For example if the user requested an image starting at
              * (5,5) but the image to return starts at (1,1), then we need to set its location to (-4,-4).
+             *
+             * Note: we could do a special case when the result has only one tile and create a BufferedImage
+             * with Raster.createChild(…), but that would force us to invoke RenderedImage.getTile(…) which
+             * may force data loading earlier than desired.
              */
             final ReshapedImage r = new ReshapedImage(data, xmin, ymin, xmax, ymax);
             String error; assert (error = r.verify()) != null : error;
