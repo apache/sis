@@ -70,6 +70,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotAssignCharacteristics_1 = 2;
 
         /**
+         * Can not compute tile ({0}, {1}).
+         */
+        public static final short CanNotComputeTile_2 = 66;
+
+        /**
          * Can not create a two-dimensional reference system from the “{0}” system.
          */
         public static final short CanNotCreateTwoDimensionalCRS_1 = 60;
@@ -128,6 +133,11 @@ public final class Resources extends IndexedResourceBundle {
          * Operation “{0}” requires a “{1}” property, but no such property has been found in “{2}”.
          */
         public static final short DependencyNotFound_3 = 8;
+
+        /**
+         * Empty tile or image region.
+         */
+        public static final short EmptyTileOrImageRegion = 67;
 
         /**
          * Indices ({3}) are outside grid coverage. The value in dimension {0} shall be between

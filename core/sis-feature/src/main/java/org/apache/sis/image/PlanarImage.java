@@ -22,9 +22,7 @@ import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.SampleModel;
-import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
-import java.awt.image.RasterFormatException;
 import java.awt.image.WritableRaster;
 import java.awt.image.RenderedImage;
 import java.util.Vector;
@@ -83,12 +81,6 @@ import org.apache.sis.internal.coverage.j2d.ScaledColorSpace;
  * @module
  */
 public abstract class PlanarImage implements RenderedImage {
-    /**
-     * Approximate size of the buffer to use for copying data from the image to a raster, in bits.
-     * The actual buffer size may be smaller or larger, depending on the actual tile size.
-     */
-    private static final int BUFFER_SIZE = 8192 * Byte.SIZE;
-
     /**
      * Creates a new rendered image.
      */
@@ -261,22 +253,6 @@ public abstract class PlanarImage implements RenderedImage {
     }
 
     /**
-     * Returns the size in bits of the transfer type, or an arbitrary value if that type is unknown.
-     * For this class it is okay if the value is not accurate; this method is used only for adjusting
-     * the {@link #BUFFER_SIZE} value.
-     *
-     * @param  raster  the raster for which to get transfer type size.
-     * @return size in bits of transfer type. May be an arbitrary size.
-     */
-    private static int getTransferTypeSize(final Raster raster) {
-        try {
-            return DataBuffer.getDataTypeSize(raster.getTransferType());
-        } catch (IllegalArgumentException e) {
-            return Short.SIZE;
-        }
-    }
-
-    /**
      * Returns a copy of this image as one large tile.
      * The returned raster will not be updated if this image is changed.
      *
@@ -352,6 +328,8 @@ public abstract class PlanarImage implements RenderedImage {
          * Iterate over all tiles that interesect the area of interest. For each tile,
          * copy a few rows in a temporary buffer, then copy that buffer to destination.
          * The buffer will be reused for each transfer, unless its size is insufficient.
+         * Note that `tb` should never be empty since we restrict iteration to the tiles
+         * that intersect the given area of interest.
          */
         Object buffer = null;
         int bufferCapacity = 0;
@@ -359,15 +337,7 @@ public abstract class PlanarImage implements RenderedImage {
             for (int tx = minTileX; tx <= maxTileX; tx++) {
                 final Raster tile = getTile(tx, ty);
                 final Rectangle tb = aoi.intersection(tile.getBounds());        // Bounds of transfer buffer.
-                if (tb.isEmpty()) {
-                    /*
-                     * Should never happen since we iterate only over the tiles
-                     * that intersect the given area of interest.
-                     */
-                    throw new RasterFormatException("Inconsistent tile matrix.");
-                }
-                final int afterLastRow = Math.addExact(tb.y, tb.height);
-                tb.height = Math.max(1, Math.min(BUFFER_SIZE / (getTransferTypeSize(tile) * tb.width), tb.height));
+                final int afterLastRow = ImageUtilities.prepareTransferRegion(tb, tile.getTransferType());
                 final int transferCapacity = tb.width * tb.height;
                 if (transferCapacity > bufferCapacity) {
                     bufferCapacity = transferCapacity;

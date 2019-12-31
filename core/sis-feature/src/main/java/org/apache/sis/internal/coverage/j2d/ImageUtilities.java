@@ -26,6 +26,7 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.PackedColorModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
+import java.awt.image.RasterFormatException;
 import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import org.apache.sis.internal.feature.Resources;
@@ -43,6 +44,20 @@ import org.apache.sis.util.resources.Vocabulary;
  * @module
  */
 public final class ImageUtilities {
+    /**
+     * Default width and height of tiles, in pixels.
+     */
+    public static final int DEFAULT_TILE_SIZE = 256;
+
+    /**
+     * Approximate size of the buffer to use for copying data from/to a raster, in bits.
+     * The actual buffer size may be smaller or larger, depending on the actual tile size.
+     * This value does not need to be very large. The current value is 8 kb.
+     *
+     * @see #prepareTransferRegion(Rectangle, int)
+     */
+    private static final int BUFFER_SIZE = 32 * DEFAULT_TILE_SIZE * Byte.SIZE;
+
     /**
      * Do not allow instantiation of this class.
      */
@@ -273,5 +288,33 @@ public final class ImageUtilities {
             }
         }
         return keys;
+    }
+
+    /**
+     * Suggests the height of a transfer region for a tile of the given size. The given region should be
+     * contained inside {@link Raster#getBounds()}. This method modifies {@link Rectangle#height} in-place.
+     * The {@link Rectangle#width} value is never modified, so caller can iterate on all raster rows without
+     * the need to check if the row is incomplete.
+     *
+     * @param  bounds    on input, the region of interest. On output, the suggested transfer region bounds.
+     * @param  dataType  one of {@link DataBuffer} constant. It is okay if an unknown constant is used since
+     *                   this information is used only as a hint for adjusting the {@link #BUFFER_SIZE} value.
+     * @return the maximum <var>y</var> value plus 1. This can be used as stop condition for iterating over rows.
+     * @throws ArithmeticException if the maximum <var>y</var> value overflows 32 bits integer capacity.
+     * @throws RasterFormatException if the given bounds is empty.
+     */
+    public static int prepareTransferRegion(final Rectangle bounds, final int dataType) {
+        if (bounds.isEmpty()) {
+            throw new RasterFormatException(Resources.format(Resources.Keys.EmptyTileOrImageRegion));
+        }
+        final int afterLastRow = Math.addExact(bounds.y, bounds.height);
+        int size;
+        try {
+            size = DataBuffer.getDataTypeSize(dataType);
+        } catch (IllegalArgumentException e) {
+            size = Short.SIZE;  // Arbitrary value is okay because this is only a hint for choosing a buffer size.
+        }
+        bounds.height = Math.max(1, Math.min(BUFFER_SIZE / (size * bounds.width), bounds.height));
+        return afterLastRow;
     }
 }

@@ -40,7 +40,7 @@ import static java.lang.Math.ulp;
  * Miscellaneous utilities methods working on floating point numbers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -219,6 +219,18 @@ public final class Numerics extends Static {
 //      final long high = Math.multiplyHigh(value, multiplier);
 //      return Math.multiplyExact(value * multiplier / divisor, high);
         return Math.multiplyExact(value, multiplier) / divisor;
+    }
+
+    /**
+     * Returns the given value clamped to the range on 32 bits integer.
+     *
+     * @param  value  the value to clamp.
+     * @return the value clamped to the range of 32 bits integer.
+     */
+    public static int clamp(final long value) {
+        if (value < Integer.MIN_VALUE) return Integer.MIN_VALUE;
+        if (value > Integer.MAX_VALUE) return Integer.MAX_VALUE;
+        return (int) value;
     }
 
     /**

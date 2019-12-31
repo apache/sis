@@ -22,6 +22,7 @@ import javax.measure.Quantity;
 import javax.measure.UnitConverter;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -155,7 +156,7 @@ abstract class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<
      */
     @Override
     public final int intValue() {
-        return (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, longValue()));
+        return Numerics.clamp(longValue());
     }
 
     /**

@@ -26,6 +26,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.lang.ref.WeakReference;
 import org.apache.sis.internal.system.ReferenceQueueConsumer;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.ArgumentChecks;
@@ -161,6 +162,19 @@ public abstract class CachedImage extends PlanarImage {
     }
 
     /**
+     * Returns the sample model associated with this image.
+     * All rasters returned from this image will have this sample model.
+     * In {@code CachedImage} implementation, the sample model determines the tile size
+     * (this is not necessarily true for all {@link RenderedImage} implementations).
+     *
+     * @return the sample model of this image.
+     */
+    @Override
+    public SampleModel getSampleModel() {
+        return sampleModel;
+    }
+
+    /**
      * Returns the width of tiles in this image. The default implementation returns {@link SampleModel#getWidth()}.
      *
      * <div class="note"><b>Note:</b>
@@ -221,7 +235,7 @@ public abstract class CachedImage extends PlanarImage {
                 if (tile == null) {
                     tile = computeTile(tileX, tileY);
                     if (tile == null) {
-                        throw new ImagingOpException("No data");    // TODO
+                        throw new ImagingOpException(Resources.format(Resources.Keys.CanNotComputeTile_2, tileX, tileY));
                     }
                 }
             } finally {
