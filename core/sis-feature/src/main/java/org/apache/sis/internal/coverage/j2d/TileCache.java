@@ -23,7 +23,7 @@ import org.apache.sis.util.collection.Cache;
 
 
 /**
- * A cache of tiles computed by {@link CachedImage}. A common cache is shared by all images.
+ * A cache of tiles computed by {@link ComputedImage}. A common cache is shared by all images.
  * Tiles are kept by strong references until a memory usage limit is reached, in which case
  * the references of oldest tiles become soft references.
  *
@@ -71,7 +71,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
     }
 
     /**
-     * A compound key identifying a tile of a {@link CachedImage}.
+     * A compound key identifying a tile of a {@link ComputedImage}.
      */
     static final class Key {
         /**
@@ -79,7 +79,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
          * for the same image will share the same reference.  Consequently it is okay to compare
          * {@code image} fields directly instead of {@code image.get()}.
          */
-        private final Reference<CachedImage> image;
+        private final Reference<ComputedImage> image;
 
         /**
          * Index of the tile owned by the image.
@@ -93,7 +93,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
          * @param  tileX  the column index of the cached tile.
          * @param  tileY  the row index of the cached tile.
          */
-        Key(final Reference<CachedImage> image, final int tileX, final int tileY) {
+        Key(final Reference<ComputedImage> image, final int tileX, final int tileY) {
             this.image = image;
             this.tileX = tileX;
             this.tileY = tileY;
@@ -110,7 +110,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
         /**
          * Returns a hash code value for this key. Note that this is okay to use {@link #image} directly
          * in hash code computation instead of {@link Reference#get()} because we maintain a one-to-one
-         * relationship between {@link CachedImage} and its {@link Reference}.
+         * relationship between {@link ComputedImage} and its {@link Reference}.
          */
         @Override
         public int hashCode() {

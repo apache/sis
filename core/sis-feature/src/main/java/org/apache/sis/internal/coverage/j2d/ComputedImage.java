@@ -18,6 +18,8 @@ package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Vector;
 import java.awt.Point;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
@@ -40,6 +42,15 @@ import org.apache.sis.util.Disposable;
  * discarded at any time, in which case they will need to be recomputed
  * when needed again.
  *
+ * <p>Subclasses need to implement at least the following methods:</p>
+ * <ul>
+ *   <li>{@link #getWidth()}</li>
+ *   <li>{@link #getHeight()}</li>
+ *   <li>{@link #getTileWidth()}</li>
+ *   <li>{@link #getTileHeight()}</li>
+ *   <li>{@link #computeTile(int,int)}</li>
+ * </ul>
+ *
  * <p>This class is thread-safe. Multiple tiles may be computed in
  * different background threads.</p>
  *
@@ -48,24 +59,24 @@ import org.apache.sis.util.Disposable;
  * @since   1.1
  * @module
  */
-public abstract class CachedImage extends PlanarImage {
+public abstract class ComputedImage extends PlanarImage {
     /**
      * Weak reference to the enclosing image together with necessary information for releasing resources
      * when image is disposed. This class shall not contain any strong reference to the enclosing image.
      */
     // MUST be static
-    private static final class Cleaner extends WeakReference<CachedImage> implements Disposable {
+    private static final class Cleaner extends WeakReference<ComputedImage> implements Disposable {
         /**
          * Indices of all cached tiles. Used for removing tiles from the cache when the image is disposed.
          * All accesses to this collection must be synchronized. This field has to be declared here because
-         * {@link Cleaner} is not allowed to keep a strong reference to the enclosing {@link CachedImage}.
+         * {@link Cleaner} is not allowed to keep a strong reference to the enclosing {@link ComputedImage}.
          */
         private final Set<TileCache.Key> cachedTiles;
 
         /**
          * Creates a new weak reference to the given image.
          */
-        Cleaner(final CachedImage image) {
+        Cleaner(final ComputedImage image) {
             super(image, ReferenceQueueConsumer.QUEUE);
             cachedTiles = new HashSet<>();
         }
@@ -104,6 +115,13 @@ public abstract class CachedImage extends PlanarImage {
     private final Cleaner reference;
 
     /**
+     * The sources of this image, or {@code null} if unknown.
+     *
+     * @see #getSource(int)
+     */
+    private final RenderedImage[] sources;
+
+    /**
      * The sample model shared by all tiles in this image.
      * The {@linkplain SampleModel#getWidth() sample model width}
      * determines this {@linkplain #getTileWidth() image tile width},
@@ -111,7 +129,7 @@ public abstract class CachedImage extends PlanarImage {
      * determines this {@linkplain #getTileHeight() image tile height}.
      *
      * <div class="note"><b>Design note:</b>
-     * {@code CachedImage} requires the sample model to have exactly the desired tile size
+     * {@code ComputedImage} requires the sample model to have exactly the desired tile size
      * otherwise tiles created by {@link #createTile(int, int)} will consume more memory
      * than needed.</div>
      */
@@ -122,11 +140,21 @@ public abstract class CachedImage extends PlanarImage {
      * The tile size will be the width and height of the given sample model.
      *
      * @param  sampleModel  the sample model shared by all tiles in this image.
+     * @param  sources      sources of this image (may be an empty array), or a null array if unknown.
      */
-    protected CachedImage(final SampleModel sampleModel) {
+    protected ComputedImage(final SampleModel sampleModel, RenderedImage... sources) {
         ArgumentChecks.ensureNonNull("sampleModel", sampleModel);
-        reference = new Cleaner(this);
         this.sampleModel = sampleModel;
+        if (sources != null) {
+            sources = sources.clone();
+            this.sources = sources;
+            for (int i=0; i<sources.length; i++) {
+                ArgumentChecks.ensureNonNullElement("sources", i, sources[i]);
+            }
+        } else {
+            this.sources = null;
+        }
+        reference = new Cleaner(this);
     }
 
     /**
@@ -140,31 +168,65 @@ public abstract class CachedImage extends PlanarImage {
      * unless subclass override {@link #getMinX()}, {@link #getMinY()}, {@link #getMinTileX()}
      * and {@link #getMinTileY()}.</p>
      *
-     * @param  image  the image from which to get tile size.
+     * @param  image   the main image from which to get tile size.
+     * @param  others  additional sources, or {@code null} if none.
      */
-    protected CachedImage(final RenderedImage image) {
+    protected ComputedImage(final RenderedImage image, final RenderedImage... others) {
         ArgumentChecks.ensureNonNull("image", image);
+        /*
+         * Get a sample model compatible with the given one, but with the tile width and height.
+         * We check if the given sample model can be used as-is and create a new one only if needed.
+         * This restriction about sample model size matching tile size is for reducing the amount
+         * of memory consumed by {@link #createTile(int, int)}.
+         */
+        final int width  = image.getTileWidth();
+        final int height = image.getTileHeight();
+        SampleModel sm   = image.getSampleModel();
+        if (sm.getWidth() != width || sm.getHeight() != height) {
+            sm = sm.createCompatibleSampleModel(width, height);
+        }
+        sampleModel = sm;
+        if (others == null) {
+            sources = new RenderedImage[] {image};
+        } else {
+            sources = new RenderedImage[others.length + 1];
+            sources[0] = image;
+            System.arraycopy(others, 0, sources, 1, others.length);
+            for (int i=1; i<sources.length; i++) {
+                ArgumentChecks.ensureNonNullElement("others", i-1, sources[i]);
+            }
+        }
         reference = new Cleaner(this);
-        sampleModel = adapt(image.getSampleModel(), image.getTileWidth(), image.getTileHeight());
     }
 
     /**
-     * Returns a sample model compatible with the given one, but with the specified width and height.
-     * This method checks if the given sample model can be used as-is and create a new one only if needed.
-     * This restriction about sample model size matching tile size is for reducing the amount of memory
-     * consumed by {@link #createTile(int, int)}.
+     * Returns the source at the given index.
+     *
+     * @param  index  index of the desired source.
+     * @return source at the given index.
+     * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
-    private static SampleModel adapt(SampleModel sampleModel, final int width, final int height) {
-        if (sampleModel.getWidth() != width || sampleModel.getHeight() != height) {
-            sampleModel = sampleModel.createCompatibleSampleModel(width, height);
-        }
-        return sampleModel;
+    protected final RenderedImage getSource(final int index) {
+        if (sources != null) return sources[index];
+        else throw new IndexOutOfBoundsException();
+    }
+
+    /**
+     * Returns the immediate sources of image data for this image (may be {@code null}).
+     * This method returns all sources specified at construction time.
+     *
+     * @return the immediate sources, or an empty vector is none, or {@code null} if unknown.
+     */
+    @Override
+    @SuppressWarnings("UseOfObsoleteCollectionType")
+    public Vector<RenderedImage> getSources() {
+        return (sources != null) ? new Vector<>(Arrays.asList(sources)) : null;
     }
 
     /**
      * Returns the sample model associated with this image.
      * All rasters returned from this image will have this sample model.
-     * In {@code CachedImage} implementation, the sample model determines the tile size
+     * In {@code ComputedImage} implementation, the sample model determines the tile size
      * (this is not necessarily true for all {@link RenderedImage} implementations).
      *
      * @return the sample model of this image.
@@ -179,7 +241,7 @@ public abstract class CachedImage extends PlanarImage {
      *
      * <div class="note"><b>Note:</b>
      * a raster can have a smaller width than its sample model, for example when a raster is a view over a subregion
-     * of another raster. But this is not recommended in the particular case of this {@code CachedImage} class,
+     * of another raster. But this is not recommended in the particular case of this {@code ComputedImage} class,
      * because it would cause {@link #createTile(int, int)} to consume more memory than necessary.</div>
      *
      * @return the width of this image in pixels.
@@ -194,7 +256,7 @@ public abstract class CachedImage extends PlanarImage {
      *
      * <div class="note"><b>Note:</b>
      * a raster can have a smaller height than its sample model, for example when a raster is a view over a subregion
-     * of another raster. But this is not recommended in the particular case of this {@code CachedImage} class,
+     * of another raster. But this is not recommended in the particular case of this {@code ComputedImage} class,
      * because it would cause {@link #createTile(int, int)} to consume more memory than necessary.</div>
      *
      * @return the height of this image in pixels.
