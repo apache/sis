@@ -78,7 +78,7 @@ import org.apache.sis.storage.event.WarningEvent;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -95,8 +95,9 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
     protected final Path location;
 
     /**
-     * An identifier for this folder, or {@code null} if this folder is the root specified by the user.
-     * Shall never be null for sub-folders found in the root folder.
+     * An identifier for this folder, or {@code null} if not yet created. Only the root folder specified by
+     * user has an initially null identifier. All sub-folders shall have a non-null identifier determined
+     * at construction time.
      *
      * @see #identifier(NameFactory)
      */
@@ -268,7 +269,15 @@ class Store extends DataStore implements StoreResource, Aggregate, DirectoryStre
             mb.addResourceScope(ScopeCode.COLLECTION, Resources.formatInternational(Resources.Keys.DirectoryContent_1, getDisplayName()));
             mb.addLanguage(locale,   MetadataBuilder.Scope.RESOURCE);
             mb.addEncoding(encoding, MetadataBuilder.Scope.RESOURCE);
-            mb.addTitleOrIdentifier(identifier.toString(), MetadataBuilder.Scope.RESOURCE);
+            String name = null;
+            if (identifier != null) {
+                name = identifier.toString();
+                if (".".equals(name)) name = null;
+            }
+            if (name == null) {
+                name = super.getDisplayName();              // User-specified folder (root of this resource).
+            }
+            mb.addTitleOrIdentifier(name, MetadataBuilder.Scope.RESOURCE);
             metadata = mb.build(true);
         }
         return metadata;
