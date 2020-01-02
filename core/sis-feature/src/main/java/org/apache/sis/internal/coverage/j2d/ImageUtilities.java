@@ -19,7 +19,6 @@ package org.apache.sis.internal.coverage.j2d;
 import java.util.Arrays;
 import java.awt.Rectangle;
 import java.awt.color.ColorSpace;
-import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
@@ -31,6 +30,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -43,7 +43,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @since   1.1
  * @module
  */
-public final class ImageUtilities {
+public final class ImageUtilities extends Static {
     /**
      * Default width and height of tiles, in pixels.
      */
@@ -65,43 +65,6 @@ public final class ImageUtilities {
     }
 
     /**
-     * Creates an opaque image with a gray scale color model. The image can have an arbitrary
-     * number of bands, but in current implementation only one band is used.
-     *
-     * <p><b>Warning:</b> displaying this image is very slow, except in a few special cases.
-     * It should be used only when no standard color model can be used.</p>
-     *
-     * @param  dataType       the color model type as one of {@code DataBuffer.TYPE_*} constants.
-     * @param  width          the desired image width.
-     * @param  height         the desired image height.
-     * @param  numComponents  the number of components.
-     * @param  visibleBand    the band to use for computing colors.
-     * @param  minimum        the minimal sample value expected.
-     * @param  maximum        the maximal sample value expected.
-     * @return the color space for the given range of values.
-     */
-    public static BufferedImage createGrayScale(final int dataType, final int width, final int height,
-            final int numComponents, final int visibleBand, final double minimum, final double maximum)
-    {
-        switch (dataType) {
-            case DataBuffer.TYPE_BYTE: {
-                if (numComponents == 1 && minimum <= 0 && maximum >= 0xFF) {
-                    return new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-                }
-                break;
-            }
-            case DataBuffer.TYPE_USHORT: {
-                if (numComponents == 1 && minimum <= 0 && maximum >= 0xFFFF) {
-                    return new BufferedImage(width, height, BufferedImage.TYPE_USHORT_GRAY);
-                }
-                break;
-            }
-        }
-        final ColorModel cm = ColorModelFactory.createGrayScale(DataBuffer.TYPE_INT, 1, 0, -10, 10);
-        return new BufferedImage(cm, cm.createCompatibleWritableRaster(width, height), false, null);
-    }
-
-    /**
      * Returns the bounds of the given image as a new rectangle.
      *
      * @param  image  the image for which to get the bounds.
@@ -111,6 +74,22 @@ public final class ImageUtilities {
      */
     public static Rectangle getBounds(final RenderedImage image) {
         return new Rectangle(image.getMinX(), image.getMinY(), image.getWidth(), image.getHeight());
+    }
+
+    /**
+     * Returns the data type of the given raster.
+     *
+     * @param  raster  the raster for which to get the data type, or {@code null}.
+     * @return the data type, or {@link DataBuffer#TYPE_UNDEFINED} if unknown.
+     */
+    public static int getDataType(final Raster raster) {
+        if (raster != null) {
+            final DataBuffer buffer = raster.getDataBuffer();
+            if (buffer != null) {
+                return buffer.getDataType();
+            }
+        }
+        return DataBuffer.TYPE_UNDEFINED;
     }
 
     /**

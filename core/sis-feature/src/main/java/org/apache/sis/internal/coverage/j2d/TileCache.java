@@ -114,7 +114,11 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
          */
         @Override
         public int hashCode() {
-            return Long.hashCode(System.identityHashCode(image) + tileX + 65563L * tileY);
+            /*
+             * Dispatch tileX and tileY on approximately two halves of 32 bits integer.
+             * 65563 is a prime number close to 65536, the capacity of 16 bits integers.
+             */
+            return System.identityHashCode(image) + tileX + 65563 * tileY;
         }
 
         /**

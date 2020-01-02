@@ -61,7 +61,7 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see DecimalFunctions
  * @see org.apache.sis.util.Numbers
@@ -750,8 +750,8 @@ public final class MathFunctions extends Static {
              */
             return Double.NaN;
         }
-        exp -= (16383 - 1023);      //change from 15 bias to 11 bias
-        // Check cases where mantissa excess what double can support
+        exp -= (16383 - 1023);     // Change from 15 bias to 11 bias.
+        // Check cases where mantissa excess what double can support.
         if (exp < 0)    return Double.NEGATIVE_INFINITY;
         if (exp > 2046) return Double.POSITIVE_INFINITY;
 
@@ -852,12 +852,11 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
         int count = 1;
         /*
          * Searches for the first divisors among the prime numbers. We stop the search at the
-         * square root of 'n' because every values above that point can be inferred from the
-         * values before that point, i.e. if n=p1*p2 and p2 is greater than 'sqrt', than p1
-         * most be lower than 'sqrt'.
+         * square root of `n` because every values above that point can be inferred from the
+         * values before that point, i.e. if n=p₁⋅p₂ and p₂ is greater than `sqrt`, than p₁
+         * must be lower than `sqrt`.
          */
-        final int sqrt = (int) sqrt(number);               // Really want rounding toward 0.
-        for (int p,i=0; (p=primeNumberAt(i)) <= sqrt; i++) {
+        for (int p,i=0; (p=primeNumberAt(i))*p <= number; i++) {
             if (number % p == 0) {
                 if (count == divisors.length) {
                     divisors = Arrays.copyOf(divisors, count*2);
@@ -866,7 +865,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
             }
         }
         /*
-         * Completes the divisors past 'sqrt'. The numbers added here may or may not be prime
+         * Completes the divisors past `sqrt`. The numbers added here may or may not be prime
          * numbers. Side note: checking that they are prime numbers would be costly, but this
          * algorithm doesn't need that.
          */

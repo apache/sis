@@ -44,15 +44,21 @@ import org.apache.sis.util.Disposable;
  *
  * <p>Subclasses need to implement at least the following methods:</p>
  * <ul>
- *   <li>{@link #getWidth()}</li>
- *   <li>{@link #getHeight()}</li>
- *   <li>{@link #getTileWidth()}</li>
- *   <li>{@link #getTileHeight()}</li>
- *   <li>{@link #computeTile(int,int)}</li>
+ *   <li>{@link #getWidth()}           — the image width in pixels.</li>
+ *   <li>{@link #getHeight()}          — the image height in pixels.</li>
+ *   <li>{@link #computeTile(int,int)} — invoked when a requested tile is not in the cache.</li>
  * </ul>
  *
- * <p>This class is thread-safe. Multiple tiles may be computed in
- * different background threads.</p>
+ * <p>If pixel coordinates or tile indices do not start at zero,
+ * then subclasses shall also override the following methods:</p>
+ * <ul>
+ *   <li>{@link #getMinX()}     — the minimum <var>x</var> coordinate (inclusive) of the image.</li>
+ *   <li>{@link #getMinY()}     — the minimum <var>y</var> coordinate (inclusive) of the image.</li>
+ *   <li>{@link #getMinTileX()} — the minimum tile index in the <var>x</var> direction.</li>
+ *   <li>{@link #getMinTileY()} — the minimum tile index in the <var>y</var> direction.</li>
+ * </ul>
+ *
+ * <p>This class is thread-safe: multiple tiles may be computed in different background threads.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -137,7 +143,13 @@ public abstract class ComputedImage extends PlanarImage {
 
     /**
      * Creates an initially empty image with the given sample model.
-     * The tile size will be the width and height of the given sample model.
+     * The default tile size will be the width and height of the given sample model.
+     * The {@link ImageLayout#createCompatibleSampleModel(RenderedImage)} convenience method
+     * may be used for getting a sample model of desired size.
+     *
+     * <div class="note"><b>Note:</b>
+     * the restriction about sample model size matching tile size is for reducing the amount
+     * of memory consumed by {@link #createTile(int, int)}.</div>
      *
      * @param  sampleModel  the sample model shared by all tiles in this image.
      * @param  sources      sources of this image (may be an empty array), or a null array if unknown.
@@ -147,56 +159,12 @@ public abstract class ComputedImage extends PlanarImage {
         this.sampleModel = sampleModel;
         if (sources != null) {
             sources = sources.clone();
-            this.sources = sources;
             for (int i=0; i<sources.length; i++) {
                 ArgumentChecks.ensureNonNullElement("sources", i, sources[i]);
             }
-        } else {
-            this.sources = null;
         }
-        reference = new Cleaner(this);
-    }
-
-    /**
-     * Creates an initially empty image with a sample model derived from the given image.
-     * This constructor sets {@link #sampleModel} to a model compatible with the one used
-     * by the given image, but with {@linkplain SampleModel#getWidth() width} and
-     * {@linkplain SampleModel#getHeight() height} matching exactly the size of the tiles.
-     *
-     * <p>This constructor does <strong>not</strong> inherit other image properties.
-     * In particular pixel coordinates and tile indices in this image start at (0,0)
-     * unless subclass override {@link #getMinX()}, {@link #getMinY()}, {@link #getMinTileX()}
-     * and {@link #getMinTileY()}.</p>
-     *
-     * @param  image   the main image from which to get tile size.
-     * @param  others  additional sources, or {@code null} if none.
-     */
-    protected ComputedImage(final RenderedImage image, final RenderedImage... others) {
-        ArgumentChecks.ensureNonNull("image", image);
-        /*
-         * Get a sample model compatible with the given one, but with the tile width and height.
-         * We check if the given sample model can be used as-is and create a new one only if needed.
-         * This restriction about sample model size matching tile size is for reducing the amount
-         * of memory consumed by {@link #createTile(int, int)}.
-         */
-        final int width  = image.getTileWidth();
-        final int height = image.getTileHeight();
-        SampleModel sm   = image.getSampleModel();
-        if (sm.getWidth() != width || sm.getHeight() != height) {
-            sm = sm.createCompatibleSampleModel(width, height);
-        }
-        sampleModel = sm;
-        if (others == null) {
-            sources = new RenderedImage[] {image};
-        } else {
-            sources = new RenderedImage[others.length + 1];
-            sources[0] = image;
-            System.arraycopy(others, 0, sources, 1, others.length);
-            for (int i=1; i<sources.length; i++) {
-                ArgumentChecks.ensureNonNullElement("others", i-1, sources[i]);
-            }
-        }
-        reference = new Cleaner(this);
+        this.sources = sources;             // Note: null value does not have same meaning than empty array.
+        reference = new Cleaner(this);      // Create cleaner last after all arguments have been validated.
     }
 
     /**
@@ -282,7 +250,7 @@ public abstract class ComputedImage extends PlanarImage {
      * @param  tileX  the column index of the tile to get.
      * @param  tileY  the row index of the tile to get.
      * @return the tile at the given index (never null).
-     * @throws IndexOutOfBoundsException if a given tile index is out of bounds.
+     * @throws IllegalArgumentException if a given tile index is out of bounds.
      * @throws ImagingOpException if an error occurred while computing the image.
      */
     @Override
@@ -291,13 +259,24 @@ public abstract class ComputedImage extends PlanarImage {
         final Cache<TileCache.Key,Raster> cache = TileCache.GLOBAL;
         Raster tile = cache.peek(key);
         if (tile == null) {
+            int min;
+            ArgumentChecks.ensureBetween("tileX", (min = getMinTileX()), min + getNumXTiles() - 1, tileX);
+            ArgumentChecks.ensureBetween("tileY", (min = getMinTileY()), min + getNumYTiles() - 1, tileY);
             final Cache.Handler<Raster> handler = cache.lock(key);
             try {
                 tile = handler.peek();
                 if (tile == null) {
-                    tile = computeTile(tileX, tileY);
+                    Exception cause = null;
+                    try {
+                        tile = computeTile(tileX, tileY);
+                    } catch (ImagingOpException e) {
+                        throw e;                            // Let that kind of exception propagate.
+                    } catch (Exception e) {
+                        cause = e;
+                    }
                     if (tile == null) {
-                        throw new ImagingOpException(Resources.format(Resources.Keys.CanNotComputeTile_2, tileX, tileY));
+                        throw (ImagingOpException) new ImagingOpException(Resources.format(
+                                Resources.Keys.CanNotComputeTile_2, tileX, tileY)).initCause(cause);
                     }
                 }
             } finally {
@@ -314,8 +293,9 @@ public abstract class ComputedImage extends PlanarImage {
      * @param  tileX  the column index of the tile to compute.
      * @param  tileY  the row index of the tile to compute.
      * @return computed tile for the given indices (can not be null).
+     * @throws Exception if an error occurred while computing the tile.
      */
-    protected abstract Raster computeTile(int tileX, int tileY);
+    protected abstract Raster computeTile(int tileX, int tileY) throws Exception;
 
     /**
      * Creates an initially empty tile at the given tile grid position.
