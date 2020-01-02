@@ -23,6 +23,7 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.image.ComputedImage;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.Strings;
 

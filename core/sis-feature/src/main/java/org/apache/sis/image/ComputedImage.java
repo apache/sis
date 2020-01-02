@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage.j2d;
+package org.apache.sis.image;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -29,7 +29,6 @@ import java.awt.image.SampleModel;
 import java.lang.ref.WeakReference;
 import org.apache.sis.internal.system.ReferenceQueueConsumer;
 import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.image.PlanarImage;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Disposable;
@@ -144,8 +143,6 @@ public abstract class ComputedImage extends PlanarImage {
     /**
      * Creates an initially empty image with the given sample model.
      * The default tile size will be the width and height of the given sample model.
-     * The {@link ImageLayout#createCompatibleSampleModel(RenderedImage)} convenience method
-     * may be used for getting a sample model of desired size.
      *
      * <div class="note"><b>Note:</b>
      * the restriction about sample model size matching tile size is for reducing the amount

@@ -396,7 +396,7 @@ public final class ColorModelFactory {
      * @param  maximum        the maximal sample value expected.
      * @return the color space for the given range of values.
      *
-     * @see ImageUtilities#createGrayScale(int, int, int, int, int, double, double)
+     * @see ImageFactory#createGrayScale(int, int, int, int, int, double, double)
      */
     public static ColorModel createGrayScale(final int dataType, final int numComponents,
             final int visibleBand, final double minimum, final double maximum)
