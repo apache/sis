@@ -375,7 +375,7 @@ public class ImageRenderer {
         for (int i=0; i<data.length; i++) {
             final Vector v = data[i];
             ArgumentChecks.ensureNonNullElement("data", i, v);
-            final int t = RasterFactory.getType(v.getElementType(), v.isUnsigned());
+            final int t = RasterFactory.getDataType(v.getElementType(), v.isUnsigned());
             if (dataType != t) {
                 if (i != 0) {
                     throw new RasterFormatException(Resources.format(Resources.Keys.MismatchedDataType));

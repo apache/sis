@@ -56,11 +56,6 @@ public class BufferedGridCoverage extends GridCoverage {
     protected final DataBuffer data;
 
     /**
-     * Result of the call to {@link #forConvertedValues(boolean)}, created when first needed.
-     */
-    private GridCoverage converted;
-
-    /**
      * Constructs a grid coverage using the specified grid geometry, sample dimensions and data buffer.
      * This method stores the given buffer by reference (no copy).
      *
@@ -118,29 +113,5 @@ public class BufferedGridCoverage extends GridCoverage {
         } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
             throw new CannotEvaluateException(e.getMessage(), e);
         }
-    }
-
-    /**
-     * Returns a grid coverage that contains real values or sample values, depending if {@code converted} is {@code true}
-     * or {@code false} respectively.
-     *
-     * If the given value is {@code true}, then the default implementation returns a grid coverage which produces
-     * {@link RenderedImage} views. Those views convert each sample value on the fly. This is known to be very slow
-     * if an entire raster needs to be processed, but this is temporary until another implementation is provided in
-     * a future SIS release.
-     *
-     * @return a coverage containing converted or packed values, depending on {@code converted} argument value.
-     */
-    @Override
-    public GridCoverage forConvertedValues(final boolean converted) {
-        if (converted) {
-            synchronized (this) {
-                if (this.converted == null) {
-                    this.converted = ConvertedGridCoverage.createFromPacked(this);
-                }
-                return this.converted;
-            }
-        }
-        return this;
     }
 }

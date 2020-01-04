@@ -16,9 +16,12 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.io.IOException;
@@ -33,10 +36,13 @@ import org.opengis.util.InternationalString;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.ConvertedGridCoverage;
+import org.apache.sis.internal.coverage.j2d.BandedSampleConverter;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.collection.TableColumn;
@@ -120,27 +126,33 @@ public class GridCoverage2D extends GridCoverage {
     /**
      * The two-dimensional components of the coordinate reference system and "grid to CRS" transform.
      * This is derived from {@link #gridGeometry} when first needed, retaining only the components at
-     * dimension indices {@link #xDimension} and {@link #yDimension}.
+     * dimension indices {@link #xDimension} and {@link #yDimension}. The same {@link AtomicReference}
+     * instance may be shared with {@link #convertedView} and {@link #packedView}.
      *
      * @see #getGridGeometry2D()
      */
-    private transient GridGeometry gridGeometry2D;
+    private final AtomicReference<GridGeometry> gridGeometry2D;
 
     /**
-     * Result of the call to {@link #forConvertedValues(boolean)} with a boolean value opposite to
-     * {@link #isConverted}. This coverage is determined when first needed and may be {@code this}.
+     * Creates a new grid coverage for the conversion of specified source coverage.
      *
-     * @see #forConvertedValues(boolean)
+     * @param  source       the coverage containing source values.
+     * @param  range        the sample dimensions to assign to the converted grid coverage.
+     * @param  converters   conversion from source to converted coverage, one transform per band.
+     * @param  isConverted  whether this grid coverage is for converted or packed values.
      */
-    private transient GridCoverage converse;
-
-    /**
-     * Whether all sample dimensions are already representing converted values.
-     * This field has no meaning if {@link #converse} is null.
-     *
-     * @see #forConvertedValues(boolean)
-     */
-    private transient boolean isConverted;
+    private GridCoverage2D(final GridCoverage2D source, final List<SampleDimension> range,
+                           final MathTransform1D[] converters, final boolean isConverted)
+    {
+        super(source.gridGeometry, range);
+        final int dataType = ConvertedGridCoverage.getDataType(range, isConverted);
+        data           = new BandedSampleConverter(source.data, null, dataType, converters);
+        gridToImageX   = source.gridToImageX;
+        gridToImageY   = source.gridToImageY;
+        xDimension     = source.xDimension;
+        yDimension     = source.yDimension;
+        gridGeometry2D = source.gridGeometry2D;
+    }
 
     /**
      * Constructs a grid coverage using the specified domain, range and data. If the given domain does not
@@ -190,7 +202,7 @@ public class GridCoverage2D extends GridCoverage {
         gridToImageX = subtractExact(data.getMinX(), extent.getLow(xDimension));
         gridToImageY = subtractExact(data.getMinY(), extent.getLow(yDimension));
         /*
-         * Verifiy that the domain is consistent with image size.
+         * Verify that the domain is consistent with image size.
          * We do not verify image location; it can be anywhere.
          */
         for (int i=0; i<MIN_DIMENSION; i++) {
@@ -201,6 +213,7 @@ public class GridCoverage2D extends GridCoverage {
             }
         }
         verifyBandCount(range, data);
+        gridGeometry2D = new AtomicReference<>();
     }
 
     /**
@@ -255,13 +268,11 @@ public class GridCoverage2D extends GridCoverage {
      * This convenience constructor computes a {@link GridGeometry} from the given envelope and image size.
      * This constructor assumes that all grid axes are in the same order than CRS axes and no axis is flipped.
      * This straightforward approach often results in the <var>y</var> axis to be oriented toward up,
-     * not down as often expected in rendered images.
+     * not down as commonly expected with rendered images.
      *
      * <p>This constructor is generally not recommended because of the assumptions on axis order and directions.
      * For better control, use the constructor expecting a {@link GridGeometry} argument instead.
      * This constructor is provided mostly as a convenience for testing purposes.</p>
-     *
-     * @todo Not yet public. We should provide an argument controlling whether to flip Y axis.
      *
      * @param  domain  the envelope encompassing all images, from upper-left corner to lower-right corner.
      *                 If {@code null} a default grid geometry will be created with no CRS and identity conversion.
@@ -272,7 +283,7 @@ public class GridCoverage2D extends GridCoverage {
      *
      * @see GridGeometry#GridGeometry(GridExtent, Envelope)
      */
-    GridCoverage2D(final Envelope domain, final Collection<? extends SampleDimension> range, final RenderedImage data) {
+    public GridCoverage2D(final Envelope domain, final Collection<? extends SampleDimension> range, final RenderedImage data) {
         super(createGridGeometry(data, domain), defaultIfAbsent(range, data));
         this.data = data;   // Non-null verified by createGridGeometry(…, data).
         xDimension   = 0;
@@ -280,6 +291,7 @@ public class GridCoverage2D extends GridCoverage {
         gridToImageX = 0;
         gridToImageY = 0;
         verifyBandCount(range, data);
+        gridGeometry2D = new AtomicReference<>();
     }
 
     /**
@@ -387,21 +399,21 @@ public class GridCoverage2D extends GridCoverage {
      * @see #getGridGeometry()
      * @see GridGeometry#reduce(int...)
      */
-    public synchronized GridGeometry getGridGeometry2D() {
-        if (gridGeometry2D == null) {
-            gridGeometry2D = gridGeometry.reduce(xDimension, yDimension);
+    public GridGeometry getGridGeometry2D() {
+        GridGeometry g = gridGeometry2D.get();
+        if (g == null) {
+            g = gridGeometry.reduce(xDimension, yDimension);
+            if (!gridGeometry2D.compareAndSet(null, g)) {
+                GridGeometry other = gridGeometry2D.get();
+                if (other != null) return other;
+            }
         }
-        return gridGeometry2D;
+        return g;
     }
 
     /**
      * Returns a grid coverage that contains real values or sample values,
      * depending if {@code converted} is {@code true} or {@code false} respectively.
-     *
-     * If the given value is {@code true}, then the default implementation returns a grid coverage which produces
-     * {@link RenderedImage} views. Those views convert each sample value on the fly. This is known to be very slow
-     * if an entire raster needs to be processed, but this is temporary until another implementation is provided in
-     * a future SIS release.
      *
      * @param  converted  {@code true} for a coverage containing converted values,
      *                    or {@code false} for a coverage containing packed values.
@@ -409,37 +421,22 @@ public class GridCoverage2D extends GridCoverage {
      */
     @Override
     public synchronized GridCoverage forConvertedValues(final boolean converted) {
-        if (converse == null) {
-            isConverted = allConvertedFlagEqual(true);
-            if (isConverted) {
-                if (allConvertedFlagEqual(false)) {
-                    // No conversion in any direction.
-                    converse = this;
-                } else {
-                    // Data are converted and user may want a packed format.
-                    converse = ConvertedGridCoverage.createFromConverted(this);
-                }
+        GridCoverage2D view = (GridCoverage2D) getView(converted);
+        if (view == null) try {
+            final List<SampleDimension> sources = getSampleDimensions();
+            final List<SampleDimension> targets = new ArrayList<>(sources.size());
+            final MathTransform1D[]  converters = ConvertedGridCoverage.converters(sources, targets, converted);
+            if (converters != null) {
+                view = new GridCoverage2D(this, targets, converters, converted);
+                view.setView(!converted, this);
             } else {
-                // Anything that need conversion, even if "is packed" test is also false.
-                converse = ConvertedGridCoverage.createFromPacked(this);
+                view = this;
             }
+            setView(converted, view);
+        } catch (NoninvertibleTransformException e) {
+            throw new CannotEvaluateException(e.getMessage(), e);
         }
-        return (converted == isConverted) ? this : converse;
-    }
-
-    /**
-     * Determines whether an "is converted" or "is packed" test on all sample dimensions returns {@code true}.
-     *
-     * @param  converted  {@coce true} for an "is converted" test, or {@code false} for an "is packed" test.
-     * @return whether all sample dimensions in this coverage pass the specified test.
-     */
-    private boolean allConvertedFlagEqual(final boolean converted) {
-        for (final SampleDimension sd : getSampleDimensions()) {
-            if (sd != sd.forConvertedValues(converted)) {
-                return false;
-            }
-        }
-        return true;
+        return view;
     }
 
     /**

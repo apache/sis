@@ -35,12 +35,15 @@ import java.awt.image.BufferedImage;
 import java.nio.Buffer;
 import java.nio.ReadOnlyBufferException;
 import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.collection.WeakHashSet;
+
+import static org.apache.sis.internal.util.Numerics.MAX_INTEGER_CONVERTIBLE_TO_FLOAT;
 
 
 /**
@@ -211,15 +214,63 @@ public final class RasterFactory extends Static {
      * @param  unsigned  whether the type should be considered unsigned.
      * @return the {@link DataBuffer} type, or {@link DataBuffer#TYPE_UNDEFINED}.
      */
-    public static int getType(final Class<?> sample, final boolean unsigned) {
+    public static int getDataType(final Class<?> sample, final boolean unsigned) {
         switch (Numbers.getEnumConstant(sample)) {
-            case Numbers.BYTE:    if (unsigned) return DataBuffer.TYPE_BYTE; else break;
-            case Numbers.SHORT:   return unsigned ? DataBuffer.TYPE_USHORT : DataBuffer.TYPE_SHORT;
-            case Numbers.INTEGER: if (!unsigned) return DataBuffer.TYPE_INT; else break;
+            case Numbers.BYTE:    return unsigned ? DataBuffer.TYPE_BYTE      : DataBuffer.TYPE_SHORT;
+            case Numbers.SHORT:   return unsigned ? DataBuffer.TYPE_USHORT    : DataBuffer.TYPE_SHORT;
+            case Numbers.INTEGER: return unsigned ? DataBuffer.TYPE_UNDEFINED : DataBuffer.TYPE_INT;
             case Numbers.FLOAT:   return DataBuffer.TYPE_FLOAT;
             case Numbers.DOUBLE:  return DataBuffer.TYPE_DOUBLE;
+            default:              return DataBuffer.TYPE_UNDEFINED;
         }
-        return DataBuffer.TYPE_UNDEFINED;
+    }
+
+    /**
+     * Returns the {@link DataBuffer} constant for the given range of values.
+     * If {@code keepFloat} is {@code false}, then this method tries to return
+     * an integer type regardless if the range uses a floating point type.
+     * Range checks for integers assume ties rounding to positive infinity.
+     *
+     * @param  range      the range of values, or {@code null}.
+     * @param  keepFloat  whether to avoid integer types if the range uses floating point numbers.
+     * @return the {@link DataBuffer} type or {@link DataBuffer#TYPE_UNDEFINED} if the given range was null.
+     */
+    static int getDataType(final NumberRange<?> range, final boolean keepFloat) {
+        if (range == null) {
+            return DataBuffer.TYPE_UNDEFINED;
+        }
+        final byte nt = Numbers.getEnumConstant(range.getElementType());
+        if (keepFloat) {
+            if (nt >= Numbers.DOUBLE)   return DataBuffer.TYPE_DOUBLE;
+            if (nt >= Numbers.FRACTION) return DataBuffer.TYPE_FLOAT;
+        }
+        final double min = range.getMinDouble();
+        final double max = range.getMaxDouble();
+        if (nt < Numbers.BYTE || nt > Numbers.FLOAT || nt == Numbers.LONG) {
+            /*
+             * Value type is long, double, BigInteger, BigDecimal or unknown type.
+             * If conversions to 32 bits integers would lost integer digits, or if
+             * a bound is NaN, stick to the most conservative data buffer type.
+             *
+             * Range check assumes ties rounding to positive infinity.
+             */
+            if (!(min >= -MAX_INTEGER_CONVERTIBLE_TO_FLOAT - 0.5 && max < MAX_INTEGER_CONVERTIBLE_TO_FLOAT + 0.5)) {
+                return DataBuffer.TYPE_DOUBLE;
+            }
+        }
+        /*
+         * Check most common types first. If the range could be both signed and unsigned short,
+         * give precedence to unsigned short because it works better with IndexColorModel.
+         * If a bounds is NaN, fallback on TYPE_FLOAT.
+         */
+        if (min >= -0.5 && max < 0xFFFF + 0.5) {
+            return (max < 0xFF + 0.5) ? DataBuffer.TYPE_BYTE : DataBuffer.TYPE_USHORT;
+        } else if (min >= Short.MIN_VALUE - 0.5 && max < Short.MAX_VALUE + 0.5) {
+            return DataBuffer.TYPE_SHORT;
+        } else if (min >= Integer.MIN_VALUE - 0.5 && max < Integer.MAX_VALUE + 0.5) {
+            return DataBuffer.TYPE_INT;
+        }
+        return DataBuffer.TYPE_FLOAT;
     }
 
     /**

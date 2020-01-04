@@ -26,9 +26,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.internal.coverage.j2d.ConvertedGridCoverage;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -70,6 +72,14 @@ public abstract class GridCoverage {
      * @see #getSampleDimensions()
      */
     private final SampleDimension[] sampleDimensions;
+
+    /**
+     * View over this grid coverage after conversion of sample values, or {@code null} if not yet created.
+     * May be {@code this} if we determined that there is no conversion or the conversion is identity.
+     *
+     * @see #forConvertedValues(boolean)
+     */
+    private transient GridCoverage packedView, convertedView;
 
     /**
      * The last coordinate operation used by {@link #toGridCoordinates(DirectPosition)}.
@@ -140,6 +150,26 @@ public abstract class GridCoverage {
     }
 
     /**
+     * Returns the converted or package view, or {@code null} if not yet computed.
+     * It is caller responsibility to ensure that this method is invoked in a synchronized block.
+     */
+    final GridCoverage getView(final boolean converted) {
+        return converted ? convertedView : packedView;
+    }
+
+    /**
+     * Sets the converted or package view. The given view should not be null.
+     * It is caller responsibility to ensure that this method is invoked in a synchronized block.
+     */
+    final void setView(final boolean converted, final GridCoverage view) {
+        if (converted) {
+            convertedView = view;
+        } else {
+            packedView = view;
+        }
+    }
+
+    /**
      * Returns a grid coverage that contains real values or sample values, depending if {@code converted} is {@code true}
      * or {@code false} respectively. If there is no {@linkplain SampleDimension#getTransferFunction() transfer function}
      * defined by the {@linkplain #getSampleDimensions() sample dimensions}, then this method returns {@code this}.
@@ -162,7 +192,16 @@ public abstract class GridCoverage {
      *
      * @see SampleDimension#forConvertedValues(boolean)
      */
-    public abstract GridCoverage forConvertedValues(boolean converted);
+    public synchronized GridCoverage forConvertedValues(final boolean converted) {
+        GridCoverage view = getView(converted);
+        if (view == null) try {
+            view = ConvertedGridCoverage.create(this, converted);
+            setView(converted, view);
+        } catch (NoninvertibleTransformException e) {
+            throw new CannotEvaluateException(e.getMessage(), e);
+        }
+        return view;
+    }
 
     /**
      * Returns a sequence of double values for a given point in the coverage.

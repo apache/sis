@@ -80,10 +80,10 @@ public final strictfp class GridCoverage2DTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridCoverage2D#forConvertedValues(boolean)}.
+     * Tests reading the values provided by {@link GridCoverage2D#forConvertedValues(boolean)}.
      */
     @Test
-    public void testForConvertedValues() {
+    public void testReadConvertedValues() {
         GridCoverage coverage = createTestCoverage();
         /*
          * Verify packed values.
@@ -95,6 +95,20 @@ public final strictfp class GridCoverage2DTest extends TestCase {
         /*
          * Verify converted values.
          */
+        coverage = coverage.forConvertedValues(true);
+        assertSamplesEqual(coverage, new double[][] {
+            {101.0, 102.5},
+            { 97.5,  95.0}
+        });
+    }
+
+    /**
+     * Tests writing values in {@link GridCoverage2D#forConvertedValues(boolean)}.
+     */
+    @Test
+    @org.junit.Ignore("BandedSampleConverter is not yet writable")
+    public void testWriteConvertedValues() {
+        GridCoverage coverage = createTestCoverage();
         coverage = coverage.forConvertedValues(true);
         assertSamplesEqual(coverage, new double[][] {
             {101.0, 102.5},

@@ -149,6 +149,13 @@ public final class Numerics extends Static {
     public static final int SIGNIFICAND_SIZE_OF_FLOAT = 23;
 
     /**
+     * Maximal integer value which is convertible to {@code float} type without lost of precision digits.
+     *
+     * @since 1.1
+     */
+    public static final int MAX_INTEGER_CONVERTIBLE_TO_FLOAT = 1 << (SIGNIFICAND_SIZE_OF_FLOAT + 1);
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Numerics() {

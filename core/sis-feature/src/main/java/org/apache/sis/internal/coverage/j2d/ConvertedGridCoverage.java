@@ -16,493 +16,211 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
-import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.awt.image.DataBuffer;
+import java.awt.image.RenderedImage;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.opengis.referencing.operation.MathTransform1D;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.opengis.referencing.operation.TransformException;
 
 
 /**
  * Decorates a {@link GridCoverage} in order to convert sample values on the fly.
+ * There is two strategies about when to convert sample values:
  *
- * <p><b>WARNING: this is a temporary class.</b>
- * This class produces a special {@link SampleModel} in departure with the contract documented in JDK javadoc.
- * That sample model does not only define the sample layout (pixel stride, scanline stride, <i>etc.</i>), but
- * also converts the sample values. This may be an issue for optimized pipelines accessing {@link DataBuffer}
- * directly. This class may be replaced by another mechanism (creating new tiles) in a future SIS version.</p>
+ * <ul>
+ *   <li>In calls to {@link #render(GridExtent)}, sample values are converted when first needed
+ *       on a tile-by-tile basis then cached for future reuse. Note however that discarding the
+ *       returned image may result in the lost of cached tiles.</li>
+ *   <li>In calls to {@link #evaluate(DirectPosition, double[])}, the conversion is applied
+ *       on-the-fly each time in order to avoid the potentially costly tile computations.</li>
+ * </ul>
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
  * @module
  */
 public final class ConvertedGridCoverage extends GridCoverage {
     /**
-     * Returns a coverage for converted values computed from a coverage of package values.
-     * If the given coverage is already converted,
-     * then this method returns the given {@code coverage} unchanged.
+     * The coverage containing source values.
+     * Sample values will be converted from that coverage using the {@link #converters}.
+     */
+    private final GridCoverage source;
+
+    /**
+     * Conversions from {@link #source} values to converted values.
+     * The length of this array shall be equal to the number of bands.
+     */
+    private final MathTransform1D[] converters;
+
+    /**
+     * Whether this grid coverage is for converted values.
+     * If {@code false}, then this coverage is for packed values.
+     */
+    private final boolean isConverted;
+
+    /**
+     * One of {@link DataBuffer} constants the describe the sample values type
+     * of images produced by {@link #render(GridExtent)}.
+     */
+    private final int dataType;
+
+    /**
+     * Creates a new coverage with the same grid geometry than the given coverage but converted sample dimensions.
      *
-     * @param  packed  the coverage containing packed values to convert.
-     * @return the converted coverage. May be {@code coverage}.
+     * @param  source       the coverage containing source values.
+     * @param  range        the sample dimensions to assign to the converted grid coverage.
+     * @param  converters   conversion from source to converted coverage, one transform per band.
+     * @param  isConverted  whether this grid coverage is for converted or packed values.
      */
-    public static GridCoverage createFromPacked(final GridCoverage packed) {
-        final List<SampleDimension> sds = packed.getSampleDimensions();
-        final List<SampleDimension> cfs = new ArrayList<>(sds.size());
-        for (SampleDimension sd : sds) {
-            cfs.add(sd.forConvertedValues(true));
-        }
-        return cfs.equals(sds) ? packed : new ConvertedGridCoverage(packed, sds, cfs);
+    private ConvertedGridCoverage(final GridCoverage source, final List<SampleDimension> range,
+                                  final MathTransform1D[] converters, final boolean isConverted)
+    {
+        super(source.getGridGeometry(), range);
+        this.source      = source;
+        this.converters  = converters;
+        this.isConverted = isConverted;
+        this.dataType    = getDataType(range, isConverted);
     }
 
     /**
-     * @todo Placeholder for future evolution.
+     * Returns a coverage of converted values computed from a coverage of packed values, or conversely.
+     * If the given coverage is already converted, then this method returns {@code coverage} unchanged.
+     *
+     * @param  source     the coverage containing values to convert.
+     * @param  converted  {@code true} for a coverage containing converted values,
+     *                    or {@code false} for a coverage containing packed values.
+     * @return the converted coverage. May be {@code source}.
+     * @throws NoninvertibleTransformException if this constructor can not build a full conversion chain to target.
      */
-    public static GridCoverage createFromConverted(final GridCoverage converted) {
-        throw new UnsupportedOperationException("\"Converted to packed\" not yet implemented.");
+    public static GridCoverage create(final GridCoverage source, final boolean converted) throws NoninvertibleTransformException {
+        final List<SampleDimension> sources = source.getSampleDimensions();
+        final List<SampleDimension> targets = new ArrayList<>(sources.size());
+        final MathTransform1D[]  converters = converters(sources, targets, converted);
+        return (converters != null) ? new ConvertedGridCoverage(source, targets, converters, converted) : source;
     }
 
     /**
-     * The coverage containing packed values. Sample values will be converted from this coverage.
+     * Returns the transforms for converting sample values from given sources to the {@code converted} status
+     * of those sources. This method opportunistically adds the target sample dimensions in {@code target} list.
+     *
+     * @param  sources    {@link GridCoverage#getSampleDimensions()} of {@code source} coverage.
+     * @param  targets    where to add {@link SampleDimension#forConvertedValues(boolean)} results.
+     * @param  converted  {@code true} for transforms to converted values, or {@code false} for transforms to packed values.
+     * @return the transforms, or {@code null} if all transforms are identity transform.
+     * @throws NoninvertibleTransformException if this method can not build a full conversion chain.
      */
-    private final GridCoverage packed;
-
-    /**
-     * Conversions from {@code packed} values to converted values. There is one transform for each band.
-     */
-    private final MathTransform1D[] toConverted;
-
-    /**
-     * Conversions from converted values to {@code packed} values. They are the inverse of {@link #toConverted}.
-     */
-    private final MathTransform1D[] toPacked;
-
-    /**
-     * Whether all transforms in the {@link #toConverted} array are identity transforms.
-     */
-    private final boolean isIdentity;
-
-    /**
-     * Creates a new coverage with the same grid geometry than the given coverage and the given converted sample dimensions.
-     */
-    private ConvertedGridCoverage(final GridCoverage packed, final List<SampleDimension> sampleDimensions, final List<SampleDimension> converted) {
-        super(packed.getGridGeometry(), converted);
-        final int numBands = sampleDimensions.size();
-        toConverted = new MathTransform1D[numBands];
-        toPacked    = new MathTransform1D[numBands];
-        boolean isIdentity = true;
-        final MathTransform1D identity = (MathTransform1D) MathTransforms.identity(1);
+    public static MathTransform1D[] converters(final List<SampleDimension> sources,
+                                               final List<SampleDimension> targets,
+                                               final boolean converted)
+            throws NoninvertibleTransformException
+    {
+        final int               numBands   = sources.size();
+        final MathTransform1D   identity   = (MathTransform1D) MathTransforms.identity(1);
+        final MathTransform1D[] converters = new MathTransform1D[numBands];
+        Arrays.fill(converters, identity);
         for (int i = 0; i < numBands; i++) {
-            MathTransform1D tr = sampleDimensions.get(i).getTransferFunction().orElse(identity);
-            toConverted[i] = tr;
-            isIdentity &= tr.isIdentity();
-            try {
-                tr = tr.inverse();
-            } catch (NoninvertibleTransformException ex) {
-                tr = (MathTransform1D) MathTransforms.linear(Double.NaN, 0.0);
+            final SampleDimension src = sources.get(i);
+            final SampleDimension tgt = src.forConvertedValues(converted);
+            targets.add(tgt);
+            if (src != tgt) {
+                MathTransform1D tr = src.getTransferFunction().orElse(identity);
+                Optional<MathTransform1D> complete = tgt.getTransferFunction();
+                if (complete.isPresent()) {
+                    tr = MathTransforms.concatenate(tr, complete.get().inverse());
+                }
+                converters[i] = tr;
             }
-            toPacked[i] = tr;
         }
-        this.isIdentity = isIdentity;
-        this.packed     = packed;
+        for (final MathTransform1D converter : converters) {
+            if (!converter.isIdentity()) return converters;
+        }
+        return null;
     }
 
     /**
-     * Creates a converted view over {@link #packed} data for the given extent.
+     * Returns the {@link DataBuffer} constant for range of values of given sample dimensions.
      *
-     * @return the grid slice as a rendered image, as a converted view.
+     * @param  targets    the sample dimensions for which to get the data type.
+     * @param  converted  whether the image will hold converted or packed values.
+     * @return the {@link DataBuffer} type.
+     */
+    public static int getDataType(final List<SampleDimension> targets, final boolean converted) {
+        NumberRange<?> union = null;
+        for (final SampleDimension dimension : targets) {
+            final Optional<NumberRange<?>> c = dimension.getSampleRange();
+            if (c.isPresent()) {
+                final NumberRange<?> range = c.get();
+                if (union == null) {
+                    union = range;
+                } else {
+                    union = union.unionAny(range);
+                }
+            }
+        }
+        return RasterFactory.getDataType(union, converted);
+    }
+
+    /**
+     * Returns a sequence of double values for a given point in the coverage.
+     * This method delegates to the source coverage, then convert values.
+     *
+     * @param  point   the coordinate point where to evaluate.
+     * @param  buffer  an array in which to store values, or {@code null} to create a new array.
+     * @return the {@code buffer} array, or a newly created array if {@code buffer} was null.
+     * @throws CannotEvaluateException if the values can not be computed.
+     */
+    @Override
+    public double[] evaluate(final DirectPosition point, double[] buffer) throws CannotEvaluateException {
+        try {
+            buffer = source.evaluate(point, buffer);
+            for (int i=0; i<converters.length; i++) {
+                buffer[i] = converters[i].transform(buffer[i]);
+            }
+        } catch (TransformException ex) {
+            throw new CannotEvaluateException(ex.getMessage(), ex);
+        }
+        return buffer;
+    }
+
+    /**
+     * Creates a converted view over {@link #source} data for the given extent.
+     * Values will be converted when first requested on a tile-by-tile basis.
+     * Note that if the returned image is discarded, then the cache of converted
+     * tiles will be discarded too.
+     *
+     * @return the grid slice as a rendered image with converted view.
      */
     @Override
     public RenderedImage render(final GridExtent sliceExtent) {
-        final RenderedImage render = packed.render(sliceExtent);
-        if (isIdentity) {
-            return render;
-        }
-        final Raster raster;
-        if (render.getNumXTiles() == 1 && render.getNumYTiles() == 1 && render.getTileGridXOffset() == 0 && render.getTileGridYOffset() == 0) {
-            raster = render.getTile(render.getMinTileX(), render.getMinTileY());
-        } else {
-            /*
-             * This fallback is very inefficient since it copies all data in one big raster.
-             * We will replace this class by tiles management in a future Apache SIS version.
-             *
-             * Note : we need to specify the Rectangle to reset raster location at 0,0
-             */
-            raster = render.getData(new Rectangle(render.getMinX(), render.getMinY(), render.getWidth(), render.getHeight()));
-        }
-        final SampleModel baseSm = raster.getSampleModel();
-        final DataBuffer dataBuffer = raster.getDataBuffer();
-        final SampleConverter convSm = new SampleConverter(baseSm, toConverted, toPacked);
-        final WritableRaster convRaster = WritableRaster.createWritableRaster(convSm, dataBuffer, null);
+        RenderedImage image = source.render(sliceExtent);
         /*
-         * The default color models have a lot of constraints. Use a custom model with relaxed rules instead.
-         * We arbitrarily use the range of values of the first band only; a future Apache SIS version will
-         * need to perform another calculation.
+         * That image should never be null. But if an implementation wants to do so, respect that.
          */
-        final ColorModel cm = new ScaledColorModel(getSampleDimensions().get(0).getSampleRange().get());
-        return new BufferedImage(cm, convRaster, false, null);
+        if (image != null) {
+            image = new BandedSampleConverter(image, null, dataType, converters);
+        }
+        return image;
     }
 
     /**
-     * Returns the packed coverage if {@code converted} is {@code false}, or {@code this} otherwise.
+     * Returns this coverage or the source coverage depending on whether {@code converted} matches
+     * the kind of content of this coverage.
      */
     @Override
     public GridCoverage forConvertedValues(final boolean converted) {
-        return converted ? this : packed;
-    }
-
-    /**
-     * A sample model which convert sample values on the fly.
-     *
-     * <p><b>WARNING: this is a temporary class.</b>
-     * This sample model does not only define the sample layout (pixel stride, scanline stride, <i>etc.</i>), but
-     * also converts the sample values. This may be an issue for optimized pipelines accessing {@link DataBuffer}
-     * directly. This class may be replaced by another mechanism (creating new tiles) in a future SIS version.</p>
-     */
-    private static final class SampleConverter extends SampleModel {
-
-        private final SampleModel base;
-        private final int baseDataType;
-        private final MathTransform1D[] toConverted;
-        private final MathTransform1D[] toPacked;
-
-        SampleConverter(SampleModel base, MathTransform1D[] toConverted, MathTransform1D[] toPacked) {
-            super(DataBuffer.TYPE_FLOAT, base.getWidth(), base.getHeight(), base.getNumBands());
-            this.base         = base;
-            this.baseDataType = base.getDataType();
-            this.toConverted  = toConverted;
-            this.toPacked     = toPacked;
-        }
-
-        @Override
-        public int getNumDataElements() {
-            return base.getNumDataElements();
-        }
-
-        @Override
-        public Object getDataElements(final int x, final int y, final Object obj, final DataBuffer data) {
-            final Object buffer = base.getDataElements(x, y, null, data);
-            final float[] pixel;
-            if (obj == null) {
-                pixel = new float[numBands];
-            } else if (!(obj instanceof float[])) {
-                throw new ClassCastException("Unsupported array type, expecting a float array.");
-            } else {
-                pixel = (float[]) obj;
-            }
-            switch (baseDataType) {
-                case DataBuffer.TYPE_BYTE: {
-                    final byte[] b = (byte[]) buffer;
-                    for (int i = 0; i < b.length; i++) pixel[i] = b[i];
-                    break;
-                }
-                case DataBuffer.TYPE_SHORT: {
-                    final short[] b = (short[]) buffer;
-                    for (int i = 0; i < b.length; i++) pixel[i] = b[i];
-                    break;
-                }
-                case DataBuffer.TYPE_USHORT: {
-                    final short[] b = (short[]) buffer;
-                    for (int i = 0; i < b.length; i++) pixel[i] = Short.toUnsignedInt(b[i]);
-                    break;
-                }
-                case DataBuffer.TYPE_INT: {
-                    final int[] b = (int[]) buffer;
-                    for (int i = 0; i < b.length; i++) pixel[i] = b[i];
-                    break;
-                }
-                case DataBuffer.TYPE_FLOAT: {
-                    final float[] b = (float[]) buffer;
-                    System.arraycopy(b, 0, pixel, 0, b.length);
-                    break;
-                }
-                case DataBuffer.TYPE_DOUBLE: {
-                    final double[] b = (double[]) buffer;
-                    for (int i = 0; i < b.length; i++) pixel[i] = (float) b[i];
-                    break;
-                }
-                default: {
-                    throw new ClassCastException("Unsupported base array type.");
-                }
-            }
-            try {
-                for (int i=0; i<toConverted.length; i++) {
-                    pixel[i] = (float) toConverted[i].transform(pixel[i]);
-                }
-            } catch (TransformException ex) {
-                Arrays.fill(pixel, Float.NaN);
-            }
-            return pixel;
-        }
-
-        @Override
-        public void setDataElements(final int x, final int y, final Object obj, final DataBuffer data) {
-            float[] pixel;
-            Objects.requireNonNull(obj);
-            if (!(obj instanceof float[])) {
-                throw new ClassCastException("Unsupported array type, expecting a float array.");
-            } else {
-                pixel = (float[]) obj;
-            }
-            try {
-                for (int i=0; i<toConverted.length; i++) {
-                    pixel[i] = (float) toPacked[i].transform(pixel[i]);
-                }
-            } catch (TransformException ex) {
-                Arrays.fill(pixel, Float.NaN);
-            }
-            switch (baseDataType) {
-                case DataBuffer.TYPE_BYTE: {
-                    final byte[] b = new byte[pixel.length];
-                    for (int i = 0; i < b.length; i++) b[i] = (byte) pixel[i];
-                    base.setDataElements(x, y, b, data);
-                    break;
-                }
-                case DataBuffer.TYPE_SHORT: {
-                    final short[] b = new short[pixel.length];
-                    for (int i = 0; i < b.length; i++) b[i] = (short) pixel[i];
-                    base.setDataElements(x, y, b, data);
-                    break;
-                }
-                case DataBuffer.TYPE_USHORT: {
-                    final short[] b = new short[pixel.length];
-                    for (int i = 0; i < b.length; i++) b[i] = (short) pixel[i];
-                    base.setDataElements(x, y, b, data);
-                    break;
-                }
-                case DataBuffer.TYPE_INT: {
-                    final int[] b = new int[pixel.length];
-                    for (int i = 0; i < b.length; i++) b[i] = (int) pixel[i];
-                    base.setDataElements(x, y, b, data);
-                    break;
-                }
-                case DataBuffer.TYPE_FLOAT: {
-                    base.setDataElements(x, y, pixel, data);
-                    break;
-                }
-                case DataBuffer.TYPE_DOUBLE: {
-                    final double[] b = new double[pixel.length];
-                    for (int i = 0 ;i < b.length; i++) b[i] = pixel[i];
-                    base.setDataElements(x, y, b, data);
-                    break;
-                }
-                default: {
-                    throw new ClassCastException("Unsupported base array type.");
-                }
-            }
-        }
-
-        @Override
-        public int getSample(int x, int y, int b, DataBuffer data) {
-            return (int) getSampleDouble(x, y, b, data);
-        }
-
-        @Override
-        public float getSampleFloat(int x, int y, int b, DataBuffer data) {
-            try {
-                return (float) toConverted[b].transform(base.getSampleFloat(x, y, b, data));
-            } catch (TransformException ex) {
-                return Float.NaN;
-            }
-        }
-
-        @Override
-        public double getSampleDouble(int x, int y, int b, DataBuffer data) {
-            try {
-                return toConverted[b].transform(base.getSampleDouble(x, y, b, data));
-            } catch (TransformException ex) {
-                return Double.NaN;
-            }
-        }
-
-        @Override
-        public void setSample(int x, int y, int b, int s, DataBuffer data) {
-            setSample(x,y,b, (double) s, data);
-        }
-
-        @Override
-        public void setSample(int x, int y, int b, double s, DataBuffer data) {
-            try {
-                s = toPacked[b].transform(s);
-            } catch (TransformException ex) {
-                s = Double.NaN;
-            }
-            base.setSample(x, y, b, s, data);
-        }
-
-        @Override
-        public void setSample(int x, int y, int b, float s, DataBuffer data) {
-            setSample(x, y, b, (double) s, data);
-        }
-
-        @Override
-        public SampleModel createCompatibleSampleModel(int w, int h) {
-            final SampleModel cp = base.createCompatibleSampleModel(w, h);
-            return new SampleConverter(cp, toConverted, toPacked);
-        }
-
-        @Override
-        public SampleModel createSubsetSampleModel(int[] bands) {
-            final SampleModel cp = base.createSubsetSampleModel(bands);
-            final MathTransform1D[] trs = new MathTransform1D[bands.length];
-            final MathTransform1D[] ivtrs = new MathTransform1D[bands.length];
-            for (int i=0; i<bands.length;i++) {
-                trs[i] = toConverted[bands[i]];
-                ivtrs[i] = toPacked[bands[i]];
-            }
-            return new SampleConverter(cp, trs, ivtrs);
-        }
-
-        @Override
-        public DataBuffer createDataBuffer() {
-            return base.createDataBuffer();
-        }
-
-        @Override
-        public int[] getSampleSize() {
-            final int[] sizes = new int[numBands];
-            Arrays.fill(sizes, Float.SIZE);
-            return sizes;
-        }
-
-        @Override
-        public int getSampleSize(int band) {
-            return Float.SIZE;
-        }
-    }
-
-    /**
-     * Color model for working with {@link SampleConverter}.
-     * Defined as a workaround for the validations normally performed by {@link ColorModel}.
-     *
-     * <p><b>WARNING: this is a temporary class.</b>
-     * This color model disable validations normally performed by {@link ColorModel}, in order to enable the use
-     * of {@link SampleConverter}. This class may be replaced by another mechanism (creating new tiles) in
-     * a future SIS version.</p>
-     *
-     * @see ScaledColorSpace
-     */
-    private static final class ScaledColorModel extends ColorModel {
-
-        private final float scale;
-        private final float offset;
-
-        /**
-         * Creates a new color model for the given of converted values.
-         */
-        ScaledColorModel(final NumberRange<?> range){
-            super(Float.SIZE);
-            final double scale  = (255.0) / (range.getMaxDouble() - range.getMinDouble());
-            this.scale  = (float) scale;
-            this.offset = (float) (range.getMinDouble() / scale);
-        }
-
-        @Override
-        public boolean isCompatibleRaster(Raster raster) {
-            return isCompatibleSampleModel(raster.getSampleModel());
-        }
-
-        @Override
-        public boolean isCompatibleSampleModel(SampleModel sm) {
-            return sm instanceof SampleConverter;
-        }
-
-        @Override
-        public int getRGB(Object inData) {
-            float value;
-            // Most used cases. Compatible color model is designed for cases where indexColorModel cannot do the job (float or int samples).
-            if (inData instanceof float[]) {
-                value = ((float[]) inData)[0];
-            } else if (inData instanceof int[]) {
-                value = ((int[]) inData)[0];
-            } else if (inData instanceof double[]) {
-                value = (float) ((double[]) inData)[0];
-            } else if (inData instanceof byte[]) {
-                value = ((byte[]) inData)[0];
-            } else if (inData instanceof short[]) {
-                value = ((short[]) inData)[0];
-            } else if (inData instanceof long[]) {
-                value = ((long[]) inData)[0];
-            } else if (inData instanceof Number[]) {
-                value = ((Number[]) inData)[0].floatValue();
-            } else if (inData instanceof Byte[]) {
-                value = ((Byte[]) inData)[0];
-            } else {
-                value = 0.0f;
-            }
-
-            int c = (int) ((value - offset) * scale);
-            if (c < 0) c = 0;
-            else if (c > 255) c = 255;
-
-            return (255 << 24) | (c << 16) | (c << 8) | c;
-        }
-
-        @Override
-        public int getRed(int pixel) {
-            final int argb = getRGB((Object) pixel);
-            return 0xFF & (argb >>> 16);
-        }
-
-        @Override
-        public int getGreen(int pixel) {
-            final int argb = getRGB((Object) pixel);
-            return 0xFF & (argb >>> 8);
-        }
-
-        @Override
-        public int getBlue(int pixel) {
-            final int argb = getRGB((Object) pixel);
-            return 0xFF & argb;
-        }
-
-        @Override
-        public int getAlpha(int pixel) {
-            final int argb = getRGB((Object) pixel);
-            return 0xFF & (argb >>> 24);
-        }
-
-        @Override
-        public int getRed(Object pixel) {
-            final int argb = getRGB(pixel);
-            return 0xFF & (argb >>> 16);
-        }
-
-        @Override
-        public int getGreen(Object pixel) {
-            final int argb = getRGB(pixel);
-            return 0xFF & (argb >>> 8);
-        }
-
-        @Override
-        public int getBlue(Object pixel) {
-            final int argb = getRGB(pixel);
-            return 0xFF & argb;
-        }
-
-        @Override
-        public int getAlpha(Object pixel) {
-            final int argb = getRGB(pixel);
-            return 0xFF & (argb >>> 24);
-        }
-
-        /*
-         * createCompatibleWritableRaster(int w, int h) not implemented for this class.
-         */
+        return (converted == isConverted) ? this : source;
     }
 }
