@@ -21,9 +21,11 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.RenderedImage;
 import java.awt.image.BandedSampleModel;
+import java.awt.image.ColorModel;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.ComputedImage;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Workaround;
 
 
@@ -50,7 +52,7 @@ import org.apache.sis.util.Workaround;
  * @since   1.1
  * @module
  */
-public abstract class BandedSampleConverter extends ComputedImage {
+public final class BandedSampleConverter extends ComputedImage {
     /**
      * The transfer functions to apply on each band of the source image.
      */
@@ -58,6 +60,8 @@ public abstract class BandedSampleConverter extends ComputedImage {
 
     /**
      * Creates a new image of the given data type which will compute values using the given converters.
+     * The number of bands is the length of the {@code converters} array, which must be greater than 0
+     * and not greater than the number of bands in the source image.
      *
      * @param  source      the image for which to convert sample values.
      * @param  layout      object to use for computing tile size, or {@code null} for the default.
@@ -79,11 +83,45 @@ public abstract class BandedSampleConverter extends ComputedImage {
     private static BandedSampleModel createSampleModel(final int targetType,
             final int numBands, ImageLayout layout, final RenderedImage source)
     {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureSizeBetween("converters", 1, source.getSampleModel().getNumBands(), numBands);
         if (layout == null) {
             layout = ImageLayout.DEFAULT;
         }
         final Dimension tile = layout.suggestTileSize(source);
         return new BandedSampleModel(targetType, tile.width, tile.height, numBands);
+    }
+
+    /**
+     * Returns the color model associated with all rasters of this image.
+     *
+     * @return the color model of this image, or {@code null} if none.
+     */
+    @Override
+    public ColorModel getColorModel() {
+        return null;
+    }
+
+    /**
+     * Returns the width (in pixels) of this image.
+     * This is the the same value than the source image (not necessarily zero).
+     *
+     * @return the width (number of columns) of this image.
+     */
+    @Override
+    public int getWidth() {
+        return getSource(0).getWidth();
+    }
+
+    /**
+     * Returns the height (in pixels) of this image.
+     * This is the the same value than the source image (not necessarily zero).
+     *
+     * @return the height (number of rows) of this image.
+     */
+    @Override
+    public int getHeight() {
+        return getSource(0).getHeight();
     }
 
     /**
@@ -140,10 +178,8 @@ public abstract class BandedSampleConverter extends ComputedImage {
      */
     @Override
     protected Raster computeTile(final int tileX, final int tileY) throws TransformException {
-        final Raster         source = getSource(0).getTile(tileX, tileY);
         final WritableRaster target = createTile(tileX, tileY);
-        final Transferer   transfer = Transferer.suggest(source, target);
-        transfer.compute(converters);
+        Transferer.create(getSource(0), target).compute(converters);
         return target;
     }
 }

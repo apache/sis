@@ -43,21 +43,10 @@ public final strictfp class PlanarImageTest extends TestCase {
     private static final int TILE_WIDTH = 3, TILE_HEIGHT = 2;
 
     /**
-     * Random number generator for this test.
+     * Creates a rendered image with arbitrary tiles.
      */
-    private final Random random;
-
-    /**
-     * Creates a new test.
-     */
-    public PlanarImageTest() {
-        random = TestUtilities.createRandomNumberGenerator();
-    }
-
-    /**
-     * Creates a rendered image which arbitrary tiles.
-     */
-    private PlanarImage createImage() {
+    private static PlanarImage createImage() {
+        final Random random = TestUtilities.createRandomNumberGenerator();
         final TiledImageMock image = new TiledImageMock(
                 DataBuffer.TYPE_USHORT, 1,      // dataType and numBands
                 random.nextInt(20) - 10,        // minX

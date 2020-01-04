@@ -248,7 +248,10 @@ public abstract class PlanarImage implements RenderedImage {
      * This method does not verify argument validity.
      */
     private WritableRaster createWritableRaster(final Rectangle aoi) {
-        final SampleModel sm = getSampleModel().createCompatibleSampleModel(aoi.width, aoi.height);
+        SampleModel sm = getSampleModel();
+        if (sm.getWidth() != aoi.width || sm.getHeight() != aoi.height) {
+            sm = sm.createCompatibleSampleModel(aoi.width, aoi.height);
+        }
         return Raster.createWritableRaster(sm, aoi.getLocation());
     }
 

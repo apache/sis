@@ -24,6 +24,7 @@ import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferFloat;
 import java.awt.image.DataBufferDouble;
+import java.awt.image.RenderedImage;
 import org.apache.sis.internal.util.Numerics;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
@@ -489,15 +490,32 @@ abstract class Transferer {
 
 
     /**
+     * Suggests a strategy for transferring data from the given source image to the given target.
+     * This method assumes that the source image uses the same pixel coordinate system than the
+     * target raster (i.e. that pixels at the same coordinates are at the same location on Earth).
+     * It also assumes that the target tile is fully included in the bounds of a single source tile.
+     * That later condition is met if the target grid tiles has been created by {@link ImageLayout}.
+     *
+     * @param  source  image from which to read sample values.
+     * @param  target  image tile where to write sample values after processing.
+     * @return object to use for applying the operation.
+     */
+    static Transferer create(final RenderedImage source, final WritableRaster target) {
+        int tileX = Math.floorDiv((target.getMinX() - source.getTileGridXOffset()), source.getTileWidth());
+        int tileY = Math.floorDiv((target.getMinY() - source.getTileGridYOffset()), source.getTileHeight());
+        return create(source.getTile(tileX, tileY), target);
+    }
+
+    /**
      * Suggests a strategy for transferring data from the given source to the given target.
-     * Some operation can be applied on sample values during the transfer for producing a
-     * computed image.
+     * The operation to apply on sample values during transfer is specified later, during
+     * the call to {@link #compute(MathTransform1D[])}.
      *
      * @param  source  image tile from which to read sample values.
      * @param  target  image tile where to write sample values after processing.
      * @return object to use for applying the operation.
      */
-    static Transferer suggest(final Raster source, final WritableRaster target) {
+    static Transferer create(final Raster source, final WritableRaster target) {
         switch (ImageUtilities.getDataType(target)) {
             case DataBuffer.TYPE_DOUBLE: {
                 if (isDirect(target)) {

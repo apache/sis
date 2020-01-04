@@ -186,7 +186,7 @@ public class ImageLayout {
         boolean pt = allowPartialTiles;
         if (pt) {
             final ColorModel cm = image.getColorModel();
-            if (cm != null) {
+            if (pt = (cm != null)) {
                 if (cm instanceof IndexColorModel) {
                     pt = ((IndexColorModel) cm).getTransparentPixel() == 0;
                 } else {

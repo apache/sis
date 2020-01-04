@@ -67,7 +67,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
         } catch (IllegalArgumentException e) {
             numBits *= Integer.SIZE;                // Conservatively assume 32 bits values.
         }
-        return (int) Math.min(Integer.MIN_VALUE, numBits / Byte.SIZE);
+        return (int) Math.min(Integer.MAX_VALUE, numBits / Byte.SIZE);
     }
 
     /**

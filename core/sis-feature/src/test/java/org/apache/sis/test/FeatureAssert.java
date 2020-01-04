@@ -38,7 +38,7 @@ public strictfp class FeatureAssert extends ReferencingAssert {
     }
 
     /**
-     * Verifies that sample values in the given raster are equal to the expected values.
+     * Verifies that sample values in the given raster are equal to the expected integer values.
      *
      * @param  raster    the raster to verify.
      * @param  band      the band to verify.
@@ -54,14 +54,47 @@ public strictfp class FeatureAssert extends ReferencingAssert {
             final int y = minY + j;
             for (int i=0; i<row.length; i++) {
                 final int x = minX + i;
-                final int actual = raster.getSample(x, y, band);
+                final int a = raster.getSample(x, y, band);
                 final int e = row[i];
-                if (actual != e) {
-                    fail("Mismatched sample value at image coordinates (" + x + ", " + y + ") "
-                            + "— matrix indices (" + i + ", " + j + ") band " + band
-                            + ": expected " + e + " but found " + actual);
+                if (a != e) {
+                    fail(mismatchedSampleValue(x, y, i, j, band, e, a));
                 }
             }
         }
+    }
+
+    /**
+     * Verifies that sample values in the given raster are equal to the expected floating-point values.
+     *
+     * @param  raster    the raster to verify.
+     * @param  band      the band to verify.
+     * @param  expected  the expected sample values.
+     */
+    public static void assertValuesEqual(final Raster raster, final int band, final float[][] expected) {
+        final int minX = raster.getMinX();
+        final int minY = raster.getMinY();
+        assertEquals("Height", expected.length, raster.getHeight());
+        for (int j=0; j<expected.length; j++) {
+            final float[] row = expected[j];
+            assertEquals("Width", row.length, raster.getWidth());
+            final int y = minY + j;
+            for (int i=0; i<row.length; i++) {
+                final int   x = minX + i;
+                final float a = raster.getSampleFloat(x, y, band);
+                final float e = row[i];
+                if (Float.floatToRawIntBits(a) != Float.floatToRawIntBits(e)) {
+                    fail(mismatchedSampleValue(x, y, i, j, band, e, a));
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the error message for a test failure in an {@code assertValuesEqual(…)} method.
+     */
+    private static String mismatchedSampleValue(int x, int y, int i, int j, int band, Number expected, Number actual) {
+        return "Mismatched sample value at image coordinates (" + x + ", " + y + ") "
+                + "— matrix indices (" + i + ", " + j + ") band " + band
+                + ": expected " + expected + " but found " + actual;
     }
 }
