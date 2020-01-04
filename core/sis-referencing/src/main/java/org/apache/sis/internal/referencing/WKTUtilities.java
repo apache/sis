@@ -58,6 +58,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.Statistics;
 import org.apache.sis.math.Vector;
 
 
@@ -70,7 +71,7 @@ import org.apache.sis.math.Vector;
  * We need to be specific in order to select the right "aspect" of the given object.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -349,6 +350,43 @@ public final class WKTUtilities extends Static {
     }
 
     /**
+     * Suggests an amount of fraction digits to use for formatting numbers in each column of the given matrix.
+     * The number of fraction digits may be negative if we could round the numbers to 10, 100, <i>etc</i>.
+     *
+     * @param  rows  the matrix rows. It is not required that each row has the same length.
+     * @return suggested amount of fraction digits as an array as long as the longest row.
+     *
+     * @see org.apache.sis.referencing.operation.matrix.Matrices#toString(Matrix)
+     */
+    public static int[] suggestFractionDigits(final Vector[] rows) {
+        int length = 0;
+        final int n = rows.length - 1;
+        for (int j=0; j <= n; j++) {
+            final int rl = rows[j].size();
+            if (rl > length) length = rl;
+        }
+        final int[] fractionDigits = new int[length];
+        final Statistics stats = new Statistics(null);
+        for (int i=0; i<length; i++) {
+            boolean isInteger = true;
+            for (final Vector row : rows) {
+                if (row.size() > i) {
+                    final double value = row.doubleValue(i);
+                    stats.accept(value);
+                    if (isInteger && Math.floor(value) != value && !Double.isNaN(value)) {
+                        isInteger = false;
+                    }
+                }
+            }
+            if (!isInteger) {
+                fractionDigits[i] = Numerics.suggestFractionDigits(stats);
+            }
+            stats.reset();
+        }
+        return fractionDigits;
+    }
+
+    /**
      * Suggests an amount of fraction digits to use for formatting numbers in each column of the given sequence
      * of points. The number of fraction digits may be negative if we could round the numbers to 10, <i>etc</i>.
      *
@@ -357,7 +395,7 @@ public final class WKTUtilities extends Static {
      * @return suggested amount of fraction digits as an array as long as the longest row.
      */
     public static int[] suggestFractionDigits(final CoordinateReferenceSystem crs, final Vector[] points) {
-        final int[] fractionDigits = Numerics.suggestFractionDigits(points);
+        final int[] fractionDigits = suggestFractionDigits(points);
         final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(crs);
         if (ellipsoid != null) {
             /*

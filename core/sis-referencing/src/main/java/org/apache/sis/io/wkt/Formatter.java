@@ -1239,7 +1239,7 @@ public class Formatter implements Localized {
             return;
         }
         if (fractionDigits == null || fractionDigits.length == 0) {
-            fractionDigits = Numerics.suggestFractionDigits(rows);
+            fractionDigits = WKTUtilities.suggestFractionDigits(rows);
         }
         numberFormat.setRoundingMode(RoundingMode.HALF_EVEN);
         /*
