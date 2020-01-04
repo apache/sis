@@ -100,7 +100,8 @@ public abstract class ComputedImage extends PlanarImage {
          * Invoked when the enclosing image has been garbage-collected. This method removes all cached tiles
          * that were owned by the enclosing image. This method should not perform other cleaning work than
          * removing cached tiles because it is not guaranteed to be invoked if {@link TileCache#GLOBAL}
-         * does not contain any tile for the enclosing image.
+         * does not contain any tile for the enclosing image (because there would be nothing preventing
+         * this weak reference to be garbage collected before {@code dispose()} is invoked).
          */
         @Override
         public void dispose() {

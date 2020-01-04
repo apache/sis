@@ -207,7 +207,7 @@ final class MultiBandsIndexColorModel extends IndexColorModel {
      */
     @Override
     public SampleModel createCompatibleSampleModel(final int width, final int height) {
-        return new BandedSampleModel(transferType, width, height, numBands);
+        return RasterFactory.unique(new BandedSampleModel(transferType, width, height, numBands));
     }
 
     /**

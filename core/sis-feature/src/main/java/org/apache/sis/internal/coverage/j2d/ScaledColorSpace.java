@@ -17,7 +17,9 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.awt.color.ColorSpace;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.collection.WeakHashSet;
 
 
 /**
@@ -36,11 +38,16 @@ import org.apache.sis.util.Debug;
  * @since 1.0
  * @module
  */
-public final class ScaledColorSpace extends ColorSpace {
+final class ScaledColorSpace extends ColorSpace {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 438226855772441165L;
+
+    /**
+     * Shared instances of {@link ScaledColorSpace}s.
+     */
+    private static final WeakHashSet<ScaledColorSpace> POOL = new WeakHashSet<>(ScaledColorSpace.class);
 
     /**
      * Minimal normalized RGB value.
@@ -69,6 +76,7 @@ public final class ScaledColorSpace extends ColorSpace {
 
     /**
      * Creates a color model for the given range of values.
+     * Callers should invoke {@link #unique()} on the newly created instance.
      *
      * @param  numComponents  the number of components.
      * @param  visibleBand    the band to use for computing colors.
@@ -181,9 +189,42 @@ public final class ScaledColorSpace extends ColorSpace {
      * @param  buffer  where to append the range of values.
      */
     @Debug
-    public final void formatRange(final StringBuilder buffer) {
+    final void formatRange(final StringBuilder buffer) {
         buffer.append('[').append(getMinValue(visibleBand))
             .append(" … ").append(getMaxValue(visibleBand))
             .append(" in band ").append(visibleBand).append(']');
+    }
+
+    /**
+     * Returns a unique instance of this color space. May be {@code this}.
+     */
+    final ScaledColorSpace unique() {
+        return POOL.unique(this);
+    }
+
+    /**
+     * Returns a hash code value for this color model.
+     * Defined for implementation of {@link #unique()}.
+     */
+    @Override
+    public int hashCode() {
+        return Float.floatToIntBits(scale) + 31 * Float.floatToIntBits(offset) + 7 * getNumComponents() + visibleBand;
+    }
+
+    /**
+     * Compares this color space with the given object for equality.
+     * Defined for implementation of {@link #unique()}.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof ScaledColorSpace) {
+            final ScaledColorSpace that = (ScaledColorSpace) obj;
+            return Numerics.equals(scale,  that.scale)  &&
+                   Numerics.equals(offset, that.offset) &&
+                   visibleBand         ==  that.visibleBand &&
+                   getNumComponents()  ==  that.getNumComponents() &&
+                   getType()           ==  that.getType();
+        }
+        return false;
     }
 }

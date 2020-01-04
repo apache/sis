@@ -27,7 +27,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.internal.coverage.j2d.ImageFactory;
+import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -70,7 +70,7 @@ public final strictfp class GridCoverage2DTest extends TestCase {
          * Create an image and set values directly as integers. We do not use one of the
          * BufferedImage.TYPE_* constant because this test uses some negative values.
          */
-        final BufferedImage  image  = ImageFactory.createGrayScale(DataBuffer.TYPE_INT, size, size, 1, 0, -10, 10);
+        final BufferedImage  image  = RasterFactory.createGrayScaleImage(DataBuffer.TYPE_INT, size, size, 1, 0, -10, 10);
         final WritableRaster raster = image.getRaster();
         raster.setSample(0, 0, 0,   2);
         raster.setSample(1, 0, 0,   5);

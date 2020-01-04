@@ -36,6 +36,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -63,7 +64,7 @@ public final class ColorModelFactory {
      *
      * @see #unique(ColorModel)
      */
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings("rawtypes")   // TODO: Remove after we removed ColorModelPatch.
     private static final WeakHashSet<ColorModelPatch> CACHE = new WeakHashSet<>(ColorModelPatch.class);
 
     /**
@@ -396,7 +397,7 @@ public final class ColorModelFactory {
      * @param  maximum        the maximal sample value expected.
      * @return the color space for the given range of values.
      *
-     * @see ImageFactory#createGrayScale(int, int, int, int, int, double, double)
+     * @see RasterFactory#createGrayScaleImage(int, int, int, int, int, double, double)
      */
     public static ColorModel createGrayScale(final int dataType, final int numComponents,
             final int visibleBand, final double minimum, final double maximum)
@@ -421,7 +422,25 @@ public final class ColorModelFactory {
         if (numComponents == 1 && minimum == 0 && maximum == 1) {
             return ColorSpace.getInstance(ColorSpace.CS_GRAY);
         }
-        return new ScaledColorSpace(numComponents, visibleBand, minimum, maximum);
+        return new ScaledColorSpace(numComponents, visibleBand, minimum, maximum).unique();
+    }
+
+    /**
+     * Appends a description of the given color space in the given buffer.
+     * This is used for {@code toString()} method implementations.
+     *
+     * @param  cs      the color space to describe, or {@code null}.
+     * @param  buffer  where to append the description.
+     */
+    @Debug
+    public static void formatDescription(final ColorSpace cs, final StringBuilder buffer) {
+        if (cs != null) {
+            if (cs instanceof ScaledColorSpace) {
+                ((ScaledColorSpace) cs).formatRange(buffer.append("showing "));
+            } else if (cs.getType() == ColorSpace.TYPE_GRAY) {
+                buffer.append("grayscale");
+            }
+        }
     }
 
     /**

@@ -18,7 +18,6 @@ package org.apache.sis.image;
 
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.SampleModel;
@@ -26,12 +25,12 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.RenderedImage;
 import java.util.Vector;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.coverage.j2d.ScaledColorSpace;
+import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 
 
 /**
@@ -432,14 +431,7 @@ colors: if (cm != null) {
             if (cm instanceof IndexColorModel) {
                 buffer.append(((IndexColorModel) cm).getMapSize()).append(" indexed colors");
             } else {
-                final ColorSpace cs = cm.getColorSpace();
-                if (cs != null) {
-                    if (cs instanceof ScaledColorSpace) {
-                        ((ScaledColorSpace) cs).formatRange(buffer.append("showing "));
-                    } else if (cs.getType() == ColorSpace.TYPE_GRAY) {
-                        buffer.append("grayscale");
-                    }
-                }
+                ColorModelFactory.formatDescription(cm.getColorSpace(), buffer);
             }
             final String transparency;
             switch (cm.getTransparency()) {

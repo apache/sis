@@ -37,6 +37,8 @@ import org.apache.sis.util.resources.Vocabulary;
 
 /**
  * Utility methods related to images and their color model or sample model.
+ * Those methods only fetch information, they do not create new rasters or sample/color models
+ * (see {@code *Factory} classes for creating those objects).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

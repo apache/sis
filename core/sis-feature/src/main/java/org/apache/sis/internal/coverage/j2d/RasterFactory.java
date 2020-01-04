@@ -17,8 +17,11 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.awt.Point;
+import java.awt.image.ColorModel;
+import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
+import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferDouble;
@@ -26,10 +29,9 @@ import java.awt.image.DataBufferFloat;
 import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
-import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.RasterFormatException;
-import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.awt.image.BufferedImage;
 import java.nio.Buffer;
 import java.nio.ReadOnlyBufferException;
 import org.apache.sis.internal.feature.Resources;
@@ -38,21 +40,67 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.collection.WeakHashSet;
 
 
 /**
- * Creates rasters from given properties.
+ * Creates rasters from given properties. Contains also convenience methods for
+ * creating {@link BufferedImage} since that kind of images wraps a single raster.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
 public final class RasterFactory extends Static {
     /**
+     * Shared instances of {@link SampleModel}s.
+     *
+     * @see #unique(SampleModel)
+     */
+    private static final WeakHashSet<SampleModel> POOL = new WeakHashSet<>(SampleModel.class);
+
+    /**
      * Do not allow instantiation of this class.
      */
     private RasterFactory() {
+    }
+
+    /**
+     * Creates an opaque image with a gray scale color model. The image can have an arbitrary
+     * number of bands, but in current implementation only one band is used.
+     *
+     * <p><b>Warning:</b> displaying this image is very slow, except in a few special cases.
+     * It should be used only when no standard color model can be used.</p>
+     *
+     * @param  dataType       the color model type as one of {@code DataBuffer.TYPE_*} constants.
+     * @param  width          the desired image width.
+     * @param  height         the desired image height.
+     * @param  numComponents  the number of components.
+     * @param  visibleBand    the band to use for computing colors.
+     * @param  minimum        the minimal sample value expected.
+     * @param  maximum        the maximal sample value expected.
+     * @return the color space for the given range of values.
+     */
+    public static BufferedImage createGrayScaleImage(final int dataType, final int width, final int height,
+            final int numComponents, final int visibleBand, final double minimum, final double maximum)
+    {
+        switch (dataType) {
+            case DataBuffer.TYPE_BYTE: {
+                if (numComponents == 1 && minimum <= 0 && maximum >= 0xFF) {
+                    return new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+                }
+                break;
+            }
+            case DataBuffer.TYPE_USHORT: {
+                if (numComponents == 1 && minimum <= 0 && maximum >= 0xFFFF) {
+                    return new BufferedImage(width, height, BufferedImage.TYPE_USHORT_GRAY);
+                }
+                break;
+            }
+        }
+        final ColorModel cm = ColorModelFactory.createGrayScale(DataBuffer.TYPE_INT, 1, 0, -10, 10);
+        return new BufferedImage(cm, cm.createCompatibleWritableRaster(width, height), false, null);
     }
 
     /**
@@ -152,7 +200,7 @@ public final class RasterFactory extends Static {
                 model = new ComponentSampleModel(dataType, width, height, pixelStride, scanlineStride, bankIndices, bandOffsets);
             }
         }
-        return WritableRaster.createWritableRaster(model, buffer, location);
+        return WritableRaster.createWritableRaster(unique(model), buffer, location);
     }
 
     /**
@@ -223,5 +271,17 @@ public final class RasterFactory extends Static {
             case DataBuffer.TYPE_DOUBLE: return new DataBufferDouble((double[][]) arrays, length, offsets);
             default: return null;
         }
+    }
+
+    /**
+     * Returns a unique instance of the given sample model. This method can be invoked after a new sample
+     * has been created in order to share the same instance for many similar {@code Raster} instances.
+     *
+     * @param  <T>          the type of the given {@code sampleModel}.
+     * @param  sampleModel  the sample model to make unique.
+     * @return a unique instance of the given sample model. May be {@code sampleModel} itself.
+     */
+    static <T extends SampleModel> T unique(final T sampleModel) {
+        return POOL.unique(sampleModel);
     }
 }

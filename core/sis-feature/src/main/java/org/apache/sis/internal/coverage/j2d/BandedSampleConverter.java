@@ -89,7 +89,7 @@ public final class BandedSampleConverter extends ComputedImage {
             layout = ImageLayout.DEFAULT;
         }
         final Dimension tile = layout.suggestTileSize(source);
-        return new BandedSampleModel(targetType, tile.width, tile.height, numBands);
+        return RasterFactory.unique(new BandedSampleModel(targetType, tile.width, tile.height, numBands));
     }
 
     /**
