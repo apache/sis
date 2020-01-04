@@ -275,6 +275,7 @@ public abstract class ComputedImage extends PlanarImage {
                         throw (ImagingOpException) new ImagingOpException(Resources.format(
                                 Resources.Keys.CanNotComputeTile_2, tileX, tileY)).initCause(cause);
                     }
+                    reference.addTile(key);
                 }
             } finally {
                 handler.putAndUnlock(tile);     // Must be invoked even if an exception occurred.

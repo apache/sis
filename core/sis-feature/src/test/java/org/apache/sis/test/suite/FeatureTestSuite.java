@@ -77,6 +77,7 @@ import org.junit.runners.Suite;
     org.apache.sis.internal.coverage.j2d.ImageUtilitiesTest.class,
     org.apache.sis.internal.coverage.j2d.ScaledColorSpaceTest.class,
     org.apache.sis.image.PlanarImageTest.class,
+    org.apache.sis.image.ComputedImageTest.class,
     org.apache.sis.image.DefaultIteratorTest.class,
     org.apache.sis.image.LinearIteratorTest.class,
     org.apache.sis.coverage.CategoryTest.class,
