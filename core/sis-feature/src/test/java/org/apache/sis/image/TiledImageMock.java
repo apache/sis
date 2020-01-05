@@ -288,11 +288,10 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
     }
 
     /**
-     * Unsupported since we do not need tile observers for the tests.
+     * Ignored since we do not need tile observers for the tests.
      */
     @Override
     public void addTileObserver(TileObserver to) {
-        throw new UnsupportedOperationException();
     }
 
     /**

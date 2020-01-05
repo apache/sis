@@ -44,7 +44,7 @@ import org.apache.sis.util.Workaround;
  *   <li>Calculation is performed on {@code float} or {@code double} numbers.</li>
  * </ul>
  *
- * Subclasses may relax those restrictions at the cost of more complex {@link #computeTile(int, int)}
+ * Subclasses may relax those restrictions at the cost of more complex {@link #computeTile(int, int, WritableRaster)}
  * implementation. Those restrictions may also be relaxed in future versions of this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -171,14 +171,17 @@ public final class BandedSampleConverter extends ComputedImage {
     /**
      * Computes the tile at specified indices.
      *
-     * @param  tileX  the column index of the tile to compute.
-     * @param  tileY  the row index of the tile to compute.
+     * @param  tileX   the column index of the tile to compute.
+     * @param  tileY   the row index of the tile to compute.
+     * @param  target  if the tile already exists but needs to be updated, the tile to update. Otherwise {@code null}.
      * @return computed tile for the given indices (can not be null).
      * @throws TransformException if an error occurred while converting a sample value.
      */
     @Override
-    protected Raster computeTile(final int tileX, final int tileY) throws TransformException {
-        final WritableRaster target = createTile(tileX, tileY);
+    protected Raster computeTile(final int tileX, final int tileY, WritableRaster target) throws TransformException {
+        if (target == null) {
+            target = createTile(tileX, tileY);
+        }
         Transferer.create(getSource(0), target).compute(converters);
         return target;
     }

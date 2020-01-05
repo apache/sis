@@ -60,7 +60,7 @@ public final strictfp class ComputedImageTest extends TestCase {
             @Override public ColorModel getColorModel() {return getSource(0).getColorModel();}
             @Override public int        getWidth()      {return getSource(0).getWidth();}
             @Override public int        getHeight()     {return getSource(0).getHeight();}
-            @Override protected Raster  computeTile(final int tileX, final int tileY) {
+            @Override protected Raster  computeTile(final int tileX, final int tileY, WritableRaster previous) {
                 final int tw = getTileWidth();
                 final int th = getTileHeight();
                 return getSource(0).getData(new Rectangle(tileX * tw, tileY * th, tw, th));
