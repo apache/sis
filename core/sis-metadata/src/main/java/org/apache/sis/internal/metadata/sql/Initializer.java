@@ -297,17 +297,19 @@ public abstract class Initializer {
         if (source == null) {
             if (hasJNDI()) try {
                 final Context env = (Context) InitialContext.doLookup("java:comp/env");
-                source = (DataSource) env.lookup(JNDI);
-                if (env instanceof EventContext) {
-                    Listener.register((EventContext) env);
+                if (env != null) {
+                    source = (DataSource) env.lookup(JNDI);
+                    if (env instanceof EventContext) {
+                        Listener.register((EventContext) env);
+                    }
+                    return source;
+                    /*
+                     * No Derby shutdown hook for DataSource fetched from JNDI.
+                     * We presume that shutdowns are handled by the container.
+                     * We do not clear the 'supplier' field in case 'source'
+                     * is cleaned by the listener.
+                     */
                 }
-                return source;
-                /*
-                 * No Derby shutdown hook for DataSource fetched fron JNDI.
-                 * We presume that shutdowns are handled by the container.
-                 * We do not clear the 'supplier' field in case 'source'
-                 * is cleaned by the listener.
-                 */
             } catch (NameNotFoundException e) {
                 final LogRecord record = Messages.getResources(null).getLogRecord(
                         Level.CONFIG, Messages.Keys.JNDINotSpecified_1, JNDI);
