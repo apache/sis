@@ -127,9 +127,9 @@ public final class Longitude extends Angle {
     }
 
     /**
-     * Returns the given longitude value normalized to the [{@linkplain #MIN_VALUE -180} … {@linkplain #MAX_VALUE 180})°
-     * range (upper value is exclusive). If the given value is outside the longitude range, then this method adds or
-     * subtracts a multiple of 360° in order to bring back the value to that range.
+     * Returns the given longitude value normalized to the [{@value #MIN_VALUE} … {@value #MAX_VALUE})°
+     * range (upper value is exclusive). If the given value is outside the longitude range, then this
+     * method adds or subtracts a multiple of 360° in order to bring back the value to that range.
      *
      * <p>Special cases:</p>
      * <ul>

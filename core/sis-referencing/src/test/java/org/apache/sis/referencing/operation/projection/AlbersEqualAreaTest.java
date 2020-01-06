@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -247,5 +247,52 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
                        new double[] {+40, 60},                  // Maximal input coordinate values
                        new int[]    {  5,  5},                  // Number of points to test
                        TestUtilities.createRandomNumberGenerator());
+    }
+
+    /**
+     * Tests the projection of point where the difference between the given longitude value and central meridian
+     * is close to 360°. In most map other map projection implementations, we rely on range reductions performed
+     * automatically by trigonometric functions. However we can not rely on that effect in the particular case of
+     * {@link AlbersEqualArea} because the longitude is pre-multiplied by a <var>n</var> factor before to be used
+     * in trigonometric functions. The range reduction must be performed explicitly in map projection code.
+     *
+     * <p>The math transform tested here is:</p>
+     * {@preformat wkt
+     *   Param_MT["Albers Equal Area",
+     *     Parameter["semi_major", 6378206.4, Unit["metre"]],
+     *     Parameter["semi_minor", 6356583.8, Unit["metre"]],
+     *     Parameter["Latitude of false origin", 50, Unit["degree"]],
+     *     Parameter["Longitude of false origin", -154, Unit["degree"]],
+     *     Parameter["Latitude of 1st standard parallel", 55, Unit["degree"]],
+     *     Parameter["Latitude of 2nd standard parallel", 65, Unit["degree"]]]
+     * }
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a point.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-486">SIS-486</a>
+     */
+    @Test
+    public void testLongitudeWraparound() throws FactoryException, TransformException {
+        createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
+                6378206.4,  // Semi-major axis length
+                6356583.8,  // Semi-minor axis length
+                -154,       // Central meridian
+                50,         // Latitude of origin
+                55,         // Standard parallel 1
+                65,         // Standard parallel 2
+                NaN,        // Scale factor (none)
+                NaN,        // False easting (none)
+                NaN);       // False northing (none)
+
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        /*
+         * Skip inverse transform because the 176.003° become -183.997°. It is not the purpose
+         * of this test to verify longitude wraparound in inverse projection (we do not expect
+         * such wraparound to be applied).
+         */
+        isInverseTransformSupported = false;
+        verifyTransform(new double[] {176.00296518775082, 52.00158201757688},
+                        new double[] {-2000419.117, 680784.426});
     }
 }

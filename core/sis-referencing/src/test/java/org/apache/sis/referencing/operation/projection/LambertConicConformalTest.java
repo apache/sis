@@ -51,7 +51,7 @@ import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -352,9 +352,12 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
     @DependsOnMethod("testLambertConicConformal1SP")
     public void testSerialization() throws FactoryException, TransformException {
         createNormalizedProjection(true, 40);
-        final double[] source = CoordinateDomain.GEOGRAPHIC_RADIANS_NORTH.generateRandomInput(TestUtilities.createRandomNumberGenerator(), 2, 10);
+        final double[] source = new double[] {
+            70*PI/180, 27*PI/180,
+            30*PI/180, 56*PI/180
+        };
         final double[] target = new double[source.length];
-        transform.transform(source, 0, target, 0, 10);
+        transform.transform(source, 0, target, 0, source.length / 2);
         transform = assertSerializedEquals(transform);
         tolerance = Formulas.LINEAR_TOLERANCE;
         verifyTransform(source, target);
