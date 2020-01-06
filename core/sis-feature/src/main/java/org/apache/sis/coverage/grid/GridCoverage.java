@@ -32,7 +32,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
-import org.apache.sis.internal.coverage.j2d.ConvertedGridCoverage;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -158,7 +157,7 @@ public abstract class GridCoverage {
      * @param  dataType     the color model type as one {@link java.awt.image.DataBuffer} constants.
      * @return proposed color model, or {@code null} if none.
      */
-    protected final ColorModel createColorModel(final int visibleBand, final int dataType) {
+    final ColorModel createColorModel(final int visibleBand, final int dataType) {
         return ColorModelFactory.createColorModel(sampleDimensions, visibleBand, dataType, ColorModelFactory.GRAYSCALE);
     }
 

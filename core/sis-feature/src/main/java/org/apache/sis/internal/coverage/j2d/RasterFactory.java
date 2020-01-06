@@ -235,7 +235,7 @@ public final class RasterFactory extends Static {
      * @param  keepFloat  whether to avoid integer types if the range uses floating point numbers.
      * @return the {@link DataBuffer} type or {@link DataBuffer#TYPE_UNDEFINED} if the given range was null.
      */
-    static int getDataType(final NumberRange<?> range, final boolean keepFloat) {
+    public static int getDataType(final NumberRange<?> range, final boolean keepFloat) {
         if (range == null) {
             return DataBuffer.TYPE_UNDEFINED;
         }

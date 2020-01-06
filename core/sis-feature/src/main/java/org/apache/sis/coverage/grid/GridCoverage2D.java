@@ -42,7 +42,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.coverage.j2d.ConvertedGridCoverage;
 import org.apache.sis.internal.coverage.j2d.BandedSampleConverter;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.DefaultFactories;

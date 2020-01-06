@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage.j2d;
+package org.apache.sis.coverage.grid;
 
 import java.util.List;
 import java.util.Arrays;
@@ -30,8 +30,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.internal.coverage.j2d.BandedSampleConverter;
+import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.measure.NumberRange;
 
 
@@ -53,12 +53,12 @@ import org.apache.sis.measure.NumberRange;
  * @since   1.0
  * @module
  */
-public final class ConvertedGridCoverage extends GridCoverage {
+final class ConvertedGridCoverage extends GridCoverage {
     /**
      * The band to make visible when the image is shown on screen.
      * All other bands, if any, will be computed their result ignored at display time.
      */
-    public static final int VISIBLE_BAND = 0;
+    static final int VISIBLE_BAND = 0;
 
     /**
      * The coverage containing source values.
@@ -112,7 +112,7 @@ public final class ConvertedGridCoverage extends GridCoverage {
      * @return the converted coverage. May be {@code source}.
      * @throws NoninvertibleTransformException if this constructor can not build a full conversion chain to target.
      */
-    public static GridCoverage create(final GridCoverage source, final boolean converted) throws NoninvertibleTransformException {
+    static GridCoverage create(final GridCoverage source, final boolean converted) throws NoninvertibleTransformException {
         final List<SampleDimension> sources = source.getSampleDimensions();
         final List<SampleDimension> targets = new ArrayList<>(sources.size());
         final MathTransform1D[]  converters = converters(sources, targets, converted);
@@ -129,9 +129,9 @@ public final class ConvertedGridCoverage extends GridCoverage {
      * @return the transforms, or {@code null} if all transforms are identity transform.
      * @throws NoninvertibleTransformException if this method can not build a full conversion chain.
      */
-    public static MathTransform1D[] converters(final List<SampleDimension> sources,
-                                               final List<SampleDimension> targets,
-                                               final boolean converted)
+    static MathTransform1D[] converters(final List<SampleDimension> sources,
+                                        final List<SampleDimension> targets,
+                                        final boolean converted)
             throws NoninvertibleTransformException
     {
         final int               numBands   = sources.size();
