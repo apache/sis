@@ -20,13 +20,17 @@ import java.awt.Dimension;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRenderedImage;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ColorModel;
+import java.awt.image.TileObserver;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.image.ComputedImage;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Workaround;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -44,15 +48,16 @@ import org.apache.sis.util.Workaround;
  *   <li>Calculation is performed on {@code float} or {@code double} numbers.</li>
  * </ul>
  *
- * Subclasses may relax those restrictions at the cost of more complex {@link #computeTile(int, int, WritableRaster)}
- * implementation. Those restrictions may also be relaxed in future versions of this class.
+ * If the given source is writable and the transform are invertible, then the {@code BandedSampleConverter}
+ * returned by the {@link #create create(…)} method will implement {@link WritableRenderedImage} interface.
+ * In such case, writing converted values will cause the corresponding source values to be updated too.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-public final class BandedSampleConverter extends ComputedImage {
+public class BandedSampleConverter extends ComputedImage {
     /**
      * The transfer functions to apply on each band of the source image.
      */
@@ -64,6 +69,22 @@ public final class BandedSampleConverter extends ComputedImage {
     private final ColorModel colorModel;
 
     /**
+     * Creates a new image which will compute values using the given converters.
+     *
+     * @param  source       the image for which to convert sample values.
+     * @param  sampleModel  the sample model shared by all tiles in this image.
+     * @param  colorModel   the color model for from the expected range of values, or {@code null}.
+     * @param  converters   the transfer functions to apply on each band of the source image.
+     */
+    BandedSampleConverter(final RenderedImage source,  final BandedSampleModel sampleModel,
+                          final ColorModel colorModel, final MathTransform1D[] converters)
+    {
+        super(sampleModel, source);
+        this.colorModel = colorModel;
+        this.converters = converters;
+    }
+
+    /**
      * Creates a new image of the given data type which will compute values using the given converters.
      * The number of bands is the length of the {@code converters} array, which must be greater than 0
      * and not greater than the number of bands in the source image.
@@ -73,31 +94,38 @@ public final class BandedSampleConverter extends ComputedImage {
      * @param  targetType  the type of this image resulting from conversion of given image.
      * @param  colorModel  the color model for from the expected range of values, or {@code null}.
      * @param  converters  the transfer functions to apply on each band of the source image.
+     * @return the image which compute converted values from the given source.
      */
-    public BandedSampleConverter(final RenderedImage source, final ImageLayout layout,
-                                 final int targetType, final ColorModel colorModel,
-                                 final MathTransform1D... converters)
-    {
-        super(createSampleModel(targetType, converters.length, layout, source), source);
-        this.colorModel = colorModel;
-        this.converters = converters;
-    }
-
-    /**
-     * Returns the sample model to use for this image. This is a workaround for RFE #4093999
-     * ("Relax constraint on placement of this()/super() call in constructors").
-     */
-    @Workaround(library="JDK", version="1.8")
-    private static BandedSampleModel createSampleModel(final int targetType,
-            final int numBands, ImageLayout layout, final RenderedImage source)
+    public static BandedSampleConverter create(final RenderedImage source, ImageLayout layout,
+                                               final int targetType, final ColorModel colorModel,
+                                               final MathTransform1D... converters)
     {
         ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("converters", converters);
+        final int numBands = converters.length;
         ArgumentChecks.ensureSizeBetween("converters", 1, source.getSampleModel().getNumBands(), numBands);
         if (layout == null) {
             layout = ImageLayout.DEFAULT;
         }
         final Dimension tile = layout.suggestTileSize(source);
-        return RasterFactory.unique(new BandedSampleModel(targetType, tile.width, tile.height, numBands));
+        final BandedSampleModel sampleModel = RasterFactory.unique(
+                new BandedSampleModel(targetType, tile.width, tile.height, numBands));
+        /*
+         * If the source image is writable, then changes in the converted image may be retro-propagated
+         * to that source image. If we fail to compute the required inverse transforms, log a notice at
+         * a low level because this is not a serious problem; writable BandedSampleConverter is a plus
+         * but not a requirement.
+         */
+        if (source instanceof WritableRenderedImage) try {
+            final MathTransform1D[] inverses = new MathTransform1D[numBands];
+            for (int i=0; i<numBands; i++) {
+                inverses[i] = converters[i].inverse();
+            }
+            return new Writable((WritableRenderedImage) source, sampleModel, colorModel, converters, inverses);
+        } catch (NoninvertibleTransformException e) {
+            Logging.recoverableException(Logging.getLogger(Modules.RASTER), BandedSampleConverter.class, "create", e);
+        }
+        return new BandedSampleConverter(source, sampleModel, colorModel, converters);
     }
 
     /**
@@ -194,5 +222,47 @@ public final class BandedSampleConverter extends ComputedImage {
         }
         Transferer.create(getSource(0), target).compute(converters);
         return target;
+    }
+
+    /**
+     * A {@code BandedSampleConverter} capable to retro-propagate the changes to the source coverage.
+     */
+    private static final class Writable extends BandedSampleConverter implements WritableRenderedImage {
+        /**
+         * The converters for computing the source values from a converted value.
+         */
+        private final MathTransform1D[] inverses;
+
+        /**
+         * Creates a new writable image which will compute values using the given converters.
+         */
+        Writable(final WritableRenderedImage source,  final BandedSampleModel sampleModel,
+                 final ColorModel colorModel, final MathTransform1D[] converters, final MathTransform1D[] inverses)
+        {
+            super(source, sampleModel, colorModel, converters);
+            this.inverses = inverses;
+        }
+
+        @Override
+        public void addTileObserver(final TileObserver observer) {
+        }
+
+        @Override
+        public void removeTileObserver(final TileObserver observer) {
+        }
+
+        @Override
+        public WritableRaster getWritableTile(final int tileX, final int tileY) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void releaseWritableTile(final int tileX, final int tileY) {
+        }
+
+        @Override
+        public void setData(final Raster data) {
+            throw new UnsupportedOperationException();
+        }
     }
 }

@@ -18,6 +18,8 @@ package org.apache.sis.image;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
 import java.awt.Insets;
@@ -124,26 +126,19 @@ public abstract class ComputedImage extends PlanarImage {
     public static final String SOURCE_PADDING_PROPERTY = "sourcePadding";
 
     /**
-     * Whether a tile in the cache is ready for use or needs to be recomputed
-     * because one if its sources changed its data.
+     * Whether a tile in the cache is ready for use or needs to be recomputed because one if its sources
+     * changed its data. If the tile is checkout out for a write operation, the write operation will have
+     * precedence over the dirty state.
      */
     private enum TileStatus {
-        /** The tile is ready for use. */
-        STORED,
+        /** The tile, if present, is ready for use. */
+        VALID,
 
         /** The tile needs to be recomputed because at least one source changed its data. */
         DIRTY,
 
         /** The tile has been checked out for a write operation. */
-        CHECKED,
-
-        /** The tile needs to be recomputed, but it is also checked for write operation by someone else. */
-        CHECKED_AND_DIRTY;
-
-        /** Remapping function for calls to {@link Map#computeIfPresent(Object, java.util.function.BiFunction)}. */
-        static TileStatus dirty(final TileCache.Key key, TileStatus oldValue) {
-            return (oldValue == CHECKED) ? CHECKED_AND_DIRTY : DIRTY;
-        }
+        WRITABLE
     }
 
     /**
@@ -192,24 +187,46 @@ public abstract class ComputedImage extends PlanarImage {
         }
 
         /**
-         * Remembers that the given tile will need to be removed from the cache
-         * when the enclosing image will be garbage-collected.
+         * Sets the status of the specified tile, discarding any previous status.
          */
-        final void addTile(final TileCache.Key key) {
+        final void setTileStatus(final TileCache.Key key, final TileStatus status) {
             synchronized (cachedTiles) {
-                cachedTiles.put(key, TileStatus.STORED);
+                cachedTiles.put(key, status);
             }
         }
 
         /**
-         * Returns {@code true} if the specified tile needs to be recomputed.
+         * Returns the status of the tile at the specified indices.
+         * The main status of interest are:
+         * <ul>
+         *   <li>{@link TileStatus#DIRTY}    — if the tile needs to be recomputed.</li>
+         *   <li>{@link TileStatus#WRITABLE} — if the tile is currently checked out for writing.</li>
+         * </ul>
          */
-        final boolean isDirty(final TileCache.Key key) {
-            final TileStatus status;
+        final TileStatus getTileStatus(final TileCache.Key key) {
             synchronized (cachedTiles) {
-                status = cachedTiles.get(key);
+                return cachedTiles.get(key);
             }
-            return (status == TileStatus.DIRTY) || (status == TileStatus.CHECKED_AND_DIRTY);
+        }
+
+        /**
+         * Adds in the given list the indices of all tiles which are checked out for writing.
+         * If the given list is {@code null}, then this method stops the search at the first
+         * tile checked out.
+         *
+         * @param  indices  the list where to add indices, or {@code null} if none.
+         * @return whether at least one tile is checked out for writing.
+         */
+        final boolean getWritableTileIndices(final List<Point> indices) {
+            synchronized (cachedTiles) {
+                for (final Map.Entry<TileCache.Key, TileStatus> entry : cachedTiles.entrySet()) {
+                    if (entry.getValue() == TileStatus.WRITABLE) {
+                        if (indices == null) return true;
+                        indices.add(entry.getKey().indices());
+                    }
+                }
+            }
+            return (indices != null) && !indices.isEmpty();
         }
 
         /**
@@ -224,7 +241,7 @@ public abstract class ComputedImage extends PlanarImage {
                 for (int tileY = minTileY; tileY <= maxTileY; tileY++) {
                     for (int tileX = minTileX; tileX <= maxTileX; tileX++) {
                         final TileCache.Key key = new TileCache.Key(this, tileX, tileY);
-                        cachedTiles.computeIfPresent(key, TileStatus::dirty);
+                        cachedTiles.replace(key, TileStatus.VALID, TileStatus.DIRTY);
                     }
                 }
             }
@@ -497,6 +514,13 @@ public abstract class ComputedImage extends PlanarImage {
      *       If an error occurred, an {@link ImagingOpException} is thrown.</li>
      * </ol>
      *
+     * <h4>Race conditions with write operations</h4>
+     * If this image implements the {@link WritableRenderedImage} interface, then a user may have acquired
+     * the tile for a write operation outside the {@link #computeTile computeTile(…)} method. In such case,
+     * there is no consistency guarantees on sample values: the tile returned by this method may show data
+     * in an unspecified stage during the write operation. This situation may be detected by checking if
+     * {@link #isTileWritable(int, int) isTileWritable(tileX, tileY)} returns {@code true}.
+     *
      * @param  tileX  the column index of the tile to get.
      * @param  tileY  the row index of the tile to get.
      * @return the tile at the given index (never null).
@@ -508,14 +532,14 @@ public abstract class ComputedImage extends PlanarImage {
         final TileCache.Key key = new TileCache.Key(reference, tileX, tileY);
         final Cache<TileCache.Key,Raster> cache = TileCache.GLOBAL;
         Raster tile = cache.peek(key);
-        if (tile == null || reference.isDirty(key)) {
+        if (tile == null || reference.getTileStatus(key) == TileStatus.DIRTY) {
             int min;
             ArgumentChecks.ensureBetween("tileX", (min = getMinTileX()), min + getNumXTiles() - 1, tileX);
             ArgumentChecks.ensureBetween("tileY", (min = getMinTileY()), min + getNumYTiles() - 1, tileY);
             final Cache.Handler<Raster> handler = cache.lock(key);
             try {
                 tile = handler.peek();
-                if (tile == null || reference.isDirty(key)) {
+                if (tile == null || reference.getTileStatus(key) == TileStatus.DIRTY) {
                     final WritableRaster previous = (tile instanceof WritableRaster) ? (WritableRaster) tile : null;
                     Exception cause = null;
                     tile = null;
@@ -530,7 +554,7 @@ public abstract class ComputedImage extends PlanarImage {
                         throw (ImagingOpException) new ImagingOpException(Resources.format(
                                 Resources.Keys.CanNotComputeTile_2, tileX, tileY)).initCause(cause);
                     }
-                    reference.addTile(key);
+                    reference.setTileStatus(key, TileStatus.VALID);
                 }
             } finally {
                 handler.putAndUnlock(tile);     // Must be invoked even if an exception occurred.
@@ -577,6 +601,89 @@ public abstract class ComputedImage extends PlanarImage {
         final int x = Math.toIntExact((((long) tileX) - getMinTileX()) * getTileWidth()  + getMinX());
         final int y = Math.toIntExact((((long) tileY) - getMinTileY()) * getTileHeight() + getMinY());
         return WritableRaster.createWritableRaster(getSampleModel(), new Point(x,y));
+    }
+
+    /**
+     * Returns whether any tile is checked out for writing.
+     * This method always returns {@code false} for read-only images, but may return {@code true}
+     * if this {@code ComputedImage} is also a {@link WritableRenderedImage}.
+     *
+     * @return {@code true} if any tiles are checked out for writing; {@code false} otherwise.
+     *
+     * @see #markWritableTile(int, int, boolean)
+     * @see WritableRenderedImage#hasTileWriters()
+     */
+    public boolean hasTileWriters() {
+        return reference.getWritableTileIndices(null);
+    }
+
+    /**
+     * Returns whether a tile is currently checked out for writing.
+     * This method always returns {@code false} for read-only images, but may return {@code true}
+     * if this {@code ComputedImage} is also a {@link WritableRenderedImage}.
+     *
+     * @param  tileX the X index of the tile.
+     * @param  tileY the Y index of the tile.
+     * @return {@code true} if specified tile is checked out for writing; {@code false} otherwise.
+     *
+     * @see #markWritableTile(int, int, boolean)
+     * @see WritableRenderedImage#isTileWritable(int, int)
+     */
+    public boolean isTileWritable(final int tileX, final int tileY) {
+        return reference.getTileStatus(new TileCache.Key(reference, tileX, tileY)) == TileStatus.WRITABLE;
+    }
+
+    /**
+     * Returns an array of Point objects indicating which tiles are checked out for writing, or {@code null} if none.
+     * This method always returns {@code null} for read-only images, but may return a non-empty array
+     * if this {@code ComputedImage} is also a {@link WritableRenderedImage}.
+     *
+     * @return an array containing the locations of tiles that are checked out for writing, or {@code null} if none.
+     *
+     * @see #markWritableTile(int, int, boolean)
+     * @see WritableRenderedImage#getWritableTileIndices()
+     */
+    public Point[] getWritableTileIndices() {
+        final List<Point> indices = new ArrayList<>();
+        if (reference.getWritableTileIndices(indices)) {
+            return indices.toArray(new Point[indices.size()]);
+        }
+        return null;
+    }
+
+    /**
+     * Marks a tile as checkout out for writing. This method is provided for subclasses that also implement
+     * the {@link WritableRenderedImage} interface. This method can be used as below:
+     *
+     * {@preformat java
+     *     class MyImage extends ComputedImage implements WritableRenderedImage {
+     *         // Constructor omitted for brevity.
+     *
+     *         &#64;Override
+     *         public WritableRaster getWritableTile(int tileX, int tileY) {
+     *             WritableRaster raster = ...;             // Get the writable tile here.
+     *             markWritableTile(tileX, tileY, true);
+     *             return raster;
+     *         }
+     *
+     *         &#64;Override
+     *         public void releaseWritableTile(int tileX, int tileY) {
+     *             markWritableTile(tileX, tileY, false);
+     *             // Release the raster here.
+     *         }
+     *     }
+     * }
+     *
+     * @param  tileX    the X index of the tile to acquire or release.
+     * @param  tileY    the Y index of the tile to acquire or release.
+     * @param  writing  {@code true} for acquiring the tile, or {@code false} for releasing it.
+     *
+     * @see WritableRenderedImage#getWritableTile(int, int)
+     * @see WritableRenderedImage#releaseWritableTile(int, int)
+     */
+    protected void markWritableTile(final int tileX, final int tileY, final boolean writing) {
+        final TileCache.Key key = new TileCache.Key(reference, tileX, tileY);
+        reference.setTileStatus(key, writing ? TileStatus.WRITABLE : TileStatus.VALID);
     }
 
     /**

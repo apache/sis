@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.awt.Point;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.lang.ref.Reference;
@@ -97,6 +98,13 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
             this.image = image;
             this.tileX = tileX;
             this.tileY = tileY;
+        }
+
+        /**
+         * Returns the tile indices.
+         */
+        final Point indices() {
+            return new Point(tileX, tileY);
         }
 
         /**

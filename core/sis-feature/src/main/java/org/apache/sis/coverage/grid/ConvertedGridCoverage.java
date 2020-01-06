@@ -218,7 +218,7 @@ final class ConvertedGridCoverage extends GridCoverage {
          */
         if (image != null) {
             final ColorModel colorModel = createColorModel(VISIBLE_BAND, dataType);
-            image = new BandedSampleConverter(image, null, dataType, colorModel, converters);
+            image = BandedSampleConverter.create(image, null, dataType, colorModel, converters);
         }
         return image;
     }
