@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Objects;
+import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -30,6 +31,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ConvertedGridCoverage;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
@@ -147,6 +149,17 @@ public abstract class GridCoverage {
      */
     public List<SampleDimension> getSampleDimensions() {
         return UnmodifiableArrayList.wrap(sampleDimensions);
+    }
+
+    /**
+     * Creates a color model for the expected range of sample values.
+     *
+     * @param  visibleBand  the band to be made visible (usually 0). All other bands (if any) will be ignored.
+     * @param  dataType     the color model type as one {@link java.awt.image.DataBuffer} constants.
+     * @return proposed color model, or {@code null} if none.
+     */
+    protected final ColorModel createColorModel(final int visibleBand, final int dataType) {
+        return ColorModelFactory.createColorModel(sampleDimensions, visibleBand, dataType, ColorModelFactory.GRAYSCALE);
     }
 
     /**

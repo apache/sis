@@ -304,7 +304,7 @@ public final class ColorModelFactory {
      * Returned instances of {@link ColorModel} are shared among all callers in the running virtual machine.
      *
      * @param  bands        the sample dimensions for which to create a color model.
-     * @param  visibleBand  the band to be made visible (usually 0). All other bands, if any will be ignored.
+     * @param  visibleBand  the band to be made visible (usually 0). All other bands (if any) will be ignored.
      * @param  type         the color model type. One of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_USHORT},
      *                      {@link DataBuffer#TYPE_INT}, {@link DataBuffer#TYPE_FLOAT} or {@link DataBuffer#TYPE_DOUBLE}.
      * @param  colors       the colors to use for each category. The function may return {@code null}, which means transparent.

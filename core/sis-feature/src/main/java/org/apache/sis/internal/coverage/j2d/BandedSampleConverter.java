@@ -59,6 +59,11 @@ public final class BandedSampleConverter extends ComputedImage {
     private final MathTransform1D[] converters;
 
     /**
+     * The color model for the expected range of values. May be {@code null}.
+     */
+    private final ColorModel colorModel;
+
+    /**
      * Creates a new image of the given data type which will compute values using the given converters.
      * The number of bands is the length of the {@code converters} array, which must be greater than 0
      * and not greater than the number of bands in the source image.
@@ -66,12 +71,15 @@ public final class BandedSampleConverter extends ComputedImage {
      * @param  source      the image for which to convert sample values.
      * @param  layout      object to use for computing tile size, or {@code null} for the default.
      * @param  targetType  the type of this image resulting from conversion of given image.
+     * @param  colorModel  the color model for from the expected range of values, or {@code null}.
      * @param  converters  the transfer functions to apply on each band of the source image.
      */
     public BandedSampleConverter(final RenderedImage source, final ImageLayout layout,
-                                 final int targetType, final MathTransform1D... converters)
+                                 final int targetType, final ColorModel colorModel,
+                                 final MathTransform1D... converters)
     {
         super(createSampleModel(targetType, converters.length, layout, source), source);
+        this.colorModel = colorModel;
         this.converters = converters;
     }
 
@@ -94,12 +102,14 @@ public final class BandedSampleConverter extends ComputedImage {
 
     /**
      * Returns the color model associated with all rasters of this image.
+     * If the sample values of this image are floating point numbers, then
+     * a gray scale color model is computed from the expected range of values.
      *
      * @return the color model of this image, or {@code null} if none.
      */
     @Override
     public ColorModel getColorModel() {
-        return null;
+        return colorModel;
     }
 
     /**

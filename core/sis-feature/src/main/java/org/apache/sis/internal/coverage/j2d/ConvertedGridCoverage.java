@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
@@ -53,6 +54,12 @@ import org.apache.sis.measure.NumberRange;
  * @module
  */
 public final class ConvertedGridCoverage extends GridCoverage {
+    /**
+     * The band to make visible when the image is shown on screen.
+     * All other bands, if any, will be computed their result ignored at display time.
+     */
+    public static final int VISIBLE_BAND = 0;
+
     /**
      * The coverage containing source values.
      * Sample values will be converted from that coverage using the {@link #converters}.
@@ -210,7 +217,8 @@ public final class ConvertedGridCoverage extends GridCoverage {
          * That image should never be null. But if an implementation wants to do so, respect that.
          */
         if (image != null) {
-            image = new BandedSampleConverter(image, null, dataType, converters);
+            final ColorModel colorModel = createColorModel(VISIBLE_BAND, dataType);
+            image = new BandedSampleConverter(image, null, dataType, colorModel, converters);
         }
         return image;
     }

@@ -29,6 +29,7 @@ import java.io.UncheckedIOException;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
+import java.awt.image.ColorModel;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.NameFactory;
@@ -59,6 +60,7 @@ import static java.lang.Math.subtractExact;
 import static java.lang.Math.toIntExact;
 
 // Branch-specific imports
+
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
 
@@ -146,7 +148,8 @@ public class GridCoverage2D extends GridCoverage {
     {
         super(source.gridGeometry, range);
         final int dataType = ConvertedGridCoverage.getDataType(range, isConverted);
-        data           = new BandedSampleConverter(source.data, null, dataType, converters);
+        final ColorModel colorModel = createColorModel(ConvertedGridCoverage.VISIBLE_BAND, dataType);
+        data           = new BandedSampleConverter(source.data, null, dataType, colorModel, converters);
         gridToImageX   = source.gridToImageX;
         gridToImageY   = source.gridToImageY;
         xDimension     = source.xDimension;
