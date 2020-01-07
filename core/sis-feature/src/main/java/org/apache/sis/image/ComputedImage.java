@@ -35,6 +35,7 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.coverage.grid.GridExtent;     // For javadoc
+import org.apache.sis.internal.feature.Resources;
 
 
 /**
@@ -360,7 +361,7 @@ public abstract class ComputedImage extends PlanarImage {
                         error = e;
                     }
                     if (marked) {
-                        reference.endWrite(key);
+                        reference.endWrite(key, error == null);
                     }
                 }
             } finally {
@@ -370,7 +371,7 @@ public abstract class ComputedImage extends PlanarImage {
                 if (error instanceof ImagingOpException) {
                     throw (ImagingOpException) error;
                 } else {
-                    throw (ImagingOpException) new ImagingOpException(key.error()).initCause(error);
+                    throw (ImagingOpException) new ImagingOpException(key.error(Resources.Keys.CanNotComputeTile_2)).initCause(error);
                 }
             }
         }
@@ -393,6 +394,14 @@ public abstract class ComputedImage extends PlanarImage {
      *         return tile;
      *     }
      * }
+     *
+     * <h4>Error handling</h4>
+     * If this method throws an exception or return {@code null}, then {@link #getTile(int, int) getTile(…)}
+     * will set an error flag on the tile and throw an {@link ImagingOpException} with the exception thrown
+     * by {@code computeTile(…)} as its cause. Future invocations of {@code getTile(tileX, tileY)} with the
+     * same tile indices will cause an {@link ImagingOpException} to be thrown immediately without invocation
+     * of {@code compute(tileX, tileY)}. If the cause of the error has been fixed, then users should invoke
+     * {@link #clearErrorFlags(Rectangle)} for allowing the tile to be computed again.
      *
      * @param  tileX     the column index of the tile to compute.
      * @param  tileY     the row index of the tile to compute.
@@ -509,16 +518,19 @@ public abstract class ComputedImage extends PlanarImage {
      * @param  tileX    the X index of the tile to acquire or release.
      * @param  tileY    the Y index of the tile to acquire or release.
      * @param  writing  {@code true} for acquiring the tile, or {@code false} for releasing it.
+     * @return {@code true} if the tile goes from having no writers to having one writer
+     *         (may happen if {@code writing} is {@code true}), or from having one writer
+     *         to no writers (may happen if {@code writing} is {@code false}).
      *
      * @see WritableRenderedImage#getWritableTile(int, int)
      * @see WritableRenderedImage#releaseWritableTile(int, int)
      */
-    protected void markTileWritable(final int tileX, final int tileY, final boolean writing) {
+    protected boolean markTileWritable(final int tileX, final int tileY, final boolean writing) {
         final TileCache.Key key = new TileCache.Key(reference, tileX, tileY);
         if (writing) {
-            reference.startWrite(key);
+            return reference.startWrite(key);
         } else {
-            reference.endWrite(key);
+            return reference.endWrite(key, true);
         }
     }
 
@@ -535,11 +547,29 @@ public abstract class ComputedImage extends PlanarImage {
      * for them.</p>
      *
      * @param  tiles  indices of tiles to mark as dirty.
+     * @return {@code true} if at least one tile has been marked dirty.
      */
-    protected void markDirtyTiles(final Rectangle tiles) {
-        reference.markDirtyTiles(tiles.x, tiles.y,
-                   Math.addExact(tiles.x, tiles.width  - 1),
-                   Math.addExact(tiles.y, tiles.height - 1));
+    protected boolean markDirtyTiles(final Rectangle tiles) {
+        return reference.markDirtyTiles(tiles.x, tiles.y,
+                          Math.addExact(tiles.x, tiles.width  - 1),
+                          Math.addExact(tiles.y, tiles.height - 1), false);
+    }
+
+    /**
+     * Clears the error status of all tiles in the given range of indices.
+     * Those tiles will be marked as dirty and recomputed next time the the
+     * {@link #getTile(int, int)} method is invoked.
+     * The status of valid tiles is unchanged by this method call.
+     *
+     * @param  tiles  indices of tiles for which to clear the error status.
+     * @return {@code true} if at least one tile got its error flag cleared.
+     *
+     * @see #computeTile(int, int, WritableRaster)
+     */
+    protected boolean clearErrorFlags(final Rectangle tiles) {
+        return reference.markDirtyTiles(tiles.x, tiles.y,
+                          Math.addExact(tiles.x, tiles.width  - 1),
+                          Math.addExact(tiles.y, tiles.height - 1), true);
     }
 
     /**
@@ -568,7 +598,7 @@ public abstract class ComputedImage extends PlanarImage {
         reference.markDirtyTiles(Numerics.clamp(Math.floorDiv(tx - (b == null ? 0 : b.left), targetWidth)),
                                  Numerics.clamp(Math.floorDiv(ty - (b == null ? 0 : b.top),  targetHeight)),
                                  Numerics.clamp(Math.floorDiv(tx + (b == null ? 0 : b.right)  + sourceWidth  - 1, targetWidth)),
-                                 Numerics.clamp(Math.floorDiv(ty + (b == null ? 0 : b.bottom) + sourceHeight - 1, targetHeight)));
+                                 Numerics.clamp(Math.floorDiv(ty + (b == null ? 0 : b.bottom) + sourceHeight - 1, targetHeight)), false);
     }
 
     /**

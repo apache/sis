@@ -331,6 +331,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short PropertyNotFound_2 = 16;
 
         /**
+         * Tile ({0}, {1}) has the error flag set.
+         */
+        public static final short TileErrorFlagSet_2 = 68;
+
+        /**
          * Too many qualitative categories.
          */
         public static final short TooManyQualitatives = 48;

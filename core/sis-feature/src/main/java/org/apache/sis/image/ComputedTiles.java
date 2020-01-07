@@ -24,6 +24,7 @@ import java.awt.Point;
 import java.awt.image.TileObserver;
 import java.awt.image.ImagingOpException;
 import java.awt.image.WritableRenderedImage;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.ReferenceQueueConsumer;
 import org.apache.sis.util.Disposable;
 
@@ -142,7 +143,7 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
         if (value != null) {
             switch (value) {
                 case DIRTY: break;
-                case ERROR: throw new ImagingOpException(key.error());
+                case ERROR: throw new ImagingOpException(key.error(Resources.Keys.TileErrorFlagSet_2));
                 default:    return false;
             }
         }
@@ -166,7 +167,7 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
             }
         }
         if (value == ERROR) {
-            throw new ImagingOpException(key.error());
+            throw new ImagingOpException(key.error(Resources.Keys.TileErrorFlagSet_2));
         }
         return false;
     }
@@ -180,9 +181,9 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
      * @throws ArithmeticException if too many writers.
      */
     final boolean startWrite(final TileCache.Key key) {
-        final Integer value;
+        Integer value = COMPUTING;                          // Do the boxing outside synchronized block.
         synchronized (cachedTiles) {
-            value = cachedTiles.merge(key, COMPUTING, ComputedTiles::increment);
+            value = cachedTiles.merge(key, value, ComputedTiles::increment);
         }
         return value == COMPUTING;
     }
@@ -190,15 +191,17 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
     /**
      * Decrements the count of writers for the specified tile.
      *
-     * @param  key  indices of the tile which was marked writable.
+     * @param  key      indices of the tile which was marked writable.
+     * @param  success  whether the operation should be considered successful.
      * @return {@code true} if the tile goes from having one writer to having no writers.
      */
-    final boolean endWrite(final TileCache.Key key) {
-        final Integer value;
+    final boolean endWrite(final TileCache.Key key, final boolean success) {
+        final int status = success ? VALID : ERROR;
+        Integer value = status;                             // Do the boxing outside synchronized block.
         synchronized (cachedTiles) {
-            value = cachedTiles.merge(key, VALID, ComputedTiles::decrement);
+            value = cachedTiles.merge(key, value, ComputedTiles::decrement);
         }
-        return value == VALID;
+        return value == status;
     }
 
     /**
@@ -222,16 +225,16 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
 
     /**
      * If the value is {@link #VALID}, {@link #DIRTY}, {@link #ERROR} or {@link #COMPUTING},
-     * sets it to {@link #VALID}. Otherwise decrements that value.
+     * sets that value to {@link #VALID} or {@link #ERROR}. Otherwise decrements that value.
      *
-     * @param  value  the value to decrement.
-     * @param  valid  must be {@link #VALID}.
+     * @param  value   the value to decrement.
+     * @param  status  {@link #VALID} or {@link #ERROR}.
      * @return the decremented value.
      */
-    private static Integer decrement(final Integer value, final Integer valid) {
+    private static Integer decrement(final Integer value, final Integer status) {
         final int n = value;
         if (n >= ERROR && n <= COMPUTING) {     // Do not use the ternary operator here.
-            return valid;
+            return status;
         } else {
             return n - 1;
         }
@@ -262,17 +265,24 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
      * This method is invoked when some tiles of at least one source image changed.
      * All arguments, including maximum values, are inclusive.
      *
+     * @param  error  {@code false} for marking valid tiles as dirty, or {@code true} for marking tiles in error.
+     * @return {@code true} if at least one tile got its status updated.
+     *
      * @see ComputedImage#markDirtyTiles(Rectangle)
      */
-    final void markDirtyTiles(final int minTileX, final int minTileY, final int maxTileX, final int maxTileY) {
+    final boolean markDirtyTiles(final int minTileX, final int minTileY, final int maxTileX, final int maxTileY, final boolean error) {
+        final Integer search = error ? ERROR : VALID;
+        final Integer dirty  = DIRTY;
+        boolean updated = false;
         synchronized (cachedTiles) {
             for (int tileY = minTileY; tileY <= maxTileY; tileY++) {
                 for (int tileX = minTileX; tileX <= maxTileX; tileX++) {
                     final TileCache.Key key = new TileCache.Key(this, tileX, tileY);
-                    cachedTiles.replace(key, VALID, DIRTY);
+                    updated |= cachedTiles.replace(key, search, dirty);
                 }
             }
         }
+        return updated;
     }
 
     /**

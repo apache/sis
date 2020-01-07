@@ -111,9 +111,11 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
 
         /**
          * Returns the error message when this tile can not be computed.
+         *
+         * @param  key  {@link Resources.Keys#CanNotComputeTile_2} or {@link Resources.Keys#TileErrorFlagSet_2}.
          */
-        final String error() {
-            return Resources.format(Resources.Keys.CanNotComputeTile_2, tileX, tileY);
+        final String error(final short key) {
+            return Resources.format(key, tileX, tileY);
         }
 
         /**

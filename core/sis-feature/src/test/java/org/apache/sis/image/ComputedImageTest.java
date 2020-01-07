@@ -16,16 +16,20 @@
  */
 package org.apache.sis.image;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.ImagingOpException;
+import java.util.function.Consumer;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.FeatureAssert.assertValuesEqual;
 
 
@@ -46,9 +50,21 @@ public final strictfp class ComputedImageTest extends TestCase {
     private static final int TILE_WIDTH = 3, TILE_HEIGHT = 2;
 
     /**
-     * Creates an image to test. The {@link ComputedImage} tiles are simply sub-regions of a {@link BufferedImage}.
+     * Tile indices used in some methods performing their tests on only one tile.
      */
-    private static ComputedImage createImage() {
+    private static final int TILE_X = 1, TILE_Y = 2;
+
+    /**
+     * Additional code to invoke during {@link ComputedImage#computeTile(int, int, WritableRaster)} execution,
+     * or {@code null} if none.
+     */
+    private Consumer<ComputedImage> onComputeTile;
+
+    /**
+     * Creates an image to test. The {@link ComputedImage} tiles are simply sub-regions of a {@link BufferedImage}.
+     * If {@link #onComputeTile} is non-null, it will be invoked every time that a tile is computed.
+     */
+    private ComputedImage createImage() {
         final BufferedImage source = new BufferedImage(TILE_WIDTH * 2, TILE_HEIGHT * 4, BufferedImage.TYPE_USHORT_GRAY);
         final WritableRaster raster = source.getRaster();
         for (int y=raster.getHeight(); --y >= 0;) {
@@ -61,6 +77,8 @@ public final strictfp class ComputedImageTest extends TestCase {
             @Override public int        getWidth()      {return getSource(0).getWidth();}
             @Override public int        getHeight()     {return getSource(0).getHeight();}
             @Override protected Raster  computeTile(final int tileX, final int tileY, WritableRaster previous) {
+                final Consumer<ComputedImage> f = onComputeTile;
+                if (f != null) f.accept(this);
                 final int tw = getTileWidth();
                 final int th = getTileHeight();
                 return getSource(0).getData(new Rectangle(tileX * tw, tileY * th, tw, th));
@@ -113,4 +131,82 @@ public final strictfp class ComputedImageTest extends TestCase {
             {70, 71, 72, 73, 74, 75}
         });
     }
+
+    /**
+     * Tests {@link ComputedImage#hasTileWriters()}, {@link ComputedImage#isTileWritable(int, int)}
+     * and {@link ComputedImage#getWritableTileIndices()}.
+     */
+    @Test
+    public void testHasTileWriters() {
+        onComputeTile = ComputedImageTest::verifyNoWrite;
+        final ComputedImage image = createImage();
+        verifyWritableTiles(image, (Point[]) null);
+        /*
+         * During execution of ComputedImage.computeTile(1, 2),
+         * the writable tile indices should be set to (1, 2).
+         */
+        onComputeTile = ComputedImageTest::verifyWriting;
+        final Raster tile = image.getTile(TILE_X, TILE_Y);
+        /*
+         * After tile computation we should be back to no writable tile.
+         */
+        verifyWritableTiles(image, (Point[]) null);
+        onComputeTile = ComputedImageTest::verifyNoWrite;
+        assertSame(tile, image.getTile(TILE_X, TILE_Y));
+    }
+
+    /**
+     * Callback method invoked during {@code ComputedImage.computeTile(…)} execution.
+     */
+    private static void verifyWriting(final ComputedImage image) {verifyWritableTiles(image, new Point(TILE_X, TILE_Y));}
+    private static void verifyNoWrite(final ComputedImage image) {verifyWritableTiles(image, (Point[]) null);}
+
+    /**
+     * Asserts that the writable tiles indices are the expected ones.
+     * If non-null, the given indices shall contain (1,2) and shall not contain (2,1).
+     */
+    private static void verifyWritableTiles(final ComputedImage image, final Point... expected) {
+        assertFalse      ("isTileWritable",                   image.isTileWritable(2, 1));
+        assertEquals     ("isTileWritable", null != expected, image.isTileWritable(TILE_X, TILE_Y));
+        assertEquals     ("hasTileWriters", null != expected, image.hasTileWriters());
+        assertArrayEquals("getWritableTileIndices", expected, image.getWritableTileIndices());
+    }
+
+    /**
+     * Verifies that a tile that failed to compute will not be computed again, unless we mark it as dirty.
+     */
+    @Test
+    public void testErrorFlag() {
+        onComputeTile = ComputedImageTest::makeError;
+        final ComputedImage image = createImage();
+        try {
+            image.getTile(TILE_X, TILE_Y);
+            fail("Computation should have failed.");
+        } catch (ImagingOpException e) {
+            assertInstanceOf("cause", IllegalStateException.class, e.getCause());
+        }
+        /*
+         * Ask again for the same tile. ComputedTile should have set a flag for remembering
+         * that the computation of this tile failed, and should not try to compute it again.
+         */
+        onComputeTile = ComputedImageTest::notInvoked;
+        try {
+            image.getTile(TILE_X, TILE_Y);
+            fail("Computation should have failed.");
+        } catch (ImagingOpException e) {
+            assertNull("cause", e.getCause());
+        }
+        /*
+         * Clearing the error flag should allow to compute the tile again.
+         */
+        onComputeTile = null;
+        assertTrue(image.clearErrorFlags(new Rectangle(TILE_X, TILE_Y, 1, 1)));
+        assertNotNull(image.getTile(TILE_X, TILE_Y));
+    }
+
+    /**
+     * Callback method invoked during {@code ComputedImage.computeTile(…)} execution.
+     */
+    private static void makeError (final ComputedImage image) {throw new IllegalStateException("Testing an error");}
+    private static void notInvoked(final ComputedImage image) {fail("Should not be invoked.");}
 }
