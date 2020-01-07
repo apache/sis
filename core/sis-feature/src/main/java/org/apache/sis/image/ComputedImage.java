@@ -16,8 +16,6 @@
  */
 package org.apache.sis.image;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,14 +30,10 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.TileObserver;
 import java.awt.image.ImagingOpException;
-import java.lang.ref.WeakReference;
-import org.apache.sis.internal.system.ReferenceQueueConsumer;
-import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Disposable;
 import org.apache.sis.coverage.grid.GridExtent;     // For javadoc
 
 
@@ -74,7 +68,7 @@ import org.apache.sis.coverage.grid.GridExtent;     // For javadoc
  * implementation assumes that source images occupy the same region as this {@code ComputedImage}:
  * all pixels at coordinates (<var>x</var>, <var>y</var>) in this {@code ComputedImage} depend on pixels
  * at the same (<var>x</var>, <var>y</var>) coordinates in the source images,
- * possibly expanded to neighborhood pixels as described in {@link #SOURCE_PADDING_PROPERTY}.
+ * possibly shifted or expanded to neighborhood pixels as described in {@link #SOURCE_PADDING_PROPERTY}.
  * If this assumption does not hold, then subclasses should override the
  * {@link #sourceTileChanged(RenderedImage, int, int)} method.</p>
  *
@@ -95,6 +89,19 @@ import org.apache.sis.coverage.grid.GridExtent;     // For javadoc
  *   <li>{@link #getMinTileX()} — the minimum tile index in the <var>x</var> direction.</li>
  *   <li>{@link #getMinTileY()} — the minimum tile index in the <var>y</var> direction.</li>
  * </ul>
+ *
+ * <h2>Writable computed images</h2>
+ * {@code ComputedImage} can itself be a {@link WritableRenderedImage} if subclasses decide so.
+ * A writable computed image is an image which can retro-propagate changes of its values to the source images.
+ * This class provides {@link #hasTileWriters()}, {@link #getWritableTileIndices()}, {@link #isTileWritable(int, int)}
+ * and {@link #markTileWritable(int, int, boolean)} methods for making {@link WritableRenderedImage} implementations easier.
+ *
+ * <p>If this {@code ComputedImage} is writable, then it is subclass responsibility to manage synchronization between
+ * {@link #getTile(int, int) getTile(…)} method (e.g. with a {@linkplain java.util.concurrent.locks.ReadWriteLock#readLock() read lock}) and
+ * {@link WritableRenderedImage#getWritableTile getWritableTile}/{@link WritableRenderedImage#releaseWritableTile releaseWritableTile(…)}
+ * methods (e.g. with a {@linkplain java.util.concurrent.locks.ReadWriteLock#writeLock() write lock}).
+ * Users should invoke the {@code getWritableTile(…)} and {@code releaseWritableTile(…)} methods in
+ * {@code try ... finally} blocks for ensuring proper release of locks.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -126,214 +133,18 @@ public abstract class ComputedImage extends PlanarImage {
     public static final String SOURCE_PADDING_PROPERTY = "sourcePadding";
 
     /**
-     * Whether a tile in the cache is ready for use or needs to be recomputed because one if its sources
-     * changed its data. If the tile is checkout out for a write operation, the write operation will have
-     * precedence over the dirty state.
-     */
-    private enum TileStatus {
-        /** The tile, if present, is ready for use. */
-        VALID,
-
-        /** The tile needs to be recomputed because at least one source changed its data. */
-        DIRTY,
-
-        /** The tile has been checked out for a write operation. */
-        WRITABLE
-    }
-
-    /**
-     * Weak reference to the enclosing image together with necessary information for releasing resources
-     * when image is disposed. This class shall not contain any strong reference to the enclosing image.
-     */
-    // MUST be static
-    private static final class Cleaner extends WeakReference<ComputedImage> implements Disposable, TileObserver {
-        /**
-         * Indices of all cached tiles. Used for removing tiles from the cache when the image is disposed.
-         * All accesses to this collection must be synchronized. This field has to be declared here because
-         * {@link Cleaner} is not allowed to keep a strong reference to the enclosing {@link ComputedImage}.
-         */
-        private final Map<TileCache.Key, TileStatus> cachedTiles;
-
-        /**
-         * All {@link ComputedImage#sources} that are writable, or {@code null} if none.
-         * This is used for removing tile observers when the enclosing image is garbage-collected.
-         */
-        private WritableRenderedImage[] sources;
-
-        /**
-         * Creates a new weak reference to the given image and registers this {@link Cleaner}
-         * as a listener of all given sources. The listeners will be automatically removed
-         * when the enclosing image is garbage collected.
-         *
-         * @param  image  the enclosing image for which to release tiles on garbage-collection.
-         * @param  ws     sources to observe for changes, or {@code null} if none.
-         */
-        @SuppressWarnings("ThisEscapedInObjectConstruction")
-        Cleaner(final ComputedImage image, final WritableRenderedImage[] ws) {
-            super(image, ReferenceQueueConsumer.QUEUE);
-            cachedTiles = new HashMap<>();
-            sources = ws;
-            if (ws != null) {
-                int i = 0;
-                try {
-                    while (i < ws.length) {
-                        WritableRenderedImage source = ws[i++];     // `i++` must be before `addTileObserver(…)` call.
-                        source.addTileObserver(this);
-                    }
-                } catch (RuntimeException e) {
-                    unregister(ws, i, e);                           // `unregister(…)` will rethrow the given exception.
-                }
-            }
-        }
-
-        /**
-         * Sets the status of the specified tile, discarding any previous status.
-         */
-        final void setTileStatus(final TileCache.Key key, final TileStatus status) {
-            synchronized (cachedTiles) {
-                cachedTiles.put(key, status);
-            }
-        }
-
-        /**
-         * Returns the status of the tile at the specified indices.
-         * The main status of interest are:
-         * <ul>
-         *   <li>{@link TileStatus#DIRTY}    — if the tile needs to be recomputed.</li>
-         *   <li>{@link TileStatus#WRITABLE} — if the tile is currently checked out for writing.</li>
-         * </ul>
-         */
-        final TileStatus getTileStatus(final TileCache.Key key) {
-            synchronized (cachedTiles) {
-                return cachedTiles.get(key);
-            }
-        }
-
-        /**
-         * Adds in the given list the indices of all tiles which are checked out for writing.
-         * If the given list is {@code null}, then this method stops the search at the first
-         * tile checked out.
-         *
-         * @param  indices  the list where to add indices, or {@code null} if none.
-         * @return whether at least one tile is checked out for writing.
-         */
-        final boolean getWritableTileIndices(final List<Point> indices) {
-            synchronized (cachedTiles) {
-                for (final Map.Entry<TileCache.Key, TileStatus> entry : cachedTiles.entrySet()) {
-                    if (entry.getValue() == TileStatus.WRITABLE) {
-                        if (indices == null) return true;
-                        indices.add(entry.getKey().indices());
-                    }
-                }
-            }
-            return (indices != null) && !indices.isEmpty();
-        }
-
-        /**
-         * Marks all tiles in the given range of indices as in need of being recomputed.
-         * This method is invoked when some tiles of at least one source image changed.
-         * All arguments, including maximum values, are inclusive.
-         *
-         * @see ComputedImage#markDirtyTiles(Rectangle)
-         */
-        final void markDirtyTiles(final int minTileX, final int minTileY, final int maxTileX, final int maxTileY) {
-            synchronized (cachedTiles) {
-                for (int tileY = minTileY; tileY <= maxTileY; tileY++) {
-                    for (int tileX = minTileX; tileX <= maxTileX; tileX++) {
-                        final TileCache.Key key = new TileCache.Key(this, tileX, tileY);
-                        cachedTiles.replace(key, TileStatus.VALID, TileStatus.DIRTY);
-                    }
-                }
-            }
-        }
-
-        /**
-         * Invoked when a source is changing the content of one of its tile.
-         * This method is interested only in events fired after the change is done.
-         * The tiles that depend on the modified tile are marked in need to be recomputed.
-         *
-         * @param source          the image that own the tile which is about to be updated.
-         * @param tileX           the <var>x</var> index of the tile that is being updated.
-         * @param tileY           the <var>y</var> index of the tile that is being updated.
-         * @param willBeWritable  if {@code true}, the tile is grabbed for writing; otherwise it is being released.
-         */
-        @Override
-        public void tileUpdate(final WritableRenderedImage source, int tileX, int tileY, final boolean willBeWritable) {
-            if (!willBeWritable) {
-                final ComputedImage target = get();
-                if (target != null) {
-                    target.sourceTileChanged(source, tileX, tileY);
-                } else {
-                    /*
-                     * Should not happen, unless maybe the source invoked this method before `dispose()`
-                     * has done its work. Or maybe we have a bug in our code and this `Cleaner` is still
-                     * alive but should not. In any cases there is no point to continue observing the source.
-                     */
-                    source.removeTileObserver(this);
-                }
-            }
-        }
-
-        /**
-         * Invoked when the enclosing image has been garbage-collected. This method removes all cached tiles
-         * that were owned by the enclosing image and stops observing all sources.
-         *
-         * This method should not perform other cleaning work because it is not guaranteed to be invoked if
-         * this {@code Cleaner} is not registered as a {@link TileObserver} and if {@link TileCache#GLOBAL}
-         * does not contain any tile for the enclosing image. The reason is because there would be nothing
-         * preventing this weak reference to be garbage collected before {@code dispose()} is invoked.
-         *
-         * @see ComputedImage#dispose()
-         */
-        @Override
-        public void dispose() {
-            synchronized (cachedTiles) {
-                cachedTiles.keySet().forEach(TileCache.Key::dispose);
-                cachedTiles.clear();
-            }
-            final WritableRenderedImage[] ws = sources;
-            if (ws != null) {
-                unregister(ws, ws.length, null);
-            }
-        }
-
-        /**
-         * Stops observing writable sources for modifications. This methods is invoked when the enclosing
-         * image is garbage collected. It may also be invoked for rolling back observer registrations if
-         * an error occurred during {@link Cleaner} construction. This method clears the {@link #sources}
-         * field immediately for allowing the garbage collector to release the sources in the event where
-         * this {@code Cleaner} would live longer than expected.
-         *
-         * @param  ws       a copy of {@link #sources}. Can not be null.
-         * @param  i        index after the last source to stop observing.
-         * @param  failure  if this method is invoked because an exception occurred, that exception.
-         */
-        private void unregister(final WritableRenderedImage[] ws, int i, RuntimeException failure) {
-            sources = null;                     // Let GC to its work in case of error in this method.
-            while (--i >= 0) try {
-                ws[i].removeTileObserver(this);
-            } catch (RuntimeException e) {
-                if (failure == null) failure = e;
-                else failure.addSuppressed(e);
-            }
-            if (failure != null) {
-                throw failure;
-            }
-        }
-    }
-
-    /**
      * Weak reference to this image, also used as a cleaner when the image is garbage-collected.
      * This reference is retained in {@link TileCache#GLOBAL}. Note that if that cache does not
-     * cache any tile for this image, then this {@link Cleaner} may be garbage-collected in same
-     * time than this image and its {@link Cleaner#dispose()} method may never be invoked.
+     * cache any tile for this image, then that {@link ComputedTiles} may be garbage-collected
+     * in same time than this image and its {@link ComputedTiles#dispose()} method may never be
+     * invoked.
      */
-    private final Cleaner reference;
+    private final ComputedTiles reference;
 
     /**
      * The sources of this image, or {@code null} if unknown. This array contains all sources.
-     * By contrast the {@link Cleaner#sources} array contains only the modifiable sources, for
-     * which we listen for changes.
+     * By contrast the {@link ComputedTiles#sources} array contains only the modifiable sources,
+     * for which we listen for changes.
      *
      * @see #getSource(int)
      */
@@ -392,14 +203,14 @@ public abstract class ComputedImage extends PlanarImage {
              */
             if (count != 0) {
                 if (count == sources.length) {
-                    sources = ws;               // The two arrays have the same content; share the same array.
+                    sources = ws;                   // The two arrays have the same content; share the same array.
                 } else {
                     ws = ArraysExt.resize(ws, count);
                 }
             }
         }
-        this.sources = sources;             // Note: null value does not have same meaning than empty array.
-        reference = new Cleaner(this, ws);  // Create cleaner last after all arguments have been validated.
+        this.sources = sources;                     // Note: null value does not have same meaning than empty array.
+        reference = new ComputedTiles(this, ws);    // Create cleaner last after all arguments have been validated.
     }
 
     /**
@@ -507,19 +318,18 @@ public abstract class ComputedImage extends PlanarImage {
      *
      * <ol>
      *   <li>If the requested tile is present in the cache and is not dirty, then that tile is returned immediately.</li>
-     *   <li>Otherwise if the requested tile is being computed in another thread, then this method blocks
-     *       until the other thread completed its work and returns its result. If the other thread failed
-     *       to compute the tile, an {@link ImagingOpException} is thrown.</li>
+     *   <li>Otherwise if the requested tile is being {@linkplain #computeTile computed} in another thread,
+     *       then this method blocks until the other thread completed its work and returns its result.
+     *       If the other thread failed to compute the tile, an {@link ImagingOpException} is thrown.</li>
      *   <li>Otherwise this method computes the tile and caches the result before to return it.
      *       If an error occurred, an {@link ImagingOpException} is thrown.</li>
      * </ol>
      *
      * <h4>Race conditions with write operations</h4>
-     * If this image implements the {@link WritableRenderedImage} interface, then a user may have acquired
-     * the tile for a write operation outside the {@link #computeTile computeTile(…)} method. In such case,
-     * there is no consistency guarantees on sample values: the tile returned by this method may show data
-     * in an unspecified stage during the write operation. This situation may be detected by checking if
-     * {@link #isTileWritable(int, int) isTileWritable(tileX, tileY)} returns {@code true}.
+     * If this image implements the {@link WritableRenderedImage} interface, then a user may acquire the same
+     * tile for a write operation after this method returned. In such case there is no consistency guarantees
+     * on sample values: the tile returned by this method may show data in an unspecified stage during the
+     * write operation.
      *
      * @param  tileX  the column index of the tile to get.
      * @param  tileY  the row index of the tile to get.
@@ -532,32 +342,36 @@ public abstract class ComputedImage extends PlanarImage {
         final TileCache.Key key = new TileCache.Key(reference, tileX, tileY);
         final Cache<TileCache.Key,Raster> cache = TileCache.GLOBAL;
         Raster tile = cache.peek(key);
-        if (tile == null || reference.getTileStatus(key) == TileStatus.DIRTY) {
+        if (tile == null || reference.isTileDirty(key)) {
             int min;
             ArgumentChecks.ensureBetween("tileX", (min = getMinTileX()), min + getNumXTiles() - 1, tileX);
             ArgumentChecks.ensureBetween("tileY", (min = getMinTileY()), min + getNumYTiles() - 1, tileY);
+            Exception error = null;
             final Cache.Handler<Raster> handler = cache.lock(key);
             try {
                 tile = handler.peek();
-                if (tile == null || reference.getTileStatus(key) == TileStatus.DIRTY) {
+                final boolean marked = reference.trySetComputing(key);              // May throw ImagingOpException.
+                if (marked || tile == null) {
                     final WritableRaster previous = (tile instanceof WritableRaster) ? (WritableRaster) tile : null;
-                    Exception cause = null;
-                    tile = null;
                     try {
                         tile = computeTile(tileX, tileY, previous);
-                    } catch (ImagingOpException e) {
-                        throw e;                            // Let that kind of exception propagate.
                     } catch (Exception e) {
-                        cause = e;
+                        tile = null;
+                        error = e;
                     }
-                    if (tile == null) {
-                        throw (ImagingOpException) new ImagingOpException(Resources.format(
-                                Resources.Keys.CanNotComputeTile_2, tileX, tileY)).initCause(cause);
+                    if (marked) {
+                        reference.endWrite(key);
                     }
-                    reference.setTileStatus(key, TileStatus.VALID);
                 }
             } finally {
                 handler.putAndUnlock(tile);     // Must be invoked even if an exception occurred.
+            }
+            if (tile == null) {                 // Null in case of exception or if `computeTile(…)` returned null.
+                if (error instanceof ImagingOpException) {
+                    throw (ImagingOpException) error;
+                } else {
+                    throw (ImagingOpException) new ImagingOpException(key.error()).initCause(error);
+                }
             }
         }
         return tile;
@@ -604,13 +418,21 @@ public abstract class ComputedImage extends PlanarImage {
     }
 
     /**
-     * Returns whether any tile is checked out for writing.
-     * This method always returns {@code false} for read-only images, but may return {@code true}
-     * if this {@code ComputedImage} is also a {@link WritableRenderedImage}.
+     * Returns whether any tile is under computation or is checked out for writing.
+     * There is two reasons why this method may return {@code true}:
      *
-     * @return {@code true} if any tiles are checked out for writing; {@code false} otherwise.
+     * <ul>
+     *   <li>At least one {@link #computeTile(int, int, WritableRaster) computeTile(…)}
+     *       call is running in another thread.</li>
+     *   <li>There is at least one call to <code>{@linkplain #markTileWritable(int, int, boolean)
+     *       markTileWritable}(tileX, tileY, true)</code> call without matching call to
+     *       {@code markTileWritable(tileX, tileY, false)}. This second case may happen
+     *       if this {@code ComputedImage} is also a {@link WritableRenderedImage}.</li>
+     * </ul>
      *
-     * @see #markWritableTile(int, int, boolean)
+     * @return whether any tiles are under computation or checked out for writing.
+     *
+     * @see #markTileWritable(int, int, boolean)
      * @see WritableRenderedImage#hasTileWriters()
      */
     public boolean hasTileWriters() {
@@ -618,29 +440,38 @@ public abstract class ComputedImage extends PlanarImage {
     }
 
     /**
-     * Returns whether a tile is currently checked out for writing.
-     * This method always returns {@code false} for read-only images, but may return {@code true}
-     * if this {@code ComputedImage} is also a {@link WritableRenderedImage}.
+     * Returns whether the specified tile is currently under computation or checked out for writing.
+     * There is two reasons why this method may return {@code true}:
      *
-     * @param  tileX the X index of the tile.
-     * @param  tileY the Y index of the tile.
-     * @return {@code true} if specified tile is checked out for writing; {@code false} otherwise.
+     * <ul>
+     *   <li><code>{@linkplain #computeTile(int, int, WritableRaster) computeTile}(tileX, tileY, …)</code>
+     *       is running in another thread.</li>
+     *   <li>There is at least one call to <code>{@linkplain #markTileWritable(int, int, boolean)
+     *       markTileWritable}(tileX, tileY, true)</code> call without matching call to
+     *       {@code markTileWritable(tileX, tileY, false)}. This second case may happen
+     *       if this {@code ComputedImage} is also a {@link WritableRenderedImage}.</li>
+     * </ul>
      *
-     * @see #markWritableTile(int, int, boolean)
+     * @param  tileX the X index of the tile to check.
+     * @param  tileY the Y index of the tile to check.
+     * @return whether the specified tile is under computation or checked out for writing.
+     *
+     * @see #markTileWritable(int, int, boolean)
      * @see WritableRenderedImage#isTileWritable(int, int)
      */
     public boolean isTileWritable(final int tileX, final int tileY) {
-        return reference.getTileStatus(new TileCache.Key(reference, tileX, tileY)) == TileStatus.WRITABLE;
+        return reference.isTileWritable(new TileCache.Key(reference, tileX, tileY));
     }
 
     /**
-     * Returns an array of Point objects indicating which tiles are checked out for writing, or {@code null} if none.
-     * This method always returns {@code null} for read-only images, but may return a non-empty array
-     * if this {@code ComputedImage} is also a {@link WritableRenderedImage}.
+     * Returns the indices of all tiles under computation or checked out for writing, or {@code null} if none.
+     * This method lists all tiles for which the condition documented in {@link #isTileWritable(int, int)} is
+     * {@code true}.
      *
-     * @return an array containing the locations of tiles that are checked out for writing, or {@code null} if none.
+     * @return an array containing the indices of tiles that are under computation or checked out for writing,
+     *         or {@code null} if none.
      *
-     * @see #markWritableTile(int, int, boolean)
+     * @see #markTileWritable(int, int, boolean)
      * @see WritableRenderedImage#getWritableTileIndices()
      */
     public Point[] getWritableTileIndices() {
@@ -652,8 +483,9 @@ public abstract class ComputedImage extends PlanarImage {
     }
 
     /**
-     * Marks a tile as checkout out for writing. This method is provided for subclasses that also implement
-     * the {@link WritableRenderedImage} interface. This method can be used as below:
+     * Sets or clears whether a tile is checked out for writing.
+     * This method is provided for subclasses that implement the {@link WritableRenderedImage} interface.
+     * This method can be used as below:
      *
      * {@preformat java
      *     class MyImage extends ComputedImage implements WritableRenderedImage {
@@ -662,13 +494,13 @@ public abstract class ComputedImage extends PlanarImage {
      *         &#64;Override
      *         public WritableRaster getWritableTile(int tileX, int tileY) {
      *             WritableRaster raster = ...;             // Get the writable tile here.
-     *             markWritableTile(tileX, tileY, true);
+     *             markTileWritable(tileX, tileY, true);
      *             return raster;
      *         }
      *
      *         &#64;Override
      *         public void releaseWritableTile(int tileX, int tileY) {
-     *             markWritableTile(tileX, tileY, false);
+     *             markTileWritable(tileX, tileY, false);
      *             // Release the raster here.
      *         }
      *     }
@@ -681,9 +513,13 @@ public abstract class ComputedImage extends PlanarImage {
      * @see WritableRenderedImage#getWritableTile(int, int)
      * @see WritableRenderedImage#releaseWritableTile(int, int)
      */
-    protected void markWritableTile(final int tileX, final int tileY, final boolean writing) {
+    protected void markTileWritable(final int tileX, final int tileY, final boolean writing) {
         final TileCache.Key key = new TileCache.Key(reference, tileX, tileY);
-        reference.setTileStatus(key, writing ? TileStatus.WRITABLE : TileStatus.VALID);
+        if (writing) {
+            reference.startWrite(key);
+        } else {
+            reference.endWrite(key);
+        }
     }
 
     /**

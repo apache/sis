@@ -70,7 +70,7 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
  *   <li>Check if the value is already available in the map.
  *       If it is, return it immediately and we are done.</li>
  *   <li>Otherwise, get a lock and check again if the value is already available in the map
- *       (because the value could have been computed by an other thread between step 1 and
+ *       (because the value could have been computed by another thread between step 1 and
  *       the obtention of the lock). If it is, release the lock and we are done.</li>
  *   <li>Otherwise compute the value, store the result and release the lock.</li>
  * </ol>
@@ -775,7 +775,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     /**
      * If a value is already cached for the given key, returns it. Otherwise returns {@code null}.
      * This method is similar to {@link #get(Object)} except that it doesn't block if the value is
-     * in process of being computed in an other thread; it returns {@code null} in such case.
+     * in process of being computed in another thread; it returns {@code null} in such case.
      *
      * @param  key  the key for which to get the cached value.
      * @return the cached value for the given key, or {@code null} if there is none.
@@ -864,7 +864,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
                 if (value == null) {
                     /*
                      * We succeed in adding the handler in the map (we know that because all our
-                     * map.put(...) or map.replace(...) operations are guaranteed to put non-null
+                     * map.put(…) or map.replace(…) operations are guaranteed to put non-null
                      * values). We are done. But before to leave, declare that we do not want to
                      * unlock in the finally clause (we want the lock to still active).
                      */
@@ -981,7 +981,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
         /**
          * If the value is already in the cache, returns it. Otherwise returns {@code null}.
          * This method should be invoked after the {@code Handler} creation in case a value
-         * has been computed in an other thread.
+         * has been computed in another thread.
          *
          * @return the value from the cache, or {@code null} if none.
          */
@@ -1004,12 +1004,12 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
 
     /**
      * A simple handler implementation wrapping an existing value. This implementation
-     * is used when the value has been fully computed in an other thread before this
+     * is used when the value has been fully computed in another thread before this
      * thread could start its work.
      */
     private final class Simple<V> implements Handler<V> {
         /**
-         * The result computed in an other thread.
+         * The result computed in another thread.
          */
         private final V value;
 
@@ -1034,7 +1034,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
          * <div class="note"><b>Implementation note:</b>
          * An alternative would have been to store the result in the map anyway.
          * But doing so is unsafe because we have no lock; we have no guarantee that nothing
-         * has happened in an other thread between {@code peek} and {@code putAndUnlock}.</div>
+         * has happened in another thread between {@code peek} and {@code putAndUnlock}.</div>
          */
         @Override
         public void putAndUnlock(final V result) throws IllegalStateException {
@@ -1130,9 +1130,9 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
         }
 
         /**
-         * A handler implementation used when the value is in process of being computed in an
-         * other thread. At the difference of the {@code Simple} handler, the computation is
-         * not yet completed, so this handler has to wait.
+         * A handler implementation used when the value is in process of being computed in another thread.
+         * At the difference of the {@code Simple} handler, the computation is not yet completed, so this
+         * handler has to wait.
          */
         final class Wait implements Handler<V> {
             /**
@@ -1149,7 +1149,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
              * <div class="note"><b>Implementation note:</b>
              * An alternative would have been to store the result in the map anyway.
              * But doing so is unsafe because we have no lock; we have no guarantee that nothing
-             * has happened in an other thread between {@code peek} and {@code putAndUnlock}.</div>
+             * has happened in another thread between {@code peek} and {@code putAndUnlock}.</div>
              */
             @Override
             public void putAndUnlock(final V result) throws IllegalStateException {

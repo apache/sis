@@ -23,6 +23,7 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
+import java.awt.image.WritableRenderedImage;
 import java.awt.image.RenderedImage;
 import java.util.Vector;
 import org.apache.sis.util.Classes;
@@ -72,6 +73,24 @@ import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
  * {@link #getTileGridXOffset()}, {@link #getTileGridYOffset()}, {@link #getData()},
  * {@link #getData(Rectangle)} and {@link #copyData(WritableRaster)}
  * in terms of above methods.
+ *
+ * <h2>Writable images</h2>
+ * Some subclasses may implement the {@link WritableRenderedImage} interface. If this image is writable, then the
+ * {@link WritableRenderedImage#getWritableTile getWritableTile(…)} and {@link WritableRenderedImage#releaseWritableTile
+ * releaseWritableTile(…)} methods <strong>must</strong> be invoked in {@code try ... finally} block like below:
+ *
+ * {@preformat java
+ *     WritableRenderedImage image = ...;
+ *     WritableRaster tile = image.getWritableTile(tileX, tileY);
+ *     try {
+ *         // Do some process on the tile.
+ *     } finally {
+ *         image.releaseWritableTile(tileX, tileY);
+ *     }
+ * }
+ *
+ * The reason is because some implementations may acquire and release synchronization locks in the
+ * {@code getWritableTile(…)} and {@code releaseWritableTile(…)} methods.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

@@ -21,6 +21,8 @@ import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.lang.ref.Reference;
 import org.apache.sis.util.collection.Cache;
+import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.feature.Resources;
 
 
 /**
@@ -68,7 +70,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
         } catch (IllegalArgumentException e) {
             numBits *= Integer.SIZE;                // Conservatively assume 32 bits values.
         }
-        return (int) Math.min(Integer.MAX_VALUE, numBits / Byte.SIZE);
+        return Numerics.clamp(numBits / Byte.SIZE);
     }
 
     /**
@@ -105,6 +107,13 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
          */
         final Point indices() {
             return new Point(tileX, tileY);
+        }
+
+        /**
+         * Returns the error message when this tile can not be computed.
+         */
+        final String error() {
+            return Resources.format(Resources.Keys.CanNotComputeTile_2, tileX, tileY);
         }
 
         /**
