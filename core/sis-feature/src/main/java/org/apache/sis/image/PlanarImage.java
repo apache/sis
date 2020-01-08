@@ -31,6 +31,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 
 
@@ -341,14 +342,6 @@ public abstract class PlanarImage implements RenderedImage {
      * @param  raster  the raster to hold a copy of this image, or {@code null}.
      */
     private void copyData(final Rectangle aoi, final WritableRaster raster) {
-        final int  tileWidth       = getTileWidth();
-        final int  tileHeight      = getTileHeight();
-        final long tileGridXOffset = getTileGridXOffset();          // We want 64 bits arithmetic in operations below.
-        final long tileGridYOffset = getTileGridYOffset();
-        final int  minTileX = Math.toIntExact(Math.floorDiv(aoi.x                     - tileGridXOffset, tileWidth));
-        final int  minTileY = Math.toIntExact(Math.floorDiv(aoi.y                     - tileGridYOffset, tileHeight));
-        final int  maxTileX = Math.toIntExact(Math.floorDiv(aoi.x + (aoi.width  - 1L) - tileGridXOffset, tileWidth));
-        final int  maxTileY = Math.toIntExact(Math.floorDiv(aoi.y + (aoi.height - 1L) - tileGridYOffset, tileHeight));
         /*
          * Iterate over all tiles that interesect the area of interest. For each tile,
          * copy a few rows in a temporary buffer, then copy that buffer to destination.
@@ -356,11 +349,12 @@ public abstract class PlanarImage implements RenderedImage {
          * Note that `tb` should never be empty since we restrict iteration to the tiles
          * that intersect the given area of interest.
          */
-        Object buffer = null;
-        int bufferCapacity = 0;
-        for (int ty = minTileY; ty <= maxTileY; ty++) {
-            for (int tx = minTileX; tx <= maxTileX; tx++) {
-                final Raster tile = getTile(tx, ty);
+        final TileOpExecutor executor = new TileOpExecutor(this, aoi) {
+            /** For copying data using data type specified by raster. */ private Object buffer;
+            /** For detecting if {@link #buffer} size is sufficient.  */ private int bufferCapacity;
+
+            /** Invoked for each tile to copy to target raster. */
+            @Override protected void readFrom(final Raster tile) {
                 final Rectangle tb = aoi.intersection(tile.getBounds());        // Bounds of transfer buffer.
                 final int afterLastRow = ImageUtilities.prepareTransferRegion(tb, tile.getTransferType());
                 final int transferCapacity = tb.width * tb.height;
@@ -375,7 +369,8 @@ public abstract class PlanarImage implements RenderedImage {
                     tb.y += height;
                 }
             }
-        }
+        };
+        executor.readFrom(this);
     }
 
     /**

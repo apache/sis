@@ -30,6 +30,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
@@ -76,6 +77,28 @@ public final class ImageUtilities extends Static {
      */
     public static Rectangle getBounds(final RenderedImage image) {
         return new Rectangle(image.getMinX(), image.getMinY(), image.getWidth(), image.getHeight());
+    }
+
+    /**
+     * Clips the given rectangle to the bounds of the given image.
+     *
+     * @param  image  the image.
+     * @param  aoi    a region of interest to clip to the image bounds.
+     */
+    public static void clipBounds(final RenderedImage image, final Rectangle aoi) {
+        int low = aoi.x;
+        int min = image.getMinX();
+        if (low < min) aoi.x = min;
+        aoi.width = Numerics.clamp(Math.min(
+                ((long) min) + image.getWidth(),
+                ((long) low) + aoi.width) - aoi.x);
+
+        low = aoi.y;
+        min = image.getMinY();
+        if (low < min) aoi.y = min;
+        aoi.height = Numerics.clamp(Math.min(
+                ((long) min) + image.getHeight(),
+                ((long) low) + aoi.height) - aoi.y);
     }
 
     /**

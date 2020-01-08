@@ -522,8 +522,8 @@ public abstract class ComputedImage extends PlanarImage {
      *     }
      * }
      *
-     * @param  tileX    the X index of the tile to acquire or release.
-     * @param  tileY    the Y index of the tile to acquire or release.
+     * @param  tileX    the <var>x</var> index of the tile to acquire or release.
+     * @param  tileY    the <var>y</var> index of the tile to acquire or release.
      * @param  writing  {@code true} for acquiring the tile, or {@code false} for releasing it.
      * @return {@code true} if the tile goes from having no writers to having one writer
      *         (may happen if {@code writing} is {@code true}), or goes from having one

@@ -21,6 +21,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
+import java.awt.image.WritableRenderedImage;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.coverage.PointOutsideCoverageException;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -106,7 +107,6 @@ public final strictfp class GridCoverage2DTest extends TestCase {
      * Tests writing values in {@link GridCoverage2D#forConvertedValues(boolean)}.
      */
     @Test
-    @org.junit.Ignore("BandedSampleConverter is not yet writable")
     public void testWriteConvertedValues() {
         GridCoverage coverage = createTestCoverage();
         coverage = coverage.forConvertedValues(true);
@@ -120,11 +120,13 @@ public final strictfp class GridCoverage2DTest extends TestCase {
          *
          *   70 = p * 0.5 + 100   →   (70-100)/0.5 = p   →   p = -60
          */
-        final WritableRaster raster = ((BufferedImage) coverage.render(null)).getRaster();
+        final WritableRenderedImage image = (WritableRenderedImage) coverage.render(null);
+        final WritableRaster raster = image.getWritableTile(0, 0);
         raster.setSample(0, 0, 0,  70);
         raster.setSample(1, 0, 0,   2.5);
         raster.setSample(0, 1, 0,  -8);
         raster.setSample(1, 1, 0, -90);
+        image.releaseWritableTile(0, 0);
         assertSamplesEqual(coverage.forConvertedValues(false), new double[][] {
             { -60, -195},
             {-216, -380}

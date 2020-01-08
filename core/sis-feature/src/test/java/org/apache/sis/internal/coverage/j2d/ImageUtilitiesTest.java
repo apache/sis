@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
+import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
@@ -38,6 +39,29 @@ import static org.junit.Assert.*;
  * @module
  */
 public final strictfp class ImageUtilitiesTest extends TestCase {
+    /**
+     * Tests {@link ImageUtilities#getBounds(RenderedImage)} and {@link ImageUtilities#clipBounds(RenderedImage, Rectangle)}.
+     */
+    @Test
+    public void testClipBounds() {
+        final BufferedImage image = new BufferedImage(5, 4, BufferedImage.TYPE_BYTE_GRAY);
+        final Rectangle bounds = ImageUtilities.getBounds(image);
+        assertEquals(0, bounds.x);
+        assertEquals(0, bounds.y);
+        assertEquals(5, bounds.width);
+        assertEquals(4, bounds.height);
+
+        bounds.x      = -4;
+        bounds.y      =  1;
+        bounds.width  =  8;
+        bounds.height =  7;
+        ImageUtilities.clipBounds(image, bounds);
+        assertEquals(0, bounds.x);
+        assertEquals(1, bounds.y);
+        assertEquals(4, bounds.width);
+        assertEquals(3, bounds.height);
+    }
+
     /**
      * Tests {@link ImageUtilities#getDataTypeName(SampleModel)}.
      */

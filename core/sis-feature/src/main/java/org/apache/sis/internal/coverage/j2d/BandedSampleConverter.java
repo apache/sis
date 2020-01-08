@@ -17,6 +17,7 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.RenderedImage;
@@ -76,8 +77,8 @@ public class BandedSampleConverter extends ComputedImage {
      * @param  colorModel   the color model for from the expected range of values, or {@code null}.
      * @param  converters   the transfer functions to apply on each band of the source image.
      */
-    BandedSampleConverter(final RenderedImage source,  final BandedSampleModel sampleModel,
-                          final ColorModel colorModel, final MathTransform1D[] converters)
+    private BandedSampleConverter(final RenderedImage source,  final BandedSampleModel sampleModel,
+                                  final ColorModel colorModel, final MathTransform1D[] converters)
     {
         super(sampleModel, source);
         this.colorModel = colorModel;
@@ -226,12 +227,24 @@ public class BandedSampleConverter extends ComputedImage {
 
     /**
      * A {@code BandedSampleConverter} capable to retro-propagate the changes to the source coverage.
+     * This class contains the inverse of all {@link MathTransform1D} given to the parent class.
      */
     private static final class Writable extends BandedSampleConverter implements WritableRenderedImage {
         /**
          * The converters for computing the source values from a converted value.
          */
         private final MathTransform1D[] inverses;
+
+        /**
+         * The observers, or {@code null} if none. This is a copy-on-write array:
+         * values are never modified after construction (new arrays are created).
+         *
+         * This field is declared volatile because it is read without synchronization by
+         * {@link #markTileWritable(int, int, boolean)}. Since this is a copy-on-write array,
+         * it is okay to omit synchronization for that method but we still need the memory effect.
+         */
+        @SuppressWarnings("VolatileArrayField")
+        private volatile TileObserver[] observers;
 
         /**
          * Creates a new writable image which will compute values using the given converters.
@@ -243,26 +256,92 @@ public class BandedSampleConverter extends ComputedImage {
             this.inverses = inverses;
         }
 
+        /**
+         * Adds an observer to be notified when a tile is checked out for writing.
+         * If the observer is already present, it will receive multiple notifications.
+         *
+         * @param  observer  the observer to notify.
+         */
         @Override
-        public void addTileObserver(final TileObserver observer) {
+        public synchronized void addTileObserver(final TileObserver observer) {
+            observers = WriteSupport.addTileObserver(observers, observer);
         }
 
+        /**
+         * Removes an observer from the list of observers notified when a tile is checked out for writing.
+         * If the observer was not registered, nothing happens. If the observer was registered for multiple
+         * notifications, it will now be registered for one fewer.
+         *
+         * @param  observer  the observer to stop notifying.
+         */
         @Override
-        public void removeTileObserver(final TileObserver observer) {
+        public synchronized void removeTileObserver(final TileObserver observer) {
+            observers = WriteSupport.removeTileObserver(observers, observer);
         }
 
+        /**
+         * Sets or clears whether a tile is checked out for writing and notifies the listener if needed.
+         *
+         * @param  tileX    the <var>x</var> index of the tile to acquire or release.
+         * @param  tileY    the <var>y</var> index of the tile to acquire or release.
+         * @param  writing  {@code true} for acquiring the tile, or {@code false} for releasing it.
+         */
+        @Override
+        protected boolean markTileWritable(final int tileX, final int tileY, final boolean writing) {
+            final boolean notify = super.markTileWritable(tileX, tileY, writing);
+            if (notify) {
+                WriteSupport.fireTileUpdate(observers, this, tileX, tileY, writing);
+            }
+            return notify;
+        }
+
+        /**
+         * Checks out a tile for writing.
+         *
+         * @param  tileX  the <var>x</var> index of the tile.
+         * @param  tileY  the <var>y</var> index of the tile.
+         * @return the specified tile as a writable tile.
+         */
         @Override
         public WritableRaster getWritableTile(final int tileX, final int tileY) {
-            throw new UnsupportedOperationException();
+            final WritableRaster tile = (WritableRaster) getTile(tileX, tileY);
+            markTileWritable(tileX, tileY, true);
+            return tile;
         }
 
+        /**
+         * Relinquishes the right to write to a tile. If the tile goes from having one writer to
+         * having no writers, the values are inverse converted and written in the original image.
+         * If the caller continues to write to the tile, the results are undefined.
+         *
+         * @param  tileX  the <var>x</var> index of the tile.
+         * @param  tileY  the <var>y</var> index of the tile.
+         */
         @Override
         public void releaseWritableTile(final int tileX, final int tileY) {
+            if (markTileWritable(tileX, tileY, false)) {
+                setData(getTile(tileX, tileY));
+            }
         }
 
+        /**
+         * Sets a region of the image to the contents of the given raster.
+         * The raster is assumed to be in the same coordinate space as this image.
+         * The operation is clipped to the bounds of this image.
+         *
+         * @param  data  the values to write in this image.
+         */
         @Override
         public void setData(final Raster data) {
-            throw new UnsupportedOperationException();
+            final Rectangle aoi = data.getBounds();
+            final WritableRenderedImage target = (WritableRenderedImage) getSource(0);
+            ImageUtilities.clipBounds(target, aoi);
+            final TileOpExecutor executor = new TileOpExecutor(target, aoi) {
+                @Override protected void writeTo(final WritableRaster target) throws TransformException {
+                    Transferer.create(data, target).compute(inverses);
+                }
+            };
+            executor.writeTo(target);
         }
     }
 }

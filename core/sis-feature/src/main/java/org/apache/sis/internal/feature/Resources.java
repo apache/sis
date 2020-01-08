@@ -115,6 +115,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotSimplifyTransferFunction_1 = 26;
 
         /**
+         * Can not update tile ({0}, {1}).
+         */
+        public static final short CanNotUpdateTile_2 = 69;
+
+        /**
          * The two categories “{0}” and “{2}” have overlapping ranges: {1} and {3} respectively.
          */
         public static final short CategoryRangeOverlap_4 = 27;
