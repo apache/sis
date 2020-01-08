@@ -75,9 +75,10 @@ import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
  * in terms of above methods.
  *
  * <h2>Writable images</h2>
- * Some subclasses may implement the {@link WritableRenderedImage} interface. If this image is writable, then the
- * {@link WritableRenderedImage#getWritableTile getWritableTile(…)} and {@link WritableRenderedImage#releaseWritableTile
- * releaseWritableTile(…)} methods <strong>must</strong> be invoked in {@code try ... finally} block like below:
+ * Some subclasses may implement the {@link WritableRenderedImage} interface. If this image is writable,
+ * then the {@link WritableRenderedImage#getWritableTile WritableRenderedImage​.getWritableTile(…)} and
+ * {@link WritableRenderedImage#releaseWritableTile releaseWritableTile(…)} methods should be invoked in
+ * {@code try ... finally} blocks like below:
  *
  * {@preformat java
  *     WritableRenderedImage image = ...;
@@ -89,8 +90,11 @@ import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
  *     }
  * }
  *
- * The reason is because some implementations may acquire and release synchronization locks in the
- * {@code getWritableTile(…)} and {@code releaseWritableTile(…)} methods.
+ * This is recommended because implementations may count the number of acquisitions and releases for deciding
+ * when to notify the {@link java.awt.image.TileObserver}s. Some implementations may also acquire and release
+ * synchronization locks in the {@code getWritableTile(…)} and {@code releaseWritableTile(…)} methods.
+ * Apache SIS <a href="https://issues.apache.org/jira/browse/SIS-487">does not yet define a synchronization policy</a>
+ * for {@link WritableRenderedImage}, but such policy may be defined in a future version.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

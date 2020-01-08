@@ -93,16 +93,22 @@ import org.apache.sis.internal.feature.Resources;
  *
  * <h2>Writable computed images</h2>
  * {@code ComputedImage} can itself be a {@link WritableRenderedImage} if subclasses decide so.
- * A writable computed image is an image which can retro-propagate changes of its values to the source images.
+ * A writable computed image is an image which can retro-propagate sample value changes to the source images.
  * This class provides {@link #hasTileWriters()}, {@link #getWritableTileIndices()}, {@link #isTileWritable(int, int)}
- * and {@link #markTileWritable(int, int, boolean)} methods for making {@link WritableRenderedImage} implementations easier.
+ * and {@link #markTileWritable(int, int, boolean)} methods for {@link WritableRenderedImage} implementations convenience.
  *
- * <p>If this {@code ComputedImage} is writable, then it is subclass responsibility to manage synchronization between
- * {@link #getTile(int, int) getTile(…)} method (e.g. with a {@linkplain java.util.concurrent.locks.ReadWriteLock#readLock() read lock}) and
- * {@link WritableRenderedImage#getWritableTile getWritableTile}/{@link WritableRenderedImage#releaseWritableTile releaseWritableTile(…)}
- * methods (e.g. with a {@linkplain java.util.concurrent.locks.ReadWriteLock#writeLock() write lock}).
- * Users should invoke the {@code getWritableTile(…)} and {@code releaseWritableTile(…)} methods in
- * {@code try ... finally} blocks for ensuring proper release of locks.</p>
+ * <p>Apache SIS <a href="https://issues.apache.org/jira/browse/SIS-487">does not yet define a synchronization policy</a>
+ * between {@link #getTile(int, int) getTile(…)} method and {@link WritableRenderedImage#getWritableTile(int, int)
+ * WritableRenderedImage​.getWritableTile}/{@link WritableRenderedImage#releaseWritableTile releaseWritableTile(…)} methods.
+ * For example if a call to {@code getTile(tileX, tileY)} is followed by a call to {@code getWritableTile(tileX, tileY)}
+ * in another thread, there is no guarantees about whether or not the sample values seen in the {@link Raster} would be
+ * isolated from the write operations done concurrently in the {@link WritableRaster}.
+ * A future SIS version may define a policy (possibly based on {@link java.util.concurrent.locks.ReadWriteLock}).</p>
+ *
+ * <p>Note that despite above-cited issue, all methods in this {@code ComputedImage} class are thread-safe.
+ * What is not thread-safe is writing into a {@link WritableRaster} from outside the {@link #computeTile
+ * computeTile(…)} method, or reading a {@link Raster} after it {@linkplain #markDirtyTiles became dirty}
+ * if the change to dirty state happened after the call to {@link #getTile(int, int) getTile(…)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -330,7 +336,8 @@ public abstract class ComputedImage extends PlanarImage {
      * If this image implements the {@link WritableRenderedImage} interface, then a user may acquire the same
      * tile for a write operation after this method returned. In such case there is no consistency guarantees
      * on sample values: the tile returned by this method may show data in an unspecified stage during the
-     * write operation.
+     * write operation. A synchronization policy <a href="https://issues.apache.org/jira/browse/SIS-487">may
+     * be defined in a future Apache SIS version</a>.
      *
      * @param  tileX  the column index of the tile to get.
      * @param  tileY  the row index of the tile to get.
@@ -396,11 +403,11 @@ public abstract class ComputedImage extends PlanarImage {
      * }
      *
      * <h4>Error handling</h4>
-     * If this method throws an exception or return {@code null}, then {@link #getTile(int, int) getTile(…)}
+     * If this method throws an exception or returns {@code null}, then {@link #getTile(int, int) getTile(…)}
      * will set an error flag on the tile and throw an {@link ImagingOpException} with the exception thrown
      * by {@code computeTile(…)} as its cause. Future invocations of {@code getTile(tileX, tileY)} with the
      * same tile indices will cause an {@link ImagingOpException} to be thrown immediately without invocation
-     * of {@code compute(tileX, tileY)}. If the cause of the error has been fixed, then users should invoke
+     * of {@code compute(tileX, tileY)}. If the error has been fixed, then users can invoke
      * {@link #clearErrorFlags(Rectangle)} for allowing the tile to be computed again.
      *
      * @param  tileX     the column index of the tile to compute.
@@ -519,8 +526,8 @@ public abstract class ComputedImage extends PlanarImage {
      * @param  tileY    the Y index of the tile to acquire or release.
      * @param  writing  {@code true} for acquiring the tile, or {@code false} for releasing it.
      * @return {@code true} if the tile goes from having no writers to having one writer
-     *         (may happen if {@code writing} is {@code true}), or from having one writer
-     *         to no writers (may happen if {@code writing} is {@code false}).
+     *         (may happen if {@code writing} is {@code true}), or goes from having one
+     *         writer to no writers (may happen if {@code writing} is {@code false}).
      *
      * @see WritableRenderedImage#getWritableTile(int, int)
      * @see WritableRenderedImage#releaseWritableTile(int, int)

@@ -1508,7 +1508,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         }
         /*
          * No coordinate operation because of mismatched factories. This is not illegal (the result is an empty set)
-         * but it is worth to notify the user because this case has some chances to be an user error.
+         * but it is worth to notify the user because this case has some chances to be a user error.
          */
         final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
                 Resources.Keys.MismatchedOperationFactories_2, sourceCRS, targetCRS);
