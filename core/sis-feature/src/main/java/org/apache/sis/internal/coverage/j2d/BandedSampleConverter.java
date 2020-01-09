@@ -343,6 +343,12 @@ public class BandedSampleConverter extends ComputedImage {
                 }
             };
             executor.writeTo(target);
+            /*
+             * Request to recompute the tiles of this `BandedSampleConverter` because if the values
+             * in the source image are integers, then converting back to floating point values may
+             * produce slightly different results.
+             */
+            markDirtyTiles(executor.getTileIndices());
         }
     }
 }

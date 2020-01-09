@@ -64,6 +64,15 @@ public abstract class TileOpExecutor {
     }
 
     /**
+     * Returns the range of indices of tiles to be processed by this {@code TileOpExecutor}.
+     *
+     * @return range of tile indices to be processed.
+     */
+    public final Rectangle getTileIndices() {
+        return new Rectangle(minTileX, minTileY, maxTileX - minTileX + 1, maxTileY - minTileY + 1);
+    }
+
+    /**
      * Executes the read operation on the given tile.
      * The default implementation does nothing.
      *
