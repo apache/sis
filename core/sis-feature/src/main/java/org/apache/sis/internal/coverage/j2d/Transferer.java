@@ -73,14 +73,17 @@ abstract class Transferer {
 
     /**
      * Creates a new instance for transferring data between the two specified rasters.
+     * It is caller responsibility to ensure that {@code aoi} is contained in the bounds
+     * of both {@code source} and {@code target} rasters.
      *
      * @param  source  image tile from which to read sample values.
      * @param  target  image tile where to write sample values after processing.
+     * @param  aoi     the area of interest, often {@code target.getBounds()}.
      */
-    protected Transferer(final Raster source, final WritableRaster target) {
+    protected Transferer(final Raster source, final WritableRaster target, final Rectangle aoi) {
         this.source = source;
         this.target = target;
-        this.region = target.getBounds();
+        this.region = aoi;
     }
 
     /**
@@ -111,6 +114,8 @@ abstract class Transferer {
      * @throws TransformException if an error occurred during calculation.
      */
     public final void compute(final MathTransform1D[] converters) throws TransformException {
+        assert source.getBounds().contains(region) : region;
+        assert target.getBounds().contains(region) : region;
         final int afterLastRow = prepareTransferRegion();
         final int ymin         = region.y;
         final int maxHeight    = region.height;             // Computed by `prepareTransferRegion()`.
@@ -154,8 +159,8 @@ abstract class Transferer {
         private final DataBufferDouble buffer;
 
         /** Creates a new instance for transferring data between the two specified rasters. */
-        DoubleToDirect(final Raster source, final WritableRaster target) {
-            super(source, target);
+        DoubleToDirect(final Raster source, final WritableRaster target, final Rectangle aoi) {
+            super(source, target, aoi);
             buffer = (DataBufferDouble) target.getDataBuffer();
         }
 
@@ -180,8 +185,8 @@ abstract class Transferer {
         private final DataBufferFloat buffer;
 
         /** Creates a new instance for transferring data between the two specified rasters. */
-        FloatToDirect(final Raster source, final WritableRaster target) {
-            super(source, target);
+        FloatToDirect(final Raster source, final WritableRaster target, final Rectangle aoi) {
+            super(source, target, aoi);
             buffer = (DataBufferFloat) target.getDataBuffer();
         }
 
@@ -223,8 +228,8 @@ abstract class Transferer {
         private double[] buffer;
 
         /** Creates a new instance for transferring data between the two specified rasters. */
-        DoubleToDouble(final Raster source, final WritableRaster target) {
-            super(source, target);
+        DoubleToDouble(final Raster source, final WritableRaster target, final Rectangle aoi) {
+            super(source, target, aoi);
         }
 
         /** Subdivides the region to process in smaller strips, for smaller {@linkplain #buffer}. */
@@ -255,8 +260,8 @@ abstract class Transferer {
         private float[] buffer;
 
         /** Creates a new instance for transferring data between the two specified rasters. */
-        FloatToFloat(final Raster source, final WritableRaster target) {
-            super(source, target);
+        FloatToFloat(final Raster source, final WritableRaster target, final Rectangle aoi) {
+            super(source, target, aoi);
         }
 
         /** Subdivides the region to process in smaller strips, for smaller {@linkplain #buffer}. */
@@ -289,8 +294,8 @@ abstract class Transferer {
         protected int[] transfer;
 
         /** Creates a new instance for transferring data between the two specified rasters. */
-        DoubleToInteger(final Raster source, final WritableRaster target) {
-            super(source, target);
+        DoubleToInteger(final Raster source, final WritableRaster target, final Rectangle aoi) {
+            super(source, target, aoi);
         }
 
         /** Subdivides the region to process in smaller strips, for smaller {@linkplain #buffer}. */
@@ -325,8 +330,8 @@ abstract class Transferer {
      */
     private static final class DoubleToShort extends DoubleToInteger {
         /** Creates a new instance for transferring data between the two specified rasters. */
-        DoubleToShort(final Raster source, final WritableRaster target) {
-            super(source, target);
+        DoubleToShort(final Raster source, final WritableRaster target, final Rectangle aoi) {
+            super(source, target, aoi);
         }
 
         /** Clamps data to the range of target integer type. */
@@ -346,8 +351,8 @@ abstract class Transferer {
      */
     private static final class DoubleToUShort extends DoubleToInteger {
         /** Creates a new instance for transferring data between the two specified rasters. */
-        DoubleToUShort(final Raster source, final WritableRaster target) {
-            super(source, target);
+        DoubleToUShort(final Raster source, final WritableRaster target, final Rectangle aoi) {
+            super(source, target, aoi);
         }
 
         /** Clamps data to the range of target integer type. */
@@ -367,8 +372,8 @@ abstract class Transferer {
      */
     private static final class DoubleToByte extends DoubleToInteger {
         /** Creates a new instance for transferring data between the two specified rasters. */
-        DoubleToByte(final Raster source, final WritableRaster target) {
-            super(source, target);
+        DoubleToByte(final Raster source, final WritableRaster target, final Rectangle aoi) {
+            super(source, target, aoi);
         }
 
         /** Clamps data to the range of target integer type. */
@@ -396,8 +401,8 @@ abstract class Transferer {
         protected int[] transfer;
 
         /** Creates a new instance for transferring data between the two specified rasters. */
-        FloatToInteger(final Raster source, final WritableRaster target) {
-            super(source, target);
+        FloatToInteger(final Raster source, final WritableRaster target, final Rectangle aoi) {
+            super(source, target, aoi);
         }
 
         /** Subdivides the region to process in smaller strips, for smaller {@linkplain #buffer}. */
@@ -432,8 +437,8 @@ abstract class Transferer {
      */
     private static final class FloatToShort extends FloatToInteger {
         /** Creates a new instance for transferring data between the two specified rasters. */
-        FloatToShort(final Raster source, final WritableRaster target) {
-            super(source, target);
+        FloatToShort(final Raster source, final WritableRaster target, final Rectangle aoi) {
+            super(source, target, aoi);
         }
 
         /** Clamps data to the range of target integer type. */
@@ -453,8 +458,8 @@ abstract class Transferer {
      */
     private static final class FloatToUShort extends FloatToInteger {
         /** Creates a new instance for transferring data between the two specified rasters. */
-        FloatToUShort(final Raster source, final WritableRaster target) {
-            super(source, target);
+        FloatToUShort(final Raster source, final WritableRaster target, final Rectangle aoi) {
+            super(source, target, aoi);
         }
 
         /** Clamps data to the range of target integer type. */
@@ -474,8 +479,8 @@ abstract class Transferer {
      */
     private static final class FloatToByte extends FloatToInteger {
         /** Creates a new instance for transferring data between the two specified rasters. */
-        FloatToByte(final Raster source, final WritableRaster target) {
-            super(source, target);
+        FloatToByte(final Raster source, final WritableRaster target, final Rectangle aoi) {
+            super(source, target, aoi);
         }
 
         /** Clamps data to the range of target integer type. */
@@ -503,7 +508,7 @@ abstract class Transferer {
     static Transferer create(final RenderedImage source, final WritableRaster target) {
         int tileX = Math.floorDiv((target.getMinX() - source.getTileGridXOffset()), source.getTileWidth());
         int tileY = Math.floorDiv((target.getMinY() - source.getTileGridYOffset()), source.getTileHeight());
-        return create(source.getTile(tileX, tileY), target);
+        return create(source.getTile(tileX, tileY), target, target.getBounds());
     }
 
     /**
@@ -513,13 +518,15 @@ abstract class Transferer {
      *
      * @param  source  image tile from which to read sample values.
      * @param  target  image tile where to write sample values after processing.
+     * @param  aoi     the area of interest, often {@code target.getBounds()}. It is caller responsibility
+     *                 to ensure that {@code aoi} is contained in {@code source} and {@code target} bounds.
      * @return object to use for applying the operation.
      */
-    static Transferer create(final Raster source, final WritableRaster target) {
+    static Transferer create(final Raster source, final WritableRaster target, final Rectangle aoi) {
         switch (ImageUtilities.getDataType(target)) {
             case DataBuffer.TYPE_DOUBLE: {
-                if (isDirect(target)) {
-                    return new DoubleToDirect(source, target);
+                if (isDirect(target, aoi)) {
+                    return new DoubleToDirect(source, target, aoi);
                 }
                 break;
             }
@@ -529,10 +536,10 @@ abstract class Transferer {
                     case DataBuffer.TYPE_SHORT:
                     case DataBuffer.TYPE_USHORT:        // TODO: consider using IntegerToDirect here.
                     case DataBuffer.TYPE_FLOAT: {
-                        if (isDirect(target)) {
-                            return new FloatToDirect(source, target);
+                        if (isDirect(target, aoi)) {
+                            return new FloatToDirect(source, target, aoi);
                         } else {
-                            return new FloatToFloat(source, target);
+                            return new FloatToFloat(source, target, aoi);
                         }
                     }
                     /*
@@ -542,15 +549,15 @@ abstract class Transferer {
                 }
                 break;
             }
-            case DataBuffer.TYPE_INT:    return isFloat(source) ? new FloatToInteger(source, target) : new DoubleToInteger(source, target);
-            case DataBuffer.TYPE_USHORT: return isFloat(source) ? new FloatToUShort (source, target) : new DoubleToUShort (source, target);
-            case DataBuffer.TYPE_SHORT:  return isFloat(source) ? new FloatToShort  (source, target) : new DoubleToShort  (source, target);
-            case DataBuffer.TYPE_BYTE:   return isFloat(source) ? new FloatToByte   (source, target) : new DoubleToByte   (source, target);
+            case DataBuffer.TYPE_INT:    return isFloat(source) ? new FloatToInteger(source, target, aoi) : new DoubleToInteger(source, target, aoi);
+            case DataBuffer.TYPE_USHORT: return isFloat(source) ? new FloatToUShort (source, target, aoi) : new DoubleToUShort (source, target, aoi);
+            case DataBuffer.TYPE_SHORT:  return isFloat(source) ? new FloatToShort  (source, target, aoi) : new DoubleToShort  (source, target, aoi);
+            case DataBuffer.TYPE_BYTE:   return isFloat(source) ? new FloatToByte   (source, target, aoi) : new DoubleToByte   (source, target, aoi);
         }
         /*
          * Most conservative fallback, also used for any unknown type.
          */
-        return new DoubleToDouble(source, target);
+        return new DoubleToDouble(source, target, aoi);
     }
 
     /**
@@ -574,17 +581,19 @@ abstract class Transferer {
      * In other words, verifies if the given raster uses a pixel stride of 1 with no gab between lines.
      * Another condition is that the data buffer must start at offset 0.
      */
-    private static boolean isDirect(final Raster target) {
-        final SampleModel sm = target.getSampleModel();
-        if (sm instanceof ComponentSampleModel) {
-            final ComponentSampleModel cm = (ComponentSampleModel) sm;
-            if (cm.getPixelStride() == 1 && cm.getScanlineStride() == target.getWidth()) {
-                for (final int offset : target.getDataBuffer().getOffsets()) {
-                    if (offset != 0) {
-                        return false;
+    private static boolean isDirect(final Raster target, final Rectangle aoi) {
+        if (target.getMinX() == aoi.x && target.getWidth() == aoi.width) {
+            final SampleModel sm = target.getSampleModel();
+            if (sm instanceof ComponentSampleModel) {
+                final ComponentSampleModel cm = (ComponentSampleModel) sm;
+                if (cm.getPixelStride() == 1 && cm.getScanlineStride() == target.getWidth()) {
+                    for (final int offset : target.getDataBuffer().getOffsets()) {
+                        if (offset != 0) {
+                            return false;
+                        }
                     }
+                    return true;
                 }
-                return true;
             }
         }
         return false;

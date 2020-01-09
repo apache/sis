@@ -333,12 +333,13 @@ public class BandedSampleConverter extends ComputedImage {
          */
         @Override
         public void setData(final Raster data) {
-            final Rectangle aoi = data.getBounds();
+            final Rectangle bounds = data.getBounds();
             final WritableRenderedImage target = (WritableRenderedImage) getSource(0);
-            ImageUtilities.clipBounds(target, aoi);
-            final TileOpExecutor executor = new TileOpExecutor(target, aoi) {
+            ImageUtilities.clipBounds(target, bounds);
+            final TileOpExecutor executor = new TileOpExecutor(target, bounds) {
                 @Override protected void writeTo(final WritableRaster target) throws TransformException {
-                    Transferer.create(data, target).compute(inverses);
+                    final Rectangle aoi = target.getBounds().intersection(bounds);
+                    Transferer.create(data, target, aoi).compute(inverses);
                 }
             };
             executor.writeTo(target);
