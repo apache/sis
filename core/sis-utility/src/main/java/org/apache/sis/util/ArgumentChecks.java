@@ -16,16 +16,14 @@
  */
 package org.apache.sis.util;
 
+import java.util.Map;
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.Map;
-
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.Envelope;
-import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
-
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 
@@ -84,7 +82,8 @@ import org.apache.sis.util.resources.Errors;
  * in the {@linkplain java.util.Locale#getDefault() default locale} if the check failed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -192,13 +191,16 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
-     * Makes sure that given collection is non-null and non-empty. If it is null, then a {@link NullArgumentException}
-     * is thrown. Otherwise if it {@link Collection#isEmpty() is empty}, then an {@link IllegalArgumentException} is thrown.
+     * Makes sure that given collection is non-null and non-empty.
+     * If it is null, then a {@link NullArgumentException} is thrown.
+     * Otherwise if it {@linkplain Collection#isEmpty() is empty}, then an {@link IllegalArgumentException} is thrown.
      *
-     * @param name the name of the argument to be checked. Used only if an exception is thrown.
-     * @param toCheck the user argument to check against null value and empty collection.
+     * @param  name     the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  toCheck  the user argument to check against null value and empty collection.
      * @throws NullArgumentException if {@code toCheck} is null.
      * @throws IllegalArgumentException if {@code toCheck} is empty.
+     *
+     * @since 1.1
      */
     public static void ensureNonEmpty(final String name, final Collection<?> toCheck) {
         if (toCheck == null) {
