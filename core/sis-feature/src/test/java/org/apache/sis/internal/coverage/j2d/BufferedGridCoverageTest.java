@@ -16,128 +16,51 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
+import java.util.List;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
-import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import java.util.Arrays;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridCoverage2DTest;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.measure.NumberRange;
-import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.test.TestCase;
-import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.operation.MathTransform1D;
-import org.junit.Assert;
-import org.junit.Test;
-import org.opengis.coverage.PointOutsideCoverageException;
 
 
 /**
  * Tests the {@link BufferedGridCoverage} implementation.
+ * This method inherits the tests defined in {@link GridCoverage2DTest},
+ * changing only the implementation class to test.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
  * @module
  */
-public class BufferedGridCoverageTest extends TestCase {
+public final strictfp class BufferedGridCoverageTest extends GridCoverage2DTest {
     /**
-     * Tests with a two-dimensional coverage.
+     * Creates a {@link GridCoverage} instance to test with fixed sample values.
+     * The coverage returned by this method shall contain the following values:
+     *
+     * {@preformat text
+     *    2    5
+     *   -5  -10
+     * }
+     *
+     * @param  grid  the grid geometry of the coverage to create.
+     * @param  sd    the sample dimensions of the coverage to create.
+     * @return the coverage instance to test, with above-cited values.
      */
-    @Test
-    public void testCoverage2D() {
-        /*
-         * Create coverage of 2×2 pixels with an identity "grid to CRS" transform.
-         * The range of sample values will be [-10 … +10]°C.
-         */
-        final GridGeometry grid = new GridGeometry(new GridExtent(2, 2),
-                PixelInCell.CELL_CENTER, MathTransforms.identity(2), HardCodedCRS.WGS84);
-
-        final MathTransform1D toUnits = (MathTransform1D) MathTransforms.linear(0.5, 100);
-        final SampleDimension sd = new SampleDimension.Builder().setName("t")
-                .addQuantitative("data", NumberRange.create(-10, true, 10, true), toUnits, Units.CELSIUS)
-                .build();
+    protected GridCoverage createTestCoverage(final GridGeometry grid, final List<SampleDimension> sd) {
         /*
          * Create the grid coverage, gets its image and set values directly as short integers.
          */
-        GridCoverage   coverage = new BufferedGridCoverage(grid, Arrays.asList(sd), DataBuffer.TYPE_SHORT);
+        GridCoverage   coverage = new BufferedGridCoverage(grid, sd, DataBuffer.TYPE_SHORT);
         WritableRaster raster = ((BufferedImage) coverage.render(null)).getRaster();
-        raster.setSample(0, 0, 0,   0);
+        raster.setSample(0, 0, 0,   2);
         raster.setSample(1, 0, 0,   5);
         raster.setSample(0, 1, 0,  -5);
         raster.setSample(1, 1, 0, -10);
-        /*
-         * Verify packed values.
-         */
-        assertSamplesEqual(coverage, new double[][] {
-            { 0,   5},
-            {-5, -10}
-        });
-        /*
-         * Verify converted values.
-         */
-        coverage = coverage.forConvertedValues(true);
-        assertSamplesEqual(coverage, new double[][] {
-            {100.0, 102.5},
-            { 97.5,  95.0}
-        });
-        /*
-         * Test writing converted values and verify the result in the packed coverage.
-         * For example for the sample value at (0,0), we have (x is the packed value):
-         *
-         *   70 = x * 0.5 + 100   →   (70-100)/0.5 = x   →   x = -60
-         */
-        if (true) return;   // TODO
-        raster = ((BufferedImage) coverage.render(null)).getRaster();
-        raster.setSample(0, 0, 0,  70);
-        raster.setSample(1, 0, 0,   2.5);
-        raster.setSample(0, 1, 0,  -8);
-        raster.setSample(1, 1, 0, -90);
-        assertSamplesEqual(coverage.forConvertedValues(false), new double[][] {
-            { -60, -195},
-            {-216, -380}
-        });
-        /*
-         * Test evaluation
-         */
-        Assert.assertArrayEquals(new double[]{ 70.0}, coverage.evaluate(new DirectPosition2D(0, 0), null), STRICT);
-        Assert.assertArrayEquals(new double[]{  2.5}, coverage.evaluate(new DirectPosition2D(1, 0), null), STRICT);
-        Assert.assertArrayEquals(new double[]{- 8.0}, coverage.evaluate(new DirectPosition2D(0, 1), null), STRICT);
-        Assert.assertArrayEquals(new double[]{-90.0}, coverage.evaluate(new DirectPosition2D(1, 1), null), STRICT);
-        //test nearest neighor rounding
-        Assert.assertArrayEquals(new double[]{70.0}, coverage.evaluate(new DirectPosition2D(-0.499, -0.499), null), STRICT);
-        Assert.assertArrayEquals(new double[]{70.0}, coverage.evaluate(new DirectPosition2D( 0.499,  0.499), null), STRICT);
-        //test out of coverage
-        try {
-            coverage.evaluate(new DirectPosition2D(-0.51, 0), null);
-            Assert.fail("Point ouside coverage evalue must fail");
-        } catch (PointOutsideCoverageException ex) {
-            //ok
-        }
-        try {
-            coverage.evaluate(new DirectPosition2D(1.51, 0), null);
-            Assert.fail("Point ouside coverage evalue must fail");
-        } catch (PointOutsideCoverageException ex) {
-            //ok
-        }
-    }
-
-    /**
-     * assert that the sample values in the given coverage are equal to the expected values.
-     */
-    private static void assertSamplesEqual(final GridCoverage coverage, final double[][] expected) {
-        final Raster raster = coverage.render(null).getData();
-        for (int y=0; y<expected.length; y++) {
-            for (int x=0; x<expected[y].length; x++) {
-                double value = raster.getSampleDouble(x, y, 0);
-                Assert.assertEquals(expected[y][x], value, STRICT);
-            }
-        }
+        return coverage;
     }
 }

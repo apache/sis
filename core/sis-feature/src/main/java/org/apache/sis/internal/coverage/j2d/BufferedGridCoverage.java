@@ -71,7 +71,7 @@ public class BufferedGridCoverage extends GridCoverage {
 
     /**
      * Constructs a grid coverage using the specified grid geometry, sample dimensions and data type.
-     * This constructor create a single-bank {@link DataBuffer} (pixel interleaved sample model) with
+     * This constructor creates a single-bank {@link DataBuffer} (pixel interleaved sample model) with
      * all sample values initialized to zero.
      *
      * @param  grid      the grid extent, CRS and conversion from cell indices to CRS.

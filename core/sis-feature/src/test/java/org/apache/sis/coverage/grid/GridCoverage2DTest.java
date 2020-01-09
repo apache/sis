@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.List;
 import java.util.Collections;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -41,15 +42,22 @@ import static org.junit.Assert.*;
 
 /**
  * Tests the {@link GridCoverage2D} implementation.
+ * Also used as a base class for testing other implementations.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-public final strictfp class GridCoverage2DTest extends TestCase {
+public strictfp class GridCoverage2DTest extends TestCase {
+    /*
+     * Width and height of the grid tested in this class.
+     */
+    protected static final int GRID_SIZE = 2;
+
     /**
-     * Creates a {@link GridCoverage2D} instance with arbitrary sample values.
+     * Creates a {@link GridCoverage} instance with arbitrary sample values.
      * The image size is 2×2 pixels, the "grid to CRS" transform is identity,
      * the range of sample values is [-97.5 … 105] metres and the packed values are:
      *
@@ -58,26 +66,42 @@ public final strictfp class GridCoverage2DTest extends TestCase {
      *   -5  -10
      * }
      */
-    private static GridCoverage2D createTestCoverage() {
-        final int size = 2;
-        final GridGeometry grid = new GridGeometry(new GridExtent(size, size),
+    private GridCoverage createTestCoverage() {
+        final GridGeometry grid = new GridGeometry(new GridExtent(GRID_SIZE, GRID_SIZE),
                 PixelInCell.CELL_CENTER, MathTransforms.identity(2), HardCodedCRS.WGS84);
 
         final MathTransform1D toUnits = (MathTransform1D) MathTransforms.linear(0.5, 100);
         final SampleDimension sd = new SampleDimension.Builder().setName("Some kind of height")
                 .addQuantitative("data", NumberRange.create(-10, true, 10, true), toUnits, Units.METRE)
                 .build();
+        return createTestCoverage(grid, Collections.singletonList(sd));
+    }
+
+    /**
+     * Creates a {@link GridCoverage} instance to test with fixed sample values.
+     * The coverage returned by this method shall contain the following values:
+     *
+     * {@preformat text
+     *    2    5
+     *   -5  -10
+     * }
+     *
+     * @param  grid  the grid geometry of the coverage to create.
+     * @param  sd    the sample dimensions of the coverage to create.
+     * @return the coverage instance to test, with above-cited values.
+     */
+    protected GridCoverage createTestCoverage(final GridGeometry grid, final List<SampleDimension> sd) {
         /*
          * Create an image and set values directly as integers. We do not use one of the
          * BufferedImage.TYPE_* constant because this test uses some negative values.
          */
-        final BufferedImage  image  = RasterFactory.createGrayScaleImage(DataBuffer.TYPE_INT, size, size, 1, 0, -10, 10);
+        final BufferedImage  image  = RasterFactory.createGrayScaleImage(DataBuffer.TYPE_INT, GRID_SIZE, GRID_SIZE, 1, 0, -10, 10);
         final WritableRaster raster = image.getRaster();
         raster.setSample(0, 0, 0,   2);
         raster.setSample(1, 0, 0,   5);
         raster.setSample(0, 1, 0,  -5);
         raster.setSample(1, 1, 0, -10);
-        return new GridCoverage2D(grid, Collections.singleton(sd), image);
+        return new GridCoverage2D(grid, sd, image);
     }
 
     /**
