@@ -21,7 +21,6 @@ import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.xml.Schemas;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -30,6 +29,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.internal.jaxb.gml.MeasureTest.UOM_URL;
 
 
 /**
@@ -37,7 +37,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -126,7 +126,7 @@ public final strictfp class DefaultResolutionTest extends TestCase {
                 "<mri:MD_Resolution xmlns:mri=\"" + Namespaces.MRI + '"' +
                                   " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <mri:distance>\n" +
-                "    <gco:Distance uom=\"" + Schemas.METADATA_ROOT_LEGACY + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>\n" +
+                "    <gco:Distance uom=\"" + UOM_URL + "#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>\n" +
                 "  </mri:distance>\n" +
                 "</mri:MD_Resolution>", xml, "xmlns:*");
 
@@ -157,7 +157,7 @@ public final strictfp class DefaultResolutionTest extends TestCase {
                 "<gmd:MD_Resolution xmlns:gmd=\"" + LegacyNamespaces.GMD + '"' +
                                   " xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
                 "  <gmd:distance>\n" +
-                "    <gco:Distance uom=\"" + Schemas.METADATA_ROOT_LEGACY + Schemas.UOM_PATH + "#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>\n" +
+                "    <gco:Distance uom=\"" + UOM_URL + "#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>\n" +
                 "  </gmd:distance>\n" +
                 "</gmd:MD_Resolution>", xml, "xmlns:*");
 

@@ -39,8 +39,8 @@ import org.opengis.util.CodeList;
 import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.internal.xml.Schemas;
 import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -72,7 +72,7 @@ import junit.framework.AssertionFailedError;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -341,7 +341,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
         switch (uml.specification()) {
             case ISO_19115:
             case ISO_19115_2:
-            case ISO_19115_3: return Schemas.METADATA_ROOT;
+            case ISO_19115_3: return CodeListUID.METADATA_ROOT;
             case ISO_19139:   return LegacyNamespaces.GMX;
             case ISO_19108:   return LegacyNamespaces.GMD;
             default: throw new IllegalArgumentException(uml.toString());

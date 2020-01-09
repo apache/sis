@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.xml.Schemas;
+import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.measure.UnitFormat;
@@ -64,7 +64,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see org.apache.sis.internal.jaxb.gml.MeasureList
  * @see org.apache.sis.internal.jaxb.gco.UnitAdapter
@@ -179,8 +179,8 @@ public final class Measure {
          *     link = current code
          * }
          */
-        link = Context.schema(context, "gmd", Schemas.METADATA_ROOT_LEGACY);
-        link.append(Schemas.UOM_PATH).append("#xpointer(//*[@gml:id='");
+        link = Context.schema(context, "gmd", CodeListUID.METADATA_ROOT_LEGACY);
+        link.append(CodeListUID.UOM_PATH).append("#xpointer(//*[@gml:id='");
         try {
             UCUM.format(unit, link);
         } catch (IOException e) {

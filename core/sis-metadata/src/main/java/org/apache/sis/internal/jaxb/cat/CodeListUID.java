@@ -26,7 +26,6 @@ import org.opengis.util.CodeList;
 import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.xml.Schemas;
 
 
 /**
@@ -39,10 +38,42 @@ import org.apache.sis.internal.xml.Schemas;
  * This object is wrapped by {@link CodeListAdapter} or, in the special case of {@link Locale} type, by
  * {@link org.apache.sis.internal.jaxb.lan.LanguageCode} or {@link org.apache.sis.internal.jaxb.lan.Country}.
  *
+ * <h2>Base URLs</h2>
+ * This class defines constants for URL to schema directories or definition files used in code list elements.
+ * SIS does not use those URL directly for downloading files (downloading an XML schema from ISO servers
+ * require {@code "https"} protocol, but the URLs in this class use {@code "http"} for historical reasons).
+ * Example:
+ *
+ * {@preformat xml
+ *   <gmi:MI_SensorTypeCode
+ *       codeList="http://standards.iso.org/…snip…/codelists.xml#CI_SensorTypeCode"
+ *       codeListValue="RADIOMETER">Radiometer</gmi:MI_SensorTypeCode>
+ * }
+ *
+ * <p>Constants in this class are organized in three groups:</p>
+ * <ul>
+ *   <li>Constants with the {@code _ROOT} suffix are {@code "http://"} URL to a root directory.</li>
+ *   <li>Constants with the {@code _PATH} suffix are relative paths to concatenate to a {@code _ROOT}
+ *       constant in order to get the full path to a file.</li>
+ *   <li>Constants with the {@code _XSD} suffix are {@code "http://"} URL to a the XSD definition file.</li>
+ * </ul>
+ *
+ * <h3>Note on multi-lingual files</h3>
+ * Some files are available in two variants: with and without {@code "ML_"} prefix, which stands for "Multi Lingual".
+ * Some examples are {@code "[ML_]gmxCodelists.xml"} and {@code "[ML_]gmxUom.xml"}. The following assumptions hold:
+ *
+ * <ul>
+ *   <li>All code lists defined in a {@code ML_foo.xml} file exist also in {@code foo.xml}.</li>
+ *   <li>The converse of above point is not necessarily true:
+ *       the {@code ML_foo.xml} file may contain only a subset of {@code foo.xml}.</li>
+ *   <li>All English descriptions in {@code ML_foo.xml} file are strictly identical to the ones in {@code foo.xml}.</li>
+ *   <li>Descriptions in other languages than English exist only in {@code ML_foo.xml}.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.1
  *
  * @see CodeListAdapter
  *
@@ -51,6 +82,51 @@ import org.apache.sis.internal.xml.Schemas;
  */
 @XmlType(name = "CodeList", propOrder = {"codeList", "codeListValue", "codeSpace"})
 public final class CodeListUID {
+    /**
+     * The root directory of ISO 19115 metadata schemas.
+     * This is the schema used by default in Apache SIS.
+     */
+    public static final String METADATA_ROOT = "http://standards.iso.org/iso/19115/";
+
+    /**
+     * The root directory of OGC metadata schemas.
+     * This is the schema used by default in Apache SIS.
+     * Some alternatives to this URL are:
+     *
+     * <ul>
+     *   <li>http://schemas.opengis.net/iso/19139/20070417/</li>
+     *   <li>http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/</li>
+     * </ul>
+     */
+    public static final String METADATA_ROOT_LEGACY = "http://www.isotc211.org/2005/";
+
+    /**
+     * The string to append to {@link #METADATA_ROOT} for obtaining the path to the definitions of code lists.
+     */
+    public static final String CODELISTS_PATH = "resources/Codelist/cat/codelists.xml";
+
+    /**
+     * The string to append to {@link #METADATA_ROOT_LEGACY} or one of its alternative for obtaining the path
+     * to the definitions of code lists.
+     *
+     * <p>A localized version of this file exists also with the {@code "ML_gmxCodelists.xml"} filename
+     * instead of {@code "gmxCodelists.xml"}</p>
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-154">SIS-154</a>
+     */
+    public static final String CODELISTS_PATH_LEGACY = "resources/Codelist/gmxCodelists.xml";
+
+    /**
+     * The string to append to {@link #METADATA_ROOT} or one of its alternative for obtaining the path
+     * to the definitions of units of measurement.
+     *
+     * <p>A localized version of this file exists also with the {@code "ML_gmxUom.xml"} filename
+     * instead of {@code "gmxUom.xml"}</p>
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-154">SIS-154</a>
+     */
+    public static final String UOM_PATH = "resources/uom/gmxUom.xml";
+
     /**
      * Returns the URL to a given code list in the given XML file.
      * This method concatenates the base schema URL with the given identifier.
@@ -73,12 +149,12 @@ public final class CodeListUID {
         final String prefix, root, path;
         if (Context.isFlagSet(context, Context.LEGACY_METADATA)) {
             prefix = "gmd";
-            root = Schemas.METADATA_ROOT_LEGACY;
-            path = Schemas.CODELISTS_PATH_LEGACY;   // Future SIS version may switch between localized/unlocalized file.
+            root = METADATA_ROOT_LEGACY;
+            path = CODELISTS_PATH_LEGACY;       // Future SIS version may switch between localized/unlocalized file.
         } else {
             prefix = "cat";
-            root = Schemas.METADATA_ROOT;
-            path = Schemas.CODELISTS_PATH;
+            root = METADATA_ROOT;
+            path = CODELISTS_PATH;
         }
         return Context.schema(context, prefix, root).append(path).append('#').append(identifier).toString();
     }

@@ -28,7 +28,6 @@ import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.xml.Schemas;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
@@ -44,7 +43,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -58,7 +57,7 @@ public final strictfp class CodeListMarshallingTest extends TestCase {
     private static String getResponsiblePartyXML(final String baseURL) {
         return "<gmd:CI_ResponsibleParty xmlns:gmd=\"" + LegacyNamespaces.GMD + "\">\n" +
                "  <gmd:role>\n" +
-               "    <gmd:CI_RoleCode codeList=\"" + baseURL + Schemas.CODELISTS_PATH_LEGACY + "#CI_RoleCode\"" +
+               "    <gmd:CI_RoleCode codeList=\"" + baseURL + CodeListUID.CODELISTS_PATH_LEGACY + "#CI_RoleCode\"" +
                     " codeListValue=\"principalInvestigator\">" + "Principal investigator</gmd:CI_RoleCode>\n" +
                "  </gmd:role>\n" +
                "</gmd:CI_ResponsibleParty>";
@@ -75,15 +74,15 @@ public final strictfp class CodeListMarshallingTest extends TestCase {
         final Object[] args = new Object[] {
             "cit",                          // Prefix
             Namespaces.CIT,                 // Namespace
-            Schemas.METADATA_ROOT,          // Base URL of code list path
-            Schemas.CODELISTS_PATH,         // Relative code list path in base URL
+            CodeListUID.METADATA_ROOT,      // Base URL of code list path
+            CodeListUID.CODELISTS_PATH,     // Relative code list path in base URL
             language, dateType
         };
         if (legacy) {
-            args[0] = "gmd";                              // Prefix
-            args[1] = LegacyNamespaces.GMD;               // Namespace
-            args[2] = Schemas.METADATA_ROOT_LEGACY;       // Base URL of code list path
-            args[3] = Schemas.CODELISTS_PATH_LEGACY;      // Relative code list path in base URL
+            args[0] = "gmd";                                // Prefix
+            args[1] = LegacyNamespaces.GMD;                 // Namespace
+            args[2] = CodeListUID.METADATA_ROOT_LEGACY;     // Base URL of code list path
+            args[3] = CodeListUID.CODELISTS_PATH_LEGACY;    // Relative code list path in base URL
         }
         return String.format(
                 "<%1$s:CI_Date xmlns:%1$s=\"%2$s\">\n" +
@@ -101,7 +100,7 @@ public final strictfp class CodeListMarshallingTest extends TestCase {
      */
     @Test
     public void testDefaultURL() throws JAXBException {
-        final String expected = getResponsiblePartyXML(Schemas.METADATA_ROOT_LEGACY);
+        final String expected = getResponsiblePartyXML(CodeListUID.METADATA_ROOT_LEGACY);
         final Responsibility rp = unmarshal(Responsibility.class, expected);
         assertEquals(Role.PRINCIPAL_INVESTIGATOR, rp.getRole());
         /*
