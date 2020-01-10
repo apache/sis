@@ -89,7 +89,7 @@ import org.apache.sis.util.Characters;
  * methods are responsible for doing the transliteration at formatting and parsing time, respectively.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see org.apache.sis.util.Characters#isValidWKT(int)
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#39">WKT 2 specification §7.5.3</a>
@@ -217,8 +217,16 @@ public abstract class Transliterator implements Serializable {
      * @see org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#formatTo(Formatter)
      */
     public String toShortAxisName(final CoordinateSystem cs, final AxisDirection direction, final String name) {
-        if (name.equalsIgnoreCase(AxisNames.GEODETIC_LATITUDE )) return AxisNames.LATITUDE;  // ISO 19162:2015 §7.5.3(ii)
-        if (name.equalsIgnoreCase(AxisNames.GEODETIC_LONGITUDE)) return AxisNames.LONGITUDE;
+        if (name.equalsIgnoreCase(AxisNames.GEODETIC_LATITUDE) ||               // ISO 19162:2015 §7.5.3(ii)
+            name.equalsIgnoreCase(AxisNames.PLANETODETIC_LATITUDE))
+        {
+            return AxisNames.LATITUDE;
+        }
+        if (name.equalsIgnoreCase(AxisNames.GEODETIC_LONGITUDE) ||
+            name.equalsIgnoreCase(AxisNames.PLANETODETIC_LONGITUDE))
+        {
+            return AxisNames.LONGITUDE;
+        }
         if (AxisDirections.isGeocentric(direction) && CharSequences.equalsFiltered(
                 name, direction.name(), Characters.Filter.LETTERS_AND_DIGITS, true))
         {
