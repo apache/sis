@@ -18,7 +18,9 @@ package org.apache.sis.internal.map;
 
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
+ * Thrown when a map rendering process failed.
  *
  * <p>
  * NOTE: this class is a first draft subject to modifications.

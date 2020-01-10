@@ -19,69 +19,61 @@ package org.apache.sis.storage.shapefile.cpg;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.apache.sis.util.Static;
+
 
 /**
  * CPG files utilities.
- * *.cpg files contains a single word for the name of the dbf character encoding.
+ * {@code *.cpg} files contains a single word for the name of the DBF character encoding.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 2.0
  * @since   2.0
  * @module
  */
-public final class CpgFiles {
-
+public final class CpgFiles extends Static {
+    /**
+     * Do not allow instantiation of this class.
+     */
     private CpgFiles(){}
 
     /**
-     * Read charset from given stream.
+     * Reads the character set from given stream.
+     * If the file is empty, then the default character set is returned.
      *
-     * @param in input channel
-     * @return CharSet
-     * @throws IOException
-     */
-    public static Charset read(ReadableByteChannel in) throws IOException {
-        final String str = toString(Channels.newInputStream(in),Charset.forName("UTF-8")).trim();
-        return Charset.forName(str);
-    }
-
-    /**
-     * Write charset to given file.
-     *
-     * @param cs charset to write.
-     * @param file output file.
-     * @throws IOException
-     */
-    public static void write(Charset cs, Path file) throws IOException {
-        try (BufferedWriter cpgWriter = Files.newBufferedWriter(file, Charset.defaultCharset())) {
-            cpgWriter.write(cs.name());
-        }
-    }
-
-    /**
-     * Read the contents of a stream into String with specified encoding and close the Stream.
-     *
-     * @param stream input steam
-     * @return The file contents as string
+     * @param  in input channel from which to read the character set.
+     * @return the character set from the given stream.
      * @throws IOException if the file does not exist or cannot be read.
      */
-    private static String toString(final InputStream stream, final Charset encoding) throws IOException {
-        final StringBuilder sb  = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(stream, encoding))) {
+    public static Charset read(final ReadableByteChannel in) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Channels.newInputStream(in), StandardCharsets.UTF_8))) {
             String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line).append('\n');
+            while ((line = reader.readLine()) != null) {
+                if ((line = line.trim()).isEmpty()) {
+                    return Charset.forName(line);
+                }
             }
-        } finally {
-            stream.close();
         }
-        return sb.toString();
+        return Charset.defaultCharset();
+    }
+
+    /**
+     * Writes the character set to given file.
+     *
+     * @param  cs    charset to write.
+     * @param  file  output file.
+     * @throws IOException if an error occurred while writing the file.
+     */
+    public static void write(final Charset cs, final Path file) throws IOException {
+        try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
+            writer.write(cs.name());
+        }
     }
 }

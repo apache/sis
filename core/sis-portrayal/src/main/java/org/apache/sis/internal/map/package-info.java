@@ -27,8 +27,8 @@
  * @todo Since everything is about maps in this package, should we omit the {@code Map} prefix in class names?
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 2.0
+ * @since   2.0
  * @module
  */
 package org.apache.sis.internal.map;

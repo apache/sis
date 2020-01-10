@@ -26,13 +26,13 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.feature.FoliationRepresentation;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
-import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.util.ArgumentChecks;
 
 

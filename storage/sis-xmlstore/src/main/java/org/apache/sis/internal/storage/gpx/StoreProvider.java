@@ -21,11 +21,11 @@ import javax.xml.bind.JAXBException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.xml.stream.StaxDataStoreProvider;
 import org.apache.sis.measure.Range;
-import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.util.Version;
 
 

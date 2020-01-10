@@ -16,32 +16,32 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Map;
 import java.util.Optional;
-
-import org.opengis.feature.Attribute;
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureAssociationRole;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.IdentifiedType;
-import org.opengis.feature.InvalidPropertyValueException;
-import org.opengis.feature.Operation;
-import org.opengis.feature.PropertyType;
+import java.util.IdentityHashMap;
+import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.Result;
-import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
-import org.opengis.util.NameFactory;
-
-import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.DefaultNameFactory;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.feature.Resources;
 
 // Branch-dependent imports
+import org.opengis.feature.Attribute;
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.IdentifiedType;
+import org.opengis.feature.InvalidPropertyValueException;
+import org.opengis.feature.Operation;
+import org.opengis.feature.PropertyType;
 
 
 /**
@@ -49,7 +49,8 @@ import org.apache.sis.util.iso.DefaultNameFactory;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   0.5
  * @module
  */
@@ -120,6 +121,49 @@ public final class Features extends Static {
             }
         }
         return (Attribute<V>) attribute;
+    }
+
+    /**
+     * Returns the given type as an {@link AttributeType} by casting if possible, or by getting the result type
+     * of an operation. More specifically this method returns the first of the following types which apply:
+     *
+     * <ul>
+     *   <li>If the given type is an instance of {@link AttributeType}, then it is returned as-is.</li>
+     *   <li>If the given type is an instance of {@link Operation} and the {@linkplain Operation#getResult()
+     *       result type} is an {@link AttributeType}, then that result type is returned.</li>
+     *   <li>If the given type is an instance of {@link Operation} and the {@linkplain Operation#getResult()
+     *       result type} is another operation, then the above check is performed recursively.</li>
+     * </ul>
+     *
+     * @param  type  the data type to express as an attribute type.
+     * @return the attribute type, or empty if this method cannot find any.
+     *
+     * @since 1.1
+     */
+    public static Optional<AttributeType<?>> castOrUnwrap(IdentifiedType type) {
+        if (!(type instanceof AttributeType<?>)) {
+            if (!(type instanceof Operation)) {
+                return Optional.empty();
+            }
+            type = ((Operation) type).getResult();
+            if (!(type instanceof AttributeType<?>)) {
+                if (!(type instanceof Operation)) {
+                    return Optional.empty();
+                }
+                /*
+                 * Operation returns another operation. This case should be rare and should never
+                 * contain a cycle. However given that the consequence of an infinite cycle here
+                 * would be thread freeze, we check as a safety.
+                 */
+                final Map<IdentifiedType,Boolean> done = new IdentityHashMap<>(4);
+                while (!((type = ((Operation) type).getResult()) instanceof AttributeType<?>)) {
+                    if (!(type instanceof Operation) || done.put(type, Boolean.TRUE) != null) {
+                        return Optional.empty();
+                    }
+                }
+            }
+        }
+        return Optional.of((AttributeType<?>) type);
     }
 
     /**
@@ -261,27 +305,5 @@ public final class Features extends Static {
                 }
             }
         }
-    }
-
-
-    /**
-     * Test if given property type is an attribute as defined by {@link AttributeType}, or if it produces one as an
-     * {@link Operation#getResult() operation result}. It it is, we return the found attribute.
-     *
-     * @param input the data type to unravel the attribute from.
-     * @return The found attribute or an empty shell if we cannot find any.
-     */
-    public static Optional<AttributeType<?>> castOrUnwrap(IdentifiedType input) {
-        // In case an operation also implements attribute type, we check it first.
-        // TODO : cycle detection ?
-        while (!(input instanceof AttributeType) && input instanceof Operation) {
-            input = ((Operation) input).getResult();
-        }
-
-        if (input instanceof AttributeType) {
-            return Optional.of((AttributeType) input);
-        }
-
-        return Optional.empty();
     }
 }

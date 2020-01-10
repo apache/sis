@@ -18,6 +18,7 @@ package org.apache.sis.internal.map;
 
 import org.opengis.feature.Feature;
 
+
 /**
  * When rendering resources, the first step is to generate the visual aspect
  * of each feature or coverage, we call each one a Presentation.

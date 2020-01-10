@@ -17,23 +17,17 @@
 package org.apache.sis.internal.storage.query;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Objects;
-
-import org.opengis.feature.FeatureType;
-import org.opengis.filter.Filter;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.sort.SortBy;
 import org.opengis.util.GenericName;
-
+import org.apache.sis.filter.InvalidExpressionException;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
-import org.apache.sis.filter.InvalidExpressionException;
 import org.apache.sis.internal.feature.FeatureExpression;
-import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
 import org.apache.sis.util.ArgumentChecks;
@@ -42,6 +36,10 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.Names;
 
 // Branch-dependent imports
+import org.opengis.feature.FeatureType;
+import org.opengis.filter.Filter;
+import org.opengis.filter.expression.Expression;
+import org.opengis.filter.sort.SortBy;
 
 
 /**
@@ -125,9 +123,8 @@ public class SimpleQuery extends Query implements Cloneable {
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     public void setColumns(Column... columns) {
-        if (columns == null || columns.length < 1) {
-            this.columns = null;
-        } else {
+        if (columns != null) {
+            ArgumentChecks.ensureNonEmpty("columns", columns);
             columns = columns.clone();
             final Map<Object,Integer> uniques = new LinkedHashMap<>(Containers.hashMapCapacity(columns.length));
             for (int i=0; i<columns.length; i++) {
@@ -139,8 +136,8 @@ public class SimpleQuery extends Query implements Cloneable {
                     throw new IllegalArgumentException(Resources.format(Resources.Keys.DuplicatedQueryProperty_3, key, p, i));
                 }
             }
-            this.columns = columns;
         }
+        this.columns = columns;
     }
 
     /**

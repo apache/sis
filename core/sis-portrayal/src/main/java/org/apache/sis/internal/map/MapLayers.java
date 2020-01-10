@@ -40,8 +40,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 2.0
+ * @since   2.0
  * @module
  */
 public class MapLayers extends MapItem {

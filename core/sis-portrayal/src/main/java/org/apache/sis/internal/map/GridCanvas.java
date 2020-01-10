@@ -27,7 +27,6 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.referencing.CRS;
-import static org.apache.sis.referencing.CRS.getSingleComponents;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.operation.DefaultConversion;
@@ -43,7 +42,10 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 
+
 /**
+ * Area when an grid coverage is displayed.
+ *
  * <p>
  * NOTE: this class is a first draft subject to modifications.
  * </p>
@@ -319,8 +321,8 @@ public abstract class GridCanvas {
         final GeneralEnvelope result = new GeneralEnvelope(targetCRS);
 
         //decompose crs
-        final List<SingleCRS> sourceParts = getSingleComponents(sourceCRS);
-        final List<SingleCRS> targetParts = getSingleComponents(targetCRS);
+        final List<SingleCRS> sourceParts = CRS.getSingleComponents(sourceCRS);
+        final List<SingleCRS> targetParts = CRS.getSingleComponents(targetCRS);
 
         int sourceAxeIndex=0;
         sourceLoop:

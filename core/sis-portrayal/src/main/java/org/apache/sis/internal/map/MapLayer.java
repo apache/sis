@@ -37,8 +37,8 @@ import org.opengis.style.Style;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 2.0
+ * @since   2.0
  * @module
  */
 public class MapLayer extends MapItem {

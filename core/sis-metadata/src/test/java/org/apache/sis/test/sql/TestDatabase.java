@@ -17,24 +17,21 @@
 package org.apache.sis.test.sql;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLDataException;
-import java.sql.SQLException;
-import java.sql.Statement;
 import javax.sql.DataSource;
-
+import java.sql.Connection;
+import java.sql.Statement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLDataException;
+import org.postgresql.PGProperty;
+import org.postgresql.ds.PGSimpleDataSource;
+import org.hsqldb.jdbc.JDBCDataSource;
+import org.hsqldb.jdbc.JDBCPool;
+import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.Debug;
-
-import org.apache.derby.jdbc.EmbeddedDataSource;
-
-import org.hsqldb.jdbc.JDBCDataSource;
-import org.hsqldb.jdbc.JDBCPool;
-import org.postgresql.PGProperty;
-import org.postgresql.ds.PGSimpleDataSource;
 
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
@@ -68,7 +65,8 @@ import static org.junit.Assume.assumeTrue;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -209,35 +207,39 @@ public strictfp class TestDatabase implements AutoCloseable {
         ds.setCurrentSchema(schema);
         ds.setProperty(PGProperty.LOGGER_LEVEL, "OFF");   // For avoiding warning when no PostgreSQL server is running.
         /*
-         * Current version does not use pooling on the assumption
-         * that connections to local host are fast enough.
+         * Current version does not use pooling on the assumption that connections to local host are fast enough.
+         * We verify that the schema does not exist, even if the `create` argument is `false`, because we assume
+         * that the test is going to create the schema soon (see the contract documented in method javadoc).
+         * This is also a safety for avoiding to delete a schema that was not created by the test case.
          */
-        if (create) {
-            try (Connection c = ds.getConnection()) {
-                try (ResultSet reflect = c.getMetaData().getSchemas(null, schema)) {
-                    if (reflect.next()) {
-                        throw new SQLDataException("Schema \"" + schema + "\" already exists in \"" + NAME + "\".");
-                    }
+        try (Connection c = ds.getConnection()) {
+            try (ResultSet reflect = c.getMetaData().getSchemas(null, schema)) {
+                if (reflect.next()) {
+                    throw new SQLDataException("Schema \"" + schema + "\" already exists in \"" + NAME + "\".");
                 }
+            }
+            if (create) {
                 try (Statement s = c.createStatement()) {
                     s.execute("CREATE SCHEMA \"" + schema + '"');
                 }
-
-            } catch (SQLException e) {
-                final String state = e.getSQLState();
-                assumeFalse("This test needs a PostgreSQL server running on the local host.", "08001".equals(state));
-                assumeFalse("This test needs a PostgreSQL database named \"" + NAME + "\".", "3D000".equals(state));
-                throw e;
             }
+        } catch (SQLException e) {
+            final String state = e.getSQLState();
+            assumeFalse("This test needs a PostgreSQL server running on the local host.", "08001".equals(state));
+            assumeFalse("This test needs a PostgreSQL database named \"" + NAME + "\".", "3D000".equals(state));
+            throw e;
         }
         return new TestDatabase(ds) {
             @Override public void close() throws SQLException {
                 final PGSimpleDataSource ds = (PGSimpleDataSource) source;
                 try (Connection c = ds.getConnection()) {
                     try (Statement s = c.createStatement()) {
-                        // Prevents test to hang indefinitely if connections are not properly released in test cases.
+                        /*
+                         * Prevents test to hang indefinitely if connections are not properly released in test cases.
+                         * If the limit (in seconds) is exceeded, an SQLTimeoutException is thrown and test fails.
+                         */
                         s.setQueryTimeout(10);
-                        s.execute("DROP SCHEMA \"" + ds.getCurrentSchema() + "\" CASCADE;");
+                        s.execute("DROP SCHEMA \"" + ds.getCurrentSchema() + "\" CASCADE");
                     }
                 }
             }

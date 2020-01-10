@@ -29,7 +29,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * This class is for internal purpose only and may change or be removed in any future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */

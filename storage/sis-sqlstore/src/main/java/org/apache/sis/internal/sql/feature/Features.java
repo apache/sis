@@ -584,6 +584,7 @@ final class Features implements Spliterator<Feature> {
         }
 
         Builder setColumns(final ColumnRef... columns) {
+            // TODO: empty array is not the same than null array.
             if (columns == null || columns.length < 1) this.columns = null;
             else this.columns = Arrays.copyOf(columns, columns.length);
             return this;

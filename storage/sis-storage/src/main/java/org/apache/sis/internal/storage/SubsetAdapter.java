@@ -62,7 +62,8 @@ public final class SubsetAdapter {
         if (sortRequired(query) && !driver.sort(query.getSortBy())) remaining.setSortBy(query.getSortBy());
 
         if (!allColumnsIncluded(query) && !driver.select(query.getColumns())) {
-            remaining.setColumns(query.getColumns().toArray(new SimpleQuery.Column[0]));
+            List<SimpleQuery.Column> columns = query.getColumns();
+            remaining.setColumns(columns != null ? columns.toArray(new SimpleQuery.Column[columns.size()]) : null);
         }
 
         final FeatureSet driverSubset = driver.build().orElse(source);

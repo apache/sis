@@ -21,6 +21,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Objects;
 import javax.swing.event.EventListenerList;
 
+
 /**
  * Parent class of all map elements.
  *
@@ -29,8 +30,8 @@ import javax.swing.event.EventListenerList;
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
- * @since   1.0
+ * @version 2.0
+ * @since   2.0
  * @module
  */
 public abstract class MapItem {

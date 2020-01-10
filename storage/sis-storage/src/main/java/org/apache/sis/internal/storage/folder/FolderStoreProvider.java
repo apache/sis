@@ -38,6 +38,9 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
@@ -47,9 +50,6 @@ import org.apache.sis.internal.storage.Capability;
 import org.apache.sis.internal.storage.StoreMetadata;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.storage.Aggregate;
-import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.GridCoverageResource;
 
 
 /**
@@ -73,7 +73,7 @@ public final class FolderStoreProvider extends DataStoreProvider {
     static final String NAME = "folder";
 
     /**
-     * Description of the parameter for formating conventions of dates and numbers.
+     * Description of the parameter for formatting conventions of dates and numbers.
      */
     private static final ParameterDescriptor<Locale> LOCALE;
 
