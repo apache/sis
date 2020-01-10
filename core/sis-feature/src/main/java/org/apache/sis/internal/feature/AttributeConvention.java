@@ -16,12 +16,14 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.util.Optional;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.Static;
+import org.apache.sis.feature.Features;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -67,7 +69,7 @@ import org.opengis.feature.PropertyNotFoundException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -247,11 +249,9 @@ public final class AttributeConvention extends Static {
      *
      * @see #GEOMETRY_PROPERTY
      */
-    public static boolean isGeometryAttribute(IdentifiedType type) {
-        while (type instanceof Operation) {
-            type = ((Operation) type).getResult();
-        }
-        return (type instanceof AttributeType<?>) && Geometries.isKnownType(((AttributeType<?>) type).getValueClass());
+    public static boolean isGeometryAttribute(final IdentifiedType type) {
+        final Optional<AttributeType<?>> at = Features.toAttribute(type);
+        return at.isPresent() && Geometries.isKnownType(at.get().getValueClass());
     }
 
     /**
@@ -356,13 +356,11 @@ public final class AttributeConvention extends Static {
      * @return {@code true} if a characteristic of the given name exists and has values assignable to the given class.
      */
     private static boolean hasCharacteristic(IdentifiedType type, final String name, final Class<?> valueClass) {
-        while (type instanceof Operation) {
-            type = ((Operation) type).getResult();
-        }
-        if (type instanceof AttributeType<?>) {
-            final AttributeType<?> at = ((AttributeType<?>) type).characteristics().get(name);
-            if (at != null) {
-                return valueClass.isAssignableFrom(at.getValueClass());
+        final Optional<AttributeType<?>> at = Features.toAttribute(type);
+        if (at.isPresent()) {
+            final AttributeType<?> ct = at.get().characteristics().get(name);
+            if (ct != null) {
+                return valueClass.isAssignableFrom(ct.getValueClass());
             }
         }
         return false;

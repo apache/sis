@@ -17,6 +17,7 @@
 package org.apache.sis.internal.filter.sqlmm;
 
 import java.util.Map;
+import java.util.Optional;
 import org.apache.sis.feature.Features;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.feature.AttributeConvention;
@@ -81,16 +82,15 @@ public abstract class AbstractSpatialFunction extends NamedFunction implements F
     }
 
     protected static CoordinateReferenceSystem expectedCrs(FeatureType type, Expression exp) {
-
         final PropertyType expressionType = FeatureExpression.expectedType(exp, type, new FeatureTypeBuilder()).build();
-        final AttributeType<?> attr = Features.castOrUnwrap(expressionType).orElse(null);
-        if (attr == null) {
-            return null;
+        final Optional<AttributeType<?>> attr = Features.toAttribute(expressionType);
+        if (attr.isPresent()) {
+            final AttributeType<CoordinateReferenceSystem> crsCharacteristic = Features.cast(
+                    attr.get().characteristics().get(AttributeConvention.CRS_CHARACTERISTIC),
+                    CoordinateReferenceSystem.class);
+            return crsCharacteristic == null ? null : crsCharacteristic.getDefaultValue();
         }
-
-        final AttributeType<CoordinateReferenceSystem> crsCharacteristic = (AttributeType<CoordinateReferenceSystem>)
-                attr.characteristics().get(AttributeConvention.CRS_CHARACTERISTIC);
-        return crsCharacteristic == null ? null : crsCharacteristic.getDefaultValue();
+        return null;
     }
 
     protected static void copyCrs(Geometry source, Geometry target) {

@@ -142,7 +142,7 @@ public class ST_Envelope extends NamedFunction implements FeatureExpression {
         @Override
         public PropertyType type(FeatureType target) {
             final PropertyType expressionType = source.expectedType(target, new FeatureTypeBuilder()).build();
-            final AttributeType<?> attr = Features.castOrUnwrap(expressionType)
+            final AttributeType<?> attr = Features.toAttribute(expressionType)
                     .orElseThrow(() -> new UnsupportedOperationException("Cannot evaluate given expression because it does not create attribute values"));
             // If given expression evaluates directly to a bbox, there's no need for a conversion step.
             if (Envelope.class.isAssignableFrom(attr.getValueClass())) {

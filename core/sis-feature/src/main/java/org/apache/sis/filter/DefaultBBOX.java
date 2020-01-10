@@ -145,7 +145,7 @@ final class DefaultBBOX extends SpatialFunction implements BBOX, Serializable {
             return type.getProperties(true)
                     .stream()
                     .filter(p
-                            -> Features.castOrUnwrap(p)
+                            -> Features.toAttribute(p)
                             .map(AttributeType::getValueClass)
                             .filter(Geometries::isKnownType)
                             .isPresent()

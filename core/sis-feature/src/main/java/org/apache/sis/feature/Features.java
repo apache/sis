@@ -140,7 +140,7 @@ public final class Features extends Static {
      *
      * @since 1.1
      */
-    public static Optional<AttributeType<?>> castOrUnwrap(IdentifiedType type) {
+    public static Optional<AttributeType<?>> toAttribute(IdentifiedType type) {
         if (!(type instanceof AttributeType<?>)) {
             if (!(type instanceof Operation)) {
                 return Optional.empty();

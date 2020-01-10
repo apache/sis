@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Objects;
+import java.util.Optional;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
@@ -43,7 +44,6 @@ import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.IdentifiedType;
-import org.opengis.feature.Operation;
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
 
@@ -138,8 +138,9 @@ final class EnvelopeOperation extends AbstractOperation {
          */
         boolean characterizedByCRS = false;
         final Map<String,CoordinateReferenceSystem> names = new LinkedHashMap<>(4);
-        for (IdentifiedType property : geometryAttributes) {
-            if (AttributeConvention.isGeometryAttribute(property)) {
+        for (final IdentifiedType property : geometryAttributes) {
+            final Optional<AttributeType<?>> at = Features.toAttribute(property);
+            if (at.isPresent() && Geometries.isKnownType(at.get().getValueClass())) {
                 final GenericName name = property.getName();
                 final String attributeName = (property instanceof LinkOperation)
                                              ? ((LinkOperation) property).referentName : name.toString();
@@ -148,18 +149,14 @@ final class EnvelopeOperation extends AbstractOperation {
                     defaultGeometry = attributeName;
                 }
                 CoordinateReferenceSystem attributeCRS = null;
-                while (property instanceof Operation) {
-                    property = ((Operation) property).getResult();
-                }
                 /*
-                 * At this point 'property' is an attribute, otherwise isGeometryAttribute(property) would have
-                 * returned false. Set 'characterizedByCRS' to true if we find at least one attribute which may
-                 * have the "CRS" characteristic. Note that we can not rely on 'attributeCRS' being non-null
+                 * Set `characterizedByCRS` to true if we find at least one attribute which may have the
+                 * "CRS" characteristic. Note that we can not rely on `attributeCRS` being non-null
                  * because an attribute may be characterized by a CRS without providing default CRS.
                  */
-                final AttributeType<?> at = ((AttributeType<?>) property).characteristics().get(characteristicName);
-                if (at != null && CoordinateReferenceSystem.class.isAssignableFrom(at.getValueClass())) {
-                    attributeCRS = (CoordinateReferenceSystem) at.getDefaultValue();              // May still null.
+                final AttributeType<?> ct = at.get().characteristics().get(characteristicName);
+                if (ct != null && CoordinateReferenceSystem.class.isAssignableFrom(ct.getValueClass())) {
+                    attributeCRS = (CoordinateReferenceSystem) ct.getDefaultValue();              // May still null.
                     if (crs == null && isDefault) {
                         crs = attributeCRS;
                     }
