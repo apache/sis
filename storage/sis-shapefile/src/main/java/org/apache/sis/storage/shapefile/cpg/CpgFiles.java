@@ -56,7 +56,7 @@ public final class CpgFiles extends Static {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(Channels.newInputStream(in), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if ((line = line.trim()).isEmpty()) {
+                if (!(line = line.trim()).isEmpty()) {
                     return Charset.forName(line);
                 }
             }
@@ -67,7 +67,7 @@ public final class CpgFiles extends Static {
     /**
      * Writes the character set to given file.
      *
-     * @param  cs    charset to write.
+     * @param  cs    character set to write.
      * @param  file  output file.
      * @throws IOException if an error occurred while writing the file.
      */
