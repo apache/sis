@@ -15,15 +15,12 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
 License for the specific language governing permissions and limitations under
 the License.
 -->
+
 <Context path="/sis" docBase="/path/to/sis-webapp-x.y.war">
+
+    <!-- TODO: this file is only a template. Need to be edited. -->
 
     <Parameter name="org.apache.sis.services.config.filePath"
         value="/path/to/sis-location-config.xml" override="false"/>
-
-    <Parameter name="org.apache.sis.services.config.qIndexPath"
-        value="/path/to/qtree/index/dir" override="false"/>
-
-    <Parameter name="org.apache.sis.services.config.geodataPath"
-        value="/path/to/georss/xml/files/dir" override="false"/>
 
 </Context>
