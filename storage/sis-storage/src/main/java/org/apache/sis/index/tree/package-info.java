@@ -16,9 +16,12 @@
  */
 
 /**
- * A simple quadtree implementation.
+ * A simple QuadTree implementation.
  *
- * <div class="warning"><b>Note on future work:</b> this package may change in incompatible way
- * in a future Apache SIS release, or may be replaced by new API.</div>
+ * @author  Chris Mattmann
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
+ * @since   1.1
+ * @module
  */
 package org.apache.sis.index.tree;

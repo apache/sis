@@ -25,11 +25,13 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-storage} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.index.tree.QuadTreeNodeTest.class,
+    org.apache.sis.index.tree.QuadTreeTest.class,
     org.apache.sis.internal.storage.CodeTypeTest.class,
     org.apache.sis.internal.storage.io.IOUtilitiesTest.class,
     org.apache.sis.internal.storage.io.ChannelDataInputTest.class,

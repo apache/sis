@@ -16,16 +16,27 @@
  */
 package org.apache.sis.index.tree;
 
-import junit.framework.TestCase;
 
-public class TestQuadTreeNode extends TestCase{
-
-	/**
-	 * @since SIS-39
-	 */
-	public void testCapacityGreaterThanZero(){
-		QuadTreeNode node = new QuadTreeNode(-1, -5);
-		assertNotNull(node);
-		assertTrue(node.getCapacity() > 0);
-	}
+/**
+ * Base class of <var>k</var>-dimensional tree index. For <var>k</var>=2, this is a {@link QuadTree}.
+ * For <var>k</var>=3, this is an {@code Octree}. Higher dimensions are also accepted.
+ *
+ * <h2>Thread-safety</h2>
+ * This class is not thread-safe when the tree content is modified. But if the tree is kept unmodified
+ * after construction, then multiple read operations in concurrent threads are safe.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
+ *
+ * @param  <E>  the type of elements stored in this tree.
+ *
+ * @since 1.1
+ * @module
+ */
+abstract class KDTree<E> {
+    /**
+     * Creates an initially empty tree.
+     */
+    KDTree() {
+    }
 }
