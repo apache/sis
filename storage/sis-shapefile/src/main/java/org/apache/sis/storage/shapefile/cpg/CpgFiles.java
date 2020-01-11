@@ -53,7 +53,7 @@ public final class CpgFiles extends Static {
      * @throws IOException if the file does not exist or cannot be read.
      */
     public static Charset read(final ReadableByteChannel in) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Channels.newInputStream(in), StandardCharsets.UTF_8))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Channels.newInputStream(in), StandardCharsets.US_ASCII))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!(line = line.trim()).isEmpty()) {
@@ -72,7 +72,7 @@ public final class CpgFiles extends Static {
      * @throws IOException if an error occurred while writing the file.
      */
     public static void write(final Charset cs, final Path file) throws IOException {
-        try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(file, StandardCharsets.US_ASCII)) {
             writer.write(cs.name());
         }
     }

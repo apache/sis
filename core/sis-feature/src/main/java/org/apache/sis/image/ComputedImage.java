@@ -34,6 +34,7 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.coverage.grid.GridExtent;     // For javadoc
 import org.apache.sis.internal.feature.Resources;
 
@@ -365,7 +366,7 @@ public abstract class ComputedImage extends PlanarImage {
                         tile = computeTile(tileX, tileY, previous);
                     } catch (Exception e) {
                         tile = null;
-                        error = e;
+                        error = Exceptions.unwrap(e);
                     }
                     if (marked) {
                         reference.endWrite(key, error == null);
