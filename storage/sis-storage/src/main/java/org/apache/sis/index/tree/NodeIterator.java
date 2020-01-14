@@ -18,17 +18,17 @@ package org.apache.sis.index.tree;
 
 import java.util.Spliterator;
 import java.util.function.Consumer;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.function.Function;
+import org.opengis.geometry.Envelope;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
  * An iterator over the elements contained in a {@link KDTreeNode}.
  * The iterator applies a first filtering of elements by traversing only the nodes that <em>may</em>
  * intersect the Area Of Interest (AOI). But after a node has been retained, an additional check for
- * inclusion may be necessary. That additional check is performed by {@link #filter(Point2D)}
- * and can be overridden by subclasses.
+ * inclusion may be necessary. That additional check is performed by {@link #filter(double[])} and
+ * can be overridden by subclasses.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -40,26 +40,40 @@ import java.util.function.Function;
  */
 class NodeIterator<E> implements Spliterator<E> {
     /**
+     * The maximum number of dimensions that this class can support.
+     * This value is determined by the maximal capacity of {@link Cursor#quadrants}:
+     * 2<sup>{@value #MAX_DIMENSION}</sup> ≤ {@value Long#SIZE}.
+     */
+    static final int MAX_DIMENSION = 6;
+
+    /**
      * Sentinel value meaning that iteration is over.
      */
     private static final Object[] FINISHED = new Object[0];
 
     /**
-     * The function computing a position for an arbitrary element of this tree.
+     * The function computing a position for an arbitrary element of the tree.
      */
-    private final Function<? super E, ? extends Point2D> evaluator;
+    private final Function<? super E, double[]> evaluator;
 
     /**
-     * The region on which to iterate.
+     * A mask with a bit set for all quadrants. This is used as the initial value of
+     * {@link Cursor#quadrants} before to clear to bits of quadrants to not search.
      */
-    private final double xmin, ymin, xmax, ymax;
+    private final long bitmask;
+
+    /**
+     * The region on which to iterate. The first half are minimal coordinates
+     * and the second half are maximal coordinates.
+     */
+    private final double[] bounds;
 
     /**
      * The object to use for updating the {@link #current} field, or {@code null} if none.
      * This {@code NodeIterator} starts by returning elements in the {@link #current} array.
      * When iteration over {@link #current} array is finished, {@code NodeIterator} uses the
      * {@link Cursor} for changing the array reference to the next array. The iteration then
-     * continues until all leaf nodes intersecting the area of interest (AOI) have been traversed.
+     * continues until all leaf nodes intersecting the search region have been traversed.
      */
     private Cursor<E> cursor;
 
@@ -82,23 +96,27 @@ class NodeIterator<E> implements Spliterator<E> {
     private Cursor<E> recycle;
 
     /**
-     * Creates a new iterator for the specified bounding box.
+     * Creates a new iterator for the specified search region.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    NodeIterator(final QuadTree<E> tree, final Rectangle2D region) {
+    NodeIterator(final KDTree<E> tree, final Envelope searchRegion) {
+        final int n = searchRegion.getDimension();
+        bitmask = Numerics.bitmask(1 << n) - 1;
+        bounds  = new double[n*2];
+        for (int i = n; --i >= 0;) {
+            bounds[i]   = searchRegion.getMinimum(i);
+            bounds[i+n] = searchRegion.getMaximum(i);
+        }
         evaluator = tree.evaluator;
-        xmin   = region.getMinX();
-        ymin   = region.getMinY();
-        xmax   = region.getMaxX();
-        ymax   = region.getMaxY();
-        cursor = new Cursor<>(tree);
+        cursor = new Cursor<>(tree.treeRegion);
+        cursor.node = tree.root;
         cursor.findIntersections(this);
         current = next();
     }
 
     /**
      * A provider for arrays of elements of child nodes contained in a {@link KDTreeNode}.
-     * The starting point is {@link QuadTree#root}. A new {@link Cursor} instance is created
+     * The starting point is {@link KDTree#root}. A new {@link Cursor} instance is created
      * for each level when the node at next level is itself a parent of at least two nodes
      * (if there is only one child node, then this implementation takes a shortcut).
      */
@@ -118,7 +136,7 @@ class NodeIterator<E> implements Spliterator<E> {
          * The node for which to iterate over elements. Only the quadrants/octants identified
          * by the {@link #quadrants} bitmask will be traversed.
          */
-        QuadTreeNode node;
+        KDTreeNode node;
 
         /**
          * Bitmask of quadrants/octants on which to iterate. Quadrants/octants are iterated from rightmost
@@ -127,36 +145,28 @@ class NodeIterator<E> implements Spliterator<E> {
          *
          * <p><b>Note:</b> we take "quadrant" name from {@link QuadTree}, but this algorithm can actually
          * be used with more dimensions.</p>
+         *
+         * @see #MAX_DIMENSION
          */
-        int quadrants;
+        long quadrants;
 
         /**
-         * (<var>x</var>,<var>y</var>) coordinate in the center of {@link #node} node,
-         * and (<var>Δx</var>,<var>Δy</var>) size of the {@link #node} node.
+         * (<var>x</var>,<var>y</var>,…) coordinates in the center of {@link #node} node,
+         * followed by (<var>Δx</var>,<var>Δy</var>,…) sizes of the {@link #node} node.
          */
-        private double cx, cy, dx, dy;
+        private final double[] region;
 
         /**
-         * Creates a new cursor with all values initialized to zero.
-         * It is caller responsibility to initialize all fields.
+         * Creates a new cursor. It is caller responsibility to initialize the {@link #node} field, the
+         * {@link #parent} field if a parent exists, and to invoke {@link #findIntersections(NodeIterator)}.
          */
-        private Cursor() {
-        }
-
-        /**
-         * Creates a new cursor initialized to the root node of the given tree.
-         */
-        Cursor(final QuadTree<E> tree) {
-            node = tree.root;
-            cx   = tree.centerX;
-            cy   = tree.centerY;
-            dx   = tree.width;
-            dy   = tree.height;
+        Cursor(final double[] region) {
+            this.region = region.clone();       // Must be cloned because this class may modify those values.
         }
 
         /**
          * Computes a bitmask of all quadrants/octants that intersect the search area. This method
-         * must be invoked after {@link #cx}, {@link #cy}, {@link #dx}, {@link #dy} fields changed.
+         * must be invoked after {@link #region} values changed.
          *
          * @todo the computation performed in this method is not necessary when the caller knows that
          *       the node is fully included in the AOI. We should carry a flag for this common case.
@@ -164,12 +174,51 @@ class NodeIterator<E> implements Spliterator<E> {
          * @param  it  the iterator which defines the area of interest.
          */
         final void findIntersections(final NodeIterator<E> it) {
-            quadrants = (1 << 4) - 1;                                                               // Bits initially set for all quadrants.
-            if (!(it.xmin <= cx)) quadrants &= ~((1 << QuadTreeNode.NW) | (1 << QuadTreeNode.SW));  // Clear bits of all quadrant on West side.
-            if (!(it.xmax >= cx)) quadrants &= ~((1 << QuadTreeNode.NE) | (1 << QuadTreeNode.SE));  // Clear bits of all quadrant on East side.
-            if (!(it.ymin <= cy)) quadrants &= ~((1 << QuadTreeNode.SE) | (1 << QuadTreeNode.SW));  // Clear bits of all quadrant on South side.
-            if (!(it.ymax >= cy)) quadrants &= ~((1 << QuadTreeNode.NE) | (1 << QuadTreeNode.NW));  // Clear bits of all quadrant on North side.
+            final double[] bounds = it.bounds;
+            quadrants = it.bitmask;                                 // Bits initially set for all quadrants.
+            final int n = bounds.length >>> 1;
+            for (int i = n; --i >= 0;) {
+                final double c = region[i];
+                /*
+                 * Example: given xmin and xmax the bounds of the search region in dimension of x,
+                 * and cx the x coordinate of the center of current node, then:
+                 *
+                 *   if !(xmin <= cx) then we want to clear the bits of all quadrants on West side.
+                 *   if !(xmax >= cx) then we want to clear the bits of all quadrants on East side.
+                 *
+                 * Quadrants on the East side are all quadrants with a number where bit 0 is unset.
+                 * Those quadrants are 0, 2, 4, 6, etc. Conversely quadrants on the West side have
+                 * bit 0 set. They are 1, 3, 5, 7, etc.
+                 *
+                 * Applying the same rational on y:
+                 *
+                 *   if !(ymin <= cy) then we want to clear bits of all quadrants on South side.
+                 *   if !(ymax >= cy) then we want to clear bits of all quadrants on North side.
+                 *
+                 * Quadrants on the North side have bit 1 unset:
+                 */
+                if (!(bounds[i]   <= c)) quadrants &=  CLEAR_MASKS[i];      // Use '!' for catching NaN.
+                if (!(bounds[i+n] >= c)) quadrants &= ~CLEAR_MASKS[i];
+            }
         }
+
+        /**
+         * Masks for clearing the bits of all quadrants that do not intersect the search region on the left side.
+         * For example for <var>x</var> dimension, this is the mask to apply if the {@code xmin <= cx} condition
+         * is false. In this example {@code CLEAR_MASKS[0]} clears the bits of all quadrants on the West side,
+         * which are quadrants 1, 3, 5, <i>etc.</i>
+         *
+         * <p>The index in this array is the dimension in which the quadrant do not intersect the search region.
+         * The length of this array should be equal to {@link #MAX_DIMENSION}.</p>
+         */
+        private static final long[] CLEAR_MASKS = {
+            0b0101010101010101010101010101010101010101010101010101010101010101L,
+            0b0011001100110011001100110011001100110011001100110011001100110011L,
+            0b0000111100001111000011110000111100001111000011110000111100001111L,
+            0b0000000011111111000000001111111100000000111111110000000011111111L,
+            0b0000000000000000111111111111111100000000000000001111111111111111L,
+            0b0000000000000000000000000000000011111111111111111111111111111111L
+        };
 
         /**
          * Creates a new {@code Cursor} for getting element arrays in the {@linkplain #node} quadrant/octant,
@@ -187,13 +236,13 @@ class NodeIterator<E> implements Spliterator<E> {
         final Cursor<E> push(final NodeIterator<E> it, final int q) {
             Cursor<E> c = it.recycle;
             if (c == null) {
-                c = new Cursor<>();
+                c = new Cursor<>(region);
             } else {
                 it.recycle = c.parent;
+                System.arraycopy(region, 0, c.region, 0, region.length);
             }
+            KDTreeNode.enterQuadrant(c.region, q);
             c.parent = this;
-            c.cx = cx + QuadTreeNode.factorX(q) * (c.dx = dx * 0.5);      // TODO: use Math.fma with JDK9.
-            c.cy = cy + QuadTreeNode.factorY(q) * (c.dy = dy * 0.5);
             return c;
         }
 
@@ -208,8 +257,7 @@ class NodeIterator<E> implements Spliterator<E> {
          * @param  q  the quadrant/octant in which to iterate.
          */
         final void moveDown(final int q) {
-            cx += QuadTreeNode.factorX(q) * (dx *= 0.5);        // Center and size of the child node.
-            cy += QuadTreeNode.factorY(q) * (dy *= 0.5);
+            KDTreeNode.enterQuadrant(region, q);
         }
 
         /**
@@ -227,18 +275,19 @@ class NodeIterator<E> implements Spliterator<E> {
     }
 
     /**
-     * Returns an array of elements that <em>may</em> intersect the area of interest,
+     * Returns an array of elements that <em>may</em> intersect the search region,
      * or {@link #FINISHED} if the iteration is finished. This method does not verify
-     * if the points are really in the AOI; callers may need to filter the returned array.
+     * if the points are really in the search region; callers may need to filter the
+     * returned array.
      *
-     * @return array of elements that may be in the area of interest (AOI),
+     * @return array of elements that may be in the search region,
      *         or {@link #FINISHED} if the iteration is finished.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private Object[] next() {
         while (cursor != null) {
             while (cursor.quadrants != 0) {
-                final int q = Integer.numberOfTrailingZeros(cursor.quadrants);
+                final int q = Long.numberOfTrailingZeros(cursor.quadrants);
                 cursor.quadrants &= ~(1 << q);
                 final Object child = cursor.node.getChild(q);
                 if (child != null) {
@@ -307,13 +356,15 @@ class NodeIterator<E> implements Spliterator<E> {
      * @param  position  the position to check for inclusion.
      * @return whether the position is in the search region.
      */
-    protected boolean filter(final Point2D position) {
-        final double x = position.getX();
-        if (x >= xmin && x <= xmax) {
-            final double y = position.getY();
-            return (y >= ymin && y <= ymax);
+    protected boolean filter(final double[] position) {
+        final int n = bounds.length >>> 1;
+        for (int i = n; --i >= 0;) {
+            final double p = position[i];
+            if (!(p >= bounds[i] && p <= bounds[i+n])) {            // Use '!' for catching NaN.
+                return false;
+            }
         }
-        return false;
+        return true;
     }
 
     /**

@@ -30,7 +30,7 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.index.tree.QuadTreeNodeTest.class,
+    org.apache.sis.index.tree.NodeIteratorTest.class,
     org.apache.sis.index.tree.QuadTreeTest.class,
     org.apache.sis.internal.storage.CodeTypeTest.class,
     org.apache.sis.internal.storage.io.IOUtilitiesTest.class,

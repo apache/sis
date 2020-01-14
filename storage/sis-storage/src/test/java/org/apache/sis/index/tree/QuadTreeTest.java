@@ -21,10 +21,9 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Random;
-import java.util.function.Function;
-import java.awt.Rectangle;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import org.opengis.geometry.Envelope;
+import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
@@ -41,7 +40,7 @@ import static org.junit.Assert.*;
  * @since   1.1
  * @module
  */
-@DependsOn(QuadTreeNodeTest.class)
+@DependsOn(NodeIteratorTest.class)
 public final strictfp class QuadTreeTest extends TestCase {
     /**
      * Bounds of the region where to create points. Intentionally use asymmetric bounds
@@ -66,13 +65,11 @@ public final strictfp class QuadTreeTest extends TestCase {
 
     /**
      * The elements to be added in the {@link QuadTree} to test.
-     * This element extends {@link Point2D} for convenience, but this is not a requirement.
+     * This element extends {@link DirectPosition2D} for convenience, but this is not a requirement.
      * The point is unmodifiable; attempt to modify a coordinate will cause the test to fail.
      */
-    private static final class Element extends Point2D {
-        /** The coordinate values. */
-        private final int x, y;
-
+    @SuppressWarnings("serial")
+    private static final class Element extends DirectPosition2D {
         /** Creates a new element with random coordinates. */
         Element(final Random random) {
             x = random.nextInt(XMAX - XMIN) + XMIN;
@@ -84,10 +81,10 @@ public final strictfp class QuadTreeTest extends TestCase {
         @Override public String toString() {return "P(" + x + ", " + y + ')';}
 
         @Override public void setLocation(double x, double y) {
-            fail("Location shoulf not be modified.");
+            fail("Location should not be modified.");
         }
 
-        @Override public Object clone() {
+        @Override public DirectPosition2D clone() {
             fail("Location should not be cloned.");
             return super.clone();
         }
@@ -97,8 +94,13 @@ public final strictfp class QuadTreeTest extends TestCase {
      * Creates a tree filled with random values.
      */
     private void createTree() {
+        final Envelope2D region = new Envelope2D();
+        region.x      = XMIN;
+        region.y      = YMIN;
+        region.width  = XMAX - XMIN;
+        region.height = YMAX - YMIN;
         random = TestUtilities.createRandomNumberGenerator();
-        tree = new QuadTree<>(new Rectangle(XMIN, YMIN, XMAX - XMIN, YMAX - YMIN), Function.identity(), 5);
+        tree = new QuadTree<>(region, Element::getCoordinate, 5);
         int count = random.nextInt(100) + 200;
         data = new ArrayList<>(count);
         while (--count >= 0) {
@@ -109,7 +111,7 @@ public final strictfp class QuadTreeTest extends TestCase {
     }
 
     /**
-     * Tests {@link QuadTree#queryByBoundingBox(Rectangle2D)} with random coordinates.
+     * Tests {@link QuadTree#queryByBoundingBox(Envelope)} with random coordinates.
      * This method performs some searches in random regions and compare the results
      * against searches performed by raw force.
      */
@@ -117,7 +119,7 @@ public final strictfp class QuadTreeTest extends TestCase {
     public void testQueryByBoundingBox() {
         createTree();
         final Set<Element> expected = new HashSet<>();
-        final Rectangle2D.Double region = new Rectangle2D.Double();
+        final Envelope2D region = new Envelope2D();
         for (int i=0; i<20; i++) {
             final int xmin = random.nextInt(XMAX - XMIN) + XMIN;
             final int ymin = random.nextInt(YMAX - YMIN) + YMIN;

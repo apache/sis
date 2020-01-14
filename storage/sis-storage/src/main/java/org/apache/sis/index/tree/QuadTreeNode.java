@@ -40,60 +40,9 @@ final class QuadTreeNode extends KDTreeNode {
      * </ul>
      *
      * This pattern is generalizable to <var>n</var> dimensions (by contrast, the use of a {@code Quadrant}
-     * enumeration is not generalizable). Current implementation uses only 2 dimensions, but a future version
-     * may generalize.
+     * enumeration is not generalizable).
      */
     static final int NE = 0, NW = 1, SE = 2, SW = 3;
-
-    /**
-     * The mask to apply on quadrant values for getting the sign of <var>x</var> and <var>y</var>
-     * values relative to the center of a node.
-     *
-     * Also used as bit position + 1 (this is possible only for mask values 1 and 2).
-     * If we generalize to 3 or more dimensions, we will need to differentiate those
-     * "bit positions" from "mask values".
-     */
-    private static final int X_MASK = 1, Y_MASK = 2;
-
-    /**
-     * Returns the quadrant relative to the given point.
-     *
-     * @param  x   data <var>x</var> coordinate.
-     * @param  y   data <var>y</var> coordinate.
-     * @param  cx  center of current node along <var>x</var> axis.
-     * @param  cy  center of current node along <var>y</var> axis.
-     * @return one of {@link #NE}, {@link #NW}, {@link #SE} or {@link #SW} constants.
-     */
-    static int quadrant(final double x, final double y, final double cx, final double cy) {
-        int q = 0;
-        if (x < cx) q  = X_MASK;
-        if (y < cy) q |= Y_MASK;
-        // Same for z and all other dimensions.
-        return q;
-    }
-
-    /**
-     * Returns 0.5 if the given quadrant is in the East side, or -0.5 if in the West side.
-     */
-    static double factorX(final int quadrant) {
-        /*
-         * The 3FE0000000000000 long value is the bit pattern of 0.5. The leftmost bit at (Long.SIZE - 1)
-         * is the sign, which we set to the sign encoded in the quadrant value. This approach allow us to
-         * get the value efficiently, without jump instructions.
-         */
-        return Double.longBitsToDouble(0x3FE0000000000000L | (((long) quadrant) << (Long.SIZE - X_MASK)));
-    }
-
-    /**
-     * Returns 0.5 if the given quadrant is in the North side, or -0.5 if in the South side.
-     */
-    static double factorY(final int quadrant) {
-        /*
-         * Same approach than for factorY, except that we need to clear the bits on the right side of
-         * the Y mask (it was not necessary for X because they were no bit on the right side of X mask).
-         */
-        return Double.longBitsToDouble(0x3FE0000000000000L | (((long) (quadrant & Y_MASK)) << (Long.SIZE - Y_MASK)));
-    }
 
     /**
      * The child nodes in 4 quadrants of equal size.
@@ -108,19 +57,28 @@ final class QuadTreeNode extends KDTreeNode {
     }
 
     /**
+     * Creates a new instance of the same class than this node.
+     */
+    @Override
+    final KDTreeNode newInstance() {
+        return new QuadTreeNode();
+    }
+
+    /**
      * Returns the child of this node that resides in the specified quadrant.
      *
-     * @param  q  quadrant of child to get.
+     * @param  quadrant  quadrant of child to get.
      * @return child in the specified quadrant.
      */
-    final Object getChild(final int q) {
+    @Override
+    final Object getChild(final int quadrant) {
         final Object child;
-        switch (q) {
+        switch (quadrant) {
             case NW: child = nw; break;
             case NE: child = ne; break;
             case SW: child = sw; break;
             case SE: child = se; break;
-            default: throw new AssertionError(q);
+            default: throw new IndexOutOfBoundsException(/*quadrant*/);     // TODO: uncomment with JDK9.
         }
         return child;
     }
@@ -128,16 +86,17 @@ final class QuadTreeNode extends KDTreeNode {
     /**
      * Sets the node's quadrant to the specified child.
      *
-     * @param q      quadrant where the child resides.
-     * @param child  child of this node in the specified quadrant.
+     * @param quadrant  quadrant where the child resides.
+     * @param child     child of this node in the specified quadrant.
      */
-    final void setChild(final int q, final Object child) {
-        switch (q) {
+    @Override
+    final void setChild(final int quadrant, final Object child) {
+        switch (quadrant) {
             case NW: nw = child; break;
             case NE: ne = child; break;
             case SW: sw = child; break;
             case SE: se = child; break;
-            default: throw new AssertionError(q);
+            default: throw new IndexOutOfBoundsException(/*quadrant*/);     // TODO: uncomment with JDK9.
         }
     }
 }

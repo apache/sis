@@ -53,22 +53,107 @@ abstract class KDTreeNode {
     }
 
     /**
+     * Returns the quadrant/octant relative to the given point.
+     * Each bit specifies the relative position for a dimension.
+     * For (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) coordinates, the pattern is:
+     *
+     * <ul>
+     *   <li>Bit 0 is the relative position of <var>x</var> coordinate: 0 for East   and 1 for West.</li>
+     *   <li>Bit 1 is the relative position of <var>y</var> coordinate: 0 for North  and 1 for South.</li>
+     *   <li>Bit 2 is the relative position of <var>z</var> coordinate: 0 for up     and 1 for down.</li>
+     *   <li>Bit 3 is the relative position of <var>t</var> coordinate: 0 for future and 1 for past.</li>
+     *   <li><i>etc.</i> for any additional dimensions.</li>
+     * </ul>
+     *
+     * @param  point   data (<var>x</var>, <var>y</var>, …) coordinate.
+     * @param  region  region of current node, as the center in first half and size in second half.
+     * @return an identification of the quadrant where the given point is located.
+     */
+    static int quadrant(final double[] point, final double[] region) {
+        int q = 0;
+        for (int i = region.length >>> 1; --i >= 0;) {          // Iterate only over center coordinates.
+            if (point[i] < region[i]) {
+                q |= (1 << i);
+            }
+        }
+        return q;
+    }
+
+    /**
+     * Modifies in place the specified for describing the coordinates of the specified quadrant.
+     *
+     * @param  region    region of current node, as the center in first half and size in second half.
+     * @param  quadrant  the quadrant as computed by {@link #quadrant(double[], double[])}.
+     */
+    static void enterQuadrant(final double[] region, final int quadrant) {
+        final int n = region.length >>> 1;
+        for (int i = n; --i >= 0;) {
+            region[i] += factor(quadrant, i) * (region[i+n] *= 0.5);    // TODO: use Math.fma with JDK9.
+        }
+    }
+
+    /**
+     * Returns 0.5 if the given quadrant is in the East/North/Up/Future side,
+     * or -0.5 if in the West/South/Down/Past side.
+     *
+     * @param  quadrant   the quadrant as computed by {@link #quadrant(double[], double[])}.
+     * @param  dimension  the dimension index: 0 for <var>x</var>, 1 for <var>y</var>, <i>etc.</i>
+     */
+    static double factor(final int quadrant, final int dimension) {
+        /*
+         * The 3FE0000000000000 long value is the bit pattern of 0.5. The leftmost bit at (Long.SIZE - 1)
+         * is the sign, which we set to the sign encoded in the quadrant value. This approach allow us to
+         * get the value efficiently, without jump instructions.
+         */
+        return Double.longBitsToDouble(0x3FE0000000000000L |
+                (((long) (quadrant & (1 << dimension))) << (Long.SIZE - 1 - dimension)));
+    }
+
+    /**
+     * Returns the child of this node that resides in the specified quadrant/octant.
+     * The return value can be null or an instance of one of those two classes:
+     *
+     * <ul>
+     *   <li>Another {@link KDTreeNode} if the node in a quadrant/octant is itself a parent of other children.</li>
+     *   <li>{@code Object[]} if the node in a quadrant/octant is a leaf. In such case, the array contains elements.
+     *       We do not wrap the leaf in another {@link KDTreeNode} for reducing the number of objects created.</li>
+     * </ul>
+     *
+     * Any other kind of object is an error.
+     *
+     * @param  quadrant  quadrant/octant of child to get.
+     * @return child in the specified quadrant/octant.
+     * @throws IndexOutOfBoundsException if the specified quadrant/octant is out of bounds.
+     */
+    abstract Object getChild(int quadrant);
+
+    /**
+     * Sets the node's quadrant/octant to the specified child.
+     * The {@code child} value must be one of the types documented in {@link #getChild(int)}.
+     *
+     * @param quadrant  quadrant/octant where the child resides.
+     * @param child     child of this node in the specified quadrant/octant.
+     * @throws IndexOutOfBoundsException if the specified quadrant/octant is out of bounds.
+     */
+    abstract void setChild(int quadrant, Object child);
+
+    /**
+     * Creates a new instance of the same class than this node.
+     */
+    abstract KDTreeNode newInstance();
+
+    /**
      * Default implementation of {@link KDTreeNode} when no specialized class is available.
      * This default implementation stores children in an array. The usage of arrays allows
      * arbitrary lengths, but implies one more object to be created for each node instance.
      * Since this class should be used only for relatively large numbers of dimensions,
      * the cost of arrays creation should be less significant compared to array length.
      */
-    private static final class Default extends KDTreeNode {
+    static final class Default extends KDTreeNode {
         /**
          * The nodes or element values in each quadrant/octant of this node.
-         * Each array element can be null or an instance of one of those two classes:
-         *
-         * <ul>
-         *   <li>Another {@link KDTreeNode} if the node in a quadrant/octant is itself a parent of other children.</li>
-         *   <li>{@code Object[]} if the node in a quadrant/octant is a leaf. In such case, the array contains elements.
-         *       We do not wrap the leaf in another {@link KDTreeNode} for reducing the number of objects created.</li>
-         * </ul>
+         * Each array element can be null or an instance of one of the classes
+         * documented in {@link KDTreeNode#getChild(int)}.
          */
         private final Object[] children;
 
@@ -79,6 +164,36 @@ abstract class KDTreeNode {
          */
         Default(final int n) {
             children = new Object[n];
+        }
+
+        /**
+         * Creates a new instance of the same class than this node.
+         */
+        @Override
+        final KDTreeNode newInstance() {
+            return new Default(children.length);
+        }
+
+        /**
+         * Returns the child of this node that resides in the specified quadrant/octant.
+         *
+         * @param  quadrant  quadrant/octant of child to get.
+         * @return child in the specified quadrant/octant.
+         */
+        @Override
+        final Object getChild(final int quadrant) {
+            return children[quadrant];
+        }
+
+        /**
+         * Sets the node's quadrant/octant to the specified child.
+         *
+         * @param quadrant   quadrant/octant where the child resides.
+         * @param child      child of this node in the specified quadrant/octant.
+         */
+        @Override
+        final void setChild(final int quadrant, final Object child) {
+            children[quadrant] = child;
         }
     }
 }
