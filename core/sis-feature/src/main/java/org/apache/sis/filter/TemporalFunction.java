@@ -27,7 +27,6 @@ import org.opengis.temporal.Period;
 import org.apache.sis.math.Fraction;
 
 
-
 /**
  * Temporal operations between a period and an instant.
  * The nature of the operation depends on the subclass.
@@ -221,7 +220,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        @Override public    String getName() {return NAME;}
         @Override protected char   symbol()  {return '=';}
 
         /** Condition defined by ISO 19108:2002 §5.2.3.5. */
@@ -266,7 +265,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        @Override public    String getName() {return NAME;}
         @Override protected char   symbol()  {return '<';}
 
         /** Condition defined by ISO 19108:2002 §5.2.3.5. */
@@ -309,7 +308,7 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        @Override public    String getName() {return NAME;}
         @Override protected char   symbol()  {return '>';}
 
         /** Condition defined by ISO 19108:2002 §5.2.3.5. */

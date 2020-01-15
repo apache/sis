@@ -61,6 +61,7 @@ public abstract class Node implements Serializable {
      * Creates an attribute type for values of the given type and name.
      * The attribute is mandatory, unbounded and has no default value.
      *
+     * @param  <T>   compile-time value of {@code type}.
      * @param  type  type of values in the attribute.
      * @param  name  name of the attribute to create.
      * @return an attribute of the given type and name.
@@ -151,6 +152,9 @@ public abstract class Node implements Serializable {
 
     /**
      * Returns {@code true} if the given object is an instance of the same class with the equal children.
+     *
+     * @param  other  the other object to compare with this node.
+     * @return whether the two object are equal.
      */
     @Override
     public boolean equals(final Object other) {
@@ -164,11 +168,13 @@ public abstract class Node implements Serializable {
      * Reports that an operation failed because of the given exception.
      * This method assumes that the warning occurred in an {@code evaluate(…)} method.
      *
+     * @param  e  the exception that occurred.
+     *
      * @todo Consider defining a {@code Context} class providing, among other information, listeners where to report warnings.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-460">SIS-460</a>
      */
-    public final void warning(final Exception e) {
+    protected final void warning(final Exception e) {
         Logging.recoverableException(Logging.getLogger(Loggers.FILTER), getClass(), "evaluate", e);
     }
 }

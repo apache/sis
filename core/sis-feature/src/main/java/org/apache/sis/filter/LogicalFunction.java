@@ -94,6 +94,8 @@ abstract class LogicalFunction extends Node {
 
     /**
      * The "And" operation (⋀).
+     *
+     * @see org.apache.sis.filter.ComparisonFunction.Between
      */
     static final class And extends LogicalFunction implements org.opengis.filter.And {
         /** For cross-version compatibility. */
@@ -105,7 +107,7 @@ abstract class LogicalFunction extends Node {
         }
 
         /** Returns a name for this filter. */
-        @Override public String getName() {return "And";}
+        @Override public    String getName() {return "And";}
         @Override protected char   symbol()  {return filters.length <= 2 ? '∧' : '⋀';}
 
         /** Implementation of the visitor pattern. */
@@ -138,7 +140,7 @@ abstract class LogicalFunction extends Node {
         }
 
         /** Returns a name for this filter. */
-        @Override public String getName() {return "Or";}
+        @Override public    String getName() {return "Or";}
         @Override protected char   symbol()  {return filters.length <= 2 ? '∨' : '⋁';}
 
         /** Implementation of the visitor pattern. */

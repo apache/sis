@@ -19,11 +19,11 @@ package org.apache.sis.filter;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
-import org.apache.sis.internal.filter.Node;
 import org.apache.sis.util.ArgumentChecks;
-import org.opengis.filter.Filter;
+import org.apache.sis.internal.filter.Node;
 
 // Branch-dependent imports
+import org.opengis.filter.Filter;
 import org.opengis.filter.FilterVisitor;
 import org.opengis.filter.expression.Expression;
 
@@ -113,7 +113,7 @@ abstract class UnaryFunction extends Node implements Serializable {
         }
 
         /** Identification of this operation. */
-        @Override public String getName() {return NAME;}
+        @Override public    String getName() {return NAME;}
         @Override protected char   symbol()  {return '∅';}
 
         /** Returns {@code true} if the given value evaluates to {@code null}. */
@@ -145,7 +145,7 @@ abstract class UnaryFunction extends Node implements Serializable {
         }
 
         /** Identification of this operation. */
-        @Override public String getName() {return "Not";}
+        @Override public    String getName() {return "Not";}
         @Override protected char   symbol()  {return '¬';}
 
         /** Returns the singleton filter used by this operation. */

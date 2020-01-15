@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
-
 import org.opengis.filter.*;
 import org.opengis.filter.capability.*;
 import org.opengis.filter.expression.Add;
@@ -63,8 +62,6 @@ import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.filter.sqlmm.SQLMM;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.collection.BackingStoreException;
-
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 
 
@@ -102,9 +99,9 @@ public class DefaultFilterFactory implements FilterFactory2 {
     }
 
     /**
-     * According to OGC Filter encoding v2.0, comparison operators should default to cas sensitive comparison. We'll
-     * use this constant to model it, so it will be easier to change default value is the standard evolves.
-     * Doc reference : OGC 09-026r1 and ISO 19143:2010(E), section 7.7.3.2
+     * According to OGC Filter encoding v2.0, comparison operators should default to case sensitive comparison.
+     * We use this constant to model it, so it will be easier to change default value if the standard evolves.
+     * Documentation reference: OGC 09-026r1 and ISO 19143:2010(E), section 7.7.3.2.
      */
     private static final boolean DEFAULT_MATCH_CASE = true;
 
@@ -142,26 +139,27 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc}
      */
     @Override
-    public BBOX bbox(final Expression e, final double minx, final double miny,
-            final double maxx, final double maxy, final String srs)
+    public BBOX bbox(final Expression e,
+                     final double minx, final double miny,
+                     final double maxx, final double maxy, final String srs)
     {
-        final CoordinateReferenceSystem crs = readCrs(srs);
-        final GeneralEnvelope env = new GeneralEnvelope(2);
-        env.setEnvelope(minx, miny, maxx, maxy);
-        if (crs != null) env.setCoordinateReferenceSystem(crs);
-        return bbox(e, new ImmutableEnvelope(env));
+        final CoordinateReferenceSystem crs = decodeCRS(srs);
+        return bbox(e, new ImmutableEnvelope(new double[] {minx, miny},
+                                             new double[] {maxx, maxy}, crs));
     }
 
     /**
-     * Try to decode a full {@link CoordinateReferenceSystem} from given text. First, we try to interpret it as a code,
-     * and if it fails, we try to read it as a WKT.
+     * Tries to decode a full {@link CoordinateReferenceSystem} from given text.
+     * First, we try to interpret it as a code, and if it fails, we try to read it as a WKT.
      *
-     * @param srs The text describing the system. If null or blank, a null value is returned.
-     * @return Possible null value if input text is empty.
-     * @throws BackingStoreException If an error occurs while decoding the text.
+     * @param  srs  the text describing the reference system. If null or blank, a null value is returned.
+     * @return possible null value if input text is empty or blank.
+     * @throws BackingStoreException if an error occurs while decoding the text.
      */
-    private static CoordinateReferenceSystem readCrs(String srs) {
-        if (srs == null || (srs = srs.trim()).isEmpty()) return null;
+    private static CoordinateReferenceSystem decodeCRS(String srs) {
+        if (srs == null || (srs = srs.trim()).isEmpty()) {
+            return null;
+        }
         try {
             return CRS.forCode(srs);
         } catch (NoSuchAuthorityCodeException e) {
@@ -515,7 +513,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyIsGreaterThan greater(final Expression expression1, final Expression expression2) {
-        return greater(expression1,expression2,DEFAULT_MATCH_CASE, MatchAction.ANY);
+        return greater(expression1, expression2, DEFAULT_MATCH_CASE, MatchAction.ANY);
     }
 
     /**
@@ -533,7 +531,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public PropertyIsGreaterThanOrEqualTo greaterOrEqual(final Expression expression1, final Expression expression2) {
-        return greaterOrEqual(expression1, expression2,DEFAULT_MATCH_CASE, MatchAction.ANY);
+        return greaterOrEqual(expression1, expression2, DEFAULT_MATCH_CASE, MatchAction.ANY);
     }
 
     /**
@@ -597,7 +595,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
     public PropertyIsLike like(final Expression expression, final String pattern,
             final String wildcard, final String singleChar, final String escape)
     {
-        return like(expression,pattern,wildcard,singleChar,escape,DEFAULT_MATCH_CASE);
+        return like(expression, pattern, wildcard, singleChar, escape, DEFAULT_MATCH_CASE);
     }
 
     /**
