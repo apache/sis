@@ -50,7 +50,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  *
  * The performances of this {@code PointTree} depends on two parameters: an estimated bounding box of the points
  * to be added in this tree and a maximal capacity of leaf nodes (not to be confused with a capacity of the tree).
- * More details are given in the {@linkplain #PointTree(Class, Envelope, Function, int) constructor}.
+ * More details are given in the {@linkplain #PointTree(Class, Envelope, Function, int, boolean) constructor}.
  *
  * <h2>Thread-safety</h2>
  * This class is not thread-safe when the tree content is modified. But if the tree is kept unmodified
@@ -59,8 +59,8 @@ import org.apache.sis.util.collection.CheckedContainer;
  * of iterations or stream consumptions).
  *
  * <h2>Serialization</h2>
- * This tree is serializable if all elements in the tree are also serializable. However the serialization
- * details is implementation specific and may change in any future Apache SIS version.
+ * This tree is serializable if the {@code locator} function and all elements in the tree are also serializable.
+ * However the serialization details is implementation specific and may change in any future Apache SIS version.
  *
  * <h2>Limitations</h2>
  * Current implementation does not yet support removal of elements.
@@ -147,6 +147,12 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
     final Function<? super E, double[]> locator;
 
     /**
+     * Whether the stream can be parallel by default.
+     * Should be true only if the {@link #locator} is thread safe.
+     */
+    private final boolean parallel;
+
+    /**
      * Creates an initially empty <var>k</var>-dimensional tree with the given capacity for each node.
      * The number of dimensions of the given envelope determines the number of dimensions of points in this tree.
      * The positions computed by {@code locator} must have the same number of dimensions than the given envelope.
@@ -165,9 +171,11 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
      * @param  bounds        bounds of the region of data to be inserted in the <var>k</var>-dimensional tree.
      * @param  locator       function computing a position for an arbitrary element of this tree.
      * @param  nodeCapacity  the capacity of each node (not to be confused with a capacity of the tree).
+     * @param  parallel      Whether the stream can be parallel by default.
+     *                       Should be true only if the given {@code locator} is thread safe.
      */
     public PointTree(final Class<E> elementType, final Envelope bounds,
-            final Function<? super E, double[]> locator, final int nodeCapacity)
+            final Function<? super E, double[]> locator, final int nodeCapacity, final boolean parallel)
     {
         ArgumentChecks.ensureNonNull         ("elementType",  elementType);
         ArgumentChecks.ensureNonNull         ("bounds",       bounds);
@@ -190,6 +198,7 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
         this.nodeCapacity = Math.max(4, nodeCapacity);      // Here, 4 is an arbitrary value.
         this.locator      = locator;
         this.root         = (n == 2) ? new QuadTreeNode() : new PointTreeNode.Default(n);
+        this.parallel     = parallel;
     }
 
     /**
@@ -401,9 +410,22 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
     }
 
     /**
-     * Returns all elements in the given bounding box.
-     * The given envelope shall be in the same CRS than the points in this tree
-     * (this is currently not verified).
+     * Returns a possibly parallel stream with this tree as its source.
+     * It is allowable for this method to return a sequential stream.
+     *
+     * @return a possibly parallel stream over the elements in this tree.
+     */
+    @Override
+    public Stream<E> parallelStream() {
+        return StreamSupport.stream(spliterator(), parallel);
+    }
+
+    /**
+     * Returns all elements in the given bounding box. The given envelope shall be in the same CRS
+     * than the points in this tree (this is currently not verified). The returned stream may be
+     * parallel by default, depending on the argument given to the constructor.
+     * If the action to be applied on the stream can not be parallel,
+     * then user should invoke {@link Stream#sequential()} explicitly.
      *
      * @param  searchRegion  envelope representing the rectangular search region.
      * @return elements that are in the given search region (bounds inclusive).
@@ -411,8 +433,7 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
     public Stream<E> queryByBoundingBox(final Envelope searchRegion) {
         ArgumentChecks.ensureNonNull("searchRegion", searchRegion);
         ArgumentChecks.ensureDimensionMatches("searchRegion", getDimension(), searchRegion);
-        return StreamSupport.stream(new NodeIterator<>(this, searchRegion), false);
-        // TODO: make parallel by default after we tested most extensively.
+        return StreamSupport.stream(new NodeIterator<>(this, searchRegion), parallel);
     }
 
     /*

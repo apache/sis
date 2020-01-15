@@ -16,9 +16,12 @@
  */
 package org.apache.sis.index.tree;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Random;
+import java.util.Spliterator;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -100,7 +103,7 @@ public final strictfp class PointTreeTest extends TestCase {
         region.width  = XMAX - XMIN;
         region.height = YMAX - YMIN;
         random = TestUtilities.createRandomNumberGenerator();
-        tree = new PointTree<>(Element.class, region, Element::getCoordinate, 5);
+        tree = new PointTree<>(Element.class, region, Element::getCoordinate, 5, false);
         int count = random.nextInt(100) + 200;
         data = new HashSet<>(Containers.hashMapCapacity(count));
         while (--count >= 0) {
@@ -144,5 +147,31 @@ public final strictfp class PointTreeTest extends TestCase {
                         expected, xmin, xmax, ymin, ymax));
             }
         }
+    }
+
+    /**
+     * Tests {@link PointTree#spliterator()}.
+     */
+    @Test
+    public void testSpliterator() {
+        createTree();
+        final List<Spliterator<Element>> iterators = new ArrayList<>(2);
+        iterators.add(tree.spliterator());
+        for (int i=0; i<4; i++) {
+            Spliterator<Element> it = iterators.get(iterators.size() - 1);
+            it = it.trySplit();
+            if (it != null) {
+                iterators.add(it);
+            }
+        }
+        final List<Element> results = new ArrayList<>(data.size());
+        while (!iterators.isEmpty()) {
+            final int i = random.nextInt(iterators.size());
+            final Spliterator<Element> it = iterators.get(i);
+            if (!it.tryAdvance(results::add)) {
+                iterators.remove(i);
+            }
+        }
+        assertSetEquals(data, results);
     }
 }

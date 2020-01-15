@@ -402,7 +402,7 @@ class NodeIterator<E> implements Spliterator<E> {
             if (half != 0) {
                 return new NodeIterator<>(this, half);
             }
-            // TODO: go down in the tree and explore other quadrants.
+            // TODO: go down in the tree and explore other nodes.
         }
         return null;
     }
