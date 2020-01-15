@@ -16,6 +16,9 @@
  */
 package org.apache.sis.index.tree;
 
+import java.util.Arrays;
+import java.io.Serializable;
+
 
 /**
  * A node in a {@link PointTree} which is the parent of other nodes. The number of child nodes depends
@@ -45,7 +48,12 @@ package org.apache.sis.index.tree;
  * @since   1.1
  * @module
  */
-abstract class PointTreeNode {
+abstract class PointTreeNode implements Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -5911043832415017844L;
+
     /**
      * Constructs an initially empty {@link PointTree} node.
      */
@@ -110,6 +118,13 @@ abstract class PointTreeNode {
     }
 
     /**
+     * Removes all elements from this node.
+     *
+     * @see PointTree#clear()
+     */
+    abstract void clear();
+
+    /**
      * Returns the child of this node that resides in the specified quadrant/octant.
      * The return value can be null or an instance of one of those two classes:
      *
@@ -151,6 +166,11 @@ abstract class PointTreeNode {
      */
     static final class Default extends PointTreeNode {
         /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 5726750714534959859L;
+
+        /**
          * The nodes or element values in each quadrant/octant of this node.
          * Each array element can be null or an instance of one of the classes
          * documented in {@link PointTreeNode#getChild(int)}.
@@ -172,6 +192,14 @@ abstract class PointTreeNode {
         @Override
         final PointTreeNode newInstance() {
             return new Default(children.length);
+        }
+
+        /**
+         * Removes all elements from this node.
+         */
+        @Override
+        final void clear() {
+            Arrays.fill(children, null);
         }
 
         /**

@@ -17,6 +17,7 @@
 package org.apache.sis.index.tree;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Spliterator;
@@ -25,8 +26,10 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.function.Function;
 import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.CheckedContainer;
 
 
 /**
@@ -47,7 +50,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * The performances of this {@code PointTree} depends on two parameters: an estimated bounding box of the points
  * to be added in this tree and a maximal capacity of leaf nodes (not to be confused with a capacity of the tree).
- * More details are given in the {@linkplain #PointTree(Envelope, Function, int) constructor}.
+ * More details are given in the {@linkplain #PointTree(Class, Envelope, Function, int) constructor}.
  *
  * <h2>Thread-safety</h2>
  * This class is not thread-safe when the tree content is modified. But if the tree is kept unmodified
@@ -58,6 +61,9 @@ import org.apache.sis.util.resources.Errors;
  * <h2>Serialization</h2>
  * This tree is serializable if all elements in the tree are also serializable. However the serialization
  * details is implementation specific and may change in any future Apache SIS version.
+ *
+ * <h2>Limitations</h2>
+ * Current implementation does not yet support removal of elements.
  *
  * <h2>References:</h2>
  * Insertion algorithm is based on design of QuadTree index in H. Samet,
@@ -73,12 +79,31 @@ import org.apache.sis.util.resources.Errors;
  * @since 1.1
  * @module
  */
-public class PointTree<E> extends AbstractSet<E> implements Serializable {
+public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 488727778652772913L;
+
     /**
      * The maximum number of dimensions (inclusive) that this class currently supports.
      * Current maximum is {@value}. This restriction come from 2⁶ = {@value Long#SIZE}.
      */
     public static final int MAXIMUM_DIMENSIONS = 6;
+
+    /**
+     * The type of elements in this set.
+     *
+     * @see #getElementType()
+     */
+    private final Class<E> elementType;
+
+    /**
+     * The coordinate reference system, or {@code null} if none.
+     *
+     * @see #getCoordinateReferenceSystem()
+     */
+    private final CoordinateReferenceSystem crs;
 
     /**
      * The root node of this <var>k</var>-dimensional tree.
@@ -96,6 +121,8 @@ public class PointTree<E> extends AbstractSet<E> implements Serializable {
      * Number of elements in this <var>k</var>-dimensional tree.
      * This is used as an unsigned integer (we do not expect to have as many elements,
      * but in this case it is easy to get the extra bit provided by unsigned integer).
+     *
+     * @see #size()
      */
     private long count;
 
@@ -134,13 +161,17 @@ public class PointTree<E> extends AbstractSet<E> implements Serializable {
      * be splited into smaller children nodes. That capacity should be a relatively small number,
      * for example 10. Determining the most efficient value may require benchmarking.</p>
      *
+     * @param  elementType   the base type of all elements in this tree.
      * @param  bounds        bounds of the region of data to be inserted in the <var>k</var>-dimensional tree.
      * @param  locator       function computing a position for an arbitrary element of this tree.
      * @param  nodeCapacity  the capacity of each node (not to be confused with a capacity of the tree).
      */
-    public PointTree(final Envelope bounds, final Function<? super E, double[]> locator, final int nodeCapacity) {
-        ArgumentChecks.ensureNonNull("bounds",  bounds);
-        ArgumentChecks.ensureNonNull("locator", locator);
+    public PointTree(final Class<E> elementType, final Envelope bounds,
+            final Function<? super E, double[]> locator, final int nodeCapacity)
+    {
+        ArgumentChecks.ensureNonNull         ("elementType",  elementType);
+        ArgumentChecks.ensureNonNull         ("bounds",       bounds);
+        ArgumentChecks.ensureNonNull         ("locator",      locator);
         ArgumentChecks.ensureStrictlyPositive("nodeCapacity", nodeCapacity);
         final int n = bounds.getDimension();
         if (n < 2) {
@@ -154,9 +185,21 @@ public class PointTree<E> extends AbstractSet<E> implements Serializable {
             ArgumentChecks.ensureFinite("treeRegion", treeRegion[i]   = bounds.getMedian(i));
             ArgumentChecks.ensureFinite("treeRegion", treeRegion[i+n] = bounds.getSpan(i));
         }
+        this.crs          = bounds.getCoordinateReferenceSystem();
+        this.elementType  = elementType;
         this.nodeCapacity = Math.max(4, nodeCapacity);      // Here, 4 is an arbitrary value.
         this.locator      = locator;
         this.root         = (n == 2) ? new QuadTreeNode() : new PointTreeNode.Default(n);
+    }
+
+    /**
+     * Returns the coordinate reference system (CRS) of all points in this tree.
+     * The CRS is taken from the envelope given in argument to the constructor.
+     *
+     * @return the CRS of all points in this tree, if presents.
+     */
+    public final Optional<CoordinateReferenceSystem> getCoordinateReferenceSystem() {
+        return Optional.ofNullable(crs);
     }
 
     /**
@@ -166,6 +209,36 @@ public class PointTree<E> extends AbstractSet<E> implements Serializable {
      */
     public final int getDimension() {
         return treeRegion.length >>> 1;
+    }
+
+    /**
+     * Returns the base type of all elements in this tree.
+     *
+     * @return the element type.
+     */
+    @Override
+    public final Class<E> getElementType() {
+        return elementType;
+    }
+
+
+    /**
+     * Removes all elements from this tree.
+     */
+    @Override
+    public void clear() {
+        root.clear();
+        count = 0;
+    }
+
+    /**
+     * Returns true if this set contains no elements.
+     *
+     * @return whether this set is empty.
+     */
+    @Override
+    public boolean isEmpty() {
+        return count == 0;
     }
 
     /**
@@ -271,6 +344,40 @@ public class PointTree<E> extends AbstractSet<E> implements Serializable {
     }
 
     /**
+     * Returns {@code true} if this set contains the specified element.
+     *
+     * @param  element  the object to search.
+     * @return whether this set contains the specified element.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public boolean contains​(final Object element) {
+        if (!elementType.isInstance(element)) {
+            return false;
+        }
+        PointTreeNode  parent = root;
+        final double[] region = treeRegion.clone();
+        final double[] point  = locator.apply((E) element);
+        for (;;) {
+            final int quadrant = PointTreeNode.quadrant(point, region);
+            final Object child = parent.getChild(quadrant);
+            if (child != null) {
+                if (child instanceof PointTreeNode) {
+                    PointTreeNode.enterQuadrant(region, quadrant);
+                    parent = (PointTreeNode) child;
+                    continue;
+                }
+                for (Object data : (Object[]) child) {
+                    if (element.equals(data)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
+    /**
      * Creates an iterator over all elements in this set.
      * In current implementation, the iterator does not support element removal.
      */
@@ -295,9 +402,11 @@ public class PointTree<E> extends AbstractSet<E> implements Serializable {
 
     /**
      * Returns all elements in the given bounding box.
+     * The given envelope shall be in the same CRS than the points in this tree
+     * (this is currently not verified).
      *
      * @param  searchRegion  envelope representing the rectangular search region.
-     * @return elements that are within the given radius from the point.
+     * @return elements that are in the given search region (bounds inclusive).
      */
     public Stream<E> queryByBoundingBox(final Envelope searchRegion) {
         ArgumentChecks.ensureNonNull("searchRegion", searchRegion);
@@ -305,4 +414,21 @@ public class PointTree<E> extends AbstractSet<E> implements Serializable {
         return StreamSupport.stream(new NodeIterator<>(this, searchRegion), false);
         // TODO: make parallel by default after we tested most extensively.
     }
+
+    /*
+     * Returns all elements at the specified distance from a point.
+     *
+     * @param  center    center of the region where to search for elements.
+     * @param  distance  distance from the center of elements to retain.
+     * @return elements that are within the given radius from the point.
+     *
+     * @todo use GeodeticCalculator if the CRS is geographic. Otherwise if the CS is Cartesian,
+     *       compute Euclidian distance. Otherwise raise an exception.
+     *
+    public Stream<E> queryByPointRadius(final DirectPosition center, final double distance) {
+        ArgumentChecks.ensureNonNull("center", center);
+        ArgumentChecks.ensureDimensionMatches("center", getDimension(), center);
+        return StreamSupport.stream(new NodeIterator.ByDistance<>(this, center, distance), false);
+    }
+    */
 }

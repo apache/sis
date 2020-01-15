@@ -31,6 +31,11 @@ package org.apache.sis.index.tree;
  */
 final class QuadTreeNode extends PointTreeNode {
     /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 3860185925702742700L;
+
+    /**
      * The 4 quadrants of a {@link QuadTreeNode}: North-West (NW), North-East (NE),
      * South-West (SW) and South-East (SE). Numerical values follow this bit pattern:
      *
@@ -62,6 +67,14 @@ final class QuadTreeNode extends PointTreeNode {
     @Override
     final PointTreeNode newInstance() {
         return new QuadTreeNode();
+    }
+
+    /**
+     * Removes all elements from this node.
+     */
+    @Override
+    final void clear() {
+        nw = ne = se = sw = null;
     }
 
     /**

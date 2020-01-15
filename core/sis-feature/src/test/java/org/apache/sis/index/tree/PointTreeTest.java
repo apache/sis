@@ -100,7 +100,7 @@ public final strictfp class PointTreeTest extends TestCase {
         region.width  = XMAX - XMIN;
         region.height = YMAX - YMIN;
         random = TestUtilities.createRandomNumberGenerator();
-        tree = new PointTree<>(region, Element::getCoordinate, 5);
+        tree = new PointTree<>(Element.class, region, Element::getCoordinate, 5);
         int count = random.nextInt(100) + 200;
         data = new HashSet<>(Containers.hashMapCapacity(count));
         while (--count >= 0) {
