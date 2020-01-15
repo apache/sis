@@ -16,20 +16,20 @@
  */
 package org.apache.sis.index.tree;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Random;
 import org.opengis.geometry.Envelope;
-import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.assertSetEquals;
 
 
 /**
@@ -61,7 +61,7 @@ public final strictfp class PointTreeTest extends TestCase {
     /**
      * All data added to the {@link #tree}, for comparison purpose.
      */
-    private List<Element> data;
+    private Set<Element> data;
 
     /**
      * The elements to be added in the {@link PointTree} to test.
@@ -102,12 +102,13 @@ public final strictfp class PointTreeTest extends TestCase {
         random = TestUtilities.createRandomNumberGenerator();
         tree = new PointTree<>(region, Element::getCoordinate, 5);
         int count = random.nextInt(100) + 200;
-        data = new ArrayList<>(count);
+        data = new HashSet<>(Containers.hashMapCapacity(count));
         while (--count >= 0) {
             final Element e = new Element(random);
             assertEquals(data.add(e), tree.add(e));
             assertEquals(data.size(), tree.size());
         }
+        assertSetEquals(data, tree);
     }
 
     /**

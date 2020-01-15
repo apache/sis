@@ -16,6 +16,11 @@
  */
 package org.apache.sis.index.tree;
 
+import java.io.Serializable;
+import java.util.AbstractSet;
+import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.function.Function;
@@ -30,8 +35,11 @@ import org.apache.sis.util.resources.Errors;
  * For <var>k</var>=3, this is a point <cite>Octree</cite>.
  * Higher dimensions are also accepted up to {@value #MAXIMUM_DIMENSIONS} dimensions.
  * Elements are stored in this {@code PointTree} as arbitrary non-null objects with their coordinates
- * provided by a user-specified function. That function expects an element {@code E} in argument and
- * returns its coordinates as a {@code double[]} array. Elements can be searched by the following methods:
+ * computed by a user-specified {@code locator} function. That function expects an element {@code E}
+ * in argument and returns its coordinates as a {@code double[]} array.
+ * The coordinates of each elements must be <em>stable</em>, i.e. applying the {@code locator} function
+ * twice on the same element must return the same coordinates.
+ * Searches based on element coordinates can be done with the following methods:
  *
  * <ul>
  *   <li>{@link #queryByBoundingBox(Envelope)}</li>
@@ -47,6 +55,10 @@ import org.apache.sis.util.resources.Errors;
  * with {@link java.util.concurrent.locks.ReadWriteLock} (the read lock must be held for complete duration
  * of iterations or stream consumptions).
  *
+ * <h2>Serialization</h2>
+ * This tree is serializable if all elements in the tree are also serializable. However the serialization
+ * details is implementation specific and may change in any future Apache SIS version.
+ *
  * <h2>References:</h2>
  * Insertion algorithm is based on design of QuadTree index in H. Samet,
  * <u>The Design and Analysis of Spatial Data Structures</u>.
@@ -61,7 +73,7 @@ import org.apache.sis.util.resources.Errors;
  * @since 1.1
  * @module
  */
-public class PointTree<E> {
+public class PointTree<E> extends AbstractSet<E> implements Serializable {
     /**
      * The maximum number of dimensions (inclusive) that this class currently supports.
      * Current maximum is {@value}. This restriction come from 2⁶ = {@value Long#SIZE}.
@@ -157,17 +169,30 @@ public class PointTree<E> {
     }
 
     /**
-     * Inserts the specified element into this tree.
+     * Returns the number of elements in this tree.
+     *
+     * @return the number of elements in this tree, or {@link Integer#MAX_VALUE}
+     *         if there is more elements than what an {@code int} can represent.
+     */
+    @Override
+    public int size() {
+        // Negative value would be `long` overflow to be returned as MAX_VALUE.
+        return (count >>> Integer.SIZE) == 0 ? (int) count : Integer.MAX_VALUE;
+    }
+
+    /**
+     * Inserts the specified element into this tree if it is not already present.
      *
      * @param  element  the element to insert.
-     * @return always {@code true} in current implementation.
+     * @return {@code true} if the element has been added, or {@code false} if it was already present.
      * @throws NullPointerException if the given element is null.
      */
+    @Override
     public boolean add(final E element) {
         ArgumentChecks.ensureNonNull("element", element);
-        insert(root, treeRegion, element);
-        count++;
-        return true;
+        final boolean p = insert(root, treeRegion, element);
+        if (p) count++;
+        return p;
     }
 
     /**
@@ -177,9 +202,10 @@ public class PointTree<E> {
      * @param  parent   the parent where to add the given data.
      * @param  region   region of current node, as the center in first half and size in second half.
      * @param  element  the element to insert.
+     * @return {@code true} if the element has been added, or {@code false} if it was already present.
      */
     @SuppressWarnings("unchecked")
-    private void insert(PointTreeNode parent, double[] region, final E element) {
+    private boolean insert(PointTreeNode parent, double[] region, final E element) {
         boolean isRegionCopied = false;
         final double[] point = locator.apply(element);
         for (;;) {
@@ -191,7 +217,7 @@ public class PointTree<E> {
              */
             if (child == null) {
                 parent.setChild(quadrant, new Object[] {element});
-                return;
+                return true;
             }
             /*
              * If the quadrant where to store the element is a parent containing other nodes,
@@ -208,17 +234,22 @@ public class PointTree<E> {
                 continue;
             }
             /*
-             * At this point we reached a leaf of the tree. Store the element in that leaf
-             * if there is enough room.
+             * At this point we reached a leaf of the tree. First, verify that the element is not
+             * already present. If not, store the element in that leaf if there is enough room.
              */
             final Object[] data = (Object[]) child;
             final int n = data.length;
+            for (int i=0; i<n; i++) {
+                if (element.equals(data[i])) {
+                    return false;
+                }
+            }
             if (n < nodeCapacity) {
                 final Object[] copy = new Object[n+1];
                 System.arraycopy(data, 0, copy, 0, n);
                 copy[n] = element;
                 parent.setChild(quadrant, copy);
-                return;                                     // Leaf node can take the data — done.
+                return true;                                // Leaf node can take the data — done.
             }
             /*
              * Leaf can not add the given element because the leaf has reached its maximal capacity.
@@ -240,14 +271,26 @@ public class PointTree<E> {
     }
 
     /**
-     * Returns the number of elements in this tree.
-     *
-     * @return the number of elements in this tree, or {@link Integer#MAX_VALUE}
-     *         if there is more elements than what an {@code int} can represent.
+     * Creates an iterator over all elements in this set.
+     * In current implementation, the iterator does not support element removal.
      */
-    public int size() {
-        // Negative value would be `long` overflow to be returned as MAX_VALUE.
-        return (count >>> Integer.SIZE) == 0 ? (int) count : Integer.MAX_VALUE;
+    @Override
+    public Iterator<E> iterator() {
+        return Spliterators.iterator(spliterator());
+    }
+
+    /**
+     * Creates an iterator over all elements in this set. The iterator characteristics are
+     * {@linkplain Spliterator#SIZED sized}, {@linkplain Spliterator#DISTINCT distinct} and
+     * {@link Spliterator#NONNULL non-null}.
+     */
+    @Override
+    public Spliterator<E> spliterator() {
+        return new NodeIterator<E>(this, null) {
+            @Override public    long    estimateSize()     {return count;}
+            @Override public    int     characteristics()  {return SIZED | DISTINCT | NONNULL;}
+            @Override protected boolean filter(double[] p) {return true;}
+        };
     }
 
     /**

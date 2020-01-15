@@ -16,6 +16,7 @@
  */
 package org.apache.sis.index.tree;
 
+import java.util.Arrays;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -90,15 +91,21 @@ class NodeIterator<E> implements Spliterator<E> {
 
     /**
      * Creates a new iterator for the specified search region.
+     * If the given region is null, then infinite bounds are assumed.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     NodeIterator(final PointTree<E> tree, final Envelope searchRegion) {
-        final int n = searchRegion.getDimension();
+        final int n = tree.getDimension();
         bitmask = Numerics.bitmask(1 << n) - 1;
         bounds  = new double[n*2];
-        for (int i = n; --i >= 0;) {
-            bounds[i]   = searchRegion.getMinimum(i);
-            bounds[i+n] = searchRegion.getMaximum(i);
+        if (searchRegion != null) {
+            for (int i = n; --i >= 0;) {
+                bounds[i]   = searchRegion.getMinimum(i);
+                bounds[i+n] = searchRegion.getMaximum(i);
+            }
+        } else {
+            Arrays.fill(bounds, 0, n,   Double.NEGATIVE_INFINITY);
+            Arrays.fill(bounds, n, n*2, Double.POSITIVE_INFINITY);
         }
         locator = tree.locator;
         cursor = new Cursor<>(tree.treeRegion);
@@ -374,7 +381,7 @@ class NodeIterator<E> implements Spliterator<E> {
      * Returns an estimate of the number of elements or {@link Long#MAX_VALUE} if too expensive to compute.
      */
     @Override
-    public final long estimateSize() {
+    public long estimateSize() {
         return Long.MAX_VALUE;
     }
 
@@ -382,7 +389,7 @@ class NodeIterator<E> implements Spliterator<E> {
      * Returns a set of characteristics of this iterator and its elements.
      */
     @Override
-    public final int characteristics() {
-        return ORDERED | NONNULL;
+    public int characteristics() {
+        return DISTINCT | NONNULL;
     }
 }
