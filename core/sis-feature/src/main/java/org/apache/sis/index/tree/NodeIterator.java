@@ -57,8 +57,8 @@ class NodeIterator<E> implements Spliterator<E> {
     private final long bitmask;
 
     /**
-     * The region on which to iterate. The first half are minimal coordinates
-     * and the second half are maximal coordinates.
+     * The region on which to iterate. The first half are minimal coordinates and the second
+     * half are maximal coordinates. The content of this array should not be modified.
      */
     private final double[] bounds;
 
@@ -112,6 +112,24 @@ class NodeIterator<E> implements Spliterator<E> {
         cursor.node = tree.root;
         cursor.findIntersections(this);
         current = next();
+    }
+
+    /**
+     * Creates a new iterator initialized to a copy of the given iterator.
+     *
+     * @param  quadrants  the value to assign to {@link Cursor#quadrants}.
+     *         That bitmask shall not intersect the bitmask of {@code other.cursor}.
+     */
+    private NodeIterator(final NodeIterator<E> other, final long quadrants) {
+        final Cursor<E> c = other.cursor;
+        locator           = other.locator;
+        bitmask           = other.bitmask;
+        bounds            = other.bounds;
+        cursor            = new Cursor<>(c.region);
+        cursor.parent     = c.parent;
+        cursor.node       = c.node;
+        cursor.quadrants  = quadrants;
+        current           = next();
     }
 
     /**
@@ -368,12 +386,24 @@ class NodeIterator<E> implements Spliterator<E> {
     }
 
     /**
-     * If this iterator can be partitioned, returns an iterator covering a strict prefix of the elements.
-     *
-     * @todo Checks {@link Cursor#quadrants} and take half of the bits.
+     * If this iterator can be partitioned, returns an iterator covering about half of the elements.
+     * Otherwise returns {@code null}.
      */
     @Override
     public final Spliterator<E> trySplit() {
+        final Cursor<E> c = cursor;
+        if (c != null) {
+            long half = 0;
+            for (int n = Long.bitCount(c.quadrants) / 2; n >= 0; --n) {
+                final long q = Long.lowestOneBit(c.quadrants);
+                c.quadrants &= ~q;
+                half |= q;
+            }
+            if (half != 0) {
+                return new NodeIterator<>(this, half);
+            }
+            // TODO: go down in the tree and explore other quadrants.
+        }
         return null;
     }
 
