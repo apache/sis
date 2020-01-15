@@ -92,7 +92,11 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.grid.ReshapedImageTest.class,
     org.apache.sis.coverage.grid.GridCoverage2DTest.class,
     org.apache.sis.internal.coverage.j2d.BandedSampleConverterTest.class,
-    org.apache.sis.internal.coverage.j2d.BufferedGridCoverageTest.class
+    org.apache.sis.internal.coverage.j2d.BufferedGridCoverageTest.class,
+
+    // Index
+    org.apache.sis.index.tree.PointTreeNodeTest.class,
+    org.apache.sis.index.tree.PointTreeTest.class
 })
 public final strictfp class FeatureTestSuite extends TestSuite {
     /**

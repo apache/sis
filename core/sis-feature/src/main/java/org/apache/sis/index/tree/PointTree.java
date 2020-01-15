@@ -25,13 +25,19 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * A <var>k</var>-dimensional tree index for points. For <var>k</var>=2, this is a point {@link QuadTree}.
- * For <var>k</var>=3, this is an point {@code Octree}. Higher dimensions are also accepted.
+ * A <var>k</var>-dimensional tree index for points. For <var>k</var>=2, this is a <cite>point QuadTree</cite>.
+ * For <var>k</var>=3, this is point <cite>Octree</cite>. Higher dimensions are also accepted.
  *
  * <h2>Thread-safety</h2>
  * This class is not thread-safe when the tree content is modified. But if the tree is kept unmodified
  * after construction, then multiple read operations in concurrent threads are safe.
  *
+ * <h2>References:</h2>
+ * Insertion algorithm is based on design of QuadTree index in H. Samet,
+ * <u>The Design and Analysis of Spatial Data Structures</u>.
+ * Massachusetts: Addison Wesley Publishing Company, 1989.
+ *
+ * @author  Chris Mattmann
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  *
@@ -40,11 +46,11 @@ import org.apache.sis.util.resources.Errors;
  * @since 1.1
  * @module
  */
-class KDTree<E> {
+public class PointTree<E> {
     /**
      * The root node of this <var>k</var>-dimensional tree.
      */
-    final KDTreeNode root;
+    final PointTreeNode root;
 
     /**
      * The maximal capacity of each node in this tree. It should be a relatively small number.
@@ -89,7 +95,7 @@ class KDTree<E> {
      * @param  evaluator  function computing a position for an arbitrary element of this tree.
      * @param  capacity   the capacity of each node.
      */
-    KDTree(final Envelope bounds, final Function<? super E, double[]> evaluator, final int capacity) {
+    public PointTree(final Envelope bounds, final Function<? super E, double[]> evaluator, final int capacity) {
         final int n = bounds.getDimension();
         if (n < 2) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedDimension_3, "bounds", 2, n));
@@ -104,7 +110,7 @@ class KDTree<E> {
         }
         this.capacity  = Math.max(4, capacity);
         this.evaluator = evaluator;
-        this.root      = (n == 2) ? new QuadTreeNode() : new KDTreeNode.Default(n);
+        this.root      = (n == 2) ? new QuadTreeNode() : new PointTreeNode.Default(n);
     }
 
     /**
@@ -129,11 +135,11 @@ class KDTree<E> {
      * @param  element  the element to insert.
      */
     @SuppressWarnings("unchecked")
-    private void insert(KDTreeNode parent, double[] region, final E element) {
+    private void insert(PointTreeNode parent, double[] region, final E element) {
         boolean isRegionCopied = false;
         final double[] point = evaluator.apply(element);
         for (;;) {
-            final int quadrant = KDTreeNode.quadrant(point, region);
+            final int quadrant = PointTreeNode.quadrant(point, region);
             final Object child = parent.getChild(quadrant);
             /*
              * If the element will be stored in a new quadrant never used before,
@@ -148,13 +154,13 @@ class KDTree<E> {
              * enter in that quadrant and repeat all above checks with that node as the new parent.
              * We continue down the tree until a leaf node is found.
              */
-            if (child instanceof KDTreeNode) {
+            if (child instanceof PointTreeNode) {
                 if (!isRegionCopied) {
                     isRegionCopied = true;
                     region = region.clone();
                 }
-                KDTreeNode.enterQuadrant(region, quadrant);
-                parent = (KDTreeNode) child;
+                PointTreeNode.enterQuadrant(region, quadrant);
+                parent = (PointTreeNode) child;
                 continue;
             }
             /*
@@ -179,8 +185,8 @@ class KDTree<E> {
                 isRegionCopied = true;
                 region = region.clone();
             }
-            KDTreeNode.enterQuadrant(region, quadrant);
-            final KDTreeNode branch = parent.newInstance();
+            PointTreeNode.enterQuadrant(region, quadrant);
+            final PointTreeNode branch = parent.newInstance();
             for (final Object e : data) {
                 insert(branch, region, (E) e);
             }

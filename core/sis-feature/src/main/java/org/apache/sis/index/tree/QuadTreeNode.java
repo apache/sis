@@ -18,8 +18,8 @@ package org.apache.sis.index.tree;
 
 
 /**
- * A node in a {@link QuadTree} which is the parent of other nodes.
- * This class is a specialization of {@link KDTree} for the two-dimensional case.
+ * A node in a two-dimensional {@link PointTree} which is the parent of other nodes.
+ * This class is a specialization of {@link PointTreeNode} for the two-dimensional case.
  * This specialization is provided for reducing the number of objects to create,
  * by storing the 4 quadrants as fields instead than in an array.
  *
@@ -29,7 +29,7 @@ package org.apache.sis.index.tree;
  * @since   0.1
  * @module
  */
-final class QuadTreeNode extends KDTreeNode {
+final class QuadTreeNode extends PointTreeNode {
     /**
      * The 4 quadrants of a {@link QuadTreeNode}: North-West (NW), North-East (NE),
      * South-West (SW) and South-East (SE). Numerical values follow this bit pattern:
@@ -60,7 +60,7 @@ final class QuadTreeNode extends KDTreeNode {
      * Creates a new instance of the same class than this node.
      */
     @Override
-    final KDTreeNode newInstance() {
+    final PointTreeNode newInstance() {
         return new QuadTreeNode();
     }
 

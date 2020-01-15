@@ -24,8 +24,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link NodeIterator}. Also contains opportunistic tests of {@link QuadTreeNode}
- * methods that are needed by the iterator.
+ * Tests {@link PointTreeNode}. Also contains a few opportunistic tests of {@link NodeIterator}.
  *
  * @author  Chris Mattmann
  * @author  Martin Desruisseaux (Geomatys)
@@ -33,7 +32,7 @@ import static org.junit.Assert.*;
  * @since   0.1
  * @module
  */
-public final strictfp class NodeIteratorTest extends TestCase {
+public final strictfp class PointTreeNodeTest extends TestCase {
     /**
      * Verifies the value of {@link NodeIterator#MAX_DIMENSION}.
      * That value is restricted by the capacity of {@code long}.

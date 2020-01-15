@@ -24,7 +24,7 @@ import org.apache.sis.internal.util.Numerics;
 
 
 /**
- * An iterator over the elements contained in a {@link KDTreeNode}.
+ * An iterator over the elements contained in a {@link PointTreeNode}.
  * The iterator applies a first filtering of elements by traversing only the nodes that <em>may</em>
  * intersect the Area Of Interest (AOI). But after a node has been retained, an additional check for
  * inclusion may be necessary. That additional check is performed by {@link #filter(double[])} and
@@ -33,7 +33,7 @@ import org.apache.sis.internal.util.Numerics;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  *
- * @param  <E>  the type of elements stored in the {@link QuadTree}.
+ * @param  <E>  the type of elements stored in the {@link PointTree}.
  *
  * @since 1.1
  * @module
@@ -99,7 +99,7 @@ class NodeIterator<E> implements Spliterator<E> {
      * Creates a new iterator for the specified search region.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    NodeIterator(final KDTree<E> tree, final Envelope searchRegion) {
+    NodeIterator(final PointTree<E> tree, final Envelope searchRegion) {
         final int n = searchRegion.getDimension();
         bitmask = Numerics.bitmask(1 << n) - 1;
         bounds  = new double[n*2];
@@ -115,8 +115,8 @@ class NodeIterator<E> implements Spliterator<E> {
     }
 
     /**
-     * A provider for arrays of elements of child nodes contained in a {@link KDTreeNode}.
-     * The starting point is {@link KDTree#root}. A new {@link Cursor} instance is created
+     * A provider for arrays of elements of child nodes contained in a {@link PointTreeNode}.
+     * The starting point is {@link PointTree#root}. A new {@link Cursor} instance is created
      * for each level when the node at next level is itself a parent of at least two nodes
      * (if there is only one child node, then this implementation takes a shortcut).
      */
@@ -136,15 +136,15 @@ class NodeIterator<E> implements Spliterator<E> {
          * The node for which to iterate over elements. Only the quadrants/octants identified
          * by the {@link #quadrants} bitmask will be traversed.
          */
-        KDTreeNode node;
+        PointTreeNode node;
 
         /**
          * Bitmask of quadrants/octants on which to iterate. Quadrants/octants are iterated from rightmost
          * bit to leftmost bit. Bits are cleared when the corresponding quadrant/octant become the current
          * one. A value of 0 means that there is no more quadrant to iterate for the {@linkplain #node}.
          *
-         * <p><b>Note:</b> we take "quadrant" name from {@link QuadTree}, but this algorithm can actually
-         * be used with more dimensions.</p>
+         * <p><b>Note:</b> we take "quadrant" name from QuadTree, but this algorithm can actually be used
+         * with more dimensions.</p>
          *
          * @see #MAX_DIMENSION
          */
@@ -241,7 +241,7 @@ class NodeIterator<E> implements Spliterator<E> {
                 it.recycle = c.parent;
                 System.arraycopy(region, 0, c.region, 0, region.length);
             }
-            KDTreeNode.enterQuadrant(c.region, q);
+            PointTreeNode.enterQuadrant(c.region, q);
             c.parent = this;
             return c;
         }
@@ -257,7 +257,7 @@ class NodeIterator<E> implements Spliterator<E> {
          * @param  q  the quadrant/octant in which to iterate.
          */
         final void moveDown(final int q) {
-            KDTreeNode.enterQuadrant(region, q);
+            PointTreeNode.enterQuadrant(region, q);
         }
 
         /**
@@ -310,7 +310,7 @@ class NodeIterator<E> implements Spliterator<E> {
                          */
                         cursor.moveDown(q);
                     }
-                    cursor.node = (QuadTreeNode) child;
+                    cursor.node = (PointTreeNode) child;
                     cursor.findIntersections(this);
                 }
             }

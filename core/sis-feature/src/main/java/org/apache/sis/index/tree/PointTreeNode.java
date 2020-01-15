@@ -18,16 +18,16 @@ package org.apache.sis.index.tree;
 
 
 /**
- * A node in a {@link KDTree} which is the parent of other nodes. The number of child nodes depends on
- * the number of dimensions of the tree: 4 children with two-dimensional {@link QuadTree}, 8 children
- * with three-dimensional {@code Octree}, <i>etc</i>. The child node can be another {@link KDTreeNode}
- * if that node is itself the parent of more nodes. Otherwise (i.e. if the child node is leaf) the child
- * is an instance of {@code Object[]}.
+ * A node in a {@link PointTree} which is the parent of other nodes. The number of child nodes depends
+ * on the number of dimensions of the tree: 4 children with two-dimensional <cite>QuadTree</cite>,
+ * 8 children with three-dimensional <cite>Octree</cite>, <i>etc</i>.
+ * The child node can be another {@link PointTreeNode} if that node is itself the parent of more nodes.
+ * Otherwise (i.e. if the child node is leaf) the child is an instance of {@code Object[]}.
  *
  * <p>Features of arbitrary types are stored in {@code Object[]} arrays. Those arrays should be small:
- * if the number of elements in a leaf exceeds a maximal capacity specified by the {@link KDTree},
- * then the leaf is replaced by a new {@link KDTreeNode} and the {@code Object[]} content is distributed
- * between the new child nodes.</p>
+ * if the number of elements in a leaf exceeds a maximal capacity specified by the {@link PointTree},
+ * then the leaf is replaced by a new {@link PointTreeNode} and the {@code Object[]} content
+ * is distributed between the new child nodes.</p>
  *
  * <p>Addition of new features in {@code Object[]} arrays uses a <cite>copy-on-write</cite> strategy
  * in order to keep memory usage minimal (a tree may have thousands of small arrays) and for making
@@ -45,11 +45,11 @@ package org.apache.sis.index.tree;
  * @since   1.1
  * @module
  */
-abstract class KDTreeNode {
+abstract class PointTreeNode {
     /**
-     * Constructs an initially empty {@link KDTree} node.
+     * Constructs an initially empty {@link PointTree} node.
      */
-    KDTreeNode() {
+    PointTreeNode() {
     }
 
     /**
@@ -114,9 +114,9 @@ abstract class KDTreeNode {
      * The return value can be null or an instance of one of those two classes:
      *
      * <ul>
-     *   <li>Another {@link KDTreeNode} if the node in a quadrant/octant is itself a parent of other children.</li>
+     *   <li>Another {@link PointTreeNode} if the node in a quadrant/octant is itself a parent of other children.</li>
      *   <li>{@code Object[]} if the node in a quadrant/octant is a leaf. In such case, the array contains elements.
-     *       We do not wrap the leaf in another {@link KDTreeNode} for reducing the number of objects created.</li>
+     *       We do not wrap the leaf in another {@link PointTreeNode} for reducing the number of objects created.</li>
      * </ul>
      *
      * Any other kind of object is an error.
@@ -140,25 +140,25 @@ abstract class KDTreeNode {
     /**
      * Creates a new instance of the same class than this node.
      */
-    abstract KDTreeNode newInstance();
+    abstract PointTreeNode newInstance();
 
     /**
-     * Default implementation of {@link KDTreeNode} when no specialized class is available.
+     * Default implementation of {@link PointTreeNode} when no specialized class is available.
      * This default implementation stores children in an array. The usage of arrays allows
      * arbitrary lengths, but implies one more object to be created for each node instance.
      * Since this class should be used only for relatively large numbers of dimensions,
      * the cost of arrays creation should be less significant compared to array length.
      */
-    static final class Default extends KDTreeNode {
+    static final class Default extends PointTreeNode {
         /**
          * The nodes or element values in each quadrant/octant of this node.
          * Each array element can be null or an instance of one of the classes
-         * documented in {@link KDTreeNode#getChild(int)}.
+         * documented in {@link PointTreeNode#getChild(int)}.
          */
         private final Object[] children;
 
         /**
-         * Constructs an initially empty {@link KDTree} node.
+         * Constructs an initially empty {@link PointTree} node.
          *
          * @param  n  must be 2<sup>k</sup> where <var>k</var> is the number of dimensions.
          */
@@ -170,7 +170,7 @@ abstract class KDTreeNode {
          * Creates a new instance of the same class than this node.
          */
         @Override
-        final KDTreeNode newInstance() {
+        final PointTreeNode newInstance() {
             return new Default(children.length);
         }
 

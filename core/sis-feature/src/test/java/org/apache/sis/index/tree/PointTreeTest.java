@@ -33,15 +33,15 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link QuadTree}.
+ * Tests {@link PointTree}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-@DependsOn(NodeIteratorTest.class)
-public final strictfp class QuadTreeTest extends TestCase {
+@DependsOn(PointTreeNode.class)
+public final strictfp class PointTreeTest extends TestCase {
     /**
      * Bounds of the region where to create points. Intentionally use asymmetric bounds
      * for increasing the chances to detect bugs in node region computations.
@@ -56,7 +56,7 @@ public final strictfp class QuadTreeTest extends TestCase {
     /**
      * The tree to test.
      */
-    private QuadTree<Element> tree;
+    private PointTree<Element> tree;
 
     /**
      * All data added to the {@link #tree}, for comparison purpose.
@@ -64,7 +64,7 @@ public final strictfp class QuadTreeTest extends TestCase {
     private List<Element> data;
 
     /**
-     * The elements to be added in the {@link QuadTree} to test.
+     * The elements to be added in the {@link PointTree} to test.
      * This element extends {@link DirectPosition2D} for convenience, but this is not a requirement.
      * The point is unmodifiable; attempt to modify a coordinate will cause the test to fail.
      */
@@ -100,7 +100,7 @@ public final strictfp class QuadTreeTest extends TestCase {
         region.width  = XMAX - XMIN;
         region.height = YMAX - YMIN;
         random = TestUtilities.createRandomNumberGenerator();
-        tree = new QuadTree<>(region, Element::getCoordinate, 5);
+        tree = new PointTree<>(region, Element::getCoordinate, 5);
         int count = random.nextInt(100) + 200;
         data = new ArrayList<>(count);
         while (--count >= 0) {
@@ -111,7 +111,7 @@ public final strictfp class QuadTreeTest extends TestCase {
     }
 
     /**
-     * Tests {@link QuadTree#queryByBoundingBox(Envelope)} with random coordinates.
+     * Tests {@link PointTree#queryByBoundingBox(Envelope)} with random coordinates.
      * This method performs some searches in random regions and compare the results
      * against searches performed by raw force.
      */

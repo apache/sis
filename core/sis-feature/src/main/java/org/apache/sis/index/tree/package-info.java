@@ -16,7 +16,7 @@
  */
 
 /**
- * A simple QuadTree implementation.
+ * A simple <var>k</var>-dimensional point tree implementation.
  *
  * @author  Chris Mattmann
  * @author  Martin Desruisseaux (Geomatys)
