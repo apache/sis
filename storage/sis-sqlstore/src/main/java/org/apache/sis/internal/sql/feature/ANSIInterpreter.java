@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.WrapResolution;
+import org.apache.sis.internal.feature.WraparoundStrategy;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import org.apache.sis.util.iso.Names;
 import org.opengis.filter.*;
@@ -521,7 +521,7 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
         }
         final GeneralEnvelope env = new GeneralEnvelope(lower, upper);
         env.setCoordinateReferenceSystem(source.getCoordinateReferenceSystem());
-        return Geometries.toGeometry(env, WrapResolution.SPLIT)
+        return Geometries.toGeometry(env, WraparoundStrategy.SPLIT)
                 .orElseThrow(() -> new UnsupportedOperationException("No geometry implementation available"));
     }
 

@@ -22,17 +22,15 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.stream.Stream;
-
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.Geometry;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
-
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.SingleCRS;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.system.Loggers;
@@ -184,9 +182,9 @@ public abstract class Geometries<G> {
      * @param env The envelope to convert.
      * @param wraparound How to resolve wrap-around ambiguities on the envelope.
      * @return If any geometric implementation is installed, return a polygon (or two polygons in case of
-     * {@link WrapResolution#SPLIT split handling of wrap-around}.
+     * {@link WraparoundStrategy#SPLIT split handling of wrap-around}.
      */
-    public static Optional<Geometry> toGeometry(final Envelope env, WrapResolution wraparound) {
+    public static Optional<Geometry> toGeometry(final Envelope env, WraparoundStrategy wraparound) {
         return findStrategy(g -> g.tryConvertToGeometry(env, wraparound))
                 .map(result -> new GeometryWrapper(result, env));
     }
@@ -593,9 +591,9 @@ public abstract class Geometries<G> {
     }
 
     /**
-     * See {@link Geometries#toGeometry(Envelope, WrapResolution)}.
+     * See {@link Geometries#toGeometry(Envelope, WraparoundStrategy)}.
      */
-    public G tryConvertToGeometry(final Envelope env, WrapResolution resolution) {
+    public G tryConvertToGeometry(final Envelope env, WraparoundStrategy resolution) {
         // Ensure that we can isolate an horizontal part in the given envelope.
         final int x;
         if (env.getDimension() == 2) {
@@ -618,7 +616,7 @@ public abstract class Geometries<G> {
         double maxY = uc.getOrdinate(y);
         double[] splittedLeft = null;
         // We start by short-circuiting simplest case for minor simplicity/performance reason.
-        if (!WrapResolution.NONE.equals(resolution)) {
+        if (!WraparoundStrategy.NONE.equals(resolution)) {
             // ensure the envelope is correctly defined, by forcing non-authorized wrapped axes to take entire crs span.
             final GeneralEnvelope fixedEnv = new GeneralEnvelope(env);
             fixedEnv.normalize();
