@@ -113,8 +113,8 @@ abstract class UnaryFunction extends Node implements Serializable {
         }
 
         /** Identification of this operation. */
-        @Override public    String getName() {return NAME;}
-        @Override protected char   symbol()  {return '∅';}
+        @Override public String getName() {return NAME;}
+        @Override protected char symbol() {return '∅';}
 
         /** Returns {@code true} if the given value evaluates to {@code null}. */
         @Override public boolean evaluate(final Object object) {
@@ -145,8 +145,8 @@ abstract class UnaryFunction extends Node implements Serializable {
         }
 
         /** Identification of this operation. */
-        @Override public    String getName() {return "Not";}
-        @Override protected char   symbol()  {return '¬';}
+        @Override public String getName() {return "Not";}
+        @Override protected char symbol() {return '¬';}
 
         /** Returns the singleton filter used by this operation. */
         @Override protected Collection<Filter> getChildren() {

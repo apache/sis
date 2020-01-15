@@ -220,8 +220,8 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override public    String getName() {return NAME;}
-        @Override protected char   symbol()  {return '=';}
+        @Override public String getName() {return NAME;}
+        @Override protected char symbol() {return '=';}
 
         /** Condition defined by ISO 19108:2002 §5.2.3.5. */
         @Override protected boolean evaluate(final Instant self, final Instant other) {
@@ -265,8 +265,8 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override public    String getName() {return NAME;}
-        @Override protected char   symbol()  {return '<';}
+        @Override public String getName() {return NAME;}
+        @Override protected char symbol() {return '<';}
 
         /** Condition defined by ISO 19108:2002 §5.2.3.5. */
         @Override protected boolean evaluate(final Instant self, final Instant other) {
@@ -308,8 +308,8 @@ abstract class TemporalFunction extends BinaryFunction implements BinaryTemporal
         }
 
         /** Identification of this operation. */
-        @Override public    String getName() {return NAME;}
-        @Override protected char   symbol()  {return '>';}
+        @Override public String getName() {return NAME;}
+        @Override protected char symbol() {return '>';}
 
         /** Condition defined by ISO 19108:2002 §5.2.3.5. */
         @Override protected boolean evaluate(final Instant self, final Instant other) {

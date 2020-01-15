@@ -107,8 +107,8 @@ abstract class LogicalFunction extends Node {
         }
 
         /** Returns a name for this filter. */
-        @Override public    String getName() {return "And";}
-        @Override protected char   symbol()  {return filters.length <= 2 ? '∧' : '⋀';}
+        @Override public String getName() {return "And";}
+        @Override protected char symbol() {return filters.length <= 2 ? '∧' : '⋀';}
 
         /** Implementation of the visitor pattern. */
         @Override public Object accept(FilterVisitor visitor, Object extraData) {
@@ -140,8 +140,8 @@ abstract class LogicalFunction extends Node {
         }
 
         /** Returns a name for this filter. */
-        @Override public    String getName() {return "Or";}
-        @Override protected char   symbol()  {return filters.length <= 2 ? '∨' : '⋁';}
+        @Override public String getName() {return "Or";}
+        @Override protected char symbol() {return filters.length <= 2 ? '∨' : '⋁';}
 
         /** Implementation of the visitor pattern. */
         @Override public Object accept(FilterVisitor visitor, Object extraData) {

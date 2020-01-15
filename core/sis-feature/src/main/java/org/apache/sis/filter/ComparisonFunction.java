@@ -523,8 +523,8 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         }
 
         /** Identification of this operation. */
-        @Override public    String getName() {return NAME;}
-        @Override protected char   symbol()  {return '<';}
+        @Override public String getName() {return NAME;}
+        @Override protected char symbol() {return '<';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
         @Override protected boolean fromCompareTo(final int result) {return result < 0;}
@@ -558,8 +558,8 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         }
 
         /** Identification of this operation. */
-        @Override public    String getName() {return NAME;}
-        @Override protected char   symbol()  {return '≤';}
+        @Override public String getName() {return NAME;}
+        @Override protected char symbol() {return '≤';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
         @Override protected boolean fromCompareTo(final int result) {return result <= 0;}
@@ -593,8 +593,8 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         }
 
         /** Identification of this operation. */
-        @Override public    String getName() {return NAME;}
-        @Override protected char   symbol()  {return '>';}
+        @Override public String getName() {return NAME;}
+        @Override protected char symbol() {return '>';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
         @Override protected boolean fromCompareTo(final int result) {return result > 0;}
@@ -628,8 +628,8 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         }
 
         /** Identification of this operation. */
-        @Override public    String getName() {return NAME;}
-        @Override protected char   symbol()  {return '≥';}
+        @Override public String getName() {return NAME;}
+        @Override protected char symbol() {return '≥';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
         @Override protected boolean fromCompareTo(final int result) {return result >= 0;}
@@ -663,8 +663,8 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         }
 
         /** Identification of this operation. */
-        @Override public    String getName() {return NAME;}
-        @Override protected char   symbol()  {return '=';}
+        @Override public String getName() {return NAME;}
+        @Override protected char symbol() {return '=';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
         @Override protected boolean fromCompareTo(final int result) {return result == 0;}
@@ -698,8 +698,8 @@ abstract class ComparisonFunction extends BinaryFunction implements BinaryCompar
         }
 
         /** Identification of this operation. */
-        @Override public    String getName() {return NAME;}
-        @Override protected char   symbol()  {return '≠';}
+        @Override public String getName() {return NAME;}
+        @Override protected char symbol() {return '≠';}
 
         /** Converts {@link Comparable#compareTo(Object)} result to this filter result. */
         @Override protected boolean fromCompareTo(final int result) {return result != 0;}
