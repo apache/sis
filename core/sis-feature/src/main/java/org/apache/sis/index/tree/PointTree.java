@@ -25,12 +25,27 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * A <var>k</var>-dimensional tree index for points. For <var>k</var>=2, this is a <cite>point QuadTree</cite>.
- * For <var>k</var>=3, this is point <cite>Octree</cite>. Higher dimensions are also accepted.
+ * A <var>k</var>-dimensional tree index for points.
+ * For <var>k</var>=2, this is a <cite>point QuadTree</cite>.
+ * For <var>k</var>=3, this is a point <cite>Octree</cite>.
+ * Higher dimensions are also accepted up to {@value #MAXIMUM_DIMENSIONS} dimensions.
+ * Elements are stored in this {@code PointTree} as arbitrary non-null objects with their coordinates
+ * provided by a user-specified function. That function expects an element {@code E} in argument and
+ * returns its coordinates as a {@code double[]} array. Elements can be searched by the following methods:
+ *
+ * <ul>
+ *   <li>{@link #queryByBoundingBox(Envelope)}</li>
+ * </ul>
+ *
+ * The performances of this {@code PointTree} depends on two parameters: an estimated bounding box of the points
+ * to be added in this tree and a maximal capacity of leaf nodes (not to be confused with a capacity of the tree).
+ * More details are given in the {@linkplain #PointTree(Envelope, Function, int) constructor}.
  *
  * <h2>Thread-safety</h2>
  * This class is not thread-safe when the tree content is modified. But if the tree is kept unmodified
- * after construction, then multiple read operations in concurrent threads are safe.
+ * after construction, then multiple read operations in concurrent threads are safe. Users can synchronize
+ * with {@link java.util.concurrent.locks.ReadWriteLock} (the read lock must be held for complete duration
+ * of iterations or stream consumptions).
  *
  * <h2>References:</h2>
  * Insertion algorithm is based on design of QuadTree index in H. Samet,
@@ -48,6 +63,12 @@ import org.apache.sis.util.resources.Errors;
  */
 public class PointTree<E> {
     /**
+     * The maximum number of dimensions (inclusive) that this class currently supports.
+     * Current maximum is {@value}. This restriction come from 2⁶ = {@value Long#SIZE}.
+     */
+    public static final int MAXIMUM_DIMENSIONS = 6;
+
+    /**
      * The root node of this <var>k</var>-dimensional tree.
      */
     final PointTreeNode root;
@@ -57,12 +78,14 @@ public class PointTree<E> {
      * If the number of elements in a leaf node exceeds this capacity, then the node will be
      * transformed into a parent node with children nodes.
      */
-    private final int capacity;
+    private final int nodeCapacity;
 
     /**
      * Number of elements in this <var>k</var>-dimensional tree.
+     * This is used as an unsigned integer (we do not expect to have as many elements,
+     * but in this case it is easy to get the extra bit provided by unsigned integer).
      */
-    private int count;
+    private long count;
 
     /**
      * The regions covered by this tree, encoded as a center and a size.
@@ -74,50 +97,71 @@ public class PointTree<E> {
      * </ul>
      *
      * The length of this array is two times the number of dimensions of points in this tree.
+     * This array content should not be modified, until the entire tree is rebuilt.
      */
     final double[] treeRegion;
 
     /**
      * The function computing a position for an arbitrary element in this tree.
+     * The length of arrays computed by this locator must be equal to {@link #getDimension()}.
      */
-    final Function<? super E, double[]> evaluator;
+    final Function<? super E, double[]> locator;
 
     /**
      * Creates an initially empty <var>k</var>-dimensional tree with the given capacity for each node.
-     * The number of dimensions of the given envelope determines the number of dimensions of points in
-     * this tree. The position computed by {@code evaluator} must have the same number of dimensions.
+     * The number of dimensions of the given envelope determines the number of dimensions of points in this tree.
+     * The positions computed by {@code locator} must have the same number of dimensions than the given envelope.
      *
-     * <p>The given {@code capacity} is a threshold value controlling when the content of a node should
+     * <p>The {@code bounds} argument specifies the expected region of points to be added in this {@code PointTree}.
+     * Those bounds do not need to be exact; {@code PointTree} will work even if some points are located outside
+     * those bounds. However performances will be better if the {@linkplain Envelope#getMedian(int) envelope center}
+     * is close to the median of the points to be inserted in the {@code PointTree}, and if the majority of points
+     * are inside those bounds.</p>
+     *
+     * <p>The given {@code nodeCapacity} is a threshold value controlling when the content of a node should
      * be splited into smaller children nodes. That capacity should be a relatively small number,
      * for example 10. Determining the most efficient value may require benchmarking.</p>
      *
-     * @param  bounds     bounds of the region of data to be inserted in the <var>k</var>-dimensional tree.
-     * @param  evaluator  function computing a position for an arbitrary element of this tree.
-     * @param  capacity   the capacity of each node.
+     * @param  bounds        bounds of the region of data to be inserted in the <var>k</var>-dimensional tree.
+     * @param  locator       function computing a position for an arbitrary element of this tree.
+     * @param  nodeCapacity  the capacity of each node (not to be confused with a capacity of the tree).
      */
-    public PointTree(final Envelope bounds, final Function<? super E, double[]> evaluator, final int capacity) {
+    public PointTree(final Envelope bounds, final Function<? super E, double[]> locator, final int nodeCapacity) {
+        ArgumentChecks.ensureNonNull("bounds",  bounds);
+        ArgumentChecks.ensureNonNull("locator", locator);
+        ArgumentChecks.ensureStrictlyPositive("nodeCapacity", nodeCapacity);
         final int n = bounds.getDimension();
         if (n < 2) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedDimension_3, "bounds", 2, n));
         }
-        if (n > NodeIterator.MAX_DIMENSION) {
+        if (n > MAXIMUM_DIMENSIONS) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, n));
         }
         treeRegion = new double[n*2];
         for (int i=0; i<n; i++) {
-            treeRegion[i]   = bounds.getMedian(i);
-            treeRegion[i+n] = bounds.getSpan(i);
+            ArgumentChecks.ensureFinite("treeRegion", treeRegion[i]   = bounds.getMedian(i));
+            ArgumentChecks.ensureFinite("treeRegion", treeRegion[i+n] = bounds.getSpan(i));
         }
-        this.capacity  = Math.max(4, capacity);
-        this.evaluator = evaluator;
-        this.root      = (n == 2) ? new QuadTreeNode() : new PointTreeNode.Default(n);
+        this.nodeCapacity = Math.max(4, nodeCapacity);      // Here, 4 is an arbitrary value.
+        this.locator      = locator;
+        this.root         = (n == 2) ? new QuadTreeNode() : new PointTreeNode.Default(n);
     }
 
     /**
-     * Inserts the specified data into this tree.
+     * Returns the number of dimensions of points in this tree.
+     *
+     * @return the number of dimensions of points in this tree.
+     */
+    public final int getDimension() {
+        return treeRegion.length >>> 1;
+    }
+
+    /**
+     * Inserts the specified element into this tree.
      *
      * @param  element  the element to insert.
      * @return always {@code true} in current implementation.
+     * @throws NullPointerException if the given element is null.
      */
     public boolean add(final E element) {
         ArgumentChecks.ensureNonNull("element", element);
@@ -137,7 +181,7 @@ public class PointTree<E> {
     @SuppressWarnings("unchecked")
     private void insert(PointTreeNode parent, double[] region, final E element) {
         boolean isRegionCopied = false;
-        final double[] point = evaluator.apply(element);
+        final double[] point = locator.apply(element);
         for (;;) {
             final int quadrant = PointTreeNode.quadrant(point, region);
             final Object child = parent.getChild(quadrant);
@@ -169,7 +213,7 @@ public class PointTree<E> {
              */
             final Object[] data = (Object[]) child;
             final int n = data.length;
-            if (n < capacity) {
+            if (n < nodeCapacity) {
                 final Object[] copy = new Object[n+1];
                 System.arraycopy(data, 0, copy, 0, n);
                 copy[n] = element;
@@ -198,22 +242,24 @@ public class PointTree<E> {
     /**
      * Returns the number of elements in this tree.
      *
-     * @return the number of elements in this tree.
+     * @return the number of elements in this tree, or {@link Integer#MAX_VALUE}
+     *         if there is more elements than what an {@code int} can represent.
      */
     public int size() {
-        return count;
+        // Negative value would be `long` overflow to be returned as MAX_VALUE.
+        return (count >>> Integer.SIZE) == 0 ? (int) count : Integer.MAX_VALUE;
     }
 
     /**
-     * Performs bounding box search.
+     * Returns all elements in the given bounding box.
      *
      * @param  searchRegion  envelope representing the rectangular search region.
      * @return elements that are within the given radius from the point.
      */
     public Stream<E> queryByBoundingBox(final Envelope searchRegion) {
         ArgumentChecks.ensureNonNull("searchRegion", searchRegion);
-        ArgumentChecks.ensureDimensionMatches("searchRegion", treeRegion.length >>> 1, searchRegion);
+        ArgumentChecks.ensureDimensionMatches("searchRegion", getDimension(), searchRegion);
         return StreamSupport.stream(new NodeIterator<>(this, searchRegion), false);
-        // TODO: make parallel after we tested most extensively.
+        // TODO: make parallel by default after we tested most extensively.
     }
 }

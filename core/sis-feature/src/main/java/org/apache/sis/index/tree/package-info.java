@@ -18,6 +18,10 @@
 /**
  * A simple <var>k</var>-dimensional point tree implementation.
  *
+ * <h2>Future development</h2>
+ * Current implementation stores only points. We do not yet provide "region QuadTree" or
+ * R-Tree for storing rectangles. A future Apache SIS may add such index in this package.
+ *
  * @author  Chris Mattmann
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

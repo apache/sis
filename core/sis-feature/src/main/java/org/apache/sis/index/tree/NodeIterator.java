@@ -40,13 +40,6 @@ import org.apache.sis.internal.util.Numerics;
  */
 class NodeIterator<E> implements Spliterator<E> {
     /**
-     * The maximum number of dimensions that this class can support.
-     * This value is determined by the maximal capacity of {@link Cursor#quadrants}:
-     * 2<sup>{@value #MAX_DIMENSION}</sup> ≤ {@value Long#SIZE}.
-     */
-    static final int MAX_DIMENSION = 6;
-
-    /**
      * Sentinel value meaning that iteration is over.
      */
     private static final Object[] FINISHED = new Object[0];
@@ -54,7 +47,7 @@ class NodeIterator<E> implements Spliterator<E> {
     /**
      * The function computing a position for an arbitrary element of the tree.
      */
-    private final Function<? super E, double[]> evaluator;
+    private final Function<? super E, double[]> locator;
 
     /**
      * A mask with a bit set for all quadrants. This is used as the initial value of
@@ -107,7 +100,7 @@ class NodeIterator<E> implements Spliterator<E> {
             bounds[i]   = searchRegion.getMinimum(i);
             bounds[i+n] = searchRegion.getMaximum(i);
         }
-        evaluator = tree.evaluator;
+        locator = tree.locator;
         cursor = new Cursor<>(tree.treeRegion);
         cursor.node = tree.root;
         cursor.findIntersections(this);
@@ -146,7 +139,7 @@ class NodeIterator<E> implements Spliterator<E> {
          * <p><b>Note:</b> we take "quadrant" name from QuadTree, but this algorithm can actually be used
          * with more dimensions.</p>
          *
-         * @see #MAX_DIMENSION
+         * @see PointTree#MAXIMUM_DIMENSIONS
          */
         long quadrants;
 
@@ -209,7 +202,7 @@ class NodeIterator<E> implements Spliterator<E> {
          * which are quadrants 1, 3, 5, <i>etc.</i>
          *
          * <p>The index in this array is the dimension in which the quadrant do not intersect the search region.
-         * The length of this array should be equal to {@link #MAX_DIMENSION}.</p>
+         * The length of this array should be equal to {@link PointTree#MAXIMUM_DIMENSIONS}.</p>
          */
         private static final long[] CLEAR_MASKS = {
             0b0101010101010101010101010101010101010101010101010101010101010101L,
@@ -341,7 +334,7 @@ class NodeIterator<E> implements Spliterator<E> {
             }
             @SuppressWarnings("unchecked")
             final E element = (E) current[nextIndex++];
-            if (filter(evaluator.apply(element))) {
+            if (filter(locator.apply(element))) {
                 action.accept(element);
                 return true;
             }

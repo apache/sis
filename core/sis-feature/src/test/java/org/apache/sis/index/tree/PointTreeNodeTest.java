@@ -34,12 +34,14 @@ import static org.junit.Assert.*;
  */
 public final strictfp class PointTreeNodeTest extends TestCase {
     /**
-     * Verifies the value of {@link NodeIterator#MAX_DIMENSION}.
-     * That value is restricted by the capacity of {@code long}.
+     * Verifies the value of {@link PointTree#MAXIMUM_DIMENSIONS}.
+     * That value is restricted by the maximal capacity of {@code long} type
+     * of {@link org.apache.sis.index.tree.NodeIterator.Cursor#quadrants}:
+     * 2<sup>{@value PointTree#MAXIMUM_DIMENSIONS}</sup> ≤ {@value Long#SIZE}.
      */
     @Test
     public void verifyMaxDimension() {
-        assertEquals(Long.SIZE, 1 << NodeIterator.MAX_DIMENSION);
+        assertEquals(Long.SIZE, 1 << PointTree.MAXIMUM_DIMENSIONS);
     }
 
     /**
@@ -96,8 +98,8 @@ public final strictfp class PointTreeNodeTest extends TestCase {
         final Field f = NodeIterator.class.getDeclaredClasses()[0].getDeclaredField("CLEAR_MASKS");
         f.setAccessible(true);
         final long[] masks = (long[]) f.get(null);
-        assertEquals(NodeIterator.MAX_DIMENSION, masks.length);
-        for (int d=0; d<NodeIterator.MAX_DIMENSION; d++) {
+        assertEquals(PointTree.MAXIMUM_DIMENSIONS, masks.length);
+        for (int d=0; d<PointTree.MAXIMUM_DIMENSIONS; d++) {
             long expected = 0;
             final long m = 1L << d;
             for (int i=0; i<Long.SIZE; i++) {
