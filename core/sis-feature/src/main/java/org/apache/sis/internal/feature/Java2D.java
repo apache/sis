@@ -24,24 +24,20 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
 import java.awt.geom.RectangularShape;
-
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.j2d.ShapeProperties;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.UnsupportedImplementationException;
-
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -50,7 +46,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -100,17 +96,49 @@ final class Java2D extends Geometries<Shape> {
     }
 
     /**
-     * If the given point is an implementation of this library, returns its coordinate.
+     * If the given point is an implementation of this library, returns its coordinates.
      * Otherwise returns {@code null}.
      */
     @Override
-    final double[] tryGetCoordinate(final Object point) {
+    final double[] tryGetPointCoordinates(final Object point) {
         if (point instanceof Point2D) {
             final Point2D pt = (Point2D) point;
             return new double[] {
                 pt.getX(),
                 pt.getY()
             };
+        }
+        return null;
+    }
+
+    /**
+     * If the given geometry is an implementation of this library, returns all its coordinate tuples.
+     * Otherwise returns {@code null}.
+     */
+    @Override
+    final double[] tryGetAllCoordinates(final Object geometry) {
+        if (geometry instanceof Point2D) {
+            final Point2D pt = (Point2D) geometry;
+            return new double[] {
+                pt.getX(),
+                pt.getY()
+            };
+        }
+        if (geometry instanceof Shape) {
+            final List<double[]> coordinates = new ShapeProperties((Shape) geometry).coordinatesAsDoubles();
+            switch (coordinates.size()) {
+                case 0:  return ArraysExt.EMPTY_DOUBLE;
+                case 1:  return coordinates.get(0);
+                default: {
+                    final double[] tgt = new double[coordinates.stream().mapToInt((a) -> a.length).sum()];
+                    int p = 0;
+                    for (final double[] src : coordinates) {
+                        System.arraycopy(src, 0, tgt, p, src.length);
+                        p += src.length;
+                    }
+                    return tgt;
+                }
+            }
         }
         return null;
     }
@@ -137,6 +165,18 @@ final class Java2D extends Geometries<Shape> {
     }
 
     /**
+     * Creates an initially empty Java2D path.
+     *
+     * @param  isFloat {@code true} for {@code float} type, {@code false} for {@code double} type.
+     * @param  length  initial capacity.
+     * @return an initially empty path of the given type.
+     */
+    private Path2D createPath(final boolean isFloat, final int length) {
+        return isFloat ? new Path2D.Float (Path2D.WIND_NON_ZERO, length)
+                       : new Path2D.Double(Path2D.WIND_NON_ZERO, length);
+    }
+
+    /**
      * Creates a path from the given coordinate values.
      * Each {@link Double#NaN} coordinate value starts a new path.
      * The geometry may be backed by {@code float} or {@code double} primitive type,
@@ -146,7 +186,7 @@ final class Java2D extends Geometries<Shape> {
      * @throws UnsupportedOperationException if this operation is not implemented for the given number of dimensions.
      */
     @Override
-    public Shape createPolyline(final int dimension, final Vector... coordinates) {
+    public Shape createPolyline(final boolean polygon, final int dimension, final Vector... coordinates) {
         if (dimension != 2) {
             throw new UnsupportedOperationException(unsupported(dimension));
         }
@@ -181,11 +221,10 @@ final class Java2D extends Geometries<Shape> {
                 return path;
             }
         }
-        final Path2D path = isFloat ? new Path2D.Float (Path2D.WIND_NON_ZERO, length)
-                                    : new Path2D.Double(Path2D.WIND_NON_ZERO, length);
-        boolean lineTo = false;
+        final Path2D path = createPath(isFloat, length);
         double startX = Double.NaN, startY = Double.NaN;
-        double lastX = Double.NaN, lastY = Double.NaN;
+        double  lastX = Double.NaN,  lastY = Double.NaN;
+        boolean lineTo = false;
         for (final Vector v : coordinates) {
             final int size = v.size();
             for (int i=0; i<size;) {
@@ -208,10 +247,36 @@ final class Java2D extends Geometries<Shape> {
                 lastX = x; lastY = y;
             }
         }
-
-        if (lastX == startX && lastY == startY) path.closePath();
-
+        if (polygon) {
+            path.closePath();
+        }
         return ShapeUtilities.toPrimitive(path);
+    }
+
+    /**
+     * Creates a multi-polygon from an array of geometries.
+     * Callers must ensure that the given objects are Java2D geometries.
+     *
+     * @param  geometries  the polygons or linear rings to put in a multi-polygons.
+     * @throws ClassCastException if an element in the array is not a Java2D geometry.
+     */
+    @Override
+    public Shape createMultiPolygon(final Object[] geometries) {
+        if (geometries.length == 1) {
+            return (Shape) geometries[0];
+        }
+        boolean isFloat = true;
+        for (final Object geometry : geometries) {
+            if (!ShapeUtilities.isFloat(geometry)) {
+                isFloat = false;
+                break;
+            }
+        }
+        final Path2D path = createPath(isFloat, 20);
+        for (final Object geometry : geometries) {
+            path.append((Shape) geometry, false);
+        }
+        return path;
     }
 
     /**
@@ -220,7 +285,7 @@ final class Java2D extends Geometries<Shape> {
      * @throws ClassCastException if an element in the iterator is not a {@link Shape} or a {@link Point2D}.
      */
     @Override
-    public final Shape tryMergePolylines(Object next, final Iterator<?> polylines) {
+    final Shape tryMergePolylines(Object next, final Iterator<?> polylines) {
         if (!(next instanceof Shape || next instanceof Point2D)) {
             return null;
         }
@@ -260,34 +325,6 @@ add:    for (;;) {
         return ShapeUtilities.toPrimitive(path);
     }
 
-    @Override
-    public double[] getPoints(Object geometry) {
-        if (geometry instanceof GeometryWrapper) geometry = ((GeometryWrapper) geometry).geometry;
-        ensureNonNull("Geometry", geometry);
-        if (geometry instanceof Point2D) return getCoordinate(geometry);
-        if (geometry instanceof Shape) {
-            final PathIterator it = ((Shape) geometry).getPathIterator(null);
-            return StreamSupport.stream(new PathSpliterator(it), false)
-                    .flatMapToDouble(Segment::ordinates)
-                    .toArray();
-        }
-
-        throw new UnsupportedOperationException("Unsupported geometry type: "+geometry.getClass().getCanonicalName());
-    }
-
-    @Override
-    public Shape createMultiPolygon(Stream<?> polygonsOrLinearRings) {
-        final Iterator<?> it = polygonsOrLinearRings.iterator();
-        if (it.hasNext()) return tryMergePolylines(it.next(), it);
-        throw new IllegalArgumentException("Empty input");
-    }
-
-    @Override
-    public Shape toPolygon(Shape polyline) throws IllegalArgumentException {
-        // TODO: check that path ends with close.
-        return polyline;
-    }
-
     /**
      * If the given object is a Java2D shape, builds its WKT representation.
      * Current implementation assumes that all closed shapes are polygons and that polygons have no hole
@@ -311,79 +348,5 @@ add:    for (;;) {
     @Override
     public Shape parseWKB(byte[] source) {
         throw new UnsupportedImplementationException(unsupported("parseWKB"));
-    }
-
-    /**
-     * An abstraction over {@link PathIterator} to use it in a streaming context.
-     */
-    private static final class PathSpliterator implements Spliterator<Segment> {
-
-        private final PathIterator source;
-
-        private PathSpliterator(PathIterator source) {
-            this.source = source;
-        }
-
-        @Override
-        public boolean tryAdvance(Consumer<? super Segment> action) {
-            if (source.isDone()) return false;
-            final double[] coords = new double[6];
-            final int segmentType = source.currentSegment(coords);
-            action.accept(new Segment(segmentType, coords));
-            source.next();
-            return true;
-        }
-
-        @Override
-        public Spliterator<Segment> trySplit() {
-            return null;
-        }
-
-        @Override
-        public long estimateSize() {
-            return Long.MAX_VALUE;
-        }
-
-        @Override
-        public int characteristics() {
-            return Spliterator.NONNULL | Spliterator.ORDERED | Spliterator.IMMUTABLE;
-        }
-    }
-
-    /**
-     * Describe a path segment as described by {@link PathIterator#currentSegment(double[]) AWT path iteration API}.
-     * Basically, the awt abstraction is really poor, so we made a wrapper around it to describe segments.
-     */
-    private static class Segment {
-        /**
-         * This segment type ({@link PathIterator#SEG_CLOSE}, etc.).
-         */
-        final int type;
-        /**
-         * Brut points composing the segment, as returned by {@link PathIterator#currentSegment(double[])}.
-         */
-        private final double[] points;
-
-        Segment(int type, double[] points) {
-            this.type = type;
-            this.points = points;
-        }
-
-        /**
-         *
-         * @return points composing this segment, as a contiguous set of ordinates. Points are all 2D, so every two
-         * elements in backed stream describe a point. Can be empty in case of {@link PathIterator#SEG_CLOSE closing segment}.
-         */
-        DoubleStream ordinates() {
-            switch (type) {
-                case PathIterator.SEG_CLOSE: return DoubleStream.empty();
-                case PathIterator.SEG_QUADTO: return Arrays.stream(points, 0, 4);
-                case PathIterator.SEG_CUBICTO: return Arrays.stream(points);
-                case PathIterator.SEG_LINETO:
-                case PathIterator.SEG_MOVETO:
-                        return Arrays.stream(points, 0, 2);
-                default: throw new IllegalStateException("Unknown segment type: "+type);
-            }
-        }
     }
 }

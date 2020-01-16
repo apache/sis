@@ -18,7 +18,6 @@ package org.apache.sis.internal.feature;
 
 import java.nio.ByteBuffer;
 import java.util.Iterator;
-import java.util.stream.Stream;
 
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Envelope2D;
@@ -41,8 +40,6 @@ import org.apache.sis.util.Classes;
 
 import com.esri.core.geometry.*;
 
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
 
 /**
  * Centralizes some usages of ESRI geometry API by Apache SIS.
@@ -50,7 +47,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -94,11 +91,11 @@ final class ESRI extends Geometries<Geometry> {
     }
 
     /**
-     * If the given point is an implementation of this library, returns its coordinate.
+     * If the given point is an implementation of this library, returns its coordinates.
      * Otherwise returns {@code null}. If non-null, the returned array may have a length of 2 or 3.
      */
     @Override
-    final double[] tryGetCoordinate(final Object point) {
+    final double[] tryGetPointCoordinates(final Object point) {
         if (point instanceof Point) {
             final Point pt = (Point) point;
             final double z = pt.getZ();
@@ -118,6 +115,25 @@ final class ESRI extends Geometries<Geometry> {
         } else if (point instanceof Point3D) {
             final Point3D pt = (Point3D) point;
             return new double[] {pt.x, pt.y, pt.z};
+        }
+        return null;
+    }
+
+    /**
+     * If the given geometry is an implementation of this library, returns all its coordinate tuples.
+     * Otherwise returns {@code null}.
+     */
+    @Override
+    final double[] tryGetAllCoordinates(final Object geometry) {
+        if (geometry instanceof MultiVertexGeometry) {
+            final Point2D[] points = ((MultiVertexGeometry) geometry).getCoordinates2D();
+            final double[] coordinates = new double[points.length * 2];
+            int i = 0;
+            for (final Point2D p : points) {
+                coordinates[i++] = p.x;
+                coordinates[i++] = p.y;
+            }
+            return coordinates;
         }
         return null;
     }
@@ -150,7 +166,7 @@ final class ESRI extends Geometries<Geometry> {
      * @throws UnsupportedOperationException if this operation is not implemented for the given number of dimensions.
      */
     @Override
-    public Geometry createPolyline(final int dimension, final Vector... coordinates) {
+    public Geometry createPolyline(final boolean polygon, final int dimension, final Vector... coordinates) {
         if (dimension != 2) {
             throw new UnsupportedOperationException(unsupported(dimension));
         }
@@ -173,13 +189,28 @@ final class ESRI extends Geometries<Geometry> {
                 }
             }
         }
+        if (polygon) {
+            final Polygon p = new Polygon();
+            p.add(path, false);
+            return p;
+        }
         return path;
     }
 
+    /**
+     * Creates a multi-polygon from an array of geometries.
+     * Callers must ensure that the given objects are ESRI geometries.
+     *
+     * @param  geometries  the polygons or linear rings to put in a multi-polygons.
+     * @throws ClassCastException if an element in the array is not an ESRI geometry.
+     */
     @Override
-    public Geometry toPolygon(Geometry polyline) throws IllegalArgumentException {
-        if (polyline instanceof Polygon) return polyline;
-        return createMultiPolygon(Stream.of(polyline));
+    public Polygon createMultiPolygon(final Object[] geometries) {
+        final Polygon polygon = new Polygon();
+        for (final Object geometry : geometries) {
+            polygon.add((MultiPath) unwrap(geometry), false);
+        }
+        return polygon;
     }
 
     /**
@@ -188,7 +219,7 @@ final class ESRI extends Geometries<Geometry> {
      * @throws ClassCastException if an element in the iterator is not an ESRI geometry.
      */
     @Override
-    public final Geometry tryMergePolylines(Object next, final Iterator<?> polylines) {
+    final Geometry tryMergePolylines(Object next, final Iterator<?> polylines) {
         if (!(next instanceof MultiPath || next instanceof Point)) {
             return null;
         }
@@ -221,38 +252,6 @@ add:    for (;;) {
             while ((next = polylines.next()) == null);
         }
         return path;
-    }
-
-    @Override
-    public double[] getPoints(Object geometry) {
-        if (geometry instanceof GeometryWrapper) geometry = ((GeometryWrapper) geometry).geometry;
-        ensureNonNull("Geometry", geometry);
-        if (geometry instanceof MultiVertexGeometry) {
-            MultiVertexGeometry vertices = (MultiVertexGeometry) geometry;
-            final Point2D[] coords = vertices.getCoordinates2D();
-            final double[] ordinates = new double[coords.length*2];
-            int idx = 0;
-            for (Point2D coord : coords) {
-                ordinates[idx++] = coord.x;
-                ordinates[idx++] = coord.y;
-            }
-            return ordinates;
-        }
-        throw new UnsupportedOperationException("Unsupported geometry type: "+geometry.getClass().getCanonicalName());
-    }
-
-    @Override
-    public Polygon createMultiPolygon(Stream<?> polygonsOrLinearRings) {
-        return polygonsOrLinearRings.map(ESRI::toMultiPath).reduce(
-                new Polygon(),
-                (p, m) -> {p.add(m, false); return p;},
-                (p1, p2) -> {p1.add(p2, false); return p1;}
-        );
-    }
-
-    private static MultiPath toMultiPath(Object polr) {
-        if (polr instanceof MultiPath) return (MultiPath) polr;
-        else throw new UnsupportedOperationException("Unsupported geometry type: "+polr == null ? "null" : polr.getClass().getCanonicalName());
     }
 
     /**

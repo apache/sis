@@ -168,7 +168,7 @@ public final class FilterGeometryUtils {
         if (value instanceof GridCoverage) {
             //use the coverage envelope
             final GridCoverage coverage = (GridCoverage) value;
-            candidate = SIS_GEOMETRY_FACTORY.tryConvertToGeometry(coverage.getGridGeometry().getEnvelope(), WraparoundStrategy.SPLIT);
+            candidate = SIS_GEOMETRY_FACTORY.toGeometry(coverage.getGridGeometry().getEnvelope(), WraparoundStrategy.SPLIT);
         } else {
             try {
                 candidate = ObjectConverters.convert(value, Geometry.class);
@@ -193,10 +193,11 @@ public final class FilterGeometryUtils {
                 .left(leftCRS)
                 .right(rightCRS);
 
-        final CRSMatching.Transformer<Geometry> projectGeom = (g, op) -> SIS_GEOMETRY_FACTORY.tryTransform(g, op, null);
-        return new Geometry[]{
-            match.transformLeftToCommon(leftGeom, projectGeom),
-            match.transformRightToCommon(rightGeom, projectGeom)
+        // TODO: avoid casts.
+        final CRSMatching.Transformer<Object> projectGeom = (g, op) -> Geometries.transform(g, op);
+        return new Geometry[] {
+            (Geometry) match.transformLeftToCommon(leftGeom, projectGeom),
+            (Geometry) match.transformRightToCommon(rightGeom, projectGeom)
         };
     }
 

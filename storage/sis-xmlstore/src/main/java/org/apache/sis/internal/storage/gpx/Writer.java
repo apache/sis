@@ -192,7 +192,7 @@ final class Writer extends StaxStreamWriter {
      */
     private void writeWayPoint(final Feature feature, final String tagName) throws XMLStreamException, JAXBException {
         if (feature != null) {
-            final double[] pt = Geometries.getCoordinate(feature.getPropertyValue(AttributeConvention.GEOMETRY));
+            final double[] pt = Geometries.getPointCoordinates(feature.getPropertyValue(AttributeConvention.GEOMETRY));
             if (pt != null && pt.length >= 2) {
                 writer.writeStartElement(tagName);
                 writer.writeAttribute(Attributes.LATITUDE,  Double.toString(pt[1]));

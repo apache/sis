@@ -33,7 +33,7 @@ import org.opengis.referencing.operation.MathTransform;
  * This is a temporary class to be refactored later as a more complete geometry framework.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -45,6 +45,7 @@ public final class GeometryWrapper implements Geometry {
 
     /**
      * Geometry bounding box, together with its coordinate reference system.
+     * May be {@code null} if the envelope is unknown.
      */
     private final Envelope envelope;
 
@@ -66,7 +67,7 @@ public final class GeometryWrapper implements Geometry {
      */
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return envelope.getCoordinateReferenceSystem();
+        return (envelope != null) ? envelope.getCoordinateReferenceSystem() : null;
     }
 
     /**

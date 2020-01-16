@@ -31,7 +31,7 @@ import org.apache.sis.util.StringBuilders;
  * Provides some information about a {@link Shape} object.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -104,8 +104,26 @@ public final class ShapeProperties {
     }
 
     /**
+     * Returns coordinates of the given geometry as a list of (<var>x</var>,<var>y</var>) tuples
+     * in {@code double[]} arrays. This method guarantees that all arrays have at least 2 points (4 coordinates).
+     * It should be invoked only for small or medium shapes. For large shapes, the path iterator should be used
+     * directly without copy to arrays.
+     *
+     * @return coordinate points as (<var>x</var>,<var>y</var>) tuples.
+     * @throws IllegalPathStateException if the given path iterator contains curves.
+     */
+    public List<double[]> coordinatesAsDoubles() {
+        isPolygon = true;
+        return coordinatesAsDoubles(geometry.getPathIterator(null));
+    }
+
+    /**
      * {@link #coordinates(double)} implementation for the double-precision case.
      * The {@link #isPolygon} field needs to be set before to invoke this method.
+     *
+     * @param  it  path iterator of the geometry for which to get the coordinate points.
+     * @return coordinate points as (<var>x</var>,<var>y</var>) tuples.
+     * @throws IllegalPathStateException if the given path iterator contains curves.
      */
     private List<double[]> coordinatesAsDoubles(final PathIterator it) {
         final List<double[]> polylines = new ArrayList<>();
@@ -158,6 +176,10 @@ public final class ShapeProperties {
     /**
      * {@link #coordinates(double)} implementation for the single-precision case.
      * The {@link #isPolygon} field needs to be set before to invoke this method.
+     *
+     * @param  it  path iterator of the geometry for which to get the coordinate points.
+     * @return coordinate points as (<var>x</var>,<var>y</var>) tuples.
+     * @throws IllegalPathStateException if the given path iterator contains curves.
      */
     private List<float[]> coordinatesAsFloats(final PathIterator it) {
         final List<float[]> polylines = new ArrayList<>();

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.stream.Stream;
 
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -32,7 +31,6 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.collection.BackingStoreException;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -56,7 +54,7 @@ import org.locationtech.jts.io.WKTReader;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -87,12 +85,8 @@ final class JTS extends Geometries<Geometry> {
     }
 
     @Override
-    public Geometry parseWKB(byte[] source) {
-        try {
-            return new WKBReader(factory).read(source);
-        } catch (ParseException e) {
-            throw new BackingStoreException("Cannot decode given bytes as a WKB geometry", e);
-        }
+    public Geometry parseWKB(byte[] source) throws ParseException {
+        return new WKBReader(factory).read(source);
     }
 
     /**
@@ -134,11 +128,11 @@ final class JTS extends Geometries<Geometry> {
     }
 
     /**
-     * If the given point is an implementation of this library, returns its coordinate.
+     * If the given point is an implementation of this library, returns its coordinates.
      * Otherwise returns {@code null}. If non-null, the returned array may have a length of 2 or 3.
      */
     @Override
-    final double[] tryGetCoordinate(final Object point) {
+    final double[] tryGetPointCoordinates(final Object point) {
         final Coordinate pt;
         if (point instanceof Point) {
             pt = ((Point) point).getCoordinate();
@@ -161,6 +155,25 @@ final class JTS extends Geometries<Geometry> {
     }
 
     /**
+     * If the given geometry is an implementation of this library, returns all its coordinate tuples.
+     * Otherwise returns {@code null}.
+     */
+    @Override
+    final double[] tryGetAllCoordinates(Object geometry) {
+        if (geometry instanceof Geometry) {
+            final Coordinate[] points = ((Geometry) geometry).getCoordinates();
+            final double[] coordinates = new double[points.length * 2];
+            int i = 0;
+            for (final Coordinate p : points) {
+                coordinates[i++] = p.x;
+                coordinates[i++] = p.y;
+            }
+            return coordinates;
+        }
+        return null;
+    }
+
+    /**
      * If the given geometry is an implementation of this library, returns its coordinate reference system.
      * Otherwise returns {@code null}.
      *
@@ -172,6 +185,16 @@ final class JTS extends Geometries<Geometry> {
             return org.apache.sis.internal.feature.jts.JTS.getCoordinateReferenceSystem((Geometry) geometry);
         } else {
             return super.tryGetCoordinateReferenceSystem(geometry);
+        }
+    }
+
+    @Override
+    final boolean trySetCoordinateReferenceSystem(final Object geometry, final CoordinateReferenceSystem crs) {
+        if (geometry instanceof Geometry) {
+            org.apache.sis.internal.feature.jts.JTS.setCoordinateReferenceSystem((Geometry) geometry, crs);
+            return true;
+        } else {
+            return super.trySetCoordinateReferenceSystem(geometry, crs);
         }
     }
 
@@ -228,7 +251,7 @@ final class JTS extends Geometries<Geometry> {
      * @throws UnsupportedOperationException if this operation is not implemented for the given number of dimensions.
      */
     @Override
-    public Geometry createPolyline(final int dimension, final Vector... coords) {
+    public Geometry createPolyline(final boolean polygon, final int dimension, final Vector... coords) {
         final boolean is3D = (dimension == 3);
         if (!is3D && dimension != 2) {
             throw new UnsupportedOperationException(unsupported(dimension));
@@ -258,13 +281,32 @@ final class JTS extends Geometries<Geometry> {
             }
         }
         toLineString(coordinates, lines);
+        if (polygon) {
+            return toPolygon(toGeometry(lines));    // TODO: create polygon directly instead.
+        }
         return toGeometry(lines);
     }
 
+    /**
+     * Creates a multi-polygon from an array of JTS {@link Polygon} or {@link LinearRing}.
+     * If some geometries are actually linear rings, they will be converted to polygons.
+     *
+     * @param  geometries  the polygons or linear rings to put in a multi-polygons.
+     * @throws ClassCastException if an element in the array is not a JTS geometry.
+     */
     @Override
-    public Polygon toPolygon(Geometry polyline) throws IllegalArgumentException {
-        if (polyline instanceof Polygon) return (Polygon) polyline;
+    public MultiPolygon createMultiPolygon(final Object[] geometries) {
+        final Polygon[] polygons = new Polygon[geometries.length];
+        for (int i=0; i<geometries.length; i++) {
+            polygons[i] = toPolygon((Geometry) unwrap(geometries[i]));
+        }
+        return factory.createMultiPolygon(polygons);
+    }
 
+    private Polygon toPolygon(Geometry polyline) throws IllegalArgumentException {
+        if (polyline instanceof Polygon) {
+            return (Polygon) polyline;
+        }
         Polygon result = null;
         if (polyline instanceof LinearRing) {
             result = factory.createPolygon((LinearRing) polyline);
@@ -274,16 +316,10 @@ final class JTS extends Geometries<Geometry> {
                 result = factory.createPolygon(myLine.getCoordinateSequence());
             }
         }
-
-        if (result == null) throw new IllegalArgumentException("Input is not a closed line.");
-
-        try {
-            final CoordinateReferenceSystem crs = org.apache.sis.internal.feature.jts.JTS.getCoordinateReferenceSystem(polyline);
-            org.apache.sis.internal.feature.jts.JTS.setCoordinateReferenceSystem(result, crs);
-        } catch (FactoryException e) {
-            throw new BackingStoreException("Cannot extract CRS from geometry", e);
+        if (result == null) {
+            throw new IllegalArgumentException("Input is not a closed line.");
         }
-
+        copyMetadata(polyline, result);
         return result;
     }
 
@@ -324,7 +360,7 @@ final class JTS extends Geometries<Geometry> {
      * @throws ClassCastException if an element in the iterator is not a JTS geometry.
      */
     @Override
-    public final Geometry tryMergePolylines(Object next, final Iterator<?> polylines) {
+    final Geometry tryMergePolylines(Object next, final Iterator<?> polylines) {
         if (!(next instanceof MultiLineString || next instanceof LineString || next instanceof Point)) {
             return null;
         }
@@ -364,53 +400,11 @@ add:    for (;;) {
         return toGeometry(lines);
     }
 
-    @Override
-    public double[] getPoints(Object geometry) {
-        if (geometry instanceof GeometryWrapper) {
-            geometry = ((GeometryWrapper) geometry).geometry;
-        }
-
-        if (geometry instanceof Geometry) {
-            Geometry geom = (Geometry) geometry;
-            final int nbPts = geom.getNumPoints();
-            final Coordinate[] coords = geom.getCoordinates();
-            double[] ordinates = new double[nbPts * 2];
-            for (int i = 0, j=0; i < nbPts ; i++) {
-                final Coordinate coord = coords[i];
-                ordinates[j++] = coord.x;
-                ordinates[j++] = coord.y;
-            }
-            return ordinates;
-        }
-
-        return null;
-    }
-
-    @Override
-    public MultiPolygon createMultiPolygon(Stream<?> polygonsOrLinearRings) {
-        final Polygon[] polys = polygonsOrLinearRings
-                .map(this::castToPolygon)
-                .toArray(size -> new Polygon[size]);
-        return factory.createMultiPolygon(polys);
-    }
-
-    private Polygon castToPolygon(Object input) {
-        if (input instanceof GeometryWrapper) input = ((GeometryWrapper) input).geometry;
-
-        if (input instanceof Geometry) return toPolygon((Geometry) input);
-        else throw new IllegalArgumentException("Given argument cannot be cast to polygon");
-    }
-
-    @Override
-    public void setCRS(Geometry target, CoordinateReferenceSystem toApply) {
-        org.apache.sis.internal.feature.jts.JTS.setCoordinateReferenceSystem(target, toApply);
-    }
-
     /**
      * If the given geometry is a JTS geometry, computes its buffer. Otherwise returns {@code null}.
      */
     @Override
-    Object tryBuffer(final Object geometry, final double distance) {
+    Geometry tryBuffer(final Object geometry, final double distance) {
         if (geometry instanceof Geometry) {
             final Geometry jts = (Geometry) geometry;
             final Geometry buffer = jts.buffer(distance);
@@ -433,7 +427,7 @@ add:    for (;;) {
      * @see #tryGetCoordinateReferenceSystem(Object)
      */
     @Override
-    public Geometry tryTransform(final Object geometry, final CoordinateOperation operation, final CoordinateReferenceSystem targetCRS)
+    final Geometry tryTransform(final Object geometry, final CoordinateOperation operation, final CoordinateReferenceSystem targetCRS)
             throws FactoryException, TransformException
     {
         if (geometry instanceof Geometry) {

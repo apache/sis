@@ -19,7 +19,6 @@ package org.apache.sis.internal.sql.feature;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.IntStream;
@@ -95,7 +94,7 @@ class EWKBReader {
         if (defaultCrs == null) return new EWKBReader(factory);
         else return new EWKBReader(factory, bytes -> {
             final Object geom = new Reader(factory, bytes).read();
-            if (geom != null) factory.setCRS(geom, defaultCrs);
+            Geometries.setCoordinateReferenceSystem(geom, defaultCrs);
             return geom;
         });
     }
@@ -106,7 +105,9 @@ class EWKBReader {
             final Object geom = reader.read();
             if (reader.srid > 0) {
                 final CoordinateReferenceSystem crs = fromPgSridToCrs.apply(reader.srid);
-                if (crs != null) factory.setCRS(geom, crs);
+                if (crs != null) {
+                    Geometries.setCoordinateReferenceSystem(geom, crs);
+                }
             }
             return geom;
         });
@@ -156,26 +157,25 @@ class EWKBReader {
                 case MULTIPOLYGON:       return readMultiPolygon();
                 case GEOMETRYCOLLECTION: return readCollection();
             }
-
             throw new UnsupportedOperationException("Unsupported geometry type: "+geomType);
         }
 
         private Object readMultiLineString() {
-            final Iterator<Object> it = IntStream.range(0, readCount())
+            final Object geometry = Geometries.mergePolylines(IntStream.range(0, readCount())
                     .mapToObj(i -> new Reader(factory, buffer).read())
-                    .iterator();
-            if (it.hasNext()) {
-                final Object first = it.next();
-                return factory.tryMergePolylines(first, it);
+                    .iterator());
+            if (geometry != null) {
+                return geometry;
             }
             throw new IllegalStateException("No geometry decoded");
         }
 
         private Object readMultiPolygon() {
-            return factory.createMultiPolygon(
-                    IntStream.range(0, readCount())
-                            .mapToObj(i -> new Reader(factory, buffer).read())
-            );
+            final Object[] polygons = new Object[readCount()];
+            for (int i=0; i<polygons.length; i++) {
+                polygons[i] = new Reader(factory, buffer).read();
+            }
+            return factory.createMultiPolygon(polygons);
         }
 
         private Object readCollection() {
@@ -190,7 +190,7 @@ class EWKBReader {
 
         final Object readLineString() {
             final double[] ordinates = readCoordinateSequence();
-            return factory.createPolyline(dimension, Vector.create(ordinates));
+            return factory.createPolyline(false, dimension, Vector.create(ordinates));
         }
 
         private Object readPolygon() {
@@ -206,8 +206,7 @@ class EWKBReader {
                 allShells[i++] = separator;
                 allShells[i++] = Vector.create(readCoordinateSequence());
             }
-
-            return factory.toPolygon(factory.createPolyline(dimension, outerShell));
+            return factory.createPolyline(true, dimension, outerShell);
         }
 
         private double[] readMultiPoint() {

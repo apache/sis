@@ -181,10 +181,11 @@ public class ST_Envelope extends NamedFunction implements FeatureExpression {
             return new GeneralEnvelope((GeographicBoundingBox) value);
         } else if (value instanceof Envelope) {
             return (Envelope) value;
-        } else if (value instanceof CharSequence) {
+        } else if (value instanceof CharSequence) try {
             // Maybe it's a WKT format, so we will try to read it
-            value = Geometries.fromWkt(value.toString())
-                    .orElseThrow(() -> new IllegalArgumentException("No geometry provider found to read WKT"));
+            value = AbstractSpatialFunction.getGeometryImplementation().parseWKT(value.toString());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Can not parse WKT", e);
         }
 
         // First, we check if the envelope is already available. If not, we try to compute it.

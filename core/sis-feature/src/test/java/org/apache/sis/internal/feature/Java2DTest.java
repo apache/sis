@@ -39,7 +39,7 @@ public final strictfp class Java2DTest extends GeometriesTestCase {
     }
 
     /**
-     * Tests {@link Java2D#createPolyline(int, Vector...)}.
+     * Tests {@link Java2D#createPolyline(boolean, int, Vector...)}.
      */
     @Test
     @Override

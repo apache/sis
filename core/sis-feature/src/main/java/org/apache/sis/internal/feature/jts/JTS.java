@@ -80,13 +80,13 @@ public final class JTS extends Static {
      *
      * If none of the above is valid, {@code null} is returned.
      *
-     * @param  geometry the geometry from which to get the CRS, or {@code null}.
+     * @param  source  the geometry from which to get the CRS, or {@code null}.
      * @return the coordinate reference system, or {@code null} if none.
      * @throws FactoryException if the CRS can not be created from the SRID code.
      */
-    public static CoordinateReferenceSystem getCoordinateReferenceSystem(final Geometry geometry) throws FactoryException {
-        if (geometry != null) {
-            final Object userData = geometry.getUserData();
+    public static CoordinateReferenceSystem getCoordinateReferenceSystem(final Geometry source) throws FactoryException {
+        if (source != null) {
+            final Object userData = source.getUserData();
             if (userData instanceof CoordinateReferenceSystem) {
                 return (CoordinateReferenceSystem) userData;
             } else if (userData instanceof Map<?,?>) {
@@ -99,7 +99,7 @@ public final class JTS extends Static {
             /*
              * Fallback on SRID with the assumption that they are EPSG codes.
              */
-            final int srid = geometry.getSRID();
+            final int srid = source.getSRID();
             if (srid > 0) {
                 return CRS.forCode(Constants.EPSG + ':' + srid);
             }
@@ -107,27 +107,26 @@ public final class JTS extends Static {
         return null;
     }
 
-    public static Optional<CoordinateReferenceSystem> setCoordinateReferenceSystem(final Geometry target, final CoordinateReferenceSystem toSet) {
+    public static Optional<CoordinateReferenceSystem> setCoordinateReferenceSystem(final Geometry target, final CoordinateReferenceSystem crs) {
         ensureNonNull("Target geometry", target);
         final Object ud = target.getUserData();
         if (ud == null) {
             // By security, we reset SRID in case old CRS was defined this way.
             target.setSRID(0);
-            target.setUserData(toSet);
+            target.setUserData(crs);
             return Optional.empty();
         } else if (ud instanceof CoordinateReferenceSystem) {
-            target.setUserData(toSet);
+            target.setUserData(crs);
             return Optional.of((CoordinateReferenceSystem) ud);
         } else if (ud instanceof Map) {
             final Map asMap = (Map) ud;
             // In case user-data contains other useful data, we don't switch from map to CRS. We also reset SRID.
-            final Object oldVal = asMap.put(CRS_KEY, toSet);
+            final Object oldVal = asMap.put(CRS_KEY, crs);
             // By security, we reset SRID in case old CRS was defined this way.
             if (oldVal == null) {
                 target.setSRID(0);
             }
         }
-
         throw new IllegalArgumentException("Cannot modify input geometry, because user-data does not comply with SIS convention (should be a map or null, but was "+ud.getClass().getCanonicalName()+").");
     }
 

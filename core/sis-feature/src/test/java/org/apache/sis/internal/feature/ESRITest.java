@@ -40,7 +40,7 @@ public final strictfp class ESRITest extends GeometriesTestCase {
     }
 
     /**
-     * Tests {@link ESRI#createPolyline(int, Vector...)}.
+     * Tests {@link ESRI#createPolyline(boolean, int, Vector...)}.
      */
     @Test
     @Override

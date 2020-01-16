@@ -62,23 +62,23 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link Geometries#createPoint(double, double)} followed by {@link Geometries#tryGetCoordinate(Object)}.
+     * Tests {@link Geometries#createPoint(double, double)} followed by {@link Geometries#tryGetPointCoordinates(Object)}.
      */
     @Test
-    public void testTryGetCoordinate() {
+    public void testTryGetPointCoordinates() {
         geometry = factory.createPoint(4, 5);
         assertNotNull("createPoint", geometry);
-        assertArrayEquals("tryGetCoordinate", new double[] {4, 5}, factory.tryGetCoordinate(geometry), STRICT);
+        assertArrayEquals("tryGetPointCoordinates", new double[] {4, 5}, factory.tryGetPointCoordinates(geometry), STRICT);
     }
 
     /**
-     * Tests {@link Geometries#createPolyline(int, Vector...)}.
+     * Tests {@link Geometries#createPolyline(boolean, int, Vector...)}.
      * This method verifies the polylines by a call to {@link Geometries#tryGetEnvelope(Object)}.
      * Subclasses should perform more extensive tests by verifying the {@link #geometry} field.
      */
     @Test
     public void testCreatePolyline() {
-        geometry = factory.createPolyline(2, Vector.create(new double[] {
+        geometry = factory.createPolyline(false, 2, Vector.create(new double[] {
                   4,   5,
                   7,   9,
                   9,   3,
@@ -134,7 +134,7 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
     @Test
     @DependsOnMethod("testCreatePolyline")
     public void testTryFormatWKT() {
-        geometry = factory.createPolyline(2, Vector.create(new double[] {4,5, 7,9, 9,3, -1,-6}));
+        geometry = factory.createPolyline(false, 2, Vector.create(new double[] {4,5, 7,9, 9,3, -1,-6}));
         final String text = factory.tryFormatWKT(geometry, 0);
         assertNotNull(text);
         assertWktEquals("LINESTRING (4 5, 7 9, 9 3, -1 -6)", text);
@@ -179,12 +179,12 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
         Stream.of(WraparoundStrategy.CONTIGUOUS, WraparoundStrategy.EXPAND, WraparoundStrategy.SPLIT)
                 .forEach(method
                         -> expectFailFast(()
-                                -> factory.tryConvertToGeometry(wrapped, method)
+                                -> factory.toGeometry(wrapped, method)
                         , IllegalArgumentException.class)
                 );
 
         final GeneralEnvelope wrapped3d = new GeneralEnvelope(3);
-        expectFailFast(() -> factory.tryConvertToGeometry(wrapped3d, WraparoundStrategy.NONE), IllegalArgumentException.class);
+        expectFailFast(() -> factory.toGeometry(wrapped3d, WraparoundStrategy.NONE), IllegalArgumentException.class);
     }
 
     public static void expectFailFast(Callable whichMustFail, Class<? extends Exception>... expectedErrorTypes) {
@@ -212,7 +212,7 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
     }
 
     private void assertConversion(final Envelope source, final WraparoundStrategy method, final double[] expectedOrdinates) {
-        final double[] result = factory.getPoints(factory.tryConvertToGeometry(source, method));
+        final double[] result = factory.tryGetAllCoordinates(factory.toGeometry(source, method));
         assertArrayEquals("Point list for: "+method, expectedOrdinates, result, 1e-9);
     }
 

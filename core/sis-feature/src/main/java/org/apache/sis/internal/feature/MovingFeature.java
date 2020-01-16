@@ -291,7 +291,7 @@ public final class MovingFeature {
         /*
          * Store the geometry and characteristics in the attribute.
          */
-        dest.setValue(factory.createPolyline(dimension, vectors));
+        dest.setValue(factory.createPolyline(false, dimension, vectors));
         final Attribute<Instant> c = TIME.newInstance();
         c.setValues(new DateList(times));
         dest.characteristics().values().add(c);

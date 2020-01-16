@@ -25,8 +25,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.feature.WraparoundStrategy;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Names;
 import org.opengis.filter.*;
 import org.opengis.filter.expression.Add;
@@ -76,6 +78,10 @@ import org.opengis.util.LocalName;
  * @module
  */
 public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
+    /**
+     * TODO
+     */
+    private static final GeometryLibrary LIBRARY = null;
 
     private final java.util.function.Function<Literal, CharSequence> valueFormatter;
 
@@ -87,10 +93,10 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
 
     public ANSIInterpreter(
             java.util.function.Function<Literal, CharSequence> valueFormatter,
-            java.util.function.Function<PropertyName, CharSequence> nameFormatter
-    ) {
-        ensureNonNull("Literal value formatter", valueFormatter);
-        ensureNonNull("Property name formatter", nameFormatter);
+            java.util.function.Function<PropertyName, CharSequence> nameFormatter)
+    {
+        ArgumentChecks.ensureNonNull("valueFormatter", valueFormatter);
+        ArgumentChecks.ensureNonNull("nameFormatter", nameFormatter);
         this.valueFormatter = valueFormatter;
         this.nameFormatter = nameFormatter;
     }
@@ -403,7 +409,6 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
         if (value instanceof Geometry) {
             return format((Geometry) value);
         }
-
         throw new UnsupportedOperationException("Not supported yet: Literal value of type "+value.getClass());
     }
 
@@ -451,8 +456,8 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
     protected CharSequence join(
             Supplier<Expression> leftOperand,
             Supplier<Expression> rightOperand,
-            String operator, Object extraData
-    ) {
+            String operator, Object extraData)
+    {
         return "("
                 + evaluateMandatory(leftOperand.get(), extraData)
                 + operator
@@ -500,8 +505,9 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
         ensureMatchCase(filter::isMatchingCase);
     }
     private static void ensureMatchCase(BooleanSupplier filter) {
-        if (!filter.getAsBoolean())
+        if (!filter.getAsBoolean()) {
             throw new UnsupportedOperationException("case insensitive match is not defined by ANSI SQL");
+        }
     }
 
     protected static CharSequence append(CharSequence toAdd, Object extraData) {
@@ -521,8 +527,11 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
         }
         final GeneralEnvelope env = new GeneralEnvelope(lower, upper);
         env.setCoordinateReferenceSystem(source.getCoordinateReferenceSystem());
-        return Geometries.toGeometry(env, WraparoundStrategy.SPLIT)
-                .orElseThrow(() -> new UnsupportedOperationException("No geometry implementation available"));
+        final Object g = Geometries.implementation(LIBRARY).toGeometry(env, WraparoundStrategy.SPLIT);
+        if (g == null) {
+            throw new UnsupportedOperationException("No geometry implementation available");
+        }
+        return new GeometryWrapper(g, env);
     }
 
     protected static CharSequence format(final Geometry source) {
@@ -543,7 +552,6 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
         } else if (candidate == Double.POSITIVE_INFINITY) {
             return Double.MAX_VALUE;
         }
-
         return candidate;
     }
 }

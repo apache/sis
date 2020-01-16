@@ -41,7 +41,7 @@ public final strictfp class JTSTest extends GeometriesTestCase {
     }
 
     /**
-     * Tests {@link JTS#createPolyline(int, Vector...)}.
+     * Tests {@link JTS#createPolyline(boolean, int, Vector...)}.
      */
     @Test
     @Override

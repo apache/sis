@@ -22,8 +22,10 @@ import org.apache.sis.feature.Features;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.FeatureExpression;
+import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.jts.JTS;
 import org.apache.sis.internal.filter.NamedFunction;
+import org.apache.sis.setup.GeometryLibrary;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
@@ -42,6 +44,13 @@ public abstract class AbstractSpatialFunction extends NamedFunction implements F
 
     public AbstractSpatialFunction(Expression[] parameters) {
         super(parameters);
+    }
+
+    /**
+     * @todo allow the geometry library to be specified.
+     */
+    static Geometries<?> getGeometryImplementation() {
+        return Geometries.implementation((GeometryLibrary) null);
     }
 
     protected int getMinParams() {
