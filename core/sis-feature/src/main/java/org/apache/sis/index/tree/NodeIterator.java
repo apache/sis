@@ -401,6 +401,7 @@ class NodeIterator<E> implements Spliterator<E> {
             }
             if (half != 0) {
                 return new NodeIterator<>(this, half);
+                // TODO: check if new.current != null.
             }
             // TODO: go down in the tree and explore other nodes.
         }
@@ -409,6 +410,9 @@ class NodeIterator<E> implements Spliterator<E> {
 
     /**
      * Returns an estimate of the number of elements or {@link Long#MAX_VALUE} if too expensive to compute.
+     *
+     * @todo Compute an estimated size by multiplying {@link PointTree#count} by the percentage of bits set
+     *       in {@link Cursor#quadrants} (use {@link #bitmask} for the number of bits in the 100% case).
      */
     @Override
     public long estimateSize() {

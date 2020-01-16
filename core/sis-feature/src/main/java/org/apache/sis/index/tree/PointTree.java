@@ -148,7 +148,7 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
 
     /**
      * Whether the stream can be parallel by default.
-     * Should be true only if the {@link #locator} is thread safe.
+     * Should be {@code false} if the {@link #locator} is not thread-safe.
      */
     private final boolean parallel;
 
@@ -171,8 +171,8 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
      * @param  bounds        bounds of the region of data to be inserted in the <var>k</var>-dimensional tree.
      * @param  locator       function computing a position for an arbitrary element of this tree.
      * @param  nodeCapacity  the capacity of each node (not to be confused with a capacity of the tree).
-     * @param  parallel      Whether the stream can be parallel by default.
-     *                       Should be true only if the given {@code locator} is thread safe.
+     * @param  parallel      whether the stream can be parallel by default.
+     *                       Should be {@code false} if the given {@code locator} is not thread-safe.
      */
     public PointTree(final Class<E> elementType, final Envelope bounds,
             final Function<? super E, double[]> locator, final int nodeCapacity, final boolean parallel)
@@ -182,16 +182,21 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
         ArgumentChecks.ensureNonNull         ("locator",      locator);
         ArgumentChecks.ensureStrictlyPositive("nodeCapacity", nodeCapacity);
         final int n = bounds.getDimension();
-        if (n < 2) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedDimension_3, "bounds", 2, n));
-        }
         if (n > MAXIMUM_DIMENSIONS) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, n));
         }
         treeRegion = new double[n*2];
+        boolean isValid = (n >= 2);
         for (int i=0; i<n; i++) {
-            ArgumentChecks.ensureFinite("treeRegion", treeRegion[i]   = bounds.getMedian(i));
-            ArgumentChecks.ensureFinite("treeRegion", treeRegion[i+n] = bounds.getSpan(i));
+            final double m = treeRegion[i]   = bounds.getMedian(i);
+            final double s = treeRegion[i+n] = bounds.getSpan(i);
+            isValid &= !Double.isNaN(m) && (s > 0);
+            if (Double.isInfinite(m) || Double.isInfinite(s)) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.InfiniteArgumentValue_1, "treeRegion"));
+            }
+        }
+        if (!isValid) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyEnvelope2D));
         }
         this.crs          = bounds.getCoordinateReferenceSystem();
         this.elementType  = elementType;
@@ -206,6 +211,8 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
      * The CRS is taken from the envelope given in argument to the constructor.
      *
      * @return the CRS of all points in this tree, if presents.
+     *
+     * @see #getDimension()
      */
     public final Optional<CoordinateReferenceSystem> getCoordinateReferenceSystem() {
         return Optional.ofNullable(crs);
@@ -215,6 +222,8 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
      * Returns the number of dimensions of points in this tree.
      *
      * @return the number of dimensions of points in this tree.
+     *
+     * @see #getCoordinateReferenceSystem()
      */
     public final int getDimension() {
         return treeRegion.length >>> 1;

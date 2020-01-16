@@ -155,9 +155,10 @@ public final strictfp class PointTreeTest extends TestCase {
     @Test
     public void testSpliterator() {
         createTree();
-        final List<Spliterator<Element>> iterators = new ArrayList<>(2);
+        final int n = 4;                    // Maximal number of splits.
+        final List<Spliterator<Element>> iterators = new ArrayList<>(n);
         iterators.add(tree.spliterator());
-        for (int i=0; i<4; i++) {
+        for (int i=0; i<n; i++) {
             Spliterator<Element> it = iterators.get(iterators.size() - 1);
             it = it.trySplit();
             if (it != null) {
