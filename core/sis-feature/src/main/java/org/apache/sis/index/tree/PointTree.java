@@ -19,12 +19,12 @@ package org.apache.sis.index.tree;
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.AbstractSet;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import java.util.function.Function;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.ArgumentChecks;
@@ -50,7 +50,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  *
  * The performances of this {@code PointTree} depends on two parameters: an estimated bounding box of the points
  * to be added in this tree and a maximal capacity of leaf nodes (not to be confused with a capacity of the tree).
- * More details are given in the {@linkplain #PointTree(Class, Envelope, Function, int, boolean) constructor}.
+ * More details are given in the {@linkplain #PointTree(Class, Envelope, Locator, int, boolean) constructor}.
  *
  * <h2>Thread-safety</h2>
  * This class is not thread-safe when the tree content is modified. But if the tree is kept unmodified
@@ -80,6 +80,23 @@ import org.apache.sis.util.collection.CheckedContainer;
  * @module
  */
 public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>, Serializable {
+    /**
+     * Provides the coordinates of any element stored in {@link PointTree}.
+     *
+     * @param  <E>  the type of elements stored in this tree.
+     */
+    @FunctionalInterface
+    public interface Locator<E> {
+        /**
+         * Provides the coordinates of the given element. The coordinate shall be written in the supplied array.
+         * The array length will be {@link PointTree#getDimension()} and this method shall overwrite all array values.
+         *
+         * @param  element  the element for which to get the coordinates.
+         * @param  dest     a pre-allocated array where to store the coordinate values.
+         */
+        void getPositionOf(E element, double[] dest);
+    }
+
     /**
      * For cross-version compatibility.
      */
@@ -142,10 +159,10 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
     final double[] treeRegion;
 
     /**
-     * The function computing a position for an arbitrary element in this tree.
+     * Function computing the position of any element in this tree.
      * The length of arrays computed by this locator must be equal to {@link #getDimension()}.
      */
-    final Function<? super E, double[]> locator;
+    final Locator<? super E> locator;
 
     /**
      * Whether the stream can be parallel by default.
@@ -188,13 +205,13 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
      *
      * @param  elementType   the base type of all elements in this tree.
      * @param  bounds        bounds of the region of data to be inserted in the <var>k</var>-dimensional tree.
-     * @param  locator       function computing a position for an arbitrary element of this tree.
+     * @param  locator       function computing the position of any element in this tree.
      * @param  nodeCapacity  the capacity of each node (not to be confused with a capacity of the tree).
      * @param  parallel      whether the stream can be parallel by default.
      *                       Should be {@code false} if the given {@code locator} is not thread-safe.
      */
     public PointTree(final Class<E> elementType, final Envelope bounds,
-            final Function<? super E, double[]> locator, final int nodeCapacity, final boolean parallel)
+            final Locator<? super E> locator, final int nodeCapacity, final boolean parallel)
     {
         ArgumentChecks.ensureNonNull         ("elementType",  elementType);
         ArgumentChecks.ensureNonNull         ("bounds",       bounds);
@@ -300,9 +317,32 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
     @Override
     public boolean add(final E element) {
         ArgumentChecks.ensureNonNull("element", element);
-        final boolean p = insert(root, treeRegion, element);
-        if (p) count++;
-        return p;
+        final boolean modified = insert(root, treeRegion, element, new double[getDimension()]);
+        if (modified) count++;
+        return modified;
+    }
+
+    /**
+     * Inserts all elements from the specified collection into this tree if they are not already present.
+     *
+     * @param  elements  the elements to insert.
+     * @return {@code true} if at least one element has been added.
+     * @throws NullPointerException if an element is null.
+     */
+    @Override
+    public boolean addAll(final Collection<? extends E> elements) {
+        ArgumentChecks.ensureNonNull("elements", elements);
+        final double[] buffer = new double[getDimension()];
+        boolean modified = false;
+        int i = 0;
+        for (final E element : elements) {
+            ArgumentChecks.ensureNonNullElement("element", i++, element);
+            if (insert(root, treeRegion, element, buffer)) {
+                modified = true;
+                count++;
+            }
+        }
+        return modified;
     }
 
     /**
@@ -312,12 +352,13 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
      * @param  parent   the parent where to add the given data.
      * @param  region   region of current node, as the center in first half and size in second half.
      * @param  element  the element to insert.
+     * @param  point    a pre-allocated array where to store the coordinates. This method will write in this array.
      * @return {@code true} if the element has been added, or {@code false} if it was already present.
      */
     @SuppressWarnings("unchecked")
-    private boolean insert(PointTreeNode parent, double[] region, final E element) {
+    private boolean insert(PointTreeNode parent, double[] region, final E element, final double[] point) {
         boolean isRegionCopied = false;
-        final double[] point = locator.apply(element);
+        locator.getPositionOf(element, point);
         for (;;) {
             final int quadrant = PointTreeNode.quadrant(point, region);
             final Object child = parent.getChild(quadrant);
@@ -372,8 +413,9 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
             }
             PointTreeNode.enterQuadrant(region, quadrant);
             final PointTreeNode branch = parent.newInstance();
+            final double[] buffer = new double[point.length];
             for (final Object e : data) {
-                insert(branch, region, (E) e);
+                insert(branch, region, (E) e, buffer);
             }
             parent.setChild(quadrant, branch);
             parent = branch;
@@ -394,7 +436,8 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
         }
         PointTreeNode  parent = root;
         final double[] region = treeRegion.clone();
-        final double[] point  = locator.apply((E) element);
+        final double[] point  = new double[getDimension()];
+        locator.getPositionOf((E) element, point);
         for (;;) {
             final int quadrant = PointTreeNode.quadrant(point, region);
             final Object child = parent.getChild(quadrant);
@@ -431,9 +474,9 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
     @Override
     public Spliterator<E> spliterator() {
         return new NodeIterator<E>(this, null) {
-            @Override public    long    estimateSize()     {return count;}
-            @Override public    int     characteristics()  {return SIZED | DISTINCT | NONNULL;}
-            @Override protected boolean filter(double[] p) {return true;}
+            @Override public    long    estimateSize()    {return count;}
+            @Override public    int     characteristics() {return SIZED | DISTINCT | NONNULL;}
+            @Override protected boolean filter(E e)       {return true;}
         };
     }
 

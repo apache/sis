@@ -19,7 +19,6 @@ package org.apache.sis.index.tree;
 import java.util.Arrays;
 import java.util.Spliterator;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.internal.util.Numerics;
 
@@ -28,8 +27,8 @@ import org.apache.sis.internal.util.Numerics;
  * An iterator over the elements contained in a {@link PointTreeNode}.
  * The iterator applies a first filtering of elements by traversing only the nodes that <em>may</em>
  * intersect the Area Of Interest (AOI). But after a node has been retained, an additional check for
- * inclusion may be necessary. That additional check is performed by {@link #filter(double[])} and
- * can be overridden by subclasses.
+ * inclusion may be necessary. That additional check is performed by {@link #filter(Object)} and can
+ * be overridden by subclasses.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -39,7 +38,7 @@ import org.apache.sis.internal.util.Numerics;
  * @since 1.1
  * @module
  */
-class NodeIterator<E> implements Spliterator<E> {
+class NodeIterator<E> implements Spliterator<E>, Cloneable {
     /**
      * Sentinel value meaning that iteration is over.
      */
@@ -48,7 +47,7 @@ class NodeIterator<E> implements Spliterator<E> {
     /**
      * The function computing a position for an arbitrary element of the tree.
      */
-    private final Function<? super E, double[]> locator;
+    private final PointTree.Locator<? super E> locator;
 
     /**
      * A mask with a bit set for all quadrants. This is used as the initial value of
@@ -61,6 +60,11 @@ class NodeIterator<E> implements Spliterator<E> {
      * half are maximal coordinates. The content of this array should not be modified.
      */
     private final double[] bounds;
+
+    /**
+     * A pre-allocated buffer where to store point coordinates, or {@code null} if not needed.
+     */
+    private double[] point;
 
     /**
      * The object to use for updating the {@link #current} field, or {@code null} if none.
@@ -99,6 +103,7 @@ class NodeIterator<E> implements Spliterator<E> {
         bitmask = Numerics.bitmask(1 << n) - 1;
         bounds  = new double[n*2];
         if (searchRegion != null) {
+            point = new double[n];
             for (int i = n; --i >= 0;) {
                 bounds[i]   = searchRegion.getMinimum(i);
                 bounds[i+n] = searchRegion.getMaximum(i);
@@ -108,28 +113,33 @@ class NodeIterator<E> implements Spliterator<E> {
             Arrays.fill(bounds, n, n*2, Double.POSITIVE_INFINITY);
         }
         locator = tree.locator;
-        cursor = new Cursor<>(tree.treeRegion);
+        cursor  = new Cursor<>(tree.treeRegion);
         cursor.node = tree.root;
         cursor.findIntersections(this);
         current = next();
     }
 
     /**
-     * Creates a new iterator initialized to a copy of the given iterator.
+     * Invoked after {@link #clone()} for copying the fields that can not be shared between two
+     * {@link NodeIterator} instances. This is used for {@link #trySplit()} implementation.
      *
      * @param  quadrants  the value to assign to {@link Cursor#quadrants}.
      *         That bitmask shall not intersect the bitmask of {@code other.cursor}.
+     * @return whether this iterator has to data to iterate.
      */
-    private NodeIterator(final NodeIterator<E> other, final long quadrants) {
-        final Cursor<E> c = other.cursor;
-        locator           = other.locator;
-        bitmask           = other.bitmask;
-        bounds            = other.bounds;
+    private boolean postClone(final long quadrants) {
+        final Cursor<E> c = cursor;
+        if (point != null) {
+            point = new double[point.length];
+        }
         cursor            = new Cursor<>(c.region);
         cursor.parent     = c.parent;
         cursor.node       = c.node;
         cursor.quadrants  = quadrants;
+        recycle           = null;
+        nextIndex         = 0;
         current           = next();
+        return (current != null);
     }
 
     /**
@@ -359,7 +369,7 @@ class NodeIterator<E> implements Spliterator<E> {
             }
             @SuppressWarnings("unchecked")
             final E element = (E) current[nextIndex++];
-            if (filter(locator.apply(element))) {
+            if (filter(element)) {
                 action.accept(element);
                 return true;
             }
@@ -367,17 +377,18 @@ class NodeIterator<E> implements Spliterator<E> {
     }
 
     /**
-     * Returns whether the given position is included in the search region.
+     * Returns whether the given element is included in the search region.
      * The default implementation verifies if the point is included in the bounding box.
      * Subclasses may override, for example for restricting the points to a radius around a central location.
      *
-     * @param  position  the position to check for inclusion.
-     * @return whether the position is in the search region.
+     * @param  element  the element to check for inclusion.
+     * @return whether the element is in the search region.
      */
-    protected boolean filter(final double[] position) {
+    protected boolean filter(final E element) {
+        locator.getPositionOf(element, point);
         final int n = bounds.length >>> 1;
         for (int i = n; --i >= 0;) {
-            final double p = position[i];
+            final double p = point[i];
             if (!(p >= bounds[i] && p <= bounds[i+n])) {            // Use '!' for catching NaN.
                 return false;
             }
@@ -399,9 +410,12 @@ class NodeIterator<E> implements Spliterator<E> {
                 c.quadrants &= ~q;
                 half |= q;
             }
-            if (half != 0) {
-                return new NodeIterator<>(this, half);
-                // TODO: check if new.current != null.
+            if (half != 0) try {
+                @SuppressWarnings("unchecked")
+                final NodeIterator<E> second = (NodeIterator<E>) clone();
+                if (second.postClone(half)) return second;
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
             }
             // TODO: go down in the tree and explore other nodes.
         }

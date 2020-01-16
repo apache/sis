@@ -79,6 +79,12 @@ public final strictfp class PointTreeTest extends TestCase {
             y = random.nextInt(YMAX - YMIN) + YMIN;
         }
 
+        /** Stores the coordinates of this element in the given array. */
+        void getPosition(final double[] dest) {
+            dest[1] = y;
+            dest[0] = x;
+        }
+
         @Override public double getX()     {return x;}
         @Override public double getY()     {return y;}
         @Override public String toString() {return "P(" + x + ", " + y + ')';}
@@ -103,7 +109,7 @@ public final strictfp class PointTreeTest extends TestCase {
         region.width  = XMAX - XMIN;
         region.height = YMAX - YMIN;
         random = TestUtilities.createRandomNumberGenerator();
-        tree = new PointTree<>(Element.class, region, Element::getCoordinate, 5, false);
+        tree = new PointTree<>(Element.class, region, Element::getPosition, 5, false);
         int count = random.nextInt(100) + 200;
         data = new HashSet<>(Containers.hashMapCapacity(count));
         while (--count >= 0) {
