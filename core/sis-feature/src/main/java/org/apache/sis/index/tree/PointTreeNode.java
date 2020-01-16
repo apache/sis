@@ -48,7 +48,7 @@ import java.io.Serializable;
  * @since   1.1
  * @module
  */
-abstract class PointTreeNode implements Serializable {
+abstract class PointTreeNode implements Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -158,6 +158,22 @@ abstract class PointTreeNode implements Serializable {
     abstract PointTreeNode newInstance();
 
     /**
+     * Returns a clone of this node. This is invoked when creating a copy of {@link PointTree}.
+     * The clone is a semi-deep clone: all children that are instances of {@link PointTreeNode}
+     * shall be cloned recursively, but instances of {@code Object[]} (the leaf nodes) are not
+     * cloned. It is safe to not clone the {@code Object[]} arrays because {@link PointTree}
+     * uses a copy-on-write strategy when data need to be modified.
+     */
+    @Override
+    protected Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    /**
      * Default implementation of {@link PointTreeNode} when no specialized class is available.
      * This default implementation stores children in an array. The usage of arrays allows
      * arbitrary lengths, but implies one more object to be created for each node instance.
@@ -184,6 +200,22 @@ abstract class PointTreeNode implements Serializable {
          */
         Default(final int n) {
             children = new Object[n];
+        }
+
+        /**
+         * Creates a new node initialized to a copy of the given node.
+         *
+         * @see #clone()
+         */
+        private Default(final Default other) {
+            children = other.children.clone();
+            for (int i=0; i<children.length; i++) {
+                final Object value = children[i];
+                if (value instanceof PointTreeNode) {
+                    children[i] = ((PointTreeNode) value).clone();
+                }
+                // Do not clone arrays because we use them as copy-on-write data structures.
+            }
         }
 
         /**
@@ -222,6 +254,15 @@ abstract class PointTreeNode implements Serializable {
         @Override
         final void setChild(final int quadrant, final Object child) {
             children[quadrant] = child;
+        }
+
+        /**
+         * Returns a clone of this node. This is invoked when creating a copy of {@link PointTree}.
+         */
+        @Override
+        @SuppressWarnings("CloneDoesntCallSuperClone")
+        protected Object clone() {
+            return new Default(this);
         }
     }
 }

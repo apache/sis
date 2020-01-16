@@ -112,4 +112,20 @@ final class QuadTreeNode extends PointTreeNode {
             default: throw new IndexOutOfBoundsException(/*quadrant*/);     // TODO: uncomment with JDK9.
         }
     }
+
+    /**
+     * Returns a clone of this node. This is invoked when creating a copy of {@link PointTree}.
+     */
+    @Override
+    protected Object clone() {
+        final QuadTreeNode c = (QuadTreeNode) super.clone();
+        for (int i=0; i<4; i++) {
+            final Object value = c.getChild(i);
+            if (value instanceof PointTreeNode) {
+                c.setChild(i, ((PointTreeNode) value).clone());
+            }
+            // Do not clone arrays because we use them as copy-on-write data structures.
+        }
+        return c;
+    }
 }

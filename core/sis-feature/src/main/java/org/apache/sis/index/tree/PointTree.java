@@ -136,7 +136,8 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
      * </ul>
      *
      * The length of this array is two times the number of dimensions of points in this tree.
-     * This array content should not be modified, until the entire tree is rebuilt.
+     * This array content should not be modified, unless the entire tree is rebuilt (keep in
+     * mind that this array may be shared by {@link PointTree} copies).
      */
     final double[] treeRegion;
 
@@ -151,6 +152,24 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
      * Should be {@code false} if the {@link #locator} is not thread-safe.
      */
     private final boolean parallel;
+
+    /**
+     * Creates a new tree initialized to a copy of the given tree.
+     * This copy constructor shares some data structure from the {@code other} tree for reducing memory usage,
+     * but the two trees are nevertheless independent (changes in a tree does not affect the other tree).
+     *
+     * @param  other  the other tree to copy.
+     */
+    public PointTree(final PointTree<E> other) {
+        root         = (PointTreeNode) other.root.clone();
+        elementType  = other.elementType;
+        crs          = other.crs;
+        nodeCapacity = other.nodeCapacity;
+        count        = other.count;
+        treeRegion   = other.treeRegion;
+        locator      = other.locator;
+        parallel     = other.parallel;
+    }
 
     /**
      * Creates an initially empty <var>k</var>-dimensional tree with the given capacity for each node.
