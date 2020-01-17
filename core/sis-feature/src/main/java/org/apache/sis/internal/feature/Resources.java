@@ -20,7 +20,6 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import javax.annotation.Generated;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
@@ -46,7 +45,6 @@ public final class Resources extends IndexedResourceBundle {
      * @since   1.1
      * @module
      */
-    @Generated("org.apache.sis.util.resources.IndexedResourceCompiler")
     public static final class Keys extends KeyConstants {
         /**
          * The unique instance of key constants handler.
