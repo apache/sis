@@ -31,6 +31,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Debug;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -156,8 +157,9 @@ final class JTS extends Geometries<Geometry> {
 
     /**
      * If the given geometry is an implementation of this library, returns all its coordinate tuples.
-     * Otherwise returns {@code null}.
+     * Otherwise returns {@code null}. This method is currently used only for testing purpose.
      */
+    @Debug
     @Override
     final double[] tryGetAllCoordinates(Object geometry) {
         if (geometry instanceof Geometry) {

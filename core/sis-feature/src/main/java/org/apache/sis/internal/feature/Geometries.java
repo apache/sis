@@ -37,6 +37,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -294,6 +295,7 @@ public abstract class Geometries<G> {
      * If the given object is one of the recognized geometry implementations, returns all its coordinate tuples.
      * Otherwise returns {@code null}. This method is currently used only for testing purpose.
      */
+    @Debug
     abstract double[] tryGetAllCoordinates(Object geometry);
 
     /**

@@ -16,18 +16,13 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.util.List;
+import java.util.Iterator;
 import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
-import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Spliterator;
-import java.util.function.Consumer;
-import java.util.stream.DoubleStream;
 import java.awt.geom.RectangularShape;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.j2d.ShapeProperties;
@@ -36,6 +31,7 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.UnsupportedImplementationException;
 
@@ -113,8 +109,9 @@ final class Java2D extends Geometries<Shape> {
 
     /**
      * If the given geometry is an implementation of this library, returns all its coordinate tuples.
-     * Otherwise returns {@code null}.
+     * Otherwise returns {@code null}. This method is currently used only for testing purpose.
      */
+    @Debug
     @Override
     final double[] tryGetAllCoordinates(final Object geometry) {
         if (geometry instanceof Point2D) {

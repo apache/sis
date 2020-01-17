@@ -341,6 +341,13 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
                 modified = true;
                 count++;
             }
+            /*
+             * Note: if practice suggests that we need more performance in this method, we could temporarily
+             * use java.util.ArrayList instead of the copy-on-write strategy applied by the insert(…) method
+             * below for elements stored in Object[] arrays, then invoke List.toArray() after we finished to
+             * insert all elements. Given the increase in code complexity, we wait to see if there is a need
+             * for that.
+             */
         }
         return modified;
     }
