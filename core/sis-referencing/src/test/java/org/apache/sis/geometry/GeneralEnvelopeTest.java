@@ -29,6 +29,7 @@ import static java.lang.Double.NaN;
 import static org.opengis.test.Validators.*;
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
+import static org.apache.sis.referencing.crs.HardCodedCRS.GEOID_ZXY;
 
 
 /**
@@ -39,7 +40,7 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -98,7 +99,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
             final double xLower, final double ymin, final double xUpper, final double ymax)
     {
         final double xmin, xmax;
-        if (MathFunctions.isNegative(xUpper - xLower)) {                // Check for anti-meridian spanning.
+        if (MathFunctions.isNegative(xUpper - xLower)) {                // Check for anti-meridian crossing.
             xmin = -180;
             xmax = +180;
         } else {
@@ -484,7 +485,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
-     * Tests the {@link GeneralEnvelope#simplify()}.
+     * Tests the {@link GeneralEnvelope#simplify()} method.
      */
     @Test
     public void testSimplify() {
@@ -493,16 +494,30 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         assertFalse(e.simplify());
         assertEnvelopeEquals(e, -100, -10, +100, +10);
 
-        // Anti-meridian spanning: should substitute [-180 … 180]°
+        // Anti-meridian crossing: should substitute [-180 … 180]°
         e = create(30, -10, -60, 10);
         assertTrue(e.simplify());
         assertEnvelopeEquals(e, -180, -10, 180, 10);
 
-        // Anti-meridian spanning using positive and negative zero.
+        // Anti-meridian crossing using positive and negative zero.
         e = create(0.0, -10, -0.0, 10);
         assertTrue(e.simplify());
         assertEnvelopeEquals(e, -180, -10, 180, 10);
         verifyInvariants(e);
+    }
+
+    /**
+     * Tests the {@link GeneralEnvelope#wraparound(WraparoundMethod)} method.
+     */
+    @Test
+    public void tesWraparound() {
+        GeneralEnvelope e = create(30, -10, -60, 10);
+        assertTrue(e.wraparound(WraparoundMethod.CONTIGUOUS));
+        assertEnvelopeEquals(e, 30, -10, 300, 10);
+
+        e = create(30, -10, -15, 10);
+        assertTrue(e.wraparound(WraparoundMethod.CONTIGUOUS));
+        assertEnvelopeEquals(e, -330, -10, -15, 10);
     }
 
     /**
@@ -626,6 +641,20 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         final GeneralEnvelope envelope = new GeneralEnvelope(new double[] {4, 5}, new double[] {8, 7});
         envelope.translate(2, -4);
         assertEnvelopeEquals(envelope, 6, 1, 10, 3);
+    }
+
+    /**
+     * Tests {@link GeneralEnvelope#horizontal()}.
+     *
+     * @since 1.1
+     */
+    @Test
+    public void testHorizontal() {
+        GeneralEnvelope envelope = new GeneralEnvelope(new double[] {4, 5, -8}, new double[] {8, 7, -3});
+        envelope.setCoordinateReferenceSystem(GEOID_ZXY);
+        envelope = envelope.horizontal();
+        assertEnvelopeEquals(envelope, 5, -8, 7, -3);
+        assertSame(WGS84, envelope.getCoordinateReferenceSystem());
     }
 
     /**

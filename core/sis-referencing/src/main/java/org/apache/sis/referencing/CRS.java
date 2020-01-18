@@ -1084,6 +1084,8 @@ public final class CRS extends Static {
      * @return the first horizontal CRS, or {@code null} if none.
      *
      * @category information
+     *
+     * @see org.apache.sis.geometry.GeneralEnvelope#horizontal()
      */
     public static SingleCRS getHorizontalComponent(final CoordinateReferenceSystem crs) {
         switch (horizontalCode(crs)) {

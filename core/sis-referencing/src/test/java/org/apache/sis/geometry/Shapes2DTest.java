@@ -44,7 +44,7 @@ public final strictfp class Shapes2DTest extends TransformTestCase<Rectangle2D> 
     @Override
     Rectangle2D createFromExtremums(CoordinateReferenceSystem crs, double xmin, double ymin, double xmax, double ymax) {
         if (xmin > xmax) {
-            // This implementation does not support spanning anti-meridian.
+            // This implementation does not support crossing anti-meridian.
             final CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(0);
             xmin = axis.getMinimumValue();
             xmax = axis.getMaximumValue();

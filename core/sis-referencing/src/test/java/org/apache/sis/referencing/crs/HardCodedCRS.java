@@ -35,7 +35,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * Collection of coordinate reference systems for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -244,6 +244,13 @@ public final strictfp class HardCodedCRS {
      */
     public static final DefaultCompoundCRS GEOID_4D = new DefaultCompoundCRS(
             properties("WGS 84 + height + time", null), WGS84, GRAVITY_RELATED_HEIGHT, TIME);
+
+    /**
+     * A (H,λ,φ) CRS where <var>H</var> is the {@link #GRAVITY_RELATED_HEIGHT}.
+     * This is the same CRS than {@link #GEOID_3D} but with height first.
+     */
+    public static final DefaultCompoundCRS GEOID_ZXY = new DefaultCompoundCRS(
+            properties("height + WGS 84", null), GRAVITY_RELATED_HEIGHT, WGS84);
 
     /**
      * A (λ,φ,H,t) CRS as a nested compound CRS.

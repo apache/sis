@@ -90,7 +90,7 @@ final class SpecialCases extends PropertyAccessor {
 
     /**
      * Returns a remark or warning to format with the value at the given index, or {@code null} if none.
-     * This is used for notifying the user that a geographic box is spanning the anti-meridian.
+     * This is used for notifying the user that a geographic box is crossing the anti-meridian.
      */
     @Override
     CharSequence remarks(final int index, final Object metadata) {

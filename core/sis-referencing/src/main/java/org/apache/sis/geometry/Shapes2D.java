@@ -578,7 +578,7 @@ public final class Shapes2D extends Static {
          * as a result of the coordinate operation. This is usually the longitude axis where the source CRS uses
          * the [-180 … +180]° range and the target CRS uses the [0 … 360]° range, or the converse. In such case we
          * set the rectangle to the full range (we do not use the mechanism documented in Envelope2D) because most
-         * Rectangle2D implementations do not support spanning the anti-meridian. This results in larger rectangle
+         * Rectangle2D implementations do not support crossing the anti-meridian. This results in larger rectangle
          * than what would be possible with GeneralEnvelope or Envelope2D, but we try to limit the situation where
          * this expansion is applied.
          */

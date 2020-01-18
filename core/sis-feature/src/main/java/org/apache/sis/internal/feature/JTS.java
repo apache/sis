@@ -118,7 +118,7 @@ final class JTS extends Geometries<Geometry> {
     final GeneralEnvelope tryGetEnvelope(final Object geometry) {
         if (geometry instanceof Geometry) {
             final Envelope bounds = ((Geometry) geometry).getEnvelopeInternal();
-            final GeneralEnvelope env = new GeneralEnvelope(2);
+            final GeneralEnvelope env = new GeneralEnvelope(BIDIMENSIONAL);
             env.setRange(0, bounds.getMinX(), bounds.getMaxX());
             env.setRange(1, bounds.getMinY(), bounds.getMaxY());
             if (!env.isEmpty()) {
@@ -145,9 +145,9 @@ final class JTS extends Geometries<Geometry> {
         final double z = pt.getZ();
         final double[] coord;
         if (Double.isNaN(z)) {
-            coord = new double[2];
+            coord = new double[BIDIMENSIONAL];
         } else {
-            coord = new double[3];
+            coord = new double[TRIDIMENSIONAL];
             coord[2] = z;
         }
         coord[1] = pt.y;
@@ -164,7 +164,7 @@ final class JTS extends Geometries<Geometry> {
     final double[] tryGetAllCoordinates(Object geometry) {
         if (geometry instanceof Geometry) {
             final Coordinate[] points = ((Geometry) geometry).getCoordinates();
-            final double[] coordinates = new double[points.length * 2];
+            final double[] coordinates = new double[points.length * BIDIMENSIONAL];
             int i = 0;
             for (final Coordinate p : points) {
                 coordinates[i++] = p.x;
@@ -254,8 +254,8 @@ final class JTS extends Geometries<Geometry> {
      */
     @Override
     public Geometry createPolyline(final boolean polygon, final int dimension, final Vector... coords) {
-        final boolean is3D = (dimension == 3);
-        if (!is3D && dimension != 2) {
+        final boolean is3D = (dimension == TRIDIMENSIONAL);
+        if (!is3D && dimension != BIDIMENSIONAL) {
             throw new UnsupportedOperationException(unsupported(dimension));
         }
         final List<Coordinate> coordinates = new ArrayList<>(32);
@@ -326,7 +326,7 @@ final class JTS extends Geometries<Geometry> {
     }
 
     /**
-     * Makes a line string or linear ring from the given coordinates, and add the line string to the given list.
+     * Makes a line string or linear ring from the given coordinates, and adds the line string to the given list.
      * If the given coordinates array is empty, then this method does nothing.
      * This method does not modify the given coordinates list.
      */

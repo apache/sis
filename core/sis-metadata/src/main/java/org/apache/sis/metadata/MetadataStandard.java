@@ -911,7 +911,7 @@ public class MetadataStandard implements Serializable {
      *   <li>{@link org.apache.sis.util.collection.TableColumn#REMARKS}<br>
      *       Remarks or warning on the property value. This is rarely present.
      *       It is provided when the value may look surprising, for example the longitude values
-     *       in a geographic bounding box spanning the anti-meridian.</li>
+     *       in a geographic bounding box crossing the anti-meridian.</li>
      * </ul>
      *
      * <h4>Write operations</h4>

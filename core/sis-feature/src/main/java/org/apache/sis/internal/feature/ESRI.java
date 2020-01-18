@@ -82,7 +82,7 @@ final class ESRI extends Geometries<Geometry> {
             final Envelope2D bounds = new Envelope2D();
             ((Geometry) geometry).queryEnvelope2D(bounds);
             if (!bounds.isEmpty()) {                                     // Test if there is NaN values.
-                final GeneralEnvelope env = new GeneralEnvelope(2);
+                final GeneralEnvelope env = new GeneralEnvelope(BIDIMENSIONAL);
                 env.setRange(0, bounds.xmin, bounds.xmax);
                 env.setRange(1, bounds.ymin, bounds.ymax);
                 return env;
@@ -102,9 +102,9 @@ final class ESRI extends Geometries<Geometry> {
             final double z = pt.getZ();
             final double[] coord;
             if (Double.isNaN(z)) {
-                coord = new double[2];
+                coord = new double[BIDIMENSIONAL];
             } else {
-                coord = new double[3];
+                coord = new double[TRIDIMENSIONAL];
                 coord[2] = z;
             }
             coord[1] = pt.getY();
@@ -129,7 +129,7 @@ final class ESRI extends Geometries<Geometry> {
     final double[] tryGetAllCoordinates(final Object geometry) {
         if (geometry instanceof MultiVertexGeometry) {
             final Point2D[] points = ((MultiVertexGeometry) geometry).getCoordinates2D();
-            final double[] coordinates = new double[points.length * 2];
+            final double[] coordinates = new double[points.length * BIDIMENSIONAL];
             int i = 0;
             for (final Point2D p : points) {
                 coordinates[i++] = p.x;
@@ -164,12 +164,12 @@ final class ESRI extends Geometries<Geometry> {
      * Creates a polyline from the given coordinate values.
      * Each {@link Double#NaN} coordinate value starts a new path.
      *
-     * @param  dimension  the number of dimensions (2 or 3).
+     * @param  dimension  the number of dimensions.
      * @throws UnsupportedOperationException if this operation is not implemented for the given number of dimensions.
      */
     @Override
     public Geometry createPolyline(final boolean polygon, final int dimension, final Vector... coordinates) {
-        if (dimension != 2) {
+        if (dimension != BIDIMENSIONAL) {
             throw new UnsupportedOperationException(unsupported(dimension));
         }
         boolean lineTo = false;

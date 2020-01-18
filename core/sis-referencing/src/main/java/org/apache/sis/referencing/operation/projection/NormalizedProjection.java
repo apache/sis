@@ -651,7 +651,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * This method intentionally does <strong>not</strong> force θ to be inside that range in all cases.
      * We avoid explicit wraparounds as much as possible (as opposed to implicit wraparounds performed by
      * trigonometric functions) because they tend to introduce discontinuities. We perform wraparounds only
-     * when necessary for the problem of area spanning the anti-meridian (±180°).
+     * when necessary for the problem of area crossing the anti-meridian (±180°).
      *
      * <div class="note"><b>Example:</b>
      * a CRS for Alaska may have the central meridian at λ₀=−154° of longitude. If the point to project is

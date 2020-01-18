@@ -323,7 +323,7 @@ public final class Matrices extends Static {
      * Actually this method is used more often for {@linkplain org.opengis.coverage.grid.GridEnvelope grid envelopes}
      * (which have no CRS) than geodetic envelopes.
      *
-     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
+     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
      * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
      * Furthermore the matrix created by this method will produce expected results only for source or destination
@@ -372,14 +372,14 @@ public final class Matrices extends Static {
         final MatrixSIS matrix = createZero(dstDim+1, srcDim+1);
         for (int i = Math.min(srcDim, dstDim); --i >= 0;) {
             /*
-             * Note on envelope spanning over the anti-meridian: the GeoAPI javadoc does not mandate the
-             * precise behavior of getSpan(int) in such situation.  In the particular case of Apache SIS
+             * Note on envelope crossing the anti-meridian: the GeoAPI javadoc does not mandate the
+             * precise behavior of getSpan(int) in such situation. In the particular case of Apache SIS
              * implementations, the envelope will compute the span correctly (taking in account the wrap
              * around behavior). For non-SIS implementations, we can not know.
              *
              * For the translation term, we really need the lower corner, NOT envelope.getMinimum(i),
-             * because we need the starting point, which is not the minimal value when spanning over
-             * the anti-meridian.
+             * because we need the starting point, which is not the minimal value when crossing the
+             * anti-meridian.
              */
             final double scale     = dstEnvelope.getSpan(i)   / srcEnvelope.getSpan(i);
             final double translate = dstCorner.getOrdinate(i) - srcCorner.getOrdinate(i)*scale;
@@ -464,7 +464,7 @@ public final class Matrices extends Static {
      * Actually this method is used more often for {@linkplain org.opengis.coverage.grid.GridEnvelope grid envelopes}
      * (which have no CRS) than geodetic envelopes.
      *
-     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
+     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
      * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
      * Furthermore the matrix created by this method will produce expected results only for source or destination

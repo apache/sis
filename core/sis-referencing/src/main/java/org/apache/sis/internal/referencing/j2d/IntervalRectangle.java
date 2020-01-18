@@ -41,7 +41,7 @@ import org.apache.sis.internal.util.Strings;
  *       {@link Envelope2D#contains(Rectangle2D)} or {@link Envelope2D#intersects(Rectangle2D)} methods.</li>
  * </ul>
  *
- * This class does <strong>not</strong> support by itself rectangles spanning the anti-meridian of a geographic CRS.
+ * This class does <strong>not</strong> support by itself rectangles crossing the anti-meridian of a geographic CRS.
  * However the {@link #getX()}, {@link #getY()}, {@link #getWidth()} and {@link #getHeight()} methods are defined in
  * the straightforward way expected by {@link Envelope2D#intersects(Rectangle2D)} and similar methods for computing
  * correct result if the given {@code Rectangle2D} crosses the anti-meridian.
@@ -78,7 +78,7 @@ public class IntervalRectangle extends Rectangle2D {
      *
      * <div class="note"><b>Note:</b> this constructor expands envelopes that cross the anti-meridian
      * because the methods defined in this class are not designed for handling such envelopes.
-     * If a rectangle with negative width is nevertheless desired for envelope spanning the anti-meridian,
+     * If a rectangle with negative width is nevertheless desired for envelope crossing the anti-meridian,
      * one can use the following constructor:
      *
      * {@preformat java
@@ -100,7 +100,7 @@ public class IntervalRectangle extends Rectangle2D {
      * This constructor unconditionally assigns {@code lower} coordinates to {@link #xmin}, {@link #ymin} and
      * {@code upper} coordinates to {@link #xmax}, {@link #ymax} regardless of their values; this constructor
      * does not verify if {@code lower} coordinates are smaller than {@code upper} coordinates.
-     * This is sometime useful for creating a rectangle spanning the anti-meridian,
+     * This is sometime useful for creating a rectangle crossing the anti-meridian,
      * even if {@code IntervalRectangle} class does not support such rectangles by itself.
      *
      * @param lower  the limits in the direction of decreasing coordinate values for each dimension.

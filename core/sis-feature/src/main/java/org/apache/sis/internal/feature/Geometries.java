@@ -25,13 +25,14 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.math.Vector;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -66,6 +67,11 @@ import org.apache.sis.util.Debug;
  * @module
  */
 public abstract class Geometries<G> {
+    /**
+     * The {@value} value used for identifying the code that assume two- or three-dimensional objects.
+     */
+    static final int BIDIMENSIONAL = 2, TRIDIMENSIONAL = 3;
+
     /*
      * Registers all supported library implementations. Those libraries are optional
      * (users will typically put at most one on their classpath).
@@ -299,32 +305,6 @@ public abstract class Geometries<G> {
     abstract double[] tryGetAllCoordinates(Object geometry);
 
     /**
-     * If the given geometry is the type supported by this {@code Geometries} instance,
-     * returns its envelope if non-empty. Otherwise returns {@code null}. We currently
-     * do not distinguish the reasons why this method may return null.
-     */
-    abstract GeneralEnvelope tryGetEnvelope(Object geometry);
-
-    /**
-     * If the given object is one of the recognized types and its envelope is non-empty,
-     * returns that envelope as an Apache SIS implementation. Otherwise returns {@code null}.
-     *
-     * @param  geometry  the geometry from which to get the envelope, or {@code null}.
-     * @return the envelope of the given geometry, or {@code null} if the given object
-     *         is not a recognized geometry or its envelope is empty.
-     *
-     * @see #toGeometry(Envelope, WraparoundStrategy)
-     */
-    public static GeneralEnvelope getEnvelope(Object geometry) {
-        geometry = unwrap(geometry);
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
-            final GeneralEnvelope env = g.tryGetEnvelope(geometry);
-            if (env != null) return env;
-        }
-        return null;
-    }
-
-    /**
      * If the given geometry is the type supported by this {@code Geometries} instance, returns its
      * centroid or center as a point instance of the same library. Otherwise returns {@code null}.
      */
@@ -346,6 +326,32 @@ public abstract class Geometries<G> {
             if (center != null) {
                 return g.rewrap(center, impl != geometry);
             }
+        }
+        return null;
+    }
+
+    /**
+     * If the given geometry is the type supported by this {@code Geometries} instance,
+     * returns its envelope if non-empty. Otherwise returns {@code null}. We currently
+     * do not distinguish the reasons why this method may return null.
+     */
+    abstract GeneralEnvelope tryGetEnvelope(Object geometry);
+
+    /**
+     * If the given object is one of the recognized types and its envelope is non-empty,
+     * returns that envelope as an Apache SIS implementation. Otherwise returns {@code null}.
+     *
+     * @param  geometry  the geometry from which to get the envelope, or {@code null}.
+     * @return the envelope of the given geometry, or {@code null} if the given object
+     *         is not a recognized geometry or its envelope is empty.
+     *
+     * @see #toGeometry2D(Envelope, WraparoundMethod)
+     */
+    public static GeneralEnvelope getEnvelope(Object geometry) {
+        geometry = unwrap(geometry);
+        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+            final GeneralEnvelope env = g.tryGetEnvelope(geometry);
+            if (env != null) return env;
         }
         return null;
     }
@@ -471,6 +477,85 @@ public abstract class Geometries<G> {
      *       We may want to return null if the array is empty (to be decided later).
      */
     public abstract G createMultiPolygon(final Object[] geometries);
+
+    /**
+     * Creates a polyline made of points describing a rectangle whose start point is the lower left corner.
+     * The sequence of points describes each corner, going in clockwise direction and repeating the starting
+     * point to properly close the ring.
+     *
+     * @param  x  dimension of first axis.
+     * @param  y  dimension of second axis.
+     * @return a polyline made of a sequence of 5 points describing the given rectangle.
+     */
+    private G createGeometry2D(final Envelope envelope, final int x, final int y) {
+        final DirectPosition lc = envelope.getLowerCorner();
+        final DirectPosition uc = envelope.getUpperCorner();
+        final double xmin = lc.getOrdinate(x);
+        final double ymin = lc.getOrdinate(y);
+        final double xmax = uc.getOrdinate(x);
+        final double ymax = uc.getOrdinate(y);
+        return createPolyline(true, BIDIMENSIONAL, Vector.create(new double[] {
+                xmin, ymin,  xmin, ymax,  xmax, ymax,  xmax, ymin,  xmin, ymin}));
+    }
+
+    /**
+     * Transforms an envelope to a two-dimensional polygon whose start point is lower corner
+     * and other points are the envelope corners in clockwise order. The specified envelope
+     * should be two-dimensional (see for example {@link GeneralEnvelope#horizontal()}) but
+     * the coordinates does not need to be in (longitude, latitude) order; this method will
+     * reorder coordinates as (x,y) on a best-effort basis.
+     *
+     * @param  envelope  the envelope to convert.
+     * @param  strategy  how to resolve wrap-around ambiguities on the envelope.
+     * @return if any geometric implementation is installed, return a polygon (or two polygons
+     *         in case of {@linkplain WraparoundMethod#SPLIT split handling of wrap-around}).
+     *
+     * @see #getEnvelope(Object)
+     */
+    public G toGeometry2D(final Envelope envelope, final WraparoundMethod strategy) {
+        final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
+        int x = 0, y = 1;
+        if (crs != null) {
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            int cx = AxisDirections.indexOfColinear(cs, AxisDirection.EAST);
+            int cy = AxisDirections.indexOfColinear(cs, AxisDirection.NORTH);
+            if (cx >= 0 || cy >= 0) {
+                if ((cx < 0 && (cx = cy - 1) < 0 && (cx = cy + 1) >= cs.getDimension()) ||
+                    (cy < 0 && (cy = cx + 1) >= cs.getDimension() && (cy = cx - 1) < 0))
+                {
+                    // May happen if the CRS has only one dimension.
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyEnvelope2D));
+                }
+                x = cx;
+                y = cy;
+            }
+        }
+        switch (strategy) {
+            case NORMALIZE: {
+                throw new IllegalArgumentException();
+            }
+            case NONE: {
+                return createGeometry2D(envelope, x, y);
+            }
+            default: {
+                final GeneralEnvelope ge = new GeneralEnvelope(envelope);
+                ge.normalize();
+                ge.wraparound(strategy);
+                return createGeometry2D(ge, x, y);
+            }
+            case SPLIT: {
+                final Envelope[] parts = AbstractEnvelope.castOrCopy(envelope).toSimpleEnvelopes();
+                if (parts.length == 1) {
+                    return createGeometry2D(parts[0], x, y);
+                }
+                final Object[] polygons = new Object[parts.length];
+                for (int i=0; i<parts.length; i++) {
+                    polygons[i] = createGeometry2D(parts[i], x, y);
+                }
+                return createMultiPolygon(polygons);
+            }
+        }
+    }
 
     /**
      * Merges a sequence of polyline instances if the first instance is an implementation of this library.
@@ -671,124 +756,5 @@ public abstract class Geometries<G> {
      */
     private static String unsupportedImplementation(final Object geometry) {
         return Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(geometry));
-    }
-
-    /**
-     * Transforms an envelope to a polygon whose start point is lower corner,
-     * and points making result are the envelope corners in clockwise order.
-     *
-     * @param  env       the envelope to convert.
-     * @param  strategy  how to resolve wrap-around ambiguities on the envelope.
-     * @return if any geometric implementation is installed, return a polygon (or two polygons
-     *         in case of {@linkplain WraparoundStrategy#SPLIT split handling of wrap-around}).
-     *
-     * @see #getEnvelope(Object)
-     */
-    public G toGeometry(final Envelope env, WraparoundStrategy strategy) {
-        // Ensure that we can isolate an horizontal part in the given envelope.
-        final int x;
-        if (env.getDimension() == 2) {
-            x = 0;
-        } else {
-            final CoordinateReferenceSystem crs = env.getCoordinateReferenceSystem();
-            if (crs == null) throw new IllegalArgumentException("Envelope with more than 2 dimensions, but without CRS: cannot isolate horizontal part.");
-            final SingleCRS hCrs = CRS.getHorizontalComponent(crs);
-            if (hCrs == null) throw new IllegalArgumentException("Cannot find an horizontal part in given CRS");
-            x = AxisDirections.indexOfColinear(crs.getCoordinateSystem(), hCrs.getCoordinateSystem());
-        }
-
-        final int y = x+1;
-
-        final DirectPosition lc = env.getLowerCorner();
-        final DirectPosition uc = env.getUpperCorner();
-        double minX = lc.getOrdinate(x);
-        double minY = lc.getOrdinate(y);
-        double maxX = uc.getOrdinate(x);
-        double maxY = uc.getOrdinate(y);
-        double[] splittedLeft = null;
-        // We start by short-circuiting simplest case for minor simplicity/performance reason.
-        if (!WraparoundStrategy.NONE.equals(strategy)) {
-            // ensure the envelope is correctly defined, by forcing non-authorized wrapped axes to take entire crs span.
-            final GeneralEnvelope fixedEnv = new GeneralEnvelope(env);
-            fixedEnv.normalize();
-            int wrapAxis = -1;
-            for (int i = x ; i <= y && wrapAxis < x ; i++) {
-                if (fixedEnv.getLower(i) > fixedEnv.getUpper(i)) wrapAxis = i;
-            }
-            if (wrapAxis >= x) {
-                final CoordinateReferenceSystem crs = env.getCoordinateReferenceSystem();
-                if (crs == null) throw new IllegalArgumentException("Cannot resolve wrap-around for an envelope without any system defined");
-                final CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(wrapAxis);
-                final double wrapRange = axis.getMaximumValue() - axis.getMinimumValue();
-                switch (strategy) {
-                    case EXPAND:
-                        // simpler and more performant than a call to GeneralEnvelope.simplify()
-                        if (wrapAxis == x) {
-                            minX = axis.getMinimumValue();
-                            maxX = axis.getMaximumValue();
-                        } else {
-                            minY = axis.getMinimumValue();
-                            maxY = axis.getMaximumValue();
-                        }
-                        break;
-                    case SPLIT:
-                        if (wrapAxis == x) {
-                            splittedLeft = new double[]{axis.getMinimumValue(), minY, maxX, maxY};
-                            maxX = axis.getMaximumValue();
-                        }
-                        else {
-                            splittedLeft = new double[] {minX, axis.getMinimumValue(), maxX, maxY};
-                            maxY = axis.getMaximumValue();
-                        }
-                        break;
-                    case CONTIGUOUS:
-                        if (wrapAxis == x) maxX += wrapRange;
-                        else maxY += wrapRange;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unknown or unset wrap resolution: " + strategy);
-                }
-            }
-        }
-
-        Vector[] points = clockwiseRing(minX, minY, maxX, maxY);
-
-        final G mainRect = createPolyline(true, 2, points);
-        if (splittedLeft != null) {
-            minX = splittedLeft[0];
-            minY = splittedLeft[1];
-            maxX = splittedLeft[2];
-            maxY = splittedLeft[3];
-            Vector[] points2 = clockwiseRing(minX, minY, maxX, maxY);
-            final G secondRect = createPolyline(true, 2, points2);
-            return createMultiPolygon(new Object[] {mainRect, secondRect});
-        }
-
-        /* Geotk original method had an option to insert a median point on wrappped around axis, but we have not ported
-         * it, because in an orthonormal space, I don't see any case where it could be useful. However, in case it
-         * have to be added, we can do it here by amending created ring(s).
-         */
-        return mainRect;
-    }
-
-    /**
-     * Create a sequence of points describing a rectangle whose start point is the lower left one. The sequence of
-     * points describe each corner, going in clockwise order and repeating starting point to properly close the ring.
-     *
-     * @param minX Lower coordinate of first axis.
-     * @param minY Lower coordinate of second axis.
-     * @param maxX Upper coordinate of first axis.
-     * @param maxY Upper coordinate of second axis.
-     *
-     * @return A set of 5 points describing given rectangle.
-     */
-    private static Vector[] clockwiseRing(final double minX, final double minY, final double maxX, final double maxY) {
-        return new Vector[] {
-                Vector.create(new double[] {minX, minY}),
-                Vector.create(new double[] {minX, maxY}),
-                Vector.create(new double[] {maxX, maxY}),
-                Vector.create(new double[] {maxX, minY}),
-                Vector.create(new double[] {minX, minY})
-        };
     }
 }

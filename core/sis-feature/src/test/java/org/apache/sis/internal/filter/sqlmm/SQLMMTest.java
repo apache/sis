@@ -38,7 +38,6 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.util.NullArgumentException;
 
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -48,7 +47,6 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
-import static org.apache.sis.internal.feature.GeometriesTestCase.expectFailFast;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -287,10 +285,19 @@ public final strictfp class SQLMMTest extends TestCase {
         // Missing
         final GeographicCRS crs84 = CommonCRS.defaultGeographic();
         point.setUserData(crs84);
-        expectFailFast(() -> new ST_Intersects(geomName, lring).evaluate(f), IllegalArgumentException.class);
+        try {
+            new ST_Intersects(geomName, lring).evaluate(f);
+            fail("Should have throw an exception.");
+        } catch (IllegalArgumentException e) {
+            // This is the expected exception.
+        }
         final Literal lPoint = factory.literal(point);
-        expectFailFast(() -> new ST_Intersects(lPoint, lring).evaluate(null), IllegalArgumentException.class);
-
+        try {
+            new ST_Intersects(lPoint, lring).evaluate(null);
+            fail("Should have throw an exception.");
+        } catch (IllegalArgumentException e) {
+            // This is the expected exception.
+        }
         // utm domain contained in CRS:84
         final ProjectedCRS nadUtm = CommonCRS.NAD27.universal(32, 37);
         // slightly move point, because edge test is likely to fail due to transform roundings.

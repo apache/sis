@@ -19,10 +19,10 @@ package org.apache.sis.internal.filter;
 import javax.measure.Unit;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.filter.CRSMatching;
+import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
-import org.apache.sis.internal.feature.WraparoundStrategy;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.setup.GeometryLibrary;
@@ -168,7 +168,7 @@ public final class FilterGeometryUtils {
         if (value instanceof GridCoverage) {
             //use the coverage envelope
             final GridCoverage coverage = (GridCoverage) value;
-            candidate = SIS_GEOMETRY_FACTORY.toGeometry(coverage.getGridGeometry().getEnvelope(), WraparoundStrategy.SPLIT);
+            candidate = SIS_GEOMETRY_FACTORY.toGeometry2D(coverage.getGridGeometry().getEnvelope(), WraparoundMethod.SPLIT);
         } else {
             try {
                 candidate = ObjectConverters.convert(value, Geometry.class);

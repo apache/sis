@@ -17,16 +17,12 @@
 package org.apache.sis.internal.feature;
 
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.stream.Stream;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.WraparoundMethod;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.math.Vector;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -140,80 +136,70 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
         assertWktEquals("LINESTRING (4 5, 7 9, 9 3, -1 -6)", text);
     }
 
+    /**
+     * Tests {@link Geometries#toGeometry2D(Envelope, WraparoundMethod)} without longitude wraparound.
+     */
     @Test
-    public void testEnvelopeToLinearRing() {
-        // First, ensure that behavior is constant in case wrap-around is de-activated.
-        final GeneralEnvelope noWrapNeeded = new GeneralEnvelope(new DefaultGeographicBoundingBox(-30, 24, -60, -51));
-        final double[] expectedResult = {-30, -60, -30, -51, 24, -51, 24, -60, -30, -60};
-        for (WraparoundStrategy method : WraparoundStrategy.values()) assertConversion(noWrapNeeded, method, expectedResult);
-
-        // Check behavior when wrap-around is on first axis.
-        final GeneralEnvelope wrapped = new GeneralEnvelope(CommonCRS.defaultGeographic());
-        wrapped.setEnvelope(165, 32, -170, 33);
-        final EnumMap<WraparoundStrategy,double[]> expected = new EnumMap<>(WraparoundStrategy.class);
-        expected.put(WraparoundStrategy.NONE,       new double[] { 165, 32,  165, 33, -170, 33, -170, 32,  165, 32});
-        expected.put(WraparoundStrategy.CONTIGUOUS, new double[] { 165, 32,  165, 33,  190, 33,  190, 32,  165, 32});
-        expected.put(WraparoundStrategy.EXPAND,     new double[] {-180, 32, -180, 33,  180, 33,  180, 32, -180, 32});
-        expected.put(WraparoundStrategy.SPLIT,      new double[] { 165, 32,  165, 33,  180, 33,  180, 32,  165, 32,
-                                                                  -180, 32, -180, 33, -170, 33, -170, 32, -180, 32});
-        assertConversion(wrapped, expected);
-
-        wrapped.setEnvelope(177, -42, 190, 2);
-        expected.put(WraparoundStrategy.NONE,       new double[] { 177, -42,  177, 2,  190, 2,  190, -42,  177, -42});
-        expected.put(WraparoundStrategy.CONTIGUOUS, new double[] { 177, -42,  177, 2,  190, 2,  190, -42,  177, -42});
-        expected.put(WraparoundStrategy.EXPAND,     new double[] {-180, -42, -180, 2,  180, 2,  180, -42, -180, -42});
-        expected.put(WraparoundStrategy.SPLIT,      new double[] { 177, -42,  177, 2,  180, 2,  180, -42,  177, -42,
-                                                                  -180, -42, -180, 2, -170, 2, -170, -42, -180, -42});
-
-        // Check wrap-around on second axis.
-        wrapped.setCoordinateReferenceSystem(CommonCRS.WGS84.geographic());
-        wrapped.setEnvelope(2, 89, 3, 19);
-        expected.put(WraparoundStrategy.NONE,       new double[] {2,   89, 2,  19, 3,  19, 3,   89, 2,   89});
-        expected.put(WraparoundStrategy.CONTIGUOUS, new double[] {2,   89, 2, 199, 3, 199, 3,   89, 2,   89});
-        expected.put(WraparoundStrategy.EXPAND,     new double[] {2, -180, 2, 180, 3, 180, 3, -180, 2, -180});
-        expected.put(WraparoundStrategy.SPLIT,      new double[] {2,   89, 2, 180, 3, 180, 3,   89, 2,   89,
-                                                                  2, -180, 2,  19, 3,  19, 3, -180, 2, -180});
-
-        // Ensure fail fast on dimension ambiguity
-        wrapped.setCoordinateReferenceSystem(null);
-        Stream.of(WraparoundStrategy.CONTIGUOUS, WraparoundStrategy.EXPAND, WraparoundStrategy.SPLIT)
-                .forEach(method
-                        -> expectFailFast(()
-                                -> factory.toGeometry(wrapped, method)
-                        , IllegalArgumentException.class)
-                );
-
-        final GeneralEnvelope wrapped3d = new GeneralEnvelope(3);
-        expectFailFast(() -> factory.toGeometry(wrapped3d, WraparoundStrategy.NONE), IllegalArgumentException.class);
-    }
-
-    public static void expectFailFast(Callable whichMustFail, Class<? extends Exception>... expectedErrorTypes) {
-        try {
-            final Object result = whichMustFail.call();
-            fail("Fail fast expected, but successfully returned "+result);
-        } catch (Exception e) {
-            if (expectedErrorTypes == null || expectedErrorTypes.length < 1) return; // Any error accepted.
-            for (Class errorType : expectedErrorTypes) {
-                if (errorType.isInstance(e)) {
-                    // Expected behavior
-                    return;
-                }
+    public void testToGeometry2D() {
+        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
+        envelope.setRange(0, -30,  24);
+        envelope.setRange(1, -60, -51);
+        final double[] expected = {-30, -60, -30, -51, 24, -51, 24, -60, -30, -60};
+        for (WraparoundMethod method : WraparoundMethod.values()) {
+            if (method != WraparoundMethod.NORMALIZE) {
+                assertToGeometryEquals(envelope, method, expected);
             }
-            // Unexpected error
-            fail(String.format(
-                    "A fail fast occurred, but thrown error type is unexpected.%nError type: %s%nStack-trace: %s",
-                    e.getClass().getCanonicalName(), e
-            ));
         }
     }
 
-    private void assertConversion(final Envelope source, final Map<WraparoundStrategy, double[]> expectedResults) {
-        expectedResults.entrySet().forEach(entry -> assertConversion(source, entry.getKey(), entry.getValue()));
+    /**
+     * Tests {@link Geometries#toGeometry2D(Envelope, WraparoundMethod)} with longitude wraparound.
+     */
+    @Test
+    public void testToGeometryWraparound() {
+        final GeneralEnvelope e = new GeneralEnvelope(HardCodedCRS.WGS84);
+        e.setRange(0, 165, -170);
+        e.setRange(1,  32,   33);
+        assertToGeometryEquals(e, WraparoundMethod.NONE,              165, 32,  165, 33, -170, 33, -170, 32,  165, 32);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS,        165, 32,  165, 33,  190, 33,  190, 32,  165, 32);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS_LOWER, -195, 32, -195, 33, -170, 33, -170, 32, -195, 32);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS_UPPER,  165, 32,  165, 33,  190, 33,  190, 32,  165, 32);
+        assertToGeometryEquals(e, WraparoundMethod.EXPAND,           -180, 32, -180, 33,  180, 33,  180, 32, -180, 32);
+        assertToGeometryEquals(e, WraparoundMethod.SPLIT,             165, 32,  165, 33,  180, 33,  180, 32,  165, 32,
+                                                                     -180, 32, -180, 33, -170, 33, -170, 32, -180, 32);
+        e.setRange(0, 177, -170);
+        e.setRange(1, -42,    2);
+        assertToGeometryEquals(e, WraparoundMethod.NONE,              177, -42,  177, 2, -170, 2, -170, -42,  177, -42);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS,       -183, -42, -183, 2, -170, 2, -170, -42, -183, -42);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS_UPPER,  177, -42,  177, 2,  190, 2,  190, -42,  177, -42);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS_LOWER, -183, -42, -183, 2, -170, 2, -170, -42, -183, -42);
+        assertToGeometryEquals(e, WraparoundMethod.EXPAND,           -180, -42, -180, 2,  180, 2,  180, -42, -180, -42);
+        assertToGeometryEquals(e, WraparoundMethod.SPLIT,             177, -42,  177, 2,  180, 2,  180, -42,  177, -42,
+                                                                     -180, -42, -180, 2, -170, 2, -170, -42, -180, -42);
     }
 
-    private void assertConversion(final Envelope source, final WraparoundStrategy method, final double[] expectedOrdinates) {
-        final double[] result = factory.tryGetAllCoordinates(factory.toGeometry(source, method));
-        assertArrayEquals("Point list for: "+method, expectedOrdinates, result, 1e-9);
+    /**
+     * Tests {@link Geometries#toGeometry2D(Envelope, WraparoundMethod)} with automatic axis swapping.
+     */
+    @Test
+    public void testToGeometryAxisSwapping() {
+        final GeneralEnvelope e = new GeneralEnvelope(HardCodedCRS.WGS84_φλ);
+        e.setRange(0,  2,  3);
+        e.setRange(1, 89, 19);
+        assertToGeometryEquals(e, WraparoundMethod.NONE,         89, 2,   89, 3,  19, 3,   19, 2,   89, 2);
+        assertToGeometryEquals(e, WraparoundMethod.CONTIGUOUS, -271, 2, -271, 3,  19, 3,   19, 2, -271, 2);
+        assertToGeometryEquals(e, WraparoundMethod.EXPAND,     -180, 2, -180, 3, 180, 3,  180, 2, -180, 2);
+        assertToGeometryEquals(e, WraparoundMethod.SPLIT,        89, 2,   89, 3, 180, 3,  180, 2,   89, 2,
+                                                               -180, 2, -180, 3,  19, 3,   19, 2, -180, 2);
+    }
+
+    /**
+     * Verifies that call to {@link Geometries#toGeometry2D(Envelope, WraparoundMethod)}
+     * with the given argument values produces a geometry will all expected coordinates.
+     */
+    private void assertToGeometryEquals(final Envelope source, final WraparoundMethod method, final double... expected) {
+        final double[] result = factory.tryGetAllCoordinates(factory.toGeometry2D(source, method));
+        assertArrayEquals(expected, result, 1e-9);
     }
 
     /**

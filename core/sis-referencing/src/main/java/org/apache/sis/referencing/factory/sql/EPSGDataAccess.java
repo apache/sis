@@ -2079,7 +2079,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                      * for older database (this error is fixed in EPSG database 8.2).
                      *
                      * Do NOT apply anything similar for the x axis, because xmin > xmax is not error:
-                     * it describes a bounding box spanning the anti-meridian (±180° of longitude).
+                     * it describes a bounding box crossing the anti-meridian (±180° of longitude).
                      */
                     if (ymin > ymax) {
                         final double t = ymin;

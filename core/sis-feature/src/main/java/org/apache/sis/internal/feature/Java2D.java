@@ -82,7 +82,7 @@ final class Java2D extends Geometries<Shape> {
         if (geometry instanceof Shape) {
             final Rectangle2D bounds = ((Shape) geometry).getBounds2D();
             if (!bounds.isEmpty()) {                                     // Test if there is NaN values.
-                final GeneralEnvelope env = new GeneralEnvelope(2);
+                final GeneralEnvelope env = new GeneralEnvelope(BIDIMENSIONAL);
                 env.setRange(0, bounds.getMinX(), bounds.getMaxX());
                 env.setRange(1, bounds.getMinY(), bounds.getMaxY());
                 return env;
@@ -179,12 +179,12 @@ final class Java2D extends Geometries<Shape> {
      * The geometry may be backed by {@code float} or {@code double} primitive type,
      * depending on the type used by the given vectors.
      *
-     * @param  dimension  the number of dimensions (2 or 3).
+     * @param  dimension  the number of dimensions.
      * @throws UnsupportedOperationException if this operation is not implemented for the given number of dimensions.
      */
     @Override
     public Shape createPolyline(final boolean polygon, final int dimension, final Vector... coordinates) {
-        if (dimension != 2) {
+        if (dimension != BIDIMENSIONAL) {
             throw new UnsupportedOperationException(unsupported(dimension));
         }
         /*
@@ -204,7 +204,7 @@ final class Java2D extends Geometries<Shape> {
         /*
          * Note: Point2D is not an instance of Shape, so we can not make a special case for it.
          */
-        length /= 2;
+        length /= BIDIMENSIONAL;
         if (length == 2 && coordinates.length == 1) {
             final Vector v = coordinates[0];
             final double x1, y1, x2, y2;

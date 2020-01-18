@@ -695,7 +695,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                  * Convert area of interest (AOI) from an envelope to a Rectangle2D for use with
                  * Envelope2D.intersect(Rectangle2D) during IteratorOneZone.advance(…) execution.
                  * We need to use the constructor expecting the two corners in order to preserve
-                 * envelope spanning the anti-meridian.
+                 * envelope crossing the anti-meridian.
                  */
                 final IntervalRectangle aoi = new IntervalRectangle(areaOfInterest.getLowerCorner(),
                                                                     areaOfInterest.getUpperCorner());
@@ -965,7 +965,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * Temporary rectangle for computation purpose. Needs to be an implementation from the
-         * {@link org.apache.sis.geometry} in order to support AOI spanning the anti-meridian.
+         * {@link org.apache.sis.geometry} in order to support AOI crossing the anti-meridian.
          */
         private final Envelope2D cell = new Envelope2D();
 

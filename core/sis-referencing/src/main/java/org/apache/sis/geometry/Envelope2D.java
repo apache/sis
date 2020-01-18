@@ -61,17 +61,17 @@ import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
  * This is not specific to this implementation; in Java2D too, the visual axis orientation depend
  * on the {@linkplain java.awt.Graphics2D#getTransform() affine transform in the graphics context}.</p>
  *
- * <h2>Spanning the anti-meridian of a Geographic CRS</h2>
+ * <h2>Crossing the anti-meridian of a Geographic CRS</h2>
  * The <cite>Web Coverage Service</cite> (WCS) specification authorizes (with special treatment)
  * cases where <var>upper</var> &lt; <var>lower</var> at least in the longitude case. They are
- * envelopes spanning the anti-meridian, like the red box below (the green box is the usual case).
+ * envelopes crossing the anti-meridian, like the red box below (the green box is the usual case).
  * For {@code Envelope2D} objects, they are rectangle with negative {@linkplain #width width} or
  * {@linkplain #height height} field values. The default implementation of methods listed in the
  * right column can handle such cases.
  *
  * <div class="horizontal-flow">
  * <div>
- *   <img style="vertical-align: middle" src="doc-files/AntiMeridian.png" alt="Envelope spannning the anti-meridian">
+ *   <img style="vertical-align: middle" src="doc-files/AntiMeridian.png" alt="Envelope crossing the anti-meridian">
  * </div><div>
  * Supported methods:
  * <ul>
@@ -172,7 +172,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * Constructs a two-dimensional envelope defined by the specified coordinates.
      * The {@code lowerCorner} and {@code upperCorner} arguments are not necessarily
      * the minimal and maximal values respectively.
-     * See the class javadoc about anti-meridian spanning for more details.
+     * See the class javadoc about crossing the anti-meridian for more details.
      *
      * @param  lowerCorner  the fist position.
      * @param  upperCorner  the second position.
@@ -223,7 +223,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     /**
      * Constructs two-dimensional envelope defined by an other {@link Rectangle2D}.
      * If the given rectangle has negative width or height, they will be interpreted
-     * as an envelope spanning the anti-meridian.
+     * as an envelope crossing the anti-meridian.
      *
      * @param crs   the coordinate reference system, or {@code null}.
      * @param rect  the rectangle to copy (can not be {@code null}).
@@ -248,8 +248,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * @param  crs     the coordinate reference system, or {@code null}.
      * @param  x       the <var>x</var> minimal value.
      * @param  y       the <var>y</var> minimal value.
-     * @param  width   the envelope width. May be negative for envelope spanning the anti-meridian.
-     * @param  height  the envelope height. May be negative for envelope spanning the anti-meridian.
+     * @param  width   the envelope width. May be negative for envelope crossing the anti-meridian.
+     * @param  height  the envelope height. May be negative for envelope crossing the anti-meridian.
      * @throws MismatchedDimensionException if the given CRS is not two-dimensional.
      */
     public Envelope2D(final CoordinateReferenceSystem crs, final double x, final double y,
@@ -328,7 +328,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended interpretation of the
      * bounding box definition. In a WCS 1.1 data structure, the lower corner defines the edges region in the
      * directions of <em>decreasing</em> coordinate values in the envelope CRS. This is usually the algebraic
-     * minimum coordinates, but not always. For example, an envelope spanning the anti-meridian could have a
+     * minimum coordinates, but not always. For example, an envelope crossing the anti-meridian could have a
      * lower corner longitude greater than the upper corner longitude. Such extended interpretation applies
      * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
@@ -351,7 +351,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended interpretation of the
      * bounding box definition. In a WCS 1.1 data structure, the upper corner defines the edges region in the
      * directions of <em>increasing</em> coordinate values in the envelope CRS. This is usually the algebraic
-     * maximum coordinates, but not always. For example, an envelope spanning the anti-meridian could have an
+     * maximum coordinates, but not always. For example, an envelope crossing the anti-meridian could have an
      * upper corner longitude less than the lower corner longitude. Such extended interpretation applies
      * mostly to axes having {@code WRAPAROUND} range meaning.</div>
      *
@@ -371,8 +371,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
 
     /**
      * Returns the minimal coordinate along the specified dimension. This method handles
-     * anti-meridian spanning as documented in the {@link AbstractEnvelope#getMinimum(int)}
-     * method.
+     * anti-meridian as documented in the {@link AbstractEnvelope#getMinimum(int)} method.
      *
      * @param  dimension  the dimension to query.
      * @return the minimal coordinate value along the given dimension.
@@ -395,8 +394,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
 
     /**
      * Returns the maximal coordinate along the specified dimension. This method handles
-     * anti-meridian spanning as documented in the {@link AbstractEnvelope#getMaximum(int)}
-     * method.
+     * anti-meridian as documented in the {@link AbstractEnvelope#getMaximum(int)} method.
      *
      * @param  dimension  the dimension to query.
      * @return the maximal coordinate value along the given dimension.
@@ -419,8 +417,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
 
     /**
      * Returns the median coordinate along the specified dimension. This method handles
-     * anti-meridian spanning as documented in the {@link AbstractEnvelope#getMedian(int)}
-     * method.
+     * anti-meridian as documented in the {@link AbstractEnvelope#getMedian(int)} method.
      *
      * @param  dimension  the dimension to query.
      * @return the mid coordinate value along the given dimension.
@@ -442,8 +439,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     }
 
     /**
-     * Returns the envelope span along the specified dimension. This method handles anti-meridian
-     * spanning as documented in the {@link AbstractEnvelope#getSpan(int)} method.
+     * Returns the envelope span along the specified dimension. This method handles
+     * anti-meridian as documented in the {@link AbstractEnvelope#getSpan(int)} method.
      *
      * @param  dimension  the dimension to query.
      * @return the rectangle width or height, depending the given dimension.
@@ -469,7 +466,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * Returns the {@linkplain #getMinimum(int) minimal} coordinate value for dimension 0.
      * The default implementation invokes <code>{@linkplain #getMinimum(int) getMinimum}(0)</code>.
      * The result is the standard {@link Rectangle2D} value (namely {@linkplain #x x})
-     * only if the envelope is not spanning the anti-meridian.
+     * only if the envelope is not crossing the anti-meridian.
      *
      * @return the minimal coordinate value for dimension 0.
      */
@@ -482,7 +479,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * Returns the {@linkplain #getMinimum(int) minimal} coordinate value for dimension 1.
      * The default implementation invokes <code>{@linkplain #getMinimum(int) getMinimum}(1)</code>.
      * The result is the standard {@link Rectangle2D} value (namely {@linkplain #y y})
-     * only if the envelope is not spanning the anti-meridian.
+     * only if the envelope is not crossing the anti-meridian.
      *
      * @return the minimal coordinate value for dimension 1.
      */
@@ -495,7 +492,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * Returns the {@linkplain #getMaximum(int) maximal} coordinate value for dimension 0.
      * The default implementation invokes <code>{@linkplain #getMaximum(int) getMinimum}(0)</code>.
      * The result is the standard {@link Rectangle2D} value (namely {@linkplain #x x} + {@linkplain #width width})
-     * only if the envelope is not spanning the anti-meridian.
+     * only if the envelope is not crossing the anti-meridian.
      *
      * @return the maximal coordinate value for dimension 0.
      */
@@ -508,7 +505,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * Returns the {@linkplain #getMaximum(int) maximal} coordinate value for dimension 1.
      * The default implementation invokes <code>{@linkplain #getMaximum(int) getMinimum}(1)</code>.
      * The result is the standard {@link Rectangle2D} value (namely {@linkplain #y y} + {@linkplain #height height})
-     * only if the envelope is not spanning the anti-meridian.
+     * only if the envelope is not crossing the anti-meridian.
      *
      * @return the maximal coordinate value for dimension 1.
      */
@@ -521,7 +518,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * Returns the {@linkplain #getMedian(int) median} coordinate value for dimension 0.
      * The default implementation invokes <code>{@linkplain #getMedian(int) getMedian}(0)</code>.
      * The result is the standard {@link Rectangle2D} value (namely {@linkplain #x x} + {@linkplain #width width}/2)
-     * only if the envelope is not spanning the anti-meridian.
+     * only if the envelope is not crossing the anti-meridian.
      *
      * @return the median coordinate value for dimension 0.
      */
@@ -534,7 +531,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * Returns the {@linkplain #getMedian(int) median} coordinate value for dimension 1.
      * The default implementation invokes <code>{@linkplain #getMedian(int) getMedian}(1)</code>.
      * The result is the standard {@link Rectangle2D} value (namely {@linkplain #y y} + {@linkplain #height height}/2)
-     * only if the envelope is not spanning the anti-meridian.
+     * only if the envelope is not crossing the anti-meridian.
      *
      * @return the median coordinate value for dimension 1.
      */
@@ -547,7 +544,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * Returns the {@linkplain #getSpan(int) span} for dimension 0.
      * The default implementation invokes <code>{@linkplain #getSpan(int) getSpan}(0)</code>.
      * The result is the standard {@link Rectangle2D} value (namely {@linkplain #width width})
-     * only if the envelope is not spanning the anti-meridian.
+     * only if the envelope is not crossing the anti-meridian.
      *
      * @return the span for dimension 0.
      */
@@ -560,7 +557,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * Returns the {@linkplain #getSpan(int) span} for dimension 1.
      * The default implementation invokes <code>{@linkplain #getSpan(int) getSpan}(1)</code>.
      * The result is the standard {@link Rectangle2D} value (namely {@linkplain #height height})
-     * only if the envelope is not spanning the anti-meridian.
+     * only if the envelope is not crossing the anti-meridian.
      *
      * @return the span for dimension 1.
      */
@@ -691,8 +688,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * of the given coordinate value is {@link java.lang.Double#NaN NaN}, then this method returns
      * {@code false}.
      *
-     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian spanning in the same way than
+     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
+     * This method supports anti-meridian in the same way than
      * {@link AbstractEnvelope#contains(DirectPosition)}.
      *
      * @param  px  the first coordinate value of the point to text.
@@ -719,8 +716,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * envelope or the given rectangle have at least one {@link java.lang.Double#NaN NaN} value,
      * then this method returns {@code false}.
      *
-     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian spanning in the same way than
+     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
+     * This method supports anti-meridian in the same way than
      * {@link AbstractEnvelope#contains(Envelope)}.
      *
      * @param  rect  the rectangle to test for inclusion.
@@ -741,8 +738,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * envelope or the given rectangle have at least one {@link java.lang.Double#NaN NaN} value,
      * then this method returns {@code false}.
      *
-     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian spanning in the same way than
+     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
+     * This method supports anti-meridian in the same way than
      * {@link AbstractEnvelope#contains(Envelope)}.
      *
      * @param  rx  the <var>x</var> coordinate of the lower corner of the rectangle to test for inclusion.
@@ -771,7 +768,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
                 if (!isNegativeUnsafe(span1) || isNegativeUnsafe(span0)) {
                     continue;
                 }
-                if (span0 >= AbstractEnvelope.getSpan(getAxis(crs, i))) {
+                if (span0 >= AbstractEnvelope.getCycle(getAxis(crs, i))) {
                     continue;
                 }
             } else if (minCondition != maxCondition) {
@@ -791,8 +788,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * or the given rectangle have at least one {@link java.lang.Double#NaN NaN} value, then this
      * method returns {@code false}.
      *
-     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian spanning in the same way than
+     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
+     * This method supports anti-meridian in the same way than
      * {@link AbstractEnvelope#intersects(Envelope)}.
      *
      * @param  rect  the rectangle to test for intersection.
@@ -813,8 +810,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * or the given rectangle have at least one {@link java.lang.Double#NaN NaN} value, then this
      * method returns {@code false}.
      *
-     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian spanning in the same way than
+     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
+     * This method supports anti-meridian in the same way than
      * {@link AbstractEnvelope#intersects(Envelope)}.
      *
      * @param  rx  the <var>x</var> coordinate of the lower corner of the rectangle to test for intersection.
@@ -860,8 +857,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * or the given rectangle have at least one {@link java.lang.Double#NaN NaN} values, then this
      * method returns an {@linkplain #isEmpty() empty} envelope.
      *
-     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian spanning in the same way than
+     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
+     * This method supports anti-meridian in the same way than
      * {@link GeneralEnvelope#intersect(Envelope)}.
      *
      * @param  rect  the rectangle to be intersected with this envelope.
@@ -912,7 +909,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
                     if (max0 >= min1) {max = max0; intersect |= 2;}
                 }
                 if (intersect == 0 || intersect == 3) {
-                    final double csSpan = AbstractEnvelope.getSpan(getAxis(crs, i));
+                    final double csSpan = AbstractEnvelope.getCycle(getAxis(crs, i));
                     if (span1 >= csSpan || isNegativeZero(span1)) {
                         min = min0;
                         max = max0;
@@ -950,11 +947,10 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * Adds an other rectangle to this rectangle. The resulting rectangle is the union of the
      * two {@code Rectangle} objects.
      *
-     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian spanning in the same way than
-     * {@link GeneralEnvelope#add(Envelope)}, except if the result is a rectangle expanding to
-     * infinities. In the later case, the field values are set to {@code NaN} because infinite
-     * values are a little bit problematic in {@link Rectangle2D} objects.
+     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
+     * This method supports anti-meridian in the same way than {@link GeneralEnvelope#add(Envelope)},
+     * except if the result is a rectangle expanding to infinities. In that later case, the field values
+     * are set to {@code NaN} because infinite values are a problematic in {@link Rectangle2D} objects.
      *
      * @param  rect  the rectangle to add to this envelope.
      */
@@ -1048,8 +1044,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * as an argument will return {@code true}, except if one of the point coordinates was
      * {@link java.lang.Double#NaN} in which case the corresponding coordinate has been ignored.
      *
-     * <h4>Spanning the anti-meridian of a Geographic CRS</h4>
-     * This method supports anti-meridian spanning in the same way than
+     * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
+     * This method supports anti-meridian in the same way than
      * {@link GeneralEnvelope#add(DirectPosition)}.
      *
      * @param  px  the first coordinate of the point to add.

@@ -200,7 +200,7 @@ public final class ServicesForMetadata extends ReferencingServices {
             if (Double.isNaN(southBoundLatitude)) southBoundLatitude = Latitude.MIN_VALUE;
             if (Double.isNaN(northBoundLatitude)) northBoundLatitude = Latitude.MAX_VALUE;
             if (Double.isNaN(eastBoundLongitude) || Double.isNaN(westBoundLongitude)) {
-                // Conservatively set the two bounds because may be spanning the anti-meridian.
+                // Conservatively set the two bounds because may be crossing the anti-meridian.
                 eastBoundLongitude = Longitude.MIN_VALUE;
                 westBoundLongitude = Longitude.MAX_VALUE;
             }
