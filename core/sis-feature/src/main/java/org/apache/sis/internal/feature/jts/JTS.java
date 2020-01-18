@@ -17,28 +17,25 @@
 package org.apache.sis.internal.feature.jts;
 
 import java.util.Map;
-import java.util.Optional;
-
+import org.opengis.metadata.Identifier;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
-
-import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -50,7 +47,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * For example we may replace it by a more general mechanism working also on other geometry libraries.</p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -107,27 +105,27 @@ public final class JTS extends Static {
         return null;
     }
 
-    public static Optional<CoordinateReferenceSystem> setCoordinateReferenceSystem(final Geometry target, final CoordinateReferenceSystem crs) {
-        ensureNonNull("Target geometry", target);
-        final Object ud = target.getUserData();
-        if (ud == null) {
-            // By security, we reset SRID in case old CRS was defined this way.
-            target.setSRID(0);
-            target.setUserData(crs);
-            return Optional.empty();
-        } else if (ud instanceof CoordinateReferenceSystem) {
-            target.setUserData(crs);
-            return Optional.of((CoordinateReferenceSystem) ud);
-        } else if (ud instanceof Map) {
-            final Map asMap = (Map) ud;
-            // In case user-data contains other useful data, we don't switch from map to CRS. We also reset SRID.
-            final Object oldVal = asMap.put(CRS_KEY, crs);
-            // By security, we reset SRID in case old CRS was defined this way.
-            if (oldVal == null) {
-                target.setSRID(0);
-            }
+    /**
+     * Sets the Coordinate Reference System (CRS) in the specified geometry. This method overwrite any previous
+     * user data; it should be invoked only when the geometry is known to not store any other information.
+     * In current Apache SIS usage, this method is invoked only for newly created geometries.
+     *
+     * <p>This method also sets the JTS SRID to EPSG code if such code can be found. For performance reasons
+     * this method does not perform a full scan of EPSG database if the CRS does not provide an EPSG code.</p>
+     *
+     * @param  target  the geometry where to store coordinate reference system information.
+     * @param  crs     the CRS to store, or {@code null}.
+     */
+    public static void setCoordinateReferenceSystem(final Geometry target, final CoordinateReferenceSystem crs) {
+        target.setUserData(crs);
+        int epsg = 0;
+        final Identifier id = IdentifiedObjects.getIdentifier(crs, Citations.EPSG);
+        if (id != null) try {
+            epsg = Integer.parseInt(id.getCode());
+        } catch (NumberFormatException e) {
+            // Ignore. Note: this is also the exception if id.getCode() is null.
         }
-        throw new IllegalArgumentException("Cannot modify input geometry, because user-data does not comply with SIS convention (should be a map or null, but was "+ud.getClass().getCanonicalName()+").");
+        target.setSRID(epsg);
     }
 
     /**

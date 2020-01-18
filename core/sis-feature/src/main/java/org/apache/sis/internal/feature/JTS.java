@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.nio.ByteBuffer;
 
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -30,6 +31,8 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
@@ -55,6 +58,7 @@ import org.locationtech.jts.io.WKTReader;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   0.7
  * @module
@@ -75,7 +79,7 @@ final class JTS extends Geometries<Geometry> {
     }
 
     /**
-     * Parses the given WKT.
+     * Parses the given Well Known Text (WKT).
      *
      * @return the geometry object for the given WKT.
      * @throws ParseException if the WKT can not be parsed.
@@ -85,9 +89,30 @@ final class JTS extends Geometries<Geometry> {
         return new WKTReader(factory).read(wkt);
     }
 
+    /**
+     * Reads the given Well Known Binary (WKB).
+     * This implementation does not change the buffer position.
+     */
     @Override
-    public Geometry parseWKB(byte[] source) throws ParseException {
-        return new WKBReader(factory).read(source);
+    public Geometry parseWKB(final ByteBuffer data) throws ParseException {
+        byte[] array;
+        if (data.hasArray()) {
+            /*
+             * Try to use the underlying array without copy if possible.
+             * Copy only if the position or length does not match.
+             */
+            array = data.array();
+            int lower = data.arrayOffset();
+            int upper = data.limit() + lower;
+            lower += data.position();
+            if (lower != 0 || upper != array.length) {
+                array = Arrays.copyOfRange(array, lower, upper);
+            }
+        } else {
+            array = new byte[data.remaining()];
+            data.get(array);
+        }
+        return new WKBReader(factory).read(array);
     }
 
     /**
@@ -177,9 +202,8 @@ final class JTS extends Geometries<Geometry> {
 
     /**
      * If the given geometry is an implementation of this library, returns its coordinate reference system.
-     * Otherwise returns {@code null}.
-     *
-     * @see #tryTransform(Object, CoordinateOperation, CoordinateReferenceSystem)
+     * This method overwrites any previous user object. This is okay for the context in which Apache SIS
+     * uses this method, which is only for newly created geometries.
      */
     @Override
     final CoordinateReferenceSystem tryGetCoordinateReferenceSystem(final Object geometry) throws FactoryException {
@@ -190,6 +214,11 @@ final class JTS extends Geometries<Geometry> {
         }
     }
 
+    /**
+     * If the given geometry is an implementation of this library, sets its coordinate reference system.
+     *
+     * @see #tryTransform(Object, CoordinateOperation, CoordinateReferenceSystem)
+     */
     @Override
     final boolean trySetCoordinateReferenceSystem(final Object geometry, final CoordinateReferenceSystem crs) {
         if (geometry instanceof Geometry) {
@@ -259,7 +288,7 @@ final class JTS extends Geometries<Geometry> {
             throw new UnsupportedOperationException(unsupported(dimension));
         }
         final List<Coordinate> coordinates = new ArrayList<>(32);
-        final List<LineString> lines = new ArrayList<>();
+        final List<Geometry> lines = new ArrayList<>();
         for (final Vector v : coords) {
             if (v != null) {
                 final int size = v.size();
@@ -276,17 +305,14 @@ final class JTS extends Geometries<Geometry> {
                         coordinates.add(c);
                     } else {
                         if (is3D) i++;
-                        toLineString(coordinates, lines);
+                        toLineString(coordinates, lines, polygon);
                         coordinates.clear();
                     }
                 }
             }
         }
-        toLineString(coordinates, lines);
-        if (polygon) {
-            return toPolygon(toGeometry(lines));    // TODO: create polygon directly instead.
-        }
-        return toGeometry(lines);
+        toLineString(coordinates, lines, polygon);
+        return toGeometry(lines, polygon);
     }
 
     /**
@@ -295,64 +321,80 @@ final class JTS extends Geometries<Geometry> {
      *
      * @param  geometries  the polygons or linear rings to put in a multi-polygons.
      * @throws ClassCastException if an element in the array is not a JTS geometry.
+     * @throws IllegalArgumentException if an element is a non-closed linear string.
      */
     @Override
     public MultiPolygon createMultiPolygon(final Object[] geometries) {
         final Polygon[] polygons = new Polygon[geometries.length];
         for (int i=0; i<geometries.length; i++) {
-            polygons[i] = toPolygon((Geometry) unwrap(geometries[i]));
+            final Object polyline = unwrap(geometries[i]);
+            final Polygon polygon;
+            if (polyline instanceof Polygon) {
+                polygon = (Polygon) polyline;
+            } else if (polyline instanceof LinearRing) {
+                polygon = factory.createPolygon((LinearRing) polyline);
+                copyMetadata((Geometry) polyline, polygon);
+            } else if (polyline instanceof LineString) {
+                // Let JTS throws an exception with its own error message if the ring is not valid.
+                polygon = factory.createPolygon(((LineString) polyline).getCoordinateSequence());
+                copyMetadata((Geometry) polyline, polygon);
+            } else {
+                throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3,
+                        Strings.bracket("geometries", i), Polygon.class, Classes.getClass(polyline)));
+            }
+            polygons[i] = polygon;
         }
         return factory.createMultiPolygon(polygons);
     }
 
-    private Polygon toPolygon(Geometry polyline) throws IllegalArgumentException {
-        if (polyline instanceof Polygon) {
-            return (Polygon) polyline;
-        }
-        Polygon result = null;
-        if (polyline instanceof LinearRing) {
-            result = factory.createPolygon((LinearRing) polyline);
-        } else if (polyline instanceof LineString) {
-            final LineString myLine = (LineString) polyline;
-            if (myLine.getEndPoint().equals(myLine.getStartPoint())) {
-                result = factory.createPolygon(myLine.getCoordinateSequence());
-            }
-        }
-        if (result == null) {
-            throw new IllegalArgumentException("Input is not a closed line.");
-        }
-        copyMetadata(polyline, result);
-        return result;
-    }
-
     /**
      * Makes a line string or linear ring from the given coordinates, and adds the line string to the given list.
+     * If the {@code polygon} argument is {@code true}, then this method creates polygons instead of line strings.
      * If the given coordinates array is empty, then this method does nothing.
      * This method does not modify the given coordinates list.
      */
-    private void toLineString(final List<Coordinate> coordinates, final List<LineString> addTo) {
+    private void toLineString(final List<Coordinate> coordinates, final List<Geometry> addTo, final boolean polygon) {
         final int s = coordinates.size();
         if (s >= 2) {
-            final LineString line;
             final Coordinate[] ca = coordinates.toArray(new Coordinate[s]);
-            if (ca[0].equals2D(ca[s-1])) {
-                line = factory.createLinearRing(ca);        // Throws an exception if s < 4.
+            final Geometry geom;
+            if (polygon) {
+                geom = factory.createPolygon(ca);
+            } else if (ca[0].equals2D(ca[s-1])) {
+                geom = factory.createLinearRing(ca);        // Throws an exception if s < 4.
             } else {
-                line = factory.createLineString(ca);        // Throws an exception if contains duplicated point.
+                geom = factory.createLineString(ca);        // Throws an exception if contains duplicated point.
             }
-            addTo.add(line);
+            addTo.add(geom);
         }
     }
 
     /**
-     * Returns the given list of line string as a single geometry.
+     * Returns the given list of polygons or line strings as a single geometry.
+     *
+     * @param  lines  the polygons or lines strings.
+     * @return {@code true} if the given list contains {@link Polygon} instances, or
+     *         {@code false} if it contains {@link LineString} instances.
+     * @throws ArrayStoreException if the geometries in the given list are not instances
+     *         of the type specified by the {@code polygon} argument.
      */
-    private Geometry toGeometry(final List<LineString> lines) {
+    @SuppressWarnings("SuspiciousToArrayCall")      // Type controlled by `polygon`.
+    private Geometry toGeometry(final List<Geometry> lines, final boolean polygon) {
         final int s = lines.size();
         switch (s) {
-            case 0:  return factory.createLinearRing((Coordinate[]) null);      // Creates an empty linear ring.
-            case 1:  return lines.get(0);
-            default: return factory.createMultiLineString(lines.toArray(new LineString[s]));
+            case 0:  {
+                // Create an empty polygon or linear ring.
+                return polygon ? factory.createPolygon   ((Coordinate[]) null)
+                               : factory.createLinearRing((Coordinate[]) null);
+            }
+            case 1: {
+                return lines.get(0);
+            }
+            default: {
+                // An ArrayStoreException here would be a bug in our use of `polygon` boolean.
+                return polygon ? factory.createMultiPolygon   (lines.toArray(new Polygon   [s]))
+                               : factory.createMultiLineString(lines.toArray(new LineString[s]));
+            }
         }
     }
 
@@ -367,14 +409,14 @@ final class JTS extends Geometries<Geometry> {
             return null;
         }
         final List<Coordinate> coordinates = new ArrayList<>();
-        final List<LineString> lines = new ArrayList<>();
+        final List<Geometry> lines = new ArrayList<>();
 add:    for (;;) {
             if (next instanceof Point) {
                 final Coordinate pt = ((Point) next).getCoordinate();
                 if (!Double.isNaN(pt.x) && !Double.isNaN(pt.y)) {
                     coordinates.add(pt);
                 } else {
-                    toLineString(coordinates, lines);
+                    toLineString(coordinates, lines, false);
                     coordinates.clear();
                 }
             } else {
@@ -386,7 +428,7 @@ add:    for (;;) {
                         lines.add(ls);
                     } else {
                         coordinates.addAll(Arrays.asList(ls.getCoordinates()));
-                        toLineString(coordinates, lines);
+                        toLineString(coordinates, lines, false);
                         coordinates.clear();
                     }
                 }
@@ -398,8 +440,8 @@ add:    for (;;) {
             do if (!polylines.hasNext()) break add;
             while ((next = polylines.next()) == null);
         }
-        toLineString(coordinates, lines);
-        return toGeometry(lines);
+        toLineString(coordinates, lines, false);
+        return toGeometry(lines, false);
     }
 
     /**
@@ -429,7 +471,7 @@ add:    for (;;) {
      * @see #tryGetCoordinateReferenceSystem(Object)
      */
     @Override
-    final Geometry tryTransform(final Object geometry, final CoordinateOperation operation, final CoordinateReferenceSystem targetCRS)
+    Geometry tryTransform(final Object geometry, final CoordinateOperation operation, final CoordinateReferenceSystem targetCRS)
             throws FactoryException, TransformException
     {
         if (geometry instanceof Geometry) {

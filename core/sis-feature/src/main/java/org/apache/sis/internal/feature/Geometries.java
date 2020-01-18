@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -242,6 +243,9 @@ public abstract class Geometries<G> {
      * and returns {@code true}. Otherwise returns {@code false}. The default implementation returns
      * {@code false} because only a few geometry implementations can store CRS information.
      *
+     * <p>This method should be invoked only for newly created geometries. If the geometry library supports
+     * user objects (e.g. JTS), there is no guarantees that this method will not overwrite user setting.</p>
+     *
      * @see #tryTransform(Object, CoordinateOperation, CoordinateReferenceSystem)
      */
     boolean trySetCoordinateReferenceSystem(Object geometry, CoordinateReferenceSystem crs) {
@@ -422,12 +426,13 @@ public abstract class Geometries<G> {
 
     /**
      * Reads the given bytes as a Well Known Binary (WKB) encoded geometry.
+     * Whether this method changes the buffer position or not is implementation-dependent.
      *
      * @param  data  the binary data in WKB format. Can not be null.
      * @return decoded geometry (never {@code null}).
      * @throws Exception if the WKB can not be parsed. The exception sub-class depends on the implementation.
      */
-    public abstract G parseWKB(byte[] data) throws Exception;
+    public abstract G parseWKB(ByteBuffer data) throws Exception;
 
     /**
      * Creates a two-dimensional point from the given coordinate. If the CRS is geographic, then the

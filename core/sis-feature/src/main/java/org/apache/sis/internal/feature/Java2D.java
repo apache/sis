@@ -18,6 +18,7 @@ package org.apache.sis.internal.feature;
 
 import java.util.List;
 import java.util.Iterator;
+import java.nio.ByteBuffer;
 import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
@@ -42,6 +43,7 @@ import org.apache.sis.util.UnsupportedImplementationException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   0.7
  * @module
@@ -127,6 +129,11 @@ final class Java2D extends Geometries<Shape> {
                 case 0:  return ArraysExt.EMPTY_DOUBLE;
                 case 1:  return coordinates.get(0);
                 default: {
+                    /*
+                     * Concatenate the coordinates of all polygons in a single array. We lost the distinction
+                     * between the different polygons, which is why this method should not be used except for
+                     * testing.
+                     */
                     final double[] tgt = new double[coordinates.stream().mapToInt((a) -> a.length).sum()];
                     int p = 0;
                     for (final double[] src : coordinates) {
@@ -168,7 +175,7 @@ final class Java2D extends Geometries<Shape> {
      * @param  length  initial capacity.
      * @return an initially empty path of the given type.
      */
-    private Path2D createPath(final boolean isFloat, final int length) {
+    private static Path2D createPath(final boolean isFloat, final int length) {
         return isFloat ? new Path2D.Float (Path2D.WIND_NON_ZERO, length)
                        : new Path2D.Double(Path2D.WIND_NON_ZERO, length);
     }
@@ -202,6 +209,7 @@ final class Java2D extends Geometries<Shape> {
             }
         }
         /*
+         * Shortcut (for performance reason) when building a single line segment.
          * Note: Point2D is not an instance of Shape, so we can not make a special case for it.
          */
         length /= BIDIMENSIONAL;
@@ -218,30 +226,27 @@ final class Java2D extends Geometries<Shape> {
                 return path;
             }
         }
+        /*
+         * General case if we could not use a shortcut.
+         */
         final Path2D path = createPath(isFloat, length);
-        double startX = Double.NaN, startY = Double.NaN;
-        double  lastX = Double.NaN,  lastY = Double.NaN;
         boolean lineTo = false;
         for (final Vector v : coordinates) {
             final int size = v.size();
             for (int i=0; i<size;) {
                 final double x = v.doubleValue(i++);
                 final double y = v.doubleValue(i++);
-                if (Double.isNaN(startX)) {
-                    startX = x;
-                    startY = y;
-                }
                 if (Double.isNaN(x) || Double.isNaN(y)) {
-                    if (lastX == startX && lastY == startY) path.closePath();
+                    if (polygon) {
+                        path.closePath();
+                    }
                     lineTo = false;
-                    startX = startY = Double.NaN;
                 } else if (lineTo) {
                     path.lineTo(x, y);
                 } else {
                     path.moveTo(x, y);
                     lineTo = true;
                 }
-                lastX = x; lastY = y;
             }
         }
         if (polygon) {
@@ -335,15 +340,18 @@ add:    for (;;) {
     }
 
     /**
-     * Parses the given WKT.
+     * Well Known Text (WKT) parsing not supported with Java2D.
      */
     @Override
     public Shape parseWKT(final String wkt) {
         throw new UnsupportedImplementationException(unsupported("parseWKT"));
     }
 
+    /**
+     * Well Known Binary (WKB) reading not supported with Java2D.
+     */
     @Override
-    public Shape parseWKB(byte[] source) {
+    public Shape parseWKB(ByteBuffer data) {
         throw new UnsupportedImplementationException(unsupported("parseWKB"));
     }
 }

@@ -18,28 +18,27 @@ package org.apache.sis.internal.feature;
 
 import java.nio.ByteBuffer;
 import java.util.Iterator;
-
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Envelope2D;
 import com.esri.core.geometry.MultiPath;
+import com.esri.core.geometry.MultiVertexGeometry;
 import com.esri.core.geometry.Polyline;
 import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Point2D;
 import com.esri.core.geometry.Point3D;
+import com.esri.core.geometry.WkbImportFlags;
 import com.esri.core.geometry.WktImportFlags;
 import com.esri.core.geometry.WktExportFlags;
+import com.esri.core.geometry.OperatorImportFromWkb;
 import com.esri.core.geometry.OperatorImportFromWkt;
 import com.esri.core.geometry.OperatorExportToWkt;
 import com.esri.core.geometry.OperatorCentroid2D;
-
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.math.Vector;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
-
-import com.esri.core.geometry.*;
 
 
 /**
@@ -48,6 +47,7 @@ import com.esri.core.geometry.*;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   0.7
  * @module
@@ -257,17 +257,19 @@ add:    for (;;) {
     }
 
     /**
-     * Parses the given WKT.
+     * Parses the given Well Known Text (WKT).
      */
     @Override
     public Geometry parseWKT(final String wkt) {
         return OperatorImportFromWkt.local().execute(WktImportFlags.wktImportDefaults, Geometry.Type.Unknown, wkt, null);
     }
 
+    /**
+     * Reads the given Well Known Binary (WKB).
+     */
     @Override
-    public Geometry parseWKB(byte[] source) {
-        final OperatorImportFromWkb op = OperatorImportFromWkb.local();
-        return op.execute(WkbImportFlags.wkbImportDefaults, Geometry.Type.Unknown, ByteBuffer.wrap(source), null);
+    public Geometry parseWKB(final ByteBuffer data) {
+        return OperatorImportFromWkb.local().execute(WkbImportFlags.wkbImportDefaults, Geometry.Type.Unknown, data, null);
     }
 
     /**
