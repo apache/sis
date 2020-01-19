@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.feature;
+package org.apache.sis.internal.feature.jts;
 
+import org.apache.sis.internal.feature.GeometriesTestCase;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.MultiLineString;
 import org.junit.Test;
@@ -24,24 +25,24 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link JTS} implementation.
+ * Tests {@link Factory} implementation for JTS geometries.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
-public final strictfp class JTSTest extends GeometriesTestCase {
+public final strictfp class FactoryTest extends GeometriesTestCase {
     /**
      * Creates a new test case.
      */
-    public JTSTest() {
-        super(new JTS());
+    public FactoryTest() {
+        super(Factory.INSTANCE);
     }
 
     /**
-     * Tests {@link JTS#createPolyline(boolean, int, Vector...)}.
+     * Tests {@link Factory#createPolyline(boolean, int, Vector...)}.
      */
     @Test
     @Override
@@ -70,12 +71,12 @@ public final strictfp class JTSTest extends GeometriesTestCase {
     }
 
     /**
-     * Tests {@link Geometries#tryMergePolylines(Object, Iterator)}.
+     * Tests {@link Factory#mergePolylines(Iterator)} (or actually tests its strategy).
      */
     @Test
     @Override
-    public void testTryMergePolylines() {
-        super.testTryMergePolylines();
+    public void testMergePolylines() {
+        super.testMergePolylines();
         final MultiLineString mp = (MultiLineString) geometry;
         assertEquals("numGeometries", 3, mp.getNumGeometries());
         verifyTwoFirstGeometries(mp);

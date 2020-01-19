@@ -21,6 +21,7 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.filter.NamedFunction;
 import org.apache.sis.internal.feature.FeatureExpression;
+import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.util.ArgumentChecks;
 import org.opengis.feature.FeatureType;
@@ -89,8 +90,16 @@ final class ST_Buffer extends NamedFunction implements FeatureExpression {
      */
     @Override
     public Object evaluate(final Object value) {
-        return Geometries.buffer(parameters.get(0).evaluate(value),
-                                 parameters.get(1).evaluate(value, Number.class).doubleValue());
+        final Object geometry = parameters.get(0).evaluate(value);
+        final GeometryWrapper<?> wrapper = Geometries.wrap(geometry).orElse(null);
+        if (wrapper != null) {
+            final Number distance = parameters.get(1).evaluate(value, Number.class);
+            if (distance != null) {
+                final Object result = wrapper.buffer(distance.doubleValue());
+                return (geometry == wrapper) ? wrapper.wrap(result) : result;
+            }
+        }
+        return null;
     }
 
     /**

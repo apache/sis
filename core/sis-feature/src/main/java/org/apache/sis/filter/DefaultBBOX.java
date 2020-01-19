@@ -39,6 +39,7 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.collection.BackingStoreException;
 
@@ -153,14 +154,12 @@ final class DefaultBBOX extends SpatialFunction implements BBOX, Serializable {
                     .map(p -> p.getName().toString())
                     .map(f::getPropertyValue)
                     .map(Geometries::getEnvelope)
-                    .allMatch(fEnv -> fEnv != null && intersect(constEnv, fEnv));
+                    .allMatch(fEnv -> fEnv.isPresent() && intersect(constEnv, fEnv.get()));
         } else if (candidate instanceof Envelope) {
             return intersect(constEnv, (Envelope) candidate);
         } else {
-            final Envelope env = Geometries.getEnvelope(candidate);
-            if (env == null) throw new UnsupportedOperationException(
-                    "Candidate type unsupported: "+candidate == null ? "null" : candidate.getClass().getCanonicalName()
-            );
+            final Envelope env = Geometries.getEnvelope(candidate).orElseThrow(() ->
+                    new UnsupportedOperationException("Candidate type unsupported: " + Classes.getShortClassName(candidate)));
             return intersect(constEnv, env);
         }
     }
@@ -174,10 +173,9 @@ final class DefaultBBOX extends SpatialFunction implements BBOX, Serializable {
             } else if (tmpVal instanceof GeographicBoundingBox) {
                 eval = new GeneralEnvelope((GeographicBoundingBox) tmpVal);
             } else {
-                eval = Geometries.getEnvelope(tmpVal);
+                eval = Geometries.getEnvelope(tmpVal).orElse(null);
             }
         }
-
         return eval;
     }
 

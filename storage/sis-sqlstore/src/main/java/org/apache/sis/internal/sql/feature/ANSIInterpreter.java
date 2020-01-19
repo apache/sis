@@ -527,23 +527,19 @@ public class ANSIInterpreter implements FilterVisitor, ExpressionVisitor {
         }
         final GeneralEnvelope env = new GeneralEnvelope(lower, upper);
         env.setCoordinateReferenceSystem(source.getCoordinateReferenceSystem());
-        final Object g = Geometries.implementation(LIBRARY).toGeometry2D(env, WraparoundMethod.SPLIT);
-        if (g == null) {
-            throw new UnsupportedOperationException("No geometry implementation available");
-        }
-        return new GeometryWrapper(g, env);
+        return Geometries.implementation(LIBRARY).toGeometry2D(env, WraparoundMethod.SPLIT);
     }
 
     protected static CharSequence format(final Geometry source) {
+        final GeometryWrapper<?> wrapper = Geometries.wrap(source).orElseThrow(
+                () -> new IllegalArgumentException("Unsupported geometry implementation."));
         // TODO: find a better approximation of desired "flatness"
-        final Envelope env = source.getEnvelope();
+        final Envelope env = wrapper.getEnvelope();
         final double flatness = 0.05 * IntStream.range(0, env.getDimension())
                 .mapToDouble(env::getSpan)
                 .average()
                 .orElseThrow(() -> new IllegalArgumentException("Given geometry envelope dimension is 0"));
-        return new StringBuilder("ST_GeomFromText('")
-                .append(Geometries.formatWKT(source, flatness))
-                .append("')");
+        return "ST_GeomFromText('" + wrapper.formatWKT(flatness) + "')";
     }
 
     protected static double clampInfinity(final double candidate) {

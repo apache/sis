@@ -35,7 +35,7 @@ import org.apache.sis.util.StringBuilders;
  * @since   1.0
  * @module
  */
-public final class ShapeProperties {
+final class ShapeProperties {
     /**
      * The geometry.
      */

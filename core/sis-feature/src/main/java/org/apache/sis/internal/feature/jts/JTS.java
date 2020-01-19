@@ -116,7 +116,7 @@ public final class JTS extends Static {
      * @param  target  the geometry where to store coordinate reference system information.
      * @param  crs     the CRS to store, or {@code null}.
      */
-    public static void setCoordinateReferenceSystem(final Geometry target, final CoordinateReferenceSystem crs) {
+    static void setCoordinateReferenceSystem(final Geometry target, final CoordinateReferenceSystem crs) {
         target.setUserData(crs);
         int epsg = 0;
         final Identifier id = IdentifiedObjects.getIdentifier(crs, Citations.EPSG);
@@ -195,7 +195,7 @@ public final class JTS extends Static {
      * @param  geometry   the geometry to transform, or {@code null}.
      * @param  operation  the coordinate operation to apply, or {@code null}.
      * @return the transformed geometry, or the same geometry if it is already in target CRS.
-     * @throws FactoryException if transformation to the target CRS can not be constructed.
+     * @throws FactoryException if transformation to the target CRS can not be found.
      * @throws TransformException if the given geometry can not be transformed.
      */
     public static Geometry transform(Geometry geometry, CoordinateOperation operation)

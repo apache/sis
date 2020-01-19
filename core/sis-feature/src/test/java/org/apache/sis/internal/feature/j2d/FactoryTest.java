@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.feature;
+package org.apache.sis.internal.feature.j2d;
 
+import org.apache.sis.internal.feature.GeometriesTestCase;
 import java.awt.geom.Path2D;
 import org.junit.Test;
 
@@ -23,23 +24,23 @@ import static org.opengis.test.Assert.*;
 
 
 /**
- * Tests {@link Java2D} implementation.
+ * Tests {@link Factory} implementation for Java2D geometries.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
-public final strictfp class Java2DTest extends GeometriesTestCase {
+public final strictfp class FactoryTest extends GeometriesTestCase {
     /**
      * Creates a new test case.
      */
-    public Java2DTest() {
-        super(new Java2D());
+    public FactoryTest() {
+        super(Factory.INSTANCE);
     }
 
     /**
-     * Tests {@link Java2D#createPolyline(boolean, int, Vector...)}.
+     * Tests {@link Factory#createPolyline(boolean, int, Vector...)}.
      */
     @Test
     @Override
@@ -49,12 +50,12 @@ public final strictfp class Java2DTest extends GeometriesTestCase {
     }
 
     /**
-     * Tests {@link Geometries#tryMergePolylines(Object, Iterator)}.
+     * Tests {@link Factory#mergePolylines(Iterator)} (or actually tests its strategy).
      */
     @Test
     @Override
-    public void testTryMergePolylines() {
-        super.testTryMergePolylines();
+    public void testMergePolylines() {
+        super.testMergePolylines();
         assertInstanceOf("geometry", Path2D.class, geometry);
     }
 }

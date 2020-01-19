@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Base class of {@link Java2D}, {@link ESRI} and {@link JTS} implementation tests.
+ * Base class of Java2D, ESRI and JTS implementation tests.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -48,28 +48,44 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
     /**
      * The geometry created by the test. Provided for allowing sub-classes to perform additional verifications.
      */
-    Object geometry;
+    protected Object geometry;
+
+    /**
+     * The wrapper of {@link #geometry}.
+     */
+    private GeometryWrapper<?> wrapper;
 
     /**
      * Creates a new test for the given factory.
+     *
+     * @param  factory  the factory to test.
      */
-    GeometriesTestCase(final Geometries<?> factory) {
+    protected GeometriesTestCase(final Geometries<?> factory) {
         this.factory = factory;
     }
 
     /**
-     * Tests {@link Geometries#createPoint(double, double)} followed by {@link Geometries#tryGetPointCoordinates(Object)}.
+     * Initializes the {@link #wrapper} from current value of {@link #geometry}.
+     */
+    private void createWrapper() {
+        wrapper = factory.createWrapper(geometry);
+        assertNotNull("createWrapper", wrapper);
+    }
+
+    /**
+     * Tests {@link Geometries#createPoint(double, double)} followed by {@link GeometryWrapper#getPointCoordinates()}.
      */
     @Test
     public void testTryGetPointCoordinates() {
         geometry = factory.createPoint(4, 5);
         assertNotNull("createPoint", geometry);
-        assertArrayEquals("tryGetPointCoordinates", new double[] {4, 5}, factory.tryGetPointCoordinates(geometry), STRICT);
+        createWrapper();
+        assertArrayEquals("getPointCoordinates", new double[] {4, 5}, wrapper.getPointCoordinates(), STRICT);
     }
 
     /**
      * Tests {@link Geometries#createPolyline(boolean, int, Vector...)}.
-     * This method verifies the polylines by a call to {@link Geometries#tryGetEnvelope(Object)}.
+     * This method verifies the polylines by a call to {@link GeometryWrapper#getEnvelope()}.
      * Subclasses should perform more extensive tests by verifying the {@link #geometry} field.
      */
     @Test
@@ -84,7 +100,8 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
                  -2,  -5,
                  -1,  -6}));
 
-        final GeneralEnvelope env = factory.tryGetEnvelope(geometry);
+        createWrapper();
+        final GeneralEnvelope env = wrapper.getEnvelope();
         assertEquals("xmin", -3, env.getLower(0), STRICT);
         assertEquals("ymin", -6, env.getLower(1), STRICT);
         assertEquals("xmax",  9, env.getUpper(0), STRICT);
@@ -92,12 +109,12 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link Geometries#tryMergePolylines(Object, Iterator)}.
-     * This method verifies the polylines by a call to {@link Geometries#tryGetEnvelope(Object)}.
+     * Tests {@link Geometries#mergePolylines(Iterator)} (or actually tests its strategy).
+     * This method verifies the polylines by a call to {@link GeometryWrapper#getEnvelope()}.
      * Subclasses should perform more extensive tests by verifying the {@link #geometry} field.
      */
     @Test
-    public void testTryMergePolylines() {
+    public void testMergePolylines() {
         final Iterator<Object> c1 = Arrays.asList(
                 factory.createPoint(  4,   5),
                 factory.createPoint(  7,   9),
@@ -113,11 +130,12 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
                 factory.createPoint( 15,  11),
                 factory.createPoint( 13,  10)).iterator();
 
-        final Object g1 = factory.tryMergePolylines(c1.next(), c1);
-        final Object g2 = factory.tryMergePolylines(c2.next(), c2);
-        geometry = factory.tryMergePolylines(g1, Arrays.asList(factory.createPoint(13, 11), g2).iterator());
+        final Object g1 = factory.createWrapper(c1.next()).mergePolylines(c1);
+        final Object g2 = factory.createWrapper(c2.next()).mergePolylines(c2);
+        geometry = factory.createWrapper(g1).mergePolylines(Arrays.asList(factory.createPoint(13, 11), g2).iterator());
 
-        final GeneralEnvelope env = factory.tryGetEnvelope(geometry);
+        createWrapper();
+        final GeneralEnvelope env = wrapper.getEnvelope();
         assertEquals("xmin", -3, env.getLower(0), STRICT);
         assertEquals("ymin", -6, env.getLower(1), STRICT);
         assertEquals("xmax", 15, env.getUpper(0), STRICT);
@@ -125,13 +143,14 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link Geometries#tryFormatWKT(Object, double)}.
+     * Tests {@link GeometryWrapper#formatWKT(double)}.
      */
     @Test
     @DependsOnMethod("testCreatePolyline")
-    public void testTryFormatWKT() {
+    public void testFormatWKT() {
         geometry = factory.createPolyline(false, 2, Vector.create(new double[] {4,5, 7,9, 9,3, -1,-6}));
-        final String text = factory.tryFormatWKT(geometry, 0);
+        createWrapper();
+        final String text = wrapper.formatWKT(0);
         assertNotNull(text);
         assertWktEquals("LINESTRING (4 5, 7 9, 9 3, -1 -6)", text);
     }
@@ -198,7 +217,9 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
      * with the given argument values produces a geometry will all expected coordinates.
      */
     private void assertToGeometryEquals(final Envelope source, final WraparoundMethod method, final double... expected) {
-        final double[] result = factory.tryGetAllCoordinates(factory.toGeometry2D(source, method));
+        wrapper = factory.toGeometry2D(source, method);
+        geometry = wrapper.implementation();
+        final double[] result = wrapper.getAllCoordinates();
         assertArrayEquals(expected, result, 1e-9);
     }
 
@@ -206,8 +227,11 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
      * Verifies that a WKT is equal to the expected one. If the actual WKT is a multi-lines or multi-polygons,
      * then this method may modify the expected WKT accordingly. This adjustment is done for the ESRI case by
      * overriding this method.
+     *
+     * @param  expected  the expected WKT string.
+     * @param  actual    the actual WKT string.
      */
-    void assertWktEquals(String expected, final String actual) {
+    protected void assertWktEquals(String expected, final String actual) {
         assertEquals(expected, actual);
     }
 }

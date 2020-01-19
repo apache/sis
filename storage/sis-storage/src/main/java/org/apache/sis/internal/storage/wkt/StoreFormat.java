@@ -25,7 +25,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
@@ -80,12 +79,9 @@ public final class StoreFormat extends WKTFormat {
      */
     public Geometry parseGeometry(final String geometry, final String crs, final String additionalCRS) {
         if (geometry != null) try {
-            final Object obj = Geometries.implementation(library).parseWKT(geometry);
-            final GeneralEnvelope envelope = Geometries.getEnvelope(geometry);
-            if (envelope != null) {
-                envelope.setCoordinateReferenceSystem(parseCRS(crs, additionalCRS));
-                return new GeometryWrapper(obj, envelope);
-            }
+            final GeometryWrapper<?> obj = Geometries.implementation(library).parseWKT(geometry);
+            obj.setCoordinateReferenceSystem(parseCRS(crs, additionalCRS));
+            return obj;
         } catch (Exception e) {     // Implementation-specific exception (e.g. JTS has its own exception class).
             log(e);
         }

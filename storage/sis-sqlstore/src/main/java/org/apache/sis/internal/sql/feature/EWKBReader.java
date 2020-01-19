@@ -90,11 +90,11 @@ class EWKBReader {
      * @param defaultCrs The coordinate reference system to associate to each geometry.
      * @return A NEW instance of reader, with a fixed CRS resolution, applying constant value to all read geometries.
      */
-    public EWKBReader forCrs(CoordinateReferenceSystem defaultCrs) {
+    public EWKBReader forCrs(final CoordinateReferenceSystem defaultCrs) {
         if (defaultCrs == null) return new EWKBReader(factory);
-        else return new EWKBReader(factory, bytes -> {
+        return new EWKBReader(factory, bytes -> {
             final Object geom = new Reader(factory, bytes).read();
-            Geometries.setCoordinateReferenceSystem(geom, defaultCrs);
+            Geometries.wrap(geom).ifPresent((w) -> w.setCoordinateReferenceSystem(defaultCrs));
             return geom;
         });
     }
@@ -106,7 +106,7 @@ class EWKBReader {
             if (reader.srid > 0) {
                 final CoordinateReferenceSystem crs = fromPgSridToCrs.apply(reader.srid);
                 if (crs != null) {
-                    Geometries.setCoordinateReferenceSystem(geom, crs);
+                    Geometries.wrap(geom).ifPresent((w) -> w.setCoordinateReferenceSystem(crs));
                 }
             }
             return geom;
@@ -175,7 +175,7 @@ class EWKBReader {
             for (int i=0; i<polygons.length; i++) {
                 polygons[i] = new Reader(factory, buffer).read();
             }
-            return factory.createMultiPolygon(polygons);
+            return factory.createMultiPolygon(polygons).implementation();
         }
 
         private Object readCollection() {

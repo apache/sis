@@ -722,8 +722,8 @@ format:                     for (final AttributeType<?> ct : ((AttributeType<?>)
             text = toString(((IdentifiedType) value).getName());
         } else if (value instanceof IdentifiedObject) {
             text = IdentifiedObjects.getIdentifierOrName((IdentifiedObject) value);
-        } else if ((text = Geometries.toString(value)) == null) {
-            text = value.toString();
+        } else {
+            text = Geometries.toString(value).orElseGet(value::toString);
         }
         final int remaining = MAXIMAL_VALUE_LENGTH - length;
         if (remaining >= text.length()) {

@@ -20,9 +20,6 @@ import java.util.Arrays;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.AbstractDirectPosition;
 
-// Branch-dependent imports
-import org.opengis.geometry.UnmodifiableGeometryException;
-
 
 /**
  * A read-only direct position wrapping an array without performing any copy.
@@ -84,7 +81,7 @@ public abstract class DirectPositionView extends AbstractDirectPosition {
      */
     @Override
     public final void setOrdinate(final int dimension, final double value) {
-        throw new UnmodifiableGeometryException();
+        throw new UnsupportedOperationException();
     }
 
     /**

@@ -33,7 +33,6 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.jts.JTS;
-import org.apache.sis.internal.filter.sqlmm.ST_Envelope;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;

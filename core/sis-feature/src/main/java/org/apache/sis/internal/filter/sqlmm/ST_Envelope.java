@@ -183,7 +183,7 @@ public class ST_Envelope extends NamedFunction implements FeatureExpression {
             return (Envelope) value;
         } else if (value instanceof CharSequence) try {
             // Maybe it's a WKT format, so we will try to read it
-            value = AbstractSpatialFunction.getGeometryImplementation().parseWKT(value.toString());
+            return AbstractSpatialFunction.getGeometryImplementation().parseWKT(value.toString()).getEnvelope();
         } catch (Exception e) {
             throw new IllegalArgumentException("Can not parse WKT", e);
         }
@@ -194,6 +194,6 @@ public class ST_Envelope extends NamedFunction implements FeatureExpression {
             if (env != null) return env;
         }
 
-        return Geometries.getEnvelope(value);
+        return Geometries.getEnvelope(value).orElse(null);
     }
 }

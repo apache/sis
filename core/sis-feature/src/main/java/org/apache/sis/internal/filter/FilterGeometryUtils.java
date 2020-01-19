@@ -147,7 +147,7 @@ public final class FilterGeometryUtils {
         }
 
         if (value instanceof GeometryWrapper) {
-            value = ((GeometryWrapper) value).geometry;
+            value = ((GeometryWrapper) value).implementation();
         } else if (value instanceof String) {
             try {
                 //try to convert from WKT
@@ -168,7 +168,7 @@ public final class FilterGeometryUtils {
         if (value instanceof GridCoverage) {
             //use the coverage envelope
             final GridCoverage coverage = (GridCoverage) value;
-            candidate = SIS_GEOMETRY_FACTORY.toGeometry2D(coverage.getGridGeometry().getEnvelope(), WraparoundMethod.SPLIT);
+            candidate = (Geometry) SIS_GEOMETRY_FACTORY.toGeometry2D(coverage.getGridGeometry().getEnvelope(), WraparoundMethod.SPLIT).implementation();
         } else {
             try {
                 candidate = ObjectConverters.convert(value, Geometry.class);
@@ -184,17 +184,17 @@ public final class FilterGeometryUtils {
      * Reproject geometries to the same CRS if needed and if possible.
      */
     public static Geometry[] toSameCRS(final Geometry leftGeom, final Geometry rightGeom)
-            throws FactoryException, TransformException {
-
-        final CoordinateReferenceSystem leftCRS = Geometries.getCoordinateReferenceSystem(leftGeom);
-        final CoordinateReferenceSystem rightCRS = Geometries.getCoordinateReferenceSystem(rightGeom);
+            throws FactoryException, TransformException
+    {
+        final CoordinateReferenceSystem leftCRS  = Geometries.wrap( leftGeom).map(GeometryWrapper::getCoordinateReferenceSystem).orElse(null);
+        final CoordinateReferenceSystem rightCRS = Geometries.wrap(rightGeom).map(GeometryWrapper::getCoordinateReferenceSystem).orElse(null);
 
         final CRSMatching.Match match = CRSMatching
                 .left(leftCRS)
                 .right(rightCRS);
 
         // TODO: avoid casts.
-        final CRSMatching.Transformer<Object> projectGeom = (g, op) -> Geometries.transform(g, op);
+        final CRSMatching.Transformer<Object> projectGeom = (g, op) -> Geometries.wrap(g).get().transform(op);
         return new Geometry[] {
             (Geometry) match.transformLeftToCommon(leftGeom, projectGeom),
             (Geometry) match.transformRightToCommon(rightGeom, projectGeom)
@@ -207,10 +207,12 @@ public final class FilterGeometryUtils {
      * rightGeometry, matchingCRS];
      */
     public static Object[] toSameCRS(final Geometry leftGeom, final Geometry rightGeom, final Unit unit)
-            throws NoSuchAuthorityCodeException, FactoryException, TransformException {
-
-        final CoordinateReferenceSystem leftCRS = Geometries.getCoordinateReferenceSystem(leftGeom);
-        final CoordinateReferenceSystem rightCRS = Geometries.getCoordinateReferenceSystem(rightGeom);
+            throws NoSuchAuthorityCodeException, FactoryException, TransformException
+    {
+        final GeometryWrapper<?> leftHandler  = Geometries.wrap( leftGeom).get();
+        final GeometryWrapper<?> rightHandler = Geometries.wrap(rightGeom).get();
+        final CoordinateReferenceSystem leftCRS  =  leftHandler.getCoordinateReferenceSystem();
+        final CoordinateReferenceSystem rightCRS = rightHandler.getCoordinateReferenceSystem();
 
         if (leftCRS == null && rightCRS == null) {
             //bother geometries doesn't have a defined SRID, we assume that both
@@ -232,8 +234,8 @@ public final class FilterGeometryUtils {
                     final CoordinateOperation trs = CRS.findOperation(geomCRS, mercator, null);
 
                     return new Object[]{
-                        Geometries.transform(leftGeom, trs),
-                        Geometries.transform(rightGeom, trs),
+                        leftHandler.transform(trs),
+                        rightHandler.transform(trs),
                         mercator};
 
                 } else {
@@ -252,12 +254,12 @@ public final class FilterGeometryUtils {
             if (leftCRS.getCoordinateSystem().getAxis(0).getUnit().isCompatible(unit)) {
                 matchingCRS = leftCRS;
                 final CoordinateOperation trs = CRS.findOperation(rightCRS, matchingCRS, null);
-                rightMatch = Geometries.transform(rightGeom, trs);
+                rightMatch = rightHandler.transform(trs);
                 leftMatch = leftGeom;
             } else if (rightCRS.getCoordinateSystem().getAxis(0).getUnit().isCompatible(unit)) {
                 matchingCRS = rightCRS;
                 final CoordinateOperation trs = CRS.findOperation(leftCRS, matchingCRS, null);
-                leftMatch = Geometries.transform(leftGeom, trs);
+                leftMatch = leftHandler.transform(trs);
                 rightMatch = rightGeom;
             } else {
                 //the crs unit is not compatible, we must reproject both geometries to a more appropriate crs
@@ -266,16 +268,15 @@ public final class FilterGeometryUtils {
                     matchingCRS = getMercator();
 
                     CoordinateOperation trs = CRS.findOperation(leftCRS, matchingCRS, null);
-                    leftMatch = Geometries.transform(leftGeom, trs);
+                    leftMatch = leftHandler.transform(trs);
                     trs = CRS.findOperation(rightCRS, matchingCRS, null);
-                    rightMatch = Geometries.transform(rightGeom, trs);
+                    rightMatch = rightHandler.transform(trs);
 
                 } else {
                     //we can not find a matching projection in this case
                     throw new TransformException("Could not find a matching CRS for both geometries for unit :" + unit);
                 }
             }
-
             return new Object[]{leftMatch, rightMatch, matchingCRS};
         }
     }

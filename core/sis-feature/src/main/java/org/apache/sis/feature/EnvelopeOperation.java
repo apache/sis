@@ -297,7 +297,7 @@ final class EnvelopeOperation extends AbstractOperation {
                      * property values into real property instances. This is an optimization for reducing
                      * the amount of objects to create.
                      */
-                    genv = Geometries.getEnvelope(feature.getPropertyValue(name));
+                    genv = Geometries.getEnvelope(feature.getPropertyValue(name)).orElse(null);
                     if (genv == null) continue;
                 } else {
                     /*
@@ -306,7 +306,7 @@ final class EnvelopeOperation extends AbstractOperation {
                      * implementations of DenseFeature and SparseFeature have a "all of nothing" behavior anyway.
                      */
                     final Property property = feature.getProperty(name);
-                    genv = Geometries.getEnvelope(property.getValue());
+                    genv = Geometries.getEnvelope(property.getValue()).orElse(null);
                     if (genv == null) continue;
                     /*
                      * Get the CRS characteristic if present. Most of the time, 'at' will be null and we will

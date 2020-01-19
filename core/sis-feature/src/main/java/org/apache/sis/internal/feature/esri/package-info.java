@@ -16,8 +16,8 @@
  */
 
 /**
- * Centralizes usages of some (not all) Java2D geometry API by Apache SIS.
- * We use this class for isolating dependencies from the {@code org.apache.feature} package to Java2D API.
+ * Centralizes usages ERSI geometry API by Apache SIS.
+ * We use this class for isolating dependencies from the {@code org.apache.feature} package to ESRI API.
  *
  * <STRONG>Do not use!</STRONG>
  *
@@ -29,7 +29,7 @@
  *
  * @see org.apache.sis.internal.referencing.j2d
  *
- * @since 1.0
+ * @since 1.1
  * @module
  */
-package org.apache.sis.internal.feature.j2d;
+package org.apache.sis.internal.feature.esri;

@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.feature;
+package org.apache.sis.internal.feature.esri;
 
+import org.apache.sis.internal.feature.GeometriesTestCase;
 import com.esri.core.geometry.Polyline;
 import org.apache.sis.util.StringBuilders;
 import org.junit.Test;
@@ -24,23 +25,23 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link ESRI} implementation.
+ * Tests {@link Factory} implementation for ESRI geometries.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
-public final strictfp class ESRITest extends GeometriesTestCase {
+public final strictfp class FactoryTest extends GeometriesTestCase {
     /**
      * Creates a new test case.
      */
-    public ESRITest() {
-        super(new ESRI());
+    public FactoryTest() {
+        super(Factory.INSTANCE);
     }
 
     /**
-     * Tests {@link ESRI#createPolyline(boolean, int, Vector...)}.
+     * Tests {@link Factory#createPolyline(boolean, int, Vector...)}.
      */
     @Test
     @Override
@@ -51,12 +52,12 @@ public final strictfp class ESRITest extends GeometriesTestCase {
     }
 
     /**
-     * Tests {@link Geometries#tryMergePolylines(Object, Iterator)}.
+     * Tests {@link Factory#mergePolylines(Iterator)} (or actually tests its strategy).
      */
     @Test
     @Override
-    public void testTryMergePolylines() {
-        super.testTryMergePolylines();
+    public void testMergePolylines() {
+        super.testMergePolylines();
         final Polyline poly = (Polyline) geometry;
         assertEquals("pathCount", 3, poly.getPathCount());
     }
@@ -67,7 +68,7 @@ public final strictfp class ESRITest extends GeometriesTestCase {
      * geometries that way (at least with the objects that we use).
      */
     @Override
-    void assertWktEquals(String expected, final String actual) {
+    protected void assertWktEquals(String expected, final String actual) {
         assertTrue(actual.startsWith("MULTI"));
         final StringBuilder b = new StringBuilder(expected.length() + 7).append("MULTI").append(expected);
         StringBuilders.replace(b, "(", "((");

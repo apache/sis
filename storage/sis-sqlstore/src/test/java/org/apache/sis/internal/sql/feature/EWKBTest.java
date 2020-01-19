@@ -24,7 +24,8 @@ public class EWKBTest extends TestCase {
     public void decodeHexadecimal(String wkt, String hexEWKB) throws Exception {
         final GeographicCRS expectedCrs = CommonCRS.defaultGeographic();
         final EWKBReader reader = new EWKBReader(GF).forCrs(expectedCrs);
-        Assert.assertEquals("WKT and hexadecimal EWKB representation don't match", GF.parseWKT(wkt), reader.readHexa(hexEWKB));
+        Assert.assertEquals("WKT and hexadecimal EWKB representation don't match",
+                GF.parseWKT(wkt).implementation(), reader.readHexa(hexEWKB));
     }
 
     /**

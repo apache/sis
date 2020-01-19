@@ -30,7 +30,6 @@ import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.geometry.MismatchedReferenceSystemException;
-import org.opengis.geometry.UnmodifiableGeometryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -1295,13 +1294,13 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
 
         /** Unsupported operation. */
         @Override public void setOrdinate(int dimension, double value) {
-            throw new UnmodifiableGeometryException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
+            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
         }
     }
 
     /**
      * Invoked by {@link LowerCorner} and {@link UpperCorner} when a coordinate is modified.
-     * The default implementation throws an {@link UnmodifiableGeometryException} in every cases.
+     * The default implementation throws an {@link UnsupportedOperationException} in every cases.
      * This method is overridden and made public by {@link GeneralEnvelope}.
      *
      * <p>The declaration in this {@code AbstractEnvelope} class is not public on purpose,
@@ -1311,7 +1310,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @param  dimension  the dimension to set.
      * @param  lower      the limit in the direction of decreasing coordinate values.
      * @param  upper      the limit in the direction of increasing coordinate values.
-     * @throws UnmodifiableGeometryException if this envelope is not modifiable.
+     * @throws UnsupportedOperationException if this envelope is not modifiable.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws IllegalArgumentException if {@code lower > upper}, this envelope has a CRS
      *         and the axis range meaning at the given dimension is not "wraparound".
@@ -1319,6 +1318,6 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     void setRange(final int dimension, final double lower, final double upper)
             throws IndexOutOfBoundsException
     {
-        throw new UnmodifiableGeometryException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
+        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
     }
 }
