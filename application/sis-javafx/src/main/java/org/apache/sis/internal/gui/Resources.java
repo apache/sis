@@ -126,6 +126,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Dimensions = 19;
 
         /**
+         * Display
+         */
+        public static final short Display = 41;
+
+        /**
          * Error closing file
          */
         public static final short ErrorClosingFile = 13;
@@ -134,6 +139,11 @@ public final class Resources extends IndexedResourceBundle {
          * Error creating reference system
          */
         public static final short ErrorCreatingCRS = 36;
+
+        /**
+         * Error during data access
+         */
+        public static final short ErrorDataAccess = 40;
 
         /**
          * Error opening file
@@ -166,6 +176,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Format = 38;
 
         /**
+         * Full screen
+         */
+        public static final short FullScreen = 42;
+
+        /**
          * Geospatial data files
          */
         public static final short GeospatialFiles = 4;
@@ -176,9 +191,19 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Loading = 7;
 
         /**
+         * Main window
+         */
+        public static final short MainWindow = 44;
+
+        /**
          * Metadata
          */
         public static final short Metadata = 30;
+
+        /**
+         * New window
+         */
+        public static final short NewWindow = 39;
 
         /**
          * No feature type information.
@@ -244,6 +269,11 @@ public final class Resources extends IndexedResourceBundle {
          * Type of resource:
          */
         public static final short TypeOfResource = 26;
+
+        /**
+         * Windows
+         */
+        public static final short Windows = 43;
     }
 
     /**

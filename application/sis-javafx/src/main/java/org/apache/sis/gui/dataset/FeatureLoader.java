@@ -195,7 +195,7 @@ final class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
             get();                            // Wait for the task to stop before to close the stream.
         } catch (InterruptedException | CancellationException e) {
             /*
-             * Someone does not want to let us wait before closing. But log the exception so that
+             * Someone does not want to let us wait before closing. Log the exception so that
              * if a ClosedChannelException happens in another thread, we can understand why.
              */
             FeatureTable.recoverableException("interrupt", e);

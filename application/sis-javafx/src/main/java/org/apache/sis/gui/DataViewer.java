@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -92,7 +93,7 @@ public class DataViewer extends Application {
     private FileChooser.ExtensionFilter[] saveFilters;
 
     /**
-     * The last filter used by the {@link #open()} action.
+     * The last filter used by the {@link #open(ActionEvent)} action.
      */
     private FileChooser.ExtensionFilter lastFilter;
 
@@ -111,32 +112,35 @@ public class DataViewer extends Application {
     @Override
     public void start(final Stage window) {
         this.window = window;
+        content = new ResourceExplorer();
         final Resources localized = Resources.getInstance();
         /*
-         * Configure the menu bar. For most menu item, the action is to invoke a method
-         * of the same name in this application class (e.g. open()).
+         * Configure the menu bar. For all menu items except simple ones, the action is
+         * to invoke a method of the same name in this application class (e.g. open(…)).
          */
         final MenuBar menus = new MenuBar();
         final Menu file = new Menu(localized.getString(Resources.Keys.File));
-        {
-            final MenuItem open = new MenuItem(localized.getString(Resources.Keys.Open));
-            open.setAccelerator(KeyCombination.keyCombination("Shortcut+O"));
-            open.setOnAction(e -> open());
+        {   // For keeping variables locale.
+            final MenuItem open;
+            file.getItems().addAll(
+                    open = localized.menu(Resources.Keys.Open, this::open),
+                    new SeparatorMenuItem(),
+                    localized.menu(Resources.Keys.Exit, (event) -> Platform.exit()));
 
-            final MenuItem exit = localized.menu(Resources.Keys.Exit, e -> Platform.exit());
-            file.getItems().addAll(open, new SeparatorMenuItem(), exit);
+            open.setAccelerator(KeyCombination.keyCombination("Shortcut+O"));
         }
-        menus.getMenus().add(file);
+        final Menu windows = new Menu(localized.getString(Resources.Keys.Windows));
+        windows.getItems().add(content.createNewWindowMenu());
+        content.setWindowsItems(windows.getItems());
+        menus.getMenus().addAll(file, windows);
         /*
          * Set the main content and show.
          */
-        content = new ResourceExplorer();
         final BorderPane pane = new BorderPane();
         pane.setTop(menus);
         pane.setCenter(content.getView());
-        Scene scene = new Scene(pane);
         window.setTitle("Apache Spatial Information System");
-        window.setScene(scene);
+        window.setScene(new Scene(pane));
         window.setWidth(1000);
         window.setHeight(800);
         window.show();
@@ -192,8 +196,10 @@ public class DataViewer extends Application {
      * Invoked when the user selects "File" ▶ "Open" menu.
      * Users can select an arbitrary amount of files or directories.
      * The effect is the same as dragging the files in the "resources tree" window.
+     *
+     * @param  event  ignored (can be {@code null}).
      */
-    private void open() {
+    private void open(final ActionEvent event) {
         if (openFilters == null) {
             createFileFilters();
             lastFilter = openFilters[1];

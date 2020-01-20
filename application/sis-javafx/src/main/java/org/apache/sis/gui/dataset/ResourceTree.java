@@ -301,7 +301,7 @@ public class ResourceTree extends TreeView<Resource> {
 
     /**
      * Invoked when a new cell needs to be created. This method creates a specialized instance
-     * which will get the cell text from a resource by a call to {@link #getTitle(Resource)}.
+     * which will get the cell text from a resource by a call to {@link #getTitle(Resource, boolean)}.
      *
      * @param  tree  the {@link ResourceTree} for which to create a cell.
      * @return a new cell renderer for the given tree.
@@ -322,10 +322,11 @@ public class ResourceTree extends TreeView<Resource> {
      * {@linkplain DataStore#getDisplayName() data store display name} if available,
      * or the title found in {@linkplain Resource#getMetadata() metadata} otherwise.
      *
-     * @param  resource  the resource for which to get a label, or {@code null}.
+     * @param  resource   the resource for which to get a label, or {@code null}.
+     * @param  showError  whether to show the error message if an error happen.
      * @return the resource display name or the citation title, never null.
      */
-    private String getTitle(final Resource resource) {
+    final String getTitle(final Resource resource, final boolean showError) {
         Throwable failure = null;
         if (resource != null) try {
             /*
@@ -372,7 +373,9 @@ public class ResourceTree extends TreeView<Resource> {
                 }
             }
         } catch (DataStoreException | RuntimeException e) {
-            failure = e;
+            if (showError) {
+                failure = e;
+            }
         }
         /*
          * If we failed to get the name, use "unnamed" with the exception message.
@@ -446,7 +449,7 @@ public class ResourceTree extends TreeView<Resource> {
                     color = Styles.ERROR_TEXT;
                     if (tree != null) text = tree.string(((Unloadable) resource).failure);
                 } else {
-                    if (tree != null) text = tree.getTitle(resource);
+                    if (tree != null) text = tree.getTitle(resource, true);
                 }
             }
             setTextFill(isSelected() ? Styles.SELECTED_TEXT : color);

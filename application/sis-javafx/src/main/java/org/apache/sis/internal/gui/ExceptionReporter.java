@@ -151,6 +151,16 @@ public final class ExceptionReporter implements EventHandler<ActionEvent> {
     }
 
     /**
+     * Shows the reporter for a failure to use a store resource.
+     * This method does nothing if the exception is null.
+     *
+     * @param  exception  the error that occurred.
+     */
+    public static void canNotUseResource(final Throwable exception) {
+        show(Resources.Keys.ErrorDataAccess, Resources.Keys.ErrorDataAccess, new Object[0], exception);
+    }
+
+    /**
      * Constructs and shows the exception reporter. The title and text are keys from the {@link Resources}.
      * If the title and/or text are 0, then the {@link Alert} default title and text will be used.
      *

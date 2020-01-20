@@ -106,16 +106,48 @@ public class FeatureTable extends TableView<Feature> {
      * @see #getFeatures()
      * @see #setFeatures(FeatureSet)
      */
-    public final ObjectProperty<FeatureSet> featuresProperty;
+    public final ObjectProperty<FeatureSet> featuresProperty = new SimpleObjectProperty<>(this, "features");
+
+    /**
+     * Whether the {@link #getItems()} list may be shared by another {@link FeatureTable} instance.
+     * In such case, {@link #setFeatureType(FeatureType)} should create a new list instead of invoking
+     * {@link FeatureList#clear()} on the existing list.
+     */
+    private boolean isSharingList;
 
     /**
      * Creates an initially empty table.
      */
     public FeatureTable() {
         super(new FeatureList());
-        textLocale       = Locale.getDefault(Locale.Category.DISPLAY);
-        dataLocale       = Locale.getDefault(Locale.Category.FORMAT);
-        featuresProperty = new SimpleObjectProperty<>(this, "features");
+        textLocale = Locale.getDefault(Locale.Category.DISPLAY);
+        dataLocale = Locale.getDefault(Locale.Category.FORMAT);
+        initialize();
+    }
+
+    /**
+     * Creates a new table initialized to the same data than the specified table.
+     * The two tables will share the same list as long as they are viewing the same data source:
+     * as the data loading progresses, new features will appear in both tables.
+     *
+     * @param  other  the other table from which to get the feature list.
+     */
+    public FeatureTable(final FeatureTable other) {
+        super(other.getFeatureList());
+        other.isSharingList = true;
+        isSharingList = true;
+        textLocale    = other.textLocale;
+        dataLocale    = other.dataLocale;
+        featureType   = other.featureType;
+        initialize();
+        createColumns(featureType);
+    }
+
+    /**
+     * Completes the initialization of this {@link FeatureTable}.
+     * This is common code shared by both constructors.
+     */
+    private void initialize() {
         featuresProperty.addListener(this::startFeaturesLoading);
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         setTableMenuButtonVisible(true);
@@ -163,8 +195,8 @@ public class FeatureTable extends TableView<Feature> {
      * features in a background thread. It does not load all features if the feature set
      * is large, unless the user scroll down.
      *
-     * <p>If the loading of another {@code FeatureSet} was in progress at the time this method is invoked,
-     * then that previous loading process is cancelled.</p>
+     * <p>If the loading of another {@code FeatureSet} was in progress at the time this
+     * method is invoked, then that previous loading process is cancelled.</p>
      *
      * <p><b>Note:</b> the table content may appear unmodified after this method returns.
      * The modifications will appear at an undetermined amount of time later.</p>
@@ -184,7 +216,14 @@ public class FeatureTable extends TableView<Feature> {
     private void startFeaturesLoading(final ObservableValue<? extends FeatureSet> property,
                                       final FeatureSet old, final FeatureSet features)
     {
-        final FeatureList items = getFeatureList();
+        final FeatureList items;
+        if (isSharingList) {
+            items = new FeatureList();
+            isSharingList = false;
+            setItems(items);
+        } else {
+            items = getFeatureList();
+        }
         if (!items.startFeaturesLoading(this, features)) {
             featureType = null;
             getColumns().clear();
@@ -201,67 +240,76 @@ public class FeatureTable extends TableView<Feature> {
         setPlaceholder(null);
         getItems().clear();
         if (type != null && !type.equals(featureType)) {
-            final Collection<? extends PropertyType> properties = type.getProperties(true);
-            final List<TableColumn<Feature,?>> columns = new ArrayList<>(properties.size());
-            final List<String> multiValued = new ArrayList<>(columns.size());
-            for (final PropertyType pt : properties) {
-                /*
-                 * Get localized text to show in column header. Also remember
-                 * the plain property name; it will be needed for ValueGetter.
-                 */
-                final String name = pt.getName().toString();
-                String title = string(pt.getDesignation());
-                if (title == null) {
-                    title = string(pt.getName().toInternationalString());
-                    if (title == null) title = name;
-                }
-                /*
-                 * If the property may contain more than one value, we will
-                 * need a specialized cell getter.
-                 *
-                 * TODO: we should also handle FeatureAssociationRole here.
-                 *       See comment in class javadoc.
-                 */
-                boolean isMultiValued = false;
-                if (pt instanceof AttributeType<?>) {
-                    isMultiValued = ((AttributeType<?>) pt).getMaximumOccurs() > 1;
-                }
-                if (isMultiValued) {
-                    multiValued.add(name);
-                }
-                /*
-                 * Create and configure the column. For multi-valued properties, ValueGetter always
-                 * gives the whole collection. Fetching a particular element in that collection will
-                 * be ElementCell's work.
-                 */
-                final TableColumn<Feature,Object> column = new TableColumn<>(title);
-                column.setCellValueFactory(new ValueGetter(name));
-                column.setCellFactory(isMultiValued ? ElementCell::new : ValueCell::new);
-                columns.add(column);
+            createColumns(type);
+        }
+        featureType = type;     // Set only after `createColumns(…)` succeeded.
+    }
+
+    /**
+     * Creates table columns for the specified feature type.
+     *
+     * @param  type  the feature type, typically a new type before {@link #featureType} is updated.
+     */
+    private void createColumns(final FeatureType type) {
+        final Collection<? extends PropertyType> properties = type.getProperties(true);
+        final List<TableColumn<Feature,?>> columns = new ArrayList<>(properties.size());
+        final List<String> multiValued = new ArrayList<>(columns.size());
+        for (final PropertyType pt : properties) {
+            /*
+             * Get localized text to show in column header. Also remember
+             * the plain property name; it will be needed for ValueGetter.
+             */
+            final String name = pt.getName().toString();
+            String title = string(pt.getDesignation());
+            if (title == null) {
+                title = string(pt.getName().toInternationalString());
+                if (title == null) title = name;
             }
             /*
-             * If there is at least one multi-valued property, insert a column which will contain
-             * an icon in front of rows having a property with more than one value.
+             * If the property may contain more than one value, we will
+             * need a specialized cell getter.
+             *
+             * TODO: we should also handle FeatureAssociationRole here.
+             *       See comment in class javadoc.
              */
-            if (multiValued.isEmpty()) {
-                setItems(getFeatureList());         // Will fire a change event only if the list is not the same.
-            } else {
-                final ExpandableList list = getExpandableList();
-                list.setMultivaluedColumns(multiValued);
-                final TableColumn<Feature,Feature> column = new TableColumn<>();
-                column.setCellValueFactory(IdentityValueFactory.instance());
-                column.setCellFactory(list);
-                column.setReorderable(false);
-                column.setSortable   (false);
-                column.setResizable  (false);
-                column.setMinWidth(20);
-                column.setMaxWidth(20);
-                columns.add(0, column);
-                setItems(list);
+            boolean isMultiValued = false;
+            if (pt instanceof AttributeType<?>) {
+                isMultiValued = ((AttributeType<?>) pt).getMaximumOccurs() > 1;
             }
-            getColumns().setAll(columns);       // Change columns in an all or nothing operation.
+            if (isMultiValued) {
+                multiValued.add(name);
+            }
+            /*
+             * Create and configure the column. For multi-valued properties, ValueGetter always
+             * gives the whole collection. Fetching a particular element in that collection will
+             * be ElementCell's work.
+             */
+            final TableColumn<Feature,Object> column = new TableColumn<>(title);
+            column.setCellValueFactory(new ValueGetter(name));
+            column.setCellFactory(isMultiValued ? ElementCell::new : ValueCell::new);
+            columns.add(column);
         }
-        featureType = type;
+        /*
+         * If there is at least one multi-valued property, insert a column which will contain
+         * an icon in front of rows having a property with more than one value.
+         */
+        if (multiValued.isEmpty()) {
+            setItems(getFeatureList());         // Will fire a change event only if the list is not the same.
+        } else {
+            final ExpandableList list = getExpandableList();
+            list.setMultivaluedColumns(multiValued);
+            final TableColumn<Feature,Feature> column = new TableColumn<>();
+            column.setCellValueFactory(IdentityValueFactory.instance());
+            column.setCellFactory(list);
+            column.setReorderable(false);
+            column.setSortable   (false);
+            column.setResizable  (false);
+            column.setMinWidth(20);
+            column.setMaxWidth(20);
+            columns.add(0, column);
+            setItems(list);
+        }
+        getColumns().setAll(columns);       // Change columns in an all or nothing operation.
     }
 
 
