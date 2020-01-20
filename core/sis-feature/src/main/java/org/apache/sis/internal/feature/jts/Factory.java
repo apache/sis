@@ -21,17 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import org.apache.sis.internal.feature.Geometries;
-import org.apache.sis.internal.feature.GeometryWrapper;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.math.Vector;
-import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.util.Classes;
-import org.apache.sis.util.resources.Errors;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -42,6 +31,14 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKTReader;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.internal.feature.Geometries;
+import org.apache.sis.internal.feature.GeometryWrapper;
+import org.apache.sis.internal.util.Strings;
+import org.apache.sis.math.Vector;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
