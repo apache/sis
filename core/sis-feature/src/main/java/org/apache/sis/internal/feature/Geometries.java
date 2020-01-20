@@ -19,8 +19,6 @@ package org.apache.sis.internal.feature;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -30,11 +28,8 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.internal.referencing.AxisDirections;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 
@@ -61,16 +56,6 @@ public abstract class Geometries<G> {
      */
     public static final int BIDIMENSIONAL = 2, TRIDIMENSIONAL = 3;
 
-    /*
-     * Registers all supported library implementations. Those libraries are optional
-     * (users will typically put at most one on their classpath).
-     */
-    static {
-        register("j2d");
-        register("esri");
-        register("jts");        // Default implementation if other libraries are also present.
-    }
-
     /**
      * The enumeration value that identifies which geometry library is used.
      */
@@ -92,14 +77,12 @@ public abstract class Geometries<G> {
     public final Class<? extends G> polylineClass, polygonClass;
 
     /**
-     * The default geometry implementation to use. Unmodifiable after class initialization.
-     */
-    private static Geometries<?> implementation;
-
-    /**
      * The fallback implementation to use if the default one is not available.
+     * This is set by {@link GeometryFactories} and should not change after initialization.
+     * We do not synchronize accesses to this field because we keep it stable after
+     * {@link GeometryFactories} class initialization.
      */
-    private final Geometries<?> fallback;
+    Geometries<?> fallback;
 
     /**
      * {@code true} if {@link #pointClass} is not a subtype of {@link #rootClass}.
@@ -124,25 +107,7 @@ public abstract class Geometries<G> {
         this.pointClass      = pointClass;
         this.polylineClass   = polylineClass;
         this.polygonClass    = polygonClass;
-        this.fallback        = implementation;
         isPointClassDistinct = !rootClass.isAssignableFrom(pointClass);
-    }
-
-    /**
-     * Registers the library implementation of the given package (JTS or ESRI) if present; ignores otherwise.
-     * The given name shall be the sub-package name of a {@code Factory} class.
-     * The last registered library will be the default implementation.
-     */
-    private static void register(final String name) {
-        final String classname = JDK9.getPackageName(Geometries.class) + '.' + name + ".Factory";
-        try {
-            implementation = (Geometries) Class.forName(classname).getField("INSTANCE").get(null);
-        } catch (ReflectiveOperationException | LinkageError e) {
-            LogRecord record = Resources.forLocale(null).getLogRecord(Level.CONFIG,
-                    Resources.Keys.OptionalLibraryNotFound_2, name, e.toString());
-            record.setLoggerName(Loggers.GEOMETRY);
-            Logging.log(Geometries.class, "register", record);
-        }
     }
 
     /**
@@ -154,11 +119,13 @@ public abstract class Geometries<G> {
      * @throws IllegalArgumentException if a non-null library is specified by that library is not available.
      */
     public static Geometries<?> implementation(final GeometryLibrary library) {
+        Geometries<?> g = GeometryFactories.implementation;
         if (library == null) {
-            return implementation;
+            return g;
         }
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+        while (g != null) {
             if (g.library == library) return g;
+            g = g.fallback;
         }
         throw new IllegalArgumentException(Resources.format(Resources.Keys.UnavailableGeometryLibrary_1, library));
     }
@@ -171,6 +138,7 @@ public abstract class Geometries<G> {
      * @return a geometry factory compatible with the given type if possible, or the default factory otherwise.
      */
     public static Geometries<?> implementation(final Class<?> type) {
+        final Geometries<?> implementation = GeometryFactories.implementation;
         for (Geometries<?> g = implementation; g != null; g = g.fallback) {
             if (g.isSupportedType(type)) return g;
         }
@@ -184,7 +152,7 @@ public abstract class Geometries<G> {
      * @return {@code true} if the given type is one of the geometry types known to SIS.
      */
     public static boolean isKnownType(final Class<?> type) {
-        for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+        for (Geometries<?> g = GeometryFactories.implementation; g != null; g = g.fallback) {
             if (g.isSupportedType(type)) return true;
         }
         return GeometryWrapper.class.isAssignableFrom(type);
@@ -210,7 +178,7 @@ public abstract class Geometries<G> {
             if (geometry instanceof GeometryWrapper<?>) {
                 return Optional.of((GeometryWrapper<?>) geometry);
             }
-            for (Geometries<?> g = implementation; g != null; g = g.fallback) {
+            for (Geometries<?> g = GeometryFactories.implementation; g != null; g = g.fallback) {
                 if (g.isSupportedType(geometry.getClass())) {
                     return Optional.of(g.createWrapper(geometry));
                 }

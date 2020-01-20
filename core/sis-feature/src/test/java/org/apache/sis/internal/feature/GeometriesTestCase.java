@@ -19,6 +19,7 @@ package org.apache.sis.internal.feature;
 import java.util.Arrays;
 import java.util.Iterator;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -65,6 +66,14 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
     }
 
     /**
+     * Tests {@link Geometries#implementation(GeometryLibrary)}.
+     */
+    @Test
+    public void testImplementation() {
+        assertEquals(factory, Geometries.implementation(factory.library));
+    }
+
+    /**
      * Initializes the {@link #wrapper} from current value of {@link #geometry}.
      */
     private void createWrapper() {
@@ -76,7 +85,7 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
      * Tests {@link Geometries#createPoint(double, double)} followed by {@link GeometryWrapper#getPointCoordinates()}.
      */
     @Test
-    public void testTryGetPointCoordinates() {
+    public void testGetPointCoordinates() {
         geometry = factory.createPoint(4, 5);
         assertNotNull("createPoint", geometry);
         createWrapper();
