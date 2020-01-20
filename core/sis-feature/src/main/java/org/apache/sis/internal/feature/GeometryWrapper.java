@@ -27,7 +27,6 @@ import org.opengis.geometry.complex.Complex;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -253,8 +252,6 @@ public abstract class GeometryWrapper<G> implements Geometry {
     @Deprecated public final Set<Complex>   getMaximalComplex()                       {throw new UnsupportedOperationException();}
     @Deprecated public final Geometry       getConvexHull()                           {throw new UnsupportedOperationException();}
     @Deprecated public final Geometry       getBuffer(double distance)                {throw new UnsupportedOperationException();}
-    @Deprecated public final boolean        isMutable()                               {throw new UnsupportedOperationException();}
-    @Deprecated public final Geometry       toImmutable()                             {throw new UnsupportedOperationException();}
     @Deprecated public final Geometry       clone() throws CloneNotSupportedException {throw new CloneNotSupportedException();}
     @Deprecated public final boolean        contains(TransfiniteSet pointSet)         {throw new UnsupportedOperationException();}
     @Deprecated public final boolean        contains(DirectPosition point)            {throw new UnsupportedOperationException();}
@@ -264,7 +261,6 @@ public abstract class GeometryWrapper<G> implements Geometry {
     @Deprecated public final TransfiniteSet intersection(TransfiniteSet pointSet)     {throw new UnsupportedOperationException();}
     @Deprecated public final TransfiniteSet difference(TransfiniteSet pointSet)       {throw new UnsupportedOperationException();}
     @Deprecated public final TransfiniteSet symmetricDifference(TransfiniteSet ps)    {throw new UnsupportedOperationException();}
-    @Deprecated public final Geometry       transform(CoordinateReferenceSystem crs, MathTransform tr) {throw new UnsupportedOperationException();}
 
     /**
      * Returns {@code true} if the given object is a wrapper of the same class
