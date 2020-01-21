@@ -42,10 +42,10 @@ import org.apache.sis.util.ArraysExt;
  * <p>This list does not accept null elements; any attempt to add a null feature is silently ignored.
  * The null value is reserved for meaning that the element is in process of being loaded.</p>
  *
- * <p>All methods in this class shall be invoked from JavaFX thread.</p>
+ * <p>All methods in this class shall be invoked from JavaFX thread only.</p>
  *
  * @todo Current implementation does not release previously loaded features.
- *       We could do that in a previous version if memory usage is a problem,
+ *       We could do that in a future version if memory usage is a problem,
  *       provided that {@link Spliterator#ORDERED} is set.
  *
  * @author  Martin Desruisseaux (Geomatys)

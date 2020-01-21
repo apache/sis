@@ -59,7 +59,8 @@ import org.apache.sis.internal.gui.ExceptionReporter;
  *
  * <h2>Limitations</h2>
  * <ul>
- *   <li>The {@link #itemsProperty() itemsProperty} should be considered read-only.
+ *   <li>The {@link #itemsProperty() itemsProperty} should be considered read-only,
+ *       and {@link #setItems(ObservableList)} should never be invoked explicitly.
  *       For changing content, use the {@link #featuresProperty} instead.</li>
  *   <li>The list returned by {@link #getItems()} should be considered read-only.</li>
  * </ul>
@@ -223,6 +224,7 @@ public class FeatureTable extends TableView<Feature> {
             setItems(items);
         } else {
             items = getFeatureList();
+            items.interrupt();
         }
         if (!items.startFeaturesLoading(this, features)) {
             featureType = null;
