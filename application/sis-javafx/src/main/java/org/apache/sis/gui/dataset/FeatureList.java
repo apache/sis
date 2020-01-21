@@ -323,7 +323,7 @@ final class FeatureList extends ObservableListBase<Feature> {
     }
 
     /**
-     * If a loading process was under way, interrupts it and close the feature stream.
+     * If a loading process was under way, interrupts it and closes the feature stream.
      * This method returns immediately; the release of resources happens in a background thread.
      *
      * @see FeatureTable#interrupt()

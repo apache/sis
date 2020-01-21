@@ -16,23 +16,14 @@
  */
 package org.apache.sis.gui.dataset;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Collection;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanPropertyBase;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TreeItem;
-import javafx.stage.Stage;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.gui.metadata.MetadataSummary;
@@ -49,7 +40,7 @@ import org.apache.sis.internal.gui.Resources;
  * @since   1.1
  * @module
  */
-public class ResourceExplorer {
+public class ResourceExplorer extends WindowManager {
     /**
      * The tree of resources.
      */
@@ -74,59 +65,15 @@ public class ResourceExplorer {
     private final SplitPane content;
 
     /**
-     * The contextual menu items for showing data in a new window.
-     * This is disabled if there is no data to show.
-     */
-    private final List<MenuItem> windowMenus;
-
-    /**
-     * The menu items for navigating to different windows. {@code ResourceExplorer} will automatically
-     * add or remove elements in this list when new windows are created or closed.
-     *
-     * @see #setWindowsItems(ObservableList)
-     */
-    private ObservableList<MenuItem> windowsMenuItems;
-
-    /**
-     * A property telling whether at least one data window created by this {@code ResourceExplorer} is
-     * still visible.
-     *
-     * @see #createNewWindowMenu()
-     * @see #setWindowsItems(ObservableList)
-     */
-    public final ReadOnlyBooleanProperty hasWindowsProperty;
-
-    /**
-     * The {@link ResourceExplorer#hasWindowsProperty} property implementation.
-     */
-    private final class WindowsProperty extends ReadOnlyBooleanPropertyBase {
-        /** The property value. */
-        private boolean hasWindows;
-
-        /** Sets this property to the given value. */
-        final void set(final boolean value) {
-            hasWindows = value;
-            fireValueChangedEvent();
-        }
-
-        /** Returns the current property value. */
-        @Override public boolean get()    {return hasWindows;}
-        @Override public Object getBean() {return ResourceExplorer.this;}
-        @Override public String getName() {return "hasWindows";}
-    }
-
-    /**
      * Creates a new panel for exploring resources.
      */
     public ResourceExplorer() {
-        resources   = new ResourceTree();
-        metadata    = new MetadataSummary();
-        features    = new FeatureTable();
-        content     = new SplitPane();
-        windowMenus = new ArrayList<>(2);
-        hasWindowsProperty = new WindowsProperty();
+        resources = new ResourceTree();
+        metadata  = new MetadataSummary();
+        features  = new FeatureTable();
+        content   = new SplitPane();
 
-        final Resources localized = resources.localized;
+        final Resources localized = localized();
         final Tab dataTab = new Tab(localized.getString(Resources.Keys.Data), features);
         dataTab.setContextMenu(new ContextMenu(createNewWindowMenu()));
         final TabPane tabs = new TabPane(
@@ -144,51 +91,23 @@ public class ResourceExplorer {
     }
 
     /**
+     * Returns resources for current locale.
+     */
+    @Override
+    final Resources localized() {
+        return resources.localized;
+    }
+
+    /**
      * Returns the region containing the resource tree, metadata panel or any other control managed
      * by this {@code ResourceExplorer}. The subclass is implementation dependent and may change in
      * any future version.
      *
      * @return the region to show.
      */
+    @Override
     public final Region getView() {
         return content;
-    }
-
-    /**
-     * Creates a menu item for creating new windows for the currently selected resource.
-     * The new menu item is initially disabled. Its will become enabled automatically when
-     * a resource is selected.
-     *
-     * <p>Note: current implementation keeps a strong reference to created menu.
-     * Use this method only for menus that are expected to exist for application lifetime.</p>
-     *
-     * @return a "new window" menu item.
-     *
-     * @see #hasWindowsProperty
-     */
-    public final MenuItem createNewWindowMenu() {
-        final MenuItem menu = new MenuItem(resources.localized.getString(Resources.Keys.NewWindow));
-        menu.setOnAction(this::newDataWindow);
-        menu.setDisable(true);
-        windowMenus.add(menu);
-        return menu;
-    }
-
-    /**
-     * Sets the list where to add or remove the name of data windows. New data windows are created when
-     * user selects a menu item given by {@link #createNewWindowMenu()}. {@code ResourceExplorer} will
-     * automatically add or remove elements in the given list. The position of the new menu item will
-     * be just before the last {@link SeparatorMenuItem} instance. If no {@code SeparatorMenuItem} is
-     * found, then one will be inserted at the beginning of the given list when needed.
-     *
-     * @param  items  the list where to add and remove the name of windows.
-     *
-     * @see #hasWindowsProperty
-     * @see #createNewWindowMenu()
-     */
-    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
-    public void setWindowsItems(final ObservableList<MenuItem> items) {
-        windowsMenuItems = items;
     }
 
     /**
@@ -227,66 +146,21 @@ public class ResourceExplorer {
         final FeatureSet data = (resource instanceof FeatureSet) ? (FeatureSet) resource : null;
         metadata.setMetadata(resource);
         features.setFeatures(data);
-        for (final MenuItem m : windowMenus) {
-            m.setDisable(data == null);
-        }
+        setNewWindowDisabled(data == null);
     }
 
     /**
-     * Invoked when user asked to show the data in a new window. This method may be invoked from various sources:
-     * contextual menu on the tab, contextual menu in the explorer tree, or from the "new window" menu item.
-     *
-     * @param  event  ignored (can be {@code null}).
+     * Returns the set of currently selected data, or {@code null} if none.
      */
-    private void newDataWindow(final ActionEvent event) {
+    @Override
+    final SelectedData getSelectedData() {
         final FeatureSet data = features.getFeatures();
         if (data != null) {
-            final String title = resources.getTitle(data, false);
-            final DataWindow window = new DataWindow((Stage) content.getScene().getWindow(), features);
-            window.setTitle(title + " — Apache SIS");
-            window.show();
-            if (windowsMenuItems != null) {
-                /*
-                 * Search for insertion point just before the menu separator.
-                 * If no menu separator is found, add one.
-                 */
-                int insertAt = windowsMenuItems.size();
-                do if (--insertAt < 0) {
-                    windowsMenuItems.add(insertAt = 0, new SeparatorMenuItem());
-                    ((WindowsProperty) hasWindowsProperty).set(true);
-                    break;
-                } while (!(windowsMenuItems.get(insertAt) instanceof SeparatorMenuItem));
-                final MenuItem menu = new MenuItem(title);
-                menu.setOnAction((e) -> window.toFront());
-                windowsMenuItems.add(insertAt, menu);
-                window.setOnHidden((e) -> removeDataWindow(menu));
-            }
+            final SelectedData selection = new SelectedData();
+            selection.title = resources.getTitle(data, false);
+            selection.features = features;
+            return selection;
         }
-    }
-
-    /**
-     * Invoked when a window has been hidden. This method removes the window title from the "Windows" menu.
-     * The hidden window will be garbage collected at some later time.
-     */
-    private void removeDataWindow(final MenuItem menu) {
-        final ObservableList<MenuItem> items = windowsMenuItems;
-        if (items != null) {
-            for (int i = items.size(); --i >= 0;) {
-                if (items.get(i) == menu) {
-                    items.remove(i);
-                    if (i == 0) {
-                        if (!items.isEmpty()) {
-                            if (items.get(0) instanceof SeparatorMenuItem) {
-                                items.remove(0);
-                            } else {
-                                break;      // Some other windows are still present.
-                            }
-                        }
-                        ((WindowsProperty) hasWindowsProperty).set(false);
-                    }
-                    break;
-                }
-            }
-        }
+        return null;
     }
 }

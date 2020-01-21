@@ -162,7 +162,7 @@ public class FeatureTable extends TableView<Feature> {
         if (items instanceof FeatureList) {
             return (FeatureList) items;
         } else {
-            return (FeatureList) ((ExpandableList) getItems()).getSource();
+            return (FeatureList) ((ExpandableList) items).getSource();
         }
     }
 
@@ -298,7 +298,7 @@ public class FeatureTable extends TableView<Feature> {
         } else {
             final ExpandableList list = getExpandableList();
             list.setMultivaluedColumns(multiValued);
-            final TableColumn<Feature,Feature> column = new TableColumn<>();
+            final TableColumn<Feature,Feature> column = new TableColumn<>("▤");
             column.setCellValueFactory(IdentityValueFactory.instance());
             column.setCellFactory(list);
             column.setReorderable(false);
@@ -378,6 +378,9 @@ public class FeatureTable extends TableView<Feature> {
          * @todo For {@link ValueCell} only (not {@link ElementCell}), if the feature is {@link ExpandedFeature}
          *       with {@code index != 0}, write text in gray. We could also use the value formatted at index 0
          *       for avoiding to format the same thing many times.
+         *
+         * @param  value  the new item for the cell.
+         * @param  empty  whether this cell is used to render an empty row.
          */
         @Override
         protected void updateItem(final Object value, final boolean empty) {
@@ -406,6 +409,9 @@ public class FeatureTable extends TableView<Feature> {
 
         /**
          * Invoked when a new value needs to be show.
+         *
+         * @param  value  the new item for the cell.
+         * @param  empty  whether this cell is used to render an empty row.
          */
         @Override
         protected void updateItem(Object value, final boolean empty) {
