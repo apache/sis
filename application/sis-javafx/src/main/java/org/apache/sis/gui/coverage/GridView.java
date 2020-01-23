@@ -19,14 +19,18 @@ package org.apache.sis.gui.coverage;
 import java.util.Arrays;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
 import javafx.beans.DefaultProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.coverage.grid.GridCoverage;
 
 
@@ -47,9 +51,15 @@ import org.apache.sis.coverage.grid.GridCoverage;
  */
 @DefaultProperty("image")
 public class GridView extends Control {
-    /** TODO: temporary setting. */
-    static final double cellWidth = 60;
-    static final double horizontalCellSpacing = 2;
+    /**
+     * Minimum cell width and height.
+     */
+    static final int MIN_CELL_SIZE = 1;
+
+    /**
+     * The string value for sample values that are out of image bounds.
+     */
+    static final String OUT_OF_BOUNDS = "";
 
     /**
      * The data shown in this table. Note that setting this property to a non-null value may not
@@ -82,6 +92,7 @@ public class GridView extends Control {
 
     /**
      * The image band to show in the table.
+     * It should be a number between 0 inclusive and {@link SampleModel#getNumBands()} exclusive.
      *
      * @see #getBand()
      * @see #setBand(int)
@@ -89,14 +100,62 @@ public class GridView extends Control {
     public final IntegerProperty bandProperty;
 
     /**
-     * Creates an initially empty grid view. The content can be set after construction by a call
-     * to {@link #setImage(RenderedImage)}.
+     * Width of header cells to be shown in the first column.
+     * The first (header) column contains the row indices, or sometime the coordinate values.
+     * This size includes the {@linkplain #cellSpacing cell spacing}.
+     * It shall be a number strictly greater than zero.
+     *
+     * <p>We do not define getter/setter for this property; use {@link DoubleProperty#set(double)}
+     * directly instead. We omit the "Property" suffix for making this operation more natural.</p>
+     */
+    public final DoubleProperty headerWidth;
+
+    /**
+     * Width of data cell to be shown in other columns than the header column.
+     * This size includes the {@linkplain #cellSpacing cell spacing}.
+     * It shall be a number strictly greater than zero.
+     *
+     * <p>We do not define getter/setter for this property; use {@link DoubleProperty#set(double)}
+     * directly instead. We omit the "Property" suffix for making this operation more natural.</p>
+     */
+    public final DoubleProperty cellWidth;
+
+    /**
+     * Height of all rows in the grid.
+     * It shall be a number strictly greater than zero.
+     *
+     * <p>We do not define getter/setter for this property; use {@link DoubleProperty#set(double)}
+     * directly instead. We omit the "Property" suffix for making this operation more natural.</p>
+     */
+    public final DoubleProperty cellHeight;
+
+    /**
+     * Horizontal space between cells, as a number equals or greater than zero.
+     * There is no property for vertical cell spacing because increasing the
+     * {@linkplain #cellHeight cell height} should be sufficient.
+     *
+     * <p>We do not define getter/setter for this property; use {@link DoubleProperty#set(double)}
+     * directly instead. We omit the "Property" suffix for making this operation more natural.</p>
+     */
+    public final DoubleProperty cellSpacing;
+
+    /**
+     * Creates an initially empty grid view. The content can be set after
+     * construction by a call to {@link #setImage(RenderedImage)}.
      */
     public GridView() {
         imageProperty = new SimpleObjectProperty<>(this, "image");
+        bandProperty  = new SimpleIntegerProperty (this, "band");
+        headerWidth   = new SimpleDoubleProperty  (this, "headerWidth", 60);
+        cellWidth     = new SimpleDoubleProperty  (this, "cellWidth",   60);
+        cellHeight    = new SimpleDoubleProperty  (this, "cellHeight",  20);
+        cellSpacing   = new SimpleDoubleProperty  (this, "cellSpacing",  2);
+
         imageProperty.addListener(this::startImageLoading);
-        bandProperty = new SimpleIntegerProperty(this, "band");
-        // TODO: add listener. Check value range.
+        // Other listeners registered by GridViewSkin.Flow.
+
+        tileWidth  = 1;
+        tileHeight = 1;     // For avoiding division by zero.
     }
 
     /**
@@ -127,9 +186,9 @@ public class GridView extends Control {
     }
 
     /**
-     * Returns the number of the band shown in this grid view.
+     * Returns the index of the band shown in this grid view.
      *
-     * @return the currently visible band number.
+     * @return index of the currently visible band number.
      *
      * @see #bandProperty
      */
@@ -141,10 +200,17 @@ public class GridView extends Control {
      * Sets the number of the band to show in this grid view.
      * This value should be from 0 (inclusive) to the number of bands in the image (exclusive).
      *
-     * @param  visible  the band to make visible.
+     * @param  index  the band to make visible.
+     * @throws IllegalArgumentException if the given band index is out of bounds.
      */
-    public final void setBand(final int visible) {
-        bandProperty.set(visible);
+    public final void setBand(final int index) {
+        final RenderedImage image = getImage();
+        if (image != null) {
+            ArgumentChecks.ensureBetween("band", 0, image.getSampleModel().getNumBands() - 1, index);
+        } else {
+            ArgumentChecks.ensurePositive("band", index);
+        }
+        bandProperty.set(index);
     }
 
     /**
@@ -176,11 +242,23 @@ public class GridView extends Control {
             tileGridYOffset = Math.toIntExact(((long) image.getTileGridYOffset()) - minY + ((long) tileHeight) * minTileY);
             numXTiles       = image.getNumXTiles();
             tiles           = new Raster[image.getNumYTiles()][];
-            final int numBands = image.getSampleModel().getNumBands();
-            if (bandProperty.get() > numBands) {
-                bandProperty.set(numBands - 1);
+            final int n     = image.getSampleModel().getNumBands();
+            if (bandProperty.get() >= n) {
+                bandProperty.set(n - 1);
+            }
+            final Skin<?> skin = getSkin();
+            if (skin instanceof GridViewSkin) {
+                ((GridViewSkin) skin).updateItemCount();
             }
         }
+    }
+
+    /**
+     * Returns the width that this view would have if it was fully shown (without horizontal scroll bar).
+     * This value depends on the number of columns in the image and the size of each cell.
+     */
+    final double getContentWidth() {
+        return width * Math.max(MIN_CELL_SIZE, cellWidth.get()) + Math.max(MIN_CELL_SIZE, headerWidth.get());
     }
 
     /**
@@ -218,18 +296,19 @@ public class GridView extends Control {
      * be refreshed when the tile become available.
      *
      * <p>The {@code y} parameter is computed by {@link #toImageY(int)} and the {@code tileRow} parameter
-     * is computed by {@link #toTileRow(int)}. Those values are stored in {@link GridRow}.
+     * is computed by {@link #toTileRow(int)}. Those values are stored in {@link GridRow}.</p>
      *
      * @param  y        arbitrary-based <var>y</var> coordinate in the image (may differ from table {@code row}).
      * @param  tileRow  zero-based <var>y</var> coordinate of the tile (may differ from image tile Y).
      * @param  column   zero-based <var>x</var> coordinate of sample to get (may differ from image coordinate X).
-     * @return the sample value in the specified column, or {@code null} if out of bounds or not yet available.
-     * @throws ArithmeticException if an index is too large.
+     * @return the sample value in the specified column, or {@code null} if unknown (because the loading process
+     *         is still under progress), or the empty string ({@code ""}) if out of bounds.
+     * @throws ArithmeticException if an index is too large for the 32 bits integer capacity.
      *
      * @see GridRow#getSampleValue(int)
      */
-    final Number getSampleValue(final int y, final int tileRow, final int column) {
-        if (y >= 0 && y < height && column > 0 && column < width) {
+    final String getSampleValue(final int y, final int tileRow, final int column) {
+        if (y >= 0 && y < height && column >= 0 && column < width) {
             final int tx = Math.subtractExact(column, tileGridXOffset) / tileWidth;
             Raster[] row = tiles[tileRow];
             if (row == null) {
@@ -239,16 +318,19 @@ public class GridView extends Control {
             }
             Raster tile = row[tx];
             if (tile == null) {
-                // TODO: load in background
+                // TODO: load in background and return null for meaning "not yet available".
                 tile = getImage().getTile(Math.addExact(tx, minTileX), Math.addExact(tileRow, minTileY));
                 row[tx] = tile;
             }
             final int x = Math.addExact(column, minX);
             final int b = getBand();
-            return tile.getSampleDouble(x, y, b);
+            final Number value;
             // TODO: also return Float or Integer.
+            value = tile.getSampleDouble(x, y, b);
+            // TODO: format.
+            return value.toString();
         }
-        return null;
+        return OUT_OF_BOUNDS;
     }
 
     /**

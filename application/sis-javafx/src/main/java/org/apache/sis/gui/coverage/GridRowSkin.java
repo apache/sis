@@ -16,6 +16,8 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.List;
+import java.util.ArrayList;
 import javafx.scene.Node;
 import javafx.scene.control.skin.CellSkinBase;
 import javafx.collections.ObservableList;
@@ -49,10 +51,16 @@ final class GridRowSkin extends CellSkinBase<GridRow> {
      * and to modify text values here, but I have not identified another place yet. However the
      * JavaFX implementation of table skin seems to do the same, so I presume it is okay.</div>
      *
+     * The {@code width} argument can be a large number (for example 24000) because it includes
+     * the area outside the view. In order to avoid creating a large amount of {@link GridCell}
+     * instances, this method have to find the current view port area and render only the cells
+     * in that area. We do not have to do that vertically because the vertical virtualization
+     * is done by {@link GridViewSkin} parent class.
+     *
      * @param  x       the <var>x</var> position of this row, usually 0.
      * @param  y       the <var>y</var> position of this row, usually 0 (this is a relative position).
-     * @param  width   width of the region where to render this row (for example 400).
-     * @param  height  height of the region where to render this row (for example 400).
+     * @param  width   width of the row, including the area currently hidden because out of view.
+     * @param  height  height of the region where to render this row (for example 16).
      */
     @Override
     protected void layoutChildren(final double x, final double y, final double width, final double height) {
@@ -62,25 +70,52 @@ final class GridRowSkin extends CellSkinBase<GridRow> {
          */
         final GridRow row = getSkinnable();
         final ObservableList<Node> children = getChildren();
-        ((Text) children.get(0)).setText(String.valueOf(row.getIndex()));
+        final Text header = (Text) children.get(0);
+        header.setText(String.valueOf(row.getIndex()));     // TODO: format
         /*
-         * All children starting at index 1 (i.e. children at indices `column + 1`)
-         * shall be GridCell instances created in this method.
+         * Get the beginning (pos) and end (limit) of the region to render. We create only the amount
+         * of GridCell instances needed for rendering this region. We should not create cells for the
+         * whole row since it would be too many cells (can be millions). Instead we recycle the cells
+         * in a list of children that we try to keep small. All children starting at index 1 shall be
+         * GridCell instances created in this method.
          */
-        int column = 0;
-        double xc = GridView.cellWidth;
-        while (xc < width) {
-            final GridCell child;
-            if (++column < children.size()) {
-                child = (GridCell) children.get(column);
+        final double headerWidth = row.view.headerWidth.get();
+        final double cellWidth   = row.view.cellWidth.get();            // Includes the cell spacing.
+        final double cellSpacing = row.view.cellSpacing.get();
+        final double available   = cellWidth - cellSpacing;
+        double pos = row.flow.getHorizontalPosition();
+        final double limit = pos + row.flow.getWidth();
+        int column = (int) (pos / cellWidth);
+        int childIndex = 0;
+        List<GridCell> newChildren = null;
+        header.resizeRelocate(pos, y, headerWidth, height);
+        pos += headerWidth;
+        final int count = children.size();
+        while (pos < limit) {
+            final GridCell cell;
+            if (++childIndex < count) {
+                cell = (GridCell) children.get(childIndex);
             } else {
-                child = new GridCell();
-                children.add(child);
+                cell = new GridCell();
+                if (newChildren == null) {
+                    newChildren = new ArrayList<>(1 + (int) ((limit - pos) / cellWidth));
+                }
+                newChildren.add(cell);
             }
-            final Number value = row.getSampleValue(column);
-            child.updateItem(value, value == null);     // TODO: difference between "empty" and "still loading".
-            child.resizeRelocate(xc + GridView.horizontalCellSpacing, 0, GridView.cellWidth, height);
-            xc += GridView.cellWidth + 2*GridView.horizontalCellSpacing;
+            final String value = row.getSampleValue(column++);
+            cell.updateItem(value, value == GridView.OUT_OF_BOUNDS);            // Identity comparison is okay here.
+            cell.resizeRelocate(pos + cellSpacing, 0, available, height);
+            pos += cellWidth;
+        }
+        /*
+         * Add or remove fields only at the end of this method in order to fire only one change event.
+         * It is important to remove unused fields not only for saving memory, but also for preventing
+         * those fields to appear at random positions in the rendered region.
+         */
+        if (newChildren != null) {
+            children.addAll(newChildren);
+        } else if (++childIndex < count) {
+            children.remove(childIndex, count);
         }
     }
 }

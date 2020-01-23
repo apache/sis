@@ -18,6 +18,7 @@ package org.apache.sis.gui.coverage;
 
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Skin;
+import javafx.scene.control.skin.CellSkinBase;
 
 
 /**
@@ -28,7 +29,7 @@ import javafx.scene.control.Skin;
  * @since   1.1
  * @module
  */
-final class GridCell extends IndexedCell<Number> {
+final class GridCell extends IndexedCell<String> {
     /**
      * Creates a new cell.
      */
@@ -47,17 +48,14 @@ final class GridCell extends IndexedCell<Number> {
      * It may happen if the image is still loading in a background thread.
      *
      * @param  value  the sample value, or {@code null} if not available.
-     * @param  empty  whether this cell is used for filling empty space.
+     * @param  empty  whether this cell is used for filling empty space
+     *                (not to be confused with value not yet available).
      */
     @Override
-    protected void updateItem(final Number value, final boolean empty) {
+    protected void updateItem(String value, final boolean empty) {
         super.updateItem(value, empty);
-        if (empty) {
-            setText("");
-        } else {
-            // TODO: format the value.
-            setText(String.valueOf(value));
-        }
+        if (value == null) value = "";
+        setText(value);
     }
 
     /**
@@ -69,6 +67,7 @@ final class GridCell extends IndexedCell<Number> {
      */
     @Override
     protected Skin<GridCell> createDefaultSkin() {
-        return new GridCellSkin(this);
+        // We have nothing to add compared to the base implementation.
+        return new CellSkinBase<>(this);
     }
 }

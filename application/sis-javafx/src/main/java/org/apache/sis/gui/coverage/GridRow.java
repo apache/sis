@@ -40,14 +40,29 @@ import javafx.scene.control.skin.VirtualFlow;
  */
 final class GridRow extends IndexedCell<Void> {
     /**
-     * The grid view where this row will be shown.
+     * The {@link VirtualFlow} which is managing this row. This is the value given to the constructor,
+     * casted to the type used by {@link GridView}. There is two main properties that we want to access:
+     *
+     * <ul>
+     *   <li>{@link GridViewSkin.Flow#getHorizontalPosition()} for the position of the horizontal scroll bar.</li>
+     *   <li>{@link GridViewSkin.Flow#getWidth()} for the width of the visible region.
+     * </ul>
+     *
+     * Those two properties are used for creating the minimal amount of {@link GridCell} needed
+     * for rendering this row.
      */
-    private final GridView view;
+    final GridViewSkin.Flow flow;
+
+    /**
+     * The grid view where this row will be shown.
+     * This is {@code flow.getParent()} but fetched once for efficiency.
+     */
+    final GridView view;
 
     /**
      * The arbitrary-based <var>y</var> coordinate in the image. This is not necessarily the {@code row}
      * index in the table since {@link RenderedImage} coordinate system do not necessarily starts at zero.
-     * This value may be outside image bounds, in which case this row should be rendered as empty.
+     * This value may be outside image bounds, in which case this {@code GridRow} should be rendered as empty.
      */
     private int y;
 
@@ -63,14 +78,15 @@ final class GridRow extends IndexedCell<Void> {
      * This constructor is referenced by lambda-function in {@link GridViewSkin}.
      */
     GridRow(final VirtualFlow<GridRow> owner) {
+        flow = (GridViewSkin.Flow) owner;
         view = (GridView) owner.getParent();
+        setPrefWidth(view.getContentWidth());
     }
 
     /**
      * Invoked when this {@code GridRow} is used for showing a new image row.
-     * We override this method as an alternative to registering a listener to {@link #indexProperty()}
-     * (for reducing the number of object allocations). This method {@linkplain #setItem set the item}
-     * to the information required for getting pixel values on that row.
+     * We override this method as an alternative to registering a listener to
+     * {@link #indexProperty()} (for reducing the number of object allocations).
      *
      * @param  row  index of the new row.
      */
@@ -89,7 +105,7 @@ final class GridRow extends IndexedCell<Void> {
      * @param  column  zero-based <var>x</var> coordinate of sample to get (may differ from image coordinate).
      * @return the sample value in the specified column, or {@code null} if not yet available.
      */
-    final Number getSampleValue(final int column) {
+    final String getSampleValue(final int column) {
         return view.getSampleValue(y, tileRow, column);
     }
 

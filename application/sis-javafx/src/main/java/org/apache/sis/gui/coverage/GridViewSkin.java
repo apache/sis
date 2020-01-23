@@ -17,8 +17,11 @@
 package org.apache.sis.gui.coverage;
 
 import java.awt.image.RenderedImage;
-import javafx.scene.control.skin.VirtualContainerBase;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
 import javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.control.skin.VirtualContainerBase;
 
 
 /**
@@ -28,7 +31,10 @@ import javafx.scene.control.skin.VirtualFlow;
  * <p>Relationships:</p>
  * <ul>
  *   <li>This is created by {@link GridView#createDefaultSkin()}.</li>
- *   <li>The {@link GridView} owner is given by {@link #getSkinnable()}.</li>
+ *   <li>The {@link GridView} which own this skin is given by {@link #getSkinnable()}.</li>
+ *   <li>This {@code GridViewSkin} contains an arbitrary amount of {@link GridRow} children.
+ *       It should be limited to the number of children that are visible in same time,
+ *       not the total number of rows in the image.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -45,7 +51,10 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
         final VirtualFlow<GridRow> flow = getVirtualFlow();
         flow.setCellFactory(GridRow::new);
         flow.setFocusTraversable(true);
-        flow.setPannable(false);
+        flow.setFixedCellSize(Math.max(GridView.MIN_CELL_SIZE, view.cellHeight.get()));
+        view.cellHeight .addListener(this::cellHeightChanged);
+        view.cellWidth  .addListener(this::cellWidthChanged);
+        view.headerWidth.addListener(this::cellWidthChanged);
         /*
          * The list of children is initially empty. We need to
          * add the virtual flow, otherwise nothing will appear.
@@ -53,20 +62,76 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
         getChildren().add(flow);
     }
 
-    /*
-     * TODO:
-     * VirtualFlow.setFixedCellSize​(double): For optimisation purposes, some use cases can trade
-     * dynamic cell length for speed. If fixedCellSize is greater than zero JavaFX uses that rather
-     * than determining it by querying the cell itself.
+    /**
+     * Invoked when the value of {@link GridView#cellHeight} property changed.
      */
+    private void cellHeightChanged(ObservableValue<? extends Number> property, Number oldValue, Number newValue) {
+        getVirtualFlow().setFixedCellSize(Math.max(GridView.MIN_CELL_SIZE, newValue.intValue()));
+    }
 
     /**
-     * Returns the total number of image rows, including those that are currently hidden because
-     * they are out of view. The returned value is (indirectly) {@link RenderedImage#getHeight()}.
+     * Invoked when the cell width or cell spacing changed. This method notifies all children of the new width.
+     */
+    private void cellWidthChanged(ObservableValue<? extends Number> property, Number oldValue, Number newValue) {
+        final double width = getSkinnable().getContentWidth();
+        for (final Node child : getChildren()) {
+            if (child instanceof GridRow) {             // The first instance if not a GridRow.
+                ((GridRow) child).setPrefWidth(width);
+            }
+        }
+    }
+
+    /**
+     * Creates the virtual flow used by this {@link GridViewSkin}. The virtual flow
+     * created by this method registers a listener for horizontal scroll bar events.
      */
     @Override
-    public int getItemCount() {
-        return getSkinnable().getImageHeight();
+    protected VirtualFlow<GridRow> createVirtualFlow() {
+        return new Flow(getSkinnable());
+    }
+
+    /**
+     * The virtual flow used by {@link GridViewSkin}. We define that class
+     * mostly for getting access to the protected {@link #getHbar()} method.
+     */
+    static final class Flow extends VirtualFlow<GridRow> implements ChangeListener<Number> {
+        /**
+         * Creates a new flow for the given view. This method registers listeners
+         * on the properties that may require a redrawn of the full view port.
+         */
+        @SuppressWarnings("ThisEscapedInObjectConstruction")
+        Flow(final GridView view) {
+            getHbar().valueProperty().addListener(this);
+            view.bandProperty .addListener(this);
+            view.cellSpacing  .addListener(this);
+            // Other listeners are registered by enclosing class.
+        }
+
+        /**
+         * The position of the horizontal scroll bar. This is a value between 0 and
+         * the width that the {@link GridView} would have if we were showing it fully.
+         */
+        final double getHorizontalPosition() {
+            return getHbar().getValue();
+        }
+
+        /**
+         * Invoked when the content to show changed because of a change in a property.
+         * The most important event is a change in the position of horizontal scroll bar,
+         * which is handled as a change of content because we will need to change values
+         * shown by the cells (because we reuse a small number of cells in visible region).
+         * But this method is also invoked for real changes of content like changes in the
+         * index of the band to show, provided that the number of rows and columns is the same.
+         *
+         * @param  property  the property that changed (ignored).
+         * @param  oldValue  the old value (ignored).
+         * @param  newValue  the new value (ignored).
+         */
+        @Override
+        public void changed(ObservableValue<? extends Number> property, Number oldValue, Number newValue) {
+            // Inform VirtualFlow that a layout pass should be done, but no GridRows have been added or removed.
+            reconfigureCells();
+        }
     }
 
     /**
@@ -80,13 +145,19 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
          * VirtualFlow.setCellCount(int) indicates the number of cells that should be in the flow.
          * When the cell count changes, VirtualFlow responds by updating the visuals. If the items
          * backing the cells change but the count has not changed, then reconfigureCells() should
-         * be invoked instead.
+         * be invoked instead. This is done by the `Flow` inner class above.
          */
-        final VirtualFlow<GridRow> flow = getVirtualFlow();
-        flow.setCellCount(getItemCount());                  // Fires event only if count changed.
+        getVirtualFlow().setCellCount(getItemCount());      // Fires event only if count changed.
     }
 
-    // TODO: to update content, invoke getSkinnable().requestLayout().
+    /**
+     * Returns the total number of image rows, including those that are currently hidden because
+     * they are out of view. The returned value is (indirectly) {@link RenderedImage#getHeight()}.
+     */
+    @Override
+    public int getItemCount() {
+        return getSkinnable().getImageHeight();
+    }
 
     /**
      * Called during the layout pass of the scene graph. Current implementation sets the virtual
