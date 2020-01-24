@@ -51,7 +51,7 @@ import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 
 /**
  * Parser and formatter for <cite>Well Known Text</cite> (WKT) strings.
- * This format handles a pair of {@link Parser} and {@link Formatter},
+ * This format handles a pair of {@link org.apache.sis.io.wkt.Parser} and {@link Formatter},
  * used by the {@code parse(…)} and {@code format(…)} methods respectively.
  * {@code WKTFormat} objects allow the following configuration:
  *
