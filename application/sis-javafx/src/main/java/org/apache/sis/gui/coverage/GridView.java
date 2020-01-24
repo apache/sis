@@ -17,9 +17,12 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Arrays;
+import java.text.NumberFormat;
+import java.text.FieldPosition;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
+import java.awt.image.DataBuffer;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -30,6 +33,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.coverage.grid.GridCoverage;
 
@@ -84,9 +89,10 @@ public class GridView extends Control {
     private int tileGridXOffset, tileGridYOffset;
 
     /**
-     * The {@link #imageProperty} tiles, fetched when first needed. All {@code Raster[]} array element and
-     * {@code Raster} sub-array elements are initially {@code null} and created when first needed.
-     * This field is null if and only if the image is null.
+     * The {@link #imageProperty} tiles (fetched when first needed), or {@code null} if the image is null.
+     * All {@code Raster[]} array element and {@code Raster} sub-array elements are initially {@code null}
+     * and initialized when first needed. We store {@link RenderedImage#getTile(int, int)} results because
+     * we do not know if calling that method causes a costly computation or not (it depends on image class).
      */
     private Raster[][] tiles;
 
@@ -140,22 +146,72 @@ public class GridView extends Control {
     public final DoubleProperty cellSpacing;
 
     /**
+     * The background color of row and column headers.
+     *
+     * <p>We do not define getter/setter for this property; use {@link ObjectProperty#set(Object)}
+     * directly instead. We omit the "Property" suffix for making this operation more natural.</p>
+     */
+    public final ObjectProperty<Paint> headerBackground;
+
+    /**
+     * The formatter to use for writing header values (row and column numbers) or the sample values.
+     */
+    private final NumberFormat headerFormat, cellFormat;
+
+    /**
+     * Required when invoking {@link #cellFormat} methods but not used by this class.
+     * This argument is not allowed to be {@code null}, so we create an instance once
+     * and reuse it at each method call.
+     */
+    private final FieldPosition formatField;
+
+    /**
+     * A buffer for writing sample values with {@link #cellFormat}, reused for each value to format.
+     */
+    private final StringBuffer buffer;
+
+    /**
+     * The last value formatted by {@link #cellFormat}. We keep this information because it happens often
+     * that the same value is repeated for many cells, especially in area containing fill or missing values.
+     * If the value is the same, we will reuse the {@link #lastValueAsText}.
+     *
+     * <p>Note: the use of {@code double} is sufficient since rendered images can not store {@code long} values,
+     * so there is no precision lost that we could have with conversions from {@code long} to {@code double}.</p>
+     */
+    private double lastValue;
+
+    /**
+     * The formatting of {@link #lastValue}.
+     */
+    private String lastValueAsText;
+
+    /**
+     * Whether the sample values are integers.
+     */
+    private boolean isInteger;
+
+    /**
      * Creates an initially empty grid view. The content can be set after
      * construction by a call to {@link #setImage(RenderedImage)}.
      */
     public GridView() {
-        imageProperty = new SimpleObjectProperty<>(this, "image");
-        bandProperty  = new SimpleIntegerProperty (this, "band");
-        headerWidth   = new SimpleDoubleProperty  (this, "headerWidth", 60);
-        cellWidth     = new SimpleDoubleProperty  (this, "cellWidth",   60);
-        cellHeight    = new SimpleDoubleProperty  (this, "cellHeight",  20);
-        cellSpacing   = new SimpleDoubleProperty  (this, "cellSpacing",  2);
+        imageProperty    = new SimpleObjectProperty<>(this, "image");
+        bandProperty     = new SimpleIntegerProperty (this, "band");
+        headerWidth      = new SimpleDoubleProperty  (this, "headerWidth", 60);
+        cellWidth        = new SimpleDoubleProperty  (this, "cellWidth",   60);
+        cellHeight       = new SimpleDoubleProperty  (this, "cellHeight",  20);
+        cellSpacing      = new SimpleDoubleProperty  (this, "cellSpacing",  4);
+        headerBackground = new SimpleObjectProperty<>(this, "headerBackground", Color.GAINSBORO);
+        headerFormat     = NumberFormat.getIntegerInstance();
+        cellFormat       = NumberFormat.getInstance();
+        formatField      = new FieldPosition(0);
+        buffer           = new StringBuffer();
+        tileWidth        = 1;
+        tileHeight       = 1;       // For avoiding division by zero.
 
+        setMinSize(120, 40);        // 2 cells on each dimension.
         imageProperty.addListener(this::startImageLoading);
         // Other listeners registered by GridViewSkin.Flow.
-
-        tileWidth  = 1;
-        tileHeight = 1;     // For avoiding division by zero.
     }
 
     /**
@@ -205,8 +261,9 @@ public class GridView extends Control {
      */
     public final void setBand(final int index) {
         final RenderedImage image = getImage();
-        if (image != null) {
-            ArgumentChecks.ensureBetween("band", 0, image.getSampleModel().getNumBands() - 1, index);
+        final SampleModel sm;
+        if (image != null && (sm = image.getSampleModel()) != null) {
+            ArgumentChecks.ensureBetween("band", 0, sm.getNumBands() - 1, index);
         } else {
             ArgumentChecks.ensurePositive("band", index);
         }
@@ -226,9 +283,10 @@ public class GridView extends Control {
     private void startImageLoading(final ObservableValue<? extends RenderedImage> property,
                                    final RenderedImage previous, final RenderedImage image)
     {
-        tiles  = null;       // Let garbage collector dispose the rasters.
-        width  = 0;
-        height = 0;
+        tiles     = null;       // Let garbage collector dispose the rasters.
+        width     = 0;
+        height    = 0;
+        isInteger = false;
         if (image != null) {
             width           = image.getWidth();
             height          = image.getHeight();
@@ -242,14 +300,53 @@ public class GridView extends Control {
             tileGridYOffset = Math.toIntExact(((long) image.getTileGridYOffset()) - minY + ((long) tileHeight) * minTileY);
             numXTiles       = image.getNumXTiles();
             tiles           = new Raster[image.getNumYTiles()][];
-            final int n     = image.getSampleModel().getNumBands();
-            if (bandProperty.get() >= n) {
-                bandProperty.set(n - 1);
+            final SampleModel sm = image.getSampleModel();
+            if (sm != null) {                               // Should never be null, but we are paranoiac.
+                final int numBands = sm.getNumBands();
+                if (bandProperty.get() >= numBands) {
+                    bandProperty.set(numBands - 1);
+                }
+                final int dataType = sm.getDataType();
+                isInteger = (dataType >= DataBuffer.TYPE_BYTE && dataType <= DataBuffer.TYPE_INT);
+                if (isInteger) {
+                    cellFormat.setMaximumFractionDigits(0);
+                } else {
+                    /*
+                     * TODO: compute the number of fraction digits from a "sampleResolution" image property
+                     * (of type float[] or double[]) if present. Provide a widget allowing user to set pattern.
+                     */
+                    cellFormat.setMinimumFractionDigits(1);
+                    cellFormat.setMaximumFractionDigits(1);
+                }
+                formatChanged(false);
             }
-            final Skin<?> skin = getSkin();
-            if (skin instanceof GridViewSkin) {
-                ((GridViewSkin) skin).updateItemCount();
-            }
+            contentChanged(true);
+        }
+    }
+
+    /**
+     * Invoked when the content may have changed. If {@code all} is {@code true}, then everything
+     * may have changed including the number of rows and columns. If {@code all} is {@code false}
+     * then the number of rows and columns is assumed the same.
+     */
+    final void contentChanged(final boolean all) {
+        final Skin<?> skin = getSkin();             // May be null if the view is not yet shown.
+        if (skin instanceof GridViewSkin) {         // Could be a user instance (not recommended).
+            ((GridViewSkin) skin).contentChanged(all);
+        }
+    }
+
+    /**
+     * Invoked when the {@link #cellFormat} configuration changed.
+     *
+     * @param  notify  whether to notify the renderer about the change. Can be {@code false}
+     *                 if the renderer is going to be notified anyway by another method call.
+     */
+    private void formatChanged(final boolean notify) {
+        buffer.setLength(0);
+        lastValueAsText = cellFormat.format(lastValue, buffer, formatField).toString();
+        if (notify) {
+            contentChanged(false);
         }
     }
 
@@ -264,6 +361,8 @@ public class GridView extends Control {
     /**
      * Returns the number of rows in the image. This is also the number of rows in the
      * {@link GridViewSkin} virtual flow, which is using a vertical primary direction.
+     *
+     * @see javafx.scene.control.skin.VirtualContainerBase#getItemCount()
      */
     final int getImageHeight() {
         return height;
@@ -324,13 +423,33 @@ public class GridView extends Control {
             }
             final int x = Math.addExact(column, minX);
             final int b = getBand();
-            final Number value;
-            // TODO: also return Float or Integer.
-            value = tile.getSampleDouble(x, y, b);
-            // TODO: format.
-            return value.toString();
+            buffer.setLength(0);
+            if (isInteger) {
+                final int  integer = tile.getSample(x, y, b);
+                final double value = integer;
+                if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(lastValue)) {
+                    // The `format` method invoked here is not the same than in `double` case.
+                    lastValueAsText = cellFormat.format(integer, buffer, formatField).toString();
+                    lastValue = value;
+                }
+            } else {
+                final double value = tile.getSampleDouble(x, y, b);
+                if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(lastValue)) {
+                    lastValueAsText = cellFormat.format(value, buffer, formatField).toString();
+                    lastValue = value;
+                }
+            }
+            return lastValueAsText;
         }
         return OUT_OF_BOUNDS;
+    }
+
+    /**
+     * Formats a row index or column index.
+     */
+    final String formatHeaderValue(final int index) {
+        buffer.setLength(0);
+        return headerFormat.format(index, buffer, formatField).toString();
     }
 
     /**

@@ -19,9 +19,12 @@ package org.apache.sis.gui.coverage;
 import java.awt.image.RenderedImage;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.control.skin.VirtualContainerBase;
+import javafx.scene.shape.Rectangle;
 
 
 /**
@@ -56,29 +59,83 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
         view.cellWidth  .addListener(this::cellWidthChanged);
         view.headerWidth.addListener(this::cellWidthChanged);
         /*
+         * Rectangles for filling the background of the cells in the header row and header column.
+         * Those rectangles will be resized when the GridView size changes or cells size changes.
+         */
+        final Rectangle topBackground  = new Rectangle();
+        final Rectangle leftBackground = new Rectangle();
+        topBackground.setHeight(view.cellHeight.get());
+        leftBackground.setY(topBackground.getHeight());
+        leftBackground.widthProperty().bind(view.headerWidth);
+        leftBackground.fillProperty() .bind(view.headerBackground);
+        topBackground .fillProperty() .bind(view.headerBackground);
+        /*
          * The list of children is initially empty. We need to
          * add the virtual flow, otherwise nothing will appear.
          */
-        getChildren().add(flow);
+        getChildren().addAll(topBackground, leftBackground, flow);
+        flow.widthProperty() .addListener(this::gridSizeChanged);
+        flow.heightProperty().addListener(this::gridSizeChanged);
     }
 
     /**
-     * Invoked when the value of {@link GridView#cellHeight} property changed.
+     * Invoked when the width or height of {@link GridView} changed. This method recomputes the size of
+     * the rectangles used for painting backgrounds. We listen to changes in width and height together
+     * because a change of width may show or hide the horizontal scroll bar, which change the height
+     * (and conversely for the vertical scroll bar).
+     */
+    private void gridSizeChanged(ObservableValue<? extends Number> property, Number oldValue, Number newValue) {
+        final Flow flow = (Flow) getVirtualFlow();
+        final ObservableList<Node> children = getChildren();
+        Rectangle r;
+        r = (Rectangle) children.get(0); r.setWidth (flow.getVisibleWidth()  - r.getX());
+        r = (Rectangle) children.get(1); r.setHeight(flow.getVisibleHeight() - r.getY());
+    }
+
+    /**
+     * Invoked when the value of {@link GridView#cellHeight} property changed. This method copies the new value
+     * into {@link VirtualFlow#fixedCellSizeProperty()} after bounds check, then adjusts the size and position
+     * of rectangles filling the header background.
      */
     private void cellHeightChanged(ObservableValue<? extends Number> property, Number oldValue, Number newValue) {
-        getVirtualFlow().setFixedCellSize(Math.max(GridView.MIN_CELL_SIZE, newValue.intValue()));
+        final Flow flow = (Flow) getVirtualFlow();
+        final ObservableList<Node> children = getChildren();
+        final double height = Math.max(GridView.MIN_CELL_SIZE, newValue.doubleValue());
+        flow.setFixedCellSize(height);
+        Rectangle r;
+        r = (Rectangle) children.get(0); r.setHeight(height);
+        r = (Rectangle) children.get(1); r.setHeight(flow.getVisibleHeight() - height); r.setY(height);
     }
 
     /**
-     * Invoked when the cell width or cell spacing changed. This method notifies all children of the new width.
+     * Invoked when the cell width or cell spacing changed.
+     * This method notifies all children about the new width.
      */
     private void cellWidthChanged(ObservableValue<? extends Number> property, Number oldValue, Number newValue) {
         final double width = getSkinnable().getContentWidth();
         for (final Node child : getChildren()) {
-            if (child instanceof GridRow) {             // The first instance if not a GridRow.
+            if (child instanceof GridRow) {             // The first instances are not a GridRow.
                 ((GridRow) child).setPrefWidth(width);
             }
         }
+    }
+
+    /**
+     * Invoked when the content may have changed. If {@code all} is {@code true}, then everything
+     * may have changed including the number of rows and columns. If {@code all} is {@code false}
+     * then the number of rows and columns is assumed the same.
+     *
+     * @see GridView#contentChanged(boolean)
+     */
+    final void contentChanged(final boolean all) {
+        if (all) {
+            updateItemCount();
+        }
+        /*
+         * Following call may be redundant with `updateItemCount()` except if the number of
+         * rows did not changed, in which case `updateItemCount()` may have sent no event.
+         */
+        ((Flow) getVirtualFlow()).changed(null, null, null);
     }
 
     /**
@@ -113,6 +170,30 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
          */
         final double getHorizontalPosition() {
             return getHbar().getValue();
+        }
+
+        /**
+         * Returns the width of the view port area, not counting the vertical scroll bar.
+         */
+        final double getVisibleWidth() {
+            double width = getWidth();
+            final ScrollBar bar = getVbar();
+            if (bar.isVisible()) {
+                width -= bar.getWidth();
+            }
+            return width;
+        }
+
+        /**
+         * Returns the height of the view port area, not counting the horizontal scroll bar.
+         */
+        final double getVisibleHeight() {
+            double height = getHeight();
+            final ScrollBar bar = getHbar();
+            if (bar.isVisible()) {
+                height -= bar.getHeight();
+            }
+            return height;
         }
 
         /**
@@ -160,8 +241,9 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
     }
 
     /**
-     * Called during the layout pass of the scene graph. Current implementation sets the virtual
-     * flow size to the given size.
+     * Called during the layout pass of the scene graph. The (x,y) coordinates are usually zero
+     * and the (width, height) are the size of the control as shown (not the full content size).
+     * Current implementation sets the virtual flow size to the given size.
      */
     @Override
     protected void layoutChildren(final double x, final double y, final double width, final double height) {

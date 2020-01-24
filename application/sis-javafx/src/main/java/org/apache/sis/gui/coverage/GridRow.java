@@ -20,6 +20,8 @@ import java.awt.image.RenderedImage;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Skin;
 import javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 
 /**
@@ -81,6 +83,7 @@ final class GridRow extends IndexedCell<Void> {
         flow = (GridViewSkin.Flow) owner;
         view = (GridView) owner.getParent();
         setPrefWidth(view.getContentWidth());
+        setFont(Font.font(null, FontWeight.BOLD, -1));      // Apply only to the header column.
     }
 
     /**
@@ -95,6 +98,10 @@ final class GridRow extends IndexedCell<Void> {
         super.updateIndex(row);
         y = view.toImageY(row);
         tileRow = view.toTileRow(row);
+        final Skin<?> skin = getSkin();
+        if (skin != null) {
+            ((GridRowSkin) skin).setRowIndex(row);
+        }
     }
 
     /**

@@ -19,9 +19,10 @@ package org.apache.sis.gui.coverage;
 import java.util.List;
 import java.util.ArrayList;
 import javafx.scene.Node;
+import javafx.scene.text.Text;
 import javafx.scene.control.skin.CellSkinBase;
 import javafx.collections.ObservableList;
-import javafx.scene.text.Text;
+import javafx.geometry.Pos;
 
 
 /**
@@ -41,6 +42,15 @@ final class GridRowSkin extends CellSkinBase<GridRow> {
      */
     GridRowSkin(final GridRow owner) {
         super(owner);
+        setRowIndex(owner.getIndex());
+    }
+
+    /**
+     * Invoked when the index to show in the header column changed.
+     */
+    final void setRowIndex(final int index) {
+        final Text header = (Text) getChildren().get(0);
+        header.setText(getSkinnable().view.formatHeaderValue(index));
     }
 
     /**
@@ -69,9 +79,6 @@ final class GridRowSkin extends CellSkinBase<GridRow> {
          * The first child is a javafx.scene.text.Text instance, which we use for row header.
          */
         final GridRow row = getSkinnable();
-        final ObservableList<Node> children = getChildren();
-        final Text header = (Text) children.get(0);
-        header.setText(String.valueOf(row.getIndex()));     // TODO: format
         /*
          * Get the beginning (pos) and end (limit) of the region to render. We create only the amount
          * of GridCell instances needed for rendering this region. We should not create cells for the
@@ -83,13 +90,24 @@ final class GridRowSkin extends CellSkinBase<GridRow> {
         final double cellWidth   = row.view.cellWidth.get();            // Includes the cell spacing.
         final double cellSpacing = row.view.cellSpacing.get();
         final double available   = cellWidth - cellSpacing;
-        double pos = row.flow.getHorizontalPosition();
-        final double limit = pos + row.flow.getWidth();
-        int column = (int) (pos / cellWidth);
+        double pos = row.flow.getHorizontalPosition();                  // Horizontal position in the virtual view.
+        final double limit = pos + row.flow.getWidth();                 // Horizontal position where to stop.
+        int column = (int) (pos / cellWidth);                           // Column index in the RenderedImage.
+        /*
+         * Set the position of the header cell, but not its content. The content has been set by
+         * `setRowIndex(int)` and does not need to be recomputed even during horizontal scroll.
+         */
+        final ObservableList<Node> children = getChildren();
+        final Text header = (Text) children.get(0);
+        header.resizeRelocate(pos + cellSpacing, y, headerWidth - cellSpacing, height);
+        pos += headerWidth;
+        /*
+         * For sample value, we need to recompute both the values and the position. Note that even if
+         * the cells appear at the same positions visually (with different content), they moved in the
+         * virtual flow if some scrolling occurred.
+         */
         int childIndex = 0;
         List<GridCell> newChildren = null;
-        header.resizeRelocate(pos, y, headerWidth, height);
-        pos += headerWidth;
         final int count = children.size();
         while (pos < limit) {
             final GridCell cell;
@@ -97,6 +115,7 @@ final class GridRowSkin extends CellSkinBase<GridRow> {
                 cell = (GridCell) children.get(childIndex);
             } else {
                 cell = new GridCell();
+                cell.setAlignment(Pos.CENTER_RIGHT);
                 if (newChildren == null) {
                     newChildren = new ArrayList<>(1 + (int) ((limit - pos) / cellWidth));
                 }
@@ -104,7 +123,7 @@ final class GridRowSkin extends CellSkinBase<GridRow> {
             }
             final String value = row.getSampleValue(column++);
             cell.updateItem(value, value == GridView.OUT_OF_BOUNDS);            // Identity comparison is okay here.
-            cell.resizeRelocate(pos + cellSpacing, 0, available, height);
+            cell.resizeRelocate(pos, 0, available, height);
             pos += cellWidth;
         }
         /*
