@@ -17,7 +17,6 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Map;
-import java.util.Arrays;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.awt.image.Raster;
@@ -98,8 +97,7 @@ public class GridView extends Control {
      * since "real" caching is done by {@link org.apache.sis.image.ComputedImage}. The purpose of this cache is
      * to remember that a tile is immediately available and that we do not need to start a background thread.
      */
-    private final Map<GridTile,GridTile> tiles = new BoundedHashMap<>(10 * (1024 * 1024) /
-            (ImageUtilities.DEFAULT_TILE_SIZE * ImageUtilities.DEFAULT_TILE_SIZE));
+    private final Map<GridTile,GridTile> tiles = new BoundedHashMap<>(ImageUtilities.SUGGESTED_TILE_CACHE_SIZE);
 
     /**
      * The most recently used tile. Cached separately because it will be the desired tile in the vast majority

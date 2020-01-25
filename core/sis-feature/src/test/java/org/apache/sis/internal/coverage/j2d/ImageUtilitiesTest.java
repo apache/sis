@@ -40,6 +40,14 @@ import static org.junit.Assert.*;
  */
 public final strictfp class ImageUtilitiesTest extends TestCase {
     /**
+     * Verifies that {@link ImageUtilities#SUGGESTED_TILE_CACHE_SIZE} is strictly positive.
+     */
+    @Test
+    public void verifySuggestedTileCacheSize() {
+        assertTrue(ImageUtilities.SUGGESTED_TILE_CACHE_SIZE >= 1);
+    }
+
+    /**
      * Tests {@link ImageUtilities#getBounds(RenderedImage)} and {@link ImageUtilities#clipBounds(RenderedImage, Rectangle)}.
      */
     @Test

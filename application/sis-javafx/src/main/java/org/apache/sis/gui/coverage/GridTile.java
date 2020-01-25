@@ -47,9 +47,15 @@ final class GridTile {
     Raster tile;
 
     /**
-     * Whether an error occurred while reading the tile.
+     * Non-null if an error occurred while reading the tile.
      */
-    boolean error;
+    Throwable error;
+
+    /**
+     * Whether a tile loading is in progress. Used for avoiding to create many threads requesting the same tile.
+     * If loading is in progress, other requests for that tile will return {@code null} immediately.
+     */
+    private boolean loading;
 
     /**
      * Creates a new tile for the given tile coordinates.
@@ -67,27 +73,41 @@ final class GridTile {
      * @param  view  the view for which to load a tile.
      */
     final void load(final GridView view) {
-        final RenderedImage image = view.getImage();
-        BackgroundThreads.execute(new Task<Raster>() {
-            /** Invoked in background thread for fetching the tile. */
-            @Override protected Raster call() {
-                return image.getTile(tileX, tileY);
-            }
+        if (!loading && error == null) {
+            loading = true;
+            final RenderedImage image = view.getImage();
+            BackgroundThreads.execute(new Task<Raster>() {
+                /** Invoked in background thread for fetching the tile. */
+                @Override protected Raster call() {
+                    return image.getTile(tileX, tileY);
+                }
 
-            /** Invoked in JavaFX thread on success. */
-            @Override protected void succeeded() {
-                super.succeeded();
-                tile = getValue();
-                error = false;
-                view.contentChanged(false);
-            }
+                /** Invoked in JavaFX thread on success. */
+                @Override protected void succeeded() {
+                    super.succeeded();
+                    tile    = getValue();
+                    error   = null;
+                    loading = false;
+                    view.contentChanged(false);
+                }
 
-            /** Invoked in JavaFX thread on failure. */
-            @Override protected void failed() {
-                super.failed();
-                error = true;
-            }
-        });
+                /** Invoked in JavaFX thread on failure. */
+                @Override protected void failed() {
+                    super.failed();
+                    tile    = null;
+                    error   = getException();
+                    loading = false;
+                }
+
+                /** Invoked in JavaFX thread on cancellation. */
+                @Override protected void cancelled() {
+                    super.cancelled();
+                    tile    = null;
+                    error   = null;
+                    loading = false;
+                }
+            });
+        }
     }
 
     /**

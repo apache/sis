@@ -53,6 +53,13 @@ public final class ImageUtilities extends Static {
     public static final int DEFAULT_TILE_SIZE = 256;
 
     /**
+     * Suggested size for a tile cache in number of tiles. This value can be used for very simple caching mechanism,
+     * keeping the most recently used tiles up to 10 Mb of memory. This is not for sophisticated caching mechanism;
+     * instead the "real" caching should be done by {@link org.apache.sis.image.ComputedImage}.
+     */
+    public static final int SUGGESTED_TILE_CACHE_SIZE = 10 * (1024 * 1024) / (DEFAULT_TILE_SIZE * DEFAULT_TILE_SIZE);
+
+    /**
      * Approximate size of the buffer to use for copying data from/to a raster, in bits.
      * The actual buffer size may be smaller or larger, depending on the actual tile size.
      * This value does not need to be very large. The current value is 8 kb.
