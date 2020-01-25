@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.Map;
 import java.util.Arrays;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
@@ -37,6 +38,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.gui.BoundedHashMap;
 
 
 /**
@@ -80,23 +83,29 @@ public class GridView extends Control {
     /**
      * Information copied from {@link #imageProperty} for performance.
      */
-    private int width, height, minX, minY, minTileX, minTileY, tileWidth, tileHeight, numXTiles;
+    private int width, height, minX, minY, tileWidth, tileHeight, numXTiles;
 
     /**
      * Information copied and adjusted from {@link #imageProperty} for performance. Values are adjusted for using
      * zero-based indices as expected by JavaFX tables (by contrast, pixel indices in a {@link RenderedImage} may
-     * start at a non-zero value). The results of those adjustments should be 0, but we nevertheless compute them
-     * in case a {@link RenderedImage} defines unusual relationship between image and tile coordinate system.
+     * start at a non-zero value).
      */
     private int tileGridXOffset, tileGridYOffset;
 
     /**
-     * The {@link #imageProperty} tiles (fetched when first needed), or {@code null} if the image is null.
-     * All {@code Raster[]} array element and {@code Raster} sub-array elements are initially {@code null}
-     * and initialized when first needed. We store {@link RenderedImage#getTile(int, int)} results because
-     * we do not know if calling that method causes a costly computation or not (it depends on image class).
+     * A cache of most recently used {@link #imageProperty} tiles. We use a very simple caching mechanism here,
+     * keeping the most recently used tiles up to 10 Mb of memory. We do not need more sophisticated mechanism
+     * since "real" caching is done by {@link org.apache.sis.image.ComputedImage}. The purpose of this cache is
+     * to remember that a tile is immediately available and that we do not need to start a background thread.
      */
-    private Raster[][] tiles;
+    private final Map<GridTile,GridTile> tiles = new BoundedHashMap<>(10 * (1024 * 1024) /
+            (ImageUtilities.DEFAULT_TILE_SIZE * ImageUtilities.DEFAULT_TILE_SIZE));
+
+    /**
+     * The most recently used tile. Cached separately because it will be the desired tile in the vast majority
+     * of cases.
+     */
+    private GridTile lastTile;
 
     /**
      * The image band to show in the table.
@@ -279,13 +288,13 @@ public class GridView extends Control {
      * @param  property  the {@link #imageProperty} (ignored).
      * @param  previous  the previous image (ignored).
      * @param  image     the new image to show. May be {@code null}.
-     * @throws ArithmeticException if the "tile grid x/y offset" property is too big. Should never happen
-     *         since those properties should be zero after the adjustment mentioned in their javadoc.
+     * @throws ArithmeticException if the "tile grid x/y offset" property is too large.
      */
     private void startImageLoading(final ObservableValue<? extends RenderedImage> property,
                                    final RenderedImage previous, final RenderedImage image)
     {
-        tiles     = null;       // Let garbage collector dispose the rasters.
+        tiles.clear();          // Let garbage collector dispose the rasters.
+        lastTile  = null;
         width     = 0;
         height    = 0;
         isInteger = false;
@@ -294,14 +303,11 @@ public class GridView extends Control {
             height          = image.getHeight();
             minX            = image.getMinX();
             minY            = image.getMinY();
-            minTileX        = image.getMinTileX();
-            minTileY        = image.getMinTileY();
             tileWidth       = image.getTileWidth();
             tileHeight      = image.getTileHeight();
-            tileGridXOffset = Math.toIntExact(((long) image.getTileGridXOffset()) - minX + ((long) tileWidth)  * minTileX);
-            tileGridYOffset = Math.toIntExact(((long) image.getTileGridYOffset()) - minY + ((long) tileHeight) * minTileY);
+            tileGridXOffset = Math.subtractExact(image.getTileGridXOffset(), minX);
+            tileGridYOffset = Math.subtractExact(image.getTileGridYOffset(), minY);
             numXTiles       = image.getNumXTiles();
-            tiles           = new Raster[image.getNumYTiles()][];
             final SampleModel sm = image.getSampleModel();
             if (sm != null) {                               // Should never be null, but we are paranoiac.
                 final int numBands = sm.getNumBands();
@@ -345,7 +351,7 @@ public class GridView extends Control {
      * may have changed including the number of rows and columns. If {@code all} is {@code false}
      * then the number of rows and columns is assumed the same.
      */
-    private void contentChanged(final boolean all) {
+    final void contentChanged(final boolean all) {
         final Skin<?> skin = getSkin();             // May be null if the view is not yet shown.
         if (skin instanceof GridViewSkin) {         // Could be a user instance (not recommended).
             ((GridViewSkin) skin).contentChanged(all);
@@ -390,12 +396,13 @@ public class GridView extends Control {
     }
 
     /**
-     * Converts a grid row index to tile index. Note that the returned value may differ from
-     * the {@link RenderedImage} tile <var>y</var> coordinates because the index returned by
-     * this method is zero-based, while image tile index is arbitrary based.
+     * Converts a grid row index to tile index. Note that those {@link RenderedImage}
+     * tile coordinates do not necessarily start at 0; negative values may be valid.
+     *
+     * @see GridRow#tileY
      */
-    final int toTileRow(final int row) {
-        return Math.subtractExact(row, tileGridYOffset) / tileHeight;
+    final int toTileY(final int row) {
+        return Math.floorDiv(Math.subtractExact(row, tileGridYOffset), tileHeight);
     }
 
     /**
@@ -403,11 +410,11 @@ public class GridView extends Control {
      * time this method is invoked, then the tile will loaded in a background thread and the grid view will
      * be refreshed when the tile become available.
      *
-     * <p>The {@code y} parameter is computed by {@link #toImageY(int)} and the {@code tileRow} parameter
-     * is computed by {@link #toTileRow(int)}. Those values are stored in {@link GridRow}.</p>
+     * <p>The {@code y} parameter is computed by {@link #toImageY(int)} and the {@code tileY} parameter
+     * is computed by {@link #toTileY(int)}. Those values are stored in {@link GridRow}.</p>
      *
      * @param  y        arbitrary-based <var>y</var> coordinate in the image (may differ from table {@code row}).
-     * @param  tileRow  zero-based <var>y</var> coordinate of the tile (may differ from image tile Y).
+     * @param  tileY    arbitrary-based <var>y</var> coordinate of the tile.
      * @param  column   zero-based <var>x</var> coordinate of sample to get (may differ from image coordinate X).
      * @return the sample value in the specified column, or {@code null} if unknown (because the loading process
      *         is still under progress), or the empty string ({@code ""}) if out of bounds.
@@ -415,20 +422,20 @@ public class GridView extends Control {
      *
      * @see GridRow#getSampleValue(int)
      */
-    final String getSampleValue(final int y, final int tileRow, final int column) {
+    final String getSampleValue(final int y, final int tileY, final int column) {
         if (y >= 0 && y < height && column >= 0 && column < width) {
-            final int tx = Math.subtractExact(column, tileGridXOffset) / tileWidth;
-            Raster[] row = tiles[tileRow];
-            if (row == null) {
-                tiles[tileRow] = row = new Raster[Math.min(16, numXTiles)];    // Arbitrary limit, expanded if needed.
-            } else if (tx >= row.length && tx < numXTiles) {
-                tiles[tileRow] = row = Arrays.copyOf(row, Math.min(tx*2, numXTiles));
+            final int tileX = Math.floorDiv(Math.subtractExact(column, tileGridXOffset), tileWidth);
+            GridTile cache = lastTile;
+            if (cache == null || cache.tileX != tileX || cache.tileY != tileY) {
+                final GridTile key = new GridTile(tileX, tileY, numXTiles);
+                cache = tiles.putIfAbsent(key, key);
+                if (cache == null) cache = key;
+                lastTile = cache;
             }
-            Raster tile = row[tx];
+            Raster tile = cache.tile;
             if (tile == null) {
-                // TODO: load in background and return null for meaning "not yet available".
-                tile = getImage().getTile(Math.addExact(tx, minTileX), Math.addExact(tileRow, minTileY));
-                row[tx] = tile;
+                cache.load(this);
+                return null;
             }
             final int x = Math.addExact(column, minX);
             final int b = getBand();

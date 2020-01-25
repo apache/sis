@@ -54,11 +54,11 @@ final class GridRow extends IndexedCell<Void> {
     private int y;
 
     /**
-     * The zero-based <var>y</var> coordinate of the tile. This is not necessarily the
-     * {@code tileY} index in the image, since image tile index may not start at zero.
+     * The <var>y</var> coordinate of the tile in the {@link RenderedImage}.
+     * Note that those coordinates do not necessarily start at zero; negative values may be valid.
      * This value is computed from {@link #y} value and cached for efficiency.
      */
-    private int tileRow;
+    private int tileY;
 
     /**
      * Invoked by {@link VirtualFlow} when a new cell is needed.
@@ -81,7 +81,7 @@ final class GridRow extends IndexedCell<Void> {
     public void updateIndex(final int row) {
         super.updateIndex(row);
         y = view.toImageY(row);
-        tileRow = view.toTileRow(row);
+        tileY = view.toTileY(row);
         final Skin<?> skin = getSkin();
         if (skin != null) {
             ((GridRowSkin) skin).setRowIndex(row);
@@ -97,7 +97,7 @@ final class GridRow extends IndexedCell<Void> {
      * @return the sample value in the specified column, or {@code null} if not yet available.
      */
     final String getSampleValue(final int column) {
-        return view.getSampleValue(y, tileRow, column);
+        return view.getSampleValue(y, tileY, column);
     }
 
     /**
