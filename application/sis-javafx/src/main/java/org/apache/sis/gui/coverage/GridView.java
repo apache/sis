@@ -19,6 +19,7 @@ package org.apache.sis.gui.coverage;
 import java.util.Map;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
+import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
@@ -82,7 +83,13 @@ public class GridView extends Control {
     /**
      * Information copied from {@link #imageProperty} for performance.
      */
-    private int width, height, minX, minY, tileWidth, tileHeight, numXTiles;
+    private int width, height, minX, minY, numXTiles;
+
+    /**
+     * Information copied from {@link #imageProperty} for performance.
+     * Must be always greater than zero for avoiding division by zero.
+     */
+    private int tileWidth, tileHeight;
 
     /**
      * Information copied and adjusted from {@link #imageProperty} for performance. Values are adjusted for using
@@ -195,9 +202,11 @@ public class GridView extends Control {
     private String lastValueAsText;
 
     /**
-     * Whether the sample values are integers.
+     * Whether the sample values are integers. We use this flag for deciding which {@code Raster.getSampleValue(…)}
+     * method to invoke, which {@code NumberFormat.format(…)} method to invoke, and whether to set a format pattern
+     * with fraction digits.
      */
-    private boolean isInteger;
+    private boolean dataTypeisInteger;
 
     /**
      * Creates an initially empty grid view. The content can be set after
@@ -292,20 +301,20 @@ public class GridView extends Control {
                                    final RenderedImage previous, final RenderedImage image)
     {
         tiles.clear();          // Let garbage collector dispose the rasters.
-        lastTile  = null;
-        width     = 0;
-        height    = 0;
-        isInteger = false;
+        lastTile = null;
+        width    = 0;
+        height   = 0;
         if (image != null) {
-            width           = image.getWidth();
-            height          = image.getHeight();
-            minX            = image.getMinX();
-            minY            = image.getMinY();
-            tileWidth       = image.getTileWidth();
-            tileHeight      = image.getTileHeight();
-            tileGridXOffset = Math.subtractExact(image.getTileGridXOffset(), minX);
-            tileGridYOffset = Math.subtractExact(image.getTileGridYOffset(), minY);
-            numXTiles       = image.getNumXTiles();
+            minX              = image.getMinX();
+            minY              = image.getMinY();
+            width             = image.getWidth();
+            height            = image.getHeight();
+            numXTiles         = image.getNumXTiles();
+            tileWidth         = Math.max(1, image.getTileWidth());
+            tileHeight        = Math.max(1, image.getTileHeight());
+            tileGridXOffset   = Math.subtractExact(image.getTileGridXOffset(), minX);
+            tileGridYOffset   = Math.subtractExact(image.getTileGridYOffset(), minY);
+            dataTypeisInteger = false;                      // To be kept consistent with `cellFormat` pattern.
             final SampleModel sm = image.getSampleModel();
             if (sm != null) {                               // Should never be null, but we are paranoiac.
                 final int numBands = sm.getNumBands();
@@ -313,19 +322,19 @@ public class GridView extends Control {
                     bandProperty.set(numBands - 1);
                 }
                 final int dataType = sm.getDataType();
-                isInteger = (dataType >= DataBuffer.TYPE_BYTE && dataType <= DataBuffer.TYPE_INT);
-                if (isInteger) {
-                    cellFormat.setMaximumFractionDigits(0);
-                } else {
-                    /*
-                     * TODO: compute the number of fraction digits from a "sampleResolution" image property
-                     * (of type float[] or double[]) if present. Provide a widget allowing user to set pattern.
-                     */
-                    cellFormat.setMinimumFractionDigits(1);
-                    cellFormat.setMaximumFractionDigits(1);
-                }
-                formatChanged(false);
+                dataTypeisInteger = (dataType >= DataBuffer.TYPE_BYTE && dataType <= DataBuffer.TYPE_INT);
             }
+            if (dataTypeisInteger) {
+                cellFormat.setMaximumFractionDigits(0);
+            } else {
+                /*
+                 * TODO: compute the number of fraction digits from a "sampleResolution" image property
+                 * (of type float[] or double[]) if present. Provide a widget allowing user to set pattern.
+                 */
+                cellFormat.setMinimumFractionDigits(1);
+                cellFormat.setMaximumFractionDigits(1);
+            }
+            formatChanged(false);
             contentChanged(true);
         }
     }
@@ -382,6 +391,24 @@ public class GridView extends Control {
     }
 
     /**
+     * Returns the bounds of a single tile in the image. This method is invoked only
+     * if an error occurred during {@link RenderedImage#getTile(int, int)} invocation.
+     * The returned bounds are zero-based (may not be the bounds in image coordinates).
+     *
+     * <div class="note"><b>Note:</b> we use AWT rectangle instead than JavaFX rectangle
+     * because generally we use AWT for everything related to {@link RenderedImage}.</div>
+     *
+     * @param  tileX  <var>x</var> coordinates of the tile for which to get the bounds.
+     * @param  tileY  <var>y</var> coordinates of the tile for which to get the bounds.
+     * @return the zero-based bounds of the specified tile in the image.
+     */
+    final Rectangle getTileBounds(final int tileX, final int tileY) {
+        return new Rectangle(tileX * tileWidth  + tileGridXOffset,
+                             tileY * tileHeight + tileGridYOffset,
+                             tileWidth, tileHeight);
+    }
+
+    /**
      * Converts a grid row index to image <var>y</var> coordinate. Those values may differ
      * because the image coordinate system does not necessarily starts at zero.
      *
@@ -421,41 +448,52 @@ public class GridView extends Control {
      * @see GridRow#getSampleValue(int)
      */
     final String getSampleValue(final int y, final int tileY, final int column) {
-        if (y >= 0 && y < height && column >= 0 && column < width) {
-            final int tileX = Math.floorDiv(Math.subtractExact(column, tileGridXOffset), tileWidth);
-            GridTile cache = lastTile;
-            if (cache == null || cache.tileX != tileX || cache.tileY != tileY) {
-                final GridTile key = new GridTile(tileX, tileY, numXTiles);
-                cache = tiles.putIfAbsent(key, key);
-                if (cache == null) cache = key;
-                lastTile = cache;
-            }
-            Raster tile = cache.tile;
-            if (tile == null) {
-                cache.load(this);
-                return null;
-            }
-            final int x = Math.addExact(column, minX);
-            final int b = getBand();
-            buffer.setLength(0);
-            if (isInteger) {
-                final int  integer = tile.getSample(x, y, b);
-                final double value = integer;
-                if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(lastValue)) {
-                    // The `format` method invoked here is not the same than in `double` case.
-                    lastValueAsText = cellFormat.format(integer, buffer, formatField).toString();
-                    lastValue = value;
-                }
-            } else {
-                final double value = tile.getSampleDouble(x, y, b);
-                if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(lastValue)) {
-                    lastValueAsText = cellFormat.format(value, buffer, formatField).toString();
-                    lastValue = value;
-                }
-            }
-            return lastValueAsText;
+        if (y < 0 || y >= height || column < 0 || column >= width) {
+            return OUT_OF_BOUNDS;
         }
-        return OUT_OF_BOUNDS;
+        /*
+         * Fetch the tile where is located the (x,y) image coordinate of the pixel to get.
+         * If that tile has never been requested before, or has been discarded by the cache,
+         * start a background thread for fetching the tile and return null immediately; this
+         * method will be invoked again with the same coordinates after the tile become ready.
+         */
+        final int tileX = Math.floorDiv(Math.subtractExact(column, tileGridXOffset), tileWidth);
+        GridTile cache = lastTile;
+        if (cache == null || cache.tileX != tileX || cache.tileY != tileY) {
+            final GridTile key = new GridTile(tileX, tileY, numXTiles);
+            cache = tiles.putIfAbsent(key, key);
+            if (cache == null) cache = key;
+            lastTile = cache;
+        }
+        Raster tile = cache.tile();
+        if (tile == null) {
+            cache.load(this);
+            return null;
+        }
+        /*
+         * At this point we have the tile. Get the desired number and format its string representation.
+         * As a slight optimization, we reuse the previous string representation if the number is the same.
+         * It may happen in particular with fill values.
+         */
+        final int x = Math.addExact(column, minX);
+        final int b = getBand();
+        buffer.setLength(0);
+        if (dataTypeisInteger) {
+            final int  integer = tile.getSample(x, y, b);
+            final double value = integer;
+            if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(lastValue)) {
+                // The `format` method invoked here is not the same than in `double` case.
+                lastValueAsText = cellFormat.format(integer, buffer, formatField).toString();
+                lastValue = value;
+            }
+        } else {
+            final double value = tile.getSampleDouble(x, y, b);
+            if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(lastValue)) {
+                lastValueAsText = cellFormat.format(value, buffer, formatField).toString();
+                lastValue = value;
+            }
+        }
+        return lastValueAsText;
     }
 
     /**

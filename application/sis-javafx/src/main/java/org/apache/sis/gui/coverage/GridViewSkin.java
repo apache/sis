@@ -110,6 +110,12 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
     double cellInnerWidth;
 
     /**
+     * The controls to show in case of error, or {@code null} if none. This is created and
+     * added to the children list the first time that an error occurs while reading a tile.
+     */
+    private GridError error;
+
+    /**
      * Creates a new skin for the specified view.
      */
     GridViewSkin(final GridView view) {
@@ -128,7 +134,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
         view.headerWidth.addListener(this::cellWidthChanged);
         /*
          * Rectangles for filling the background of the cells in the header row and header column.
-         * Those rectangles will be resized and relocated in `layout(…)` method.
+         * Those rectangles will be resized and relocated by the `layout(…)` method.
          */
         topBackground  = new Rectangle();
         leftBackground = new Rectangle();
@@ -165,18 +171,44 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
     }
 
     /**
+     * Invoked when an error occurred when fetching a tile. If this is the first time that an error happens
+     * for this image, then a {@link GridError} node will be added as the last child (i.e. will be drawn on
+     * top of everything else). That child will be removed if a new image is set.
+     */
+    final void errorOccurred(final GridTile.Error status) {
+        if (error == null) {
+            error = new GridError();
+            getChildren().add(error);
+        }
+        if (error.update(status)) {
+            final double cellHeight = getVirtualFlow().getFixedCellSize();
+            final java.awt.Rectangle area = error.getVisibleArea();
+            positionInArea​(error,
+                    area.x      * cellWidth  + headerWidth,
+                    area.y      * cellHeight + topBackground.getHeight(),
+                    area.width  * cellWidth,
+                    area.height * cellHeight,
+                    0, HPos.CENTER, VPos.CENTER);
+        }
+    }
+
+    /**
      * Invoked when the content may have changed. If {@code all} is {@code true}, then everything
      * may have changed including the number of rows and columns. If {@code all} is {@code false}
      * then the number of rows and columns is assumed the same.
      *
-     * <p>This method is invoked by {@link GridView} when the image has changed,
-     * or the band in the image  to show has changed.</p>
+     * <p>This method is invoked by {@link GridView} when the image has changed ({@code all=true}),
+     * or the band in the image to show has changed ({@code all=false}).</p>
      *
      * @see GridView#contentChanged(boolean)
      */
     final void contentChanged(final boolean all) {
         if (all) {
             updateItemCount();
+            if (error != null) {
+                error = null;
+                getChildren().removeIf((node) -> (node instanceof GridError));
+            }
         }
         /*
          * Following call may be redundant with `updateItemCount()` except if the number of
@@ -366,6 +398,22 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
                 layoutInArea(cell, pos, y, cellWidth, headerHeight, 0, HPos.CENTER, VPos.CENTER);
                 pos += cellWidth;
             }
+        }
+        /*
+         * If an error exists somewhere, computes as estimation of the visible region
+         * as zero-based column and row indices. We use an AWT rectangle instead than
+         * JavaFX object because this rectangle will be intersected with AWT rectangle.
+         */
+        if (error != null) {
+            final java.awt.Rectangle viewArea = new java.awt.Rectangle();
+            final GridRow firstVisibleRow = flow.getFirstVisibleCell();
+            if (firstVisibleRow != null) {
+                viewArea.x      = firstVisibleColumn;
+                viewArea.y      = firstVisibleRow.getIndex();
+                viewArea.width  = (int) ((flow.getWidth() - headerWidth) / cellWidth);
+                viewArea.height = (int) (flow.getVisibleHeight() / flow.getFixedCellSize());
+            }
+            error.initialize(viewArea);
         }
     }
 }
