@@ -42,22 +42,7 @@ import javafx.scene.text.FontWeight;
  */
 final class GridRow extends IndexedCell<Void> {
     /**
-     * The {@link VirtualFlow} which is managing this row. This is the value given to the constructor,
-     * casted to the type used by {@link GridView}. There is two main properties that we want to access:
-     *
-     * <ul>
-     *   <li>{@link GridViewSkin.Flow#getHorizontalPosition()} for the position of the horizontal scroll bar.</li>
-     *   <li>{@link GridViewSkin.Flow#getWidth()} for the width of the visible region.
-     * </ul>
-     *
-     * Those two properties are used for creating the minimal amount of {@link GridCell} needed
-     * for rendering this row.
-     */
-    final GridViewSkin.Flow flow;
-
-    /**
      * The grid view where this row will be shown.
-     * This is {@code flow.getParent()} but fetched once for efficiency.
      */
     final GridView view;
 
@@ -80,7 +65,6 @@ final class GridRow extends IndexedCell<Void> {
      * This constructor is referenced by lambda-function in {@link GridViewSkin}.
      */
     GridRow(final VirtualFlow<GridRow> owner) {
-        flow = (GridViewSkin.Flow) owner;
         view = (GridView) owner.getParent();
         setPrefWidth(view.getContentWidth());
         setFont(Font.font(null, FontWeight.BOLD, -1));      // Apply only to the header column.

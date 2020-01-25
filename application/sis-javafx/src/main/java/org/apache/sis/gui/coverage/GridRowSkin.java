@@ -50,7 +50,7 @@ final class GridRowSkin extends CellSkinBase<GridRow> {
      */
     final void setRowIndex(final int index) {
         final Text header = (Text) getChildren().get(0);
-        header.setText(getSkinnable().view.formatHeaderValue(index));
+        header.setText(getSkinnable().view.formatHeaderValue(index, true));
     }
 
     /**
@@ -76,9 +76,18 @@ final class GridRowSkin extends CellSkinBase<GridRow> {
     protected void layoutChildren(final double x, final double y, final double width, final double height) {
         /*
          * Do not invoke super.layoutChildren(…) since we are doing a different layout.
-         * The first child is a javafx.scene.text.Text instance, which we use for row header.
+         * The first child is a `javafx.scene.text.Text`, which we use for row header.
          */
+        final ObservableList<Node> children = getChildren();
         final GridRow row = getSkinnable();
+        final GridViewSkin layout = (GridViewSkin) row.view.getSkin();
+        /*
+         * Set the position of the header cell, but not its content. The content has been set by
+         * `setRowIndex(int)` and does not need to be recomputed even during horizontal scroll.
+         */
+        double pos = layout.leftPosition;               // Horizontal position in the virtual view.
+        ((Text) children.get(0)).resizeRelocate(pos, y, layout.headerWidth, height);
+        pos += layout.headerWidth;
         /*
          * Get the beginning (pos) and end (limit) of the region to render. We create only the amount
          * of GridCell instances needed for rendering this region. We should not create cells for the
@@ -86,30 +95,19 @@ final class GridRowSkin extends CellSkinBase<GridRow> {
          * in a list of children that we try to keep small. All children starting at index 1 shall be
          * GridCell instances created in this method.
          */
-        final double headerWidth = row.view.headerWidth.get();
-        final double cellWidth   = row.view.cellWidth.get();            // Includes the cell spacing.
-        final double cellSpacing = row.view.cellSpacing.get();
-        final double available   = cellWidth - cellSpacing;
-        double pos = row.flow.getHorizontalPosition();                  // Horizontal position in the virtual view.
-        final double limit = pos + row.flow.getWidth();                 // Horizontal position where to stop.
-        int column = (int) (pos / cellWidth);                           // Column index in the RenderedImage.
-        /*
-         * Set the position of the header cell, but not its content. The content has been set by
-         * `setRowIndex(int)` and does not need to be recomputed even during horizontal scroll.
-         */
-        final ObservableList<Node> children = getChildren();
-        final Text header = (Text) children.get(0);
-        header.resizeRelocate(pos + cellSpacing, y, headerWidth - cellSpacing, height);
-        pos += headerWidth;
-        /*
-         * For sample value, we need to recompute both the values and the position. Note that even if
-         * the cells appear at the same positions visually (with different content), they moved in the
-         * virtual flow if some scrolling occurred.
-         */
-        int childIndex = 0;
+        final double cellWidth  = layout.cellWidth;             // Includes the cell spacing.
+        final double available  = layout.cellInnerWidth;
+        final double limit      = layout.rightPosition;         // Horizontal position where to stop.
+        int          column     = layout.firstVisibleColumn;    // Column index in the RenderedImage.
+        int          childIndex = 0;
         List<GridCell> newChildren = null;
         final int count = children.size();
         while (pos < limit) {
+            /*
+             * For sample value, we need to recompute both the values and the position. Note that even if
+             * the cells appear at the same positions visually (with different content), they moved in the
+             * virtual flow if some scrolling occurred.
+             */
             final GridCell cell;
             if (++childIndex < count) {
                 cell = (GridCell) children.get(childIndex);

@@ -57,7 +57,9 @@ import org.apache.sis.coverage.grid.GridCoverage;
 @DefaultProperty("image")
 public class GridView extends Control {
     /**
-     * Minimum cell width and height.
+     * Minimum cell width and height. Must be greater than zero, otherwise infinite loops may happen.
+     *
+     * @see #getSizeValue(DoubleProperty)
      */
     static final int MIN_CELL_SIZE = 1;
 
@@ -325,18 +327,6 @@ public class GridView extends Control {
     }
 
     /**
-     * Invoked when the content may have changed. If {@code all} is {@code true}, then everything
-     * may have changed including the number of rows and columns. If {@code all} is {@code false}
-     * then the number of rows and columns is assumed the same.
-     */
-    final void contentChanged(final boolean all) {
-        final Skin<?> skin = getSkin();             // May be null if the view is not yet shown.
-        if (skin instanceof GridViewSkin) {         // Could be a user instance (not recommended).
-            ((GridViewSkin) skin).contentChanged(all);
-        }
-    }
-
-    /**
      * Invoked when the {@link #cellFormat} configuration changed.
      *
      * @param  notify  whether to notify the renderer about the change. Can be {@code false}
@@ -351,11 +341,30 @@ public class GridView extends Control {
     }
 
     /**
+     * Invoked when the content may have changed. If {@code all} is {@code true}, then everything
+     * may have changed including the number of rows and columns. If {@code all} is {@code false}
+     * then the number of rows and columns is assumed the same.
+     */
+    private void contentChanged(final boolean all) {
+        final Skin<?> skin = getSkin();             // May be null if the view is not yet shown.
+        if (skin instanceof GridViewSkin) {         // Could be a user instance (not recommended).
+            ((GridViewSkin) skin).contentChanged(all);
+        }
+    }
+
+    /**
      * Returns the width that this view would have if it was fully shown (without horizontal scroll bar).
      * This value depends on the number of columns in the image and the size of each cell.
+     * This method does not take in account the space occupied by the vertical scroll bar.
      */
     final double getContentWidth() {
-        return width * Math.max(MIN_CELL_SIZE, cellWidth.get()) + Math.max(MIN_CELL_SIZE, headerWidth.get());
+        /*
+         * Add one more column for avoiding offsets caused by the rounding of scroll bar position
+         * to integer multiple of column size. The 20 minimal value used below is arbitrary;
+         * we take a value close to the vertical scrollbar width as a safety.
+         */
+        final double w = getSizeValue(cellWidth);
+        return width * w + getSizeValue(headerWidth) + Math.max(w, 20);
     }
 
     /**
@@ -446,10 +455,17 @@ public class GridView extends Control {
 
     /**
      * Formats a row index or column index.
+     *
+     * @param  index     the row or column index to format.
+     * @param  vertical  {@code true} if formatting row index, or {@code false} if formatting column index.
      */
-    final String formatHeaderValue(final int index) {
-        buffer.setLength(0);
-        return headerFormat.format(index, buffer, formatField).toString();
+    final String formatHeaderValue(final int index, final boolean vertical) {
+        if (index >= 0 && index < (vertical ? height : width)) {
+            buffer.setLength(0);
+            return headerFormat.format(index, buffer, formatField).toString();
+        } else {
+            return OUT_OF_BOUNDS;
+        }
     }
 
     /**
@@ -463,5 +479,15 @@ public class GridView extends Control {
     @Override
     protected final Skin<GridView> createDefaultSkin() {
         return new GridViewSkin(this);
+    }
+
+    /**
+     * Returns the value of the given property as a real number not smaller than {@value #MIN_CELL_SIZE}.
+     * We use this method instead of {@link Math#max(double, double)} because we want {@link Double#NaN}
+     * values to be replaced by {@value #MIN_CELL_SIZE}.
+     */
+    static double getSizeValue(final DoubleProperty property) {
+        final double value = property.get();
+        return (value >= MIN_CELL_SIZE) ? value : MIN_CELL_SIZE;
     }
 }
