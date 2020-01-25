@@ -298,16 +298,19 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
          * It does not perform any layout by itself in this method.
          */
         super.layoutChildren(x, y, width, height);
+        final GridView view = getSkinnable();
+        double cellSpacing  = Math.min(view.cellSpacing.get(), cellWidth);
+        if (!(cellSpacing  >= 0)) cellSpacing = 0;          // Use ! for catching NaN (can not use Math.max).
         /*
          * Do layout of the flow first because it may cause scroll bars to appear or disappear,
          * which may change the size calculations done after that. The flow is located below the
          * header row, so we adjust y and height accordingly.
          */
-        final Flow    flow       = (Flow) getVirtualFlow();
-        final double  cellHeight = flow.getFixedCellSize();
-        final double  dataY      = y + cellHeight;
-        final double  dataHeight = height - cellHeight;
-        final boolean resized    = (flow.getWidth() != width) || (flow.getHeight() != dataHeight);
+        final Flow    flow         = (Flow) getVirtualFlow();
+        final double  headerHeight = flow.getFixedCellSize() + 2*cellSpacing;
+        final double  dataY        = y + headerHeight;
+        final double  dataHeight   = height - headerHeight;
+        final boolean resized      = (flow.getWidth() != width) || (flow.getHeight() != dataHeight);
         flow.resizeRelocate(x, dataY, width, dataHeight);
         /*
          * Recompute all values which will be needed by GridRowSkin. They are mostly information about
@@ -315,11 +318,8 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
          * We compute here for avoiding to recompute the same values in each GridRowSkin instance.
          */
         final double oldPos = leftPosition;
-        final GridView view = getSkinnable();
         headerWidth         = GridView.getSizeValue(view.headerWidth);
         cellWidth           = GridView.getSizeValue(view.cellWidth);
-        double cellSpacing  = Math.min(view.cellSpacing.get(), cellWidth);
-        if (!(cellSpacing  >= 0)) cellSpacing = 0;                  // Use ! for catching NaN (can not use Math.max).
         cellInnerWidth      = cellWidth - cellSpacing;
         leftPosition        = flow.getHorizontalPosition();         // Horizontal position in the virtual view.
         rightPosition       = leftPosition + width;                 // Horizontal position where to stop.
@@ -331,7 +331,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
         topBackground .setX(x);                                     // As a matter of principle, but should be zero.
         topBackground .setY(y);
         topBackground .setWidth(width);
-        topBackground .setHeight(cellHeight);
+        topBackground .setHeight(headerHeight);
         leftBackground.setX(x);
         leftBackground.setY(dataY);
         leftBackground.setWidth(headerWidth);
@@ -363,7 +363,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
             int column = firstVisibleColumn;
             for (final Node cell : headerRow) {
                 ((GridCell) cell).setText(view.formatHeaderValue(column++, false));
-                layoutInArea(cell, pos, y, cellWidth, cellHeight, 0, HPos.CENTER, VPos.CENTER);
+                layoutInArea(cell, pos, y, cellWidth, headerHeight, 0, HPos.CENTER, VPos.CENTER);
                 pos += cellWidth;
             }
         }
