@@ -409,18 +409,6 @@ public class GridView extends Control {
     }
 
     /**
-     * Converts a grid row index to image <var>y</var> coordinate. Those values may differ
-     * because the image coordinate system does not necessarily starts at zero.
-     *
-     * @param  row  zero-based index of a row in this grid view.
-     * @return image <var>y</var> coordinate (may be outside image bounds).
-     * @throws ArithmeticException if image row for the given index is too large.
-     */
-    final int toImageY(final int row) {
-        return Math.addExact(row, minY);
-    }
-
-    /**
      * Converts a grid row index to tile index. Note that those {@link RenderedImage}
      * tile coordinates do not necessarily start at 0; negative values may be valid.
      *
@@ -435,11 +423,10 @@ public class GridView extends Control {
      * time this method is invoked, then the tile will loaded in a background thread and the grid view will
      * be refreshed when the tile become available.
      *
-     * <p>The {@code y} parameter is computed by {@link #toImageY(int)} and the {@code tileY} parameter
-     * is computed by {@link #toTileY(int)}. Those values are stored in {@link GridRow}.</p>
+     * <p>The {@code tileY} parameter is computed by {@link #toTileY(int)} and stored in {@link GridRow}.</p>
      *
-     * @param  y        arbitrary-based <var>y</var> coordinate in the image (may differ from table {@code row}).
      * @param  tileY    arbitrary-based <var>y</var> coordinate of the tile.
+     * @param  row      zero-based <var>y</var> coordinate of sample to get (may differ from image coordinate Y).
      * @param  column   zero-based <var>x</var> coordinate of sample to get (may differ from image coordinate X).
      * @return the sample value in the specified column, or {@code null} if unknown (because the loading process
      *         is still under progress), or the empty string ({@code ""}) if out of bounds.
@@ -447,8 +434,8 @@ public class GridView extends Control {
      *
      * @see GridRow#getSampleValue(int)
      */
-    final String getSampleValue(final int y, final int tileY, final int column) {
-        if (y < 0 || y >= height || column < 0 || column >= width) {
+    final String getSampleValue(final int tileY, final int row, final int column) {
+        if (row < 0 || row >= height || column < 0 || column >= width) {
             return OUT_OF_BOUNDS;
         }
         /*
@@ -476,6 +463,7 @@ public class GridView extends Control {
          * It may happen in particular with fill values.
          */
         final int x = Math.addExact(column, minX);
+        final int y = Math.addExact(row,    minY);
         final int b = getBand();
         buffer.setLength(0);
         if (dataTypeisInteger) {
@@ -504,11 +492,11 @@ public class GridView extends Control {
      */
     final String formatHeaderValue(final int index, final boolean vertical) {
         if (index >= 0 && index < (vertical ? height : width)) {
+            final long value = index + (long) (vertical ? minY : minX);
             buffer.setLength(0);
-            return headerFormat.format(index, buffer, formatField).toString();
-        } else {
-            return OUT_OF_BOUNDS;
+            return headerFormat.format(value, buffer, formatField).toString();
         }
+        return OUT_OF_BOUNDS;
     }
 
     /**

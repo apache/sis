@@ -35,6 +35,10 @@ import javafx.scene.text.FontWeight;
  * for reusing cells. A relatively small amount of {@code GridRow} instances should be created
  * even if the image contains millions of rows.</p>
  *
+ * <p>The {@code GridRow} index value is zero-based. This is not necessarily the <var>y</var> coordinate
+ * in the image since {@link RenderedImage} coordinate system do not necessarily starts at zero.
+ * This value may be outside image bounds, in which case this {@code GridRow} should be rendered as empty.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
@@ -47,16 +51,9 @@ final class GridRow extends IndexedCell<Void> {
     final GridView view;
 
     /**
-     * The arbitrary-based <var>y</var> coordinate in the image. This is not necessarily the {@code row}
-     * index in the table since {@link RenderedImage} coordinate system do not necessarily starts at zero.
-     * This value may be outside image bounds, in which case this {@code GridRow} should be rendered as empty.
-     */
-    private int y;
-
-    /**
      * The <var>y</var> coordinate of the tile in the {@link RenderedImage}.
      * Note that those coordinates do not necessarily start at zero; negative values may be valid.
-     * This value is computed from {@link #y} value and cached for efficiency.
+     * This value is computed from {@link #getIndex()} value and cached for efficiency.
      */
     private int tileY;
 
@@ -80,7 +77,6 @@ final class GridRow extends IndexedCell<Void> {
     @Override
     public void updateIndex(final int row) {
         super.updateIndex(row);
-        y = view.toImageY(row);
         tileY = view.toTileY(row);
         final Skin<?> skin = getSkin();
         if (skin != null) {
@@ -97,7 +93,7 @@ final class GridRow extends IndexedCell<Void> {
      * @return the sample value in the specified column, or {@code null} if not yet available.
      */
     final String getSampleValue(final int column) {
-        return view.getSampleValue(y, tileY, column);
+        return view.getSampleValue(tileY, getIndex(), column);
     }
 
     /**
