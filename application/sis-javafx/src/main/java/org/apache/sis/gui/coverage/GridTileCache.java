@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.gui;
+package org.apache.sis.gui.coverage;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 
 
 /**
- * A map with a fixed capacity. When the maximal capacity is exceeded, eldest entries are removed.
+ * A map of tiles with a fixed capacity. When the maximal capacity is exceeded, eldest entries are cleaned.
  * This is a trivial implementation on top of {@link LinkedHashMap} used only for very simple caching.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -30,29 +31,25 @@ import java.util.LinkedHashMap;
  * @module
  */
 @SuppressWarnings("serial")
-public final class BoundedHashMap<K,V> extends LinkedHashMap<K,V> {
+final class GridTileCache extends LinkedHashMap<GridTile,GridTile> {
     /**
-     * The maximal capacity.
+     * Creates a new cache of tiles.
      */
-    private final int capacity;
-
-    /**
-     * Creates a new map with the given maximal capacity.
-     *
-     * @param  capacity  the maximal capacity.
-     */
-    public BoundedHashMap(final int capacity) {
-        this.capacity = capacity;
+    GridTileCache() {
     }
 
     /**
-     * Removes the given entry if this map has reached its maximal capacity.
+     * Clears the latest tile if this map has reached its maximal capacity.
+     * In the common case where there is no error, the whole entry will be discarded.
      *
      * @param  entry  the eldest entry.
      * @return whether to remove the entry.
      */
     @Override
-    protected boolean removeEldestEntry​(final Map.Entry<K,V> entry) {
-        return size() > capacity;
+    protected boolean removeEldestEntry​(final Map.Entry<GridTile,GridTile> entry) {
+        if (size() > ImageUtilities.SUGGESTED_TILE_CACHE_SIZE) {
+            return entry.getValue().clearTile();
+        }
+        return false;
     }
 }

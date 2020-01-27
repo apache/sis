@@ -16,16 +16,15 @@
  */
 package org.apache.sis.gui.coverage;
 
-import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import javafx.concurrent.Task;
 import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.gui.Resources;
 
 
 /**
- * A {@link Raster} for a {@link RenderedImage} file, potentially to be loaded in a background thread.
+ * A {@link Raster} for a {@link RenderedImage} tile,
+ * potentially fetched (loaded or computed) in a background thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -46,18 +45,22 @@ final class GridTile {
     private final int hashCode;
 
     /**
-     * The tile, or {@code null} if not yet loaded.
+     * The tile, or {@code null} if not yet fetched.
      *
      * @see #tile()
      */
     private Raster tile;
 
     /**
-     * Non-null if a loading is in progress or if an error occurred while fetching the tile.
-     * The loading status is used for avoiding to create many threads requesting the same tile.
-     * If loading is in progress, requests for that tile will return {@code null} immediately.
+     * Non-null if an error occurred while fetching the tile.
      */
-    private Error status;
+    private GridError error;
+
+    /**
+     * Whether a fetching is under progress. Used for avoiding to create many threads requesting the same
+     * tile in same time: if {@code true} then {@link #load(GridView)} returns {@code null} immediately.
+     */
+    private boolean loading;
 
     /**
      * Creates a new tile for the given tile coordinates.
@@ -70,7 +73,7 @@ final class GridTile {
 
     /**
      * Returns a hash code value for this tile. This hash code value must be based only on tile indices;
-     * the {@link #tile} and the {@link #status} must be ignored, because we will use {@link GridTile}
+     * the {@link #tile} and the {@link #error} must be ignored, because we will use {@link GridTile}
      * instances also as keys for locating tiles in a hash map.
      */
     @Override
@@ -109,15 +112,42 @@ final class GridTile {
     }
 
     /**
-     * Loads tile from the given image in a background thread and informs the specified view
-     * when the tile become available. If we already failed to load that tile in a previous
-     * attempt, then this method may set the {@link GridViewSkin#error} field.
+     * Clears the cached {@link #tile}. That tile will be recomputed again if needed.
+     * Note that in many cases the tile will not be really recomputed since a second,
+     * more sophisticated caching mechanism may be done (at least in Apache SIS case)
+     * by {@link RenderedImage#getTile(int, int)} implementation.
      *
-     * @param  view  the view for which to load a tile.
+     * @return {@code true} if there is no error, in which case the whole {@link GridTile} can be discarded.
+     */
+    final boolean clearTile() {
+        if (loading) {
+            return false;
+        }
+        tile = null;
+        return error == null;
+    }
+
+    /**
+     * Clears the tile, error and loading flags. This is invoked after a the background thread fetching a
+     * tile completed, either successfully or with a failure, before to set the new values. This is also
+     * invoked if we want to retry loading a tile after a failure.
+     */
+    final void clear() {
+        tile    = null;
+        error   = null;
+        loading = false;
+    }
+
+    /**
+     * Fetches (load or compute) tile from the image in a background thread and informs the specified view
+     * when the tile become available. If we already failed to fetch that tile in a previous attempt, then
+     * this method returns {@code null}.
+     *
+     * @param  view  the view for which to fetch a tile.
      */
     final void load(final GridView view) {
-        if (status == null) {
-            status = Error.LOADING;                                         // Pseudo-error.
+        if (!loading && error == null) {
+            loading = true;
             final RenderedImage image = view.getImage();
             BackgroundThreads.execute(new Task<Raster>() {
                 /** Invoked in background thread for fetching the tile. */
@@ -132,8 +162,7 @@ final class GridTile {
                  */
                 @Override protected void succeeded() {
                     super.succeeded();
-                    tile   = null;
-                    status = null;
+                    clear();
                     if (view.getImage() == image) {
                         tile = getValue();
                         view.contentChanged(false);
@@ -146,12 +175,10 @@ final class GridTile {
                  */
                 @Override protected void failed() {
                     super.failed();
-                    tile   = null;
-                    status = null;
+                    clear();
                     if (view.getImage() == image) {
-                        status = new Error(Resources.format(Resources.Keys.CanNotFetchTile_2, tileX, tileY),
-                                           view.getTileBounds(tileX, tileY), getException());
-                        view.contentChanged(false);     // For rendering the error message.
+                        error = new GridError(view, GridTile.this, getException());
+                        ((GridViewSkin) view.getSkin()).errorOccurred(error);
                     }
                 }
 
@@ -162,99 +189,9 @@ final class GridTile {
                  */
                 @Override protected void cancelled() {
                     super.cancelled();
-                    tile   = null;
-                    status = null;
+                    clear();
                 }
             });
-        } else if (status != Error.LOADING) {
-            /*
-             * A previous attempt failed to load that tile. We may have an error message to report.
-             * If more than one tile failed, take the one with largest visible area.
-             */
-            ((GridViewSkin) view.getSkin()).errorOccurred(status);
-        }
-    }
-
-    /**
-     * The status of a tile request, either {@link #LOADING} or any other instance in case of error.
-     * If not {@link #LOADING}, this class contains the reason why a tile request failed, together
-     * with some information that depends on the viewing context. In particular {@link #visibleArea}
-     * needs to be recomputed every time the viewed area in the {@link GridView} changed.
-     */
-    static final class Error {
-        /**
-         * A pseudo-error for saying that the tile is being fetched. Its effect is similar to an error
-         * in the sense that {@link #load(GridView)} returns {@code null} immediately, except that no
-         * error message is recorded.
-         */
-        private static final Error LOADING = new Error(null, null, null);
-
-        /**
-         * The error message saying "can not fetch tile (x, y)", with tile indices.
-         */
-        final String message;
-
-        /**
-         * If we failed to load the tile, the reason for the failure.
-         */
-        final Throwable exception;
-
-        /**
-         * If we failed to load the tile, the zero-based row and column indices of the tile.
-         * This is computed by {@link GridView#getTileBounds(int, int)} and should be constant.
-         */
-        private final Rectangle region;
-
-        /**
-         * Intersection of {@link #region} with the area currently shown in the view.
-         * May vary with scrolling and is empty if the tile in error is outside visible area.
-         */
-        Rectangle visibleArea;
-
-        /**
-         * The {@link GridError#updateCount} value last time that {@link #visibleArea} was computed.
-         * Used for detecting if we should recompute the visible area.
-         */
-        private int updateCount;
-
-        /**
-         * Creates an error status with the given cause.
-         */
-        private Error(final String message, final Rectangle region, final Throwable exception) {
-            this.message   = message;
-            this.region    = region;
-            this.exception = exception;
-        }
-
-        /**
-         * Recomputes the {@link #visibleArea} value if needed, then returns {@code true}
-         * if the visible area in this {@code Error} if wider than the one in {@code other}.
-         *
-         * @param  stamp     value of {@link GridError#updateCount}.
-         * @param  viewArea  value of {@link GridError#viewArea}.
-         * @param  other     the previous error, or {@code null}.
-         * @return whether this status should replace {@code other}.
-         */
-        final boolean updateAndCompare(final int stamp, final Rectangle viewArea, final Error other) {
-            if (updateCount != stamp) {
-                visibleArea = viewArea.intersection(region);
-                updateCount = stamp;
-            }
-            if (other == null || other.visibleArea.isEmpty()) {
-                return true;
-            }
-            if (visibleArea.isEmpty()) {
-                return false;
-            }
-            /*
-             * Gives precedence to width instead than computing the area because the error
-             * messsage will be written horizontally, so we want more space for writing it.
-             */
-            int c = Integer.compare(visibleArea.width, other.visibleArea.width);
-            if (c == 0) {
-                c = Integer.compare(visibleArea.height, other.visibleArea.height);
-            }
-            return c > 0;
         }
     }
 }

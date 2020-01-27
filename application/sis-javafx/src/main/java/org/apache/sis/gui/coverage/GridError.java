@@ -18,6 +18,7 @@ package org.apache.sis.gui.coverage;
 
 import java.awt.Rectangle;
 import javafx.geometry.Pos;
+import javafx.geometry.Insets;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -31,6 +32,9 @@ import org.apache.sis.util.resources.Vocabulary;
 
 /**
  * Controls to put in the middle of a tile if an error occurred while loading that tile.
+ * This class contains the reason why a tile request failed, together with some information
+ * that depends on the viewing context. In particular {@link #getVisibleRegion(Rectangle)}
+ * needs to be recomputed every time that the visible area in the {@link GridView} changed.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -39,103 +43,87 @@ import org.apache.sis.util.resources.Vocabulary;
  */
 final class GridError extends VBox {
     /**
-     * The area where to write the error message.
+     * The tile in error.
+     */
+    private final GridTile tile;
+
+    /**
+     * The reason for the failure to load a tile.
+     */
+    private final Throwable exception;
+
+    /**
+     * The first line of {@link #message}, also used as header text in the "details" dialog box.
+     */
+    private final String header;
+
+    /**
+     * The area where to write the error message. The text said "can not fetch tile (x, y)"
+     * with tile indices, followed by the exception message (if any) on next line.
      */
     private final Label message;
 
     /**
-     * If we failed to fetch a tile, the tile in error. If more than one tile has an error,
-     * then the tile having the largest intersection with the view area. This visible error
-     * may change during scrolling.
+     * The zero-based row and column indices of the tile.
+     * This is computed by {@link GridView#getTileBounds(int, int)} and should be constant.
      */
-    private GridTile.Error visibleError;
+    private final Rectangle region;
 
     /**
-     * The last error reported. This is usually equal to {@link #visibleError}, except that
-     * the visible error may be {@code null} while {@code lastError} is never reset to null.
+     * Creates a new error control for the specified exception.
      */
-    private GridTile.Error lastError;
-
-    /**
-     * The zero-based row and columns indices of the area currently shown in {@link GridView}.
-     * This is updated by {@link GridViewSkin#layoutChildren(double, double, double, double)}.
-     */
-    private Rectangle viewArea;
-
-    /**
-     * Incremented every time that a new layout is performed. This is used for detecting if a
-     * {@link GridTile.Error} instance should recompute its visible area. It is not a problem
-     * if this value overflows; we just check if values differ, not which one is greater.
-     *
-     * @see GridTile.Error#updateCount
-     */
-    private int updateCount;
-
-    /**
-     * Creates a new error control.
-     */
-    GridError() {
+    GridError(final GridView view, final GridTile tile, final Throwable exception) {
         super(9);
-        message = new Label();
-        message.setTextFill(Color.RED);
+        this.tile      = tile;
+        this.exception = exception;
+        this.region    = view.getTileBounds(tile.tileX, tile.tileY);
+        this.header    = Resources.format(Resources.Keys.CanNotFetchTile_2, tile.tileX, tile.tileY);
+
         final Button   details = new Button(Vocabulary.format(Vocabulary.Keys.Details));
         final Button   retry   = new Button(Vocabulary.format(Vocabulary.Keys.Retry));
         final TilePane buttons = new TilePane(12, 0, details, retry);
-        message.setLabelFor(buttons);
         buttons.setPrefRows(1);
         buttons.setPrefColumns(2);
         buttons.setAlignment(Pos.CENTER);
         details.setMaxWidth(100);           // Arbitrary limit, width enough for allowing TilePane to resize.
         retry  .setMaxWidth(100);
+
+        final String t = exception.getLocalizedMessage();
+        message = new Label((t == null) ? header : header + System.lineSeparator() + t);
+        message.setTextFill(Color.RED);
+        message.setLabelFor(buttons);
+
         getChildren().addAll(message, buttons);
         setAlignment(Pos.CENTER);
+        setPadding(new Insets(12, 18, 24, 18));
         details.setOnAction(this::showDetails);
+        retry  .setOnAction(this::retry);
     }
 
     /**
-     * Invoked by {@link GridViewSkin#layoutChildren(double, double, double, double)} when a new layout is beginning.
+     * Returns the bounds of the error controls which is currently visible in the {@link GridView}.
+     * This is the intersection of {@link #region} with the area currently shown in the grid view.
+     * May vary during scrolling and is empty if the tile in error is outside the visible area.
      *
-     * @param  area  zero-based row and columns indices of the area currently shown in {@link GridView}.
+     * @param  viewArea  zero-based row and columns indices of the area currently shown in {@link GridView}.
      */
-    final void initialize(final Rectangle area) {
-        viewArea     = area;
-        visibleError = null;
-        if (++updateCount == 0) {
-            updateCount = 1;        // Paranoiac safety in case we did a cycle over all integer values.
-        }
-    }
-
-    /**
-     * Updates this error control with the given status. If this control is already showing an error message,
-     * it will be updated only if the given status cover a larger view area. If this control has been updated,
-     * then this method returns the zero-based row and column indices of the region in error in the view area.
-     * Otherwise (if this method did nothing), this method returns {@code null}.
-     *
-     * @param  status  the candidate error status.
-     * @return new indices of visible area, or {@code null} if no change.
-     *         This is a direct reference to internal field; do not modify.
-     */
-    final Rectangle update(final GridTile.Error status) {
-        if (status != visibleError && status.updateAndCompare(updateCount, viewArea, visibleError)) {
-            visibleError = lastError = status;
-            String text = status.message;
-            final Throwable exception = status.exception;
-            String more = exception.getLocalizedMessage();
-            if (more != null) {
-                text = text + System.lineSeparator() + more;
-            }
-            message.setText(text);
-            return status.visibleArea;
-        }
-        return null;
+    final Rectangle getVisibleRegion(final Rectangle viewArea) {
+        return viewArea.intersection(region);
     }
 
     /**
      * Invoked when the user click on the "details" button.
      */
     private void showDetails(final ActionEvent event) {
-        if (lastError != null) {
-            ExceptionReporter.show(Resources.format(Resources.Keys.ErrorDataAccess), lastError.message, lastError.exception);
-        }
+        ExceptionReporter.show(Resources.format(Resources.Keys.ErrorDataAccess), header, exception);
+    }
+
+    /**
+     * Invoked when the user asked to retry a tile computation.
+     */
+    private void retry(final ActionEvent event) {
+        final GridView view = (GridView) getParent();
+        ((GridViewSkin) view.getSkin()).removeError(this);
+        tile.clear();
     }
 }

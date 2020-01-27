@@ -110,10 +110,9 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
     double cellInnerWidth;
 
     /**
-     * The controls to show in case of error, or {@code null} if none. This is created and
-     * added to the children list the first time that an error occurs while reading a tile.
+     * Whether the grid view contains at least one tile that we failed to fetch.
      */
-    private GridError error;
+    private boolean hasErrors;
 
     /**
      * Creates a new skin for the specified view.
@@ -171,39 +170,24 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
     }
 
     /**
-     * Invoked when an error occurred when fetching a tile. If this is the first time that an error happens
-     * for this image, then a {@link GridError} node will be added as the last child (i.e. will be drawn on
-     * top of everything else). That child will be removed if a new image is set.
+     * Invoked when an error occurred while fetching a tile. The given {@link GridError} node is added as last
+     * child (i.e. will be drawn on top of everything else). That child will be removed if a new image is set.
      */
-    final void errorOccurred(final GridTile.Error status) {
-        if (error == null) {
-            error = new GridError();
-            getChildren().add(error);
-            computeErrorBounds((Flow) getVirtualFlow());
-        }
-        final java.awt.Rectangle area = error.update(status);
-        if (area != null) {
-            final Flow flow = (Flow) getVirtualFlow();
-            final GridRow firstVisibleRow = area.isEmpty() ? null : flow.getFirstVisibleCell();
-            error.setVisible(firstVisibleRow != null);
-            if (firstVisibleRow != null) {
-                final double cellHeight = flow.getFixedCellSize();
-                final double width  = area.width  * cellWidth;
-                final double height = area.height * cellHeight;
-                layoutInArea​(error,
-                        cellWidth  * (area.x - firstVisibleColumn)         + leftBackground.getWidth(),
-                        cellHeight * (area.y - firstVisibleRow.getIndex()) + topBackground.getHeight(),
-                        width, height, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.CENTER, VPos.CENTER);
-                /*
-                 * If after layout the error message size appears too large for the remaining space, hide it.
-                 * The intent is to avoid having the message and buttons on top of numbers in valid tiles.
-                 * It does not seem to work fully however (some overlaps can still happen).
-                 */
-                if (error.getHeight() > height || error.getWidth() > width) {
-                    error.setVisible(false);
-                }
-            }
-        }
+    final void errorOccurred(final GridError error) {
+        hasErrors = true;
+        getChildren().add(error);
+    }
+
+    /**
+     * Removes the given error. This method is invoked when the user wants to try again to fetch a tile.
+     * Callers is responsible for invoking {@link GridTile#clear()}.
+     */
+    final void removeError(final GridError error) {
+        final ObservableList<Node> children = getChildren();
+        children.remove(error);
+        // The list should never be empty, so IndexOutOfBoundsException here would be a bug.
+        hasErrors = children.get(children.size() - 1) instanceof GridError;
+        contentChanged(false);
     }
 
     /**
@@ -219,10 +203,8 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
     final void contentChanged(final boolean all) {
         if (all) {
             updateItemCount();
-            if (error != null) {
-                error = null;
-                getChildren().removeIf((node) -> (node instanceof GridError));
-            }
+            getChildren().removeIf((node) -> (node instanceof GridError));
+            hasErrors = false;
         }
         /*
          * Following call may be redundant with `updateItemCount()` except if the number of
@@ -413,7 +395,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
                 pos += cellWidth;
             }
         }
-        if (error != null) {
+        if (hasErrors) {
             computeErrorBounds(flow);
         }
     }
@@ -425,13 +407,38 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
      */
     private void computeErrorBounds(final Flow flow) {
         final java.awt.Rectangle viewArea = new java.awt.Rectangle();
-        final GridRow firstVisibleRow = flow.getFirstVisibleCell();
-        if (firstVisibleRow != null) {
+        final GridRow first = flow.getFirstVisibleCell();
+        int firstVisibleRow = 0;
+        if (first != null) {
             viewArea.x      = firstVisibleColumn;
-            viewArea.y      = firstVisibleRow.getIndex();
+            viewArea.y      = firstVisibleRow = first.getIndex();
             viewArea.width  = (int) ((flow.getWidth() - leftBackground.getWidth()) / cellWidth);
             viewArea.height = (int) (flow.getVisibleHeight() / flow.getFixedCellSize());
         }
-        error.initialize(viewArea);
+        final ObservableList<Node> children = getChildren();
+        for (int i=children.size(); --i >= 0;) {
+            final Node node = children.get(i);
+            if (!(node instanceof GridError)) break;
+            final GridError error = (GridError) node;
+            boolean visible = false;
+            final java.awt.Rectangle area = error.getVisibleRegion(viewArea);
+            if (!area.isEmpty()) {
+                final double cellHeight = flow.getFixedCellSize();
+                final double width  = area.width  * cellWidth;
+                final double height = area.height * cellHeight;
+                layoutInArea​(error,
+                        cellWidth  * (area.x - firstVisibleColumn) + leftBackground.getWidth(),
+                        cellHeight * (area.y - firstVisibleRow)    + topBackground.getHeight(),
+                        width, height, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.CENTER, VPos.CENTER);
+                /*
+                 * If after layout the error message size appears too large for the remaining space, hide it.
+                 * The intent is to avoid having the message and buttons on top of cell values in valid tiles.
+                 * It does not seem to work fully however (some overlaps can still happen), so we added some
+                 * inset to mitigate the problem and also for more aerated presentation.
+                 */
+                visible = error.getHeight() <= height && error.getWidth() <= width;
+            }
+            error.setVisible(visible);
+        }
     }
 }
