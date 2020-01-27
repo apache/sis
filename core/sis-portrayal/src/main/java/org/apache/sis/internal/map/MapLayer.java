@@ -33,7 +33,6 @@ import org.opengis.style.Style;
  *
  * <p>
  * NOTE: this class is a first draft subject to modifications.
- * TODO : missing events
  * </p>
  *
  * @author  Johann Sorel (Geomatys)

@@ -18,6 +18,8 @@ package org.apache.sis.internal.map;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import javax.swing.event.EventListenerList;
 
@@ -36,17 +38,30 @@ import javax.swing.event.EventListenerList;
  */
 public abstract class MapItem {
 
+    /** Identifies a change in the map item identifier. */
+    public static final String IDENTIFIER_PROPERTY = "identifier";
     /** Identifies a change in the map item title. */
     public static final String TITLE_PROPERTY = "title";
+    /** Identifies a change in the map item abstract description. */
+    public static final String ABSTRACT_PROPERTY = "abstract";
     /** Identifies a change in the map item visibility state. */
     public static final String VISIBLE_PROPERTY = "visible";
 
     private final EventListenerList listeners = new EventListenerList();
 
     /**
+     * Identifier of this map item.
+     */
+    private String identifier;
+    /**
      * The title of this map item, for display to the user.
      */
     private CharSequence title;
+
+    /**
+     * A description of this map item, for display to the user.
+     */
+    private CharSequence abtract;
 
     /**
      * Whether this item should be shown on the map.
@@ -54,9 +69,36 @@ public abstract class MapItem {
     private boolean visible = true;
 
     /**
+     * Additional user defined properties.
+     */
+    private Map<String,Object> userMap;
+
+    /**
      * Only used by classes in this package.
      */
     MapItem() {
+    }
+
+    /**
+     * Returns the identifier of this map item.
+     *
+     * @return identifier, or {@code null} if none.
+     */
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    /**
+     * Sets a new identifier for this map item.
+     *
+     * @param  identifier  identifier, or {@code null} if none.
+     */
+    public void setIdentifier(String identifier) {
+        if (!Objects.equals(this.identifier, identifier)) {
+            CharSequence old = this.identifier;
+            this.identifier = identifier;
+            firePropertyChange(IDENTIFIER_PROPERTY, old, identifier);
+        }
     }
 
     /**
@@ -84,6 +126,29 @@ public abstract class MapItem {
     }
 
     /**
+     * Returns the description of this map item.
+     * This description should be user friendly and may be an {@link org.opengis.util.InternationalString}.
+     *
+     * @return description to be shown to the user, or {@code null} if none.
+     */
+    public CharSequence getAbstract() {
+        return abtract;
+    }
+
+    /**
+     * Sets a new description for this map item.
+     *
+     * @param  abtract  title to be shown to the user, or {@code null} if none.
+     */
+    public void setAbstract(CharSequence abtract) {
+        if (!Objects.equals(this.abtract, abtract)) {
+            CharSequence old = this.abtract;
+            this.abtract = abtract;
+            firePropertyChange(ABSTRACT_PROPERTY, old, abtract);
+        }
+    }
+
+    /**
      * Return whether this item should be shown on the map.
      *
      * @return {@code true} if this item is visible.
@@ -105,6 +170,16 @@ public abstract class MapItem {
         }
     }
 
+    /**
+     * @return map of all user properties.
+     *          This is the live map.
+     */
+    public synchronized Map<String,Object> getUserProperties() {
+        if (userMap == null) {
+            userMap = new HashMap<>();
+        }
+        return userMap;
+    }
     /**
      * Register a property listener.
      *
