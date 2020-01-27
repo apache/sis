@@ -21,6 +21,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import javafx.concurrent.Task;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.Resources;
 
 
 /**
@@ -148,7 +149,8 @@ final class GridTile {
                     tile   = null;
                     status = null;
                     if (view.getImage() == image) {
-                        status = new Error(view.getTileBounds(tileX, tileY), getException());
+                        status = new Error(Resources.format(Resources.Keys.CanNotFetchTile_2, tileX, tileY),
+                                           view.getTileBounds(tileX, tileY), getException());
                         view.contentChanged(false);     // For rendering the error message.
                     }
                 }
@@ -185,7 +187,12 @@ final class GridTile {
          * in the sense that {@link #load(GridView)} returns {@code null} immediately, except that no
          * error message is recorded.
          */
-        private static final Error LOADING = new Error(null, null);
+        private static final Error LOADING = new Error(null, null, null);
+
+        /**
+         * The error message saying "can not fetch tile (x, y)", with tile indices.
+         */
+        final String message;
 
         /**
          * If we failed to load the tile, the reason for the failure.
@@ -201,8 +208,6 @@ final class GridTile {
         /**
          * Intersection of {@link #region} with the area currently shown in the view.
          * May vary with scrolling and is empty if the tile in error is outside visible area.
-         *
-         * @see GridError#getVisibleArea()
          */
         Rectangle visibleArea;
 
@@ -215,16 +220,10 @@ final class GridTile {
         /**
          * Creates an error status with the given cause.
          */
-        private Error(final Rectangle region, final Throwable exception) {
+        private Error(final String message, final Rectangle region, final Throwable exception) {
+            this.message   = message;
             this.region    = region;
             this.exception = exception;
-        }
-
-        /**
-         * Returns the area inside {@link #visibleArea}.
-         */
-        private long area() {
-            return visibleArea.width * (long) visibleArea.height;
         }
 
         /**
@@ -241,7 +240,21 @@ final class GridTile {
                 visibleArea = viewArea.intersection(region);
                 updateCount = stamp;
             }
-            return (other == null) || area() > other.area();
+            if (other == null || other.visibleArea.isEmpty()) {
+                return true;
+            }
+            if (visibleArea.isEmpty()) {
+                return false;
+            }
+            /*
+             * Gives precedence to width instead than computing the area because the error
+             * messsage will be written horizontally, so we want more space for writing it.
+             */
+            int c = Integer.compare(visibleArea.width, other.visibleArea.width);
+            if (c == 0) {
+                c = Integer.compare(visibleArea.height, other.visibleArea.height);
+            }
+            return c > 0;
         }
     }
 }

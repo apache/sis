@@ -81,6 +81,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotCreateCRS_1 = 35;
 
         /**
+         * Can not fetch tile ({0}, {1}).
+         */
+        public static final short CanNotFetchTile_2 = 45;
+
+        /**
          * Can not open “{0}”.
          */
         public static final short CanNotReadFile_1 = 5;

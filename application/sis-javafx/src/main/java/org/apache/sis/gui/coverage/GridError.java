@@ -17,9 +17,16 @@
 package org.apache.sis.gui.coverage;
 
 import java.awt.Rectangle;
+import javafx.geometry.Pos;
+import javafx.event.ActionEvent;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.TilePane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import org.apache.sis.util.Classes;
+import org.apache.sis.internal.gui.ExceptionReporter;
+import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -30,13 +37,24 @@ import org.apache.sis.util.Classes;
  * @since   1.1
  * @module
  */
-final class GridError extends Label {
+final class GridError extends VBox {
+    /**
+     * The area where to write the error message.
+     */
+    private final Label message;
+
     /**
      * If we failed to fetch a tile, the tile in error. If more than one tile has an error,
      * then the tile having the largest intersection with the view area. This visible error
      * may change during scrolling.
      */
     private GridTile.Error visibleError;
+
+    /**
+     * The last error reported. This is usually equal to {@link #visibleError}, except that
+     * the visible error may be {@code null} while {@code lastError} is never reset to null.
+     */
+    private GridTile.Error lastError;
 
     /**
      * The zero-based row and columns indices of the area currently shown in {@link GridView}.
@@ -57,7 +75,21 @@ final class GridError extends Label {
      * Creates a new error control.
      */
     GridError() {
-        setTextFill(Color.RED);
+        super(9);
+        message = new Label();
+        message.setTextFill(Color.RED);
+        final Button   details = new Button(Vocabulary.format(Vocabulary.Keys.Details));
+        final Button   retry   = new Button(Vocabulary.format(Vocabulary.Keys.Retry));
+        final TilePane buttons = new TilePane(12, 0, details, retry);
+        message.setLabelFor(buttons);
+        buttons.setPrefRows(1);
+        buttons.setPrefColumns(2);
+        buttons.setAlignment(Pos.CENTER);
+        details.setMaxWidth(100);           // Arbitrary limit, width enough for allowing TilePane to resize.
+        retry  .setMaxWidth(100);
+        getChildren().addAll(message, buttons);
+        setAlignment(Pos.CENTER);
+        details.setOnAction(this::showDetails);
     }
 
     /**
@@ -66,38 +98,44 @@ final class GridError extends Label {
      * @param  area  zero-based row and columns indices of the area currently shown in {@link GridView}.
      */
     final void initialize(final Rectangle area) {
-        setVisible(false);
         viewArea     = area;
         visibleError = null;
-        updateCount++;
+        if (++updateCount == 0) {
+            updateCount = 1;        // Paranoiac safety in case we did a cycle over all integer values.
+        }
     }
 
     /**
      * Updates this error control with the given status. If this control is already showing an error message,
-     * it will be updated only if the given status cover a larger view area.
+     * it will be updated only if the given status cover a larger view area. If this control has been updated,
+     * then this method returns the zero-based row and column indices of the region in error in the view area.
+     * Otherwise (if this method did nothing), this method returns {@code null}.
      *
      * @param  status  the candidate error status.
+     * @return new indices of visible area, or {@code null} if no change.
+     *         This is a direct reference to internal field; do not modify.
      */
-    final boolean update(final GridTile.Error status) {
+    final Rectangle update(final GridTile.Error status) {
         if (status != visibleError && status.updateAndCompare(updateCount, viewArea, visibleError)) {
-            visibleError = status;
+            visibleError = lastError = status;
+            String text = status.message;
             final Throwable exception = status.exception;
-            String message = exception.getLocalizedMessage();
-            if (message == null) {
-                message = Classes.getShortClassName(exception);
+            String more = exception.getLocalizedMessage();
+            if (more != null) {
+                text = text + System.lineSeparator() + more;
             }
-            setText(message);
-            setVisible(true);
-            return true;
+            message.setText(text);
+            return status.visibleArea;
         }
-        return false;
+        return null;
     }
 
     /**
-     * Returns the zero-based row and column indices of the region in error in the view area.
-     * This method returns a direct reference to internal instance; do not modify.
+     * Invoked when the user click on the "details" button.
      */
-    final Rectangle getVisibleArea() {
-        return visibleError.visibleArea;
+    private void showDetails(final ActionEvent event) {
+        if (lastError != null) {
+            ExceptionReporter.show(Resources.format(Resources.Keys.ErrorDataAccess), lastError.message, lastError.exception);
+        }
     }
 }

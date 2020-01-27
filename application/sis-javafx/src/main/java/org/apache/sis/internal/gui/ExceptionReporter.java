@@ -167,30 +167,40 @@ public final class ExceptionReporter implements EventHandler<ActionEvent> {
      * @param title       {@link Resources.Keys} of the title, or 0 if unknown.
      * @param text        {@link Resources.Keys} of the text (possibly with arguments), or 0 if unknown.
      * @param arguments   the arguments for creating the text identified by the {@code text} key.
-     * @param exception   the exception to report.
+     * @param exception   the exception to report, or {@code null} if none.
      */
     private static void show(final short title, final short text, final Object[] arguments, final Throwable exception) {
         if (exception != null) {
-            String message = exception.getLocalizedMessage();
-            if (message == null) {
-                message = Classes.getShortClassName(exception);
-            }
-            final Alert alert = new Alert(Alert.AlertType.ERROR);
+            String t = null, h = null;
             if ((title | text) != 0) {
                 final Resources resources = Resources.getInstance();
-                if (title != 0) {
-                    alert.setTitle(resources.getString(title));
-                }
-                if (text != 0) {
-                    alert.setHeaderText(resources.getString(text, arguments));
-                }
+                if (title != 0) t = resources.getString(title);
+                if (text  != 0) h = resources.getString(text, arguments);
             }
-            alert.setContentText(message);
-            final DialogPane pane = alert.getDialogPane();
-            pane.setExpandableContent(new ExceptionReporter(exception).trace);
-            pane.setPrefWidth(650);
-            alert.show();
+            show(t, h, exception);
         }
+    }
+
+    /**
+     * Constructs and shows the exception reporter.
+     *
+     * @param title      the window the title, or {@code null} if none.
+     * @param text       the text in the dialog box, or {@code null} if none.
+     * @param exception  the exception to report.
+     */
+    public static void show(final String title, final String text, final Throwable exception) {
+        String message = exception.getLocalizedMessage();
+        if (message == null) {
+            message = Classes.getShortClassName(exception);
+        }
+        final Alert alert = new Alert(Alert.AlertType.ERROR);
+        if (title != null) alert.setTitle(title);
+        if (text  != null) alert.setHeaderText(text);
+        alert.setContentText(message);
+        final DialogPane pane = alert.getDialogPane();
+        pane.setExpandableContent(new ExceptionReporter(exception).trace);
+        pane.setPrefWidth(650);
+        alert.show();
     }
 
     /**

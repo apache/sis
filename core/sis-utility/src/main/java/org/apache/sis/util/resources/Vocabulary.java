@@ -770,6 +770,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Result = 132;
 
         /**
+         * Retry
+         */
+        public static final short Retry = 189;
+
+        /**
          * Root
          */
         public static final short Root = 133;

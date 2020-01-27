@@ -82,6 +82,7 @@ final class GridRow extends IndexedCell<Void> {
         if (skin != null) {
             ((GridRowSkin) skin).setRowIndex(row);
         }
+        updateItem(null, row < 0 || row >= view.getImageHeight());
     }
 
     /**

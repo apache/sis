@@ -179,16 +179,30 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
         if (error == null) {
             error = new GridError();
             getChildren().add(error);
+            computeErrorBounds((Flow) getVirtualFlow());
         }
-        if (error.update(status)) {
-            final double cellHeight = getVirtualFlow().getFixedCellSize();
-            final java.awt.Rectangle area = error.getVisibleArea();
-            positionInArea​(error,
-                    area.x      * cellWidth  + headerWidth,
-                    area.y      * cellHeight + topBackground.getHeight(),
-                    area.width  * cellWidth,
-                    area.height * cellHeight,
-                    0, HPos.CENTER, VPos.CENTER);
+        final java.awt.Rectangle area = error.update(status);
+        if (area != null) {
+            final Flow flow = (Flow) getVirtualFlow();
+            final GridRow firstVisibleRow = area.isEmpty() ? null : flow.getFirstVisibleCell();
+            error.setVisible(firstVisibleRow != null);
+            if (firstVisibleRow != null) {
+                final double cellHeight = flow.getFixedCellSize();
+                final double width  = area.width  * cellWidth;
+                final double height = area.height * cellHeight;
+                layoutInArea​(error,
+                        cellWidth  * (area.x - firstVisibleColumn)         + leftBackground.getWidth(),
+                        cellHeight * (area.y - firstVisibleRow.getIndex()) + topBackground.getHeight(),
+                        width, height, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.CENTER, VPos.CENTER);
+                /*
+                 * If after layout the error message size appears too large for the remaining space, hide it.
+                 * The intent is to avoid having the message and buttons on top of numbers in valid tiles.
+                 * It does not seem to work fully however (some overlaps can still happen).
+                 */
+                if (error.getHeight() > height || error.getWidth() > width) {
+                    error.setVisible(false);
+                }
+            }
         }
     }
 
@@ -395,25 +409,29 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
             int column = firstVisibleColumn;
             for (final Node cell : headerRow) {
                 ((GridCell) cell).setText(view.formatHeaderValue(column++, false));
-                layoutInArea(cell, pos, y, cellWidth, headerHeight, 0, HPos.CENTER, VPos.CENTER);
+                positionInArea(cell, pos, y, cellWidth, headerHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.CENTER, VPos.CENTER);
                 pos += cellWidth;
             }
         }
-        /*
-         * If an error exists somewhere, computes as estimation of the visible region
-         * as zero-based column and row indices. We use an AWT rectangle instead than
-         * JavaFX object because this rectangle will be intersected with AWT rectangle.
-         */
         if (error != null) {
-            final java.awt.Rectangle viewArea = new java.awt.Rectangle();
-            final GridRow firstVisibleRow = flow.getFirstVisibleCell();
-            if (firstVisibleRow != null) {
-                viewArea.x      = firstVisibleColumn;
-                viewArea.y      = firstVisibleRow.getIndex();
-                viewArea.width  = (int) ((flow.getWidth() - headerWidth) / cellWidth);
-                viewArea.height = (int) (flow.getVisibleHeight() / flow.getFixedCellSize());
-            }
-            error.initialize(viewArea);
+            computeErrorBounds(flow);
         }
+    }
+
+    /**
+     * If an error exists somewhere, computes as estimation of the visible region
+     * as zero-based column and row indices. We use an AWT rectangle instead than
+     * JavaFX object because this rectangle will be intersected with AWT rectangle.
+     */
+    private void computeErrorBounds(final Flow flow) {
+        final java.awt.Rectangle viewArea = new java.awt.Rectangle();
+        final GridRow firstVisibleRow = flow.getFirstVisibleCell();
+        if (firstVisibleRow != null) {
+            viewArea.x      = firstVisibleColumn;
+            viewArea.y      = firstVisibleRow.getIndex();
+            viewArea.width  = (int) ((flow.getWidth() - leftBackground.getWidth()) / cellWidth);
+            viewArea.height = (int) (flow.getVisibleHeight() / flow.getFixedCellSize());
+        }
+        error.initialize(viewArea);
     }
 }
