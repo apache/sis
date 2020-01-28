@@ -81,6 +81,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotCreateCRS_1 = 35;
 
         /**
+         * Can not create XML document.
+         */
+        public static final short CanNotCreateXML = 47;
+
+        /**
          * Can not fetch tile ({0}, {1}).
          */
         public static final short CanNotFetchTile_2 = 45;
@@ -104,6 +109,11 @@ public final class Resources extends IndexedResourceBundle {
          * Copy
          */
         public static final short Copy = 31;
+
+        /**
+         * Copy as
+         */
+        public static final short CopyAs = 46;
 
         /**
          * Creation date:
@@ -149,6 +159,11 @@ public final class Resources extends IndexedResourceBundle {
          * Error during data access
          */
         public static final short ErrorDataAccess = 40;
+
+        /**
+         * Error exporting data
+         */
+        public static final short ErrorExportingData = 48;
 
         /**
          * Error opening file

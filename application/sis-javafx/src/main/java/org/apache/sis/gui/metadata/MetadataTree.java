@@ -20,6 +20,10 @@ import java.util.Locale;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.io.StringWriter;
+import javax.xml.bind.JAXBException;
+import javax.xml.transform.stream.StreamResult;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -27,10 +31,18 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableColumn.CellDataFeatures;
+import javafx.scene.control.TreeTableRow;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.InternationalString;
 import org.opengis.util.ControlledVocabulary;
@@ -39,9 +51,14 @@ import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.internal.xml.LegacyNamespaces;
+import org.apache.sis.internal.gui.ExceptionReporter;
+import org.apache.sis.internal.gui.DataFormats;
+import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.xml.XML;
 
 
 /**
@@ -63,8 +80,7 @@ import org.apache.sis.util.iso.Types;
  *       For changing content, use the {@link #contentProperty} instead.</li>
  * </ul>
  *
- * @todo Add contextual menu for saving or copying in clipboard the XML starting from the selected node.
- *       Add contextual menu for showing a node in the summary pane (we would store in memory the path,
+ * @todo Add contextual menu for showing a node in the summary pane (we would store in memory the path,
  *       including sequence number for multi-values property, and apply it to all opened resources).
  *       Add a panel for controlling the number/date/angle format pattern.
  *
@@ -130,6 +146,11 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
     private final Locale dataLocale;
 
     /**
+     * The "copy" and "copy as" localized string, used for contextual menus.
+     */
+    private final String copy, copyAs;
+
+    /**
      * Creates a new initially empty metadata tree.
      */
     public MetadataTree() {
@@ -152,11 +173,16 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
             textLocale = Locale.getDefault(Locale.Category.DISPLAY);
             dataLocale = Locale.getDefault(Locale.Category.FORMAT);
         }
+        final Resources localized = Resources.forLocale(textLocale);
+        copy   = localized.getString(Resources.Keys.Copy);
+        copyAs = localized.getString(Resources.Keys.CopyAs);
+
         contentProperty = new ContentProperty(this);
         nameColumn      = new TreeTableColumn<>(TableColumn.NAME .getHeader().toString(textLocale));
         valueColumn     = new TreeTableColumn<>(TableColumn.VALUE.getHeader().toString(textLocale));
         nameColumn .setCellValueFactory(MetadataTree::getPropertyName);
         valueColumn.setCellValueFactory(MetadataTree::getPropertyValue);
+        setRowFactory(Row::new);
 
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         getColumns().setAll(nameColumn, valueColumn);
@@ -167,21 +193,24 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
     }
 
     /**
+     * Returns the given metadata as a tree table.
+     */
+    private static TreeTable toTree(final Object metadata) {
+        if (metadata instanceof AbstractMetadata) {
+            return ((AbstractMetadata) metadata).asTreeTable();
+        } else {
+            return MetadataStandard.ISO_19115.asTreeTable(metadata, null, ValueExistencePolicy.COMPACT);
+        }
+    }
+
+    /**
      * Sets the metadata to show in this tree table. This method gets a {@link TreeTable} view
      * of the given metadata, then delegates to {@link #setContent(TreeTable)}.
      *
      * @param  metadata  the metadata to show in this tree table view, or {@code null} if none.
      */
     public void setContent(final Metadata metadata) {
-        TreeTable content = null;
-        if (metadata != null) {
-            if (metadata instanceof AbstractMetadata) {
-                content = ((AbstractMetadata) metadata).asTreeTable();
-            } else {
-                content = MetadataStandard.ISO_19115.asTreeTable(metadata, null, ValueExistencePolicy.COMPACT);
-            }
-        }
-        setContent(content);
+        setContent(metadata == null ? null : toTree(metadata));
     }
 
     /**
@@ -231,6 +260,109 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
             root.setExpanded(true);
         }
         s.setRoot(root);
+    }
+
+    /**
+     * A row in a metadata tree view, used for adding contextual menu on a row-by-row basis.
+     */
+    private static final class Row extends TreeTableRow<TreeTable.Node> implements EventHandler<ActionEvent> {
+        /**
+         * The context menu, to be added only if this row is non-empty.
+         */
+        private final ContextMenu menu;
+
+        /**
+         * The menu items for legacy or current XML formats.
+         */
+        private final MenuItem iso1, iso2;
+
+        /**
+         * The menu items for copying in XML formats, to be disabled if we can not do this export.
+         */
+        private final Menu copyAs;
+
+        /**
+         * Creates a new row for the given tree table.
+         */
+        @SuppressWarnings("ThisEscapedInObjectConstruction")
+        Row(final TreeTableView<TreeTable.Node> view) {
+            final MetadataTree md = (MetadataTree) view;
+            final MenuItem copy;
+            copy   = new MenuItem(md.copy);
+            iso1   = new MenuItem("XML — ISO 19139:2007");
+            iso2   = new MenuItem("XML — ISO 19115-3:2016");
+            copyAs = new Menu(md.copyAs, null, iso2, iso1);
+            menu   = new ContextMenu(copy, copyAs);
+            iso1.setOnAction(this);
+            iso2.setOnAction(this);
+            copy.setOnAction(this);
+        }
+
+        /**
+         * Invoked when a new row is selected. This method enable or disable the "copy as" menu
+         * depending on whether or not we can format XML document for currently selected row.
+         */
+        @Override
+        protected void updateItem​(final TreeTable.Node item, final boolean empty) {
+            super.updateItem(item, empty);
+            copyAs.setDisable(empty || getMetadata() == null);
+            setContextMenu(empty ? null : menu);
+        }
+
+        /**
+         * If the currently selected row is a metadata object, returns that object.
+         * Otherwise returns {@code null}.
+         */
+        private Object getMetadata() {
+            final TreeTable.Node node = getItem();
+            if (node != null) {
+                final Object md = node.getUserObject();
+                if (md != null && MetadataStandard.ISO_19115.isMetadata(md.getClass())) {
+                    return md;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Invoked when user requested to copy metadata. The requested format (ISO 19115 versus ISO 19139)
+         * will be determined by comparing the event source with {@link #iso1} and {@link #iso2} menu items.
+         */
+        @Override
+        public void handle(final ActionEvent event) {
+            final ClipboardContent content = new ClipboardContent();
+            final Object md = getMetadata();
+            if (md == null) {
+                final TreeTable.Node node = getItem();
+                if (node != null) {
+                    final Object value = node.getValue(TableColumn.VALUE);
+                    if (value != null) content.putString(value.toString());
+                }
+            } else {
+                final Object source = event.getSource();
+                if (source != iso1 && source != iso2) {
+                    content.putString(toTree(md).toString());
+                } else try {
+                    if (source == iso2) {
+                        final String xml = XML.marshal(md);
+                        content.put(DataFormats.XML, xml);
+                        content.putString(xml);
+                    } else {
+                        final StringWriter output = new StringWriter();
+                        XML.marshal(md, new StreamResult(output),
+                                Collections.singletonMap(XML.METADATA_VERSION, LegacyNamespaces.VERSION_2007));
+                        final String xml = output.toString();
+                        content.put(DataFormats.ISO_19139, xml);
+                        content.putString(xml);
+                    }
+                } catch (JAXBException e) {
+                    final Resources localized = Resources.forLocale(((MetadataTree) getTreeTableView()).textLocale);
+                    ExceptionReporter.show(localized.getString(Resources.Keys.ErrorExportingData),
+                                           localized.getString(Resources.Keys.CanNotCreateXML), e);
+                }
+            }
+            Clipboard.getSystemClipboard().setContent(content);
+        }
     }
 
     /**
