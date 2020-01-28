@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.StringWriter;
-import javax.xml.bind.JAXBException;
 import javax.xml.transform.stream.StreamResult;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.ObjectProperty;
@@ -58,6 +57,7 @@ import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.xml.XML;
 
 
@@ -272,9 +272,9 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
         private final ContextMenu menu;
 
         /**
-         * The menu items for legacy or current XML formats.
+         * The menu items for XML or WKT formats.
          */
-        private final MenuItem iso1, iso2;
+        private final MenuItem copyAsXML, copyAsLegacy, copyAsWKT;
 
         /**
          * The menu items for copying in XML formats, to be disabled if we can not do this export.
@@ -288,14 +288,15 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
         Row(final TreeTableView<TreeTable.Node> view) {
             final MetadataTree md = (MetadataTree) view;
             final MenuItem copy;
-            copy   = new MenuItem(md.copy);
-            iso1   = new MenuItem("XML — ISO 19139:2007");
-            iso2   = new MenuItem("XML — ISO 19115-3:2016");
-            copyAs = new Menu(md.copyAs, null, iso2, iso1);
-            menu   = new ContextMenu(copy, copyAs);
-            iso1.setOnAction(this);
-            iso2.setOnAction(this);
-            copy.setOnAction(this);
+            copy         = new MenuItem(md.copy);
+            copyAsXML    = new MenuItem();
+            copyAsWKT    = new MenuItem("WKT — Well Known Text");
+            copyAsLegacy = new MenuItem("XML — ISO 19139:2007");
+            copyAs       = new Menu(md.copyAs, null, copyAsWKT, copyAsXML, copyAsLegacy);
+            menu         = new ContextMenu(copy, copyAs);
+            copyAsLegacy.setOnAction(this);
+            copyAsXML   .setOnAction(this);
+            copy        .setOnAction(this);
         }
 
         /**
@@ -305,63 +306,74 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
         @Override
         protected void updateItem​(final TreeTable.Node item, final boolean empty) {
             super.updateItem(item, empty);
-            copyAs.setDisable(empty || getMetadata() == null);
+            if (!empty) {
+                boolean disabled = true;
+                final TreeTable.Node node = getItem();
+                if (node != null) {
+                    final Object obj = node.getUserObject();
+                    if (obj != null) {
+                        if (MetadataStandard.ISO_19115.isMetadata(obj.getClass())) {
+                            copyAsXML.setText("XML — ISO 19115-3:2016");
+                            copyAsWKT.setDisable(true);
+                            copyAsLegacy.setDisable(false);
+                            disabled = false;
+                        } else if (obj instanceof IdentifiedObject) {
+                            copyAsXML.setText("GML — Geographic Markup Language");
+                            copyAsWKT.setDisable(false);
+                            copyAsLegacy.setDisable(true);
+                            disabled = false;
+                        }
+                    }
+                }
+                copyAs.setDisable(disabled);
+            }
             setContextMenu(empty ? null : menu);
         }
 
         /**
-         * If the currently selected row is a metadata object, returns that object.
-         * Otherwise returns {@code null}.
-         */
-        private Object getMetadata() {
-            final TreeTable.Node node = getItem();
-            if (node != null) {
-                final Object md = node.getUserObject();
-                if (md != null && MetadataStandard.ISO_19115.isMetadata(md.getClass())) {
-                    return md;
-                }
-            }
-            return null;
-        }
-
-        /**
          * Invoked when user requested to copy metadata. The requested format (ISO 19115 versus ISO 19139)
-         * will be determined by comparing the event source with {@link #iso1} and {@link #iso2} menu items.
+         * will be determined by comparing the event source with {@link #copyAsLegacy} and {@link #copyAsXML}
+         * menu items.
          */
         @Override
         public void handle(final ActionEvent event) {
-            final ClipboardContent content = new ClipboardContent();
-            final Object md = getMetadata();
-            if (md == null) {
-                final TreeTable.Node node = getItem();
-                if (node != null) {
-                    final Object value = node.getValue(TableColumn.VALUE);
-                    if (value != null) content.putString(value.toString());
-                }
-            } else {
-                final Object source = event.getSource();
-                if (source != iso1 && source != iso2) {
-                    content.putString(toTree(md).toString());
-                } else try {
-                    if (source == iso2) {
-                        final String xml = XML.marshal(md);
-                        content.put(DataFormats.XML, xml);
-                        content.putString(xml);
-                    } else {
-                        final StringWriter output = new StringWriter();
-                        XML.marshal(md, new StreamResult(output),
-                                Collections.singletonMap(XML.METADATA_VERSION, LegacyNamespaces.VERSION_2007));
-                        final String xml = output.toString();
-                        content.put(DataFormats.ISO_19139, xml);
-                        content.putString(xml);
+            final TreeTable.Node node = getItem();
+            if (node != null) {
+                final Object obj = node.getUserObject();
+                if (obj != null) {
+                    final Object source = event.getSource();
+                    final ClipboardContent content = new ClipboardContent();
+                    final String text;
+                    try {
+                        if (source == copyAsWKT) {                              // Well Known Text.
+                            final WKTFormat f = new WKTFormat(null, null);
+                            text = f.format(obj);
+                        } else if (source == copyAsXML) {                       // GML or ISO 19115-3:2016.
+                            text = XML.marshal(obj);
+                            content.put(DataFormats.XML, text);
+                        } else if (source == copyAsLegacy) {                    // ISO 19139:2007.
+                            final StringWriter output = new StringWriter();
+                            XML.marshal(obj, new StreamResult(output),
+                                    Collections.singletonMap(XML.METADATA_VERSION, LegacyNamespaces.VERSION_2007));
+                            text = output.toString();
+                            content.put(DataFormats.ISO_19139, text);
+                        } else if (MetadataStandard.ISO_19115.isMetadata(obj.getClass())) {
+                            text = toTree(obj).toString();
+                        } else {
+                            final Object value = node.getValue(TableColumn.VALUE);
+                            if (value == null) return;
+                            text = value.toString();
+                        }
+                    } catch (Exception e) {
+                        final Resources localized = Resources.forLocale(((MetadataTree) getTreeTableView()).textLocale);
+                        ExceptionReporter.show(localized.getString(Resources.Keys.ErrorExportingData),
+                                               localized.getString(Resources.Keys.CanNotCreateXML), e);
+                        return;
                     }
-                } catch (JAXBException e) {
-                    final Resources localized = Resources.forLocale(((MetadataTree) getTreeTableView()).textLocale);
-                    ExceptionReporter.show(localized.getString(Resources.Keys.ErrorExportingData),
-                                           localized.getString(Resources.Keys.CanNotCreateXML), e);
+                    content.putString(text);
+                    Clipboard.getSystemClipboard().setContent(content);
                 }
             }
-            Clipboard.getSystemClipboard().setContent(content);
         }
     }
 
