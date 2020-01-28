@@ -85,8 +85,10 @@ final class GridError extends VBox {
         buttons.setPrefRows(1);
         buttons.setPrefColumns(2);
         buttons.setAlignment(Pos.CENTER);
-        details.setMaxWidth(100);           // Arbitrary limit, width enough for allowing TilePane to resize.
+        details.setMaxWidth(100);               // Arbitrary limit, width enough for allowing TilePane to resize.
         retry  .setMaxWidth(100);
+        details.setFocusTraversable(false);     // For avoiding confusing behavior (would be in random order anyway).
+        retry  .setFocusTraversable(false);
 
         final String t = exception.getLocalizedMessage();
         message = new Label((t == null) ? header : header + System.lineSeparator() + t);

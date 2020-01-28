@@ -18,6 +18,7 @@ package org.apache.sis.image;
 
 import java.awt.Point;
 import java.awt.image.ColorModel;
+import java.awt.image.ImagingOpException;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.RasterFormatException;
@@ -25,6 +26,8 @@ import java.awt.image.SampleModel;
 import java.awt.image.TileObserver;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
 
@@ -92,6 +95,24 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
     private boolean isTileAcquired;
 
     /**
+     * If some tiles should fail randomly, the random number generator to use for deciding if a
+     * {@link #getTile(int, int)} invocation should fail. Note that two consecutive invocations
+     * of {@code getTile(…)} may give different result.
+     *
+     * @see #failRandomly(Random)
+     */
+    private Random randomFailures;
+
+    /**
+     * Sequential number for use in production of error messages, to differentiate them.
+     * Since {@link #getTile(int, int)} may be invoked in background threads, this field
+     * should be safe to concurrent threads.
+     *
+     * @see #failRandomly(Random)
+     */
+    private AtomicInteger errorSequence;
+
+    /**
      * Creates a new tiled image. Testers should invoke {@link #validate()} after construction.
      *
      * @param dataType     sample data type as one of the {@link java.awt.image.DataBuffer} constants.
@@ -157,11 +178,27 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
     }
 
     /**
+     * Causes some {@link #getTile(int, int)} and {@link #getWritableTile(int, int)} calls to fail.
+     * Note that two consecutive invocations of {@code getTile(…)} may give different result.
+     *
+     * @param  random  the random number generator to use for deciding if a tile request should fail.
+     */
+    public void failRandomly(final Random random) {
+        randomFailures = random;
+        errorSequence = new AtomicInteger();
+    }
+
+    /**
      * Sets a sample value at the given location in pixel coordinates.
      * This is a helper method for testing purpose on small images only,
      * since invoking this method in a loop is inefficient.
+     *
+     * @param  x      column index of the pixel to set.
+     * @param  y      row index of the pixel to set.
+     * @param  b      band index of the sample value to set.
+     * @param  value  the new value.
      */
-    final void setSample(final int x, final int y, final int b, final double value) {
+    public void setSample(final int x, final int y, final int b, final double value) {
         final int ox = x - minX;
         final int oy = y - minY;
         if (ox < 0 || ox >= width || oy < 0 || oy >= height) {
@@ -237,6 +274,10 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
             (tileY -= minTileY) < 0 || tileY >= numYTiles)
         {
             throw new IndexOutOfBoundsException();
+        }
+        if (randomFailures != null && randomFailures.nextInt(10) == 0) {
+            throw new ImagingOpException("Artificial error #" + errorSequence.incrementAndGet()
+                                       + " on tile (" + tileX + ", " + tileY + ").");
         }
         final int i = tileY * numXTiles + tileX;
         WritableRaster raster = tiles[i];
