@@ -17,7 +17,6 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Optional;
-import java.util.concurrent.Future;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -105,7 +104,7 @@ public class ImageRequest {
     }
 
     /**
-     * Returns the desired grid extent and resolution, if any.
+     * Returns the desired grid extent and resolution, or an empty value for reading the full domain.
      * This is the {@code domain} argument specified to the following constructor:
      *
      * <blockquote>{@link #ImageRequest(GridCoverageResource, GridGeometry, int[])}</blockquote>
@@ -169,31 +168,12 @@ public class ImageRequest {
      * Sets a new subspace of the grid coverage extent to render. This {@code sliceExtent} argument is not specified
      * to the {@link #ImageRequest(GridCoverageResource, GridGeometry, int[])} constructor because when reading data
      * from a {@link GridCoverageResource}, a slicing can already be done by the {@link GridGeometry} {@code domain}
-     * argument. However in the following scenario, it may be useful to specify both the {@code domain} and the
-     * {@code sliceExtent}:
-     *
-     * <ol>
-     *   <li>A {@link GridCoverageResource} is read with more data than what we want to show at first.</li>
-     *   <li>A subset of loaded data is shown (this is the purpose of {@code sliceExtent}).</li>
-     *   <li>The full coverage is obtained by a call to {@link #getCoverage()} for performing other operations on it.</li>
-     * </ol>
-     *
-     * That setter method make such scenario possible.
+     * argument. This method is provided for the rare cases where it may be useful to specify both the {@code domain}
+     * and the {@code sliceExtent}.
      *
      * @param  sliceExtent  subspace of the grid coverage extent to render.
      */
     public void setSliceExtent(final GridExtent sliceExtent) {
         this.sliceExtent = sliceExtent;
-    }
-
-    /**
-     * Provides the grid coverage when it become available. If the grid coverage was specified at construction time,
-     * then a call to {@link Future#get()} will return it immediately. Otherwise that getter method will block until
-     * the read operation completed.
-     *
-     * @return the grid coverage.
-     */
-    public Future<GridCoverage> getCoverage() {
-        throw new UnsupportedOperationException();  // TODO
     }
 }

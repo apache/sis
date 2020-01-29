@@ -49,28 +49,12 @@ final class ImageLoader extends Task<RenderedImage> {
     private final ImageRequest request;
 
     /**
-     * The grid coverage obtained from the resource.
-     */
-    private volatile GridCoverage coverage;
-
-    /**
      * Creates a new task for loading an image from the specified resource.
      *
      * @param  request  source of the image to load.
      */
     ImageLoader(final ImageRequest request) {
         this.request = request;
-        coverage = request.coverage;
-    }
-
-    /**
-     * Returns the grid coverage loaded by this method.
-     * This method can be invoked from any thread.
-     *
-     * @return the coverage, or {@code null} if none.
-     */
-    final GridCoverage getCoverage() {
-        return coverage;
     }
 
     /**
@@ -83,11 +67,11 @@ final class ImageLoader extends Task<RenderedImage> {
      */
     @Override
     protected RenderedImage call() throws DataStoreException {
-        GridCoverage cv = coverage;
+        GridCoverage cv = request.coverage;
         if (cv == null) {
             final GridGeometry domain = request.getDomain().orElse(null);
             final int[]        range  = request.getRange() .orElse(null);
-            coverage = cv = request.resource.read(domain, range);       // May be long to execute.
+            request.coverage = cv = request.resource.read(domain, range);                  // May be long to execute.
         }
         if (isCancelled()) {
             return null;
