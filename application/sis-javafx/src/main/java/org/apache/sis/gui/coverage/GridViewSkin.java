@@ -339,7 +339,6 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
         final double  headerHeight = flow.getFixedCellSize() + 2*cellSpacing;
         final double  dataY        = y + headerHeight;
         final double  dataHeight   = height - headerHeight;
-        final boolean resized      = (flow.getWidth() != width) || (flow.getHeight() != dataHeight);
         flow.resizeRelocate(x, dataY, width, dataHeight);
         /*
          * Recompute all values which will be needed by GridRowSkin. They are mostly information about
@@ -374,11 +373,10 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
          * detected (in which case values changed), or because the view size changed (in which case cells
          * may need to be added or removed).
          */
-        if (resized || oldPos != leftPosition) {
-            layoutInArea(headerRow, x, y, width, headerHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.LEFT, VPos.TOP);
-            final ObservableList<Node> children = headerRow.getChildren();
-            final int count   = children.size();
-            final int missing = (int) Math.ceil((width - headerWidth) / cellWidth) - count;
+        final ObservableList<Node> children = headerRow.getChildren();
+        final int count   = children.size();
+        final int missing = (int) Math.ceil((width - headerWidth) / cellWidth) - count;
+        if (missing != 0 || oldPos != leftPosition) {
             if (missing != 0) {
                 if (missing < 0) {
                     children.remove(missing + count, count);        // Too many children. Remove the extra ones.
@@ -392,6 +390,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
                     }
                     children.addAll(more);             // Single addAll(…) operation for sending only one event.
                 }
+                layoutInArea(headerRow, x, y, width, headerHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.LEFT, VPos.TOP);
             }
             double pos = x + headerWidth;
             int column = firstVisibleColumn;
