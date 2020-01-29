@@ -748,14 +748,12 @@ public class GridExtent implements GridEnvelope, Serializable {
                 }
             }
         }
-        final int missing = s - count;
-        if (missing != 0) {
-            System.arraycopy(selected, 0, selected, missing, count);
-            count = 0;
-            for (int i=0; ; i++) {                          // An IndexOutOfBoundsException would be a bug in our algorithm.
+        if (s != count) {
+            for (int i=0; ; i++) {
+                // An IndexOutOfBoundsException would be a bug in our algorithm.
                 if (coordinates[i] == coordinates[i+m]) {
                     selected[count++] = i;
-                    if (count == missing) break;
+                    if (count == s) break;
                 }
             }
             Arrays.sort(selected);
