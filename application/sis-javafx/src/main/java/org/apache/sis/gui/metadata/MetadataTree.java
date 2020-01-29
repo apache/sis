@@ -291,7 +291,7 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
             copy         = new MenuItem(md.copy);
             copyAsXML    = new MenuItem();
             copyAsWKT    = new MenuItem("WKT — Well Known Text");
-            copyAsLegacy = new MenuItem("XML — ISO 19139:2007");
+            copyAsLegacy = new MenuItem("XML — Metadata (2007)");
             copyAs       = new Menu(md.copyAs, null, copyAsWKT, copyAsXML, copyAsLegacy);
             menu         = new ContextMenu(copy, copyAs);
             copyAsLegacy.setOnAction(this);
@@ -313,12 +313,12 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
                     final Object obj = node.getUserObject();
                     if (obj != null) {
                         if (MetadataStandard.ISO_19115.isMetadata(obj.getClass())) {
-                            copyAsXML.setText("XML — ISO 19115-3:2016");
+                            copyAsXML.setText("XML — Metadata (2016)");
                             copyAsWKT.setDisable(true);
                             copyAsLegacy.setDisable(false);
                             disabled = false;
                         } else if (obj instanceof IdentifiedObject) {
-                            copyAsXML.setText("GML — Geographic Markup Language");
+                            copyAsXML.setText("XML — Geographic Markup Language");
                             copyAsWKT.setDisable(false);
                             copyAsLegacy.setDisable(true);
                             disabled = false;

@@ -28,6 +28,8 @@ import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.control.skin.VirtualContainerBase;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Font;
 
 
 /**
@@ -382,8 +384,11 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
                     children.remove(missing + count, count);        // Too many children. Remove the extra ones.
                 } else {
                     final GridCell[] more = new GridCell[missing];
+                    final Font font = Font.font(null, FontWeight.BOLD, -1);
                     for (int i=0; i<missing; i++) {
-                        more[i] = new GridCell();
+                        final GridCell cell = new GridCell();
+                        cell.setFont(font);
+                        more[i] = cell;
                     }
                     children.addAll(more);             // Single addAll(…) operation for sending only one event.
                 }
@@ -392,7 +397,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
             int column = firstVisibleColumn;
             for (final Node cell : children) {
                 ((GridCell) cell).setText(view.formatHeaderValue(column++, false));
-                layoutInArea(cell, pos, y, cellWidth, headerHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.CENTER, VPos.CENTER);
+                layoutInArea(cell, pos, y, cellWidth, headerHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.RIGHT, VPos.CENTER);
                 pos += cellWidth;
             }
         }

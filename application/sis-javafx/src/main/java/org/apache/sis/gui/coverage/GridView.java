@@ -31,12 +31,14 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.internal.gui.BackgroundThreads;
 
 
 /**
@@ -46,8 +48,8 @@ import org.apache.sis.coverage.grid.GridCoverage;
  * dimension).
  *
  * <p>This class is designed for large images, with tiles loaded in a background thread only when first needed.
- * For matrices of relatively small size (e.g. less than 100 columns), consider using the standard JavaFX
- * {@link javafx.scene.control.TableView} instead.</p>
+ * This is not a general purpose grid viewer; for matrices of relatively small size (e.g. less than 100 columns),
+ * consider using the standard JavaFX {@link javafx.scene.control.TableView} instead.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -67,6 +69,13 @@ public class GridView extends Control {
      * The string value for sample values that are out of image bounds.
      */
     static final String OUT_OF_BOUNDS = "";
+
+    /**
+     * If a loading is in progress, the loading process. Otherwise {@code null}.
+     *
+     * @see #coverageDefined(WorkerStateEvent)
+     */
+    private ImageLoader loader;
 
     /**
      * The data shown in this table. Note that setting this property to a non-null value may not
@@ -225,12 +234,13 @@ public class GridView extends Control {
         tileHeight       = 1;       // For avoiding division by zero.
 
         setMinSize(120, 40);        // 2 cells on each dimension.
-        imageProperty.addListener(this::startImageLoading);
+        imageProperty.addListener(this::imageDefined);
         // Other listeners registered by GridViewSkin.Flow.
     }
 
     /**
      * Returns the source of sample values for this table.
+     * This method, like all other methods in this class, shall be invoked from the JavaFX thread.
      *
      * @return the image shown in this table, or {@code null} if none.
      *
@@ -241,12 +251,9 @@ public class GridView extends Control {
     }
 
     /**
-     * Sets the image to show in this table. This method loads an arbitrary amount of tiles
-     * in a background thread. It does not load all tiles if the image is large, unless the
-     * user scroll over all tiles.
-     *
-     * <p><b>Note:</b> the table content may appear unmodified after this method returns.
-     * The modifications will appear at an undetermined amount of time later.</p>
+     * Sets the image to show in this table.
+     * This method shall be invoked from JavaFX thread and returns quickly; it does not attempt to fetch any tile.
+     * Calls to {@link RenderedImage#getTile(int, int)} will be done in a background thread when first needed.
      *
      * @param  image  the image to show in this table, or {@code null} if none.
      *
@@ -254,6 +261,27 @@ public class GridView extends Control {
      */
     public final void setImage(final RenderedImage image) {
         imageProperty.set(image);
+    }
+
+    /**
+     * Loads image in a background thread from the given source.
+     * This method shall be invoked from JavaFX thread and returns immediately.
+     * The grid content may appear unmodified after this method returns;
+     * the modifications will appear after an undetermined amount of time.
+     *
+     * @param  source  the coverage or resource to load, or {@code null} if none.
+     */
+    public void setImage(final ImageRequest source) {
+        if (source == null) {
+            setImage((RenderedImage) null);
+        } else {
+            if (loader != null) {
+                loader.cancel();
+            }
+            loader = new ImageLoader(source);
+            loader.setOnSucceeded(this::coverageDefined);
+            BackgroundThreads.execute(loader);
+        }
     }
 
     /**
@@ -286,6 +314,15 @@ public class GridView extends Control {
     }
 
     /**
+     * Invoked in JavaFX thread after {@link #loader} completed its task successfully.
+     */
+    private void coverageDefined(final WorkerStateEvent event) {
+        final ImageLoader result = loader;
+        loader = null;
+        setImage(result.getValue());
+    }
+
+    /**
      * Invoked (indirectly) when the user sets a new {@link RenderedImage}.
      * See {@link #setImage(RenderedImage)} for method description.
      *
@@ -294,9 +331,13 @@ public class GridView extends Control {
      * @param  image     the new image to show. May be {@code null}.
      * @throws ArithmeticException if the "tile grid x/y offset" property is too large.
      */
-    private void startImageLoading(final ObservableValue<? extends RenderedImage> property,
-                                   final RenderedImage previous, final RenderedImage image)
+    private void imageDefined(final ObservableValue<? extends RenderedImage> property,
+                              final RenderedImage previous, final RenderedImage image)
     {
+        if (loader != null) {
+            loader.cancel();
+            loader = null;
+        }
         tiles.clear();          // Let garbage collector dispose the rasters.
         lastTile = null;
         width    = 0;
@@ -332,8 +373,8 @@ public class GridView extends Control {
                 cellFormat.setMaximumFractionDigits(1);
             }
             formatChanged(false);
-            contentChanged(true);
         }
+        contentChanged(true);
     }
 
     /**

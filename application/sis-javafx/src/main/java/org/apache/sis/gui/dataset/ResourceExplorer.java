@@ -19,6 +19,7 @@ package org.apache.sis.gui.dataset;
 import java.util.Collection;
 import javafx.collections.ListChangeListener;
 import javafx.scene.layout.Region;
+import javafx.scene.control.Control;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
@@ -28,7 +29,10 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.gui.metadata.MetadataSummary;
 import org.apache.sis.gui.metadata.MetadataTree;
+import org.apache.sis.gui.coverage.GridView;
+import org.apache.sis.gui.coverage.ImageRequest;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.storage.GridCoverageResource;
 
 
 /**
@@ -47,9 +51,20 @@ public class ResourceExplorer extends WindowManager {
     private final ResourceTree resources;
 
     /**
-     * The data as a table.
+     * The tab where to show {@link #features} or {@link #coverage},
+     * depending on the kind of resource.
      */
-    private final FeatureTable features;
+    private final Tab dataTab;
+
+    /**
+     * The data as a table, created when first needed.
+     */
+    private FeatureTable features;
+
+    /**
+     * The data as a grid coverage, created when first needed.
+     */
+    private GridView coverage;
 
     /**
      * The widget showing metadata about a selected resource.
@@ -70,11 +85,10 @@ public class ResourceExplorer extends WindowManager {
     public ResourceExplorer() {
         resources = new ResourceTree();
         metadata  = new MetadataSummary();
-        features  = new FeatureTable();
         content   = new SplitPane();
 
         final Resources localized = localized();
-        final Tab dataTab = new Tab(localized.getString(Resources.Keys.Data), features);
+        dataTab = new Tab(localized.getString(Resources.Keys.Data));
         dataTab.setContextMenu(new ContextMenu(createNewWindowMenu()));
         final TabPane tabs = new TabPane(
             new Tab(localized.getString(Resources.Keys.Summary),  metadata.getView()), dataTab,
@@ -143,10 +157,31 @@ public class ResourceExplorer extends WindowManager {
                 if (resource != null) break;
             }
         }
-        final FeatureSet data = (resource instanceof FeatureSet) ? (FeatureSet) resource : null;
+        Control      view  = null;
+        FeatureSet   table = null;
+        ImageRequest grid  = null;
+        if (resource instanceof GridCoverageResource) {
+            grid = new ImageRequest((GridCoverageResource) resource, null, null);
+            if (coverage == null) {
+                coverage = new GridView();
+            }
+            view = coverage;
+        } else if (resource instanceof FeatureSet) {
+            table = (FeatureSet) resource;
+            if (features == null) {
+                features = new FeatureTable();
+            }
+            view = features;
+        }
+        /*
+         * At least one of `grid` or `table` will be null. Invoking the following
+         * setter methods with a null argument will release memory.
+         */
+        if (coverage != null) coverage.setImage(grid);
+        if (features != null) features.setFeatures(table);
+        dataTab.setContent(view);
         metadata.setMetadata(resource);
-        features.setFeatures(data);
-        setNewWindowDisabled(data == null);
+        setNewWindowDisabled(view == null);
     }
 
     /**
