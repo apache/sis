@@ -50,10 +50,10 @@ import javafx.scene.shape.Rectangle;
  */
 final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
     /**
-     * The cells that we put in the header row on the top of the view. This list is initially empty;
+     * The cells that we put in the header row on the top of the view. The children list is initially empty;
      * new elements are added or removed when first needed and when the view size changed.
      */
-    private final ObservableList<Node> headerRow;
+    private final HBox headerRow;
 
     /**
      * Background of the header row (top side) and header column (left side) of the view.
@@ -119,8 +119,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
      */
     GridViewSkin(final GridView view) {
         super(view);
-        final HBox header = new HBox();
-        headerRow = header.getChildren();
+        headerRow = new HBox();
         /*
          * Main content where sample values will be shown.
          */
@@ -143,7 +142,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
          * The list of children is initially empty. We need to
          * add the virtual flow, otherwise nothing will appear.
          */
-        getChildren().addAll(topBackground, leftBackground, header, flow);
+        getChildren().addAll(topBackground, leftBackground, headerRow, flow);
     }
 
     /**
@@ -374,24 +373,26 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
          * may need to be added or removed).
          */
         if (resized || oldPos != leftPosition) {
-            final int count   = headerRow.size();
+            layoutInArea(headerRow, x, y, width, headerHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.LEFT, VPos.TOP);
+            final ObservableList<Node> children = headerRow.getChildren();
+            final int count   = children.size();
             final int missing = (int) Math.ceil((width - headerWidth) / cellWidth) - count;
             if (missing != 0) {
                 if (missing < 0) {
-                    headerRow.remove(missing + count, count);       // Too many children. Remove the extra ones.
+                    children.remove(missing + count, count);        // Too many children. Remove the extra ones.
                 } else {
                     final GridCell[] more = new GridCell[missing];
                     for (int i=0; i<missing; i++) {
                         more[i] = new GridCell();
                     }
-                    headerRow.addAll(more);             // Single addAll(…) operation for sending only one event.
+                    children.addAll(more);             // Single addAll(…) operation for sending only one event.
                 }
             }
             double pos = x + headerWidth;
             int column = firstVisibleColumn;
-            for (final Node cell : headerRow) {
+            for (final Node cell : children) {
                 ((GridCell) cell).setText(view.formatHeaderValue(column++, false));
-                positionInArea(cell, pos, y, cellWidth, headerHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.CENTER, VPos.CENTER);
+                layoutInArea(cell, pos, y, cellWidth, headerHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.CENTER, VPos.CENTER);
                 pos += cellWidth;
             }
         }
