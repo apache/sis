@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
@@ -29,6 +30,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
@@ -148,6 +150,23 @@ public abstract class GridCoverage {
      */
     public List<SampleDimension> getSampleDimensions() {
         return UnmodifiableArrayList.wrap(sampleDimensions);
+    }
+
+    /**
+     * Returns the range of values in each sample dimension, or {@code null} if none.
+     */
+    final NumberRange<?>[] getRanges() {
+        NumberRange<?>[] ranges = null;
+        for (int i=0; i<sampleDimensions.length; i++) {
+            final Optional<NumberRange<?>> r = sampleDimensions[i].getSampleRange();
+            if (r.isPresent()) {
+                if (ranges == null) {
+                    ranges = new NumberRange<?>[sampleDimensions.length];
+                }
+                ranges[i] = r.get();
+            }
+        }
+        return ranges;
     }
 
     /**

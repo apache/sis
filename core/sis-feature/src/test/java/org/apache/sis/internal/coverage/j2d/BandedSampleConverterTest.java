@@ -70,7 +70,7 @@ public final strictfp class BandedSampleConverterTest extends TestCase {
                 random.nextInt(20) - 10);       // minTileY
         source.validate();
         source.initializeAllTiles(0);
-        image = BandedSampleConverter.create(source, null, targetType, null,
+        image = BandedSampleConverter.create(source, null, targetType, null, null,
                 (MathTransform1D) MathTransforms.linear(scale, 0));
     }
 

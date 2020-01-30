@@ -50,12 +50,20 @@ final class ImageLoader extends Task<RenderedImage> {
     private final ImageRequest request;
 
     /**
+     * Whether the caller wants a grid coverage that contains real values or sample values.
+     */
+    private final boolean converted;
+
+    /**
      * Creates a new task for loading an image from the specified resource.
      *
-     * @param  request  source of the image to load.
+     * @param  request    source of the image to load.
+     * @param  converted  {@code true} for a coverage containing converted values,
+     *                    or {@code false} for a coverage containing packed values.
      */
-    ImageLoader(final ImageRequest request) {
-        this.request = request;
+    ImageLoader(final ImageRequest request, final boolean converted) {
+        this.request   = request;
+        this.converted = converted;
     }
 
     /**
@@ -106,7 +114,9 @@ final class ImageLoader extends Task<RenderedImage> {
                  * See ImageRequest.setOverviewSize(int).
                  */
             }
-            request.coverage = cv = request.resource.read(domain, range);   // May be long to execute.
+            cv = request.resource.read(domain, range);                      // May be long to execute.
+            cv = cv.forConvertedValues(converted);
+            request.coverage = cv;
         }
         if (isCancelled()) {
             return null;

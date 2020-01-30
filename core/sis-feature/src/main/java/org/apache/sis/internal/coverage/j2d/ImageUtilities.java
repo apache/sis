@@ -109,6 +109,20 @@ public final class ImageUtilities extends Static {
     }
 
     /**
+     * Returns the data type of the given image.
+     *
+     * @param  image  the image for which to get the data type, or {@code null}.
+     * @return the data type, or {@link DataBuffer#TYPE_UNDEFINED} if unknown.
+     */
+    public static int getDataType(final RenderedImage image) {
+        if (image != null) {
+            final SampleModel sm = image.getSampleModel();
+            if (sm != null) return sm.getDataType();            // Should never be null, but we are paranoiac.
+        }
+        return DataBuffer.TYPE_UNDEFINED;
+    }
+
+    /**
      * Returns the data type of the given raster.
      *
      * @param  raster  the raster for which to get the data type, or {@code null}.

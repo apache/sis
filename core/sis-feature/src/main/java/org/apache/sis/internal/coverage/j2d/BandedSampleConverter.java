@@ -24,6 +24,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
 import java.awt.image.TileObserver;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
@@ -32,6 +33,7 @@ import org.apache.sis.image.ComputedImage;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.measure.NumberRange;
 
 
 /**
@@ -70,19 +72,70 @@ public class BandedSampleConverter extends ComputedImage {
     private final ColorModel colorModel;
 
     /**
+     * The sample resolutions, or {@code null} if unknown.
+     */
+    private final double[] sampleResolutions;
+
+    /**
      * Creates a new image which will compute values using the given converters.
      *
      * @param  source       the image for which to convert sample values.
      * @param  sampleModel  the sample model shared by all tiles in this image.
-     * @param  colorModel   the color model for from the expected range of values, or {@code null}.
+     * @param  colorModel   the color model for the expected range of values, or {@code null}.
+     * @param  ranges       the expected range of values for each band, or {@code null} if unknown.
      * @param  converters   the transfer functions to apply on each band of the source image.
      */
     private BandedSampleConverter(final RenderedImage source,  final BandedSampleModel sampleModel,
-                                  final ColorModel colorModel, final MathTransform1D[] converters)
+                                  final ColorModel colorModel, final NumberRange<?>[] ranges,
+                                  final MathTransform1D[] converters)
     {
         super(sampleModel, source);
         this.colorModel = colorModel;
         this.converters = converters;
+        /*
+         * Get an estimation of the resolution, arbitrarily looking in the middle of the range of values.
+         * If the converters are linear (which is the most common case), the middle value does not matter
+         * except if it falls on a "no data" value.
+         */
+        boolean hasResolutions = false;
+        final double[] resolutions = new double[converters.length];
+        for (int i=0; i<resolutions.length; i++) {
+            /*
+             * Get the sample value in the middle of the range of valid values for the current band.
+             * If no range was explicitly given, use the approximate average of all possible values.
+             */
+            double middle = Double.NaN;
+            if (ranges != null) {
+                final NumberRange<?> range = ranges[i];
+                if (range != null) {
+                    middle = (range.getMinDouble() + range.getMaxDouble()) / 2;
+                }
+            }
+            if (!Double.isFinite(middle)) {
+                switch (ImageUtilities.getDataType(source)) {
+                    default:                     middle = 0;      break;
+                    case DataBuffer.TYPE_BYTE:   middle = 0x80;   break;
+                    case DataBuffer.TYPE_USHORT: middle = 0x8000; break;
+                }
+            }
+            /*
+             * Get the derivative in the middle value, which is constant everywhere
+             * in the common case of a linear transform.
+             */
+            final MathTransform1D c = converters[i];
+            double r;
+            try {
+                r = c.derivative(middle);
+                if (!Double.isFinite(r)) {
+                    r = c.derivative(1);                // Second attempt if the middle value didn't work.
+                }
+            } catch (TransformException e) {
+                r = Double.NaN;
+            }
+            resolutions[i] = r;
+            hasResolutions |= Double.isFinite(r);
+        }
+        sampleResolutions = hasResolutions ? resolutions : null;
     }
 
     /**
@@ -93,13 +146,14 @@ public class BandedSampleConverter extends ComputedImage {
      * @param  source      the image for which to convert sample values.
      * @param  layout      object to use for computing tile size, or {@code null} for the default.
      * @param  targetType  the type of this image resulting from conversion of given image.
-     * @param  colorModel  the color model for from the expected range of values, or {@code null}.
+     * @param  colorModel  the color model for the expected range of values, or {@code null}.
+     * @param  ranges      the expected range of values for each band, or {@code null} if unknown.
      * @param  converters  the transfer functions to apply on each band of the source image.
      * @return the image which compute converted values from the given source.
      */
     public static BandedSampleConverter create(final RenderedImage source, ImageLayout layout,
-                                               final int targetType, final ColorModel colorModel,
-                                               final MathTransform1D... converters)
+            final int targetType, final ColorModel colorModel, final NumberRange<?>[] ranges,
+            final MathTransform1D... converters)
     {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("converters", converters);
@@ -122,11 +176,36 @@ public class BandedSampleConverter extends ComputedImage {
             for (int i=0; i<numBands; i++) {
                 inverses[i] = converters[i].inverse();
             }
-            return new Writable((WritableRenderedImage) source, sampleModel, colorModel, converters, inverses);
+            return new Writable((WritableRenderedImage) source, sampleModel, colorModel, ranges, converters, inverses);
         } catch (NoninvertibleTransformException e) {
             Logging.recoverableException(Logging.getLogger(Modules.RASTER), BandedSampleConverter.class, "create", e);
         }
-        return new BandedSampleConverter(source, sampleModel, colorModel, converters);
+        return new BandedSampleConverter(source, sampleModel, colorModel, ranges, converters);
+    }
+
+    /**
+     * Gets a property from this image. Current implementation recognizes:
+     * {@value #SAMPLE_RESOLUTIONS_KEY}.
+     */
+    @Override
+    public Object getProperty(final String key) {
+        if (SAMPLE_RESOLUTIONS_KEY.equals(key) && sampleResolutions != null) {
+            return sampleResolutions.clone();
+        }
+        return super.getProperty(key);
+    }
+
+    /**
+     * Returns the names of all recognized properties, or {@code null} if this image has no properties.
+     */
+    @Override
+    public String[] getPropertyNames() {
+        if (sampleResolutions != null) {
+            return new String[] {
+                SAMPLE_RESOLUTIONS_KEY
+            };
+        }
+        return super.getPropertyNames();
     }
 
     /**
@@ -250,9 +329,10 @@ public class BandedSampleConverter extends ComputedImage {
          * Creates a new writable image which will compute values using the given converters.
          */
         Writable(final WritableRenderedImage source,  final BandedSampleModel sampleModel,
-                 final ColorModel colorModel, final MathTransform1D[] converters, final MathTransform1D[] inverses)
+                 final ColorModel colorModel, final NumberRange<?>[] ranges,
+                 final MathTransform1D[] converters, final MathTransform1D[] inverses)
         {
-            super(source, sampleModel, colorModel, converters);
+            super(source, sampleModel, colorModel, ranges, converters);
             this.inverses = inverses;
         }
 

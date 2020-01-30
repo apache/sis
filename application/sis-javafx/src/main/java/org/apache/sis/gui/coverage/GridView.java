@@ -16,7 +16,9 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.lang.reflect.Array;
 import java.text.NumberFormat;
+import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
@@ -36,7 +38,11 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.image.PlanarImage;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.gui.BackgroundThreads;
 
@@ -55,6 +61,8 @@ import org.apache.sis.internal.gui.BackgroundThreads;
  * @version 1.1
  * @since   1.1
  * @module
+ *
+ * @todo Allow users to specify a {@link NumberFormat} pattern for writing sample values.
  */
 @DefaultProperty("image")
 public class GridView extends Control {
@@ -175,6 +183,18 @@ public class GridView extends Control {
      */
     public final ObjectProperty<Paint> headerBackground;
 
+
+    // ════ All fields below are for the formatting of sample values as text. ════════════════════════
+
+
+    /**
+     * The "classic" number format pattern (as opposed to scientific notation). This is non-null only after
+     * {@link #cellFormat} switched to scientific notation and is used for switching back to classic notation.
+     * This is a workaround for the absence of `DecimalFormat.useScientificNotation(boolean)` method.
+     */
+    @Workaround(library="JDK", version="13")
+    private String classicFormatPattern;
+
     /**
      * The formatter to use for writing header values (row and column numbers) or the sample values.
      */
@@ -235,6 +255,7 @@ public class GridView extends Control {
 
         setMinSize(120, 40);        // 2 cells on each dimension.
         imageProperty.addListener(this::imageDefined);
+        bandProperty .addListener(this::bandDefined);
         // Other listeners registered by GridViewSkin.Flow.
     }
 
@@ -278,7 +299,7 @@ public class GridView extends Control {
             if (loader != null) {
                 loader.cancel();
             }
-            loader = new ImageLoader(source);
+            loader = new ImageLoader(source, true);
             loader.setOnSucceeded(this::coverageDefined);
             BackgroundThreads.execute(loader);
         }
@@ -324,7 +345,7 @@ public class GridView extends Control {
 
     /**
      * Invoked (indirectly) when the user sets a new {@link RenderedImage}.
-     * See {@link #setImage(RenderedImage)} for method description.
+     * See {@link #setImage(RenderedImage)} for more description.
      *
      * @param  property  the {@link #imageProperty} (ignored).
      * @param  previous  the previous image (ignored).
@@ -362,33 +383,67 @@ public class GridView extends Control {
                 final int dataType = sm.getDataType();
                 dataTypeisInteger = (dataType >= DataBuffer.TYPE_BYTE && dataType <= DataBuffer.TYPE_INT);
             }
-            if (dataTypeisInteger) {
-                cellFormat.setMaximumFractionDigits(0);
-            } else {
-                /*
-                 * TODO: compute the number of fraction digits from a "sampleResolution" image property
-                 * (of type float[] or double[]) if present. Provide a widget allowing user to set pattern.
-                 */
-                cellFormat.setMinimumFractionDigits(1);
-                cellFormat.setMaximumFractionDigits(1);
-            }
-            formatChanged(false);
+            configureCellFormat(image, bandProperty.getValue());
         }
         contentChanged(true);
     }
 
     /**
-     * Invoked when the {@link #cellFormat} configuration changed.
+     * Invoked (indirectly) when the user selects a new band.
+     * See {@link #setBand(int)} for more description.
      *
-     * @param  notify  whether to notify the renderer about the change. Can be {@code false}
-     *                 if the renderer is going to be notified anyway by another method call.
+     * @param  property  the {@link #bandProperty} (ignored).
+     * @param  previous  the previous band index (ignored).
+     * @param  band      index of the new band to show.
      */
-    private void formatChanged(final boolean notify) {
+    private void bandDefined(final ObservableValue<? extends Number> property,
+                             final Number previous, final Number band)
+    {
+        configureCellFormat(getImage(), band.intValue());
+        contentChanged(false);
+    }
+
+    /**
+     * Invoked when the {@link #cellFormat} configuration needs to be updated.
+     * Callers should invoke {@link #contentChanged(boolean)} after this method.
+     *
+     * @param  image  the source image (shall be non-null).
+     * @param  band   index of the band to show in this grid view.
+     */
+    private void configureCellFormat(final RenderedImage image, final int band) {
+        if (dataTypeisInteger) {
+            cellFormat.setMaximumFractionDigits(0);
+        } else {
+            int n = 1;          // Default value if we can not determine the number of fraction digits.
+            final Object property = image.getProperty(PlanarImage.SAMPLE_RESOLUTIONS_KEY);
+            if (property != null) {
+                final int c = Numbers.getEnumConstant(property.getClass().getComponentType());
+                if (c >= Numbers.BYTE && c <= Numbers.BIG_DECIMAL && band < Array.getLength(property)) {
+                    final double resolution = Math.abs(((Number) Array.get(property, band)).doubleValue());
+                    if (resolution > 0 && resolution <= Double.MAX_VALUE) {     // Non-zero, non-NaN and finite.
+                        n = DecimalFunctions.fractionDigitsForDelta(resolution, false);
+                        if (n > 6 || n < -9) {      // Arbitrary threshold for switching to scientific notation.
+                            if (cellFormat instanceof DecimalFormat) {
+                                if (classicFormatPattern == null) {
+                                    final DecimalFormat df = (DecimalFormat) cellFormat;
+                                    classicFormatPattern = df.toPattern();
+                                    df.applyPattern("0.###E00");
+                                }
+                                n = 3;
+                            }
+                        } else if (classicFormatPattern != null) {
+                            ((DecimalFormat) cellFormat).applyPattern(classicFormatPattern);
+                            classicFormatPattern = null;
+                        }
+                        if (n < 0) n = 0;
+                    }
+                }
+            }
+            cellFormat.setMinimumFractionDigits(n);
+            cellFormat.setMaximumFractionDigits(n);
+        }
         buffer.setLength(0);
         lastValueAsText = cellFormat.format(lastValue, buffer, formatField).toString();
-        if (notify) {
-            contentChanged(false);
-        }
     }
 
     /**
@@ -515,7 +570,11 @@ public class GridView extends Control {
         } else {
             final double value = tile.getSampleDouble(x, y, b);
             if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(lastValue)) {
-                lastValueAsText = cellFormat.format(value, buffer, formatField).toString();
+                if (Double.isNaN(value)) {
+                    lastValueAsText = "⬚";
+                } else {
+                    lastValueAsText = cellFormat.format(value, buffer, formatField).toString();
+                }
                 lastValue = value;
             }
         }

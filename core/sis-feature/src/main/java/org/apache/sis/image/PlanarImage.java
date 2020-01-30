@@ -105,6 +105,18 @@ import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
  */
 public abstract class PlanarImage implements RenderedImage {
     /**
+     * Key of a property defining the resolutions of sample values in each band. This property is recommended
+     * for images having sample values as floating point numbers. For example if sample values were computed by
+     * <var>value</var> = <var>integer</var> × <var>scale factor</var>, then the resolution is the scale factor.
+     * This information is used for choosing the number of fraction digits to show when writing sample values in
+     * text format.
+     *
+     * <p>Values should be instances of {@code float[]} or {@code double[]}.
+     * The array length should be the number of bands.</p>
+     */
+    public static final String SAMPLE_RESOLUTIONS_KEY = "SampleResolution";
+
+    /**
      * Creates a new rendered image.
      */
     protected PlanarImage() {
@@ -128,15 +140,22 @@ public abstract class PlanarImage implements RenderedImage {
 
     /**
      * Gets a property from this image.
+     * The property to get is identified by the specified key. Some keys supported by Apache SIS are:
+     *
+     * <table class="sis">
+     *   <caption>Recognized property keys</caption>
+     *   <tr><th>Keys</th>                             <th>Values</th></tr>
+     *   <tr><td>{@value #SAMPLE_RESOLUTIONS_KEY}</td> <td>Resolutions of sample values in each band.</td></tr>
+     * </table>
+     *
      * This method returns {@link Image#UndefinedProperty} if the specified property is not defined.
+     * The default implementation returns {@link Image#UndefinedProperty} in all cases.
      *
-     * <p>The default implementation returns {@link Image#UndefinedProperty} in all cases.</p>
-     *
-     * @param  name  the name of the property to get.
+     * @param  key  the name of the property to get.
      * @return the property value, or {@link Image#UndefinedProperty} if none.
      */
     @Override
-    public Object getProperty(String name) {
+    public Object getProperty(String key) {
         return Image.UndefinedProperty;
     }
 
