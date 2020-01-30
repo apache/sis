@@ -17,7 +17,9 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Optional;
+import java.util.OptionalInt;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -67,6 +69,23 @@ public class ImageRequest {
     private GridExtent sliceExtent;
 
     /**
+     * The relative position of slice in dimensions other than the 2 visible dimensions,
+     * as a ratio between 0 and 1. This may become configurable in a future version.
+     *
+     * @see GridDerivation#sliceByRatio(double, int[])
+     */
+    static final double SLICE_RATIO = 0;
+
+    /**
+     * Approximate width and height of desired image for overview purpose, or 0 for the full image.
+     * If non-zero, then {@link ImageLoader} may return only a subset of coverage data.
+     *
+     * @see #getOverviewSize()
+     * @see #setOverviewSize(int)
+     */
+    private int overviewSize;
+
+    /**
      * Creates a new request for loading an image from the specified resource.
      * If {@code domain} and {@code range} arguments are null, then the full coverage will be loaded.
      * For loading a smaller amount of data, sub-domain or sub-range can be specified as documented
@@ -78,11 +97,16 @@ public class ImageRequest {
      *
      * @see GridCoverageResource#read(GridGeometry, int...)
      */
-    public ImageRequest(final GridCoverageResource source, final GridGeometry domain, final int[] range) {
+    public ImageRequest(final GridCoverageResource source, final GridGeometry domain, final int... range) {
         ArgumentChecks.ensureNonNull("source", source);
         this.resource = source;
         this.domain   = domain;
-        this.range    = (range != null && range.length != 0) ? range.clone() : null;
+        this.range    = (range != null && range.length != 0) ? range : null;
+        /*
+         * To be strict we should clone the array, but ImageRequest is just passing the array to
+         * GridCoverageResource, which is the class making real use of it. This is not sensitive
+         * object state here.
+         */
     }
 
     /**
@@ -142,7 +166,12 @@ public class ImageRequest {
      * @return the 0-based indices of sample dimensions to read.
      */
     public Optional<int[]> getRange() {
-        return (range != null) ? Optional.of(range.clone()) : Optional.empty();
+        /*
+         * To be strict we should clone the array, but ImageRequest is just passing the array to
+         * GridCoverageResource, which is the class making real use of it. This is not sensitive
+         * object state here.
+         */
+        return Optional.ofNullable(range);
     }
 
     /**
@@ -175,5 +204,34 @@ public class ImageRequest {
      */
     public void setSliceExtent(final GridExtent sliceExtent) {
         this.sliceExtent = sliceExtent;
+    }
+
+    /**
+     * If an overview has been requested, the average width and height of the overview. This method returns the value
+     * given to the last call to {@link #setOverviewSize(int)} — see the javadoc of that method for more information.
+     * The default value is empty, meaning that the full coverage is desired.
+     *
+     * @return if this request is for an overview, the approximate overview width and height (averaged).
+     */
+    public OptionalInt getOverviewSize() {
+        return (overviewSize > 0) ? OptionalInt.of(overviewSize) : OptionalInt.empty();
+    }
+
+    /**
+     * Requests an overview of the given approximate width and height. The {@code size} argument is an average size;
+     * the overview will try to preserve the image height/width ratio. When an overview is requested, {@link GridView}
+     * may use only a subset of coverage data. The subset may consist in reading only the first slice, applying a
+     * subsampling at reading time, or other implementation specific settings.
+     *
+     * @param  size  approximate overview width and height (averaged).
+     *
+     * @todo The specified size is currently ignored. We only use the fact that an overview has been requested.
+     *       For taking the size in account, we would need to improve {@link GridView} for letting user know in
+     *       some way that a subsampling has been applied, for example by adjusting the indices shown in column
+     *       and row headers (e.g. showing "0 2 4 6 …").
+     */
+    public void setOverviewSize(final int size) {
+        ArgumentChecks.ensureStrictlyPositive("size", size);
+        overviewSize = size;
     }
 }

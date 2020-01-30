@@ -46,6 +46,11 @@ import org.apache.sis.storage.GridCoverageResource;
  */
 public class ResourceExplorer extends WindowManager {
     /**
+     * Approximate overview width and height (averaged) in number of pixels.
+     */
+    private static final int OVERVIEW_SIZE = 10000;
+
+    /**
      * The tree of resources.
      */
     private final ResourceTree resources;
@@ -161,7 +166,8 @@ public class ResourceExplorer extends WindowManager {
         FeatureSet   table = null;
         ImageRequest grid  = null;
         if (resource instanceof GridCoverageResource) {
-            grid = new ImageRequest((GridCoverageResource) resource, null, null);
+            grid = new ImageRequest((GridCoverageResource) resource, null, 0);
+            grid.setOverviewSize(OVERVIEW_SIZE);
             if (coverage == null) {
                 coverage = new GridView();
             }

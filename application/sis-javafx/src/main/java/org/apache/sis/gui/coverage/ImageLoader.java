@@ -22,6 +22,7 @@ import javafx.event.EventHandler;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
@@ -58,6 +59,27 @@ final class ImageLoader extends Task<RenderedImage> {
     }
 
     /**
+     * Computes a two dimension slice of the given grid geometry.
+     * This method select the two first dimension having a size greater than 1 cell.
+     *
+     * @param  domain  the grid geometry in which to choose a two-dimensional slice.
+     * @return a builder configured for returning the desired two-dimensional slice.
+     */
+    private static GridDerivation slice(final GridGeometry domain) {
+        final GridExtent extent = domain.getExtent();
+        final int dimension = extent.getDimension();
+        final int[] sliceDimensions = new int[BIDIMENSIONAL];
+        int k = 0;
+        for (int i=0; i<dimension; i++) {
+            if (extent.getLow(i) != extent.getHigh(i)) {
+                sliceDimensions[k] = i;
+                if (++k >= BIDIMENSIONAL) break;
+            }
+        }
+        return domain.derive().sliceByRatio(ImageRequest.SLICE_RATIO, sliceDimensions);
+    }
+
+    /**
      * Loads the image. Current implementation reads the full image. If the coverage has more than 2 dimensions,
      * only two of them are taken for the image; for all other dimensions, only the values at lowest index will
      * be read.
@@ -69,28 +91,31 @@ final class ImageLoader extends Task<RenderedImage> {
     protected RenderedImage call() throws DataStoreException {
         GridCoverage cv = request.coverage;
         if (cv == null) {
-            final GridGeometry domain = request.getDomain().orElse(null);
-            final int[]        range  = request.getRange() .orElse(null);
-            request.coverage = cv = request.resource.read(domain, range);                  // May be long to execute.
+            GridGeometry domain = request.getDomain().orElse(null);
+            final int[]  range  = request.getRange() .orElse(null);
+            if (request.getOverviewSize().isPresent()) {
+                if (domain == null) {
+                    domain = request.resource.getGridGeometry();
+                }
+                if (domain != null && domain.getDimension() > BIDIMENSIONAL) {
+                    domain = slice(domain).build();
+                }
+                /*
+                 * TODO: we should apply a subsampling here. GridDerivation has the API for that,
+                 * what is missing is to transmit this information to GridView column and row headers.
+                 * See ImageRequest.setOverviewSize(int).
+                 */
+            }
+            request.coverage = cv = request.resource.read(domain, range);   // May be long to execute.
         }
         if (isCancelled()) {
             return null;
         }
         GridExtent sliceExtent = request.getSliceExtent().orElse(null);
         if (sliceExtent == null) {
-            final GridGeometry gg = cv.getGridGeometry();
-            if (gg != null && gg.getDimension() > BIDIMENSIONAL) {      // Should never be null but we are paranoiac.
-                final GridExtent extent = gg.getExtent();
-                final int dimension = extent.getDimension();
-                final int[] sliceDimensions = new int[BIDIMENSIONAL];
-                int k = 0;
-                for (int i=0; i<dimension; i++) {
-                    if (extent.getLow(i) != extent.getHigh(i)) {
-                        sliceDimensions[k] = i;
-                        if (++k >= BIDIMENSIONAL) break;
-                    }
-                }
-                sliceExtent = gg.derive().sliceByRatio(0, sliceDimensions).getIntersection();
+            final GridGeometry domain = cv.getGridGeometry();
+            if (domain != null && domain.getDimension() > BIDIMENSIONAL) {  // Should never be null but we are paranoiac.
+                sliceExtent = slice(domain).getIntersection();
             }
         }
         return cv.render(sliceExtent);
