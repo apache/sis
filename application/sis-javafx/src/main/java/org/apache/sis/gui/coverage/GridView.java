@@ -443,7 +443,7 @@ public class GridView extends Control {
             cellFormat.setMaximumFractionDigits(n);
         }
         buffer.setLength(0);
-        lastValueAsText = cellFormat.format(lastValue, buffer, formatField).toString();
+        formatSampleValue(lastValue);
     }
 
     /**
@@ -570,15 +570,22 @@ public class GridView extends Control {
         } else {
             final double value = tile.getSampleDouble(x, y, b);
             if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(lastValue)) {
-                if (Double.isNaN(value)) {
-                    lastValueAsText = "⬚";
-                } else {
-                    lastValueAsText = cellFormat.format(value, buffer, formatField).toString();
-                }
+                formatSampleValue(value);
                 lastValue = value;
             }
         }
         return lastValueAsText;
+    }
+
+    /**
+     * Formats the given sample value and stores the result in {@link #lastValueAsText}.
+     */
+    private void formatSampleValue(final double value) {
+        if (Double.isNaN(value)) {
+            lastValueAsText = "⬚";
+        } else {
+            lastValueAsText = cellFormat.format(value, buffer, formatField).toString();
+        }
     }
 
     /**
