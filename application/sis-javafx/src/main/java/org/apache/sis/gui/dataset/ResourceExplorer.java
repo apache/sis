@@ -17,6 +17,9 @@
 package org.apache.sis.gui.dataset;
 
 import java.util.Collection;
+import javafx.beans.property.ReadOnlyProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.scene.layout.Region;
 import javafx.scene.control.Control;
@@ -56,8 +59,8 @@ public class ResourceExplorer extends WindowManager {
     private final ResourceTree resources;
 
     /**
-     * The tab where to show {@link #features} or {@link #coverage},
-     * depending on the kind of resource.
+     * The tab where to show {@link #features} or {@link #coverage}, depending on the kind of resource.
+     * The data will be set only if this tab is visible, because their loading may be costly.
      */
     private final Tab dataTab;
 
@@ -85,6 +88,18 @@ public class ResourceExplorer extends WindowManager {
     private final SplitPane content;
 
     /**
+     * The currently selected resource.
+     */
+    public final ReadOnlyProperty<Resource> selectedResourceProperty;
+
+    /**
+     * Whether the setting of new values in {@link #dataTab} has been done.
+     * The new values are set only if the tab is visible, and otherwise are
+     * delayed until the tab become visible.
+     */
+    private boolean isDataTabSet;
+
+    /**
      * Creates a new panel for exploring resources.
      */
     public ResourceExplorer() {
@@ -107,6 +122,9 @@ public class ResourceExplorer extends WindowManager {
         SplitPane.setResizableWithParent(resources, Boolean.FALSE);
         SplitPane.setResizableWithParent(tabs, Boolean.TRUE);
         content.setDividerPosition(0, 300);
+
+        selectedResourceProperty = new SimpleObjectProperty<>(this, "selectedResource");
+        dataTab.selectedProperty().addListener(this::dataTabShown);
     }
 
     /**
@@ -162,6 +180,25 @@ public class ResourceExplorer extends WindowManager {
                 if (resource != null) break;
             }
         }
+        ((SimpleObjectProperty<Resource>) selectedResourceProperty).set(resource);
+        metadata.setMetadata(resource);
+        isDataTabSet = dataTab.isSelected();
+        boolean disable = updateDataTab(isDataTabSet ? resource : null);
+        if (!isDataTabSet) {
+            disable = !(resource instanceof FeatureSet);
+        }
+        setNewWindowDisabled(disable);
+    }
+
+    /**
+     * Sets the given resource to the {@link #dataTab}. Should be invoked only if the tab is visible, since data
+     * loading may be costly. It is caller responsibility to invoke {@link #setNewWindowDisabled(boolean)} after
+     * this method.
+     *
+     * @param  resource  the resource to set, or {@code null} if none.
+     * @return whether the given resource is an unsupported type, in which case menu should be disabled.
+     */
+    private boolean updateDataTab(final Resource resource) {
         Control      view  = null;
         FeatureSet   table = null;
         ImageRequest grid  = null;
@@ -185,9 +222,25 @@ public class ResourceExplorer extends WindowManager {
          */
         if (coverage != null) coverage.setImage(grid);
         if (features != null) features.setFeatures(table);
-        dataTab.setContent(view);
-        metadata.setMetadata(resource);
-        setNewWindowDisabled(view == null);
+        if (view     != null) dataTab .setContent(view);
+        return view == null;
+    }
+
+    /**
+     * Invoked when the data tab become selected or unselected.
+     *
+     * @param  property  ignored.
+     * @param  previous  ignored.
+     * @param  selected  whether the tab became the selected one.
+     */
+    private void dataTabShown(final ObservableValue<? extends Boolean> property,
+                              final Boolean previous, final Boolean selected)
+    {
+        if (selected && !isDataTabSet) {
+            isDataTabSet = true;
+            boolean disable = updateDataTab(selectedResourceProperty.getValue());
+            setNewWindowDisabled(disable);
+        }
     }
 
     /**
