@@ -136,7 +136,7 @@ public class ResourceExplorer extends WindowManager {
     }
 
     /**
-     * Returns the region containing the resource tree, metadata panel or any other control managed
+     * Returns the region containing the resource tree, metadata panel and any other control managed
      * by this {@code ResourceExplorer}. The subclass is implementation dependent and may change in
      * any future version.
      *
@@ -183,11 +183,10 @@ public class ResourceExplorer extends WindowManager {
         ((SimpleObjectProperty<Resource>) selectedResourceProperty).set(resource);
         metadata.setMetadata(resource);
         isDataTabSet = dataTab.isSelected();
-        boolean disable = updateDataTab(isDataTabSet ? resource : null);
+        updateDataTab(isDataTabSet ? resource : null);
         if (!isDataTabSet) {
-            disable = !(resource instanceof FeatureSet);
+            setNewWindowDisabled(!(resource instanceof GridCoverageResource || resource instanceof FeatureSet));
         }
-        setNewWindowDisabled(disable);
     }
 
     /**
@@ -195,10 +194,14 @@ public class ResourceExplorer extends WindowManager {
      * loading may be costly. It is caller responsibility to invoke {@link #setNewWindowDisabled(boolean)} after
      * this method.
      *
+     * <p>The {@link #isDataTabSet} flag should be set before to invoke this method. If {@code true}, then
+     * the given resource is the final content and window menus will be updated accordingly by this method.
+     * If {@code false}, then the given resource is temporarily null and window menus should be updated by
+     * the caller instead than this method.</p>
+     *
      * @param  resource  the resource to set, or {@code null} if none.
-     * @return whether the given resource is an unsupported type, in which case menu should be disabled.
      */
-    private boolean updateDataTab(final Resource resource) {
+    private void updateDataTab(final Resource resource) {
         Control      view  = null;
         FeatureSet   table = null;
         ImageRequest grid  = null;
@@ -223,11 +226,14 @@ public class ResourceExplorer extends WindowManager {
         if (coverage != null) coverage.setImage(grid);
         if (features != null) features.setFeatures(table);
         if (view     != null) dataTab .setContent(view);
-        return view == null;
+        if (isDataTabSet) {
+            setNewWindowDisabled(view == null);
+        }
     }
 
     /**
      * Invoked when the data tab become selected or unselected.
+     * This method sets the current resource in the {@link #dataTab} if it has not been already set.
      *
      * @param  property  ignored.
      * @param  previous  ignored.
@@ -237,9 +243,8 @@ public class ResourceExplorer extends WindowManager {
                               final Boolean previous, final Boolean selected)
     {
         if (selected && !isDataTabSet) {
-            isDataTabSet = true;
-            boolean disable = updateDataTab(selectedResourceProperty.getValue());
-            setNewWindowDisabled(disable);
+            isDataTabSet = true;                // Must be set before to invoke `updateDataTab(…)`.
+            updateDataTab(selectedResourceProperty.getValue());
         }
     }
 
@@ -248,13 +253,36 @@ public class ResourceExplorer extends WindowManager {
      */
     @Override
     final SelectedData getSelectedData() {
-        final FeatureSet data = features.getFeatures();
-        if (data != null) {
-            final SelectedData selection = new SelectedData();
-            selection.title = resources.getTitle(data, false);
-            selection.features = features;
-            return selection;
+        final Resource resource = selectedResourceProperty.getValue();
+        if (resource == null) {
+            return null;
         }
-        return null;
+        ImageRequest grid  = null;
+        FeatureTable table = null;
+        if (resource instanceof GridCoverageResource) {
+            /*
+             * Want the full coverage in all bands (sample dimensions). This is different than
+             * the ImageRequest created by `updateDataTab(…)` which requested only an overview
+             * (i.e. potentially with subsamplings) and only the first band.
+             *
+             * TODO: check if we can still share the coverage in some situations.
+             */
+            grid = new ImageRequest((GridCoverageResource) resource, null, null);
+        } else if (resource instanceof FeatureSet) {
+            /*
+             * We will not set features in an initially empty `FeatureTable` (to be newly created),
+             * but instead share the `FeatureLoader` created by the feature table of this explorer.
+             * We do that even if the feature table is not currently visible. This will not cause
+             * useless data loading since they share the same `FeatureLoader`.
+             */
+            if (features == null || !isDataTabSet) {
+                isDataTabSet = true;                    // Must be set before to invoke `updateDataTab(…)`.
+                updateDataTab(resource);                // For forcing creation of FeatureTable.
+            }
+            table = features;
+        } else {
+            return null;
+        }
+        return new SelectedData(resources.getTitle(resource, false), table, grid, resources.localized);
     }
 }

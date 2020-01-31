@@ -24,6 +24,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Region;
 import org.apache.sis.internal.gui.Resources;
 
 
@@ -44,18 +45,23 @@ final class DataWindow extends Stage {
      */
     private final ToolBar tools;
 
-    DataWindow(final Stage main, final FeatureTable data) {
-        final FeatureTable features = new FeatureTable(data);
-        Resources localized = Resources.forLocale(data.textLocale);
+    /**
+     * Creates a new window for the given data.
+     *
+     * @param  home  the window containing the main explorer, to be the target of "home" button.
+     * @param  data  the data to show in a new window.
+     */
+    DataWindow(final Stage home, final SelectedData data) {
+        final Region content = data.createView();
         /*
          * Build the tools bar. This bar will be hidden in full screen mode.
          */
         final Button mainWindow = new Button("⌂");
-        mainWindow.setTooltip(new Tooltip(localized.getString(Resources.Keys.MainWindow)));
-        mainWindow.setOnAction((event) -> {main.show(); main.toFront();});
+        mainWindow.setTooltip(new Tooltip(data.localized.getString(Resources.Keys.MainWindow)));
+        mainWindow.setOnAction((event) -> {home.show(); home.toFront();});
 
         final Button fullScreen = new Button("⇱");
-        fullScreen.setTooltip(new Tooltip(localized.getString(Resources.Keys.FullScreen)));
+        fullScreen.setTooltip(new Tooltip(data.localized.getString(Resources.Keys.FullScreen)));
         fullScreen.setOnAction((event) -> setFullScreen(true));
 
         tools = new ToolBar(mainWindow, fullScreen);
@@ -66,7 +72,7 @@ final class DataWindow extends Stage {
          */
         final BorderPane pane = new BorderPane();
         pane.setTop(tools);
-        pane.setCenter(features);
+        pane.setCenter(content);
         setScene(new Scene(pane));
         final Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
         setWidth (0.8 * bounds.getWidth());

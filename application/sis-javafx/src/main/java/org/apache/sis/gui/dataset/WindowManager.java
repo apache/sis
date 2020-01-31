@@ -146,27 +146,6 @@ abstract class WindowManager {
     }
 
     /**
-     * A description of currently selected data.
-     */
-    static final class SelectedData {
-        /**
-         * A title to use for windows and menu items.
-         */
-        String title;
-
-        /**
-         * The control that contains the currently selected data.
-         */
-        FeatureTable features;
-
-        /**
-         * Creates an initially empty set of selected data.
-         */
-        SelectedData() {
-        }
-    }
-
-    /**
      * Returns the set of currently selected data, or {@code null} if none.
      */
     abstract SelectedData getSelectedData();
@@ -180,7 +159,7 @@ abstract class WindowManager {
     private void newDataWindow(final ActionEvent event) {
         final SelectedData selection = getSelectedData();
         if (selection != null) {
-            final DataWindow window = new DataWindow((Stage) getView().getScene().getWindow(), selection.features);
+            final DataWindow window = new DataWindow((Stage) getView().getScene().getWindow(), selection);
             window.setTitle(selection.title + " — Apache SIS");
             window.show();
             if (showWindowMenus != null) {

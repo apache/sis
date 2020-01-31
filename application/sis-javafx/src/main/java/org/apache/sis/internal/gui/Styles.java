@@ -36,6 +36,12 @@ import org.apache.sis.internal.system.Modules;
  */
 public final class Styles {
     /**
+     * Initial position of divider in split panes. This is used in data windows,
+     * but not necessarily in the main window (the resource explorer).
+     */
+    public static final double INITIAL_SPLIT = 200;
+
+    /**
      * Usual color of text.
      */
     public static final Color NORMAL_TEXT = Color.BLACK;

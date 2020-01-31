@@ -1,0 +1,88 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.gui.dataset;
+
+import javafx.scene.layout.Region;
+import org.apache.sis.gui.coverage.CoverageExplorer;
+import org.apache.sis.gui.coverage.ImageRequest;
+import org.apache.sis.internal.gui.Resources;
+
+
+/**
+ * A description of currently selected data.
+ * The selected data may be one of the following resources:
+ *
+ * <ul>
+ *   <li>{@link org.apache.sis.storage.FeatureSet}</li>
+ *   <li>{@link org.apache.sis.storage.GridCoverageResource}</li>
+ * </ul>
+ *
+ * {@code SelectedData} does not contain those resources directly, but rather contains the view or
+ * other kind of object wrapping the selected resource. The kind of wrappers used for each type of
+ * resource may change in any future version of this class.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
+ * @since   1.1
+ * @module
+ */
+final class SelectedData {
+    /**
+     * A title to use for windows and menu items.
+     */
+    final String title;
+
+    /**
+     * The control that contains the currently selected data if those data are features.
+     * Only one of {@link #features} and {@link #coverage} shall be non-null.
+     */
+    private final FeatureTable features;
+
+    /**
+     * The request for coverage data, or {@code null} if the selected data are not coverage.
+     * Only one of {@link #features} and {@link #coverage} shall be non-null.
+     */
+    private final ImageRequest coverage;
+
+    /**
+     * Localized resources, for convenience only.
+     */
+    final Resources localized;
+
+    /**
+     * Creates a snapshot of selected data.
+     */
+    SelectedData(final String title, final FeatureTable features, final ImageRequest coverage, final Resources localized) {
+        this.title     = title;
+        this.features  = features;
+        this.coverage  = coverage;
+        this.localized = localized;
+    }
+
+    /**
+     * Creates the view for selected data.
+     */
+    final Region createView() {
+        if (features != null) {
+            return new FeatureTable(features);
+        } else {
+            final CoverageExplorer ce = new CoverageExplorer();
+            ce.setCoverage(coverage);
+            return ce.getView();
+        }
+    }
+}

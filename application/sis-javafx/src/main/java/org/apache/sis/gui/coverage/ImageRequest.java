@@ -46,6 +46,10 @@ public class ImageRequest {
      * The source for rendering the image, specified at construction time.
      * After class initialization, only one of {@link #resource} and {@link #coverage} is non-null.
      * But after task execution, this field will be set to the coverage which has been read.
+     *
+     * @todo If we implement subsampling using the {@link #overviewSize} parameter, then we need to
+     *       remember whether subsampling has been used for this {@code coverage} instance. This is
+     *       needed for deciding if we can reuse that instance for a view over the full coverage.
      */
     volatile GridCoverage coverage;
 
