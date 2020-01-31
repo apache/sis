@@ -21,13 +21,13 @@ import java.io.StringWriter;
 import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.Region;
@@ -47,11 +47,16 @@ import org.apache.sis.util.Classes;
  * @since   1.1
  * @module
  */
-public final class ExceptionReporter implements EventHandler<ActionEvent> {
+public final class ExceptionReporter {
     /**
      * The margin to use for the stack trace. We add some spaces on the top and left sides.
      */
     private static final Insets MARGIN = new Insets(9, 0, 0, 40);
+
+    /**
+     * The exception that occurred.
+     */
+    private final Throwable exception;
 
     /**
      * The component where to show the stack trace.
@@ -63,14 +68,17 @@ public final class ExceptionReporter implements EventHandler<ActionEvent> {
      *
      * @param  exception  the error to report.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public ExceptionReporter(final Throwable exception) {
+        this.exception = exception;
         trace = new Label(getStackTrace(exception));
         trace.setAlignment(Pos.TOP_LEFT);
         trace.setPadding(MARGIN);
 
         final Resources localized = Resources.getInstance();
-        final ContextMenu menu = new ContextMenu();
-        menu.getItems().add(localized.menu(Resources.Keys.Copy, this));
+        final Menu sendTo = new Menu(localized.getString(Resources.Keys.SendTo));
+        sendTo.getItems().add(localized.menu(Resources.Keys.StandardErrorStream, this::printStackTrace));
+        final ContextMenu menu = new ContextMenu(localized.menu(Resources.Keys.Copy, this::copy), sendTo);
         trace.setContextMenu(menu);
     }
 
@@ -205,14 +213,22 @@ public final class ExceptionReporter implements EventHandler<ActionEvent> {
 
     /**
      * Invoked when the user selected the "Copy" action in contextual menu.
-     * This method is public as an implementation side-effect; do not use.
      *
      * @param event ignored.
      */
-    @Override
-    public void handle(final ActionEvent event) {
+    private void copy(final ActionEvent event) {
         final ClipboardContent content = new ClipboardContent();
         content.putString(trace.getText());
         Clipboard.getSystemClipboard().setContent(content);
+    }
+
+    /**
+     * Invoked when the user selected the "Send to ⏵ Standard error stream" action in contextual menu.
+     *
+     * @param event ignored.
+     */
+    @SuppressWarnings("CallToPrintStackTrace")
+    private void printStackTrace(final ActionEvent event) {
+        exception.printStackTrace();
     }
 }

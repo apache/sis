@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.OptionalInt;
 import org.apache.sis.storage.GridCoverageResource;
@@ -88,6 +89,15 @@ public class ImageRequest {
      * @see #setOverviewSize(int)
      */
     private int overviewSize;
+
+    /**
+     * The coverage explorers to inform when {@link #coverage} become available, or {@code null} if none.
+     * We do not provide a more generic listeners API for now, but it could be done in the future if there
+     * is a need for that.
+     *
+     * @see #addListener(CoverageExplorer)
+     */
+    private CoverageExplorer[] listeners;
 
     /**
      * Creates a new request for loading an image from the specified resource.
@@ -237,5 +247,45 @@ public class ImageRequest {
     public void setOverviewSize(final int size) {
         ArgumentChecks.ensureStrictlyPositive("size", size);
         overviewSize = size;
+    }
+
+    /**
+     * Adds a listener to inform when {@link #coverage} become available. We do not provide a more
+     * generic listeners API for now, but it could be done in the future if there is a need for that.
+     *
+     * <p>All listeners are discarded after the reading process.</p>
+     */
+    final void addListener(final CoverageExplorer listener) {
+        final int n;
+        if (listeners == null) {                        // Usual case.
+            n = 0;
+            listeners = new CoverageExplorer[1];
+        } else {                                        // Should be very rare.
+            n = listeners.length;
+            listeners = Arrays.copyOf(listeners, n+1);
+        }
+        listeners[n] = listener;
+    }
+
+    /**
+     * Notifies all listeners that the given coverage has been read or failed to be read,
+     * then discards the listeners. This method shall be invoked in JavaFX thread.
+     *
+     * @param  result  the result, or {@code null} on failure.
+     */
+    final void notifyListeners(final GridCoverage result) {
+        final CoverageExplorer[] snapshot = listeners;
+        listeners = null;                                   // Clear now in case an error happen.
+        for (final CoverageExplorer e : snapshot) {
+            e.onLoadStep(result);
+        }
+    }
+
+    /**
+     * Notifies all listeners that the coverage has been read, then discards the listeners.
+     * This method shall be invoked in JavaFX thread.
+     */
+    final void notifyLoaded() {
+        notifyListeners(coverage);
     }
 }

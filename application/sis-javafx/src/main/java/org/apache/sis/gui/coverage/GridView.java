@@ -254,8 +254,8 @@ public class GridView extends Control {
         tileHeight       = 1;       // For avoiding division by zero.
 
         setMinSize(120, 40);        // 2 cells on each dimension.
-        imageProperty.addListener(this::imageDefined);
-        bandProperty .addListener(this::bandDefined);
+        imageProperty.addListener(this::onImageSpecified);
+        bandProperty .addListener(this::onBandSpecified);
         // Other listeners registered by GridViewSkin.Flow.
     }
 
@@ -352,8 +352,8 @@ public class GridView extends Control {
      * @param  image     the new image to show. May be {@code null}.
      * @throws ArithmeticException if the "tile grid x/y offset" property is too large.
      */
-    private void imageDefined(final ObservableValue<? extends RenderedImage> property,
-                              final RenderedImage previous, final RenderedImage image)
+    private void onImageSpecified(final ObservableValue<? extends RenderedImage> property,
+                                  final RenderedImage previous, final RenderedImage image)
     {
         if (loader != null) {
             loader.cancel();
@@ -396,8 +396,8 @@ public class GridView extends Control {
      * @param  previous  the previous band index (ignored).
      * @param  band      index of the new band to show.
      */
-    private void bandDefined(final ObservableValue<? extends Number> property,
-                             final Number previous, final Number band)
+    private void onBandSpecified(final ObservableValue<? extends Number> property,
+                                 final Number previous, final Number band)
     {
         configureCellFormat(getImage(), band.intValue());
         contentChanged(false);

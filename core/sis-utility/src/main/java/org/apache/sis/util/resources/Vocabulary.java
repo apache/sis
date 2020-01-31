@@ -210,6 +210,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Correlation = 28;
 
         /**
+         * Coverage
+         */
+        public static final short Coverage = 190;
+
+        /**
          * Coverage domain
          */
         public static final short CoverageDomain = 29;

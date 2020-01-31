@@ -17,6 +17,7 @@
 package org.apache.sis.gui.coverage;
 
 import java.awt.image.RenderedImage;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -117,6 +118,7 @@ final class ImageLoader extends Task<RenderedImage> {
             cv = request.resource.read(domain, range);                      // May be long to execute.
             cv = cv.forConvertedValues(converted);
             request.coverage = cv;
+            Platform.runLater(request::notifyLoaded);
         }
         if (isCancelled()) {
             return null;
@@ -133,16 +135,26 @@ final class ImageLoader extends Task<RenderedImage> {
 
     /**
      * Invoked in JavaFX thread on failure.
-     * This method popups a dialog box for reporting the error.
+     * Current implementation popups a dialog box for reporting the error.
      */
     @Override
     protected void failed() {
         super.failed();
+        request.notifyListeners(null);
         final GridCoverageResource resource = request.resource;
         if (resource instanceof StoreListeners) {
             ExceptionReporter.canNotReadFile(((StoreListeners) resource).getSourceName(), getException());
         } else {
             ExceptionReporter.canNotUseResource(getException());
         }
+    }
+
+    /**
+     * Invoked in JavaFX thread in case of cancellation.
+     */
+    @Override
+    protected void cancelled() {
+        super.cancelled();
+        request.notifyListeners(null);
     }
 }

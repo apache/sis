@@ -271,9 +271,19 @@ public final class Resources extends IndexedResourceBundle {
         public static final short SelectCRS = 37;
 
         /**
+         * Send to
+         */
+        public static final short SendTo = 49;
+
+        /**
          * Spatial representation
          */
         public static final short SpatialRepresentation = 24;
+
+        /**
+         * Standard error stream
+         */
+        public static final short StandardErrorStream = 50;
 
         /**
          * Summary
