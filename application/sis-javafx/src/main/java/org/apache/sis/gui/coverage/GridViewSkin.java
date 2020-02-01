@@ -112,6 +112,12 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
     double cellInnerWidth;
 
     /**
+     * Whether a new image has been set, in which case we should recompute everything
+     * including the labels in header row.
+     */
+    private boolean layoutAll;
+
+    /**
      * Whether the grid view contains at least one tile that we failed to fetch.
      */
     private boolean hasErrors;
@@ -205,6 +211,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
         if (all) {
             updateItemCount();
             getChildren().removeIf((node) -> (node instanceof GridError));
+            layoutAll = true;
             hasErrors = false;
         }
         /*
@@ -339,7 +346,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
         final double  headerHeight = flow.getFixedCellSize() + 2*cellSpacing;
         final double  dataY        = y + headerHeight;
         final double  dataHeight   = height - headerHeight;
-        final boolean resized      = (flow.getWidth() != width) || (flow.getHeight() != dataHeight);
+        layoutAll |= (flow.getWidth() != width) || (flow.getHeight() != dataHeight);
         flow.resizeRelocate(x, dataY, width, dataHeight);
         /*
          * Recompute all values which will be needed by GridRowSkin. They are mostly information about
@@ -374,7 +381,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
          * detected (in which case values changed), or because the view size changed (in which case cells
          * may need to be added or removed).
          */
-        if (resized || oldPos != leftPosition) {
+        if (layoutAll || oldPos != leftPosition) {
             layoutInArea(headerRow, x, y, width, headerHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.LEFT, VPos.TOP);
             final ObservableList<Node> children = headerRow.getChildren();
             final int count   = children.size();
@@ -401,6 +408,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
                 pos += cellWidth;
             }
         }
+        layoutAll = false;
         if (hasErrors) {
             computeErrorBounds(flow);
         }
