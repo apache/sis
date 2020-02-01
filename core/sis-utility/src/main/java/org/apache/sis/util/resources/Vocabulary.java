@@ -585,6 +585,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Mapping = 96;
 
         /**
+         * Maximum
+         */
+        public static final short Maximum = 191;
+
+        /**
          * Maximum value
          */
         public static final short MaximumValue = 97;
@@ -603,6 +608,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Methods
          */
         public static final short Methods = 100;
+
+        /**
+         * Minimum
+         */
+        public static final short Minimum = 192;
 
         /**
          * Minimum value

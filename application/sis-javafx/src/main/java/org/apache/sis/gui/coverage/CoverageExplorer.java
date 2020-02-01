@@ -22,12 +22,12 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
-import javafx.scene.control.ListCell;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.apache.sis.coverage.SampleDimension;
@@ -46,6 +46,11 @@ import org.apache.sis.util.resources.Vocabulary;
  * @module
  */
 public class CoverageExplorer {
+    /**
+     * Margin to keep around captions on top of tables or lists.
+     */
+    private static final Insets CAPTION_MARGIN = new Insets(12, 0, 9, 0);
+
     /**
      * The data shown in this table. Note that setting this property to a non-null value may not
      * modify the grid content immediately. Instead, a background process will request the tiles.
@@ -66,7 +71,7 @@ public class CoverageExplorer {
     /**
      * The control showing sample dimensions for the current coverage.
      */
-    private final ListView<SampleDimension> sampleDimensions;
+    private final TableView<SampleDimension> sampleDimensions;
 
     /**
      * The control that put everything together.
@@ -80,26 +85,29 @@ public class CoverageExplorer {
      * Creates an initially empty explorer.
      */
     public CoverageExplorer() {
-        gridView         = new GridView();
-        sampleDimensions = new ListView<>();
-        sampleDimensions.setCellFactory(SampleDimensionCell::new);
         final Vocabulary vocabulary = Vocabulary.getResources((Locale) null);
+        gridView         = new GridView();
+        sampleDimensions = new CategoryCellFactory(gridView.cellFormat).createSampleDimensionTable(vocabulary);
         /*
-         * Create the "Coverage" pane with the following controls:
+         * "Coverage" section with the following controls:
          *    - Coverage domain as a list of CRS dimensions with two of them selected (TODO).
          *    - Coverage range as a list of sample dimensions with at least one selected.
          */
         final VBox coveragePane;
         {   // Block for making variables locale to this scope.
-            final Label label = new Label(vocabulary.getString(Vocabulary.Keys.SampleDimensions));
+            final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.SampleDimensions));
+            label.setPadding(CAPTION_MARGIN);
             label.setLabelFor(sampleDimensions);
             coveragePane = new VBox(label, sampleDimensions);
         }
-
+        /*
+         * Put all sections together and have the first one expanded by default.
+         */
         final Accordion controls = new Accordion(
                 new TitledPane(vocabulary.getString(Vocabulary.Keys.Coverage), coveragePane)
                 // TODO: more controls to be added in a future version.
         );
+        controls.setExpandedPane(controls.getPanes().get(0));
         content = new SplitPane(controls, gridView);
         SplitPane.setResizableWithParent(controls, Boolean.FALSE);
         SplitPane.setResizableWithParent(gridView, Boolean.TRUE);
@@ -176,10 +184,8 @@ public class CoverageExplorer {
         gridView.setImage((RenderedImage) null);
         if (coverage != null) {
             gridView.setImage(new ImageRequest(coverage, null));        // Start a background thread.
-            sampleDimensions.getItems().setAll(coverage.getSampleDimensions());
-        } else {
-            sampleDimensions.getItems().clear();
         }
+        onLoadStep(coverage);
     }
 
     /**
@@ -194,23 +200,19 @@ public class CoverageExplorer {
         final ObservableList<SampleDimension> items = sampleDimensions.getItems();
         if (coverage != null) {
             items.setAll(coverage.getSampleDimensions());
+            sampleDimensions.getSelectionModel().clearAndSelect(gridView.getBand());
         } else {
             items.clear();
         }
     }
 
     /**
-     * A row in the list of sample dimensions.
+     * Invoked when the selected band changed. This method ensures that the selected row
+     * in the sample dimension table matches the band which is shown in the grid view.
      */
-    private static final class SampleDimensionCell extends ListCell<SampleDimension> {
-        /** Invoked by lambda function (needs this exact signature). */
-        SampleDimensionCell(final ListView<SampleDimension> list) {
-        }
-
-        /** Invoked when a new sample dimension needs to be shown. */
-        @Override public void updateItem(final SampleDimension item, final boolean empty) {
-            super.updateItem(item, empty);
-            setText(empty ? "" : item.getName().toString());
-        }
+    private void onBandSpecified(final ObservableValue<? extends Number> property,
+                                 final Number previous, final Number band)
+    {
+        sampleDimensions.getSelectionModel().clearAndSelect(band.intValue());
     }
 }

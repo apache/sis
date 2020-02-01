@@ -184,7 +184,7 @@ public class GridView extends Control {
     /**
      * The formatter to use for writing sample values.
      */
-    private final CellFormat cellFormat;
+    final CellFormat cellFormat;
 
     /**
      * Creates an initially empty grid view. The content can be set after

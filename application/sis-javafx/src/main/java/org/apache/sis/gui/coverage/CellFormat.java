@@ -133,7 +133,7 @@ final class CellFormat {
             cellFormat.setMaximumFractionDigits(n);
         }
         buffer.setLength(0);
-        format(lastValue);
+        formatCell(lastValue);
     }
 
     /**
@@ -154,7 +154,7 @@ final class CellFormat {
         } else {
             final double value = tile.getSampleDouble(x, y, b);
             if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(lastValue)) {
-                format(value);
+                formatCell(value);
                 lastValue = value;
             }
         }
@@ -163,13 +163,25 @@ final class CellFormat {
 
     /**
      * Formats the given sample value and stores the result in {@link #lastValueAsText}.
+     * This method should be invoked only for real numbers, not when the number is known
+     * to be an integer value. This method is designed for cell values in {@link GridView},
+     * where {@link Double#NaN} values are represented by a more compact symbol.
+     * For formatting in other contexts, use {@link #format(Number)} instead.
      */
-    private void format(final double value) {
+    private void formatCell(final double value) {
         if (Double.isNaN(value)) {
             lastValueAsText = "⬚";
         } else {
             lastValueAsText = cellFormat.format(value, buffer, formatField).toString();
         }
+    }
+
+    /**
+     * Formats the given sample value.
+     */
+    final String format(final Number value) {
+        buffer.setLength(0);
+        return cellFormat.format(value, buffer, formatField).toString();
     }
 
     /**

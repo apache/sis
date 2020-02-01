@@ -75,7 +75,7 @@ import org.apache.sis.measure.Range;
  * multiple threads.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -484,11 +484,37 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      */
     public final void appendLabel(final short key, final Appendable toAppendTo) throws IOException {
         toAppendTo.append(getString(key));
-        if (Locale.FRENCH.getLanguage().equals(getLocale().getLanguage())) {
-            toAppendTo.append("\u00A0:");
+        final String colon = colon();
+        if (colon != null) {
+            toAppendTo.append(colon);
         } else {
             toAppendTo.append(':');
         }
+    }
+
+    /**
+     * Returns the localized string identified by the given key followed by a colon.
+     * This is the same functionality as {@link #appendLabel(short, Appendable)} but
+     * without temporary buffer.
+     *
+     * @param  key  the key for the desired string.
+     * @return localized string followed by a colon.
+     *
+     * @since 1.1
+     */
+    public final String getLabel(final short key) {
+        final String text = getString(key);
+        final String colon = colon();
+        return (colon != null) ? (text + colon) : (text + ':');
+    }
+
+    /**
+     * Returns the colon to write after localized text.
+     *
+     * @todo Should be a localized resource by itself.
+     */
+    private String colon() {
+        return Locale.FRENCH.getLanguage().equals(getLocale().getLanguage()) ? "\u00A0:" : null;
     }
 
     /**
