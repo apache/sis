@@ -134,25 +134,22 @@ public class CoverageExplorer {
             gp.setBorder(GROUP_BORDER);
             gp.setVgap(9);
             gp.setHgap(9);
-            for (int i=0; i<3; i++) {
+            int row = 0;
+            do {
                 final DoubleProperty property;
                 final double min, max;
                 final short key;
-                switch (i) {
-                    case 0: key = Vocabulary.Keys.Width;   property = gridView.cellWidth;   min = 30; max = 200; break;
-                    case 1: key = Vocabulary.Keys.Height;  property = gridView.cellHeight;  min = 10; max =  50; break;
-                    case 2: key = Vocabulary.Keys.Spacing; property = gridView.cellSpacing; min =  0; max =  10; break;
-                    default: throw new AssertionError(i);
-                }
+                if (row == 0) {key = Vocabulary.Keys.Width;   property = gridView.cellWidth;   min = 30; max = 200;}
+                else          {key = Vocabulary.Keys.Height;  property = gridView.cellHeight;  min = 10; max =  50;}
                 final Label  label  = new Label(vocabulary.getLabel(key));
                 final Slider slider = new Slider(min, max, property.getValue());
                 property.bind(slider.valueProperty());
                 slider.setShowTickMarks(false);
                 label.setLabelFor(slider);
-                GridPane.setConstraints(label,  0, i);
-                GridPane.setConstraints(slider, 1, i);
+                GridPane.setConstraints(label,  0, row);
+                GridPane.setConstraints(slider, 1, row);
                 gp.getChildren().addAll(label, slider);
-            }
+            } while (++row <= 1);
             final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Cells));
             label.setPadding(CAPTION_MARGIN);
             label.setLabelFor(gp);

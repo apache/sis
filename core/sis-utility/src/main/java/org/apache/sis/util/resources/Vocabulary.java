@@ -342,7 +342,7 @@ public final class Vocabulary extends IndexedResourceBundle {
         /**
          * Display
          */
-        public static final short Display = 196;
+        public static final short Display = 194;
 
         /**
          * ″
@@ -838,11 +838,6 @@ public final class Vocabulary extends IndexedResourceBundle {
          * South bound
          */
         public static final short SouthBound = 139;
-
-        /**
-         * Spacing
-         */
-        public static final short Spacing = 194;
 
         /**
          * Standard deviation
