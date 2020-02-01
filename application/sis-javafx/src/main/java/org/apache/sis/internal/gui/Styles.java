@@ -42,6 +42,11 @@ public final class Styles {
     public static final double INITIAL_SPLIT = 200;
 
     /**
+     * "Standard" height of table rows. Can be approximate.
+     */
+    public static final double ROW_HEIGHT = 30;
+
+    /**
      * Usual color of text.
      */
     public static final Color NORMAL_TEXT = Color.BLACK;
@@ -70,6 +75,11 @@ public final class Styles {
      * Color for header of expanded rows in {@link org.apache.sis.gui.dataset.FeatureTable}.
      */
     public static final Color EXPANDED_ROW = Color.GAINSBORO;
+
+    /**
+     * The color for border grouping some controls together.
+     */
+    public static final Color BORDER = Color.SILVER;
 
     /**
      * Do not allow instantiation of this class.

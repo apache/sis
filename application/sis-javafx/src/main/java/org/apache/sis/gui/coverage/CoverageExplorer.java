@@ -18,6 +18,7 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
 import java.awt.image.RenderedImage;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
@@ -25,9 +26,16 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.apache.sis.coverage.SampleDimension;
@@ -50,6 +58,17 @@ public class CoverageExplorer {
      * Margin to keep around captions on top of tables or lists.
      */
     private static final Insets CAPTION_MARGIN = new Insets(12, 0, 9, 0);
+
+    /**
+     * Space between a group of controls and the border encompassing the group.
+     */
+    private static final Insets GROUP_INSETS = new Insets(12);
+
+    /**
+     * The border to use for grouping some controls together.
+     */
+    private static final Border GROUP_BORDER = new Border(new BorderStroke(
+            Styles.BORDER, BorderStrokeStyle.SOLID, null, null));
 
     /**
      * The data shown in this table. Note that setting this property to a non-null value may not
@@ -101,10 +120,50 @@ public class CoverageExplorer {
             coveragePane = new VBox(label, sampleDimensions);
         }
         /*
+         * "Display" section with the following controls:
+         *    - Number format as a localized pattern (TODO).
+         *    - Cell width as a slider.
+         */
+        final VBox displayPane;
+        {   // Block for making variables locale to this scope.
+            final GridPane gp = new GridPane();
+            final ColumnConstraints sliderColumn = new ColumnConstraints();
+            sliderColumn.setHgrow(Priority.ALWAYS);
+            gp.getColumnConstraints().setAll(new ColumnConstraints(), sliderColumn);
+            gp.setPadding(GROUP_INSETS);
+            gp.setBorder(GROUP_BORDER);
+            gp.setVgap(9);
+            gp.setHgap(9);
+            for (int i=0; i<3; i++) {
+                final DoubleProperty property;
+                final double min, max;
+                final short key;
+                switch (i) {
+                    case 0: key = Vocabulary.Keys.Width;   property = gridView.cellWidth;   min = 30; max = 200; break;
+                    case 1: key = Vocabulary.Keys.Height;  property = gridView.cellHeight;  min = 10; max =  50; break;
+                    case 2: key = Vocabulary.Keys.Spacing; property = gridView.cellSpacing; min =  0; max =  10; break;
+                    default: throw new AssertionError(i);
+                }
+                final Label  label  = new Label(vocabulary.getLabel(key));
+                final Slider slider = new Slider(min, max, property.getValue());
+                property.bind(slider.valueProperty());
+                slider.setShowTickMarks(false);
+                label.setLabelFor(slider);
+                GridPane.setConstraints(label,  0, i);
+                GridPane.setConstraints(slider, 1, i);
+                gp.getChildren().addAll(label, slider);
+            }
+            final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Cells));
+            label.setPadding(CAPTION_MARGIN);
+            label.setLabelFor(gp);
+            displayPane = new VBox(label, gp);
+        }
+        /*
          * Put all sections together and have the first one expanded by default.
          */
         final Accordion controls = new Accordion(
-                new TitledPane(vocabulary.getString(Vocabulary.Keys.Coverage), coveragePane)
+                new TitledPane(vocabulary.getString(Vocabulary.Keys.Coverage), coveragePane),
+                new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),  displayPane)
                 // TODO: more controls to be added in a future version.
         );
         controls.setExpandedPane(controls.getPanes().get(0));
@@ -115,6 +174,7 @@ public class CoverageExplorer {
 
         coverageProperty = new SimpleObjectProperty<>(this, "coverage");
         coverageProperty.addListener(this::onCoverageSpecified);
+        gridView.bandProperty.addListener(this::onBandSpecified);
     }
 
     /**

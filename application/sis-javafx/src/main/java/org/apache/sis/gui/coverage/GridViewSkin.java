@@ -161,6 +161,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
         final Flow flow = (Flow) getVirtualFlow();
         final double value = newValue.doubleValue();
         flow.setFixedCellSize(value >= GridView.MIN_CELL_SIZE ? value : GridView.MIN_CELL_SIZE);
+        contentChanged(false);
     }
 
     /**
@@ -174,6 +175,8 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
                 ((GridRow) child).setPrefWidth(width);
             }
         }
+        layoutAll = true;
+        contentChanged(false);
     }
 
     /**

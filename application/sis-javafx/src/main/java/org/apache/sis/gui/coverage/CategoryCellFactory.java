@@ -29,6 +29,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.gui.Styles;
 
 
 /**
@@ -68,7 +69,7 @@ final class CategoryCellFactory implements Callback<TableColumn<SampleDimension,
      */
     TableView<SampleDimension> createSampleDimensionTable(final Vocabulary vocabulary) {
         final TableView<SampleDimension> table = new TableView<>();
-        table.setPrefHeight(5 * 30);    // Show approximately 5 rows.
+        table.setPrefHeight(5 * Styles.ROW_HEIGHT);                         // Show approximately 5 rows.
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.getColumns().setAll(
                 createStringColumn(vocabulary, Vocabulary.Keys.Name,    NAME),

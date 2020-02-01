@@ -145,6 +145,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short CellCount_1 = 16;
 
         /**
+         * Cells
+         */
+        public static final short Cells = 193;
+
+        /**
          * Character encoding
          */
         public static final short CharacterEncoding = 17;
@@ -333,6 +338,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Directory
          */
         public static final short Directory = 50;
+
+        /**
+         * Display
+         */
+        public static final short Display = 196;
 
         /**
          * ″
@@ -830,6 +840,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short SouthBound = 139;
 
         /**
+         * Spacing
+         */
+        public static final short Spacing = 194;
+
+        /**
          * Standard deviation
          */
         public static final short StandardDeviation = 140;
@@ -998,6 +1013,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * West bound
          */
         public static final short WestBound = 171;
+
+        /**
+         * Width
+         */
+        public static final short Width = 195;
 
         /**
          * World
