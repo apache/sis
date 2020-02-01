@@ -16,10 +16,7 @@
  */
 package org.apache.sis.gui.coverage;
 
-import java.lang.reflect.Array;
 import java.text.NumberFormat;
-import java.text.DecimalFormat;
-import java.text.FieldPosition;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -38,11 +35,7 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import org.apache.sis.util.Numbers;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.image.PlanarImage;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.gui.BackgroundThreads;
 
@@ -183,56 +176,15 @@ public class GridView extends Control {
      */
     public final ObjectProperty<Paint> headerBackground;
 
-
-    // ════ All fields below are for the formatting of sample values as text. ════════════════════════
-
+    /**
+     * The formatter to use for writing header values (row and column numbers).
+     */
+    private final NumberFormat headerFormat;
 
     /**
-     * The "classic" number format pattern (as opposed to scientific notation). This is non-null only after
-     * {@link #cellFormat} switched to scientific notation and is used for switching back to classic notation.
-     * This is a workaround for the absence of `DecimalFormat.useScientificNotation(boolean)` method.
+     * The formatter to use for writing sample values.
      */
-    @Workaround(library="JDK", version="13")
-    private String classicFormatPattern;
-
-    /**
-     * The formatter to use for writing header values (row and column numbers) or the sample values.
-     */
-    private final NumberFormat headerFormat, cellFormat;
-
-    /**
-     * Required when invoking {@link #cellFormat} methods but not used by this class.
-     * This argument is not allowed to be {@code null}, so we create an instance once
-     * and reuse it at each method call.
-     */
-    private final FieldPosition formatField;
-
-    /**
-     * A buffer for writing sample values with {@link #cellFormat}, reused for each value to format.
-     */
-    private final StringBuffer buffer;
-
-    /**
-     * The last value formatted by {@link #cellFormat}. We keep this information because it happens often
-     * that the same value is repeated for many cells, especially in area containing fill or missing values.
-     * If the value is the same, we will reuse the {@link #lastValueAsText}.
-     *
-     * <p>Note: the use of {@code double} is sufficient since rendered images can not store {@code long} values,
-     * so there is no precision lost that we could have with conversions from {@code long} to {@code double}.</p>
-     */
-    private double lastValue;
-
-    /**
-     * The formatting of {@link #lastValue}.
-     */
-    private String lastValueAsText;
-
-    /**
-     * Whether the sample values are integers. We use this flag for deciding which {@code Raster.getSampleValue(…)}
-     * method to invoke, which {@code NumberFormat.format(…)} method to invoke, and whether to set a format pattern
-     * with fraction digits.
-     */
-    private boolean dataTypeisInteger;
+    private final CellFormat cellFormat;
 
     /**
      * Creates an initially empty grid view. The content can be set after
@@ -247,9 +199,7 @@ public class GridView extends Control {
         cellSpacing      = new SimpleDoubleProperty  (this, "cellSpacing",  4);
         headerBackground = new SimpleObjectProperty<>(this, "headerBackground", Color.GAINSBORO);
         headerFormat     = NumberFormat.getIntegerInstance();
-        cellFormat       = NumberFormat.getInstance();
-        formatField      = new FieldPosition(0);
-        buffer           = new StringBuffer();
+        cellFormat       = new CellFormat();
         tileWidth        = 1;
         tileHeight       = 1;       // For avoiding division by zero.
 
@@ -373,7 +323,7 @@ public class GridView extends Control {
             tileHeight        = Math.max(1, image.getTileHeight());
             tileGridXOffset   = Math.subtractExact(image.getTileGridXOffset(), minX);
             tileGridYOffset   = Math.subtractExact(image.getTileGridYOffset(), minY);
-            dataTypeisInteger = false;                      // To be kept consistent with `cellFormat` pattern.
+            cellFormat.dataTypeisInteger = false;           // To be kept consistent with `cellFormat` pattern.
             final SampleModel sm = image.getSampleModel();
             if (sm != null) {                               // Should never be null, but we are paranoiac.
                 final int numBands = sm.getNumBands();
@@ -381,9 +331,9 @@ public class GridView extends Control {
                     bandProperty.set(numBands - 1);
                 }
                 final int dataType = sm.getDataType();
-                dataTypeisInteger = (dataType >= DataBuffer.TYPE_BYTE && dataType <= DataBuffer.TYPE_INT);
+                cellFormat.dataTypeisInteger = (dataType >= DataBuffer.TYPE_BYTE && dataType <= DataBuffer.TYPE_INT);
             }
-            configureCellFormat(image, bandProperty.getValue());
+            cellFormat.configure(image, bandProperty.getValue());
         }
         contentChanged(true);
     }
@@ -399,51 +349,8 @@ public class GridView extends Control {
     private void onBandSpecified(final ObservableValue<? extends Number> property,
                                  final Number previous, final Number band)
     {
-        configureCellFormat(getImage(), band.intValue());
+        cellFormat.configure(getImage(), band.intValue());
         contentChanged(false);
-    }
-
-    /**
-     * Invoked when the {@link #cellFormat} configuration needs to be updated.
-     * Callers should invoke {@link #contentChanged(boolean)} after this method.
-     *
-     * @param  image  the source image (shall be non-null).
-     * @param  band   index of the band to show in this grid view.
-     */
-    private void configureCellFormat(final RenderedImage image, final int band) {
-        if (dataTypeisInteger) {
-            cellFormat.setMaximumFractionDigits(0);
-        } else {
-            int n = 1;          // Default value if we can not determine the number of fraction digits.
-            final Object property = image.getProperty(PlanarImage.SAMPLE_RESOLUTIONS_KEY);
-            if (property != null) {
-                final int c = Numbers.getEnumConstant(property.getClass().getComponentType());
-                if (c >= Numbers.BYTE && c <= Numbers.BIG_DECIMAL && band < Array.getLength(property)) {
-                    final double resolution = Math.abs(((Number) Array.get(property, band)).doubleValue());
-                    if (resolution > 0 && resolution <= Double.MAX_VALUE) {     // Non-zero, non-NaN and finite.
-                        n = DecimalFunctions.fractionDigitsForDelta(resolution, false);
-                        if (n > 6 || n < -9) {      // Arbitrary threshold for switching to scientific notation.
-                            if (cellFormat instanceof DecimalFormat) {
-                                if (classicFormatPattern == null) {
-                                    final DecimalFormat df = (DecimalFormat) cellFormat;
-                                    classicFormatPattern = df.toPattern();
-                                    df.applyPattern("0.###E00");
-                                }
-                                n = 3;
-                            }
-                        } else if (classicFormatPattern != null) {
-                            ((DecimalFormat) cellFormat).applyPattern(classicFormatPattern);
-                            classicFormatPattern = null;
-                        }
-                        if (n < 0) n = 0;
-                    }
-                }
-            }
-            cellFormat.setMinimumFractionDigits(n);
-            cellFormat.setMaximumFractionDigits(n);
-        }
-        buffer.setLength(0);
-        formatSampleValue(lastValue);
     }
 
     /**
@@ -555,37 +462,10 @@ public class GridView extends Control {
          * As a slight optimization, we reuse the previous string representation if the number is the same.
          * It may happen in particular with fill values.
          */
-        final int x = Math.addExact(column, minX);
-        final int y = Math.addExact(row,    minY);
-        final int b = getBand();
-        buffer.setLength(0);
-        if (dataTypeisInteger) {
-            final int  integer = tile.getSample(x, y, b);
-            final double value = integer;
-            if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(lastValue)) {
-                // The `format` method invoked here is not the same than in `double` case.
-                lastValueAsText = cellFormat.format(integer, buffer, formatField).toString();
-                lastValue = value;
-            }
-        } else {
-            final double value = tile.getSampleDouble(x, y, b);
-            if (Double.doubleToRawLongBits(value) != Double.doubleToRawLongBits(lastValue)) {
-                formatSampleValue(value);
-                lastValue = value;
-            }
-        }
-        return lastValueAsText;
-    }
-
-    /**
-     * Formats the given sample value and stores the result in {@link #lastValueAsText}.
-     */
-    private void formatSampleValue(final double value) {
-        if (Double.isNaN(value)) {
-            lastValueAsText = "⬚";
-        } else {
-            lastValueAsText = cellFormat.format(value, buffer, formatField).toString();
-        }
+        return cellFormat.format(tile,
+                Math.addExact(column, minX),
+                Math.addExact(row,    minY),
+                getBand());
     }
 
     /**
@@ -596,9 +476,7 @@ public class GridView extends Control {
      */
     final String formatHeaderValue(final int index, final boolean vertical) {
         if (index >= 0 && index < (vertical ? height : width)) {
-            final long value = index + (long) (vertical ? minY : minX);
-            buffer.setLength(0);
-            return headerFormat.format(value, buffer, formatField).toString();
+            return cellFormat.format(headerFormat, index + (long) (vertical ? minY : minX));
         }
         return OUT_OF_BOUNDS;
     }
