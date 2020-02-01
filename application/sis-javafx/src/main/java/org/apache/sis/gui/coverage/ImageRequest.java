@@ -275,9 +275,11 @@ public class ImageRequest {
      */
     final void notifyListeners(final GridCoverage result) {
         final CoverageExplorer[] snapshot = listeners;
-        listeners = null;                                   // Clear now in case an error happen.
-        for (final CoverageExplorer e : snapshot) {
-            e.onLoadStep(result);
+        if (snapshot != null) {
+            listeners = null;                               // Clear now in case an error happen.
+            for (final CoverageExplorer e : snapshot) {
+                e.onLoadStep(result);
+            }
         }
     }
 
