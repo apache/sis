@@ -68,7 +68,7 @@ public class CoverageExplorer {
      * The border to use for grouping some controls together.
      */
     private static final Border GROUP_BORDER = new Border(new BorderStroke(
-            Styles.BORDER, BorderStrokeStyle.SOLID, null, null));
+            Styles.GROUP_BORDER, BorderStrokeStyle.SOLID, null, null));
 
     /**
      * The data shown in this table. Note that setting this property to a non-null value may not

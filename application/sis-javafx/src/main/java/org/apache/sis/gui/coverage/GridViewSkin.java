@@ -30,6 +30,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Font;
+import javafx.scene.input.MouseEvent;
+import javafx.event.EventHandler;
+import org.apache.sis.internal.gui.Styles;
 
 
 /**
@@ -50,7 +53,7 @@ import javafx.scene.text.Font;
  * @since   1.1
  * @module
  */
-final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
+final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> implements EventHandler<MouseEvent> {
     /**
      * The cells that we put in the header row on the top of the view. The children list is initially empty;
      * new elements are added or removed when first needed and when the view size changed.
@@ -63,9 +66,9 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
     private final Rectangle topBackground, leftBackground;
 
     /**
-     * Image index of the first column visible in the view, ignoring the header column.
-     * This is a {@link RenderedImage} <var>x</var> index (with an arbitrary origin),
-     * not necessarily the same value than the zero-based index used in JavaFX views.
+     * Zero-based index of the first column visible in the view, ignoring the header column.
+     * This is equal to the {@link RenderedImage} <var>x</var> index if the image coordinates
+     * also start at zero (i.e. {@link RenderedImage#getMinX()} = 0).
      *
      * <p>This field is written by {@link #layoutChildren(double, double, double, double)}.
      * All other accesses (especially from outside of this class) should be read-only.</p>
@@ -123,6 +126,11 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
     private boolean hasErrors;
 
     /**
+     * A rectangle around selected cells.
+     */
+    private final Rectangle selection;
+
+    /**
      * Creates a new skin for the specified view.
      */
     GridViewSkin(final GridView view) {
@@ -147,10 +155,48 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
         leftBackground.fillProperty().bind(view.headerBackground);
         topBackground .fillProperty().bind(view.headerBackground);
         /*
+         * Rectangle around the selected cell (for example the cell below mouse position).
+         * Become visible only when the mouse enter in the widget area.
+         */
+        selection = new Rectangle(view.cellWidth.getValue(), view.cellHeight.getValue());
+        selection.setFill(Styles.SELECTION_BACKGROUND);
+        selection.setVisible(false);
+        flow.setOnMouseExited(this::hideSelection);
+        /*
          * The list of children is initially empty. We need to
          * add the virtual flow, otherwise nothing will appear.
          */
-        getChildren().addAll(topBackground, leftBackground, headerRow, flow);
+        getChildren().addAll(topBackground, leftBackground, headerRow, selection, flow);
+    }
+
+    /**
+     * Invoked when the mouse is moving over the cells. This method computes cell indices
+     * and draws the selection rectangle around that cell. Then, listeners are notified.
+     *
+     * <p>This listener is registered for each {@link GridRow} instances.
+     * It is not designed for other kinds of event source.</p>
+     */
+    @Override
+    public final void handle(final MouseEvent event) {
+        final double tx = leftBackground.getWidth();
+        final double x = event.getX() - tx;
+        boolean visible = (x >= 0);
+        if (visible) {
+            final int column = (int) (x / cellWidth);
+            visible = (column >= firstVisibleColumn);
+            if (visible) {
+                selection.setX((column - firstVisibleColumn) * cellWidth + tx);
+                selection.setY(((GridRow) event.getSource()).getLayoutY() + topBackground.getHeight());
+            }
+        }
+        selection.setVisible(visible);
+    }
+
+    /**
+     * Hides the selection when the mouse moved outside the grid view area.
+     */
+    private void hideSelection(final MouseEvent event) {
+        selection.setVisible(false);
     }
 
     /**
@@ -159,8 +205,13 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
      */
     private void cellHeightChanged(ObservableValue<? extends Number> property, Number oldValue, Number newValue) {
         final Flow flow = (Flow) getVirtualFlow();
-        final double value = newValue.doubleValue();
-        flow.setFixedCellSize(value >= GridView.MIN_CELL_SIZE ? value : GridView.MIN_CELL_SIZE);
+        double value = newValue.doubleValue();
+        if (!(value >= GridView.MIN_CELL_SIZE)) {           // Use ! for catching NaN values.
+            value = GridView.MIN_CELL_SIZE;
+        }
+        flow.setFixedCellSize(value);
+        selection.setVisible(false);
+        selection.setHeight(value);
         contentChanged(false);
     }
 
@@ -169,11 +220,16 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
      * This method notifies all children about the new width.
      */
     private void cellWidthChanged(ObservableValue<? extends Number> property, Number oldValue, Number newValue) {
-        final double width = getSkinnable().getContentWidth();
+        final GridView view = getSkinnable();
+        final double width = view.getContentWidth();
         for (final Node child : getChildren()) {
             if (child instanceof GridRow) {             // The first instances are not a GridRow.
                 ((GridRow) child).setPrefWidth(width);
             }
+        }
+        if (property == view.cellWidth) {
+            selection.setVisible(false);
+            selection.setWidth(newValue.doubleValue());
         }
         layoutAll = true;
         contentChanged(false);
@@ -362,7 +418,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> {
         cellInnerWidth      = cellWidth - cellSpacing;
         leftPosition        = flow.getHorizontalPosition();         // Horizontal position in the virtual view.
         rightPosition       = leftPosition + width;                 // Horizontal position where to stop.
-        firstVisibleColumn  = (int) (leftPosition / cellWidth);     // Column index in the RenderedImage.
+        firstVisibleColumn  = (int) (leftPosition / cellWidth);     // Zero-based column index in the image.
         /*
          * Set the rectangle position before to do final adjustment on cell position,
          * because the background to fill should include the `cellSpacing` margin.

@@ -77,9 +77,14 @@ public final class Styles {
     public static final Color EXPANDED_ROW = Color.GAINSBORO;
 
     /**
-     * The color for border grouping some controls together.
+     * Color for border grouping some controls together.
      */
-    public static final Color BORDER = Color.SILVER;
+    public static final Color GROUP_BORDER = Color.SILVER;
+
+    /**
+     * Color for background of a selection.
+     */
+    public static final Color SELECTION_BACKGROUND = Color.LIGHTBLUE;
 
     /**
      * Do not allow instantiation of this class.

@@ -471,7 +471,7 @@ public class GridView extends Control {
     /**
      * Formats a row index or column index.
      *
-     * @param  index     the row or column index to format.
+     * @param  index     the zero-based row or column index to format.
      * @param  vertical  {@code true} if formatting row index, or {@code false} if formatting column index.
      */
     final String formatHeaderValue(final int index, final boolean vertical) {

@@ -65,6 +65,7 @@ final class GridRow extends IndexedCell<Void> {
         view = (GridView) owner.getParent();
         setPrefWidth(view.getContentWidth());
         setFont(Font.font(null, FontWeight.BOLD, -1));      // Apply only to the header column.
+        setOnMouseMoved((GridViewSkin) view.getSkin());
         setManaged(false);
     }
 

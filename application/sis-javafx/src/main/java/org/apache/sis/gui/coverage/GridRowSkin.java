@@ -98,7 +98,7 @@ final class GridRowSkin extends CellSkinBase<GridRow> {
         final double cellWidth  = layout.cellWidth;             // Includes the cell spacing.
         final double available  = layout.cellInnerWidth;
         final double limit      = layout.rightPosition;         // Horizontal position where to stop.
-        int          column     = layout.firstVisibleColumn;    // Column index in the RenderedImage.
+        int          column     = layout.firstVisibleColumn;    // Zero-based column index in image.
         int          childIndex = 0;
         List<GridCell> newChildren = null;
         final int count = children.size();
