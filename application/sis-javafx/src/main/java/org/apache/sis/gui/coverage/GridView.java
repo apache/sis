@@ -35,7 +35,9 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import org.opengis.geometry.DirectPosition;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.gui.BackgroundThreads;
 
@@ -74,7 +76,7 @@ public class GridView extends Control {
     /**
      * If a loading is in progress, the loading process. Otherwise {@code null}.
      *
-     * @see #coverageDefined(WorkerStateEvent)
+     * @see #onImageLoaded(WorkerStateEvent)
      */
     private ImageLoader loader;
 
@@ -250,7 +252,7 @@ public class GridView extends Control {
                 loader.cancel();
             }
             loader = new ImageLoader(source, true);
-            loader.setOnSucceeded(this::coverageDefined);
+            loader.setOnSucceeded(this::onImageLoaded);
             BackgroundThreads.execute(loader);
         }
     }
@@ -286,11 +288,14 @@ public class GridView extends Control {
 
     /**
      * Invoked in JavaFX thread after {@link #loader} completed its task successfully.
+     * This method updates the image shown in this {@link GridView} and configures the
+     * status bar.
      */
-    private void coverageDefined(final WorkerStateEvent event) {
-        final ImageLoader result = loader;
+    private void onImageLoaded(final WorkerStateEvent event) {
         loader = null;
+        final ImageLoader result = (ImageLoader) event.getSource();
         setImage(result.getValue());
+        result.request.configure(((GridViewSkin) getSkin()).statusBar);
     }
 
     /**
@@ -314,15 +319,15 @@ public class GridView extends Control {
         width    = 0;
         height   = 0;
         if (image != null) {
-            minX              = image.getMinX();
-            minY              = image.getMinY();
-            width             = image.getWidth();
-            height            = image.getHeight();
-            numXTiles         = image.getNumXTiles();
-            tileWidth         = Math.max(1, image.getTileWidth());
-            tileHeight        = Math.max(1, image.getTileHeight());
-            tileGridXOffset   = Math.subtractExact(image.getTileGridXOffset(), minX);
-            tileGridYOffset   = Math.subtractExact(image.getTileGridYOffset(), minY);
+            minX            = image.getMinX();
+            minY            = image.getMinY();
+            width           = image.getWidth();
+            height          = image.getHeight();
+            numXTiles       = image.getNumXTiles();
+            tileWidth       = Math.max(1, image.getTileWidth());
+            tileHeight      = Math.max(1, image.getTileHeight());
+            tileGridXOffset = Math.subtractExact(image.getTileGridXOffset(), minX);
+            tileGridYOffset = Math.subtractExact(image.getTileGridYOffset(), minY);
             cellFormat.dataTypeisInteger = false;           // To be kept consistent with `cellFormat` pattern.
             final SampleModel sm = image.getSampleModel();
             if (sm != null) {                               // Should never be null, but we are paranoiac.
@@ -372,12 +377,22 @@ public class GridView extends Control {
      */
     final double getContentWidth() {
         /*
-         * Add one more column for avoiding offsets caused by the rounding of scroll bar position
-         * to integer multiple of column size. The 20 minimal value used below is arbitrary;
+         * Add one more column for avoiding offsets caused by the rounding of scroll bar position to
+         * integer multiple of column size. The SCROLLBAR_WIDTH minimal value used below is arbitrary;
          * we take a value close to the vertical scrollbar width as a safety.
          */
         final double w = getSizeValue(cellWidth);
-        return width * w + getSizeValue(headerWidth) + Math.max(w, 20);
+        return width * w + getSizeValue(headerWidth) + Math.max(w, GridViewSkin.SCROLLBAR_WIDTH);
+    }
+
+    /**
+     * Returns the value of the given property as a real number not smaller than {@value #MIN_CELL_SIZE}.
+     * We use this method instead of {@link Math#max(double, double)} because we want {@link Double#NaN}
+     * values to be replaced by {@value #MIN_CELL_SIZE}.
+     */
+    static double getSizeValue(final DoubleProperty property) {
+        final double value = property.get();
+        return (value >= MIN_CELL_SIZE) ? value : MIN_CELL_SIZE;
     }
 
     /**
@@ -482,6 +497,15 @@ public class GridView extends Control {
     }
 
     /**
+     * Converts cell indices to pixel indices. They are often the same indices, but may differ if the
+     * {@link RenderedImage} uses a coordinate system where the coordinates of the upper-left corner
+     * is not (0,0).
+     */
+    final DirectPosition toImageCoordinates(final int column, final int row) {
+        return new DirectPosition2D(column + (long) minX, row + (long) minY);
+    }
+
+    /**
      * Creates a new instance of the skin responsible for rendering this grid view.
      * From the perspective of this {@link Control}, the {@link Skin} is a black box.
      * It listens and responds to changes in state of this grid view. This method is
@@ -492,15 +516,5 @@ public class GridView extends Control {
     @Override
     protected final Skin<GridView> createDefaultSkin() {
         return new GridViewSkin(this);
-    }
-
-    /**
-     * Returns the value of the given property as a real number not smaller than {@value #MIN_CELL_SIZE}.
-     * We use this method instead of {@link Math#max(double, double)} because we want {@link Double#NaN}
-     * values to be replaced by {@value #MIN_CELL_SIZE}.
-     */
-    static double getSizeValue(final DoubleProperty property) {
-        final double value = property.get();
-        return (value >= MIN_CELL_SIZE) ? value : MIN_CELL_SIZE;
     }
 }

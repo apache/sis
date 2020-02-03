@@ -48,7 +48,13 @@ final class ImageLoader extends Task<RenderedImage> {
     /**
      * The image source together with optional parameters for reading only a subset.
      */
-    private final ImageRequest request;
+    final ImageRequest request;
+
+    /**
+     * The coverage explorer to inform when {@link ImageRequest#coverage} become available, or {@code null} if none.
+     * We do not provide a more generic listeners API for now, but it could be done in the future if there is a need.
+     */
+    private CoverageExplorer listener;
 
     /**
      * Whether the caller wants a grid coverage that contains real values or sample values.
@@ -63,8 +69,10 @@ final class ImageLoader extends Task<RenderedImage> {
      *                    or {@code false} for a coverage containing packed values.
      */
     ImageLoader(final ImageRequest request, final boolean converted) {
-        this.request   = request;
-        this.converted = converted;
+        this.request     = request;
+        this.converted   = converted;
+        this.listener    = request.listener;
+        request.listener = null;
     }
 
     /**
@@ -118,7 +126,7 @@ final class ImageLoader extends Task<RenderedImage> {
             cv = request.resource.read(domain, range);                      // May be long to execute.
             cv = cv.forConvertedValues(converted);
             request.coverage = cv;
-            Platform.runLater(request::notifyLoaded);
+            Platform.runLater(this::fireCoverageLoaded);
         }
         if (isCancelled()) {
             return null;
@@ -140,7 +148,7 @@ final class ImageLoader extends Task<RenderedImage> {
     @Override
     protected void failed() {
         super.failed();
-        request.notifyListeners(null);
+        fireFinished(null);
         final GridCoverageResource resource = request.resource;
         if (resource instanceof StoreListeners) {
             ExceptionReporter.canNotReadFile(((StoreListeners) resource).getSourceName(), getException());
@@ -155,6 +163,31 @@ final class ImageLoader extends Task<RenderedImage> {
     @Override
     protected void cancelled() {
         super.cancelled();
-        request.notifyListeners(null);
+        fireFinished(null);
+    }
+
+    /**
+     * Notifies listener that the given coverage has been read or failed to be read,
+     * then discards the listener. This method shall be invoked in JavaFX thread.
+     *
+     * <p>This method is also invoked with a null argument for notifying listener
+     * that the read operation failed (or has been cancelled).</p>
+     *
+     * @param  result  the result, or {@code null} on failure.
+     */
+    private void fireFinished(final GridCoverage result) {
+        final CoverageExplorer snapshot = listener;
+        if (snapshot != null) {
+            listener = null;                               // Clear now in case an error happen.
+            snapshot.onCoverageLoaded(result);
+        }
+    }
+
+    /**
+     * Notifies all listeners that the coverage has been read, then discards the listeners.
+     * This method shall be invoked in JavaFX thread.
+     */
+    private void fireCoverageLoaded() {
+        fireFinished(request.coverage);
     }
 }

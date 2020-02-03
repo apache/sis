@@ -27,6 +27,7 @@ import javafx.scene.control.ScrollBar;
 import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.control.skin.VirtualContainerBase;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Font;
@@ -54,6 +55,11 @@ import org.apache.sis.internal.gui.Styles;
  * @module
  */
 final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> implements EventHandler<MouseEvent> {
+    /**
+     * Approximate size of vertical scroll bar.
+     */
+    static final int SCROLLBAR_WIDTH = 20;
+
     /**
      * The cells that we put in the header row on the top of the view. The children list is initially empty;
      * new elements are added or removed when first needed and when the view size changed.
@@ -126,9 +132,14 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
     private boolean hasErrors;
 
     /**
-     * A rectangle around selected cells.
+     * A rectangle around selected cells in the content area or in the row/column header.
      */
-    private final Rectangle selection;
+    private final Rectangle selection, selectedRow, selectedColumn;
+
+    /**
+     * The status bar where to show coordinates of selected cell.
+     */
+    final StatusBar statusBar;
 
     /**
      * Creates a new skin for the specified view.
@@ -158,15 +169,25 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
          * Rectangle around the selected cell (for example the cell below mouse position).
          * Become visible only when the mouse enter in the widget area.
          */
-        selection = new Rectangle(view.cellWidth.getValue(), view.cellHeight.getValue());
-        selection.setFill(Styles.SELECTION_BACKGROUND);
-        selection.setVisible(false);
+        selection      = new Rectangle();
+        selectedRow    = new Rectangle();
+        selectedColumn = new Rectangle();
+        selection     .setFill(Styles.SELECTION_BACKGROUND);
+        selectedRow   .setFill(Color.SILVER);
+        selectedColumn.setFill(Color.SILVER);
+        selection     .setVisible(false);
+        selectedRow   .setVisible(false);
+        selectedColumn.setVisible(false);
         flow.setOnMouseExited(this::hideSelection);
+        /*
+         * The status bar where to show coordinates of selected cell.
+         */
+        statusBar = new StatusBar(view);
         /*
          * The list of children is initially empty. We need to
          * add the virtual flow, otherwise nothing will appear.
          */
-        getChildren().addAll(topBackground, leftBackground, headerRow, selection, flow);
+        getChildren().addAll(topBackground, leftBackground, selectedColumn, selectedRow, headerRow, selection, statusBar, flow);
     }
 
     /**
@@ -179,24 +200,37 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
     @Override
     public final void handle(final MouseEvent event) {
         final double tx = leftBackground.getWidth();
-        final double x = event.getX() - tx;
+        double x = event.getX() - tx;
         boolean visible = (x >= 0);
         if (visible) {
             final int column = (int) (x / cellWidth);
             visible = (column >= firstVisibleColumn);
             if (visible) {
-                selection.setX((column - firstVisibleColumn) * cellWidth + tx);
-                selection.setY(((GridRow) event.getSource()).getLayoutY() + topBackground.getHeight());
+                final GridRow row = (GridRow) event.getSource();
+                double y = row.getLayoutY();
+                visible = y < getVirtualFlow().getHeight();
+                if (visible) {
+                    x  = (column - firstVisibleColumn) * cellWidth + tx;
+                    y += topBackground.getHeight();
+                    selection.relocate(x, y);
+                    selectedRow.setY(y);
+                    selectedColumn.setX(x);
+                    statusBar.setCoordinates(column, row.getIndex());
+                }
             }
         }
-        selection.setVisible(visible);
+        selection     .setVisible(visible);
+        selectedRow   .setVisible(visible);
+        selectedColumn.setVisible(visible);
     }
 
     /**
      * Hides the selection when the mouse moved outside the grid view area.
      */
     private void hideSelection(final MouseEvent event) {
-        selection.setVisible(false);
+        selection     .setVisible(false);
+        selectedRow   .setVisible(false);
+        selectedColumn.setVisible(false);
     }
 
     /**
@@ -401,10 +435,12 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
          * which may change the size calculations done after that. The flow is located below the
          * header row, so we adjust y and height accordingly.
          */
-        final Flow    flow         = (Flow) getVirtualFlow();
-        final double  headerHeight = flow.getFixedCellSize() + 2*cellSpacing;
-        final double  dataY        = y + headerHeight;
-        final double  dataHeight   = height - headerHeight;
+        final Flow   flow         = (Flow) getVirtualFlow();
+        final double cellHeight   = flow.getFixedCellSize();
+        final double headerHeight = cellHeight + 2*cellSpacing;
+        final double statusHeight = statusBar.getHeight();
+        final double dataY        = y + headerHeight;
+        final double dataHeight   = height - headerHeight - statusHeight;
         layoutAll |= (flow.getWidth() != width) || (flow.getHeight() != dataHeight);
         flow.resizeRelocate(x, dataY, width, dataHeight);
         /*
@@ -431,6 +467,14 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         leftBackground.setY(dataY);
         leftBackground.setWidth(headerWidth);
         leftBackground.setHeight(flow.getVisibleHeight());
+        selection     .setWidth (cellWidth);
+        selectedRow   .setWidth (headerWidth);
+        selectedColumn.setWidth (cellWidth);
+        selection     .setHeight(cellHeight);
+        selectedRow   .setHeight(cellHeight);
+        selectedColumn.setHeight(headerHeight);
+        selectedRow   .setX(x);
+        selectedColumn.setY(y);
         if (cellSpacing < headerWidth) {
             headerWidth  -= cellSpacing;
             leftPosition += cellSpacing;
@@ -442,6 +486,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
          */
         if (layoutAll || oldPos != leftPosition) {
             layoutInArea(headerRow, x, y, width, headerHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.LEFT, VPos.TOP);
+            layoutInArea(statusBar, x, height - statusHeight, width, statusHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.RIGHT, VPos.BOTTOM);
             final ObservableList<Node> children = headerRow.getChildren();
             final int count   = children.size();
             final int missing = (int) Math.ceil((width - headerWidth) / cellWidth) - count;

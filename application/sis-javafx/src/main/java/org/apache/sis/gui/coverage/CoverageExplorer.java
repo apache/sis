@@ -223,7 +223,7 @@ public class CoverageExplorer {
         if (source == null) {
             setCoverage((GridCoverage) null);
         } else {
-            source.addListener(this);
+            source.listener = this;
             gridView.setImage(source);
         }
     }
@@ -242,7 +242,7 @@ public class CoverageExplorer {
         if (coverage != null) {
             gridView.setImage(new ImageRequest(coverage, null));        // Start a background thread.
         }
-        onLoadStep(coverage);
+        onCoverageLoaded(coverage);
     }
 
     /**
@@ -253,7 +253,7 @@ public class CoverageExplorer {
      *
      * @param  coverage  the new coverage, or {@code null} if loading failed.
      */
-    final void onLoadStep(final GridCoverage coverage) {
+    final void onCoverageLoaded(final GridCoverage coverage) {
         final ObservableList<SampleDimension> items = sampleDimensions.getItems();
         if (coverage != null) {
             items.setAll(coverage.getSampleDimensions());
