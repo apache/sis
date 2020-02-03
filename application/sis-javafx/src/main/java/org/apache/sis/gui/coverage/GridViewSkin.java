@@ -199,23 +199,22 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
      */
     @Override
     public final void handle(final MouseEvent event) {
-        final double tx = leftBackground.getWidth();
-        double x = event.getX() - tx;
+        double x = event.getX() - (leftPosition + headerWidth);
         boolean visible = (x >= 0);
         if (visible) {
-            final int column = (int) (x / cellWidth);
-            visible = (column >= firstVisibleColumn);
+            final double visibleColumn = Math.floor(x / cellWidth);
+            visible = (visibleColumn >= 0);
             if (visible) {
                 final GridRow row = (GridRow) event.getSource();
                 double y = row.getLayoutY();
                 visible = y < getVirtualFlow().getHeight();
                 if (visible) {
-                    x  = (column - firstVisibleColumn) * cellWidth + tx;
+                    x  = visibleColumn * cellWidth + leftBackground.getWidth() + row.getLayoutX();
                     y += topBackground.getHeight();
                     selection.relocate(x, y);
                     selectedRow.setY(y);
                     selectedColumn.setX(x);
-                    statusBar.setCoordinates(column, row.getIndex());
+                    statusBar.setCoordinates(((int) visibleColumn) + firstVisibleColumn, row.getIndex());
                 }
             }
         }
