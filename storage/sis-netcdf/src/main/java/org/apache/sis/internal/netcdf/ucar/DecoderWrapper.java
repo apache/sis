@@ -40,6 +40,8 @@ import ucar.nc2.ft.FeatureDatasetPoint;
 import ucar.nc2.ft.FeatureDatasetFactoryManager;
 import ucar.nc2.ft.FeatureCollection;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
@@ -497,6 +499,50 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
         }
         final Group group = file.findGroup(name);
         return (group != null) ? new GroupWrapper(this, group) : null;
+    }
+
+    /**
+     * Adds netCDF attributes to the given node.
+     *
+     * @param  root  the node where to add netCDF attributes.
+     */
+    @Override
+    public void addNativeMetadata(final TreeTable.Node root) {
+        addNativeMetadata(root, file.getRootGroup());
+    }
+
+    /**
+     * Adds all attributes of the given group, then create nodes for sub-groups (if any).
+     * This method invokes itself recursively.
+     */
+    private void addNativeMetadata(final TreeTable.Node branch, final Group group) {
+        for (final Attribute attribute : group.getAttributes()) {
+            final TreeTable.Node node = branch.newChild();
+            node.setValue(TableColumn.NAME, attribute.getShortName());
+            final int length = attribute.getLength();
+            final Object value;
+            switch (length) {
+                case 0: continue;
+                case 1: {
+                    value = attribute.getValue(0);
+                    break;
+                }
+                default: {
+                    final Object[] values = new Object[length];
+                    for (int i=0; i<length; i++) {
+                        values[i] = attribute.getValue(i);
+                    }
+                    value = values;
+                    break;
+                }
+            }
+            node.setValue(TableColumn.VALUE, value);
+        }
+        for (final Group sub : group.getGroups()) {
+            final TreeTable.Node node = branch.newChild();
+            node.setValue(TableColumn.NAME, sub.getShortName());
+            addNativeMetadata(node, sub);
+        }
     }
 
     /**

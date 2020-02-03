@@ -42,6 +42,9 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
+import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
 import ucar.nc2.constants.ACDD;
@@ -53,7 +56,7 @@ import ucar.nc2.constants.CDM;
  * Instances of this data store are created by {@link NetcdfStoreProvider#open(StorageConnector)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see NetcdfStoreProvider
  *
@@ -188,6 +191,26 @@ public class NetcdfStore extends DataStore implements Aggregate {
             throw new DataStoreException(e);
         }
         return metadata;
+    }
+
+    /**
+     * Returns netCDF attributes. The meaning of those attributes may vary depending on data provider.
+     * The {@linkplain #getMetadata() standard metadata} should be preferred since they allow abstraction of
+     * data format details, but those native metadata are sometime useful when an information is not provided
+     * by the standard metadata.
+     *
+     * @return resources information structured in an implementation-specific way.
+     * @throws DataStoreException if an error occurred while reading the metadata.
+     *
+     * @since 1.1
+     */
+    @Override
+    public Optional<TreeTable> getNativeMetadata() throws DataStoreException {
+        final DefaultTreeTable table = new DefaultTreeTable(TableColumn.NAME, TableColumn.VALUE);
+        final TreeTable.Node root = table.getRoot();
+        root.setValue(TableColumn.NAME, NetcdfStoreProvider.NAME);
+        decoder.addNativeMetadata(root);
+        return Optional.of(table);
     }
 
     /**

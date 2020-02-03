@@ -29,6 +29,8 @@ import org.opengis.metadata.identification.Identification;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.util.Strings;
@@ -63,7 +65,7 @@ import org.apache.sis.storage.event.StoreListeners;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see DataStores#open(Object)
  *
@@ -351,12 +353,37 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * file format and more.
      *
      * @return information about resources in the data store. Should not be {@code null}.
-     * @throws DataStoreException if an error occurred while reading the data.
+     * @throws DataStoreException if an error occurred while reading the metadata.
      *
      * @see #getIdentifier()
      */
     @Override
     public abstract Metadata getMetadata() throws DataStoreException;
+
+    /**
+     * Returns implementation-specific metadata. The structure of those metadata varies for each file format.
+     * The {@linkplain #getMetadata() standard metadata} should be preferred since they allow abstraction of
+     * format details, but those native metadata are sometime useful when an information is not provided by
+     * the standard metadata.
+     *
+     * <p>The tree table should contain at least the following columns:</p>
+     * <ul>
+     *   <li>{@link TableColumn#NAME}  — a name for the metadata property, e.g. "Title".</li>
+     *   <li>{@link TableColumn#VALUE} — the property value typically as a string, number or date.</li>
+     * </ul>
+     *
+     * The {@link TableColumn#NAME} of the root node should be a format name such as "NetCDF" or "GeoTIFF".
+     * That name should be short since it may be used in widget as a designation of implementation-specific
+     * details.
+     *
+     * @return resources information structured in an implementation-specific way.
+     * @throws DataStoreException if an error occurred while reading the metadata.
+     *
+     * @since 1.1
+     */
+    public Optional<TreeTable> getNativeMetadata() throws DataStoreException {
+        return Optional.empty();
+    }
 
     /**
      * Searches for a resource identified by the given identifier. The given identifier should be the string

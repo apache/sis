@@ -19,6 +19,7 @@ package org.apache.sis.gui.metadata;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.StringJoiner;
 import javafx.application.Platform;
@@ -43,9 +44,11 @@ import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.Types;
 
 
@@ -134,6 +137,13 @@ public class MetadataSummary {
     private final TitledPane[] information;
 
     /**
+     * The listeners to notify about native metadata. We define those listeners in this {@link MetadataSummary}
+     * for taking advantage of the background loading mechanism. We do not provide public API for such listeners
+     * because a future version may want to provide those listeners in a more appropriate (not yet defined) class.
+     */
+    final ArrayList<MetadataTree> nativeMetadataViews;
+
+    /**
      * Creates an initially empty metadata overview.
      */
     public MetadataSummary() {
@@ -147,6 +157,7 @@ public class MetadataSummary {
         content.setFitToWidth(true);
         metadataProperty = new SimpleObjectProperty<>(this, "metadata");
         metadataProperty.addListener(MetadataSummary::applyChange);
+        nativeMetadataViews = new ArrayList<>();
     }
 
     /**
@@ -202,19 +213,31 @@ public class MetadataSummary {
             setMetadata((Metadata) null);
         } else {
             final class Getter extends Task<Metadata> {
-                /**
-                 * Invoked in a background thread for fetching metadata,
-                 * eventually with other information like grid geometry.
-                 */
+                /** The native metadata, or {@code null} if none or not requested. */
+                private TreeTable nativeMetadata;
+
+                /** Invoked in a background thread for fetching metadata. */
                 @Override protected Metadata call() throws DataStoreException {
+                    if (resource instanceof DataStore && !nativeMetadataViews.isEmpty()) {
+                        nativeMetadata = ((DataStore) resource).getNativeMetadata().orElse(null);
+                    }
                     return resource.getMetadata();
                 }
 
-                /**
-                 * Shows the result, unless another {@link #setMetadata(Resource)} has been invoked.
-                 */
-                @Override protected void succeeded() {super.succeeded(); setMetadata(getValue());}
-                @Override protected void failed()    {super.failed();    setError(getException());}
+                /** Shows the result in JavaFX thread. */
+                @Override protected void succeeded() {
+                    super.succeeded();
+                    setMetadata(getValue());
+                    for (final MetadataTree view : nativeMetadataViews) {
+                        view.setContent(nativeMetadata);
+                    }
+                }
+
+                /** Invoked in JavaFX thread if metadata loading failed. */
+                @Override protected void failed() {
+                    super.failed();
+                    setError(getException());
+                }
             }
             BackgroundThreads.execute(new Getter());
         }

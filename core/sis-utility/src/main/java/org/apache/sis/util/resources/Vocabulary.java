@@ -410,6 +410,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short FillValue = 63;
 
         /**
+         * Format
+         */
+        public static final short Format = 196;
+
+        /**
          * Geocentric
          */
         public static final short Geocentric = 64;

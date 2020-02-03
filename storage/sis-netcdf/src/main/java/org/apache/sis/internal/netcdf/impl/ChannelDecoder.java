@@ -60,6 +60,8 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
@@ -1033,6 +1035,26 @@ nextVar:    for (final VariableInfo variable : variables) {
     @Override
     public void close() throws IOException {
         input.channel.close();
+    }
+
+    /**
+     * Adds netCDF attributes to the given node.
+     *
+     * @param  root  the node where to add netCDF attributes.
+     */
+    @Override
+    public void addNativeMetadata(final TreeTable.Node root) {
+        for (final Map.Entry<String,Object> entry : attributeMap.entrySet()) {
+            final TreeTable.Node node = root.newChild();
+            node.setValue(TableColumn.NAME, entry.getKey());
+            Object value = entry.getValue();
+            if (value != null) {
+                if (value instanceof Vector) {
+                    value = ((Vector) value).toArray();
+                }
+                node.setValue(TableColumn.VALUE, value);
+            }
+        }
     }
 
     /**

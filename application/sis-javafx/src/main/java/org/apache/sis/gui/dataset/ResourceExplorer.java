@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.dataset;
 
+import java.util.Objects;
 import java.util.Collection;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -32,10 +33,13 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.gui.metadata.MetadataSummary;
 import org.apache.sis.gui.metadata.MetadataTree;
+import org.apache.sis.gui.metadata.StandardMetadataTree;
 import org.apache.sis.gui.coverage.GridView;
 import org.apache.sis.gui.coverage.ImageRequest;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -57,12 +61,6 @@ public class ResourceExplorer extends WindowManager {
      * The tree of resources.
      */
     private final ResourceTree resources;
-
-    /**
-     * The tab where to show {@link #features} or {@link #coverage}, depending on the kind of resource.
-     * The data will be set only if this tab is visible, because their loading may be costly.
-     */
-    private final Tab dataTab;
 
     /**
      * The data as a table, created when first needed.
@@ -88,6 +86,12 @@ public class ResourceExplorer extends WindowManager {
     private final SplitPane content;
 
     /**
+     * The tab where to show {@link #features} or {@link #coverage}, depending on the kind of resource.
+     * The data will be set only if this tab is visible, because their loading may be costly.
+     */
+    private final Tab dataTab;
+
+    /**
      * The currently selected resource.
      */
     public final ReadOnlyProperty<Resource> selectedResourceProperty;
@@ -110,9 +114,21 @@ public class ResourceExplorer extends WindowManager {
         final Resources localized = localized();
         dataTab = new Tab(localized.getString(Resources.Keys.Data));
         dataTab.setContextMenu(new ContextMenu(createNewWindowMenu()));
+
+        final String nativeTabText = Vocabulary.getResources(localized.getLocale()).getString(Vocabulary.Keys.Format);
+        final MetadataTree nativeMetadata = new MetadataTree(metadata);
+        final Tab nativeTab = new Tab(nativeTabText, nativeMetadata);
+        nativeTab.setDisable(true);
+        nativeMetadata.contentProperty.addListener((p,o,n) -> {
+            nativeTab.setDisable(n == null);
+            Object label = (n != null) ? n.getRoot().getValue(TableColumn.NAME) : null;
+            nativeTab.setText(Objects.toString(label, nativeTabText));
+        });
+
         final TabPane tabs = new TabPane(
             new Tab(localized.getString(Resources.Keys.Summary),  metadata.getView()), dataTab,
-            new Tab(localized.getString(Resources.Keys.Metadata), new MetadataTree(metadata)));
+            new Tab(localized.getString(Resources.Keys.Metadata), new StandardMetadataTree(metadata)),
+            nativeTab);
 
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         tabs.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
@@ -121,7 +137,7 @@ public class ResourceExplorer extends WindowManager {
         resources.getSelectionModel().getSelectedItems().addListener(this::selectResource);
         SplitPane.setResizableWithParent(resources, Boolean.FALSE);
         SplitPane.setResizableWithParent(tabs, Boolean.TRUE);
-        content.setDividerPosition(0, 300);
+        resources.setPrefWidth(400);
 
         selectedResourceProperty = new SimpleObjectProperty<>(this, "selectedResource");
         dataTab.selectedProperty().addListener(this::dataTabShown);

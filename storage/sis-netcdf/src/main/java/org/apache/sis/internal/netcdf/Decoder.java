@@ -41,6 +41,7 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
@@ -54,7 +55,7 @@ import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
  * Synchronizations are caller's responsibility.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -177,6 +178,13 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
         // Convention are still null if this method is invoked from Convention.isApplicableTo(Decoder).
         return (convention != null) ? convention : Convention.DEFAULT;
     }
+
+    /**
+     * Adds netCDF attributes to the given node.
+     *
+     * @param  root  the node where to add netCDF attributes.
+     */
+    public abstract void addNativeMetadata(TreeTable.Node root);
 
     /**
      * Returns a filename for formatting error message and for information purpose.
