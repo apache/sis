@@ -44,6 +44,8 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.AttributeNames;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
@@ -59,7 +61,7 @@ import org.apache.sis.math.Vector;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.3
  * @module
  */
@@ -544,6 +546,38 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     @Override
     protected Object getAttributeValue(final String attributeName) {
         return attributes.get(attributeName);
+    }
+
+    /**
+     * Adds the attributes of this variable to the given node. This is used for building the tree returned by
+     * {@link org.apache.sis.storage.netcdf.NetcdfStore#getNativeMetadata()}. For information purpose only.
+     *
+     * @param  branch  where to add new nodes for the attributes of this variable.
+     */
+    final void addAttributesTo(final TreeTable.Node branch) {
+        addAttributesTo(branch, attributes);
+    }
+
+    /**
+     * Adds the given attributes to the given node. This is used for building the tree
+     * returned by {@link org.apache.sis.storage.netcdf.NetcdfStore#getNativeMetadata()}.
+     * This tree is for information purpose only.
+     *
+     * @param  branch      where to add new nodes for the given attributes.
+     * @param  attributes  the attributes to add to the specified branch.
+     */
+    static void addAttributesTo(final TreeTable.Node branch, final Map<String,Object> attributes) {
+        for (final Map.Entry<String,Object> entry : attributes.entrySet()) {
+            final TreeTable.Node node = branch.newChild();
+            node.setValue(TableColumn.NAME, entry.getKey());
+            Object value = entry.getValue();
+            if (value != null) {
+                if (value instanceof Vector) {
+                    value = ((Vector) value).toArray();
+                }
+                node.setValue(TableColumn.VALUE, value);
+            }
+        }
     }
 
     /**

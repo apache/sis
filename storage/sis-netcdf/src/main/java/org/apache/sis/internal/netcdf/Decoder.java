@@ -180,11 +180,13 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     }
 
     /**
-     * Adds netCDF attributes to the given node.
+     * Adds netCDF attributes to the given node, including variables and sub-groups attributes.
+     * Groups are shown first, then variables attributes, and finally global attributes.
+     * Showing global attributes last is consistent with ncML ("netCDF dump") output.
      *
      * @param  root  the node where to add netCDF attributes.
      */
-    public abstract void addNativeMetadata(TreeTable.Node root);
+    public abstract void addAttributesTo(TreeTable.Node root);
 
     /**
      * Returns a filename for formatting error message and for information purpose.

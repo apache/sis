@@ -1038,23 +1038,19 @@ nextVar:    for (final VariableInfo variable : variables) {
     }
 
     /**
-     * Adds netCDF attributes to the given node.
+     * Adds netCDF attributes to the given node, including variables attributes.
+     * Variables attributes are shown fist, and global attributes are last.
      *
      * @param  root  the node where to add netCDF attributes.
      */
     @Override
-    public void addNativeMetadata(final TreeTable.Node root) {
-        for (final Map.Entry<String,Object> entry : attributeMap.entrySet()) {
+    public void addAttributesTo(final TreeTable.Node root) {
+        for (final Map.Entry<String,VariableInfo> entry : variableMap.entrySet()) {
             final TreeTable.Node node = root.newChild();
             node.setValue(TableColumn.NAME, entry.getKey());
-            Object value = entry.getValue();
-            if (value != null) {
-                if (value instanceof Vector) {
-                    value = ((Vector) value).toArray();
-                }
-                node.setValue(TableColumn.VALUE, value);
-            }
+            entry.getValue().addAttributesTo(node);
         }
+        VariableInfo.addAttributesTo(root, attributeMap);
     }
 
     /**

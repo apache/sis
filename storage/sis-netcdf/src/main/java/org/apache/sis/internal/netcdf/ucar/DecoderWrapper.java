@@ -502,46 +502,69 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
-     * Adds netCDF attributes to the given node.
+     * Adds netCDF attributes to the given node, including variables and sub-groups attributes.
+     * Groups are shown first, then variables attributes, and finally global attributes.
      *
      * @param  root  the node where to add netCDF attributes.
      */
     @Override
-    public void addNativeMetadata(final TreeTable.Node root) {
-        addNativeMetadata(root, file.getRootGroup());
+    public void addAttributesTo(final TreeTable.Node root) {
+        addAttributesTo(root, file.getRootGroup());
     }
 
     /**
      * Adds all attributes of the given group, then create nodes for sub-groups (if any).
      * This method invokes itself recursively.
+     *
+     * @param  branch  where to add new nodes for the children of given group.
+     * @param  group   group for which to add sub-group, variables and attributes.
      */
-    private void addNativeMetadata(final TreeTable.Node branch, final Group group) {
-        for (final Attribute attribute : group.getAttributes()) {
-            final TreeTable.Node node = branch.newChild();
-            node.setValue(TableColumn.NAME, attribute.getShortName());
-            final int length = attribute.getLength();
-            final Object value;
-            switch (length) {
-                case 0: continue;
-                case 1: {
-                    value = attribute.getValue(0);
-                    break;
-                }
-                default: {
-                    final Object[] values = new Object[length];
-                    for (int i=0; i<length; i++) {
-                        values[i] = attribute.getValue(i);
-                    }
-                    value = values;
-                    break;
-                }
-            }
-            node.setValue(TableColumn.VALUE, value);
-        }
+    private void addAttributesTo(final TreeTable.Node branch, final Group group) {
         for (final Group sub : group.getGroups()) {
             final TreeTable.Node node = branch.newChild();
             node.setValue(TableColumn.NAME, sub.getShortName());
-            addNativeMetadata(node, sub);
+            addAttributesTo(node, sub);
+        }
+        for (final ucar.nc2.Variable variable : group.getVariables()) {
+            final TreeTable.Node node = branch.newChild();
+            node.setValue(TableColumn.NAME, variable.getShortName());
+            addAttributesTo(node, variable.getAttributes());
+        }
+        addAttributesTo(branch, group.getAttributes());
+    }
+
+    /**
+     * Adds the given attributes to the given node. This is used for building the tree
+     * returned by {@link org.apache.sis.storage.netcdf.NetcdfStore#getNativeMetadata()}.
+     * This tree is for information purpose only.
+     *
+     * @param  branch      where to add new nodes for the given attributes.
+     * @param  attributes  the attributes to add to the specified branch.
+     */
+    private static void addAttributesTo(final TreeTable.Node branch, final List<Attribute> attributes) {
+        if (attributes != null) {
+            for (final Attribute attribute : attributes) {
+                final TreeTable.Node node = branch.newChild();
+                node.setValue(TableColumn.NAME, attribute.getShortName());
+                final int length = attribute.getLength();
+                final Object value;
+                switch (length) {
+                    case 0: continue;
+                    case 1: {
+                        value = attribute.getValue(0);
+                        break;
+                    }
+                    default: {
+                        final Object[] values = new Object[length];
+                        for (int i=0; i<length; i++) {
+                            values[i] = attribute.getValue(i);
+                        }
+                        value = values;
+                        break;
+                    }
+                }
+                node.setValue(TableColumn.VALUE, value);
+            }
         }
     }
 

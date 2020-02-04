@@ -209,7 +209,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
         final DefaultTreeTable table = new DefaultTreeTable(TableColumn.NAME, TableColumn.VALUE);
         final TreeTable.Node root = table.getRoot();
         root.setValue(TableColumn.NAME, NetcdfStoreProvider.NAME);
-        decoder.addNativeMetadata(root);
+        decoder.addAttributesTo(root);
         return Optional.of(table);
     }
 
