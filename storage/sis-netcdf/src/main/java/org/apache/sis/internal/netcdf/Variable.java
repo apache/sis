@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import java.io.IOException;
 import java.time.Instant;
 import javax.measure.Unit;
+import javax.measure.format.ParserException;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.storage.DataStoreException;
@@ -253,10 +254,20 @@ public abstract class Variable extends Node {
         if (!unitParsed) {
             unitParsed = true;                          // Set first for avoiding to report errors many times.
             final String symbols = getUnitsString();
+            Exception error = null;
             if (symbols != null) try {
                 unit = parseUnit(symbols);
             } catch (Exception ex) {
-                error(Variable.class, "getUnit", ex, Errors.Keys.CanNotAssignUnitToVariable_2, getName(), symbols);
+                error = ex;
+            }
+            if (unit == null) try {
+                unit = decoder.convention().getUnitFallback(this);
+            } catch (ParserException ex) {
+                if (error == null) error = ex;
+                else error.addSuppressed(ex);
+            }
+            if (error != null) {
+                error(Variable.class, "getUnit", error, Errors.Keys.CanNotAssignUnitToVariable_2, getName(), symbols);
             }
         }
         return unit;

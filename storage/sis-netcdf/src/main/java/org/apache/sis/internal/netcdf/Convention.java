@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.awt.image.DataBuffer;
+import javax.measure.Unit;
+import javax.measure.format.ParserException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.operation.MathTransform;
@@ -537,7 +539,6 @@ public class Convention {
     // │                                       COVERAGE RANGE                                       │
     // └────────────────────────────────────────────────────────────────────────────────────────────┘
 
-
     /**
      * Returns the range of valid values, or {@code null} if unknown.
      * The default implementation takes the range of values from the following properties, in precedence order:
@@ -714,5 +715,18 @@ public class Convention {
         if (!Double.isNaN(scale))  tr.setScale (scale);
         if (!Double.isNaN(offset)) tr.setOffset(offset);
         return tr;
+    }
+
+    /**
+     * Returns the unit of measurement to use as a fallback if it can not be determined in a standard way.
+     * Default implementation returns {@code null}. Subclasses can override if the unit can be determined
+     * in a way specific to this convention.
+     *
+     * @param  data  the variable for which to get the unit of measurement.
+     * @return the unit of measurement, or {@code null} if none or unknown.
+     * @throws ParserException if the unit symbol can not be parsed.
+     */
+    public Unit<?> getUnitFallback(final Variable data) throws ParserException {
+        return null;
     }
 }

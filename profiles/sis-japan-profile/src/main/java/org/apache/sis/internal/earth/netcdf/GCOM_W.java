@@ -21,6 +21,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.regex.Pattern;
+import javax.measure.Unit;
+import javax.measure.format.ParserException;
+import org.apache.sis.measure.Units;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.internal.netcdf.Convention;
 import org.apache.sis.internal.netcdf.Decoder;
@@ -65,7 +68,7 @@ import org.apache.sis.referencing.operation.transform.TransferFunction;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see <a href="http://global.jaxa.jp/projects/sat/gcom_w/">SHIZUKU (GCOM-W) on JAXA</a>
  * @see <a href="https://en.wikipedia.org/wiki/Global_Change_Observation_Mission">GCOM on Wikipedia</a>
@@ -230,5 +233,24 @@ public final class GCOM_W extends Convention {
             if (Double.isFinite(offset)) tr.setOffset(offset);
         }
         return tr;
+    }
+
+    /**
+     * Returns the unit of measurement to use as a fallback if it can not be determined in a standard way.
+     *
+     * @param  data  the variable for which to get the unit of measurement.
+     * @return the unit of measurement, or {@code null} if none or unknown.
+     * @throws ParserException if the unit symbol can not be parsed.
+     */
+    @Override
+    public Unit<?> getUnitFallback(final Variable data) throws ParserException {
+        final String symbol = data.getAttributeAsString("UNIT");
+        if (symbol == null) {
+            return super.getUnitFallback(data);
+        }
+        if (symbol.equals("C")) {       // Missing "°" before "C".
+            return Units.CELSIUS;
+        }
+        return Units.valueOf(symbol);
     }
 }
