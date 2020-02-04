@@ -104,9 +104,11 @@ public class CoverageExplorer {
      * Creates an initially empty explorer.
      */
     public CoverageExplorer() {
-        final Vocabulary vocabulary = Vocabulary.getResources((Locale) null);
+        final Locale locale = Locale.getDefault(Locale.Category.DISPLAY);
+        final Vocabulary vocabulary = Vocabulary.getResources(locale);
         gridView         = new GridView();
         sampleDimensions = new CategoryCellFactory(gridView.cellFormat).createSampleDimensionTable(vocabulary);
+        sampleDimensions.getSelectionModel().selectedIndexProperty().addListener(new BandSelectionListener(gridView.bandProperty));
         /*
          * "Coverage" section with the following controls:
          *    - Coverage domain as a list of CRS dimensions with two of them selected (TODO).

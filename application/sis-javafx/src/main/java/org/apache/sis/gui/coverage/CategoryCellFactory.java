@@ -101,7 +101,7 @@ final class CategoryCellFactory implements Callback<TableColumn<SampleDimension,
     }
 
     /**
-     * Creates a cell for numeric values.
+     * Invoked by {@link TableColumn} for creating a cell for numeric values.
      * This method is public as an implementation side-effect; do not rely on that.
      */
     @Override
