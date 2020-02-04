@@ -89,5 +89,4 @@ public abstract class Presentation {
     public void setCandidate(Feature feature) {
         this.candidate = feature;
     }
-
 }

@@ -59,7 +59,6 @@ import static java.lang.Math.subtractExact;
 import static java.lang.Math.toIntExact;
 
 // Branch-specific imports
-
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
 

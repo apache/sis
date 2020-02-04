@@ -24,11 +24,13 @@
  * Some classes in this package will move to public API after we gained enough confidence
  * about their stability.</p>
  *
- * @todo Since everything is about maps in this package, should we omit the {@code Map} prefix in class names?
+ * <h2>Synchronization</h2>
+ * Unless otherwise specified, classes in this package are not thread safe.
+ * Synchronization, if desired, must be done by the caller.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 package org.apache.sis.internal.map;

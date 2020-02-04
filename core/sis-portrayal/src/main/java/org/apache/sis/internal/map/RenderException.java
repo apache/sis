@@ -16,34 +16,46 @@
  */
 package org.apache.sis.internal.map;
 
-import org.apache.sis.util.ArgumentChecks;
-
 
 /**
  * Thrown when a map rendering process failed.
  *
- * <p>
- * NOTE: this class is a first draft subject to modifications.
- * </p>
- *
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public class RenderException extends Exception {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 4185833217030999642L;
 
+    /**
+     * Creates an exception with the specified details message.
+     *
+     * @param message  the detail message.
+     */
     public RenderException(final String message) {
         super(message);
-        ArgumentChecks.ensureNonEmpty("message", message);
     }
 
-    public RenderException(final Throwable throwable) {
-        this(((throwable.getMessage() == null) ? "No message" : throwable.getMessage()), throwable);
+    /**
+     * Creates an exception with the specified cause and no details message.
+     *
+     * @param cause  the cause for this exception.
+     */
+    public RenderException(final Throwable cause) {
+        super(cause);
     }
 
-    public RenderException(final String message, final Throwable throwable) {
-        super(message, throwable);
-        ArgumentChecks.ensureNonEmpty("message", message);
+    /**
+     * Creates an exception with the specified details message and cause.
+     *
+     * @param message  the detail message in the default locale.
+     * @param cause    the cause for this exception.
+     */
+    public RenderException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 }
