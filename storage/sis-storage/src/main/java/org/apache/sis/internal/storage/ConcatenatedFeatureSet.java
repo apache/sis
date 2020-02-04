@@ -192,7 +192,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
                     }
                 }
             }
-            return null;                 // A source can not provide estimation.
+            return OptionalLong.empty();                        // A source can not provide estimation.
         }
         return OptionalLong.of(sum);
     }
