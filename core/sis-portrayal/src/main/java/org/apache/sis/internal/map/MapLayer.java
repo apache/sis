@@ -17,52 +17,82 @@
 package org.apache.sis.internal.map;
 
 import java.util.Objects;
+import org.opengis.style.Style;
+import org.opengis.feature.Feature;
+import org.opengis.coverage.Coverage;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.Resource;
-import org.opengis.style.Style;
+import org.apache.sis.storage.DataSet;
+import org.apache.sis.storage.Aggregate;
 
 
 /**
  * Data (resource) associated to visual representation (symbology).
- * Layers are the key elements of a map: they link datas (given by a {@link Resource})
- * to their visual representation (defined by a {@link Style}).
+ * Layers are the key elements of a map: they link data (given by {@link Resource}s) or a subset of
+ * those data (filtered by {@link Query}) to their visual representation (defined by {@link Style}s).
  * The visual appearance of a layer should be similar with any rendering engine.
  * Some details may very because of different rendering strategies for label placements, 2D or 3D,
- * but the fundamentals aspect of each {@link org.opengis.feature.Feature} or
- * {@link org.opengis.coverage.Coverage} should be unchanged.
- *
- * <p>
- * NOTE: this class is a first draft subject to modifications.
- * </p>
+ * but the fundamentals aspect of each {@link Feature} or {@link Coverage} should be unchanged.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public class MapLayer extends MapItem {
-
-    /** Identifies a change in the layer resource. */
+    /**
+     * The {@value} property name, used for notifications about changes in map layer resource.
+     * The resource provides the data to be rendered.
+     * Associated values should be instances of {@link DataSet} or {@link Aggregate}.
+     *
+     * @see #getResource()
+     * @see #setResource(Resource)
+     */
     public static final String RESOURCE_PROPERTY = "resource";
-    /** Identifies a change in the layer style. */
-    public static final String STYLE_PROPERTY = "style";
-    /** Identifies a change in the layer query. */
+
+    /**
+     * The {@value} property name, used for notifications about changes in map layer query.
+     * The query can filter resource data for rendering only a subset of available data.
+     * Associated values are instances of {@link Query}.
+     *
+     * @see #getQuery()
+     * @see #setQuery(Query)
+     */
     public static final String QUERY_PROPERTY = "query";
 
     /**
-     * Data to be rendered.
+     * The {@value} property name, used for notifications about changes in map layer style.
+     * The style specifies the appearance of the filtered data to be rendered.
+     * Associated values are instances of {@link Style}.
+     *
+     * @see #getStyle()
+     * @see #setStyle(Style)
+     */
+    public static final String STYLE_PROPERTY = "style";
+
+    /**
+     * Data to be rendered, or {@code null} if unavailable.
+     *
+     * @see #RESOURCE_PROPERTY
+     * @see #getResource()
      */
     private Resource resource;
 
     /**
-     * Visual representation of data.
-     */
-    private Style style;
-
-    /**
-     * User defined query.
+     * Filter for rendering a subset of available data, or {@code null} if none.
+     *
+     * @see #QUERY_PROPERTY
+     * @see #getQuery()
      */
     private Query query;
+
+    /**
+     * Visual representation of data, or {@code null} if none.
+     *
+     * @see #STYLE_PROPERTY
+     * @see #getStyle()
+     */
+    private Style style;
 
     /**
      * Constructs an initially empty map layer.
@@ -75,11 +105,12 @@ public class MapLayer extends MapItem {
 
     /**
      * Returns the data (resource) represented by this layer.
-     * The resource should be a {@link org.apache.sis.storage.DataSet},
-     * but {@link org.apache.sis.storage.Aggregate} are also accepted.
-     * The behavior in such case depends on the rendering engine.
+     * The resource should be a {@link DataSet}, but {@link Aggregate} is also accepted.
+     * The behavior in aggregate case depends on the rendering engine.
      *
      * @return data to be rendered, or {@code null} is unavailable.
+     *
+     * @see #RESOURCE_PROPERTY
      */
     public Resource getResource() {
         return resource;
@@ -91,13 +122,45 @@ public class MapLayer extends MapItem {
      * that the layer should have existed but is unavailable for an unspecified reason.
      * This case may happen with processing or distant services resources.
      *
-     * @param  resource  the new data, or {@code null} if unavailable.
+     * <p>The given resource should be a {@link DataSet} or an {@link Aggregate} of data sets.
+     * However this base class does not enforce those types. Subclasses may restrict the set
+     * of resource types accepted by this method.</p>
+     *
+     * @param  newValue  the new data, or {@code null} if unavailable.
      */
-    public void setResource(Resource resource) {
-        if (!Objects.equals(this.resource, resource)) {
-            Resource old = this.resource;
-            this.resource = resource;
-            firePropertyChange(RESOURCE_PROPERTY, old, resource);
+    public void setResource(final Resource newValue) {
+        final Resource oldValue = resource;
+        if (!Objects.equals(oldValue, newValue)) {
+            resource = newValue;
+            firePropertyChange(RESOURCE_PROPERTY, oldValue, newValue);
+        }
+    }
+
+    /**
+     * Returns the filter for reducing the amount of data to render. Query filters can be
+     * specified for rendering a smaller amount of data than what the resource can provide.
+     * If the query is undefined, then all data will be rendered.
+     *
+     * @return filter for reducing data, or {@code null} for rendering all data.
+     *
+     * @see #QUERY_PROPERTY
+     */
+    public Query getQuery() {
+        return query;
+    }
+
+    /**
+     * Sets a filter for reducing the amount of data to render. If this method is never invoked, the default value
+     * is {@code null}. If the given value is different than the previous value, then a change event is sent to all
+     * listeners registered for the {@value #QUERY_PROPERTY} property.
+     *
+     * @param  newValue  filter for reducing data, or {@code null} for rendering all data.
+     */
+    public void setQuery(final Query newValue) {
+        final Query oldValue = query;
+        if (!Objects.equals(oldValue, newValue)) {
+            query = newValue;
+            firePropertyChange(QUERY_PROPERTY, oldValue, newValue);
         }
     }
 
@@ -113,42 +176,17 @@ public class MapLayer extends MapItem {
     }
 
     /**
-     * Sets the visual appearance of the data.
+     * Sets the visual appearance of the data. If this method is never invoked, the default value is {@code null}.
+     * If the given value is different than the previous value, then a change event is sent to all listeners
+     * registered for the {@value #STYLE_PROPERTY} property.
      *
-     * @param  style  description of data visual appearance, or {@code null} if unspecified.
+     * @param  newValue  description of data visual appearance, or {@code null} if unspecified.
      */
-    public void setStyle(Style style) {
-        if (!Objects.equals(this.style, style)) {
-            Style old = this.style;
-            this.style = style;
-            firePropertyChange(STYLE_PROPERTY, old, style);
-        }
-    }
-
-    /**
-     * Returns the definition query for this layer.If no definition
-     * query has been defined {@code null} is returned.
-     * @return query, or {@code null} if unspecified.
-     */
-    public Query getQuery() {
-        return query;
-    }
-
-    /**
-     * Sets a filter query for this layer.
-     *
-     * <p>
-     * Query filters should be used to reduce searched or displayed resource
-     * when rendering or analyzing this layer.
-     * </p>
-     *
-     * @param query the query for this layer, or {@code null} if unavailable.
-     */
-    public void setQuery(Query query) {
-        if (!Objects.equals(this.query, query)) {
-            Query old = this.query;
-            this.query = query;
-            firePropertyChange(QUERY_PROPERTY, old, query);
+    public void setStyle(final Style newValue) {
+        final Style oldValue = style;
+        if (!Objects.equals(oldValue, newValue)) {
+            style = newValue;
+            firePropertyChange(STYLE_PROPERTY, oldValue, newValue);
         }
     }
 }
