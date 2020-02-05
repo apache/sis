@@ -17,27 +17,29 @@
 package org.apache.sis.internal.map;
 
 import org.opengis.feature.Feature;
+import org.apache.sis.storage.Resource;
+import org.apache.sis.coverage.grid.GridCoverage;
 
 
 /**
- * When rendering resources, the first step is to generate the visual aspect
- * of each feature or coverage, we call each one a Presentation.
- * <p>
- * A presentation object must be a simplistic description without any evaluation,
- * processing or loading work remaining.
- * </p>
- * <p>
- * It is important to note that multiple presentations may be generated for the
- * same feature.
- * </p>
+ * Parent class of all elements having a graphical representation on the map.
+ * {@code Presentation} instances are organized in a tree parallel to the {@link MapLayer} tree.
+ * The {@link MapLayer} tree links data and styles in a device-independent way, while
+ * the {@code Presentation} tree can be seen as map layers information "compiled"
+ * in a form more directly exploitable by the display device.
+ * In particular a {@code Presentation} objects must encapsulate data without
+ * costly evaluation, processing or loading work remaining to be done.
+ * (for example {@link Feature} or {@link GridCoverage} instances instead than {@link Resource}s).
+ *
+ * <p>Note that multiple presentations may be generated for the same feature.
+ * Consequently many {@code Presentation} instances may encapsulate the same {@link Feature} instances.</p>
  *
  * <p>
  * NOTE: this class is a first draft subject to modifications.
  * </p>
  *
- * @todo Maybe should be not be part of public API. This functionality could be done with a
- *       {@link MapItem} subclasses containing only a {@link Feature} or {@code GridCoverage}
- *       instance, as opposed to {@link MapLayer} containing {@code Resource}.
+ * @todo Consider renaming as {@code Graphic} for emphasis that this is a graphical representation of something.
+ *       This would be consistent with legacy GO-1 specification (even if retired, it still have worthy material).
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.1

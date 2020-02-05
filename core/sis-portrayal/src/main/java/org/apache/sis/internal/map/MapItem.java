@@ -29,24 +29,24 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * Parent class of all elements having a graphical representation on the map.
- * This base class does not make any assumption about how this {@code MapItem} will be rendered;
- * the actual feature or coverage data, together with styling information, are provided by subclasses.
+ * Base class of map layer or group of map layers. This base class does not represent graphical elements.
+ * Instead it contains information (data and style) for creating a tree of {@link Presentation} objects.
  * A {@code MapItem} contains the following properties:
  *
  * <ul>
  *   <li>An {@linkplain #getIdentifier() identifier}, which can be any {@link String} at developer choice.</li>
  *   <li>A human-readable {@linkplain #getTitle() title} for pick lists, for example in GUI.</li>
- *   <li>A {@linkplain #getAbstract() narrative description} providing additional information.</li>
+ *   <li>A {@linkplain #getAbstract() narrative description} providing more details.</li>
  * </ul>
  *
  * Additional information can be added in a map of {@linkplain #getUserProperties() user properties}.
+ * The actual feature or coverage data, together with styling information, are provided by subclasses.
  *
  * <h2>Synchronization</h2>
  * {@code MapItem} instances are not thread-safe. Synchronization, if desired, is caller responsibility.
  *
- * @todo Consider renaming as {@code Graphic} for emphasis that this is a graphical representation of something.
- *       This would be consistent with legacy GO-1 specification (even if retired, it still have worthy material).
+ * @todo Rename as {@code MapNode}? "Item" suggests an element in a list, while {@link MapLayers} actually
+ *       creates a tree.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.1

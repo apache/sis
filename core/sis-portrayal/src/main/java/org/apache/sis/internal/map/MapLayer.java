@@ -27,7 +27,7 @@ import org.apache.sis.storage.Aggregate;
 
 
 /**
- * Data (resource) associated to visual representation (symbology).
+ * Data (resource) associated to rules for visual representation (symbology).
  * Layers are the key elements of a map: they link data (given by {@link Resource}s) or a subset of
  * those data (filtered by {@link Query}) to their visual representation (defined by {@link Style}s).
  * The visual appearance of a layer should be similar with any rendering engine.

@@ -25,19 +25,17 @@ import org.apache.sis.storage.DataSet;
 
 
 /**
- * A group of graphic elements to display together.
+ * A group of layers to display together.
  * {@code MapLayers} can be used for grouping related layers under a same node.
- * This allows global actions, like {@linkplain #setVisible(boolean) hiding}
- * background layers in one call.
+ * This allows global actions, like {@linkplain #setVisible(boolean) hiding} background layers in one call.
+ * A {@code MapLayers} can also contain nested {@code MapLayers}, thus forming a tree.
+ * Since {@link MapLayer} and {@code MapLayers} are the only {@link MapItem} subclasses,
+ * all leaves in this tree can only be {@link MapLayer} instances (assuming no {@code MapLayers} is empty).
  *
  * <p>A {@code MapLayers} is often (but not necessarily) the root node of the tree of all graphic elements to
- * draw on the map. Those elements are typically {@link MapLayer} instances, but more generic {@link MapItem}
- * instances are also accepted. Those elements are listed by {@link #getComponents()} in <var>z</var> order.
- * In addition, {@code MapLayers} defines the {@linkplain #getAreaOfInterest() area of interest}
- * which should be zoomed by default when the map is rendered.</p>
- *
- * @todo Despite its name, this class is not a container of {@link MapLayer}s since it accepts more generic objects.
- *       Consider renaming as {@code Group} or {@code GraphicAggregate}.
+ * draw on the map. The {@link MapItem} children are listed by {@link #getComponents()} in <var>z</var> order.
+ * In addition, {@code MapLayers} defines the {@linkplain #getAreaOfInterest() area of interest} which should
+ * be zoomed by default when the map is rendered.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
@@ -52,7 +50,7 @@ public class MapLayers extends MapItem {
      * @see #getAreaOfInterest()
      * @see #setAreaOfInterest(Envelope)
      */
-    public static final String AREAOFINTEREST_PROPERTY = "areaOfInterest";
+    public static final String AREA_OF_INTEREST_PROPERTY = "areaOfInterest";
 
     /**
      * The components in this group, or an empty list if none.
@@ -118,7 +116,7 @@ public class MapLayers extends MapItem {
         final Envelope oldValue = areaOfInterest;
         if (!Objects.equals(oldValue, newValue)) {
             areaOfInterest = newValue;
-            firePropertyChange(AREAOFINTEREST_PROPERTY, oldValue, newValue);
+            firePropertyChange(AREA_OF_INTEREST_PROPERTY, oldValue, newValue);
         }
     }
 }
