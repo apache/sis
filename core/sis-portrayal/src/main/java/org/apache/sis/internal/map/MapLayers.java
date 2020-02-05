@@ -21,46 +21,53 @@ import java.util.List;
 import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.storage.DataSet;
 
 
 /**
- * A collection of layers.
- * Layers are used to regroup similar layers under a same node.
+ * A group of graphic elements to display together.
+ * {@code MapLayers} can be used for grouping related layers under a same node.
  * This allows global actions, like {@linkplain #setVisible(boolean) hiding}
  * background layers in one call.
  *
- * A map context which is the name given to the root map item node contains
- * all layers to display (given by the {@link #getComponents() group components})
- * and defines the {@linkplain #getAreaOfInterest() area of interest} which should be zoomed by default
- * when the map is rendered.
+ * <p>A {@code MapLayers} is often (but not necessarily) the root node of the tree of all graphic elements to
+ * draw on the map. Those elements are typically {@link MapLayer} instances, but more generic {@link MapItem}
+ * instances are also accepted. Those elements are listed by {@link #getComponents()} in <var>z</var> order.
+ * In addition, {@code MapLayers} defines the {@linkplain #getAreaOfInterest() area of interest}
+ * which should be zoomed by default when the map is rendered.</p>
  *
- * <p>
- * NOTE: this class is a first draft subject to modifications.
- * TODO : components events
- * </p>
+ * @todo Despite its name, this class is not a container of {@link MapLayer}s since it accepts more generic objects.
+ *       Consider renaming as {@code Group} or {@code GraphicAggregate}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public class MapLayers extends MapItem {
-
-    /** Identifies a change in the map context area of interest. */
+    /**
+     * The {@value} property name, used for notifications about changes in area of interest.
+     * Associated values are instances of {@link Envelope}.
+     *
+     * @see #getAreaOfInterest()
+     * @see #setAreaOfInterest(Envelope)
+     */
     public static final String AREAOFINTEREST_PROPERTY = "areaOfInterest";
 
     /**
-     * The components in this group.
+     * The components in this group, or an empty list if none.
+     *
+     * @todo Should be an observable list with event sent when an element is added/removed/modified.
      */
     private final List<MapItem> components;
 
     /**
-     * The area of interest.
+     * The area of interest, or {@code null} is unspecified.
      */
     private Envelope areaOfInterest;
 
     /**
-     * Creates an initially empty map layers.
+     * Creates an initially empty group of graphic elements.
      */
     public MapLayers() {
         components = new ArrayList<>();
@@ -83,8 +90,8 @@ public class MapLayers extends MapItem {
     }
 
     /**
-     * Returns the map area to show by default. This is not necessarily the
-     * {@linkplain org.apache.sis.storage.DataSet#getEnvelope() envelope of data}
+     * Returns the map area to show by default.
+     * This is not necessarily the {@linkplain DataSet#getEnvelope() envelope of data}
      * since one may want to zoom in a different spatiotemporal area.
      *
      * <p>The {@linkplain org.apache.sis.geometry.GeneralEnvelope#getCoordinateReferenceSystem() envelope CRS}
@@ -94,7 +101,7 @@ public class MapLayers extends MapItem {
      *
      * @return map area to show by default, or {@code null} is unspecified.
      *
-     * @see org.apache.sis.storage.DataSet#getEnvelope()
+     * @see DataSet#getEnvelope()
      */
     public Envelope getAreaOfInterest() {
         return areaOfInterest;
@@ -102,16 +109,16 @@ public class MapLayers extends MapItem {
 
     /**
      * Sets the map area to show by default.
-     * The given envelope is not necessarily related to the data contained in the map context.
-     * It may be wider, small and in a different {@link CoordinateReferenceSystem}.
+     * The given envelope is not necessarily related to the data contained in this group.
+     * It may be wider, or smaller, and in a different {@link CoordinateReferenceSystem}.
      *
-     * @param  aoi  new map area to show by default, or {@code null} is unspecified.
+     * @param  newValue  new map area to show by default, or {@code null} is unspecified.
      */
-    public void setAreaOfInterest(Envelope aoi) {
-        if (!Objects.equals(areaOfInterest, aoi)) {
-            Envelope old = areaOfInterest;
-            areaOfInterest = aoi;
-            firePropertyChange(AREAOFINTEREST_PROPERTY, old, aoi);
+    public void setAreaOfInterest(final Envelope newValue) {
+        final Envelope oldValue = areaOfInterest;
+        if (!Objects.equals(oldValue, newValue)) {
+            areaOfInterest = newValue;
+            firePropertyChange(AREAOFINTEREST_PROPERTY, oldValue, newValue);
         }
     }
 }

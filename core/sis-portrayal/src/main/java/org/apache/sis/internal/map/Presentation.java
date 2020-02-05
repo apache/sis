@@ -35,9 +35,13 @@ import org.opengis.feature.Feature;
  * NOTE: this class is a first draft subject to modifications.
  * </p>
  *
- * @author Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @todo Maybe should be not be part of public API. This functionality could be done with a
+ *       {@link MapItem} subclasses containing only a {@link Feature} or {@code GridCoverage}
+ *       instance, as opposed to {@link MapLayer} containing {@code Resource}.
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.1
+ * @since   1.1
  * @module
  */
 public abstract class Presentation {

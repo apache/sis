@@ -29,7 +29,7 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * Parent class of all map elements.
+ * Parent class of all elements having a graphical representation on the map.
  * This base class does not make any assumption about how this {@code MapItem} will be rendered;
  * the actual feature or coverage data, together with styling information, are provided by subclasses.
  * A {@code MapItem} contains the following properties:
@@ -44,6 +44,9 @@ import org.apache.sis.util.ArraysExt;
  *
  * <h2>Synchronization</h2>
  * {@code MapItem} instances are not thread-safe. Synchronization, if desired, is caller responsibility.
+ *
+ * @todo Consider renaming as {@code Graphic} for emphasis that this is a graphical representation of something.
+ *       This would be consistent with legacy GO-1 specification (even if retired, it still have worthy material).
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
