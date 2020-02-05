@@ -42,13 +42,16 @@ import org.apache.sis.storage.Aggregate;
 public class MapLayer extends MapItem {
     /**
      * The {@value} property name, used for notifications about changes in map layer resource.
-     * The resource provides the data to be rendered.
+     * The data resource provides the digital data to be rendered. Note that not all kinds of resources
+     * are digital data. For example a resource may be a citation of facts or figures printed on paper,
+     * photographic material, or other media (see all {@link org.opengis.metadata.citation.PresentationForm}
+     * values having the {@code _HARDCOPY} suffix in their name).
      * Associated values should be instances of {@link DataSet} or {@link Aggregate}.
      *
-     * @see #getResource()
-     * @see #setResource(Resource)
+     * @see #getData()
+     * @see #setData(Resource)
      */
-    public static final String RESOURCE_PROPERTY = "resource";
+    public static final String DATA_PROPERTY = "data";
 
     /**
      * The {@value} property name, used for notifications about changes in map layer query.
@@ -73,8 +76,8 @@ public class MapLayer extends MapItem {
     /**
      * Data to be rendered, or {@code null} if unavailable.
      *
-     * @see #RESOURCE_PROPERTY
-     * @see #getResource()
+     * @see #DATA_PROPERTY
+     * @see #getData()
      */
     private Resource resource;
 
@@ -110,9 +113,9 @@ public class MapLayer extends MapItem {
      *
      * @return data to be rendered, or {@code null} is unavailable.
      *
-     * @see #RESOURCE_PROPERTY
+     * @see #DATA_PROPERTY
      */
-    public Resource getResource() {
+    public Resource getData() {
         return resource;
     }
 
@@ -126,13 +129,19 @@ public class MapLayer extends MapItem {
      * However this base class does not enforce those types. Subclasses may restrict the set
      * of resource types accepted by this method.</p>
      *
+     * <p>Note that not all kinds of resources are digital data. For example a resource may be an organization,
+     * or citation of facts, tables and figures printed on paper, photographic material, or other media
+     * (see all {@link org.opengis.metadata.citation.PresentationForm} values having the {@code _HARDCOPY}
+     * suffix in their name). The kind of resources in {@code MapLayer} shall be one of those representing
+     * digital data.</p>
+     *
      * @param  newValue  the new data, or {@code null} if unavailable.
      */
-    public void setResource(final Resource newValue) {
+    public void setData(final Resource newValue) {
         final Resource oldValue = resource;
         if (!Objects.equals(oldValue, newValue)) {
             resource = newValue;
-            firePropertyChange(RESOURCE_PROPERTY, oldValue, newValue);
+            firePropertyChange(DATA_PROPERTY, oldValue, newValue);
         }
     }
 
