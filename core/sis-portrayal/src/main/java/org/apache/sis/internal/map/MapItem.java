@@ -18,14 +18,9 @@ package org.apache.sis.internal.map;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Arrays;
 import java.util.Objects;
-import java.util.ConcurrentModificationException;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -45,15 +40,16 @@ import org.apache.sis.util.ArraysExt;
  * <h2>Synchronization</h2>
  * {@code MapItem} instances are not thread-safe. Synchronization, if desired, is caller responsibility.
  *
- * @todo Rename as {@code MapNode}? "Item" suggests an element in a list, while {@link MapLayers} actually
- *       creates a tree.
+ * @todo Rename as {@code LayerNode}? "Item" suggests an element in a list, while {@link MapLayers} actually
+ *       creates a tree. Furthermore having {@code Layer} in the name would add emphasis that this is a tree
+ *       of layers and not a tree of arbitrary objects.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-public abstract class MapItem {
+public abstract class MapItem extends Observable {
     /**
      * The {@value} property name, used for notifications about changes in map item identifier.
      * The identifier (or name) can be used to reference the item externally.
@@ -138,14 +134,6 @@ public abstract class MapItem {
     private Map<String,Object> userMap;
 
     /**
-     * The registered listeners for each property, created when first needed.
-     *
-     * @see #addPropertyChangeListener(String, PropertyChangeListener)
-     * @see #removePropertyChangeListener(String, PropertyChangeListener)
-     */
-    private Map<String,PropertyChangeListener[]> listeners;
-
-    /**
      * Only used by classes in this package.
      */
     MapItem() {
@@ -154,11 +142,11 @@ public abstract class MapItem {
 
     /**
      * Returns the identifier of this map item. The identifier can be any character string at developer choice;
-     * there is currently no restriction on the identifier form and no restriction about identifier uniqueness.
-     * The identifier is currently not used by Apache SIS; it is made available as a user convenience for
+     * there is currently no restriction on identifier syntax and no restriction about identifier uniqueness.
+     * That identifier is currently not used by Apache SIS; it is made available as a user convenience for
      * referencing {@code MapItem} instances externally.
      *
-     * <p>NOTE: restriction about identifier form and uniqueness may be added in a future version.</p>
+     * <p>NOTE: restriction about identifier syntax and uniqueness may be added in a future version.</p>
      *
      * @return identifier, or {@code null} if none.
      *
@@ -244,6 +232,8 @@ public abstract class MapItem {
      * then a {@code false} visibility status implies that all group components are also hidden.
      *
      * @return {@code true} if this item is visible.
+     *
+     * @see #VISIBLE_PROPERTY
      */
     public boolean isVisible() {
         return visible;
@@ -284,101 +274,5 @@ public abstract class MapItem {
             userMap = new HashMap<>();
         }
         return userMap;
-    }
-
-    /**
-     * Register a listener for the property of the given name.
-     * The listener will be notified every time that the property of the given name got a new value.
-     * The {@code propertyName} can be one of the following values:
-     *
-     * <ul>
-     *   <li>{@value #IDENTIFIER_PROPERTY} — for changes in identifier of this map item.</li>
-     *   <li>{@value #TITLE_PROPERTY}      — for changes in human-readable short description.</li>
-     *   <li>{@value #ABSTRACT_PROPERTY}   — for changes in narrative description.</li>
-     *   <li>{@value #VISIBLE_PROPERTY}    — for changes in visibility state.</li>
-     *   <li>Any other property defined by subclasses.</li>
-     * </ul>
-     *
-     * If the same listener is registered twice for the same property, then it will be notified twice
-     * (this method does not perform duplication checks).
-     *
-     * @param  propertyName  name of the property to listen.
-     * @param  listener      property listener to register.
-     */
-    public final void addPropertyChangeListener(final String propertyName, final PropertyChangeListener listener) {
-        ArgumentChecks.ensureNonEmpty("propertyName", propertyName);
-        ArgumentChecks.ensureNonNull("listener", listener);
-        if (listeners == null) {
-            listeners = new HashMap<>(4);       // Assume few properties will be listened.
-        }
-        final PropertyChangeListener[] oldList = listeners.get(propertyName);
-        final PropertyChangeListener[] newList;
-        final int n;
-        if (oldList != null) {
-            n = oldList.length;
-            newList = Arrays.copyOf(oldList, n+1);
-        } else {
-            n = 0;
-            newList = new PropertyChangeListener[1];
-        }
-        newList[n] = listener;
-        if (!listeners.replace(propertyName, oldList, newList)) {
-            // Opportunistic safety against some multi-threading misuse.
-            throw new ConcurrentModificationException();
-        }
-    }
-
-    /**
-     * Unregister a property listener. The given {@code propertyName} can be any of the name documented in
-     * {@link #addPropertyChangeListener(String, PropertyChangeListener)}. If the specified listener is not
-     * registered for the specified property, then nothing happen. If the listener has been registered twice,
-     * then only one registration is removed (one registration will remain).
-     *
-     * @param  propertyName  name of the listened property.
-     * @param  listener      property listener to unregister.
-     */
-    public final void removePropertyChangeListener(final String propertyName, final PropertyChangeListener listener) {
-        ArgumentChecks.ensureNonEmpty("propertyName", propertyName);
-        ArgumentChecks.ensureNonNull("listener", listener);
-        if (listeners != null) {
-            final PropertyChangeListener[] oldList = listeners.get(propertyName);
-            if (oldList != null) {
-                for (int i=oldList.length; --i >= 0;) {
-                    if (oldList[i] == listener) {
-                        if (oldList.length != 1) {
-                            final PropertyChangeListener[] newList = ArraysExt.remove(oldList, i, 1);
-                            if (listeners.replace(propertyName, oldList, newList)) {
-                                return;
-                            }
-                        } else if (listeners.remove(propertyName, oldList)) {
-                            return;
-                        }
-                        // Opportunistic safety against some multi-threading misuse.
-                        throw new ConcurrentModificationException();
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Notifies all registered listener that a property of the given name changed its value.
-     * It is caller responsibility to verify that the old and new values are not equal
-     * (this method does not verify).
-     *
-     * @param  propertyName  name of the property that changed its value.
-     * @param  oldValue      the old property value (may be {@code null}).
-     * @param  newValue      the new property value (may be {@code null}).
-     */
-    protected void firePropertyChange(final String propertyName, final Object oldValue, final Object newValue) {
-        if (listeners != null) {
-            final PropertyChangeListener[] list = listeners.get(propertyName);
-            if (list != null) {
-                final PropertyChangeEvent event = new PropertyChangeEvent(this, propertyName, oldValue, newValue);
-                for (final PropertyChangeListener listener : list) {
-                    listener.propertyChange(event);
-                }
-            }
-        }
     }
 }

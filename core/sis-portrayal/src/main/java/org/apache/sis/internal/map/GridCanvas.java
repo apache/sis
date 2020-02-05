@@ -33,7 +33,6 @@ import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.SingleCRS;
@@ -44,18 +43,18 @@ import org.opengis.util.FactoryException;
 
 
 /**
- * Area when an grid coverage is displayed.
+ * Canvas defined by a {@link GridGeometry}.
  *
  * <p>
  * NOTE: this class is a first draft subject to modifications.
  * </p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 2.0
- * @since   2.0
+ * @version 1.1
+ * @since   1.1
  * @module
  */
-public abstract class GridCanvas {
+public abstract class GridCanvas extends Canvas2D {
     /**
      * The operation method used by {@link #getDisplayCRS()}.
      * This is a temporary constant, as we will probably need to replace the creation
@@ -68,6 +67,9 @@ public abstract class GridCanvas {
     private GridGeometry gridGeometry2d = gridGeometry;
     private boolean proportion = true;
 
+    protected GridCanvas() {
+    }
+
     public GridGeometry getGridGeometry() {
         return gridGeometry;
     }
@@ -77,17 +79,15 @@ public abstract class GridCanvas {
      *
      * @param gridGeometry new grid geometry
      */
-    public final void setGridGeometry(GridGeometry gridGeometry) throws FactoryException {
+    public final void setGridGeometry(GridGeometry gridGeometry) throws RenderException {
         ArgumentChecks.ensureNonNull("gridGeometry", gridGeometry);
         if (this.gridGeometry.equals(gridGeometry)) return;
-        final GridGeometry old = this.gridGeometry;
         this.gridGeometry = gridGeometry;
-
         {
             final CoordinateReferenceSystem crs = gridGeometry.getCoordinateReferenceSystem();
             if (crs.getCoordinateSystem().getDimension() == 2) {
                 gridGeometry2d = gridGeometry;
-            } else {
+            } else try {
                 final CoordinateReferenceSystem crs2d = getHorizontalComponent(crs);
                 final int idx = getHorizontalIndex(crs);
                 final MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
@@ -98,6 +98,8 @@ public abstract class GridCanvas {
                 //we are expecting axis index to be preserved from grid to crs
                 final GridExtent extent = gridGeometry.getExtent().reduce(idx, idx+1);
                 gridGeometry2d = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS2D, crs2d);
+            } catch (FactoryException e) {
+                throw new RenderException(e);
             }
         }
     }
@@ -138,7 +140,7 @@ public abstract class GridCanvas {
         return displayCRS;
     }
 
-    public final void setObjectiveCRS(final CoordinateReferenceSystem crs) throws TransformException, FactoryException {
+    public final void setObjectiveCRS(final CoordinateReferenceSystem crs) throws RenderException {
         ArgumentChecks.ensureNonNull("Objective CRS", crs);
         if (Utilities.equalsIgnoreMetadata(gridGeometry.getCoordinateReferenceSystem(), crs)) {
             return;
@@ -218,7 +220,7 @@ public abstract class GridCanvas {
         return bounds;
     }
 
-    public void setDisplayBounds(Rectangle2D bounds) {
+    public void setDisplayBounds(Rectangle2D bounds) throws RenderException {
         ArgumentChecks.ensureNonNull("Display bounds", bounds);
 
         final GridGeometry gridGeometry = getGridGeometry();
@@ -234,13 +236,7 @@ public abstract class GridCanvas {
         final GridExtent newExt = new GridExtent(null, low, high, true);
 
         final GridGeometry newGrid = new GridGeometry(newExt, PixelInCell.CELL_CENTER, gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER), gridGeometry.getCoordinateReferenceSystem());
-        try {
-            setGridGeometry(newGrid);
-        } catch (FactoryException ex) {
-            //we are just changing the size, this should not cause the exception
-            //should not happen with current parameters
-            throw new BackingStoreException(ex.getMessage(), ex);
-        }
+        setGridGeometry(newGrid);
     }
 
     private GridGeometry preserverRatio(GridGeometry gridGeometry) {
@@ -309,7 +305,7 @@ public abstract class GridCanvas {
      * @param targetCRS target CoordinateReferenceSystem
      * @return transformed envelope
      */
-    private static Envelope transform(Envelope env, CoordinateReferenceSystem targetCRS) throws TransformException{
+    private static Envelope transform(Envelope env, CoordinateReferenceSystem targetCRS) throws RenderException {
         try {
             return Envelopes.transform(env, targetCRS);
         } catch (TransformException ex) {
@@ -350,8 +346,9 @@ public abstract class GridCanvas {
                     break targetLoop;
                 } catch (FactoryException ex) {
                     //we tried...
+                } catch (TransformException ex) {
+                    throw new RenderException(ex);
                 }
-
                 targetAxeIndex += targetPartDimension;
             }
             sourceAxeIndex += sourcePartDimension;

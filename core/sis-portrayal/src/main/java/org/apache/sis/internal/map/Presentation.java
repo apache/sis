@@ -17,22 +17,23 @@
 package org.apache.sis.internal.map;
 
 import org.opengis.feature.Feature;
-import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.coverage.grid.GridCoverage;
 
 
 /**
  * Parent class of all elements having a graphical representation on the map.
- * {@code Presentation} instances are organized in a tree parallel to the {@link MapLayer} tree.
- * The {@link MapLayer} tree links data and styles in a device-independent way, while
- * the {@code Presentation} tree can be seen as map layers information "compiled"
- * in a form more directly exploitable by the display device.
- * In particular a {@code Presentation} objects must encapsulate data without
- * costly evaluation, processing or loading work remaining to be done.
- * (for example {@link Feature} or {@link GridCoverage} instances instead than {@link Resource}s).
+ * {@code Presentation} instances are organized in a tree closely related to the {@link MapLayer} tree.
+ * The {@link MapLayer} tree specifies data and styles in a device-independent way and for all zoom levels.
+ * The {@code Presentation} tree can be seen as {@link MapLayer} information filtered for the current rendering
+ * context (map projection, zoom level, window size, <i>etc.</i>) and converted to data structures more directly
+ * exploitable by the display device. In particular a {@code Presentation} object must encapsulate data without
+ * costly evaluation, processing or loading work remaining to do: the {@link Feature} or the {@link GridCoverage}
+ * (for instance) should have been read in advance from the {@link DataStore}.
+ * The preparation of a {@link Presentation} tree before displaying may be done in a background thread.
  *
  * <p>Note that multiple presentations may be generated for the same feature.
- * Consequently many {@code Presentation} instances may encapsulate the same {@link Feature} instances.</p>
+ * Consequently many {@code Presentation} instances may encapsulate the same {@link Feature} instance.</p>
  *
  * <p>
  * NOTE: this class is a first draft subject to modifications.

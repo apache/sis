@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.storage.DataSet;
 
 
@@ -32,10 +33,11 @@ import org.apache.sis.storage.DataSet;
  * Since {@link MapLayer} and {@code MapLayers} are the only {@link MapItem} subclasses,
  * all leaves in this tree can only be {@link MapLayer} instances (assuming no {@code MapLayers} is empty).
  *
- * <p>A {@code MapLayers} is often (but not necessarily) the root node of the tree of all graphic elements to
- * draw on the map. The {@link MapItem} children are listed by {@link #getComponents()} in <var>z</var> order.
- * In addition, {@code MapLayers} defines the {@linkplain #getAreaOfInterest() area of interest} which should
- * be zoomed by default when the map is rendered.</p>
+ * <p>A {@code MapLayers} is the root node of the tree of all layers to draw on the map,
+ * unless there is only one layer to draw.
+ * The {@link MapItem} children are listed by {@link #getComponents()} in <var>z</var> order.
+ * In addition, {@code MapLayers} may define an {@linkplain #getAreaOfInterest() area of interest}
+ * which should be zoomed by default when the map is rendered.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
@@ -62,25 +64,25 @@ public class MapLayers extends MapItem {
     /**
      * The area of interest, or {@code null} is unspecified.
      */
-    private Envelope areaOfInterest;
+    private ImmutableEnvelope areaOfInterest;
 
     /**
-     * Creates an initially empty group of graphic elements.
+     * Creates an initially empty group of layers.
      */
     public MapLayers() {
         components = new ArrayList<>();
     }
 
     /**
-     * Gets the modifiable list of components contained in this group.
-     * The components in the list are presented in rendering order.
-     * This means that the first rendered component, which will be below
-     * all other components on the rendered map, is located at index zero.
+     * Gets the modifiable list of children contained in this group.
+     * The elements in the list are sorted in rendering order.
+     * This means that the first rendered element, which will be below
+     * all other elements on the rendered map, is located at index zero.
      *
      * <p>The returned list is modifiable: changes in the returned list will
-     * be immediately reflected in this {@code MapGroup}, and conversely.</p>
+     * be immediately reflected in this {@code MapLayers}, and conversely.</p>
      *
-     * @return modifiable list of components in this group.
+     * @return modifiable list of children in this group of layers.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<MapItem> getComponents() {
@@ -93,9 +95,9 @@ public class MapLayers extends MapItem {
      * since one may want to zoom in a different spatiotemporal area.
      *
      * <p>The {@linkplain org.apache.sis.geometry.GeneralEnvelope#getCoordinateReferenceSystem() envelope CRS}
-     * defines the map projection to use for rendering the map. It may be different than the CRS of the data.
-     * The returned envelope may have {@linkplain org.apache.sis.geometry.GeneralEnvelope#isAllNaN() all its
-     * coordinates set to NaN} if only the {@link CoordinateReferenceSystem} is specified.</p>
+     * provides the reference system to use by default for rendering the map. It may be different than the CRS
+     * of data. The returned envelope may have {@linkplain org.apache.sis.geometry.GeneralEnvelope#isAllNaN()
+     * all its coordinates set to NaN} if only the {@link CoordinateReferenceSystem} is specified.</p>
      *
      * @return map area to show by default, or {@code null} is unspecified.
      *
@@ -113,10 +115,11 @@ public class MapLayers extends MapItem {
      * @param  newValue  new map area to show by default, or {@code null} is unspecified.
      */
     public void setAreaOfInterest(final Envelope newValue) {
+        final ImmutableEnvelope imenv = ImmutableEnvelope.castOrCopy(newValue);
         final Envelope oldValue = areaOfInterest;
-        if (!Objects.equals(oldValue, newValue)) {
-            areaOfInterest = newValue;
-            firePropertyChange(AREA_OF_INTEREST_PROPERTY, oldValue, newValue);
+        if (!Objects.equals(oldValue, imenv)) {
+            areaOfInterest = imenv;
+            firePropertyChange(AREA_OF_INTEREST_PROPERTY, oldValue, imenv);
         }
     }
 }
