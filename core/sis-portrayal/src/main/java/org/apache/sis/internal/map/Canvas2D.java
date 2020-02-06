@@ -16,9 +16,14 @@
  */
 package org.apache.sis.internal.map;
 
+import java.awt.geom.AffineTransform;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
+
 
 /**
  * A canvas in which data are reduced to a two-dimensional slice before to be displayed.
+ * This canvas assumes that the display device uses a Cartesian coordinate system
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -28,11 +33,39 @@ package org.apache.sis.internal.map;
  */
 public abstract class Canvas2D extends Canvas {
     /**
+     * The conversion from {@linkplain #getObjectiveCRS() objective CRS} to the display coordinate system.
+     * This transform will be modified in-place when user applies zoom, translation or rotation on the view area.
+     */
+    private final AffineTransform objectiveToDisplay;
+
+    /**
+     * An immutable snapshot of {@link #objectiveToDisplay}, created when needed.
+     * This field is reset to {@code null} when {@link #objectiveToDisplay} is modified.
+     *
+     * @see #getObjectiveToDisplay()
+     */
+    private AffineTransform2D conversionSnapshot;
+
+    /**
      * Creates a new two-dimensional canvas.
      */
     protected Canvas2D() {
-        super(2);
+        super(null);    // TODO
+        objectiveToDisplay = new AffineTransform();
     }
 
-    // TODO: methods to be provided.
+    /**
+     * Returns the conversion from objective CRS to display coordinate system.
+     * The number of source and target dimensions is always 2.
+     * That conversion will change every time that the user zooms or scrolls on viewed data.
+     *
+     * @return conversion from objective CRS to display coordinate system.
+     */
+    @Override
+    public LinearTransform getObjectiveToDisplay() {
+        if (conversionSnapshot == null) {
+            conversionSnapshot = new AffineTransform2D(objectiveToDisplay);
+        }
+        return conversionSnapshot;
+    }
 }

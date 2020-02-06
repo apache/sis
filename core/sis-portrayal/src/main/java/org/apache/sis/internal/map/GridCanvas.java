@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
@@ -56,11 +57,12 @@ import org.opengis.util.FactoryException;
  */
 public abstract class GridCanvas extends Canvas2D {
     /**
-     * The operation method used by {@link #getDisplayCRS()}.
+     * @deprecated
      * This is a temporary constant, as we will probably need to replace the creation
      * of a {@link DefaultDerivedCRS} by something else. After that replacement, this
      * constant will be removed.
      */
+    @Deprecated
     private static final Affine DISPLAY_TO_OBJECTIVE_OPERATION = new Affine();
 
     private GridGeometry gridGeometry = new GridGeometry(new GridExtent(360, 180), CRS.getDomainOfValidity(CommonCRS.WGS84.normalizedGeographic()));
@@ -122,7 +124,14 @@ public abstract class GridCanvas extends Canvas2D {
         return gridGeometry2d.getCoordinateReferenceSystem();
     }
 
-    public final CoordinateReferenceSystem getDisplayCRS() {
+    /**
+     * @deprecated The display CRS is rarely needed. The information needed is the "objectiveToDisplay" transform.
+     *             The approach that consisted in wrapping that transform in a new {@link DefaultDerivedCRS} after
+     *             every zoom or translation was unnecessary and actually a bad usage of derived CRS (those CRS are
+     *             for another purpose.
+     */
+    @Deprecated
+    public final CoordinateReferenceSystem getDerivedCRS() {
         /*
          * TODO: will need a way to avoid the cast below. In my understanding, DerivedCRS may not be the appropriate
          *       CRS to create after all, because in ISO 19111 a DerivedCRS is more than just a base CRS with a math
@@ -203,7 +212,7 @@ public abstract class GridCanvas extends Canvas2D {
         return proportion;
     }
 
-    public final Rectangle2D getDisplayBounds() {
+    public final Envelope2D getDisplayBounds() {
 
         final GridGeometry gridGeometry = getGridGeometry();
         final CoordinateReferenceSystem crs = gridGeometry.getCoordinateReferenceSystem();
@@ -212,7 +221,7 @@ public abstract class GridCanvas extends Canvas2D {
         //we are expecting axis index to be preserved from grid to crs
         final GridExtent extent = gridGeometry.getExtent().reduce(idx, idx+1);
 
-        final Rectangle2D.Double bounds = new Rectangle2D.Double();
+        final Envelope2D bounds = new Envelope2D();
         bounds.x = extent.getLow(0);
         bounds.y = extent.getLow(1);
         bounds.width = extent.getSize(0);
