@@ -55,7 +55,7 @@ import org.opengis.util.FactoryException;
  * @since   1.1
  * @module
  */
-public abstract class GridCanvas extends Canvas2D {
+public abstract class GridCanvas extends PlanarCanvas {
     /**
      * @deprecated
      * This is a temporary constant, as we will probably need to replace the creation

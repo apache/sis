@@ -16,14 +16,24 @@
  */
 package org.apache.sis.internal.map;
 
+import java.util.Map;
 import java.awt.geom.AffineTransform;
-import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.measure.Units;
+import org.apache.sis.referencing.cs.DefaultCartesianCS;
+import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
+import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
+import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+
+import static java.util.Collections.singletonMap;
+import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 
 
 /**
- * A canvas in which data are reduced to a two-dimensional slice before to be displayed.
- * This canvas assumes that the display device uses a Cartesian coordinate system
+ * A canvas for two-dimensional display device using a Cartesian coordinate system.
+ * Data are reduced to a two-dimensional slice before to be displayed.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -31,7 +41,20 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
  * @since   1.1
  * @module
  */
-public abstract class Canvas2D extends Canvas {
+public abstract class PlanarCanvas extends Canvas {
+    /**
+     * The display Coordinate Reference System used by all {@code PlanarCanvas} instances.
+     */
+    private static final DefaultEngineeringCRS DISPLAY_CRS;
+    static {
+        Map<String,?> property = singletonMap(NAME_KEY, "Display on two-dimensional Cartesian coordinate system");
+        DefaultCartesianCS cs = new DefaultCartesianCS(property,
+                new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Column"), "x", AxisDirection.DISPLAY_RIGHT, Units.PIXEL),
+                new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Row"),    "y", AxisDirection.DISPLAY_DOWN,  Units.PIXEL));
+        property = singletonMap(NAME_KEY, cs.getName());        // Reuse the same Identifier instance.
+        DISPLAY_CRS = new DefaultEngineeringCRS(property, new DefaultEngineeringDatum(property), cs);
+    }
+
     /**
      * The conversion from {@linkplain #getObjectiveCRS() objective CRS} to the display coordinate system.
      * This transform will be modified in-place when user applies zoom, translation or rotation on the view area.
@@ -49,8 +72,8 @@ public abstract class Canvas2D extends Canvas {
     /**
      * Creates a new two-dimensional canvas.
      */
-    protected Canvas2D() {
-        super(null);    // TODO
+    protected PlanarCanvas() {
+        super(DISPLAY_CRS);
         objectiveToDisplay = new AffineTransform();
     }
 
