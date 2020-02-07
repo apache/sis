@@ -671,6 +671,8 @@ public final class MathTransforms extends Static {
      * @return the matrix of the transform derivative at the given source position.
      * @throws TransformException if the point can't be transformed or if a problem occurred
      *         while calculating the derivative.
+     *
+     * @see Matrices#createAffine(Matrix, DirectPosition)
      */
     public static Matrix derivativeAndTransform(final MathTransform transform,
                                                 final double[] srcPts, final int srcOff,

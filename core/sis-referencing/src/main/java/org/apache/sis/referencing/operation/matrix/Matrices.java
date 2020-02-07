@@ -37,6 +37,7 @@ import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.operation.transform.MathTransforms;       // For javadoc
 
 
 /**
@@ -70,7 +71,7 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see org.apache.sis.parameter.TensorParameters
  *
@@ -702,6 +703,60 @@ public final class Matrices extends Static {
                 targetDimensions, sourceDimensions,
                 lastRow,          lastColumn,
                 1,                1);
+        return matrix;
+    }
+
+    /**
+     * Creates an affine transform as the given matrix augmented by the given translation vector and a [0 … 0 1] row.
+     * At least one of {@code derivative} and {@code translation} arguments shall be non-null. If {@code derivative}
+     * is non-null, the returned matrix will have one more row and one more column than {@code derivative} with all
+     * {@code derivative} values copied into the new matrix at the same (row, column) indices. If {@code translation}
+     * is non-null, all its coordinate values are copied in the last column of the returned matrix.
+     *
+     * <div class="note"><b>Relationship with {@link MathTransform}</b><br>
+     * When used together with {@link MathTransforms#derivativeAndTransform MathTransforms.derivativeAndTransform(…)},
+     * the {@code derivative} argument is the derivative computed by {@code derivativeAndTransform(…)} and the
+     * {@code translation} vector is the position computed by that method. The result is an approximation of the
+     * transform in the vicinity of the position given to {@code derivativeAndTransform(…)}.</div>
+     *
+     * @param  derivative   the scale, shear and rotation of the affine transform.
+     * @param  translation  the translation vector (the last column) of the affine transform.
+     * @return an affine transform as the given matrix augmented by the given column and a a [0 … 0 1] row.
+     * @throws NullPointerException if {@code derivative} and {@code translation} are both null.
+     * @throws MismatchedMatrixSizeException if {@code derivative} and {@code translation} are both non-null and
+     *         the number of {@code derivative} rows is not equal to the number of {@code translation} dimensions.
+     *
+     * @see MathTransforms#derivativeAndTransform(MathTransform, double[], int, double[], int)
+     *
+     * @since 1.1
+     */
+    public static MatrixSIS createAffine(final Matrix derivative, final DirectPosition translation) {
+        final int numRow, numCol;
+        final MatrixSIS matrix;
+        if (derivative != null) {
+            numRow = derivative.getNumRow();
+            numCol = derivative.getNumCol();
+            if (translation != null) {
+                MatrixSIS.ensureNumRowMatch(translation.getDimension(), numRow, numCol);
+            }
+            matrix = createZero(numRow + 1, numCol + 1);
+            matrix.setElement(numRow, numCol, 1);
+            for (int j=0; j<numRow; j++) {
+                for (int i=0; i<numCol; i++) {
+                    matrix.setElement(j, i, derivative.getElement(j, i));
+                }
+            }
+        } else {
+            // If both arguments are null, report the first one ("derivative") as the one that should be non-null.
+            ArgumentChecks.ensureNonNull("derivative", translation);          // Intentional mismatch (see above).
+            numRow = numCol = translation.getDimension();
+            matrix = createIdentity(numRow + 1);
+        }
+        if (translation != null) {
+            for (int j=0; j<numRow; j++) {
+                matrix.setElement(j, numCol, translation.getOrdinate(j));
+            }
+        }
         return matrix;
     }
 
