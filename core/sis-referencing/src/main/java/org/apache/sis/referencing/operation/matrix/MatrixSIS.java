@@ -454,7 +454,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * <h4>Equivalence between this method and Java2D {@code AffineTransform} methods</h4>
      * If this matrix was an instance of Java2D {@link AffineTransform}, then invoking this method would
-     * be equivalent to invoke the following {@code AffineTransform} methods in the order shown below:
+     * be equivalent to invoking the following {@code AffineTransform} methods in the order shown below:
      *
      * <table class="sis">
      * <caption>Equivalence between this method and AffineTransform methods</caption>
@@ -462,11 +462,11 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *     <th>{@code MatrixSIS} method</th>
      *     <th class="sep">{@code AffineTransform} methods</th>
      *   </tr><tr>
-     *     <td>{@code concatenate(0, scale, offset)}</td>
+     *     <td>{@code convertBefore(0, scale, offset)}</td>
      *     <td class="sep"><code>at.{@linkplain AffineTransform#translate(double, double) translate}(offset, 0);
      *     at.{@linkplain AffineTransform#scale(double, double) scale}(scale, 1);</code></td>
      *   </tr><tr>
-     *     <td class="hsep">{@code concatenate(1, scale, offset)}</td>
+     *     <td class="hsep">{@code convertBefore(1, scale, offset)}</td>
      *     <td class="hsep sep"><code>at.{@linkplain AffineTransform#translate(double, double) translate}(0, offset);
      *     at.{@linkplain AffineTransform#scale(double, double) scale}(1, scale);</code></td>
      *   </tr>

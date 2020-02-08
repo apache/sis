@@ -56,7 +56,7 @@ import org.apache.sis.util.Static;
  * GeoAPI factory interfaces instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see MathTransformFactory
  *
@@ -669,9 +669,11 @@ public final class MathTransforms extends Static {
      * @param  dstPts     the array into which the transformed coordinate is returned.
      * @param  dstOff     the offset to the location of the transformed point that is stored in the destination array.
      * @return the matrix of the transform derivative at the given source position.
-     * @throws TransformException if the point can't be transformed or if a problem occurred
-     *         while calculating the derivative.
+     * @throws TransformException if the point can not be transformed
+     *         or if a problem occurred while calculating the derivative.
      *
+     * @see #tangent(MathTransform, DirectPosition)
+     * @see MathTransform#derivative(DirectPosition)
      * @see Matrices#createAffine(Matrix, DirectPosition)
      */
     public static Matrix derivativeAndTransform(final MathTransform transform,
@@ -689,5 +691,49 @@ public final class MathTransforms extends Static {
             transform.transform(srcPts, srcOff, dstPts, dstOff, 1);
         }
         return derivative;
+    }
+
+    /**
+     * Computes a linear approximation of the given math transform at the given position.
+     * If the given transform is already an instance of {@link LinearTransform}, then it is returned as-is.
+     * Otherwise an affine transform is created from the {@linkplain MathTransform#derivative(DirectPosition)
+     * transform derivative} and the tangent point coordinates. The returned transform has the same number of
+     * source and target dimensions than the given transform.
+     *
+     * <p>If the given transform is a one dimensional curve, then this method computes the tangent at the given
+     * position. The same computation is generalized to any number of dimensions (computes a tangent plane if the
+     * given transform is two-dimensional, <i>etc.</i>).</p>
+     *
+     * @param  toApproximate  the non-linear transform to approximate by a linear transform.
+     * @param  tangentPoint   the point where to compute a linear approximation.
+     * @return linear approximation of the given math transform at the given position.
+     * @throws TransformException if the point can not be transformed
+     *         or if a problem occurred while calculating the derivative.
+     *
+     * @since 1.1
+     */
+    public static LinearTransform tangent(final MathTransform toApproximate, final DirectPosition tangentPoint)
+            throws TransformException
+    {
+        if (toApproximate instanceof LinearTransform) {
+            return (LinearTransform) toApproximate;
+        }
+        ArgumentChecks.ensureNonNull("toApproximate", toApproximate);
+        final int srcDim = toApproximate.getSourceDimensions();
+        ArgumentChecks.ensureDimensionMatches("tangentPoint", srcDim, tangentPoint);
+        final int tgtDim = toApproximate.getTargetDimensions();
+        final double[] coordinates = new double[Math.max(srcDim, tgtDim)];
+        for (int i=0; i<srcDim; i++) {
+            coordinates[i] = tangentPoint.getOrdinate(i);
+        }
+        final Matrix derivative = derivativeAndTransform(toApproximate, coordinates, 0, coordinates, 0);
+        final MatrixSIS m = Matrices.createAffine(derivative, new DirectPositionView.Double(coordinates, 0, tgtDim));
+        for (int i=0; i<srcDim; i++) {
+            m.convertBefore(i, null, -tangentPoint.getOrdinate(i));
+        }
+        final LinearTransform tangent = linear(m);
+        assert tangent.getSourceDimensions() == srcDim;
+        assert tangent.getTargetDimensions() == tgtDim;
+        return tangent;
     }
 }

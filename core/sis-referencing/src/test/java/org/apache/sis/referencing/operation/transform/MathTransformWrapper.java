@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -31,16 +32,17 @@ import org.apache.sis.io.wkt.UnformattableObjectException;
 
 
 /**
- * The base class of math transform wrappers. Despite being a concrete class, there is no point
- * to instantiate directly this base class. Instantiate one of the subclasses instead.
+ * The base class of math transform wrappers. This can be used as an opaque object for hiding the fact
+ * that a given transform implements the {@link MathTransform2D} or {@link LinearTransform} interface,
+ * in order to disable optimization paths in some tests.
  *
- * <strong>Do not implement {@code MathTransform2D} in this base class</strong>.
+ * <strong>Do not implement {@link MathTransform2D} in this base class</strong>.
  * This wrapper is sometime used for hiding the fact that a transform implements
  * the {@code MathTransform2D} interface, typically for testing a different code
  * path in a JUnit test.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -70,7 +72,7 @@ public strictfp class MathTransformWrapper extends FormattableObject implements 
      */
     @Override
     public final int getSourceDimensions() {
-        return transform.getTargetDimensions();
+        return transform.getSourceDimensions();
     }
 
     /**
@@ -78,7 +80,7 @@ public strictfp class MathTransformWrapper extends FormattableObject implements 
      */
     @Override
     public final int getTargetDimensions() {
-        return transform.getSourceDimensions();
+        return transform.getTargetDimensions();
     }
 
     /**

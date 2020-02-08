@@ -727,6 +727,7 @@ public final class Matrices extends Static {
      *         the number of {@code derivative} rows is not equal to the number of {@code translation} dimensions.
      *
      * @see MathTransforms#derivativeAndTransform(MathTransform, double[], int, double[], int)
+     * @see MathTransforms#tangent(MathTransform, DirectPosition)
      *
      * @since 1.1
      */
