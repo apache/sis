@@ -67,7 +67,7 @@ public final class AffineTransforms2D extends Static {
         }
         MatrixSIS.ensureSizeMatch(3, 3, matrix);
         if (!Matrices.isAffine(matrix)) {
-            throw new IllegalStateException(Resources.format(Resources.Keys.NotAnAffineTransform));
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.NotAnAffineTransform));
         }
         return new AffineTransform(matrix.getElement(0,0), matrix.getElement(1,0),
                                    matrix.getElement(0,1), matrix.getElement(1,1),

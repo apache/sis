@@ -397,7 +397,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * the CRS of this envelope will be set to the CRS of the given envelope.
      *
      * @param  envelope  the envelope to copy coordinates from.
-     * @throws MismatchedDimensionException if the specified envelope doesn't have
+     * @throws MismatchedDimensionException if the specified envelope does not have
      *         the expected number of dimensions.
      */
     public void setEnvelope(final Envelope envelope) throws MismatchedDimensionException {

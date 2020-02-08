@@ -70,6 +70,7 @@ public abstract class GridCanvas extends PlanarCanvas {
     private boolean proportion = true;
 
     protected GridCanvas() {
+        super(null);
     }
 
     public GridGeometry getGridGeometry() {

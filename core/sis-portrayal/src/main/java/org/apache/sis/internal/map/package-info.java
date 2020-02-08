@@ -25,7 +25,7 @@
  * about their stability.</p>
  *
  * <h2>Synchronization</h2>
- * Unless otherwise specified, classes in this package are not thread safe.
+ * Unless otherwise specified, classes in this package are not thread-safe.
  * Synchronization, if desired, must be done by the caller.
  *
  * @author  Johann Sorel (Geomatys)

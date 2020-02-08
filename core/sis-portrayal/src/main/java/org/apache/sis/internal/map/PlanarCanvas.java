@@ -17,13 +17,20 @@
 package org.apache.sis.internal.map;
 
 import java.util.Map;
+import java.util.Locale;
 import java.awt.geom.AffineTransform;
+import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.measure.Units;
+import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
 import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
+import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 
@@ -43,6 +50,19 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  */
 public abstract class PlanarCanvas extends Canvas {
     /**
+     * The {@value} constant for identifying code specific to bi-dimensional case.
+     */
+    private static final int BIDIMENSIONAL = 2;
+
+    /**
+     * Name of grid axes in {@link org.apache.sis.coverage.grid.GridGeometry} extent.
+     */
+    private static final DimensionNameType[] DISPLAY_AXES = {
+        DimensionNameType.COLUMN,
+        DimensionNameType.ROW
+    };
+
+    /**
      * The display Coordinate Reference System used by all {@code PlanarCanvas} instances.
      */
     private static final DefaultEngineeringCRS DISPLAY_CRS;
@@ -58,37 +78,106 @@ public abstract class PlanarCanvas extends Canvas {
     /**
      * The conversion from {@linkplain #getObjectiveCRS() objective CRS} to the display coordinate system.
      * This transform will be modified in-place when user applies zoom, translation or rotation on the view area.
-     */
-    private final AffineTransform objectiveToDisplay;
-
-    /**
-     * An immutable snapshot of {@link #objectiveToDisplay}, created when needed.
-     * This field is reset to {@code null} when {@link #objectiveToDisplay} is modified.
+     * The {@link #objectiveToDisplay} transform inherited from parent class is used as an immutable snapshot of
+     * this {@link #toDisplayAsAffine} transform. That snapshot is created when needed and reset to {@code null}
+     * when {@link #toDisplayAsAffine} is modified.
      *
      * @see #getObjectiveToDisplay()
+     * @see #objectiveToDisplay
      */
-    private AffineTransform2D conversionSnapshot;
+    private final AffineTransform toDisplayAsAffine;
 
     /**
      * Creates a new two-dimensional canvas.
+     *
+     * @param  locale  the locale to use for labels and some messages, or {@code null} for default.
      */
-    protected PlanarCanvas() {
-        super(DISPLAY_CRS);
-        objectiveToDisplay = new AffineTransform();
+    protected PlanarCanvas(final Locale locale) {
+        super(DISPLAY_CRS, locale);
+        toDisplayAsAffine = new AffineTransform();
     }
 
     /**
-     * Returns the conversion from objective CRS to display coordinate system.
-     * The number of source and target dimensions is always 2.
-     * That conversion will change every time that the user zooms or scrolls on viewed data.
-     *
-     * @return conversion from objective CRS to display coordinate system.
+     * Returns the number of dimensions of the display device.
      */
     @Override
-    public LinearTransform getObjectiveToDisplay() {
-        if (conversionSnapshot == null) {
-            conversionSnapshot = new AffineTransform2D(objectiveToDisplay);
-        }
-        return conversionSnapshot;
+    final int getDisplayDimensions() {
+        return BIDIMENSIONAL;
+    }
+
+    /**
+     * Returns name of display axes, or {@code null} if unknown.
+     * Caller shall not modify the returned array (it is not cloned).
+     */
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final DimensionNameType[] getDisplayAxes() {
+        return DISPLAY_AXES;
+    }
+
+    /**
+     * Allocates a position which can hold a coordinates in objective or display CRS.
+     */
+    @Override
+    final DirectPosition allocatePosition() {
+        return new DirectPosition2D();
+    }
+
+    /**
+     * Returns the size and location of the display device. The unit of measurement is
+     * {@link Units#PIXEL} and coordinate values are usually (but not necessarily) integers.
+     *
+     * <p>This value may be {@code null} on newly created {@code Canvas}, before data are added and canvas
+     * is configured. It should not be {@code null} anymore once a {@code Canvas} is ready for displaying.</p>
+     *
+     * @return size and location of the display device.
+     *
+     * @see #setDisplayBounds(Envelope)
+     */
+    @Override
+    public Envelope2D getDisplayBounds() {
+        return displayBounds.isAllNaN() ? null : new Envelope2D(displayBounds);
+    }
+
+    /**
+     * Returns the affine conversion from objective CRS to display coordinate system.
+     * The transform returned by this method is a snapshot taken at the time this method is invoked;
+     * subsequent changes in the <cite>objective to display</cite> conversion are not reflected in
+     * the returned transform.
+     *
+     * @return snapshot of the affine conversion from objective CRS
+     *         to display coordinate system (never {@code null}).
+     */
+    @Override
+    final LinearTransform updateObjectiveToDisplay() {
+        return new AffineTransform2D(toDisplayAsAffine);
+    }
+
+    /**
+     * Sets the conversion from objective CRS to display coordinate system.
+     * Contrarily to other setter methods, this method does not notify listeners about that change;
+     * it is caller responsibility to send a {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} change event.
+     * This method does not update the {@value #POINT_OF_INTEREST_PROPERTY} property;
+     * the point of interest may move outside the view area as a result of this method call.
+     *
+     * @param  newValue  the new <cite>objective to display</cite> conversion.
+     * @throws IllegalArgumentException if the given transform is not two-dimensional or is not affine.
+     */
+    @Override
+    final void updateObjectiveToDisplay(final LinearTransform newValue) {
+        toDisplayAsAffine.setTransform(AffineTransforms2D.castOrCopy(newValue.getMatrix()));
+        super.updateObjectiveToDisplay(newValue);
+    }
+
+    public void scale(final double sx, final double sy) {
+        // TODO
+    }
+
+    public void translate(final double tx, final double ty) {
+        // TODO
+    }
+
+    public void rotate(final double angle) {
+        // TODO
     }
 }
