@@ -247,8 +247,9 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     }
 
     /**
-     * Returns the underlying math transform factory. This factory is used for constructing {@link MathTransform}
-     * dependencies for all {@linkplain AbstractCoordinateOperation coordinate operations} instances.
+     * Returns the underlying math transform factory. This factory is used for constructing the {@link MathTransform}
+     * instances doing the actual mathematical work of {@linkplain AbstractCoordinateOperation coordinate operations}
+     * instances.
      *
      * @return the underlying math transform factory.
      */

@@ -19,6 +19,7 @@ package org.apache.sis.internal.map;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ArrayList;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -31,6 +32,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.util.FactoryException;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
@@ -201,6 +203,7 @@ public class Canvas extends Observable implements Localized {
      * @see #OBJECTIVE_CRS_PROPERTY
      * @see #getObjectiveCRS()
      * @see #setObjectiveCRS(CoordinateReferenceSystem)
+     * @see #augmentedObjectiveCRS
      */
     private CoordinateReferenceSystem objectiveCRS;
 
@@ -240,8 +243,45 @@ public class Canvas extends Observable implements Localized {
      * The point of interest transformed to the objective CRS, or {@code null} if {@link #pointOfInterest}
      * has not yet been provided. This point shall be updated immediately when {@link #pointOfInterest} is
      * updated, as a way to verify that the point is valid.
+     *
+     * <p>There is no setter method for this property. It is computed from {@link #pointOfInterest}
+     * and {@link #objectiveCRS} (indirectly, through {@link #multidimToObjective}) and should be
+     * recomputed when any of those properties changed.</p>
      */
     private DirectPosition objectivePOI;
+
+    /**
+     * The transform from the multi-dimensional CRS of {@link #pointOfInterest} to the objective CRS.
+     * This is the transform used for computing {@link #objectivePOI}. This transform may reduce the
+     * number of dimensions.
+     *
+     * <p>There is no setter method for this property. It is computed from {@link #pointOfInterest}
+     * and {@link #objectiveCRS} and should be recomputed when any of those properties changed.</p>
+     */
+    private MathTransform multidimToObjective;
+
+    /**
+     * The {@link #objectiveCRS} augmented with additional dimensions found in {@link #pointOfInterest}.
+     * This field is initially {@code null} and computed only if needed. It may be reset to {@code null}
+     * at any time if the properties used for computing this value changed.
+     *
+     * <p>If the point of interest has no supplemental dimension, then this CRS is {@link #objectiveCRS}.
+     * Otherwise {@linkplain #supplementalDimensions supplemental dimensions} are added on a best effort
+     * basis: some supplemental dimensions may be missing if we have not been able to separate components
+     * from the Point Of Interest CRS.</p>
+     */
+    private CoordinateReferenceSystem augmentedObjectiveCRS;
+
+    /**
+     * The dimensions in the Point Of Interest CRS that are not in the {@link #objectiveCRS}.
+     * Those dimensions are encoded as a bitmask: if dimension <var>n</var> is a supplemental
+     * dimension, then the bit {@code 1L << n} is set to 1. This encoding implies that we can
+     * not handle more than {@value Long#SIZE} dimensions at this time.
+     *
+     * <p>The value of this field is invalid if {@link #augmentedObjectiveCRS} is {@code null}.
+     * Those two fields are computed together.</p>
+     */
+    private long supplementalDimensions;
 
     /**
      * The factory to use for creating coordinate operations. This factory allow us to specify the area
@@ -376,7 +416,7 @@ public class Canvas extends Observable implements Localized {
         final CoordinateReferenceSystem oldValue = objectiveCRS;
         LinearTransform oldObjectiveToDisplay = null;
         LinearTransform newObjectiveToDisplay = null;
-        if (!Objects.equals(oldValue, newValue)) {
+        if (!newValue.equals(oldValue)) {
             if (oldValue != null) try {
                 /*
                  * Compute the change unconditionally as a way to verify that the new CRS is compatible with
@@ -406,7 +446,9 @@ public class Canvas extends Observable implements Localized {
                      */
                     newObjectiveToDisplay = MathTransforms.tangent(result, poiInNew);
                     updateObjectiveToDisplay(newObjectiveToDisplay);
-                    objectivePOI = poiInNew;    // Set only after everything else succeeded.
+                    objectivePOI          = poiInNew;               // Set only after everything else succeeded.
+                    multidimToObjective   = poiToNew;
+                    augmentedObjectiveCRS = null;                   // Will be recomputed when first needed.
                 }
             } catch (FactoryException | TransformException e) {
                 throw new RenderException(errors().getString(Errors.Keys.CanNotSetPropertyValue_1, OBJECTIVE_CRS_PROPERTY), e);
@@ -448,6 +490,8 @@ public class Canvas extends Observable implements Localized {
      * to be overridden only by subclasses that use their own specialized class instead than
      * {@link #objectiveToDisplay} for managing changes in the zooms or viewed area.
      *
+     * @return snapshot of objective to display conversion, never null.
+     *
      * @see #updateObjectiveToDisplay(LinearTransform)
      */
     LinearTransform updateObjectiveToDisplay() {
@@ -478,7 +522,7 @@ public class Canvas extends Observable implements Localized {
                 if (oldValue == null) {
                     oldValue = updateObjectiveToDisplay();
                 }
-                if (!Objects.equals(oldValue, newValue)) {
+                if (!oldValue.equals(newValue)) {
                     updateObjectiveToDisplay(newValue);
                     firePropertyChange(OBJECTIVE_TO_DISPLAY_PROPERTY, oldValue, newValue);
                 }
@@ -531,20 +575,19 @@ public class Canvas extends Observable implements Localized {
      */
     public void setDisplayBounds(final Envelope newValue) throws RenderException {
         ArgumentChecks.ensureNonNull(DISPLAY_BOUNDS_PROPERTY, newValue);
-        if (objectiveCRS != null) {
-            final CoordinateReferenceSystem crs = newValue.getCoordinateReferenceSystem();
-            if (crs != null && !Utilities.equalsIgnoreMetadata(objectiveCRS, crs)) {
-                throw new MismatchedReferenceSystemException(errors().getString(
-                        Errors.Keys.IllegalCoordinateSystem_1, IdentifiedObjects.getDisplayName(crs, getLocale())));
-            }
+        final CoordinateReferenceSystem crs = newValue.getCoordinateReferenceSystem();
+        if (crs != null && !Utilities.equalsIgnoreMetadata(getDisplayCRS(), crs)) {
+            throw new MismatchedReferenceSystemException(errors().getString(
+                    Errors.Keys.IllegalCoordinateSystem_1, IdentifiedObjects.getDisplayName(crs, getLocale())));
         }
         final GeneralEnvelope oldValue = new GeneralEnvelope(displayBounds);
         displayBounds.setEnvelope(newValue);
+        displayBounds.setCoordinateReferenceSystem(oldValue.getCoordinateReferenceSystem());
         if (displayBounds.isEmpty()) {
             displayBounds.setEnvelope(oldValue);
             throw new IllegalArgumentException(errors().getString(Errors.Keys.EmptyProperty_1, DISPLAY_BOUNDS_PROPERTY));
         }
-        if (!Objects.equals(oldValue, displayBounds)) {
+        if (!oldValue.equals(displayBounds)) {
             firePropertyChange(DISPLAY_BOUNDS_PROPERTY, oldValue, newValue);    // Do not publish reference to `displayBounds`.
         }
     }
@@ -575,16 +618,42 @@ public class Canvas extends Observable implements Localized {
      *
      * @param  newValue  the new coordinates of the point to show typically in the center of display area.
      * @throws NullPointerException if the given position is null.
+     * @throws IllegalArgumentException if the given position does not have a CRS.
      * @throws RenderException if the point of interest can not be set to the given value.
      */
     public void setPointOfInterest(final DirectPosition newValue) throws RenderException {
         ArgumentChecks.ensureNonNull(POINT_OF_INTEREST_PROPERTY, newValue);
         final GeneralDirectPosition copy = new GeneralDirectPosition(newValue);
+        final CoordinateReferenceSystem crs = copy.getCoordinateReferenceSystem();
+        if (crs == null) {
+            throw new IllegalArgumentException(errors().getString(Errors.Keys.UnspecifiedCRS));
+        }
         final GeneralDirectPosition oldValue = pointOfInterest;
-        if (!Objects.equals(oldValue, copy)) try {
-            final MathTransform mt = findTransform(newValue.getCoordinateReferenceSystem(), objectiveCRS);
-            objectivePOI = mt.transform(copy, allocatePosition());
-            pointOfInterest = copy;
+        if (!copy.equals(oldValue)) try {
+            /*
+             * If the user has not yet specified an objective CRS, takes the Point Of Interest CRS
+             * (only the number of dimensions that the display device can show).
+             */
+            if (objectiveCRS == null) {
+                objectiveCRS = CRS.getComponentAt(crs, 0, getDisplayDimensions());
+                if (objectiveCRS == null) {
+                    throw new IllegalArgumentException("Can not infer objective CRS.");
+                    // Message not localized yet because we should probably try harder.
+                }
+            }
+            /*
+             * Transform the Point Of Interest to the objective CRS as a way to test its validity.
+             * All canvas fields will be updated only if this operation succeeds.
+             * Note: `oldValue` can not be null if `mt` is non-null.
+             */
+            MathTransform mt = multidimToObjective;
+            if (mt == null || !Utilities.equalsIgnoreMetadata(crs, oldValue.getCoordinateReferenceSystem())) {
+                mt = findTransform(crs, objectiveCRS);
+            }
+            objectivePOI          = mt.transform(copy, allocatePosition());
+            pointOfInterest       = copy;                                           // Set only after transform succeeded.
+            multidimToObjective   = mt;
+            augmentedObjectiveCRS = null;                                           // Will be recomputed when first needed.
             firePropertyChange(POINT_OF_INTEREST_PROPERTY, oldValue, newValue);     // Do not publish reference to `copy`.
         } catch (FactoryException | TransformException e) {
             throw new RenderException(errors().getString(Errors.Keys.CanNotSetPropertyValue_1, POINT_OF_INTEREST_PROPERTY), e);
@@ -592,17 +661,18 @@ public class Canvas extends Observable implements Localized {
     }
 
     /**
-     * Returns canvas properties (objective CRS, display bounds, conversion) encapsulated in a grid geometry.
-     * This is a convenience method for interoperability with grid coverage API. Properties are mapped as below:
+     * Returns canvas properties (CRS, display bounds, conversion) encapsulated in a grid geometry.
+     * This is a convenience method for interoperability with grid coverage API.
+     * The grid geometry elements are mapped to canvas properties as below:
      *
      * <table>
      *   <caption>Canvas to grid geometry properties</caption>
      *   <tr>
-     *     <th>Grid geometry value</th>
-     *     <th>Canvas value</th>
+     *     <th>Grid geometry element</th>
+     *     <th>Canvas property</th>
      *   </tr><tr>
      *     <td>{@link GridGeometry#getCoordinateReferenceSystem()}</td>
-     *     <td>{@link #getObjectiveCRS()}</td>
+     *     <td>{@link #getObjectiveCRS()}.</td>
      *   </tr><tr>
      *     <td>{@link GridGeometry#getExtent()}</td>
      *     <td>{@link #getDisplayBounds()} rounded to enclosing integers</td>
@@ -612,32 +682,62 @@ public class Canvas extends Observable implements Localized {
      *   </tr>
      * </table>
      *
-     * @param  allDimensions  if {@code true}, all dimensions from the point of interest are included in
-     *         the returned grid geometry. If {@code false}, only the displayed dimensions are included.
+     * All those elements are augmented with supplemental dimensions found in the point of interest.
+     * For example if the canvas shows only (<var>x</var>,<var>y</var>) coordinates but the point of
+     * interest also includes a <var>t</var> value, then a third dimension for <var>t</var> is added
+     * to the CRS, extent and transform of the returned grid geometry.
+     *
      * @return a grid geometry encapsulating canvas properties.
      * @throws RenderException if the grid geometry can not be computed.
      */
-    public GridGeometry getGridGeometry(final boolean allDimensions) throws RenderException {
-        final GridExtent extent;
-        if (displayBounds.isEmpty()) {
-            extent = null;
-        } else {
-            // TODO: take allDimensions in account.
-            final int dimension = displayBounds.getDimension();
-            final long[] lower = new long[dimension];
-            final long[] upper = new long[dimension];
-            for (int i=0; i<dimension; i++) {
-                lower[i] = (long) Math.floor(displayBounds.getMinimum(i));
-                upper[i] = (long) Math.ceil (displayBounds.getMaximum(i));
-            }
-            final DimensionNameType[] axisTypes = getDisplayAxes();
-            extent = new GridExtent(axisTypes, lower, upper, false);
-        }
+    public GridGeometry getGridGeometry() throws RenderException {
         try {
-            // TODO: take allDimensions in account.
-            return new GridGeometry(extent, PixelInCell.CELL_CENTER, objectiveToDisplay.inverse(), objectiveCRS);
-        } catch (TransformException e) {
-            throw new RenderException(errors().getString(Errors.Keys.CanNotCompute_1, POINT_OF_INTEREST_PROPERTY), e);
+            /*
+             * If not already done, create a multi-dimensional CRS composed of `objectiveCRS`
+             * with supplemental dimensions appended. This CRS needs to be recreated only if
+             * the Point of Interest changed, or if the objective CRS changed.
+             */
+            if (augmentedObjectiveCRS == null) {
+                if (pointOfInterest != null) {
+                    final ArrayList<CoordinateReferenceSystem> components = new ArrayList<>(4);
+                    components.add(objectiveCRS);
+                    supplementalDimensions = CanvasExtent.findSupplementalDimensions(
+                            pointOfInterest.getCoordinateReferenceSystem(),
+                            multidimToObjective.derivative(pointOfInterest), components);
+                    augmentedObjectiveCRS = CRS.compound(components.toArray(new CoordinateReferenceSystem[components.size()]));
+                } else {
+                    augmentedObjectiveCRS = objectiveCRS;
+                }
+            }
+            /*
+             * Create the `gridToCRS` using the "display to objective" transform augmented with POI coordinate
+             * values in supplemental dimensions. Note: `getObjectiveToDisplay()` should never return null.
+             */
+            LinearTransform gridToCRS = getObjectiveToDisplay().inverse();
+            if (supplementalDimensions != 0) {
+                gridToCRS = CanvasExtent.createGridToCRS(gridToCRS.getMatrix(), pointOfInterest, supplementalDimensions);
+            }
+            /*
+             * Create the grid extent with a number of dimensions that include the supplemental dimensions.
+             * The cell indices range of all supplemental dimensions is [0 … 0].
+             */
+            final GridExtent extent;
+            if (displayBounds.isEmpty()) {
+                extent = null;
+            } else {
+                final int dimension = gridToCRS.getSourceDimensions();
+                final long[] lower = new long[dimension];
+                final long[] upper = new long[dimension];
+                for (int i = displayBounds.getDimension(); --i >= 0;) {
+                    lower[i] = (long) Math.floor(displayBounds.getMinimum(i));
+                    upper[i] = (long) Math.ceil (displayBounds.getMaximum(i));
+                }
+                final DimensionNameType[] axisTypes = ArraysExt.resize(getDisplayAxes(), dimension);
+                extent = new GridExtent(axisTypes, lower, upper, false);
+            }
+            return new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, augmentedObjectiveCRS);
+        } catch (FactoryException | TransformException e) {
+            throw new RenderException(errors().getString(Errors.Keys.CanNotCompute_1, "gridGeometry"), e);
         }
     }
 
