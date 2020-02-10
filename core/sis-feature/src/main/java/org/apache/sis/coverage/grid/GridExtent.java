@@ -52,6 +52,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Types;
@@ -681,7 +682,11 @@ public class GridExtent implements GridEnvelope, Serializable {
         final int dimension = getDimension();
         final double[] center = new double[dimension];
         for (int i=0; i<dimension; i++) {
-            center[i] = ((double) coordinates[i] + (double) coordinates[i + dimension] + 1.0) * 0.5;
+            /*
+             * We want the average of (low + hi+1). However for the purpose of computing an average, it does
+             * not matter if we add 1 to `low` or `hi`. So we add 1 to `low` because it should not overflow.
+             */
+            center[i] = MathFunctions.average(Math.incrementExact(coordinates[i]), coordinates[i + dimension]);
         }
         return center;
     }

@@ -86,7 +86,7 @@ import org.apache.sis.util.Utilities;
  * The second approach is the most frequently used.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -252,8 +252,10 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * instances.
      *
      * @return the underlying math transform factory.
+     *
+     * @since 1.1
      */
-    final MathTransformFactory getMathTransformFactory() {
+    public final MathTransformFactory getMathTransformFactory() {
         MathTransformFactory factory = mtFactory;
         if (factory == null) {
             mtFactory = factory = DefaultFactories.forBuildin(MathTransformFactory.class);

@@ -182,6 +182,30 @@ public final class MathFunctions extends Static {
     }
 
     /**
+     * Computes the averages of two signed integers without overflow. The calculation is performed with
+     * {@code long} arithmetic before to convert the result to the {@code double} floating point number.
+     * This function may be more accurate than the classical (x+y)/2 formula when <var>x</var> and/or
+     * <var>y</var> are very large, because it will avoid the lost of last digits before averaging.
+     * If exactly one of <var>x</var> and <var>y</var> is odd, the result will contain the 0.5 fraction digit.
+     *
+     * <div class="note"><b>Source:</b> this function is adapted from
+     * <a href="http://aggregate.org/MAGIC/#Average%20of%20Integers">The Aggregate Magic Algorithms</a>
+     * from University of Kentucky.</div>
+     *
+     * @param  x  the first value to average.
+     * @param  y  the second value to average.
+     * @return average of given values without integer overflow.
+     *
+     * @since 1.1
+     */
+    public static double average(final long x, final long y) {
+        final long xor = (x ^ y);
+        double c = (x & y) + (xor >> 1);      // Really need >> 1, not /2 (they differ with negative numbers).
+        if ((xor & 1) != 0) c += 0.5;
+        return c;
+    }
+
+    /**
      * Truncates the given value toward zero. Invoking this method is equivalent to invoking
      * {@link Math#floor(double)} if the value is positive, or {@link Math#ceil(double)} if
      * the value is negative.

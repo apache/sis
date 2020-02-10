@@ -31,6 +31,7 @@ import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Localized;
@@ -41,12 +42,15 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 
@@ -193,6 +197,19 @@ public class Canvas extends Observable implements Localized {
      * @see #addPropertyChangeListener(String, PropertyChangeListener)
      */
     public static final String POINT_OF_INTEREST_PROPERTY = "pointOfInterest";
+
+    /**
+     * The {@value} property name, used for notifications about changes in grid geometry.
+     * The grid geometry is a synthetic property computed from other properties when requested.
+     * The computed grid geometry may change every time that a {@value #OBJECTIVE_CRS_PROPERTY},
+     * {@value #OBJECTIVE_TO_DISPLAY_PROPERTY}, {@value #DISPLAY_BOUNDS_PROPERTY} or
+     * {@value #POINT_OF_INTEREST_PROPERTY} property is changed, but a {@value} change event
+     * is send only when {@link #setGridGeometry(GridGeometry)} is explicitly invoked.
+     *
+     * @see #getGridGeometry()
+     * @see #setGridGeometry(GridGeometry)
+     */
+    public static final String GRID_GEOMETRY_PROPERTY = "gridGeometry";
 
     /**
      * The coordinate reference system in which to transform all data before displaying.
@@ -634,6 +651,7 @@ public class Canvas extends Observable implements Localized {
             throw new IllegalArgumentException(errors().getString(Errors.Keys.EmptyProperty_1, DISPLAY_BOUNDS_PROPERTY));
         }
         if (!oldValue.equals(displayBounds)) {
+            gridGeometry = null;
             firePropertyChange(DISPLAY_BOUNDS_PROPERTY, oldValue, newValue);    // Do not publish reference to `displayBounds`.
         }
     }
@@ -745,6 +763,8 @@ public class Canvas extends Observable implements Localized {
      *
      * @return a grid geometry encapsulating canvas properties, including supplemental dimensions if possible.
      * @throws RenderException if the grid geometry can not be computed.
+     *
+     * @see #GRID_GEOMETRY_PROPERTY
      */
     public GridGeometry getGridGeometry() throws RenderException {
         if (gridGeometry == null) try {
@@ -785,7 +805,9 @@ public class Canvas extends Observable implements Localized {
              * coordinate values in supplemental dimensions. Those coordinate values will be stored in the
              * translation terms of the `gridToCRS` matrix.
              */
-            final LinearTransform objectiveToDisplay = getObjectiveToDisplay();         // Should never be null.
+            if (objectiveToDisplay == null) {
+                objectiveToDisplay = updateObjectiveToDisplay();
+            }
             LinearTransform gridToCRS = objectiveToDisplay.inverse();
             if (supplementalDimensions != 0) {
                 gridToCRS = CanvasExtent.createGridToCRS(gridToCRS.getMatrix(), pointOfInterest, supplementalDimensions);
@@ -807,13 +829,93 @@ public class Canvas extends Observable implements Localized {
             }
             gridGeometry = new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, augmentedObjectiveCRS);
         } catch (FactoryException | TransformException e) {
-            throw new RenderException(errors().getString(Errors.Keys.CanNotCompute_1, "gridGeometry"), e);
+            throw new RenderException(errors().getString(Errors.Keys.CanNotCompute_1, GRID_GEOMETRY_PROPERTY), e);
         }
         return gridGeometry;
     }
 
-    public void setGridGeometry(final GridGeometry geometry) throws RenderException {
-        // TODO
+    /**
+     * Sets canvas properties from the given grid geometry. This convenience method converts the
+     * coordinate reference system, "grid to CRS" transform and extent of the given grid geometry
+     * to {@code Canvas} properties. If the given value is different than the previous value, then
+     * change events are sent to all listeners registered for the {@value #GRID_GEOMETRY_PROPERTY}
+     * property, with also potential change events for {@value #OBJECTIVE_CRS_PROPERTY},
+     * {@value #OBJECTIVE_TO_DISPLAY_PROPERTY}, {@value #DISPLAY_BOUNDS_PROPERTY} and
+     * {@value #POINT_OF_INTEREST_PROPERTY} properties.
+     *
+     * @param  newValue  the grid geometry from which to get new canvas properties.
+     * @throws RenderException if the given grid geometry can not be converted to canvas properties.
+     */
+    public void setGridGeometry(final GridGeometry newValue) throws RenderException {
+        ArgumentChecks.ensureNonNull(GRID_GEOMETRY_PROPERTY, newValue);
+        if (!newValue.equals(gridGeometry)) try {
+            /*
+             * Do not test grid.isDefined(…) — we consider all elements as mandatory for this method.
+             * First, get the dimensions to show in the canvas by searching dimensions having a span
+             * larger than 1 grid cell. Those spans will become the sizes of display bounds.
+             *
+             * Result of this block: DISPLAY_BOUNDS_PROPERTY: newBounds
+             */
+            final GridExtent extent = newValue.getExtent();
+            final int[] displayDimensions = extent.getSubspaceDimensions(getDisplayDimensions());
+            final GeneralEnvelope newBounds = new GeneralEnvelope(getDisplayCRS());
+            for (int i=0; i<displayDimensions.length; i++) {
+                final int s = displayDimensions[i];
+                newBounds.setRange(i, extent.getLow(s), Math.incrementExact(extent.getHigh(s)));
+            }
+            /*
+             * Computes the point of interest in the Coordinate Reference System (CRS) of the given grid geometry.
+             * This point will also contain the coordinates in supplemental dimensions (if any), such as vertical
+             * and temporal positions of the slice shown in this canvas. Those supplemental coordinates should be
+             * computed in cell centers. This suggests that we should use PixelInCell.CELL_CENTER transform, but
+             * actually the coordinates returned by `extent.getPointOfInterest()` for [x … x] ranges (span of 1,
+             * as required for supplemental dimensions) already includes a 0.5 fraction digit.
+             *
+             * Result of this block: POINT_OF_INTEREST_PROPERTY: newPOI
+             */
+            final MathTransform gridToCRS = newValue.getGridToCRS(PixelInCell.CELL_CORNER);
+            final CoordinateReferenceSystem crs = newValue.getCoordinateReferenceSystem();
+            final GeneralDirectPosition newPOI = new GeneralDirectPosition(crs);
+            gridToCRS.transform(extent.getPointOfInterest(), 0, newPOI.coordinates, 0, 1);
+            /*
+             * Get the CRS component in the dimensions shown by this canvas.
+             *
+             * Result of this block: OBJECTIVE_CRS_PROPERTY:        newObjectiveCRS
+             *                       OBJECTIVE_TO_DISPLAY_PROPERTY: newObjToDisplay
+             */
+            final TransformSeparator analyzer = new TransformSeparator(gridToCRS, coordinateOperationFactory.getMathTransformFactory());
+            analyzer.addSourceDimensions(displayDimensions);
+            final LinearTransform           newObjToDisplay     = MathTransforms.tangent(analyzer.separate().inverse(), newPOI);
+            final int[]                     objectiveDimensions = analyzer.getTargetDimensions();
+            final CoordinateReferenceSystem newObjectiveCRS     = CRS.reduce(crs, objectiveDimensions);
+            final MathTransform             dimensionSelect     = MathTransforms.linear(
+                    Matrices.createDimensionSelect(newPOI.getDimension(), objectiveDimensions));
+            /*
+             * Set internal fields only after we successfully computed everything, in order to have a
+             * "all or nothing" behavior. Notify listeners only after all properties have been updated.
+             */
+            final GeneralEnvelope           oldBounds       = new GeneralEnvelope(displayBounds);
+            final DirectPosition            oldPOI          = pointOfInterest;
+            final LinearTransform           oldObjToDisplay = objectiveToDisplay;
+            final CoordinateReferenceSystem oldObjectiveCRS = objectiveCRS;
+            final GridGeometry              oldGrid         = gridGeometry;
+
+            displayBounds.setEnvelope(newBounds);
+            pointOfInterest       = newPOI;
+            objectiveToDisplay    = newObjToDisplay;
+            objectiveCRS          = newObjectiveCRS;
+            multidimToObjective   = dimensionSelect;
+            augmentedObjectiveCRS = null;               // Will be recomputed when first needed.
+            axisTypes             = null;
+            gridGeometry          = newValue;
+            if (!newBounds      .equals(oldBounds))       firePropertyChange(DISPLAY_BOUNDS_PROPERTY,       oldBounds,       newBounds);
+            if (!newObjectiveCRS.equals(oldObjectiveCRS)) firePropertyChange(OBJECTIVE_CRS_PROPERTY,        oldObjectiveCRS, newObjectiveCRS);
+            if (!newObjToDisplay.equals(oldObjToDisplay)) firePropertyChange(OBJECTIVE_TO_DISPLAY_PROPERTY, oldObjToDisplay, newObjToDisplay);
+            if (!newPOI         .equals(oldPOI))          firePropertyChange(POINT_OF_INTEREST_PROPERTY,    oldPOI,          newPOI);
+            /* Unconditional notification. */             firePropertyChange(GRID_GEOMETRY_PROPERTY,        oldGrid,         newValue);
+        } catch (IncompleteGridGeometryException | CannotEvaluateException | FactoryException | TransformException e) {
+            throw new RenderException(errors().getString(Errors.Keys.CanNotSetPropertyValue_1, GRID_GEOMETRY_PROPERTY), e);
+        }
     }
 
     public Optional<GeographicBoundingBox> getGeographicArea() {

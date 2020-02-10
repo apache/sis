@@ -207,7 +207,7 @@ final class CanvasExtent extends GridExtent {
      * Those types are only a help for debugging purpose, by providing more information
      * to the developers. They should not be used for any "real" work.
      *
-     * @param  crs               the coordinate reference system to use for inferring axis types.
+     * @param  crs  the coordinate reference system to use for inferring axis types.
      * @param  displayDimension  number of dimensions managed by the {@link Canvas}.
      * @return suggested axis types. Never null, but contains null elements.
      *
