@@ -55,14 +55,6 @@ public abstract class PlanarCanvas extends Canvas {
     private static final int BIDIMENSIONAL = 2;
 
     /**
-     * Name of grid axes in {@link org.apache.sis.coverage.grid.GridGeometry} extent.
-     */
-    private static final DimensionNameType[] DISPLAY_AXES = {
-        DimensionNameType.COLUMN,
-        DimensionNameType.ROW
-    };
-
-    /**
      * The display Coordinate Reference System used by all {@code PlanarCanvas} instances.
      */
     private static final DefaultEngineeringCRS DISPLAY_CRS;
@@ -106,13 +98,17 @@ public abstract class PlanarCanvas extends Canvas {
     }
 
     /**
-     * Returns name of display axes, or {@code null} if unknown.
-     * Caller shall not modify the returned array (it is not cloned).
+     * Gets the name of display axes and stores them in the given array. Those display axis names
+     * are used for debugging purposes only, as an additional information provided to developers.
+     * Those names should not be used for any "real" work.
+     *
+     * @param  axisTypes  where to store the name of display axes. The array length will
+     *                    be at least {@link #BIDIMENSIONAL} (it will often be longer).
      */
     @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    final DimensionNameType[] getDisplayAxes() {
-        return DISPLAY_AXES;
+    final void getDisplayAxes(final DimensionNameType[] axisTypes) {
+        axisTypes[0] = DimensionNameType.COLUMN;
+        axisTypes[1] = DimensionNameType.ROW;
     }
 
     /**
