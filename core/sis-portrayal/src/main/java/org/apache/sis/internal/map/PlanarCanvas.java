@@ -116,7 +116,7 @@ public abstract class PlanarCanvas extends Canvas {
      */
     @Override
     final DirectPosition allocatePosition() {
-        return new DirectPosition2D();
+        return new DirectPosition2D(super.getObjectiveCRS());
     }
 
     /**

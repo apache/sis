@@ -16,10 +16,11 @@
  */
 package org.apache.sis.internal.map;
 
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.ArrayList;
+import java.util.OptionalDouble;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -28,8 +29,10 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.util.FactoryException;
@@ -46,7 +49,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
-import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -104,7 +106,7 @@ import org.apache.sis.coverage.grid.GridExtent;
  * <h2>Location of data to display</h2>
  * In addition of above-cited Coordinate Reference Systems, a {@code Canvas} contains also a point of interest.
  * The point of interest is often, but not necessarily, at the center of display area.
- * It defines the position where {@linkplain #getResolution() resolutions} will be computed, and where
+ * It defines the position where {@linkplain #getSpatialResolution() resolutions} will be computed, and where
  * {@linkplain PlanarCanvas#scale(double, double) scales},
  * {@linkplain PlanarCanvas#translate(double, double) translations} and
  * {@linkplain PlanarCanvas#rotate(double) rotations} will be applied.
@@ -143,14 +145,6 @@ import org.apache.sis.coverage.grid.GridExtent;
  * @module
  */
 public class Canvas extends Observable implements Localized {
-    /**
-     * Desired resolution in display units (usually pixels). This is used for avoiding
-     * the cost of transformations having too much accuracy for the current zoom level.
-     *
-     * @see #findTransform(CoordinateReferenceSystem, CoordinateReferenceSystem)
-     */
-    private static final double DISPLAY_RESOLUTION = 1;
-
     /**
      * The {@value} property name, used for notifications about changes in objective CRS.
      * The objective CRS is the Coordinate Reference System in which all data are transformed before displaying.
@@ -216,6 +210,24 @@ public class Canvas extends Observable implements Localized {
     private static final String GRID_GEOMETRY_PROPERTY = "gridGeometry";
 
     /**
+     * The {@value} property name. The geographic area is a synthetic property computed
+     * from {@value #DISPLAY_BOUNDS_PROPERTY}, {@value #OBJECTIVE_TO_DISPLAY_PROPERTY}
+     * and {@value #OBJECTIVE_CRS_PROPERTY}. There is no event fired for this property.
+     *
+     * @see #getGeographicArea()
+     */
+    private static final String GEOGRAPHIC_AREA_PROPERTY = "geographicArea";
+
+    /**
+     * The {@value} property name. The resolution is a synthetic property computed from
+     * {@value #POINT_OF_INTEREST_PROPERTY}, {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} and
+     * {@value #OBJECTIVE_CRS_PROPERTY}. There is no event fired for this property.
+     *
+     * @see #getSpatialResolution()
+     */
+    private static final String SPATIAL_RESOLUTION_PROPERTY = "spatialResolution";
+
+    /**
      * The coordinate reference system in which to transform all data before displaying.
      * If {@code null}, then no transformation is applied and data coordinates are used directly
      * as display coordinates, regardless the data CRS (even if different data use different CRS).
@@ -270,6 +282,7 @@ public class Canvas extends Observable implements Localized {
      * and {@link #objectiveCRS} (indirectly, through {@link #multidimToObjective}) and should be
      * recomputed when any of those properties changed.</p>
      *
+     * @see #getObjectivePOI()
      * @see #getGridGeometry()
      */
     private DirectPosition objectivePOI;
@@ -343,6 +356,17 @@ public class Canvas extends Observable implements Localized {
     private GridGeometry gridGeometry;
 
     /**
+     * The context (geographic area and desired resolution) for selecting a coordinate operation.
+     * The information contained in this object can opportunistically be used for providing the
+     * geographic area and spatial resolution of this canvas.
+     *
+     * @see #getGeographicArea()
+     * @see #getSpatialResolution()
+     * @see #findTransform(CoordinateReferenceSystem, CoordinateReferenceSystem)
+     */
+    private final CanvasContext operationContext;
+
+    /**
      * The factory to use for creating coordinate operations. This factory allow us to specify the area
      * of interest (the geographic region shown by this {@code Canvas}) and the desired resolution.
      *
@@ -374,6 +398,7 @@ public class Canvas extends Observable implements Localized {
         displayBounds = new GeneralEnvelope(displayCRS);
         displayBounds.setToNaN();
         coordinateOperationFactory = CoordinateOperations.factory();
+        operationContext = new CanvasContext();
     }
 
     /**
@@ -479,10 +504,11 @@ public class Canvas extends Observable implements Localized {
         ArgumentChecks.ensureNonNull(OBJECTIVE_CRS_PROPERTY, newValue);
         ArgumentChecks.ensureDimensionMatches(OBJECTIVE_CRS_PROPERTY, getDisplayDimensions(), newValue);
         final CoordinateReferenceSystem oldValue = objectiveCRS;
-        LinearTransform oldObjectiveToDisplay = null;
-        LinearTransform newObjectiveToDisplay = null;
-        if (!newValue.equals(oldValue)) {
-            if (oldValue != null) try {
+        if (!newValue.equals(oldValue)) try {
+            final CoordinateOperation newToGeo = objectiveToGeographic(newValue);
+            LinearTransform oldObjectiveToDisplay = null;
+            LinearTransform newObjectiveToDisplay = null;
+            if (oldValue != null) {
                 /*
                  * Compute the change unconditionally as a way to verify that the new CRS is compatible with
                  * data currently shown. Another reason is that checking identity transform is more reliable
@@ -517,14 +543,15 @@ public class Canvas extends Observable implements Localized {
                     axisTypes             = null;
                     gridGeometry          = null;
                 }
-            } catch (FactoryException | TransformException e) {
-                throw new RenderException(errors().getString(Errors.Keys.CanNotSetPropertyValue_1, OBJECTIVE_CRS_PROPERTY), e);
             }
-            objectiveCRS = newValue;            // Set only after everything else succeeded.
+            objectiveCRS = newValue;                                // Set only after everything else succeeded.
+            operationContext.setObjectiveToGeographic(newToGeo);
             firePropertyChange(OBJECTIVE_CRS_PROPERTY, oldValue, newValue);
             if (!Objects.equals(oldObjectiveToDisplay, newObjectiveToDisplay)) {
                 firePropertyChange(OBJECTIVE_TO_DISPLAY_PROPERTY, oldObjectiveToDisplay, newObjectiveToDisplay);
             }
+        } catch (FactoryException | TransformException e) {
+            throw new RenderException(errors().getString(Errors.Keys.CanNotSetPropertyValue_1, OBJECTIVE_CRS_PROPERTY), e);
         }
     }
 
@@ -610,6 +637,8 @@ public class Canvas extends Observable implements Localized {
      */
     void updateObjectiveToDisplay(final LinearTransform newValue) {
         objectiveToDisplay = newValue;
+        gridGeometry       = null;
+        operationContext.clear();
     }
 
     /**
@@ -624,6 +653,7 @@ public class Canvas extends Observable implements Localized {
      * @return size and location of the display device.
      *
      * @see #DISPLAY_BOUNDS_PROPERTY
+     * @see #getGeographicArea()
      */
     public Envelope getDisplayBounds() {
         return displayBounds.isAllNaN() ? null : new GeneralEnvelope(displayBounds);
@@ -656,6 +686,7 @@ public class Canvas extends Observable implements Localized {
         }
         if (!oldValue.equals(displayBounds)) {
             gridGeometry = null;
+            operationContext.partialClear(false);                               // Resolution is still valid.
             firePropertyChange(DISPLAY_BOUNDS_PROPERTY, oldValue, newValue);    // Do not publish reference to `displayBounds`.
         }
     }
@@ -703,11 +734,13 @@ public class Canvas extends Observable implements Localized {
              * (only the number of dimensions that the display device can show).
              */
             if (objectiveCRS == null) {
-                objectiveCRS = CRS.getComponentAt(crs, 0, getDisplayDimensions());
-                if (objectiveCRS == null) {
+                final CoordinateReferenceSystem newObjectiveCRS = CRS.getComponentAt(crs, 0, getDisplayDimensions());
+                if (newObjectiveCRS == null) {
                     throw new IllegalArgumentException("Can not infer objective CRS.");
                     // Message not localized yet because we should probably try harder.
                 }
+                operationContext.setObjectiveToGeographic(objectiveToGeographic(newObjectiveCRS));
+                objectiveCRS = newObjectiveCRS;                            // Set only on success.
             }
             /*
              * Transform the Point Of Interest to the objective CRS as a way to test its validity.
@@ -724,10 +757,19 @@ public class Canvas extends Observable implements Localized {
             augmentedObjectiveCRS = null;                                           // Will be recomputed when first needed.
             axisTypes             = null;
             gridGeometry          = null;
+            operationContext.partialClear(true);                                    // Geographic area is still valid.
             firePropertyChange(POINT_OF_INTEREST_PROPERTY, oldValue, newValue);     // Do not publish reference to `copy`.
         } catch (FactoryException | TransformException e) {
             throw new RenderException(errors().getString(Errors.Keys.CanNotSetPropertyValue_1, POINT_OF_INTEREST_PROPERTY), e);
         }
+    }
+
+    /**
+     * Returns the coordinate values of the Point Of Interest (POI) in objective CRS.
+     * The array length should be equal to {@link #getDisplayDimensions()}.
+     */
+    final double[] getObjectivePOI() {
+        return objectivePOI.getCoordinate();
     }
 
     /**
@@ -914,8 +956,8 @@ public class Canvas extends Observable implements Localized {
              * "all or nothing" behavior.
              */
             displayBounds.setEnvelope(newBounds);
+            updateObjectiveToDisplay(newObjectiveToDisplay);
             pointOfInterest       = newPOI;
-            objectiveToDisplay    = newObjectiveToDisplay;
             objectiveCRS          = newObjectiveCRS;
             multidimToObjective   = dimensionSelect;
             augmentedObjectiveCRS = null;               // Will be recomputed when first needed.
@@ -949,21 +991,47 @@ public class Canvas extends Observable implements Localized {
         }
     }
 
-    public Optional<GeographicBoundingBox> getGeographicArea() {
-        return Optional.empty();        // TODO
-    }
-
-    public double[] getResolution() {
-        return null;
+    /**
+     * Returns the geographic bounding box encompassing the area shown on the display device.
+     * If the {@linkplain #getObjectiveCRS() objective CRS} is not convertible to a geographic CRS,
+     * then this method returns an empty value.
+     *
+     * @return geographic bounding box encompassing the viewed area.
+     * @throws RenderException in an error occurred while computing the geographic area.
+     *
+     * @see #getDisplayBounds()
+     */
+    public Optional<GeographicBoundingBox> getGeographicArea() throws RenderException {
+        try {
+            return operationContext.getGeographicArea(this);
+        } catch (TransformException e) {
+            throw new RenderException(errors().getString(Errors.Keys.CanNotCompute_1, GEOGRAPHIC_AREA_PROPERTY), e);
+        }
     }
 
     /**
-     * Allocates a position which can hold a coordinates in objective or display CRS, or
-     * returns {@code null} for letting {@link MathTransform} do the allocation themselves.
-     * May be overridden by subclasses for a little bit more efficiency.
+     * Returns an estimation of the resolution (in metres) at the point of interest.
+     * If the {@linkplain #getObjectiveCRS() objective CRS} is not convertible to a
+     * geographic CRS, then this method returns an empty value.
+     *
+     * @return estimation of the resolution in metres at current point of interest.
+     * @throws RenderException in an error occurred while computing the resolution.
      */
-    DirectPosition allocatePosition() {
-        return null;
+    public OptionalDouble getSpatialResolution() throws RenderException {
+        try {
+            return operationContext.getSpatialResolution(this);
+        } catch (TransformException e) {
+            throw new RenderException(errors().getString(Errors.Keys.CanNotCompute_1, SPATIAL_RESOLUTION_PROPERTY), e);
+        }
+    }
+
+    /**
+     * Computes the value for {@link #objectiveToGeographic}. The value is not stored by this method for
+     * giving caller a chance to validate other properties before to write them in a "all or nothing" way.
+     */
+    private CoordinateOperation objectiveToGeographic(final CoordinateReferenceSystem crs) throws FactoryException {
+        final GeographicCRS geoCRS = ReferencingUtilities.toNormalizedGeographicCRS(crs, false, false);
+        return (geoCRS != null) ? coordinateOperationFactory.createOperation(crs, geoCRS) : null;
     }
 
     /**
@@ -972,14 +1040,23 @@ public class Canvas extends Observable implements Localized {
      * CRS may differ depending on which area is currently visible in the canvas. All requests for a coordinate
      * operation should invoke this method instead than {@link CRS#findOperation(CoordinateReferenceSystem,
      * CoordinateReferenceSystem, GeographicBoundingBox)}.
+     *
+     * @todo verify if bounding box/resolution are up-to-date.
      */
     private MathTransform findTransform(final CoordinateReferenceSystem source,
-                                        final CoordinateReferenceSystem target) throws FactoryException
+                                        final CoordinateReferenceSystem target)
+            throws FactoryException, RenderException
     {
-        final CoordinateOperationContext context = new CoordinateOperationContext();
-        final Optional<GeographicBoundingBox> geographicArea = getGeographicArea();
-        geographicArea.ifPresent(context::setAreaOfInterest);
-        return coordinateOperationFactory.createOperation(source, target, context).getMathTransform();
+        operationContext.refresh();
+        return coordinateOperationFactory.createOperation(source, target, operationContext).getMathTransform();
+    }
+
+    /**
+     * Allocates a position which can hold a coordinates in objective CRS.
+     * May be overridden by subclasses for a little bit more efficiency.
+     */
+    DirectPosition allocatePosition() {
+        return new GeneralDirectPosition(objectiveCRS);
     }
 
     /**

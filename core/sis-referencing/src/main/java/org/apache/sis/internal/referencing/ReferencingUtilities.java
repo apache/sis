@@ -283,8 +283,8 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Derives a geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis in the specified order and in decimal degrees.
-     * If no such CRS can be obtained or created, returns {@code null}.
+     * Derives a geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis in the specified
+     * order and in decimal degrees. If no such CRS can be obtained or created, returns {@code null}.
      *
      * <p>This method does not set the prime meridian to Greenwich.
      * Meridian rotation, if needed, shall be performed by the caller.</p>
