@@ -69,12 +69,6 @@ final class CanvasContext extends CoordinateOperationContext {
     private CoordinateOperation objectiveToGeographic;
 
     /**
-     * Authalic radius of the geographic CRS which is the target of {@link #objectiveToGeographic}, in metres.
-     * This is computed in same time than {@link #objectiveToGeographic}.
-     */
-    private double radius;
-
-    /**
      * The geographic area, computed when first requested and saved for reuse. This is reset to {@code null} every time
      * that {@link Canvas#objectiveCRS}, {@link Canvas#objectiveToDisplay} or {@link Canvas#displayBounds} is modified.
      *
@@ -103,9 +97,7 @@ final class CanvasContext extends CoordinateOperationContext {
      * Sets the operation from {@link Canvas#objectiveCRS} to geographic CRS.
      */
     final void setObjectiveToGeographic(final CoordinateOperation op) {
-        final Ellipsoid ellipsoid = ((GeographicCRS) op.getTargetCRS()).getDatum().getEllipsoid();
-        radius = ellipsoid.getAxisUnit().getConverterTo(Units.METRE).convert(Formulas.getAuthalicRadius(ellipsoid));
-        objectiveToGeographic = op;             // Set only if above line succeeded.
+        objectiveToGeographic = op;
         clear();
     }
 
@@ -192,18 +184,21 @@ final class CanvasContext extends CoordinateOperationContext {
             final Matrix derivative = MathTransforms.derivativeAndTransform(displayToGeographic, poi, 0, poi, 1);
             final double[] vector   = new double[derivative.getNumCol()];
             final double[] combined = new double[derivative.getNumRow()];
-            for (int j=0; j<combined.length; j++) {
+            for (int j=combined.length; --j>=0;) {                      // Process latitude (1) before longitude (0).
                 for (int i=0; i<vector.length; i++) {
                     vector[i] = derivative.getElement(j,i);
                 }
                 double m = MathFunctions.magnitude(vector);
                 switch (j) {
-                    case 0: m *= Math.cos(Math.toRadians(poi[1]));      // Adjust longitude, then fall through.
-                    case 1: m  = Math.toRadians(m) * radius; break;     // Latitude (this case) or Longitude (case 0).
+                    case 0: m *= Math.cos(combined[1]);                 // Adjust longitude, then fall through.
+                    case 1: m  = Math.toRadians(m); break;              // Latitude (this case) or longitude (case 0).
                     // Other cases: assume value already in metres.
                 }
                 combined[j] = m;
             }
+            final Ellipsoid ellipsoid = ((GeographicCRS) objectiveToGeographic.getTargetCRS()).getDatum().getEllipsoid();
+            double radius = Formulas.radiusOfConformalSphere(ellipsoid, combined[1]);
+            radius = ellipsoid.getAxisUnit().getConverterTo(Units.METRE).convert(radius);
             resolution = MathFunctions.magnitude(combined) * radius;
         }
     }

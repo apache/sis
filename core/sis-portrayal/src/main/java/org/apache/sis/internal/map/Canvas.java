@@ -513,6 +513,12 @@ public class Canvas extends Observable implements Localized {
                  * Compute the change unconditionally as a way to verify that the new CRS is compatible with
                  * data currently shown. Another reason is that checking identity transform is more reliable
                  * than the `compareIgnoreMetadata(oldValue, newValue)` check.
+                 *
+                 * Note: we are invoking `findTransform(…)` with a CoordinateOperationContext computed from
+                 * the old CRS. But it is okay because the context information are geographic area (degrees)
+                 * and approximate resolution (metres), which should not change a lot since we will continue
+                 * to view the same area after the CRS change. Those information only need to be approximate
+                 * anyway, and in many cases will be totally ignored.
                  */
                 final MathTransform newToOld = findTransform(newValue, oldValue);
                 if (pointOfInterest != null && !newToOld.isIdentity()) {
@@ -745,7 +751,15 @@ public class Canvas extends Observable implements Localized {
             /*
              * Transform the Point Of Interest to the objective CRS as a way to test its validity.
              * All canvas fields will be updated only if this operation succeeds.
-             * Note: `oldValue` can not be null if `mt` is non-null.
+             *
+             * Note 1: in the CoordinateOperationContext used for selecting a MathTransform, the geographic area is
+             * still the same but the spatial resolution could be slightly different because computed at a new point
+             * of interest. But we can not use the new point of interest now, because we need the MathTransform for
+             * computing it. However in practice the resolution is often ignored, or does not vary a lot in regions
+             * where it matter. So we assume it is okay to keep the CoordinateOperationContext with old resolution
+             * in the following call to `findTransform(…)` or usage of `multidimToObjective`.
+             *
+             * Note 2: `oldValue` can not be null if `multidimToObjective` is non-null.
              */
             MathTransform mt = multidimToObjective;
             if (mt == null || !Utilities.equalsIgnoreMetadata(crs, oldValue.getCoordinateReferenceSystem())) {
