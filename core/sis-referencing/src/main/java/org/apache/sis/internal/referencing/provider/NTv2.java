@@ -19,6 +19,8 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -49,6 +51,7 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.collection.Cache;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.measure.Units;
@@ -155,7 +158,7 @@ public final class NTv2 extends AbstractProvider {
                     try (ReadableByteChannel in = Files.newByteChannel(resolved)) {
                         DatumShiftGridLoader.startLoading(NTv2.class, file);
                         final Loader loader = new Loader(in, file, 2);
-                        grid = loader.readGrid();
+                        grid = loader.readAllGrids();
                         loader.report(NTv2.class);
                     } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
                         throw DatumShiftGridLoader.canNotLoad("NTv2", file, e);
@@ -268,8 +271,8 @@ public final class NTv2 extends AbstractProvider {
 
         /**
          * Keys of {@link #header} for entries that were declared in the overview header.
-         * This is used after {@link #readGrid()} execution for discarding all entries that
-         * are specific to a sub-grid, for avoiding to mix entries from two sub-grids.
+         * This is used after {@link #readGrid(Map, List)} execution for discarding all
+         * entries specific to sub-grids, for avoiding to mix entries from two sub-grids.
          */
         private final String[] overviewKeys;
 
@@ -284,10 +287,9 @@ public final class NTv2 extends AbstractProvider {
         private boolean hasUnrecognized;
 
         /**
-         * Number of grids remaining in the file. This value is set in the constructor,
-         * then decremented at every call to {@link #readGrid()}.
+         * Number of grids expected in the file.
          */
-        private int remainingGrids;
+        private final int numGrids;
 
         /**
          * Dates at which the grid has been created or updated, or {@code null} if unknown.
@@ -342,12 +344,13 @@ public final class NTv2 extends AbstractProvider {
              */
             final Integer n = (Integer) get("NUM_FILE", (vs != null) && version >= 2);
             isV2 = (n != null);
-            remainingGrids = 1;
             if (isV2) {
-                remainingGrids = n;
-                if (remainingGrids < 1) {
+                numGrids = n;
+                if (numGrids < 1) {
                     throw new FactoryException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "NUM_FILE", n));
                 }
+            } else {
+                numGrids = 1;
             }
             overviewKeys = header.keySet().toArray(new String[header.size()]);
         }
@@ -426,6 +429,39 @@ public final class NTv2 extends AbstractProvider {
         }
 
         /**
+         * Reads all grids and returns the root grid. After reading all grids, this method rearrange
+         * them in a child-parent relationship. The result is a tree with a single root containing
+         * sub-grids (if any) as children.
+         */
+        final DatumShiftGridFile<Angle,Angle> readAllGrids() throws IOException, FactoryException, NoninvertibleTransformException {
+            final Map<String, DatumShiftGridFile<Angle,Angle>> grids = new HashMap<>(Containers.hashMapCapacity(numGrids));
+            final List<Object> parentChildPairs = new ArrayList<>(numGrids * 2);
+            while (grids.size() < numGrids) {
+                readGrid(grids, parentChildPairs);
+            }
+            /*
+             * At this point all grids have been read. Now search the parent for each grid.
+             * We should have exactly one grid without parent.
+             */
+            DatumShiftGridFile<Angle,Angle> root = null;
+            for (int i = parentChildPairs.size(); i != 0;) {
+                @SuppressWarnings("unchecked")
+                final DatumShiftGridFile<Angle,Angle> grid = (DatumShiftGridFile<Angle,Angle>) parentChildPairs.get(--i);
+                final DatumShiftGridFile<Angle,Angle> parent = grids.get((String) parentChildPairs.get(--i));
+                if (parent != null && parent != grid) {     // (parent == grid) if PARENT and SUB_NAME were both null.
+// TODO             parent.addChild(head.grid);
+                } else {
+                    // TODO: if more than one root, create a synthetic grid.
+                    root = grid;
+                }
+            }
+            if (root == null) {
+                throw new FactoryException(Errors.format(Errors.Keys.CanNotRead_1, file));
+            }
+            return root;
+        }
+
+        /**
          * Reads the next grid, starting at the current position. A NTv2 file can have many grids.
          * This can be used for grids having different resolutions depending on the geographic area.
          * The first grid can cover a large area with a coarse resolution, and next grids cover smaller
@@ -433,11 +469,13 @@ public final class NTv2 extends AbstractProvider {
          *
          * <p>NTv2 grids contain also information about shifts accuracy. This is not yet handled by SIS,
          * except for determining an approximate grid cell resolution.</p>
+         *
+         * @param  addTo             the map where to add the grid with the grid name as the key.
+         * @param  parentChildPairs  the list where to add (name of parent, child grid) tuples.
          */
-        final DatumShiftGridFile<Angle,Angle> readGrid() throws IOException, FactoryException, NoninvertibleTransformException {
-            if (--remainingGrids < 0) {
-                throw new FactoryException(Errors.format(Errors.Keys.CanNotRead_1, file));
-            }
+        private void readGrid(final Map<String, DatumShiftGridFile<Angle,Angle>> addTo, final List<Object> parentChildPairs)
+                throws IOException, FactoryException, NoninvertibleTransformException
+        {
             if (isV2) {
                 readHeader((Integer) get("NUM_SREC", null, null), "NUM_SREC");
             }
@@ -450,18 +488,18 @@ public final class NTv2 extends AbstractProvider {
              */
             final Unit<Angle> unit;
             final double precision;
-            final String name = (String) get("GS_TYPE", "TYPE", null);
-            if (name.equalsIgnoreCase("SECONDS")) {                 // Most common value
+            final String type = (String) get("GS_TYPE", "TYPE", null);
+            if (type.equalsIgnoreCase("SECONDS")) {                 // Most common value
                 unit = Units.ARC_SECOND;
                 precision = SECOND_PRECISION;                       // Used only as a hint; will not hurt if wrong.
-            } else if (name.equalsIgnoreCase("MINUTES")) {
+            } else if (type.equalsIgnoreCase("MINUTES")) {
                 unit = Units.ARC_MINUTE;
                 precision = SECOND_PRECISION / 60;                  // Used only as a hint; will not hurt if wrong.
-            } else if (name.equalsIgnoreCase("DEGREES")) {
+            } else if (type.equalsIgnoreCase("DEGREES")) {
                 unit = Units.DEGREE;
                 precision = SECOND_PRECISION / DEGREES_TO_SECONDS;  // Used only as a hint; will not hurt if wrong.
             } else {
-                throw new FactoryException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "GS_TYPE", name));
+                throw new FactoryException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "GS_TYPE", type));
             }
             final double  ymin     = (Double)  get("S_LAT",    null,     null);
             final double  ymax     = (Double)  get("N_LAT",    null,     null);
@@ -499,6 +537,7 @@ public final class NTv2 extends AbstractProvider {
                     }
                 }
             } else {
+                // NTv1: same as NTv2 but using double precision and without accuracy information.
                 for (int i=0; i<count; i++) {
                     ensureBufferContains(2 * Double.BYTES);
                     ty[i] = (float) (buffer.getDouble() / dy);
@@ -514,8 +553,22 @@ public final class NTv2 extends AbstractProvider {
             if (Double.isNaN(grid.accuracy)) {
                 grid.accuracy = Units.DEGREE.getConverterTo(unit).convert(Formulas.ANGULAR_TOLERANCE) / size;
             }
-            header.keySet().retainAll(Arrays.asList(overviewKeys));   // Keep only overview records.
-            return DatumShiftGridCompressed.compress(grid, null, precision / size);
+            /*
+             * Add the grid to two collection. The first collection maps this grid to its name, and the
+             * second collection maps the grid to its parent. We do not try to resolve the child-parent
+             * relationship here; we will do that after all sub-grids have been read.
+             */
+            final String name = (String) get("SUB_NAME", numGrids > 1);
+            if (addTo.put(name, DatumShiftGridCompressed.compress(grid, null, precision / size)) != null) {
+                throw new FactoryException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, name));
+            }
+            parentChildPairs.add((String) get("PARENT", numGrids > 1));
+            parentChildPairs.add(grid);
+            /*
+             * End of grid parsing. Remove all header entries that are specific to this sub-grid.
+             * After this operation, `header` will contain only overview records.
+             */
+            header.keySet().retainAll(Arrays.asList(overviewKeys));
         }
 
         /**
