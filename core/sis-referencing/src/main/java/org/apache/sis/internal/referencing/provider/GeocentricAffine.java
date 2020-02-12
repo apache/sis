@@ -341,7 +341,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
         if (datumShift != null) try {
             parameters.setPositionVectorTransformation(datumShift, BURSAWOLF_TOLERANCE);
         } catch (IllegalArgumentException e) {
-            log(Loggers.COORDINATE_OPERATION, "createParameters", e);
+            recoverableException(GeocentricAffine.class, e);
             return null;
         } else {
             /*
@@ -435,7 +435,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
                          * Should not occur, except sometime on inverse transform of relatively complex datum shifts
                          * (more than just translation terms). We can fallback on formatting the full matrix.
                          */
-                        log(Loggers.WKT, "asDatumShift", e);
+                        Logging.recoverableException(Logging.getLogger(Loggers.WKT), GeocentricAffine.class, "asDatumShift", e);
                         continue;
                     }
                     final boolean isTranslation = parameters.isTranslation();
@@ -458,12 +458,5 @@ public abstract class GeocentricAffine extends GeodeticOperation {
     private static boolean isOperation(final String expected, final Object actual) {
         return (actual instanceof Parameterized) &&
                IdentifiedObjects.isHeuristicMatchForName(((Parameterized) actual).getParameterDescriptors(), expected);
-    }
-
-    /**
-     * Logs a warning about a failure to compute the Bursa-Wolf parameters.
-     */
-    private static void log(final String logger, final String method, final Exception e) {
-        Logging.recoverableException(Logging.getLogger(logger), GeocentricAffine.class, method, e);
     }
 }

@@ -151,8 +151,18 @@ class DatumShiftGridLoader {
      *                 the source method will be set to {@code "createMathTransform"}.
      * @param  file    the grid file, as a {@link String} or a {@link Path}.
      */
-    static void log(final Class<?> caller, final Object file) {
-        final LogRecord record = Resources.forLocale(null).getLogRecord(Level.FINE, Resources.Keys.LoadingDatumShiftFile_1, file);
+    static void startLoading(final Class<?> caller, final Object file) {
+        log(caller, Resources.forLocale(null).getLogRecord(Level.FINE, Resources.Keys.LoadingDatumShiftFile_1, file));
+    }
+
+    /**
+     * Logs the given record.
+     *
+     * @param  caller  the provider to logs as the source class.
+     *                 the source method will be set to {@code "createMathTransform"}.
+     * @param record   the record to log.
+     */
+    static void log(final Class<?> caller, final LogRecord record) {
         record.setLoggerName(Loggers.COORDINATE_OPERATION);
         Logging.log(caller, "createMathTransform", record);
     }

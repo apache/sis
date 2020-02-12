@@ -534,6 +534,11 @@ public final class Resources extends IndexedResourceBundle {
          * Parameter values have not been specified.
          */
         public static final short UnspecifiedParameterValues = 70;
+
+        /**
+         * Using datum shift grid from “{0}” to “{1}” created on {2} (updated on {3}).
+         */
+        public static final short UsingDatumShiftGrid_4 = 93;
     }
 
     /**

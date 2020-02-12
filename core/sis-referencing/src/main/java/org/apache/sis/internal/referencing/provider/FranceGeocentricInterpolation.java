@@ -341,7 +341,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
                 grid = handler.peek();
                 if (grid == null) {
                     try (BufferedReader in = Files.newBufferedReader(resolved)) {
-                        DatumShiftGridLoader.log(FranceGeocentricInterpolation.class, file);
+                        DatumShiftGridLoader.startLoading(FranceGeocentricInterpolation.class, file);
                         final DatumShiftGridFile.Float<Angle,Length> g = load(in, file);
                         grid = DatumShiftGridCompressed.compress(g, averages, scale);
                     } catch (IOException | NoninvertibleTransformException | RuntimeException e) {

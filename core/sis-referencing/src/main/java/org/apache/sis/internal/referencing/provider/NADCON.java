@@ -184,7 +184,7 @@ public final class NADCON extends AbstractProvider {
                         final ByteBuffer buffer = ByteBuffer.allocate(4096).order(ByteOrder.LITTLE_ENDIAN);
                         final FloatBuffer fb = buffer.asFloatBuffer();
                         try (ReadableByteChannel in = Files.newByteChannel(rlat)) {
-                            DatumShiftGridLoader.log(NADCON.class, CharSequences.commonPrefix(
+                            DatumShiftGridLoader.startLoading(NADCON.class, CharSequences.commonPrefix(
                                     latitudeShifts.toString(), longitudeShifts.toString()).toString() + '…');
                             loader = new Loader(in, buffer, file);
                             loader.readGrid(fb, null, longitudeShifts);
