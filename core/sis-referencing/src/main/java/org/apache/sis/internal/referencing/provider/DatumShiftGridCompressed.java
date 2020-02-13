@@ -44,13 +44,15 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
     private static final long serialVersionUID = 4847888093457104917L;
 
     /**
-     * Maximal grid index along the <var>y</var> axis.
+     * Maximal grid index along the <var>y</var> axis, inclusive.
      * This is the number of grid cells minus 2.
      */
     private final int ymax;
 
     /**
      * An "average" value for the offset in each dimension.
+     *
+     * @see #getCellMean(int)
      */
     private final double[] averages;
 

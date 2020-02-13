@@ -427,7 +427,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
             int srcOff = src.offset;
             final MathTransform tr;
             if (domain == null) {
-                tr = global;                               // The transform to apply when no specialization is found.
+                tr = global;                                // The transform to apply when no specialization is found.
                 do {                                        // Count how many points will use that transform.
                     src.offset += srcInc;
                     if (--numPts <= 0) break;

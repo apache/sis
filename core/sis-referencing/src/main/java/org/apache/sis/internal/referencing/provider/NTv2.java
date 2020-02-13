@@ -271,7 +271,7 @@ public final class NTv2 extends AbstractProvider {
 
         /**
          * Keys of {@link #header} for entries that were declared in the overview header.
-         * This is used after {@link #readGrid(Map, List)} execution for discarding all
+         * This is used after {@link #readGrid(Map, Map)} execution for discarding all
          * entries specific to sub-grids, for avoiding to mix entries from two sub-grids.
          */
         private final String[] overviewKeys;
@@ -434,31 +434,51 @@ public final class NTv2 extends AbstractProvider {
          * sub-grids (if any) as children.
          */
         final DatumShiftGridFile<Angle,Angle> readAllGrids() throws IOException, FactoryException, NoninvertibleTransformException {
-            final Map<String, DatumShiftGridFile<Angle,Angle>> grids = new HashMap<>(Containers.hashMapCapacity(numGrids));
-            final List<Object> parentChildPairs = new ArrayList<>(numGrids * 2);
+            final Map<String,      DatumShiftGridFile<Angle,Angle>>  grids    = new HashMap<>(Containers.hashMapCapacity(numGrids));
+            final Map<String, List<DatumShiftGridFile<Angle,Angle>>> children = new LinkedHashMap<>();   // Should have few entries.
             while (grids.size() < numGrids) {
-                readGrid(grids, parentChildPairs);
+                readGrid(grids, children);
             }
             /*
-             * At this point all grids have been read. Now search the parent for each grid.
-             * We should have exactly one grid without parent.
+             * Assign the sub-grids to their parent only after we finished to read all grids.
+             * Doing this work last is more robust to cases where grids are in random order.
+             *
+             * Notes: if the parent-child graph contains cycles (deeper than a child declaring itself as its parent),
+             *        the grids in cycles will be lost. This is because we need a grid without parent for getting the
+             *        graph added in the roots list. There is currently no mechanism for detecting those problems.
              */
-            DatumShiftGridFile<Angle,Angle> root = null;
-            for (int i = parentChildPairs.size(); i != 0;) {
-                @SuppressWarnings("unchecked")
-                final DatumShiftGridFile<Angle,Angle> grid = (DatumShiftGridFile<Angle,Angle>) parentChildPairs.get(--i);
-                final DatumShiftGridFile<Angle,Angle> parent = grids.get((String) parentChildPairs.get(--i));
-                if (parent != null && parent != grid) {     // (parent == grid) if PARENT and SUB_NAME were both null.
-// TODO             parent.addChild(head.grid);
+            final List<DatumShiftGridFile<Angle,Angle>> roots = new ArrayList<>();
+            for (final Map.Entry<String, List<DatumShiftGridFile<Angle,Angle>>> entry : children.entrySet()) {
+                final DatumShiftGridFile<Angle,Angle> parent = grids.get(entry.getKey());
+                final List<DatumShiftGridFile<Angle,Angle>> subgrids = entry.getValue();
+                if (parent != null) {
+                    /*
+                     * Verify that the children does not declare themselves as their parent.
+                     * It may happen if SUB_GRID and PARENT have the same value, typically a
+                     * null or empty value if those records were actually unspecified.
+                     */
+                    for (int i=subgrids.size(); --i >= 0;) {
+                        if (subgrids.get(i) == parent) {      // Want identity check, no need for equals(Object).
+                            subgrids.remove(i);
+                            roots.add(parent);
+                            break;
+                        }
+                    }
+                    if (!subgrids.isEmpty()) {
+                        parent.setSubGrids(subgrids);
+                    }
                 } else {
-                    // TODO: if more than one root, create a synthetic grid.
-                    root = grid;
+                    roots.addAll(subgrids);
                 }
             }
-            if (root == null) {
-                throw new FactoryException(Errors.format(Errors.Keys.CanNotRead_1, file));
+            switch (roots.size()) {
+                case 0: throw new FactoryException(Errors.format(Errors.Keys.CanNotRead_1, file));
+                case 1: return roots.get(0);
             }
-            return root;
+            /*
+             * If there is more than one root, creates a synthetic grid for hosting them.
+             */
+            return roots.get(0);     // TODO
         }
 
         /**
@@ -470,10 +490,11 @@ public final class NTv2 extends AbstractProvider {
          * <p>NTv2 grids contain also information about shifts accuracy. This is not yet handled by SIS,
          * except for determining an approximate grid cell resolution.</p>
          *
-         * @param  addTo             the map where to add the grid with the grid name as the key.
-         * @param  parentChildPairs  the list where to add (name of parent, child grid) tuples.
+         * @param  addTo     the map where to add the grid with the grid name as the key.
+         * @param  children  the map where to add children with the parent name as the key.
          */
-        private void readGrid(final Map<String, DatumShiftGridFile<Angle,Angle>> addTo, final List<Object> parentChildPairs)
+        private void readGrid(final Map<String, DatumShiftGridFile<Angle,Angle>> addTo,
+                final Map<String, List<DatumShiftGridFile<Angle,Angle>>> children)
                 throws IOException, FactoryException, NoninvertibleTransformException
         {
             if (isV2) {
@@ -554,16 +575,15 @@ public final class NTv2 extends AbstractProvider {
                 grid.accuracy = Units.DEGREE.getConverterTo(unit).convert(Formulas.ANGULAR_TOLERANCE) / size;
             }
             /*
-             * Add the grid to two collection. The first collection maps this grid to its name, and the
-             * second collection maps the grid to its parent. We do not try to resolve the child-parent
+             * Add the grid to two collection. The first collection associates this grid to its name, and the
+             * second collection associates the grid to its parent. We do not try to resolve the child-parent
              * relationship here; we will do that after all sub-grids have been read.
              */
             final String name = (String) get("SUB_NAME", numGrids > 1);
             if (addTo.put(name, DatumShiftGridCompressed.compress(grid, null, precision / size)) != null) {
                 throw new FactoryException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, name));
             }
-            parentChildPairs.add((String) get("PARENT", numGrids > 1));
-            parentChildPairs.add(grid);
+            children.computeIfAbsent((String) get("PARENT", numGrids > 1), (k) -> new ArrayList<>()).add(grid);
             /*
              * End of grid parsing. Remove all header entries that are specific to this sub-grid.
              * After this operation, `header` will contain only overview records.
