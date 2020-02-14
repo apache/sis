@@ -92,11 +92,11 @@ import org.apache.sis.io.TableAppender;
  * </ul>
  *
  * The tiles are not required to be arranged on a regular grid, but performances may be better if they are.
- * {@link MosaicCalculator} is responsible for analyzing the layout of a collection of tiles.
+ * {@link TileOrganizer} is responsible for analyzing the layout of a collection of tiles.
  *
  * <h2>Multi-threading</h2>
  * This class is thread-safe. In addition {@code Tile} instances can be considered as immutable after construction.
- * However some properties may be available only after the tiles have been processed by a {@link MosaicCalculator},
+ * However some properties may be available only after the tiles have been processed by a {@link TileOrganizer},
  * or only after {@link #fetchSize()} has been invoked.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -134,20 +134,20 @@ public class Tile implements Serializable {
      * has not yet been computed.
      *
      * <p>This field should be considered as final. It is not final only because
-     * {@link MosaicCalculator} may compute this value automatically.</p>
+     * {@link TileOrganizer} may compute this value automatically.</p>
      *
      * @see #getSubsampling()
      */
     private int xSubsampling, ySubsampling;
 
     /**
-     * The "grid to real world" transform, used by {@link MosaicCalculator} in order to compute
+     * The "grid to real world" transform, used by {@link TileOrganizer} in order to compute
      * the {@linkplain #getRegion() region} for this tile. This field is set to {@code null} when
-     * {@link MosaicCalculator}'s work is in progress, and set to a new value on completion.
+     * {@link TileOrganizer}'s work is in progress, and set to a new value on completion.
      *
-     * <p><b>Note:</b> {@link MosaicCalculator} really needs a new instance for each tile.
-     * No caching allowed before {@link MosaicCalculator} processing.
-     * Caching is allowed <em>after</em> {@link MosaicCalculator} processing is completed.</p>
+     * <p><b>Note:</b> {@link TileOrganizer} really needs a new instance for each tile.
+     * No caching allowed before {@link TileOrganizer} processing.
+     * Caching is allowed <em>after</em> {@link TileOrganizer} processing is completed.</p>
      */
     private AffineTransform gridToCRS;
 
@@ -195,16 +195,16 @@ public class Tile implements Serializable {
      * Creates a tile for the given region and <cite>"grid to real world"</cite> transform.
      * This constructor can be used when the {@linkplain #getLocation() location} of the tile is unknown.
      * The location and subsampling will be computed automatically when this tile will be processed by a
-     * {@link MosaicCalculator}.
+     * {@link TileOrganizer}.
      *
      * <p>When using this constructor, the {@link #getLocation()}, {@link #getRegion()} and
      * {@link #getSubsampling()} methods will throw an {@link IllegalStateException} until
-     * this tile has been processed by a {@link MosaicCalculator}, which will compute those
+     * this tile has been processed by a {@link TileOrganizer}, which will compute those
      * values automatically.</p>
      *
      * @param region     the tile region, or {@code null} if unknown.
      *                   The (<var>x</var>,<var>y</var> location of this region is typically (0,0).
-     *                   The final location will be computed when this tile will be given to a {@link MosaicCalculator}.
+     *                   The final location will be computed when this tile will be given to a {@link TileOrganizer}.
      * @param gridToCRS  the <cite>"grid to real world"</cite> transform mapping pixel
      *                   {@linkplain PixelOrientation#UPPER_LEFT upper left} corner.
      */
@@ -221,7 +221,7 @@ public class Tile implements Serializable {
 
     /**
      * Creates a new tile for the given final transform.
-     * This is used for storing {@link MosaicCalculator} results.
+     * This is used for storing {@link TileOrganizer} results.
      */
     Tile(final AffineTransform gridToCRS, final Rectangle region) {
         this.x         = region.x;
@@ -234,7 +234,7 @@ public class Tile implements Serializable {
 
     /**
      * Checks if the location, region, and subsampling can be returned. Throws an exception if this
-     * tile has been created without location and not yet processed by {@link MosaicCalculator}.
+     * tile has been created without location and not yet processed by {@link TileOrganizer}.
      */
     private void ensureDefined() throws IllegalStateException {
         if (xSubsampling == 0 || ySubsampling == 0) {
@@ -247,7 +247,7 @@ public class Tile implements Serializable {
      *
      * @return the tile upper-left corner.
      * @throws IllegalStateException if this tile has been {@linkplain #Tile(Rectangle, AffineTransform)
-     *         created without location} and has not yet been processed by {@link MosaicCalculator}.
+     *         created without location} and has not yet been processed by {@link TileOrganizer}.
      *
      * @see javax.imageio.ImageReadParam#setDestinationOffset(Point)
      */
@@ -263,7 +263,7 @@ public class Tile implements Serializable {
      *
      * <p>At the difference of {@link #getLocation()} and {@link #getRegion()}, this method never
      * throw {@link IllegalStateException} because the tile size does not depend on the processing
-     * performed by {@link MosaicCalculator}.</p>
+     * performed by {@link TileOrganizer}.</p>
      *
      * @return the tile size.
      * @throws IOException if an I/O operation was required for fetching the tile size and that operation failed.
@@ -302,7 +302,7 @@ public class Tile implements Serializable {
      * @return the region in the mosaic (destination image).
      * @throws IOException if an I/O operation was required for fetching the tile size and that operation failed.
      * @throws IllegalStateException if this tile has been {@linkplain #Tile(Rectangle, AffineTransform) created
-     *         without location} and has not yet been processed by {@link MosaicCalculator}, of if this tile does
+     *         without location} and has not yet been processed by {@link TileOrganizer}, of if this tile does
      *         not have enough information for providing a tile size.
      *
      * @see javax.imageio.ImageReadParam#setSourceRegion(Rectangle)
@@ -325,7 +325,7 @@ public class Tile implements Serializable {
      * @return the region in units relative to the tile having the finest resolution.
      * @throws IOException if an I/O operation was required for fetching the tile size and that operation failed.
      * @throws IllegalStateException if this tile has been {@linkplain #Tile(Rectangle, AffineTransform) created
-     *         without location} and has not yet been processed by {@link MosaicCalculator}, of if this tile does
+     *         without location} and has not yet been processed by {@link TileOrganizer}, of if this tile does
      *         not have enough information for providing a tile size.
      */
     public synchronized Rectangle getAbsoluteRegion() throws IOException {
@@ -340,7 +340,7 @@ public class Tile implements Serializable {
     }
 
     /**
-     * Invoked by {@link MosaicCalculator} only. No other caller allowed.
+     * Invoked by {@link TileOrganizer} only. No other caller allowed.
      * {@link #setSubsampling(Dimension)} must be invoked prior this method.
      *
      * <p>Note that invoking this method usually invalidate {@link #gridToCRS}.
@@ -368,7 +368,7 @@ public class Tile implements Serializable {
      *
      * @return the subsampling along <var>x</var> and <var>y</var> axes.
      * @throws IllegalStateException if this tile has been {@linkplain #Tile(Rectangle, AffineTransform)
-     *         created without location} and has not yet been processed by {@link MosaicCalculator}.
+     *         created without location} and has not yet been processed by {@link TileOrganizer}.
      *
      * @see javax.imageio.ImageReadParam#setSourceSubsampling(int, int, int, int)
      */
@@ -379,7 +379,7 @@ public class Tile implements Serializable {
 
     /**
      * Sets the subsampling to the given dimension.
-     * Invoked by constructors and {@link MosaicCalculator} only.
+     * Invoked by constructors and {@link TileOrganizer} only.
      */
     final void setSubsampling(final Dimension subsampling) throws IllegalStateException {
         // No assert Thread.holdsLock(this) because invoked from constructors.
@@ -397,14 +397,14 @@ public class Tile implements Serializable {
     }
 
     /**
-     * If the user-supplied transform is waiting for processing by {@link MosaicCalculator}, returns it.
-     * Otherwise returns {@code null}. This method is for internal usage by {@link MosaicCalculator} only.
+     * If the user-supplied transform is waiting for processing by {@link TileOrganizer}, returns it.
+     * Otherwise returns {@code null}. This method is for internal usage by {@link TileOrganizer} only.
      *
      * <p>This method clears the {@link #gridToCRS} field before to return. This is a way to tell that
      * processing is in progress, and also a safety against transform usage while it may become invalid.</p>
      *
      * @return the transform, or {@code null} if none. This method does not clone the returned value -
-     *         {@link MosaicCalculator} will reference and modify directly that transform.
+     *         {@link TileOrganizer} will reference and modify directly that transform.
      */
     final synchronized AffineTransform getPendingGridToCRS() {
         if ((xSubsampling | ySubsampling) != 0) {
@@ -437,14 +437,14 @@ public class Tile implements Serializable {
      * @return the <cite>"grid to real world"</cite> transform mapping pixel
      *         {@linkplain PixelOrientation#UPPER_LEFT upper left} corner, or {@code null} if undefined.
      * @throws IllegalStateException if this tile has been {@linkplain #Tile(Rectangle, AffineTransform)
-     *         created without location} and has not yet been processed by {@link MosaicCalculator}.
+     *         created without location} and has not yet been processed by {@link TileOrganizer}.
      */
     public synchronized AffineTransform2D getGridToCRS() throws IllegalStateException {
         ensureDefined();
         /*
          * The cast should not fail: if the `gridToCRS` is the one specified at construction time,
          * then `ensureDefined()` should have thrown an IllegalStateException. Otherwise this tile
-         * have been processed by `MosaicCalculator`, which has set an `AffineTransform2D` instance.
+         * have been processed by `TileOrganizer`, which has set an `AffineTransform2D` instance.
          * If we get a ClassCastException below, then there is a bug in our pre/post conditions.
          */
         return (AffineTransform2D) gridToCRS;
@@ -468,7 +468,7 @@ public class Tile implements Serializable {
     }
 
     /**
-     * Translates this tile. For internal usage by {@link MosaicCalculator} only.
+     * Translates this tile. For internal usage by {@link TileOrganizer} only.
      *
      * <p>Reminder: {@link #setGridToCRS(AffineTransform)} should be invoked after this method.</p>
      *
@@ -511,7 +511,7 @@ public class Tile implements Serializable {
      * which can still be modified (only once) by MocaicCalculator, or by read operations during `getSize()`
      * or `getRegion()` execution. This causes confusing behavior when used in an HashMap. We are better to
      * rely on system identity. For example `DatumShiftGridGroup` rely on the capability to locate Tiles in
-     * HashMap before and after they have been processed by `MosaicCalculator`.
+     * HashMap before and after they have been processed by `TileOrganizer`.
      */
 
     /**

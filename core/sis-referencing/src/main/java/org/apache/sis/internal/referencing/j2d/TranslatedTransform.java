@@ -23,7 +23,7 @@ import java.awt.geom.AffineTransform;
 /**
  * An affine transform which is translated relative to an original transform.
  * The translation terms are stored separately without modifying the transform.
- * This class if for internal use by {@link MosaicCalculator} only.
+ * This class if for internal use by {@link TileOrganizer} only.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

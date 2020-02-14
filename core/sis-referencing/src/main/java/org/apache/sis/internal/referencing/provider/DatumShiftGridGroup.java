@@ -29,7 +29,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
-import org.apache.sis.internal.referencing.j2d.MosaicCalculator;
+import org.apache.sis.internal.referencing.j2d.TileOrganizer;
 import org.apache.sis.internal.referencing.j2d.Tile;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -58,7 +58,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
         /** Subsampling compared to the grid having finest resolution. */
         private final double sx, sy;
 
-        /** Creates a new instance from the given {@link MosaicCalculator} result. */
+        /** Creates a new instance from the given {@link TileOrganizer} result. */
         Region(final Tile tile) throws IOException {
             final Rectangle r = tile.getAbsoluteRegion();
             final Dimension s = tile.getSubsampling();
@@ -101,8 +101,8 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      * The first sub-grid is taken as a template for setting parameter values such as filename (all list
      * elements should declare the same filename parameters, so the selected element should not matter).
      *
-     * @param  tiles      the tiles computed by {@link MosaicCalculator}.
-     * @param  grids      sub-grids associated to tiles computed by {@link MosaicCalculator}.
+     * @param  tiles      the tiles computed by {@link TileOrganizer}.
+     * @param  grids      sub-grids associated to tiles computed by {@link TileOrganizer}.
      * @param  gridToCRS  conversion from grid indices to "real world" coordinates.
      * @param  nx         number of cells along the <var>x</var> axis in the grid.
      * @param  ny         number of cells along the <var>y</var> axis in the grid.
@@ -136,7 +136,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
             final Path file, final List<DatumShiftGridFile<C,T>> subgrids)
             throws IOException, FactoryException, NoninvertibleTransformException
     {
-        final MosaicCalculator mosaic = new MosaicCalculator(null);
+        final TileOrganizer mosaic = new TileOrganizer(null);
         final Map<Tile,DatumShiftGridFile<C,T>> grids = new LinkedHashMap<>();
         for (final DatumShiftGridFile<C,T> grid : subgrids) {
             final int[] size = grid.getGridSize();

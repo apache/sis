@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.io.IOException;
@@ -43,7 +42,7 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
  * But in some cases the destination rectangle is not known directly. Instead we have a set of tiles,
  * all of them with an upper-left corner located at (0,0), but different <cite>grid to CRS</cite>
  * affine transforms read from <a href="https://en.wikipedia.org/wiki/World_file">World Files</a>.
- * This {@code MosaicCalculator} class infers the destination regions automatically
+ * This {@code TileOrganizer} class infers the destination regions automatically
  * from the set of affine transforms.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -51,7 +50,7 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
  * @since   1.1
  * @module
  */
-public class MosaicCalculator {
+public class TileOrganizer {
     /**
      * Small number for floating point comparisons.
      */
@@ -75,7 +74,7 @@ public class MosaicCalculator {
      *
      * @param  location  the location, or {@code null} for (0,0).
      */
-    public MosaicCalculator(final Point location) {
+    public TileOrganizer(final Point location) {
         if (location != null) {
             xLocation = location.x;
             yLocation = location.y;
@@ -128,7 +127,7 @@ public class MosaicCalculator {
      * <p><strong>Invoking this method clear the collection</strong>. On return, this instance is empty.
      * This is because current implementation modify its workspace directly for efficiency.</p>
      *
-     * @return all tiles added to this {@code MosaicCalculator}, grouped by pyramids.
+     * @return all tiles added to this {@code TileOrganizer}, grouped by pyramids.
      * @throws IOException if a call to {@link Tile#getSize()} or {@link Tile#getRegion()} failed,
      *         and {@link #unavailableSize(Tile, IOException)} did not consumed the exception.
      */
@@ -490,7 +489,7 @@ public class MosaicCalculator {
 
     /**
      * Invoked when an I/O error occurred in {@link Tile#getSize()} or {@link Tile#getRegion()}.
-     * This error is non-fatal since {@code MosaicCalculator} can fallback on calculation based
+     * This error is non-fatal since {@code TileOrganizer} can fallback on calculation based
      * on tile location only (without size).
      *
      * <p>The default implementation returns {@code false}, which instructs the caller to let
