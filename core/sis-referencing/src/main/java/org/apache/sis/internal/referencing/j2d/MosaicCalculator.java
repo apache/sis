@@ -511,8 +511,6 @@ public class MosaicCalculator {
      */
     @Override
     public String toString() {
-        final List<Tile> tiles = new ArrayList<>(this.tiles.values());
-        Collections.sort(tiles);
-        return Tile.toString(tiles, 400);
+        return Tile.toString(tiles.values(), 400);
     }
 }

@@ -71,11 +71,11 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     static final Cache<Object, DatumShiftGridFile<?,?>> CACHE = new Cache<Object, DatumShiftGridFile<?,?>>(4, 32*1024, true) {
         @Override protected int cost(final DatumShiftGridFile<?,?> grid) {
             int p = 1;
-            for (final Object array : grid.getData()) {
-                if (array instanceof DatumShiftGridFile<?,?>) {
-                    p += cost((DatumShiftGridFile<?,?>) array);
+            for (final Object data : grid.getData()) {
+                if (data instanceof DatumShiftGridFile<?,?>) {
+                    p += cost((DatumShiftGridFile<?,?>) data);          // When `grid` is a DatumShiftGridGroup.
                 } else {
-                    p *= Array.getLength(array);
+                    p *= Array.getLength(data);                         // short[], float[] or double[].
                 }
             }
             return p;

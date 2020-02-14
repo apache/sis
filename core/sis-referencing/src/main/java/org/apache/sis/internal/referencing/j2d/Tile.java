@@ -104,7 +104,7 @@ import org.apache.sis.io.TableAppender;
  * @since   1.1
  * @module
  */
-public class Tile implements Comparable<Tile>, Serializable {
+public class Tile implements Serializable {
     /**
      * For cross-version compatibility during serialization.
      */
@@ -506,88 +506,13 @@ public class Tile implements Comparable<Tile>, Serializable {
         return 0;
     }
 
-    /**
-     * Compares two tiles for optimal order in sequential reads. Default implementation sorts by
-     * increasing {@linkplain #getImageIndex image index}. This ordering allows efficient access
-     * for tiles that are stored sequentially in a file.
-     *
-     * <p>For tiles having the same image index, additional criterion are used like increasing
-     * subsampling, increasing <var>y</var> then increasing <var>x</var> coordinates.
-     * But the actual set of additional criterion may change in any future version.
-     *
-     * @param  other  the tile to compare with.
-     * @return -1 if this tile should be read before {@code other},
-     *         +1 if it should be read after or 0 if equal.
+    /*
+     * Intentionally no implementation for `equals()` and `hashCode()`. Tile is an "almost immutable" class
+     * which can still be modified (only once) by MocaicCalculator, or by read operations during `getSize()`
+     * or `getRegion()` execution. This causes confusing behavior when used in an HashMap. We are better to
+     * rely on system identity. For example `DatumShiftGridGroup` rely on the capability to locate Tiles in
+     * HashMap before and after they have been processed by `MosaicCalculator`.
      */
-    @Override
-    public final int compareTo(final Tile other) {
-        int c = getImageIndex() - other.getImageIndex();
-        if (c == 0) {
-            /*
-             * From this point it does not matter much for disk access. But we continue to
-             * define criterions for consistency with `equals(Object)` method. We compare
-             * subsampling first because it may be undefined while it is needed for (x,y)
-             * ordering. Undefined subsampling will be ordered first (this is arbitrary).
-             */
-            final int sy =  this.ySubsampling;
-            final int oy = other.ySubsampling;
-            c = sy - oy;
-            if (c == 0) {
-                final int sx =  this.xSubsampling;
-                final int ox = other.xSubsampling;
-                c = sx - ox;
-                if (c == 0) {
-                    c = (y * sy) - (other.y * oy);
-                    if (c == 0) {
-                        c = (x * sx) - (other.x * ox);
-                    }
-                }
-            }
-        }
-        return c;
-    }
-
-    /**
-     * Compares this tile with the specified one for equality. Two tiles are considered equal
-     * if they are of the same class and have the same {@linkplain #getRegion() region} and
-     * same {@linkplain #getSubsampling() subsampling}. Subclasses should override if there
-     * is more properties to compare such as image format and index.
-     *
-     * @param  object  the object to compare with.
-     * @return {@code true} if both objects are equal.
-     */
-    @Override
-    public boolean equals(final Object object) {
-        if (object == this) {
-            return true;
-        }
-        if (object != null && object.getClass() == getClass()) {
-            final Tile that = (Tile) object;
-            if (this.x == that.x  &&  this.y == that.y &&
-                this.xSubsampling == that.xSubsampling &&
-                this.ySubsampling == that.ySubsampling)
-            {
-                /*
-                 * Compares width and height only if they are defined in both tiles.  We do not
-                 * invoke `getRegion()` because it may be expensive and useless anyway: If both
-                 * tiles have the same image reader, image index and input, then logically they
-                 * must have the same size - invoking `getRegion()` would read exactly the same
-                 * image twice.
-                 */
-                return (width  == 0 || that.width  == 0 || width  == that.width) &&
-                       (height == 0 || that.height == 0 || height == that.height);
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Returns a hash code value for this tile.
-     */
-    @Override
-    public int hashCode() {
-        return x + 37*y;
-    }
 
     /**
      * Returns a string representation of this tile for debugging purposes.
@@ -632,9 +557,8 @@ public class Tile implements Comparable<Tile>, Serializable {
     }
 
     /**
-     * Returns a string representation of a collection of tiles. The tiles are formatted in a
-     * table in iteration order. Tip: consider sorting the tiles before to invoke this method;
-     * tiles are {@link Comparable} for this purpose.
+     * Returns a string representation of a collection of tiles.
+     * The tiles are formatted in a table in iteration order.
      *
      * <p>This method is not public because it can consume a large amount of memory (the underlying
      * {@link StringBuffer} can be quite large). Users are encouraged to use the method expecting a
@@ -658,9 +582,8 @@ public class Tile implements Comparable<Tile>, Serializable {
     }
 
     /**
-     * Formats a collection of tiles in a table. The tiles are appended in iteration order.
-     * Tip: consider sorting the tiles before to invoke this method;
-     * tiles are {@link Comparable} for this purpose.
+     * Formats a collection of tiles in a table.
+     * The tiles are appended in iteration order.
      *
      * @param tiles    the tiles to format in a table.
      * @param out      where to write the table.

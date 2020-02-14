@@ -20,12 +20,14 @@ import java.util.Map;
 import java.util.List;
 import java.nio.file.Path;
 import java.io.IOException;
+import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
+import java.util.LinkedHashMap;
 import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.internal.referencing.j2d.MosaicCalculator;
 import org.apache.sis.internal.referencing.j2d.Tile;
@@ -35,10 +37,8 @@ import org.apache.sis.internal.util.CollectionsExt;
 
 /**
  * A group of datum shift grids. This is used when a NTv2 file contains more than one grid with no common parent.
- * This class creates a synthetic parent with an affine transform approximating all grids. The affine transform is
- * close to identity transform. Its main purpose is to locate a grid during inverse transforms, before refinements
- * using the real grids.  So a "best match" transform (for example estimated using least squares method) would not
- * be useful because the differences would be small compared to grid cell sizes.
+ * This class creates a synthetic parent which always delegate its work to a child (as opposed to more classical
+ * trees where the parent can do some work if no child can).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -47,66 +47,79 @@ import org.apache.sis.internal.util.CollectionsExt;
  */
 final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
     /**
-     * For each {@code subgrids[i]}, {@code regions[i]} is the range of indices valid of that grid.
-     *
-     * @todo We should replace by an R-Tree. For now we assume that the array is small enough.
+     * The bounds of a sub-grid, together with the subsampling level compared to the grid having the finest resolution.
+     * All values in this class are integers, but nevertheless stored as {@code double} for avoiding to cast them every
+     * time {@link #interpolateInCell(double, double, double[])} is executed.
      */
-    private final Rectangle[] regions;
+    private static final class Region {
+        /** Grid bounds in units of the grid having finest resolution. */
+        private final double xmin, xmax, ymin, ymax;
+
+        /** Subsampling compared to the grid having finest resolution. */
+        private final double sx, sy;
+
+        /** Creates a new instance from the given {@link MosaicCalculator} result. */
+        Region(final Tile tile) throws IOException {
+            final Rectangle r = tile.getAbsoluteRegion();
+            final Dimension s = tile.getSubsampling();
+            xmin = r.getMinX();
+            xmax = r.getMaxX();
+            ymin = r.getMinY();
+            ymax = r.getMaxY();
+            sx   = s.width;
+            sy   = s.height;
+        }
+
+        /** Tests whether the given coordinates are included in this region. */
+        final boolean contains(final double x, final double y) {
+            return x >= xmin && x <= xmax && y >= ymin && y <= ymax;
+        }
+
+        /** Converts a coordinate from the parent grid to this grid. */
+        final double x(final double p) {return (p - xmin) / sx;}
+        final double y(final double p) {return (p - ymin) / sy;}
+
+        /** Returns the subsampling (compared to the grid having finest resolution) in the specified dimension. */
+        final double relativeCellSize(final int dim) {
+            switch (dim) {
+                case 0:  return sx;
+                case 1:  return sy;
+                default: throw new IndexOutOfBoundsException();
+            }
+        }
+    }
 
     /**
-     * Converts indices from this grid to indices in sub-grids.
+     * For each {@code subgrids[i]}, {@code regions[i]} is the range of indices valid of that grid.
+     * This array will be used only as a fallback if the {@code MathTransform} has not been able to
+     * find the sub-grid itself. Since it should be rarely used, we do not bother using a R-Tree.
      */
-    private final AffineTransform[] toSubGrids;
+    private final Region[] regions;
 
     /**
      * Creates a new group for the given list of sub-grids. That list shall contain at least 2 elements.
      * The first sub-grid is taken as a template for setting parameter values such as filename (all list
      * elements should declare the same filename parameters, so the selected element should not matter).
      *
-     * @param grids      sub-grids with their indices range. The array is declared as {@code Tile[]}
-     *                   because this is the type returned by {@link MosaicCalculator#tiles()}, but
-     *                   each element shall be an instance of {@link Region}.
-     * @param gridToCRS  conversion from grid indices to "real world" coordinates.
-     * @param nx         number of cells along the <var>x</var> axis in the grid.
-     * @param ny         number of cells along the <var>y</var> axis in the grid.
+     * @param  tiles      the tiles computed by {@link MosaicCalculator}.
+     * @param  grids      sub-grids associated to tiles computed by {@link MosaicCalculator}.
+     * @param  gridToCRS  conversion from grid indices to "real world" coordinates.
+     * @param  nx         number of cells along the <var>x</var> axis in the grid.
+     * @param  ny         number of cells along the <var>y</var> axis in the grid.
      * @throws IOException declared because {@link Tile#getRegion()} declares it, but should not happen.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private DatumShiftGridGroup(final Tile[] grids, final AffineTransform2D gridToCRS, final int nx, final int ny)
+    private DatumShiftGridGroup(final Tile[] tiles, final Map<Tile,DatumShiftGridFile<C,T>> grids,
+            final AffineTransform2D gridToCRS, final int nx, final int ny)
             throws IOException, NoninvertibleTransformException
     {
-        super((DatumShiftGridFile<C,T>) ((Region) grids[0]).grid, gridToCRS.inverse(), nx, ny);
-        subgrids   = new DatumShiftGridFile[grids.length];
-        regions    = new Rectangle[grids.length];
-        toSubGrids = new AffineTransform[grids.length];
-        for (int i=0; i<grids.length; i++) {
-            final Region r = (Region) grids[i];
-            final AffineTransform tr = new AffineTransform(gridToCRS);
-            tr.preConcatenate((AffineTransform) r.grid.getCoordinateToGrid());
-            subgrids  [i] = (DatumShiftGridFile<C,T>) r.grid;
-            regions   [i] = r.getAbsoluteRegion();
-            toSubGrids[i] = tr;
-        }
-    }
-
-    /**
-     * A sub-grid wrapped with information about the region where it applies.
-     * The region is expressed as indices in a larger grid. That larger grid
-     * is what {@link MosaicCalculator} will try to infer.
-     */
-    @SuppressWarnings("serial")
-    private static final class Region extends Tile {
-        /** The wrapped sub-grid. */
-        final DatumShiftGridFile<?,?> grid;
-
-        /**
-         * Creates a new wrapper for the given sub-grid.
-         *
-         * @param size  value of {@link DatumShiftGridFile#getGridSize()}.
-         */
-        Region(final DatumShiftGridFile<?,?> grid, final int[] size) throws NoninvertibleTransformException {
-            super(new Rectangle(size[0], size[1]), (AffineTransform) grid.getCoordinateToGrid().inverse());
-            this.grid = grid;
+        super(grids.get(tiles[0]), gridToCRS.inverse(), nx, ny);
+        final int n = grids.size();
+        regions  = new Region[n];
+        subgrids = new DatumShiftGridFile[n];
+        for (int i=0; i<n; i++) {
+            regions [i] = new Region(tiles[i]);
+            subgrids[i] = grids.get(tiles[i]);
         }
     }
 
@@ -124,8 +137,16 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
             throws IOException, FactoryException, NoninvertibleTransformException
     {
         final MosaicCalculator mosaic = new MosaicCalculator(null);
+        final Map<Tile,DatumShiftGridFile<C,T>> grids = new LinkedHashMap<>();
         for (final DatumShiftGridFile<C,T> grid : subgrids) {
-            mosaic.add(new Region(grid, grid.getGridSize()));
+            final int[] size = grid.getGridSize();
+            final Tile tile = new Tile(new Rectangle(size[0], size[1]),
+                    (AffineTransform) grid.getCoordinateToGrid().inverse());
+            if (mosaic.add(tile)) {                                     // Should never be false, but check anyway.
+                if (grids.put(tile, grid) != null) {
+                    throw new AssertionError(tile);                     // Should never happen (paranoiac check).
+                }
+            }
         }
         final Map.Entry<Tile,Tile[]> result = CollectionsExt.singletonOrNull(mosaic.tiles().entrySet());
         if (result == null) {
@@ -133,7 +154,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
         }
         final Tile global = result.getKey();
         final Rectangle r = global.getRegion();
-        return new DatumShiftGridGroup<>(result.getValue(), global.getGridToCRS(), r.width, r.height);
+        return new DatumShiftGridGroup<>(result.getValue(), grids, global.getGridToCRS(), r.width, r.height);
     }
 
     /**
@@ -142,9 +163,8 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      */
     private DatumShiftGridGroup(final DatumShiftGridGroup<C,T> other, final DatumShiftGridFile<C,T>[] data) {
         super(other);
-        subgrids   = data;
-        regions    = other.regions;
-        toSubGrids = other.toSubGrids;
+        subgrids = data;
+        regions  = other.regions;
     }
 
     /**
@@ -182,6 +202,9 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
 
     /**
      * Returns the translation stored at the given two-dimensional grid indices for the given dimension.
+     * This method is defined for consistency with {@link #interpolateInCell(double, double, double[])}
+     * but should never be invoked. The {@link InterpolatedTransform} class will rather invoke the
+     * {@code interpolateInCell} method for efficiency.
      *
      * @param  dim    the dimension of the translation vector component to get.
      * @param  gridX  the grid index on the <var>x</var> axis, from 0 inclusive to {@code gridSize[0]} exclusive.
@@ -191,15 +214,49 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
     @Override
     public double getCellValue(final int dim, final int gridX, final int gridY) {
         for (int i=0; i<regions.length; i++) {
-            final Rectangle r = regions[i];
+            final Region r = regions[i];
             if (r.contains(gridX, gridY)) {
-                Point2D pt = new Point2D.Double(gridX, gridY);
-                pt = toSubGrids[i].transform(pt, pt);
-                return subgrids[i].getCellValue(dim,
-                        Math.toIntExact(Math.round(pt.getX())),
-                        Math.toIntExact(Math.round(pt.getY())));
+                double shift = subgrids[i].getCellValue(dim,
+                        Math.toIntExact(Math.round(r.x(gridX))),
+                        Math.toIntExact(Math.round(r.y(gridY))));
+                /*
+                 * If the translations have been divided by the cell size, we may need to compensate.
+                 * The size of the cells of the grid used below may be bigger than the cells of this
+                 * pseudo-grid.
+                 */
+                if (isCellValueRatio()) {
+                    shift *= r.relativeCellSize(dim);
+                }
+                return shift;
             }
         }
         throw new IndexOutOfBoundsException();
+    }
+
+    /**
+     * Interpolates the translation to apply for the given two-dimensional grid indices. The result is stored
+     * in the given {@code vector} array. This method is invoked only as a fallback if the transform has not
+     * been able to use directly one of the child transforms. Consequently this implementation does not need
+     * to be very fast.
+     *
+     * @param  gridX   first grid coordinate of the point for which to get the translation.
+     * @param  gridY   second grid coordinate of the point for which to get the translation.
+     * @param  vector  a pre-allocated array where to write the translation vector.
+     */
+    @Override
+    public void interpolateInCell(final double gridX, final double gridY, final double[] vector) {
+        for (int i=0; i<regions.length; i++) {
+            final Region r = regions[i];
+            if (r.contains(gridX, gridY)) {
+                subgrids[i].interpolateInCell(r.x(gridX), r.y(gridY), vector);
+                if (isCellValueRatio()) {
+                    for (int dim=0; dim < INTERPOLATED_DIMENSIONS; dim++) {
+                        vector[dim] *= r.relativeCellSize(dim);
+                    }
+                }
+                return;
+            }
+        }
+        super.interpolateInCell(gridX, gridY, vector);
     }
 }
