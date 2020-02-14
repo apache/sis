@@ -124,6 +124,9 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
 
     /**
      * Returns a new grid with the same geometry than this grid but different data arrays.
+     * This method is invoked by {@link #useSharedData()} when it detects that a newly created
+     * grid uses the same data than an existing grid. The {@code other} object is the old grid,
+     * so we can share existing data.
      */
     @Override
     protected final DatumShiftGridFile<C,T> setData(final Object[] other) {

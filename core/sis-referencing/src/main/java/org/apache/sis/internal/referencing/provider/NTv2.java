@@ -472,13 +472,10 @@ public final class NTv2 extends AbstractProvider {
                 }
             }
             switch (roots.size()) {
-                case 0: throw new FactoryException(Errors.format(Errors.Keys.CanNotRead_1, file));
-                case 1: return roots.get(0);
+                case 0:  throw new FactoryException(Errors.format(Errors.Keys.CanNotRead_1, file));
+                case 1:  return roots.get(0);
+                default: return DatumShiftGridGroup.create(file, roots);
             }
-            /*
-             * If there is more than one root, creates a synthetic grid for hosting them.
-             */
-            return roots.get(0);     // TODO
         }
 
         /**

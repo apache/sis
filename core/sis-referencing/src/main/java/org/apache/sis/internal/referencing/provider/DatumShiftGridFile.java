@@ -72,7 +72,11 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         @Override protected int cost(final DatumShiftGridFile<?,?> grid) {
             int p = 1;
             for (final Object array : grid.getData()) {
-                p *= Array.getLength(array);
+                if (array instanceof DatumShiftGridFile<?,?>) {
+                    p += cost((DatumShiftGridFile<?,?>) array);
+                } else {
+                    p *= Array.getLength(array);
+                }
             }
             return p;
         }
@@ -120,7 +124,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      *
      * @see #setSubGrids(Collection)
      */
-    private DatumShiftGridFile<C,T>[] subgrids;
+    DatumShiftGridFile<C,T>[] subgrids;
 
     /**
      * Creates a new datum shift grid for the given grid geometry.
@@ -168,6 +172,27 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         nx         = other.nx;
         accuracy   = other.accuracy;
         subgrids   = other.subgrids;
+    }
+
+
+    /**
+     * Creates a new datum shift grid with the same configuration than the given grid,
+     * except the size and transform which are set to the given values.
+     *
+     * @param other             the other datum shift grid from which to copy parameters.
+     * @param coordinateToGrid  conversion from the "real world" coordinates to grid indices including fractional parts.
+     * @param nx                number of cells along the <var>x</var> axis in the grid.
+     * @param ny                number of cells along the <var>y</var> axis in the grid.
+     */
+    DatumShiftGridFile(final DatumShiftGridFile<C,T> other,
+                       final AffineTransform2D coordinateToGrid, final int nx, final int ny)
+    {
+        super(other.getCoordinateUnit(), coordinateToGrid, new int[] {nx, ny},
+              other.isCellValueRatio(), other.getTranslationUnit());
+        descriptor = other.descriptor;
+        files      = other.files;
+        this.nx    = nx;
+        accuracy   = other.accuracy;
     }
 
     /**
@@ -413,6 +438,9 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
 
         /**
          * Returns a new grid with the same geometry than this grid but different data arrays.
+         * This method is invoked by {@link #useSharedData()} when it detects that a newly created
+         * grid uses the same data than an existing grid. The {@code other} object is the old grid,
+         * so we can share existing data.
          */
         @Override
         protected final DatumShiftGridFile<C,T> setData(final Object[] other) {

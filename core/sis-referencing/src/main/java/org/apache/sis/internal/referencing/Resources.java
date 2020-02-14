@@ -303,6 +303,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short LoadingDatumShiftFile_1 = 32;
 
         /**
+         * Misaligned datum shift grid in “{0}”.
+         */
+        public static final short MisalignedDatumShiftGrid_1 = 94;
+
+        /**
          * The “{1}” parameter could have been omitted. But it has been given a value of {2} which does
          * not match the definition of the “{0}” ellipsoid.
          */
