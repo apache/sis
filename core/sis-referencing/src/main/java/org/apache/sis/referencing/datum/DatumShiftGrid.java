@@ -275,12 +275,14 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
 
     /**
      * Returns the domain of validity of input coordinates that can be specified to the
-     * {@link #interpolateAt interpolateAt(…)} method. Coordinates outside that domain of
-     * validity will still be accepted, but the extrapolated results may be very wrong.
+     * {@link #interpolateAt interpolateAt(…)} method. Coordinates outside that domain
+     * will still be accepted, but results will be extrapolations possibly far from reality.
      *
-     * <p>The unit of measurement for the coordinate values in the returned envelope is
-     * given by {@link #getCoordinateUnit()}. The envelope CRS is not set, but its value
-     * is implicitly the CRS of grid input coordinates.</p>
+     * <p>The envelope coordinates are computed at cell centers; the envelope does not contain
+     * the margin of 0.5 cell between cell center and cell border at the edges of the envelope.
+     * The unit of measurement for the coordinate values in the returned envelope is given by
+     * {@link #getCoordinateUnit()}. The envelope CRS is not set, but its value is implicitly
+     * the CRS of grid input coordinates.</p>
      *
      * @return the domain covered by this grid.
      * @throws TransformException if an error occurred while computing the envelope.
@@ -288,7 +290,18 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     public Envelope getDomainOfValidity() throws TransformException {
         final GeneralEnvelope env = new GeneralEnvelope(gridSize.length);
         for (int i=0; i<gridSize.length; i++) {
-            env.setRange(i, -0.5, gridSize[i] - 0.5);
+            /*
+             * Note: a previous version was using the following code in an attempt to encompass
+             * fully all cells (keeping in mind that the `coordinatetoGrid` maps cell centers):
+             *
+             *    env.setRange(i, -0.5, gridSize[i] - 0.5);
+             *
+             * However it was causing spurious overlaps when two grids are side-by-side
+             * (no overlapping) but one grid has larger cells than the other other grid.
+             * The 0.5 cell expansion caused the grid with larger cells to overlap the
+             * grid with smaller cells. This case happens with NTv2 datum shift grid.
+             */
+            env.setRange(i, 0, gridSize[i] - 1);
         }
         return Envelopes.transform(getCoordinateToGrid().inverse(), env);
     }

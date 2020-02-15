@@ -133,10 +133,10 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
          * The cells are expected to have the same size (360″ or 0.1°) in longitudes and latitudes.
          */
         final Envelope envelope = grid.getDomainOfValidity();
-        assertEquals("xmin", xmin - cellSize/2, envelope.getMinimum(0), STRICT);
-        assertEquals("xmax", xmax + cellSize/2, envelope.getMaximum(0), STRICT);
-        assertEquals("ymin", ymin - cellSize/2, envelope.getMinimum(1), STRICT);
-        assertEquals("ymax", ymax + cellSize/2, envelope.getMaximum(1), STRICT);
+        assertEquals("xmin", xmin, envelope.getMinimum(0), STRICT);
+        assertEquals("xmax", xmax, envelope.getMaximum(0), STRICT);
+        assertEquals("ymin", ymin, envelope.getMinimum(1), STRICT);
+        assertEquals("ymax", ymax, envelope.getMaximum(1), STRICT);
         assertMatrixEquals("coordinateToGrid",
                 new Matrix3(-cellSize,  0,  xmax,
                             0,  +cellSize,  ymin,
@@ -202,10 +202,10 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
          */
         final double cellSize = 300;                                    // Number of arc-seconds in a cell.
         final Envelope envelope = grid.getDomainOfValidity();
-        assertEquals("xmin", (-142.29 - 0.5/cellSize) * DEGREES_TO_SECONDS, envelope.getMinimum(0), 1E-10);
-        assertEquals("xmax", ( -43.96 + 0.5/cellSize) * DEGREES_TO_SECONDS, envelope.getMaximum(0), 1E-10);
-        assertEquals("ymin", (  39.96 - 0.5/cellSize) * DEGREES_TO_SECONDS, envelope.getMinimum(1), 1E-10);
-        assertEquals("ymax", (  84.04 + 0.5/cellSize) * DEGREES_TO_SECONDS, envelope.getMaximum(1), 1E-10);
+        assertEquals("xmin", -142.25 * DEGREES_TO_SECONDS, envelope.getMinimum(0), 1E-10);
+        assertEquals("xmax",  -44.00 * DEGREES_TO_SECONDS, envelope.getMaximum(0), 1E-10);
+        assertEquals("ymin",   40.00 * DEGREES_TO_SECONDS, envelope.getMinimum(1), 1E-10);
+        assertEquals("ymax",   84.00 * DEGREES_TO_SECONDS, envelope.getMaximum(1), 1E-10);
         /*
          * Test a point. This point is located on the 3th grid in the NTv2 file.
          * Consequently if the NTv2 implementation just pickups the first grid,

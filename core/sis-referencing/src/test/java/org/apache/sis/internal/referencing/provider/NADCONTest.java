@@ -145,10 +145,10 @@ public final strictfp class NADCONTest extends DatumShiftTestCase {
          */
         final double cellSize = 0.25;
         final Envelope envelope = grid.getDomainOfValidity();
-        assertEquals("xmin", xmin - cellSize/2, envelope.getMinimum(0), STRICT);
-        assertEquals("xmax", xmax + cellSize/2, envelope.getMaximum(0), STRICT);
-        assertEquals("ymin", ymin - cellSize/2, envelope.getMinimum(1), STRICT);
-        assertEquals("ymax", ymax + cellSize/2, envelope.getMaximum(1), STRICT);
+        assertEquals("xmin", xmin, envelope.getMinimum(0), STRICT);
+        assertEquals("xmax", xmax, envelope.getMaximum(0), STRICT);
+        assertEquals("ymin", ymin, envelope.getMinimum(1), STRICT);
+        assertEquals("ymax", ymax, envelope.getMaximum(1), STRICT);
         assertMatrixEquals("coordinateToGrid",
                 new Matrix3(cellSize,  0,  xmin,
                             0,  cellSize,  ymin,
