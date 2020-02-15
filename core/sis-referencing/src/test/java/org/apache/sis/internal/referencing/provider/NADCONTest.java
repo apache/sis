@@ -93,12 +93,11 @@ public final strictfp class NADCONTest extends DatumShiftTestCase {
      * The point used for this test is given by {@link #samplePoint(int)}.
      *
      * @throws URISyntaxException if the URL to the test file can not be converted to a path.
-     * @throws IOException if an error occurred while loading the grid.
-     * @throws FactoryException if an error occurred while computing the grid.
+     * @throws FactoryException if an error occurred while loading or computing the grid.
      * @throws TransformException if an error occurred while computing the envelope or testing the point.
      */
     @Test
-    public void testLoader() throws URISyntaxException, IOException, FactoryException, TransformException {
+    public void testLoader() throws URISyntaxException, FactoryException, TransformException {
         testNADCON(getResource(TEST_FILE + ".laa"),     // Latitude shifts
                    getResource(TEST_FILE + ".loa"),     // Longitude shifts
                    -99.75, -98.0, 37.5, 39.75);
@@ -112,12 +111,11 @@ public final strictfp class NADCONTest extends DatumShiftTestCase {
      *
      * @param  latitudeShifts   path to the official {@code "conus.las"} file.
      * @param  longitudeShifts  path to the official {@code "conus.los"} file.
-     * @throws IOException if an error occurred while loading the grid.
-     * @throws FactoryException if an error occurred while computing the grid.
+     * @throws FactoryException if an error occurred while loading or computing the grid.
      * @throws TransformException if an error occurred while computing the envelope or testing the point.
      */
     public static void testNADCON(final Path latitudeShifts, final Path longitudeShifts)
-            throws IOException, FactoryException, TransformException
+            throws FactoryException, TransformException
     {
         testNADCON(latitudeShifts, longitudeShifts, -131, -63, 20, 50);
     }
@@ -132,7 +130,7 @@ public final strictfp class NADCONTest extends DatumShiftTestCase {
      */
     private static void testNADCON(final Path latitudeShifts, final Path longitudeShifts,
             final double xmin, final double xmax, final double ymin, final double ymax)
-            throws IOException, FactoryException, TransformException
+            throws FactoryException, TransformException
     {
         final DatumShiftGridFile<Angle,Angle> grid = NADCON.getOrLoad(latitudeShifts, longitudeShifts);
         assertInstanceOf("Should not be compressed.", DatumShiftGridFile.Float.class, grid);

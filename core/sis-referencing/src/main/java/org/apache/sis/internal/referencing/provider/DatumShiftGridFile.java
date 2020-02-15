@@ -178,6 +178,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     /**
      * Creates a new datum shift grid with the same configuration than the given grid,
      * except the size and transform which are set to the given values.
+     * The {@link #accuracy} is initialized to zero and should be updated by the caller.
      *
      * @param other             the other datum shift grid from which to copy parameters.
      * @param coordinateToGrid  conversion from the "real world" coordinates to grid indices including fractional parts.
@@ -192,7 +193,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         descriptor = other.descriptor;
         files      = other.files;
         this.nx    = nx;
-        accuracy   = other.accuracy;
+        // Accuracy to be set by caller. Initial value needs to be zero.
     }
 
     /**

@@ -37,8 +37,22 @@ import org.apache.sis.internal.util.CollectionsExt;
 
 /**
  * A group of datum shift grids. This is used when a NTv2 file contains more than one grid with no common parent.
- * This class creates a synthetic parent which always delegate its work to a child (as opposed to more classical
- * trees where the parent can do some work if no child can).
+ * This class creates a synthetic parent which always delegates its work to a child (as opposed to more classical
+ * transform trees where the parent can do some work if no child can). Coordinate transformations will be applied
+ * as below:
+ *
+ * <ol>
+ *   <li>{@link org.apache.sis.referencing.operation.transform.SpecializableTransform} will try to locate the
+ *       most appropriate grid for given coordinates. This is the class where to put our optimization efforts,
+ *       for example by checking the last used grid before to check all other grids.</li>
+ *   <li>Only if {@code SpecializableTransform} did not found a better transform, it will fallback on a transform
+ *       backed by this {@code DatumShiftGridGroup}. In such case, {@link InterpolatedTransform} will perform its
+ *       calculation by invoking {@link #interpolateInCell(double, double, double[])}. That method tries again to
+ *       locate the best grid, but performance is less important there since that method is only a fallback.</li>
+ *   <li>The default {@link DatumShiftGridFile#interpolateInCell(double, double, double[])} implementation invokes
+ *       {@link #getCellValue(int, int, int)}. We provide that method for consistency, but it should not be invoked
+ *       since we overrode {@link #interpolateInCell(double, double, double[])}.</li>
+ * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -49,7 +63,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
     /**
      * The bounds of a sub-grid, together with the subsampling level compared to the grid having the finest resolution.
      * All values in this class are integers, but nevertheless stored as {@code double} for avoiding to cast them every
-     * time {@link #interpolateInCell(double, double, double[])} is executed.
+     * time {@link DatumShiftGridGroup#interpolateInCell(double, double, double[])} is executed.
      */
     private static final class Region {
         /** Grid bounds in units of the grid having finest resolution. */
@@ -90,9 +104,9 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
     }
 
     /**
-     * For each {@code subgrids[i]}, {@code regions[i]} is the range of indices valid of that grid.
-     * This array will be used only as a fallback if the {@code MathTransform} has not been able to
-     * find the sub-grid itself. Since it should be rarely used, we do not bother using a R-Tree.
+     * For each {@code subgrids[i]}, {@code regions[i]} is the range of indices valid for that grid.
+     * This array will be used only as a fallback if {@code SpecializableTransform} has not been able
+     * to find the sub-grid itself. Since it should be rarely used, we do not bother using a R-Tree.
      */
     private final Region[] regions;
 
@@ -104,22 +118,28 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      * @param  tiles      the tiles computed by {@link TileOrganizer}.
      * @param  grids      sub-grids associated to tiles computed by {@link TileOrganizer}.
      * @param  gridToCRS  conversion from grid indices to "real world" coordinates.
-     * @param  nx         number of cells along the <var>x</var> axis in the grid.
-     * @param  ny         number of cells along the <var>y</var> axis in the grid.
+     * @param  gridSize   number of cells along the <var>x</var> and <var>y</var> axes in the grid.
      * @throws IOException declared because {@link Tile#getRegion()} declares it, but should not happen.
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private DatumShiftGridGroup(final Tile[] tiles, final Map<Tile,DatumShiftGridFile<C,T>> grids,
-            final AffineTransform2D gridToCRS, final int nx, final int ny)
+    @SuppressWarnings({"rawtypes", "unchecked"})                        // For generic array creation.
+    private DatumShiftGridGroup(final Tile[] tiles,
+                                final Map<Tile,DatumShiftGridFile<C,T>> grids,
+                                final AffineTransform2D gridToCRS,
+                                final Dimension gridSize)
             throws IOException, NoninvertibleTransformException
     {
-        super(grids.get(tiles[0]), gridToCRS.inverse(), nx, ny);
+        super(grids.get(tiles[0]), gridToCRS.inverse(), gridSize.width, gridSize.height);
         final int n = grids.size();
         regions  = new Region[n];
         subgrids = new DatumShiftGridFile[n];
         for (int i=0; i<n; i++) {
-            regions [i] = new Region(tiles[i]);
-            subgrids[i] = grids.get(tiles[i]);
+            final Tile tile = tiles[i];
+            final DatumShiftGridFile<C,T> grid = grids.get(tile);
+            regions [i] = new Region(tile);
+            subgrids[i] = grid;
+            if (grid.accuracy > accuracy) {
+                accuracy = grid.accuracy;           // Conservatively set accuracy to the largest value.
+            }
         }
     }
 
@@ -127,7 +147,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      * Puts the given sub-grid in a group. This method infers itself what would be the size
      * of a grid containing all given sub-grids.
      *
-     * @param  file  filename to report in case of error.
+     * @param  file      filename to report in case of error.
      * @param  subgrids  the sub-grids to put under a common root.
      * @throws FactoryException if the sub-grid can not be combined in a single mosaic or pyramid.
      * @throws IOException declared because {@link Tile#getRegion()} declares it, but should not happen.
@@ -140,21 +160,29 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
         final Map<Tile,DatumShiftGridFile<C,T>> grids = new LinkedHashMap<>();
         for (final DatumShiftGridFile<C,T> grid : subgrids) {
             final int[] size = grid.getGridSize();
-            final Tile tile = new Tile(new Rectangle(size[0], size[1]),
+            final Tile  tile = new Tile(new Rectangle(size[0], size[1]),
                     (AffineTransform) grid.getCoordinateToGrid().inverse());
-            if (mosaic.add(tile)) {                                     // Should never be false, but check anyway.
-                if (grids.put(tile, grid) != null) {
-                    throw new AssertionError(tile);                     // Should never happen (paranoiac check).
-                }
+            /*
+             * Assertions below would fail if the tile has already been processed by TileOrganizer,
+             * or if it duplicates another tile. Since we created that tile just above, a failure
+             * would be a bug in Tile or TileOrganizer.
+             */
+            if (!mosaic.add(tile) || grids.put(tile, grid) != null) {
+                throw new AssertionError(tile);
             }
         }
+        /*
+         * After processing by TileOrganizer, we should have only one group of tiles. If we have more groups,
+         * it would mean that the cell size of the grid having larger cells is not a multiple of cell size of
+         * the grid having smallest cells, or that cell indices in some grids, when expressed in units of the
+         * smallest cells, would be fractional numbers. It should not happen in a NTv2 compliant file.
+         */
         final Map.Entry<Tile,Tile[]> result = CollectionsExt.singletonOrNull(mosaic.tiles().entrySet());
         if (result == null) {
             throw new FactoryException(Resources.format(Resources.Keys.MisalignedDatumShiftGrid_1, file));
         }
         final Tile global = result.getKey();
-        final Rectangle r = global.getRegion();
-        return new DatumShiftGridGroup<>(result.getValue(), grids, global.getGridToCRS(), r.width, r.height);
+        return new DatumShiftGridGroup<>(result.getValue(), grids, global.getGridToCRS(), global.getSize());
     }
 
     /**
@@ -192,8 +220,8 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
 
     /**
      * Returns the number of dimensions of the translation vectors interpolated by this datum shift grid.
-     * This implementation takes the first sub-grid as a template. The selected grid should not matter
-     * since they shall all have the same number of target dimensions.
+     * This implementation takes the first sub-grid as a template. The choice of the grid does not matter
+     * since all grids have the same number of target dimensions.
      */
     @Override
     public int getTranslationDimensions() {
@@ -204,7 +232,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      * Returns the translation stored at the given two-dimensional grid indices for the given dimension.
      * This method is defined for consistency with {@link #interpolateInCell(double, double, double[])}
      * but should never be invoked. The {@link InterpolatedTransform} class will rather invoke the
-     * {@code interpolateInCell} method for efficiency.
+     * {@code interpolateInCell(…)} method for efficiency.
      *
      * @param  dim    the dimension of the translation vector component to get.
      * @param  gridX  the grid index on the <var>x</var> axis, from 0 inclusive to {@code gridSize[0]} exclusive.
@@ -257,6 +285,10 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
                 return;
             }
         }
+        /*
+         * The following method call will (indirectly) invokes the above `getCellValue(…)` method.
+         * It can be used as a way to test that method.
+         */
         super.interpolateInCell(gridX, gridY, vector);
     }
 }
