@@ -30,7 +30,7 @@ import java.awt.geom.AffineTransform;
  * @since   1.1
  * @module
  */
-final class TranslatedTransform {
+final class TileTranslation {
     /**
      * The translated "grid to real world" transform, as an immutable instance.
      */
@@ -50,7 +50,7 @@ final class TranslatedTransform {
      * @param  dx           the translation along <var>x</var> axis in "absolute units".
      * @param  dy           the translation along <var>y</var> axis in "absolute units".
      */
-    TranslatedTransform(final Dimension subsampling, AffineTransform reference, int dx, int dy) {
+    TileTranslation(final Dimension subsampling, AffineTransform reference, int dx, int dy) {
         this.dx = dx / subsampling.width;                           // It is okay to round toward zero.
         this.dy = dy / subsampling.height;
         dx %= subsampling.width;

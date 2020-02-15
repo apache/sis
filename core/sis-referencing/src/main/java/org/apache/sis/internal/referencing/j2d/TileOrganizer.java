@@ -254,12 +254,12 @@ public class TileOrganizer {
                     groupBounds.translate(dx, dy);
                 }
                 reference = new AffineTransform2D(reference);               // Make immutable.
-                final Map<Dimension,TranslatedTransform> pool = new HashMap<>();
+                final Map<Dimension,TileTranslation> pool = new HashMap<>();
                 for (final Tile tile : tilesArray) {
                     final Dimension subsampling = tile.getSubsampling();
-                    TranslatedTransform translated = pool.get(subsampling);
+                    TileTranslation translated = pool.get(subsampling);
                     if (translated == null) {
-                        translated = new TranslatedTransform(subsampling, reference, dx, dy);
+                        translated = new TileTranslation(subsampling, reference, dx, dy);
                         pool.put(subsampling, translated);
                     }
                     translated.applyTo(tile);
