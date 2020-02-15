@@ -29,6 +29,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 import org.apache.sis.internal.referencing.j2d.TileOrganizer;
 import org.apache.sis.internal.referencing.j2d.Tile;
 import org.apache.sis.internal.referencing.Resources;
@@ -65,16 +66,13 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      * All values in this class are integers, but nevertheless stored as {@code double} for avoiding to cast them every
      * time {@link DatumShiftGridGroup#interpolateInCell(double, double, double[])} is executed.
      */
-    private static final class Region {
-        /** Grid bounds in units of the grid having finest resolution. */
-        private final double xmin, xmax, ymin, ymax;
-
+    private static final class Region extends IntervalRectangle {
         /** Subsampling compared to the grid having finest resolution. */
         private final double sx, sy;
 
         /** Creates a new instance from the given {@link TileOrganizer} result. */
         Region(final Tile tile) throws IOException {
-            final Rectangle r = tile.getAbsoluteRegion();
+            final Rectangle r = tile.getAbsoluteRegion();       // In units of the grid having finest resolution.
             final Dimension s = tile.getSubsampling();
             xmin = r.getMinX();
             xmax = r.getMaxX();
@@ -82,11 +80,6 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
             ymax = r.getMaxY();
             sx   = s.width;
             sy   = s.height;
-        }
-
-        /** Tests whether the given coordinates are included in this region. */
-        final boolean contains(final double x, final double y) {
-            return x >= xmin && x <= xmax && y >= ymin && y <= ymax;
         }
 
         /** Converts a coordinate from the parent grid to this grid. */
@@ -234,6 +227,9 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      * but should never be invoked. The {@link InterpolatedTransform} class will rather invoke the
      * {@code interpolateInCell(…)} method for efficiency.
      *
+     * <p>Caller must ensure that all arguments given to this method are in their expected ranges.
+     * The behavior of this method is undefined if any argument value is out-of-range.</p>
+     *
      * @param  dim    the dimension of the translation vector component to get.
      * @param  gridX  the grid index on the <var>x</var> axis, from 0 inclusive to {@code gridSize[0]} exclusive.
      * @param  gridY  the grid index on the <var>y</var> axis, from 0 inclusive to {@code gridSize[1]} exclusive.
@@ -243,7 +239,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
     public double getCellValue(final int dim, final int gridX, final int gridY) {
         for (int i=0; i<regions.length; i++) {
             final Region r = regions[i];
-            if (r.contains(gridX, gridY)) {
+            if (r.containsInclusive(gridX, gridY)) {
                 double shift = subgrids[i].getCellValue(dim,
                         Math.toIntExact(Math.round(r.x(gridX))),
                         Math.toIntExact(Math.round(r.y(gridY))));
@@ -258,14 +254,20 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
                 return shift;
             }
         }
-        throw new IndexOutOfBoundsException();
+        /*
+         * May be in the valid range of this DatumShiftGridGroup but not in the range of a subgrid.
+         * This situation may happen if there is holes in the data coverage provided by subgrids.
+         */
+        throw new IllegalArgumentException();
     }
 
     /**
-     * Interpolates the translation to apply for the given two-dimensional grid indices. The result is stored
-     * in the given {@code vector} array. This method is invoked only as a fallback if the transform has not
-     * been able to use directly one of the child transforms. Consequently this implementation does not need
-     * to be very fast.
+     * Interpolates the translation to apply for the given two-dimensional grid indices.
+     * This method is a fallback used when {@code SpecializableTransform} has not been able to use directly
+     * one of the child transforms — it should happen only in a minority of cases, so performance is not the
+     * priority here. The given point is assumed outside all sub-grids (otherwise {@code SpecializableTransform}
+     * would not be invoking this fallback). Consequently searching a sub-grid containing the given point is not
+     * sufficient; we have to search for the nearest grid even if the point is outside.
      *
      * @param  gridX   first grid coordinate of the point for which to get the translation.
      * @param  gridY   second grid coordinate of the point for which to get the translation.
@@ -273,22 +275,23 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      */
     @Override
     public void interpolateInCell(final double gridX, final double gridY, final double[] vector) {
-        for (int i=0; i<regions.length; i++) {
+        int ni = 0;
+        Region nearest = regions[ni];
+        double distance = nearest.distance(gridX, gridY);
+        for (int i=1; i<regions.length; i++) {
             final Region r = regions[i];
-            if (r.contains(gridX, gridY)) {
-                subgrids[i].interpolateInCell(r.x(gridX), r.y(gridY), vector);
-                if (isCellValueRatio()) {
-                    for (int dim=0; dim < INTERPOLATED_DIMENSIONS; dim++) {
-                        vector[dim] *= r.relativeCellSize(dim);
-                    }
-                }
-                return;
+            final double d = r.distance(gridX, gridY);
+            if (d < distance) {
+                distance = d;
+                nearest  = r;
+                ni       = i;
             }
         }
-        /*
-         * The following method call will (indirectly) invokes the above `getCellValue(…)` method.
-         * It can be used as a way to test that method.
-         */
-        super.interpolateInCell(gridX, gridY, vector);
+        subgrids[ni].interpolateInCell(nearest.x(gridX), nearest.y(gridY), vector);
+        if (isCellValueRatio()) {
+            for (int dim=0; dim < INTERPOLATED_DIMENSIONS; dim++) {
+                vector[dim] *= nearest.relativeCellSize(dim);
+            }
+        }
     }
 }

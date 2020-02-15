@@ -224,7 +224,7 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
          * should not be invoked in normal usage, so a direct invocation is the only way to test it.
          */
         final double[] result = new double[] {
-            position[0] - grid.getCellValue(0, gridX, gridY) * cellSize,
+            position[0] - grid.getCellValue(0, gridX, gridY) * cellSize,    // Positive translation is toward west.
             position[1] + grid.getCellValue(1, gridX, gridY) * cellSize
         };
         assertArrayEquals("getCellValue", expected, result, 0.001);
@@ -233,7 +233,7 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
          * when `SpecializableTransform` has not been able to find the most appropriate grid.
          */
         grid.interpolateInCell(indices[0], indices[1], result);
-        result[0] = position[0] - result[0] * cellSize;
+        result[0] = position[0] - result[0] * cellSize;                     // Positive translation is toward west.
         result[1] = position[1] + result[1] * cellSize;
         assertArrayEquals("interpolateInCell", expected, result, Formulas.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
     }
