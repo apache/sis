@@ -18,23 +18,37 @@ package org.apache.sis.internal.referencing.provider;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.logging.Level;
 import java.lang.reflect.Array;
 import java.nio.file.Path;
 import javax.measure.Unit;
 import javax.measure.Quantity;
+import javax.measure.quantity.Angle;
+import org.opengis.geometry.Envelope;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.measure.Units;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 
 
 /**
@@ -122,9 +136,12 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * in particular that it contains only translations and scales (no rotation, no shear).
      * Those assumptions are enforced by the {@link DatumShiftGridFile} constructor.</div>
      *
+     * This field has protected access for usage by {@link DatumShiftGridGroup} subclass only.
+     * No access to this field should be done except by subclasses.
+     *
      * @see #setSubGrids(Collection)
      */
-    DatumShiftGridFile<C,T>[] subgrids;
+    protected DatumShiftGridFile<C,T>[] subgrids;
 
     /**
      * Creates a new datum shift grid for the given grid geometry.
@@ -209,6 +226,8 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     /**
      * Returns the number of grids, including this grid and all sub-grids counted recursively.
      * This is used for information purpose only.
+     *
+     * @see #toTree(TreeTable.Node)
      */
     private int getGridCount() {
         int n = 1;
@@ -218,6 +237,34 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
             }
         }
         return n;
+    }
+
+    /**
+     * Returns a string representation of this grid for debugging purpose.
+     * If this grid has children, then it will be formatted as a tree.
+     */
+    @Override
+    public final String toString() {
+        if (subgrids == null) {
+            return super.toString();
+        }
+        final TreeTable tree = new DefaultTreeTable(TableColumn.NAME);
+        toTree(tree.getRoot());
+        return tree.toString();
+    }
+
+    /**
+     * Formats this grid as a tree with its children.
+     */
+    private void toTree(final TreeTable.Node branch) {
+        String label = super.toString();
+        if (subgrids != null) {
+            label = label + " (" + getGridCount() + " grids)";
+            for (final DatumShiftGridFile<C,T> subgrid : subgrids) {
+                subgrid.toTree(branch.newChild());
+            }
+        }
+        branch.setValue(TableColumn.NAME, label);
     }
 
     /**
@@ -275,6 +322,37 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     protected abstract Object[] getData();
 
     /**
+     * Returns {@code true} if the given object is a grid containing the same data than this grid.
+     * This method compares the data provided by {@link #getData()}.
+     *
+     * @param  other  the other object to compare with this datum shift grid.
+     * @return {@code true} if the given object is non-null, of the same class than this {@code DatumShiftGrid}
+     *         and contains the same data.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {                        // Optimization for a common case.
+            return true;
+        }
+        if (super.equals(other)) {
+            final DatumShiftGridFile<?,?> that = (DatumShiftGridFile<?,?>) other;
+            return Arrays.equals(files, that.files) && Arrays.deepEquals(getData(), that.getData());
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this datum shift grid. The hash code is based on metadata
+     * such as filename, but not on {@link #getData()} for performance reason.
+     *
+     * @return a hash code based on metadata.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + Arrays.hashCode(files);
+    }
+
+    /**
      * Suggests a precision for the translation values in this grid.
      * This information is used for deciding when to stop iterations in inverse transformations.
      * The default implementation returns the {@linkplain #accuracy} divided by an arbitrary value.
@@ -317,60 +395,38 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     }
 
     /**
-     * Returns {@code true} if the given object is a grid containing the same data than this grid.
+     * Creates a transformation between two geodetic CRS, including the sub-grid transforms.
+     * If the given grid has no sub-grid, then this method is equivalent to a direct call to
+     * {@link InterpolatedTransform#createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)}.
      *
-     * @param  other  the other object to compare with this datum shift grid.
-     * @return {@code true} if the given object is non-null, of the same class than this {@code DatumShiftGrid}
-     *         and contains the same data.
-     */
-    @Override
-    public boolean equals(final Object other) {
-        if (other == this) {                        // Optimization for a common case.
-            return true;
-        }
-        if (super.equals(other)) {
-            final DatumShiftGridFile<?,?> that = (DatumShiftGridFile<?,?>) other;
-            return Arrays.equals(files, that.files) && Arrays.deepEquals(getData(), that.getData());
-        }
-        return false;
-    }
-
-    /**
-     * Returns a hash code value for this datum shift grid.
+     * @param  provider  the provider which is creating a transform.
+     * @param  factory   the factory to use for creating the transform.
+     * @param  grid      the grid of datum shifts from source to target datum.
+     * @return the transformation between geodetic coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
      *
-     * @return {@inheritDoc}
+     * @see InterpolatedTransform#createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
-    @Override
-    public int hashCode() {
-        return super.hashCode() + Arrays.hashCode(files);
-    }
-
-    /**
-     * Returns a string representation for debugging purpose.
-     * If this grid has children, it will be shown as a tree.
-     */
-    @Override
-    public final String toString() {
+    public static MathTransform createGeodeticTransformation(final Class<? extends AbstractProvider> provider,
+            final MathTransformFactory factory, final DatumShiftGridFile<Angle,Angle> grid) throws FactoryException
+    {
+        MathTransform global = InterpolatedTransform.createGeodeticTransformation(factory, grid);
+        final DatumShiftGridFile<Angle,Angle>[] subgrids = grid.subgrids;
         if (subgrids == null) {
-            return super.toString();
+            return global;
         }
-        final TreeTable tree = new DefaultTreeTable(TableColumn.NAME);
-        toTree(tree.getRoot());
-        return tree.toString();
-    }
-
-    /**
-     * Formats this grid as a tree with its children.
-     */
-    private void toTree(final TreeTable.Node branch) {
-        String label = super.toString();
-        if (subgrids != null) {
-            label = label + " (" + getGridCount() + " grids)";
-            for (final DatumShiftGridFile<C,T> subgrid : subgrids) {
-                subgrid.toTree(branch.newChild());
+        final Map<Envelope,MathTransform> specializations = new LinkedHashMap<>(Containers.hashMapCapacity(subgrids.length));
+        for (final DatumShiftGridFile<Angle,Angle> sg : subgrids) try {
+            final Envelope domain = sg.getDomainOfValidity(Units.DEGREE);
+            final MathTransform st = InterpolatedTransform.createGeodeticTransformation(factory, sg);
+            if (specializations.putIfAbsent(domain, st) != null) {
+                DatumShiftGridLoader.log(provider, Errors.getResources((Locale) null)
+                        .getLogRecord(Level.FINE, Errors.Keys.DuplicatedElement_1, domain));
             }
+        } catch (TransformException e) {
+            throw new FactoryException(e);
         }
-        branch.setValue(TableColumn.NAME, label);
+        return MathTransforms.specialize(global, specializations);
     }
 
 

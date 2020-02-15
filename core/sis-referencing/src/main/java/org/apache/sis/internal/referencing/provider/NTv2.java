@@ -43,7 +43,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.Resources;
@@ -137,7 +136,7 @@ public final class NTv2 extends AbstractProvider {
             throws ParameterNotFoundException, FactoryException
     {
         final Parameters pg = Parameters.castOrWrap(values);
-        return InterpolatedTransform.createGeodeticTransformation(factory, getOrLoad(pg.getMandatoryValue(FILE)));
+        return DatumShiftGridFile.createGeodeticTransformation(NTv2.class, factory, getOrLoad(pg.getMandatoryValue(FILE)));
     }
 
     /**

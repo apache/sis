@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.Quantity;
+import javax.measure.UnitConverter;
 import org.opengis.geometry.Envelope;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
@@ -304,6 +305,30 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
             env.setRange(i, 0, gridSize[i] - 1);
         }
         return Envelopes.transform(getCoordinateToGrid().inverse(), env);
+    }
+
+    /**
+     * Returns the domain of validity converted to the specified unit of measurement.
+     * A common use case for this method is for converting the domain of a NADCON or
+     * NTv2 datum shift grid file, which are expressed in {@link Units#ARC_SECOND},
+     * to {@link Units#DEGREE}.
+     *
+     * @param  unit  the desired unit of measurement.
+     * @return the domain covered by this grid, converted to the given unit of measurement.
+     * @throws TransformException if an error occurred while computing the envelope.
+     *
+     * @since 1.1
+     */
+    public Envelope getDomainOfValidity(final Unit<C> unit) throws TransformException {
+        final UnitConverter uc = getCoordinateUnit().getConverterTo(unit);
+        if (uc.isIdentity()) {
+            return getDomainOfValidity();
+        }
+        final GeneralEnvelope domain = GeneralEnvelope.castOrCopy(getDomainOfValidity());
+        for (int i=domain.getDimension(); --i >= 0;) {
+            domain.setRange(i, uc.convert(domain.getLower(i)), uc.convert(domain.getUpper(i)));
+        }
+        return domain;
     }
 
     /**
