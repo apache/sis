@@ -34,6 +34,7 @@ import org.apache.sis.internal.referencing.j2d.TileOrganizer;
 import org.apache.sis.internal.referencing.j2d.Tile;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -62,10 +63,16 @@ import org.apache.sis.internal.util.CollectionsExt;
  */
 final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
     /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -1602724619897451422L;
+
+    /**
      * The bounds of a sub-grid, together with the subsampling level compared to the grid having the finest resolution.
      * All values in this class are integers, but nevertheless stored as {@code double} for avoiding to cast them every
      * time {@link DatumShiftGridGroup#interpolateInCell(double, double, double[])} is executed.
      */
+    @SuppressWarnings("CloneableImplementsClone")
     private static final class Region extends IntervalRectangle {
         /** Subsampling compared to the grid having finest resolution. */
         private final double sx, sy;
@@ -150,7 +157,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
             throws IOException, FactoryException, NoninvertibleTransformException
     {
         final TileOrganizer mosaic = new TileOrganizer(null);
-        final Map<Tile,DatumShiftGridFile<C,T>> grids = new LinkedHashMap<>();
+        final Map<Tile,DatumShiftGridFile<C,T>> grids = new LinkedHashMap<>(Containers.hashMapCapacity(subgrids.size()));
         for (final DatumShiftGridFile<C,T> grid : subgrids) {
             final int[] size = grid.getGridSize();
             final Tile  tile = new Tile(new Rectangle(size[0], size[1]),
@@ -263,11 +270,12 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
 
     /**
      * Interpolates the translation to apply for the given two-dimensional grid indices.
-     * This method is a fallback used when {@code SpecializableTransform} has not been able to use directly
-     * one of the child transforms — it should happen only in a minority of cases, so performance is not the
-     * priority here. The given point is assumed outside all sub-grids (otherwise {@code SpecializableTransform}
-     * would not be invoking this fallback). Consequently searching a sub-grid containing the given point is not
-     * sufficient; we have to search for the nearest grid even if the point is outside.
+     * During forward coordinate transformations, this method is invoked only if {@code SpecializableTransform}
+     * has been unable to use directly one of the child transforms — so performance is not the priority in that
+     * situation. During inverse transformations, this method is invoked for estimating an initial position before
+     * iterative refinements. The given point may be outside all sub-grids (otherwise {@code SpecializableTransform}
+     * would have done the work itself at least in the forward transformation case). Consequently searching a sub-grid
+     * containing the given point is not sufficient; we need to search for the nearest grid even if the point is outside.
      *
      * @param  gridX   first grid coordinate of the point for which to get the translation.
      * @param  gridY   second grid coordinate of the point for which to get the translation.
@@ -285,6 +293,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
                 distance = d;
                 nearest  = r;
                 ni       = i;
+                if (d == 0) break;
             }
         }
         subgrids[ni].interpolateInCell(nearest.x(gridX), nearest.y(gridY), vector);

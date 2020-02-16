@@ -418,7 +418,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         final Map<Envelope,MathTransform> specializations = new LinkedHashMap<>(Containers.hashMapCapacity(subgrids.length));
         for (final DatumShiftGridFile<Angle,Angle> sg : subgrids) try {
             final Envelope domain = sg.getDomainOfValidity(Units.DEGREE);
-            final MathTransform st = InterpolatedTransform.createGeodeticTransformation(factory, sg);
+            final MathTransform st = createGeodeticTransformation(provider, factory, sg);
             if (specializations.putIfAbsent(domain, st) != null) {
                 DatumShiftGridLoader.log(provider, Errors.getResources((Locale) null)
                         .getLogRecord(Level.FINE, Errors.Keys.DuplicatedElement_1, domain));
