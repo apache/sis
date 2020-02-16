@@ -110,6 +110,7 @@ public final strictfp class ProvidersTest extends TestCase {
             Polyconic.class,
             Mollweide.class,
             NTv2.class,
+            NTv1.class,
             NADCON.class,
             FranceGeocentricInterpolation.class,
             MolodenskyInterpolation.class,

@@ -60,6 +60,7 @@ org.apache.sis.internal.referencing.provider.Sinusoidal
 org.apache.sis.internal.referencing.provider.Polyconic
 org.apache.sis.internal.referencing.provider.Mollweide
 org.apache.sis.internal.referencing.provider.NTv2
+org.apache.sis.internal.referencing.provider.NTv1
 org.apache.sis.internal.referencing.provider.NADCON
 org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation
 org.apache.sis.internal.referencing.provider.Interpolation1D

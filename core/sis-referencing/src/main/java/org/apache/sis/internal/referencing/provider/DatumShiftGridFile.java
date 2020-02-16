@@ -118,8 +118,8 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * The best translation accuracy that we can expect from this file.
      * The unit of measurement depends on {@link #isCellValueRatio()}.
      *
-     * <p>This field is initialized to {@link Double#NaN}. It is loader responsibility
-     * to assign a value to this field after {@code DatumShiftGridFile} construction.</p>
+     * <p>This field is initialized to zero. It is loader responsibility to assign
+     * a value to this field after {@code DatumShiftGridFile} construction.</p>
      *
      * @see #getCellPrecision()
      */
@@ -173,7 +173,6 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         this.descriptor = descriptor;
         this.files      = files;
         this.nx         = nx;
-        this.accuracy   = Double.NaN;
     }
 
     /**
@@ -190,7 +189,6 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         accuracy   = other.accuracy;
         subgrids   = other.subgrids;
     }
-
 
     /**
      * Creates a new datum shift grid with the same configuration than the given grid,
@@ -478,11 +476,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
               final Path... files) throws NoninvertibleTransformException
         {
             super(coordinateUnit, translationUnit, isCellValueRatio, x0, y0, Δx, Δy, nx, ny, descriptor, files);
-            offsets = new float[dim][];
-            final int size = Math.multiplyExact(nx, ny);
-            for (int i=0; i<dim; i++) {
-                Arrays.fill(offsets[i] = new float[size], java.lang.Float.NaN);
-            }
+            offsets = new float[dim][Math.multiplyExact(nx, ny)];
         }
 
         /**
@@ -541,6 +535,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
 
         /**
          * Returns the average translation parameters from source to target.
+         * There is no need to use double-double arithmetic here since all data have only single precision.
          *
          * @param  dim  the dimension for which to get an average value.
          * @return a value close to the average for the given dimension.
@@ -553,6 +548,92 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
                 sum += value;
             }
             return sum / data.length;
+        }
+    }
+
+
+
+
+    /**
+     * An implementation of {@link DatumShiftGridFile} which stores the offset values in {@code double[]} arrays.
+     * See {@link DatumShiftGridFile.Float} for more information (most comments apply to this class as well).
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.1
+     * @since   1.1
+     * @module
+     */
+    static final class Double<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
+        /**
+         * Serial number for inter-operability with different versions.
+         */
+        private static final long serialVersionUID = 3999271636016362364L;
+
+        /**
+         * The translation values. See {@link DatumShiftGridFile.Float#offsets} for more documentation.
+         */
+        final double[][] offsets;
+
+        /**
+         * Creates a new datum shift grid with the given grid geometry, filename and number of shift dimensions.
+         * All {@code double} values given to this constructor will be converted from degrees to radians.
+         */
+        Double(final int dim,
+               final Unit<C> coordinateUnit,
+               final Unit<T> translationUnit,
+               final boolean isCellValueRatio,
+               final double x0, final double y0,
+               final double Δx, final double Δy,
+               final int    nx, final int    ny,
+               final ParameterDescriptorGroup descriptor,
+               final Path... files) throws NoninvertibleTransformException
+        {
+            super(coordinateUnit, translationUnit, isCellValueRatio, x0, y0, Δx, Δy, nx, ny, descriptor, files);
+            offsets = new double[dim][Math.multiplyExact(nx, ny)];
+        }
+
+        /**
+         * Creates a new grid of the same geometry than the given grid but using a different data array.
+         */
+        private Double(final DatumShiftGridFile<C,T> grid, final double[][] offsets) {
+            super(grid);
+            this.offsets = offsets;
+        }
+
+        /**
+         * Returns a new grid with the same geometry than this grid but different data arrays.
+         * See {@link DatumShiftGridFile.Float#setData(Object[])} for more documentation.
+         */
+        @Override
+        protected final DatumShiftGridFile<C,T> setData(final Object[] other) {
+            return new Double<>(this, (double[][]) other);
+        }
+
+        /**
+         * Returns direct references (not cloned) to the data arrays.
+         * See {@link DatumShiftGridFile.Float#getData()} for more documentation.
+         */
+        @Override
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
+        protected final Object[] getData() {
+            return offsets;
+        }
+
+        /**
+         * Returns the number of shift dimensions.
+         */
+        @Override
+        public final int getTranslationDimensions() {
+            return offsets.length;
+        }
+
+        /**
+         * Returns the cell value at the given dimension and grid index.
+         * See {@link DatumShiftGridFile.Float#getCellValue(int, int, int)} for more documentation.
+         */
+        @Override
+        public final double getCellValue(final int dim, final int gridX, final int gridY) {
+            return offsets[dim][gridX + gridY*nx];
         }
     }
 }

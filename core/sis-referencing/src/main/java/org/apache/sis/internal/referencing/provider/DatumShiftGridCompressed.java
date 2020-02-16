@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Arrays;
 import javax.measure.Quantity;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -28,7 +29,7 @@ import org.apache.sis.math.DecimalFunctions;
  * 5 digits in base 10 in ASCII files.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
  * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
@@ -258,8 +259,7 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
     public boolean equals(final Object other) {
         if (super.equals(other)) {
             final DatumShiftGridCompressed<?,?> that = (DatumShiftGridCompressed<?,?>) other;
-            return Double.doubleToLongBits(scale) == Double.doubleToLongBits(that.scale)
-                   && Arrays.equals(averages, that.averages);
+            return Numerics.equals(scale, that.scale) && Arrays.equals(averages, that.averages);
         }
         return false;
     }

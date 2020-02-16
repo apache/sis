@@ -121,7 +121,7 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
             final double ymin, final double ymax) throws FactoryException, TransformException
     {
         final double cellSize = 360;
-        final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(file);
+        final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
         assertInstanceOf("Should not be compressed.", DatumShiftGridFile.Float.class, grid);
         assertEquals("coordinateUnit",  Units.ARC_SECOND, grid.getCoordinateUnit());
         assertEquals("translationUnit", Units.ARC_SECOND, grid.getTranslationUnit());
@@ -170,7 +170,7 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
         // Same test than above, but let DatumShiftGrid do the conversions for us.
         assertArrayEquals("interpolateAt", expected, grid.interpolateAt(position),
                 FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
-        assertSame("Grid should be cached.", grid, NTv2.getOrLoad(file));
+        assertSame("Grid should be cached.", grid, NTv2.getOrLoad(NTv2.class, file, 2));
     }
 
     /**
@@ -186,7 +186,7 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
         assumeTrue(RUN_EXTENSIVE_TESTS);
         final Path file = DataDirectory.DATUM_CHANGES.resolve(Paths.get(MULTIGRID_TEST_FILE));
         assumeTrue(Files.exists(file));
-        final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(file);
+        final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
         assertInstanceOf("Should contain many grids.", DatumShiftGridGroup.class, grid);
         assertEquals("coordinateUnit",  Units.ARC_SECOND, grid.getCoordinateUnit());
         assertEquals("translationUnit", Units.ARC_SECOND, grid.getTranslationUnit());
@@ -236,6 +236,10 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
         result[0] = position[0] - result[0] * cellSize;                     // Positive translation is toward west.
         result[1] = position[1] + result[1] * cellSize;
         assertArrayEquals("interpolateInCell", expected, result, Formulas.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
+        /*
+         * Verify that the caching mechanism works for DatumShiftGridGroup too.
+         */
+        assertSame("Grid should be cached.", grid, NTv2.getOrLoad(NTv2.class, file, 2));
     }
 
 

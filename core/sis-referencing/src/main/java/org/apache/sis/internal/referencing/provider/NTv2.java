@@ -87,7 +87,7 @@ public final class NTv2 extends AbstractProvider {
      *   <li>No default value</li>
      * </ul>
      */
-    private static final ParameterDescriptor<Path> FILE;
+    static final ParameterDescriptor<Path> FILE;
 
     /**
      * The group of all parameters expected by this coordinate operation.
@@ -135,18 +135,41 @@ public final class NTv2 extends AbstractProvider {
     public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
             throws ParameterNotFoundException, FactoryException
     {
+        return createMathTransform(NTv2.class, factory, values, 2);
+    }
+
+    /**
+     * Creates a transform from the specified group of parameter values.
+     *
+     * @param  provider  the provider which is creating a transform: {@link NTv2} or {@link NTv1}.
+     * @param  factory   the factory to use if this constructor needs to create other math transforms.
+     * @param  values    the group of parameter values.
+     * @param  version   the expected version (1 or 2).
+     * @return the created math transform.
+     * @throws ParameterNotFoundException if a required parameter was not found.
+     * @throws FactoryException if an error occurred while loading the grid.
+     */
+    static MathTransform createMathTransform(final Class<? extends AbstractProvider> provider,
+            final MathTransformFactory factory, final ParameterValueGroup values, final int version)
+            throws ParameterNotFoundException, FactoryException
+    {
         final Parameters pg = Parameters.castOrWrap(values);
-        return DatumShiftGridFile.createGeodeticTransformation(NTv2.class, factory, getOrLoad(pg.getMandatoryValue(FILE)));
+        final DatumShiftGridFile<Angle,Angle> grid = getOrLoad(provider, pg.getMandatoryValue(FILE), version);
+        return DatumShiftGridFile.createGeodeticTransformation(provider, factory, grid);
     }
 
     /**
      * Returns the grid of the given name. This method returns the cached instance if it still exists,
      * or load the grid otherwise.
      *
-     * @param  file  name of the datum shift grid file to load.
+     * @param  provider  the provider which is creating a transform.
+     * @param  file      name of the datum shift grid file to load.
+     * @param  version   the expected version (1 or 2).
      */
     @SuppressWarnings("null")
-    static DatumShiftGridFile<Angle,Angle> getOrLoad(final Path file) throws FactoryException {
+    static DatumShiftGridFile<Angle,Angle> getOrLoad(final Class<? extends AbstractProvider> provider,
+            final Path file, final int version) throws FactoryException
+    {
         final Path resolved = DataDirectory.DATUM_CHANGES.resolve(file).toAbsolutePath();
         DatumShiftGridFile<?,?> grid = DatumShiftGridFile.CACHE.peek(resolved);
         if (grid == null) {
@@ -155,12 +178,12 @@ public final class NTv2 extends AbstractProvider {
                 grid = handler.peek();
                 if (grid == null) {
                     try (ReadableByteChannel in = Files.newByteChannel(resolved)) {
-                        DatumShiftGridLoader.startLoading(NTv2.class, file);
-                        final Loader loader = new Loader(in, file, 2);
+                        DatumShiftGridLoader.startLoading(provider, file);
+                        final Loader loader = new Loader(in, file, version);
                         grid = loader.readAllGrids();
-                        loader.report(NTv2.class);
+                        loader.report(provider);
                     } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
-                        throw DatumShiftGridLoader.canNotLoad("NTv2", file, e);
+                        throw DatumShiftGridLoader.canNotLoad(provider.getSimpleName(), file, e);
                     }
                     grid = grid.useSharedData();
                 }
@@ -539,26 +562,38 @@ public final class NTv2 extends AbstractProvider {
              * free us from reversing the sign of longitude translations in the code below; instead, this reversal
              * will be handled by grid.coordinateToGrid MathTransform and its inverse.
              */
-            final DatumShiftGridFile.Float<Angle,Angle> grid = new DatumShiftGridFile.Float<>(2,
-                        unit, unit, true, -xmin, ymin, -dx, dy, width, height, PARAMETERS, file);
-            @SuppressWarnings("MismatchedReadAndWriteOfArray") final float[] tx = grid.offsets[0];
-            @SuppressWarnings("MismatchedReadAndWriteOfArray") final float[] ty = grid.offsets[1];
+            final double size = Math.max(dx, dy);
+            final DatumShiftGridFile<Angle,Angle> grid;
             if (isV2) {
+                final DatumShiftGridFile.Float<Angle,Angle> data;
+                data = new DatumShiftGridFile.Float<>(2, unit, unit, true,
+                        -xmin, ymin, -dx, dy, width, height, PARAMETERS, file);
+                @SuppressWarnings("MismatchedReadAndWriteOfArray") final float[] tx = data.offsets[0];
+                @SuppressWarnings("MismatchedReadAndWriteOfArray") final float[] ty = data.offsets[1];
+                data.accuracy = Double.NaN;
                 for (int i=0; i<count; i++) {
                     ensureBufferContains(4 * Float.BYTES);
                     ty[i] = (float) (buffer.getFloat() / dy);   // Division by dx and dy because isCellValueRatio = true.
                     tx[i] = (float) (buffer.getFloat() / dx);
                     final double accuracy = Math.min(buffer.getFloat() / dy, buffer.getFloat() / dx);
-                    if (accuracy > 0 && !(accuracy >= grid.accuracy)) {   // Use '!' for replacing the initial NaN.
-                        grid.accuracy = accuracy;                         // Smallest non-zero accuracy.
+                    if (accuracy > 0 && !(accuracy >= data.accuracy)) {     // Use '!' for replacing the initial NaN.
+                        data.accuracy = accuracy;                           // Smallest non-zero accuracy.
                     }
                 }
+                grid = DatumShiftGridCompressed.compress(data, null, precision / size);
             } else {
-                // NTv1: same as NTv2 but using double precision and without accuracy information.
+                /*
+                 * NTv1: same as NTv2 but using double precision and without accuracy information.
+                 */
+                final DatumShiftGridFile.Double<Angle,Angle> data;
+                grid = data = new DatumShiftGridFile.Double<>(2, unit, unit, true,
+                        -xmin, ymin, -dx, dy, width, height, PARAMETERS, file);
+                @SuppressWarnings("MismatchedReadAndWriteOfArray") final double[] tx = data.offsets[0];
+                @SuppressWarnings("MismatchedReadAndWriteOfArray") final double[] ty = data.offsets[1];
                 for (int i=0; i<count; i++) {
                     ensureBufferContains(2 * Double.BYTES);
-                    ty[i] = (float) (buffer.getDouble() / dy);
-                    tx[i] = (float) (buffer.getDouble() / dx);
+                    ty[i] = buffer.getDouble() / dy;
+                    tx[i] = buffer.getDouble() / dx;
                 }
             }
             /*
@@ -566,8 +601,7 @@ public final class NTv2 extends AbstractProvider {
              * during inverse transformations. If we did not found that information in the file, compute
              * an arbitrary default accuracy.
              */
-            final double size = Math.max(dx, dy);
-            if (Double.isNaN(grid.accuracy)) {
+            if (!(grid.accuracy > 0)) {                 // Use ! for catching NaN values (paranoiac check).
                 grid.accuracy = Units.DEGREE.getConverterTo(unit).convert(Formulas.ANGULAR_TOLERANCE) / size;
             }
             /*
@@ -576,7 +610,7 @@ public final class NTv2 extends AbstractProvider {
              * relationship here; we will do that after all sub-grids have been read.
              */
             final String name = (String) get("SUB_NAME", numGrids > 1);
-            if (addTo.put(name, DatumShiftGridCompressed.compress(grid, null, precision / size)) != null) {
+            if (addTo.put(name, grid) != null) {
                 throw new FactoryException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, name));
             }
             children.computeIfAbsent((String) get("PARENT", numGrids > 1), (k) -> new ArrayList<>()).add(grid);
@@ -588,7 +622,7 @@ public final class NTv2 extends AbstractProvider {
         }
 
         /**
-         * Gets the value for the given key. If the value is absent, this method throws an exception
+         * Gets the value for the given key. If the value is absent, then this method throws an exception
          * if {@code mandatory} is {@code true} or returns {@code null} otherwise.
          *
          * @param  key        key of the value to search.
