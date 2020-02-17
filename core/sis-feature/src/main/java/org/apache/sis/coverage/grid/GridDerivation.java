@@ -79,7 +79,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see GridGeometry#derive()
  * @see GridGeometry#reduce(int...)
@@ -102,6 +102,9 @@ public class GridDerivation {
 
     /**
      * If non-null, the extent will be expanded by that amount of cells on each grid dimension.
+     * This array is non-null only if at least one non-zero margin has been specified. Trailing
+     * zero values are omitted (consequently this array may be shorter than {@link GridExtent}
+     * number of dimensions).
      *
      * @see #margin(int...)
      */
@@ -158,6 +161,15 @@ public class GridDerivation {
      * This is used for preventing those methods to be invoked twice or out-of-order, which is currently not supported.
      */
     private String subGridSetter;
+
+    /**
+     * Intersection between the grid envelope and the area of interest, computed when only envelopes are available.
+     * Normally we do not compute this envelope directly; instead we compute the grid extent and the "grid to CRS"
+     * transform. This envelope is computed only if it can not be computed from other grid geometry properties.
+     *
+     * @see #subgrid(Envelope, double...)
+     */
+    private GeneralEnvelope intersection;
 
     /**
      * Creates a new builder for deriving a grid geometry from the specified base.
@@ -243,13 +255,15 @@ public class GridDerivation {
         int[] margin = null;
         for (int i=cellCounts.length; --i >= 0;) {
             final int n = cellCounts[i];
-            ArgumentChecks.ensurePositive("cellCounts", n);
-            if (margin == null) {
-                margin = new int[i+1];
+            if (n != 0) {
+                ArgumentChecks.ensurePositive("cellCounts", n);
+                if (margin == null) {
+                    margin = new int[i+1];
+                }
+                margin[i] = n;
             }
-            margin[i] = n;
         }
-        this.margin = margin;           // Set only on success.
+        this.margin = margin;           // Set only on success. We want null if all margin values are 0.
         return this;
     }
 
@@ -398,6 +412,9 @@ public class GridDerivation {
      */
     public GridDerivation subgrid(final GridGeometry gridOfInterest) {
         ArgumentChecks.ensureNonNull("gridOfInterest", gridOfInterest);
+        if (gridOfInterest.isEnvelopeOnly()) {
+            return subgrid(gridOfInterest.envelope, (double[]) null);
+        }
         ensureSubgridNotSet();
         subGridSetter = "subgrid";
         if (!base.equals(gridOfInterest)) {
@@ -497,12 +514,14 @@ public class GridDerivation {
      */
     public GridDerivation subgrid(final Envelope areaOfInterest, double... resolution) {
         ensureSubgridNotSet();
-        MathTransform cornerToCRS = base.requireGridToCRS(false);
+        final boolean isEnvelopeOnly = base.isEnvelopeOnly() && (resolution == null || resolution.length == 0);
+        MathTransform cornerToCRS = isEnvelopeOnly ? MathTransforms.identity(base.envelope.getDimension())
+                                                   : base.requireGridToCRS(false);         // Normal case.
         subGridSetter = "subgrid";
         try {
             /*
              * If the envelope CRS is different than the expected CRS, concatenate the envelope transformation
-             * to the 'gridToCRS' transform.  We should not transform the envelope here - only concatenate the
+             * to the `gridToCRS` transform.  We should not transform the envelope here - only concatenate the
              * transforms - because transforming envelopes twice would add errors.
              */
             MathTransform baseToAOI = null;
@@ -521,6 +540,17 @@ public class GridDerivation {
                     baseToAOI = op.getMathTransform();
                     cornerToCRS = MathTransforms.concatenate(cornerToCRS, baseToAOI);
                 }
+            }
+            /*
+             * If the grid geometry contains only an envelope, and if user asked nothing more than intersecting
+             * envelopes, then we will return a new GridGeometry with that intersection and nothing else.
+             */
+            if (isEnvelopeOnly) {
+                if (areaOfInterest != null) {
+                    intersection = new GeneralEnvelope(base.envelope);
+                    intersection.intersect(areaOfInterest);
+                }
+                return this;
             }
             /*
              * If the envelope dimensions do not encompass all grid dimensions, the transform is probably non-invertible.
@@ -897,8 +927,26 @@ public class GridDerivation {
          * need for envelope clipping performed by GridGeometry constructor.
          */
         final GridExtent extent = (scaledExtent != null) ? scaledExtent : baseExtent;
-        if (toBase != null || extent != base.extent) try {
-            return new GridGeometry(base, extent, toBase);
+        try {
+            if (toBase != null || extent != base.extent) {
+                return new GridGeometry(base, extent, toBase);
+            }
+            /*
+             * Intersection should be non-null only if we have not been able to compute more reliable properties
+             * (grid extent and "grid to CRS" transform). It should happen only if `gridToCRS` is null, but we
+             * nevertheless pass it to the constructor as a matter of principle.
+             */
+            if (intersection != null) {
+                return new GridGeometry(PixelInCell.CELL_CENTER, base.gridToCRS, intersection, rounding);
+            }
+            /*
+             * Case when the only requested change was a margin. It is okay to test after `intersection`
+             * because a non-null envelope intersection means that this `GridDerivation` does not have
+             * required information for applying a margin anyway (no `GridExtent`, no `gridToCRS`).
+             */
+            if (margin != null && baseExtent != null) {
+                return new GridGeometry(base, baseExtent.expand(ArraysExt.copyAsLongs(margin)), null);
+            }
         } catch (TransformException e) {
             throw new IllegalGridGeometryException(e, "envelope");
         }

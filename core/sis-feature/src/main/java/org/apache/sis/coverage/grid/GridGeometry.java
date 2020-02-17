@@ -295,16 +295,20 @@ public class GridGeometry implements Serializable {
      * This constructor is used for creating a grid geometry over a subregion (for example with the grid extent
      * computed by {@link GridDerivation#subgrid(Envelope, double...)}) or grid geometry for a subsampled raster.
      *
-     * <p>If {@code toOther} is non-null, it should be a transform from the given {@code extent} coordinates to the
-     * {@code other} grid coordinates. That transform should be merely a {@linkplain MathTransforms#scale(double...)
-     * scale} and {@linkplain MathTransforms#translation(double...) translation} even if more complex transforms are
-     * accepted. The {@link #cornerToCRS} transform of the new grid geometry will be set to the following concatenation:</p>
+     * <h4>Conversion between old and new grid geometry</h4>
+     * If {@code toOther} is non-null, it defines the conversion from grid coordinates of given {@code extent} to grid
+     * coordinates of {@code other}. That transform should be a {@linkplain MathTransforms#scale(double...) scale} and
+     * a {@linkplain MathTransforms#translation(double...) translation} only, but more complex transforms are accepted.
+     * The {@link #cornerToCRS} transform of the new grid geometry will be set to the following concatenation:
      *
      * <blockquote>{@code this.cornerToCRS} = {@code toOther} → {@code other.cornerToCRS}</blockquote>
      *
-     * The new {@linkplain #getEnvelope() grid geometry envelope} will be {@linkplain GeneralEnvelope#intersect(Envelope)
-     * clipped} to the envelope of the other grid geometry. This is for preventing the envelope to become larger under the
-     * effect of subsampling (because {@link GridExtent#subsample(int[]) each cell become larger}).
+     * The new {@linkplain #getEnvelope() grid geometry envelope} will be computed from the new extent and transform,
+     * then {@linkplain GeneralEnvelope#intersect(Envelope) clipped} to the envelope of the other grid geometry.
+     * This clip is for preventing the envelope to become larger under the effect of subsampling because
+     * {@linkplain GridExtent#subsample(int[]) each cell become larger}. The clip is not applied when {@code toOther}
+     * is {@code null} because in such case, we presume that the grid extent has been changed for another reason than
+     * subsampling (e.g. application of a margin, in which case we want the envelope to be expanded).
      *
      * @param  other    the other grid geometry to copy.
      * @param  extent   the new extent for the grid geometry to construct, or {@code null} if none.
@@ -338,8 +342,13 @@ public class GridGeometry implements Serializable {
             resolution  = resolution(gridToCRS, extent);
             nonLinears  = findNonLinearTargets(gridToCRS);
         }
+        /*
+         * Recompute the envelope and clip only if a sub-sampling may have been applied (toOther != null).
+         * The reason for clipping is because subsampling may cause cells to appear larger.
+         */
         ImmutableEnvelope envelope = other.envelope;            // We will share the same instance if possible.
-        ImmutableEnvelope computed = computeEnvelope(gridToCRS, getCoordinateReferenceSystem(envelope), envelope);
+        ImmutableEnvelope computed = computeEnvelope(gridToCRS, getCoordinateReferenceSystem(envelope),
+                                                     toOther == null ? null : envelope);       // Clip.
         if (computed == null || !computed.equals(envelope)) {
             envelope = computed;
         }
@@ -1163,6 +1172,15 @@ public class GridGeometry implements Serializable {
             && ((bitmask & RESOLUTION)        == 0 || (null != resolution))
             && ((bitmask & GEOGRAPHIC_EXTENT) == 0 || (null != geographicBBox()))
             && ((bitmask & TEMPORAL_EXTENT)   == 0 || (timeRange().length != 0));
+    }
+
+    /**
+     * Returns {@code true} if this grid geometry contains only an envelope and no other information.
+     * Note: if {@link #gridToCRS} is {@code null}, then {@link #cornerToCRS} and {@link #resolution}
+     * should be null as well.
+     */
+    final boolean isEnvelopeOnly() {
+        return gridToCRS == null && extent == null && envelope != null;
     }
 
     /**

@@ -50,7 +50,7 @@ import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -459,5 +459,38 @@ public final strictfp class GridDerivationTest extends TestCase {
         } catch (DisjointExtentException e) {
             assertNotNull(e.getMessage());
         }
+    }
+
+    /**
+     * Tests {@link GridDerivation#subgrid(GridGeometry)} when the two envelopes contain only an envelope.
+     */
+    @Test
+    public void testWithEnvelopeOnly() {
+        final GridGeometry g1 = new GridGeometry(null, new Envelope2D(null, 10, 20, 110, 70));
+        final GridGeometry g2 = new GridGeometry(null, new Envelope2D(null, -5, 25, 100, 90));
+        final GridGeometry r  = g1.derive().subgrid(g2).build();
+        assertTrue(r.isEnvelopeOnly());
+        assertEnvelopeEquals(new Envelope2D(null, 10, 25, 85, 65), r.getEnvelope(), STRICT);
+    }
+
+    /**
+     * Tests {@link GridDerivation#margin(int...)} when no other operation is requested.
+     */
+    @Test
+    public void testWithMarginOnly() {
+        final GridGeometry grid = new GridGeometry(
+                new GridExtent(10, 20), PixelInCell.CELL_CENTER,
+                MathTransforms.linear(new Matrix3(
+                        2, 0, 0,
+                        0, 3, 0,
+                        0, 0, 1)), HardCodedCRS.WGS84);
+
+        final GridGeometry expanded = grid.derive().margin(4,5).build();
+        assertSame(grid.gridToCRS, expanded.gridToCRS);
+        assertExtentEquals(new long[] {-4, -5},
+                           new long[] {13, 24}, expanded.getExtent());
+
+        assertEnvelopeEquals(new Envelope2D(null, -1,  -1.5, 20, 60),     grid.getEnvelope(), STRICT);
+        assertEnvelopeEquals(new Envelope2D(null, -9, -16.5, 36, 90), expanded.getEnvelope(), STRICT);
     }
 }

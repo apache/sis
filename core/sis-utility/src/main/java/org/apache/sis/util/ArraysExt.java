@@ -67,7 +67,7 @@ import java.lang.reflect.Array;
  * objects.
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see Arrays
  *
@@ -1842,6 +1842,24 @@ public final class ArraysExt extends Static {
                 }
             }
         }
+    }
+
+    /**
+     * Returns a copy of the given array where each value has been casted to the {@code long} type.
+     *
+     * @param  data  the array to copy, or {@code null}.
+     * @return a copy of the given array with values casted to the {@code long} type,
+     *         or {@code null} if the given array was null.
+     *
+     * @since 1.1
+     */
+    public static long[] copyAsLongs(final int[] data) {
+        if (data == null) return null;
+        final long[] result = new long[data.length];
+        for (int i=0; i<data.length; i++) {
+            result[i] = data[i];
+        }
+        return result;
     }
 
     /**

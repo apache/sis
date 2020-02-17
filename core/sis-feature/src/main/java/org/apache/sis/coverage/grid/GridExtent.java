@@ -442,7 +442,7 @@ public class GridExtent implements GridEnvelope, Serializable {
              * dimension indices.  Note that the resulting extent will be intersected with enclosing extent
              * at the next step, which may cancel the margin effect.
              *
-             * Note about overflow checks: if m>0, then x < x+m unless the result overflows the 'long' capacity.
+             * Note about overflow checks: if m>0, then x < x+m unless the result overflows the `long` capacity.
              */
             if (margin != null && i < margin.length) {
                 final int m = margin[i];
