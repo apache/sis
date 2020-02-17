@@ -577,6 +577,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short ModifiedJulian = 71;
 
         /**
+         * … {0} more…
+         */
+        public static final short More_1 = 197;
+
+        /**
          * Multiplicity
          */
         public static final short Multiplicity = 147;

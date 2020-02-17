@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.Quantity;
+import javax.measure.UnitConverter;
 import org.opengis.geometry.Envelope;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
@@ -117,6 +118,15 @@ import org.apache.sis.measure.Units;
  * in more than two dimensions. See the above <cite>datum shift by geocentric translations</cite> use case for
  * an example.
  *
+ * <h2>Sub-grids</h2>
+ * Some datum shift grid files provide a grid valid on a wide region, refined with denser sub-grids in smaller regions.
+ * For each point to transform, the {@link org.opengis.referencing.operation.MathTransform} should search and use the
+ * densest sub-grid containing the point. This functionality is not supported directly by {@code DatumShiftGrid},
+ * but can be achieved by organizing many transforms in a tree. The first step is to create an instance of
+ * {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform} for each {@code DatumShiftGrid}.
+ * Then, those transforms with their domain of validity can be given to
+ * {@link org.apache.sis.referencing.operation.transform.MathTransforms#specialize MathTransforms.specialize(…)}.
+ *
  * <h2>Serialization</h2>
  * Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
  * Serialization support is appropriate for short term storage or RMI between applications running the
@@ -124,7 +134,7 @@ import org.apache.sis.measure.Units;
  * NTv2 should be preferred.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
  * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
@@ -266,11 +276,14 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
 
     /**
      * Returns the domain of validity of input coordinates that can be specified to the
-     * {@link #interpolateAt interpolateAt(…)} method. Coordinates outside that domain of
-     * validity will still be accepted, but the extrapolated results may be very wrong.
+     * {@link #interpolateAt interpolateAt(…)} method. Coordinates outside that domain
+     * will still be accepted, but results will be extrapolations possibly far from reality.
      *
-     * <p>The unit of measurement for the coordinate values in the returned envelope is
-     * given by {@link #getCoordinateUnit()}. The envelope CRS is undefined.</p>
+     * <p>The envelope coordinates are computed at cell centers; the envelope does not contain
+     * the margin of 0.5 cell between cell center and cell border at the edges of the envelope.
+     * The unit of measurement for the coordinate values in the returned envelope is given by
+     * {@link #getCoordinateUnit()}. The envelope CRS is not set, but its value is implicitly
+     * the CRS of grid input coordinates.</p>
      *
      * @return the domain covered by this grid.
      * @throws TransformException if an error occurred while computing the envelope.
@@ -278,9 +291,44 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     public Envelope getDomainOfValidity() throws TransformException {
         final GeneralEnvelope env = new GeneralEnvelope(gridSize.length);
         for (int i=0; i<gridSize.length; i++) {
-            env.setRange(i, -0.5, gridSize[i] - 0.5);
+            /*
+             * Note: a previous version was using the following code in an attempt to encompass
+             * fully all cells (keeping in mind that the `coordinatetoGrid` maps cell centers):
+             *
+             *    env.setRange(i, -0.5, gridSize[i] - 0.5);
+             *
+             * However it was causing spurious overlaps when two grids are side-by-side
+             * (no overlapping) but one grid has larger cells than the other other grid.
+             * The 0.5 cell expansion caused the grid with larger cells to overlap the
+             * grid with smaller cells. This case happens with NTv2 datum shift grid.
+             */
+            env.setRange(i, 0, gridSize[i] - 1);
         }
         return Envelopes.transform(getCoordinateToGrid().inverse(), env);
+    }
+
+    /**
+     * Returns the domain of validity converted to the specified unit of measurement.
+     * A common use case for this method is for converting the domain of a NADCON or
+     * NTv2 datum shift grid file, which are expressed in {@link Units#ARC_SECOND},
+     * to {@link Units#DEGREE}.
+     *
+     * @param  unit  the desired unit of measurement.
+     * @return the domain covered by this grid, converted to the given unit of measurement.
+     * @throws TransformException if an error occurred while computing the envelope.
+     *
+     * @since 1.1
+     */
+    public Envelope getDomainOfValidity(final Unit<C> unit) throws TransformException {
+        final UnitConverter uc = getCoordinateUnit().getConverterTo(unit);
+        if (uc.isIdentity()) {
+            return getDomainOfValidity();
+        }
+        final GeneralEnvelope domain = GeneralEnvelope.castOrCopy(getDomainOfValidity());
+        for (int i=domain.getDimension(); --i >= 0;) {
+            domain.setRange(i, uc.convert(domain.getLower(i)), uc.convert(domain.getUpper(i)));
+        }
+        return domain;
     }
 
     /**
@@ -726,22 +774,26 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     public abstract void getParameterValues(Parameters parameters);
 
     /**
-     * Returns a string representation of this {@code DatumShiftGrid}. The default implementation
-     * formats the {@linkplain #getParameterValues(Parameters) parameter values}.
+     * Returns a string representation of this {@code DatumShiftGrid} for debugging purposes.
      *
-     * @return a string representation of the grid parameters.
+     * @return a string representation of this datum shift grid.
      *
      * @since 1.0
      */
     @Override
     public String toString() {
-        final ParameterDescriptorGroup d = getParameterDescriptors();
-        if (d != null) {
-            final Parameters p = Parameters.castOrWrap(d.createValue());
-            getParameterValues(p);
-            return p.toString();
+        final StringBuffer buffer = new StringBuffer("DatumShift[");
+        for (int i=0; i<gridSize.length; i++) {
+            if (i != 0) buffer.append(" × ");
+            buffer.append(gridSize[i]);
         }
-        return super.toString();
+        String s = String.valueOf(coordinateUnit);  if (s.isEmpty()) s = "1";
+        String t = String.valueOf(translationUnit); if (t.isEmpty()) t = "1";
+        buffer.append(" cells; units = ").append(s).append(" → ").append(t);
+        if (isCellValueRatio) {
+            buffer.append("∕cellSize");
+        }
+        return buffer.append(']').toString();
     }
 
     /**

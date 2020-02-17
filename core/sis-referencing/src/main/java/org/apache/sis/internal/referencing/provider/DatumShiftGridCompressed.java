@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Arrays;
 import javax.measure.Quantity;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -28,7 +29,7 @@ import org.apache.sis.math.DecimalFunctions;
  * 5 digits in base 10 in ASCII files.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
  * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
@@ -44,13 +45,15 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
     private static final long serialVersionUID = 4847888093457104917L;
 
     /**
-     * Maximal grid index along the <var>y</var> axis.
+     * Maximal grid index along the <var>y</var> axis, inclusive.
      * This is the number of grid cells minus 2.
      */
     private final int ymax;
 
     /**
      * An "average" value for the offset in each dimension.
+     *
+     * @see #getCellMean(int)
      */
     private final double[] averages;
 
@@ -122,6 +125,9 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
 
     /**
      * Returns a new grid with the same geometry than this grid but different data arrays.
+     * This method is invoked by {@link #useSharedData()} when it detects that a newly created
+     * grid uses the same data than an existing grid. The {@code other} object is the old grid,
+     * so we can share existing data.
      */
     @Override
     protected final DatumShiftGridFile<C,T> setData(final Object[] other) {
@@ -253,8 +259,7 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
     public boolean equals(final Object other) {
         if (super.equals(other)) {
             final DatumShiftGridCompressed<?,?> that = (DatumShiftGridCompressed<?,?>) other;
-            return Double.doubleToLongBits(scale) == Double.doubleToLongBits(that.scale)
-                   && Arrays.equals(averages, that.averages);
+            return Numerics.equals(scale, that.scale) && Arrays.equals(averages, that.averages);
         }
         return false;
     }

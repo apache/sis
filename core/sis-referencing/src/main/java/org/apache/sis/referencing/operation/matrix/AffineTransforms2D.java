@@ -38,7 +38,7 @@ import static java.awt.geom.AffineTransform.*;
  * Those {@code AffineTransform} instances can be viewed as 3×3 matrices.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.4
+ * @version 1.1
  * @since   0.4
  * @module
  */
@@ -413,5 +413,17 @@ public final class AffineTransforms2D extends Static {
         if (shear == 0) return abs(scale);                  // Optimization for a very common case.
         if (scale == 0) return abs(shear);                  // Not as common as above, but still common enough.
         return hypot(scale, shear);
+    }
+
+    /**
+     * Returns a global scale factor for the specified affine transform. This scale factor combines
+     * {@link #getScaleX0 getScaleX0(tr)} and {@link #getScaleY0 getScaleY0(tr)}. The way to compute
+     * such a "global" scale is somewhat arbitrary and may change in any future version.
+     *
+     * @param  tr  the affine transform to inspect.
+     * @return a "global" scale factor.
+     */
+    public static double getScale(final AffineTransform tr) {
+        return 0.5 * (AffineTransforms2D.getScaleX0(tr) + AffineTransforms2D.getScaleY0(tr));
     }
 }

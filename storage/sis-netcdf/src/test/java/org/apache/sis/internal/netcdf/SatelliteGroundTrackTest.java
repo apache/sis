@@ -47,7 +47,7 @@ public final strictfp class SatelliteGroundTrackTest extends MathTransformTestCa
      */
     private void createTransform() throws TransformException, FactoryException {
         final LocalizationGridBuilder grid = new LocalizationGridBuilder(WIDTH, HEIGHT);
-        final AffineTransform tr = AffineTransform.getRotateInstance(StrictMath.random()/2 + 0.25);     // Between 14 and 43°.
+        final AffineTransform tr = AffineTransform.getRotateInstance(StrictMath.toRadians(31));
         tr.translate(-WIDTH / 2, -HEIGHT / 2);
         final double[] point = new double[2];
         for (int y=0; y<HEIGHT; y++) {

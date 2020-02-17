@@ -17,19 +17,38 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.logging.Level;
 import java.lang.reflect.Array;
 import java.nio.file.Path;
 import javax.measure.Unit;
 import javax.measure.Quantity;
+import javax.measure.quantity.Angle;
+import org.opengis.geometry.Envelope;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.measure.Units;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.collection.Cache;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 
 
 /**
@@ -41,7 +60,7 @@ import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
  * sharing data and for {@link #equals(Object)} and {@link #hashCode()} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
  * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
@@ -66,8 +85,12 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     static final Cache<Object, DatumShiftGridFile<?,?>> CACHE = new Cache<Object, DatumShiftGridFile<?,?>>(4, 32*1024, true) {
         @Override protected int cost(final DatumShiftGridFile<?,?> grid) {
             int p = 1;
-            for (final Object array : grid.getData()) {
-                p *= Array.getLength(array);
+            for (final Object data : grid.getData()) {
+                if (data instanceof DatumShiftGridFile<?,?>) {
+                    p += cost((DatumShiftGridFile<?,?>) data);          // When `grid` is a DatumShiftGridGroup.
+                } else {
+                    p *= Array.getLength(data);                         // short[], float[] or double[].
+                }
             }
             return p;
         }
@@ -95,12 +118,30 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * The best translation accuracy that we can expect from this file.
      * The unit of measurement depends on {@link #isCellValueRatio()}.
      *
-     * <p>This field is initialized to {@link Double#NaN}. It is loader responsibility
-     * to assign a value to this field after {@code DatumShiftGridFile} construction.</p>
+     * <p>This field is initialized to zero. It is loader responsibility to assign
+     * a value to this field after {@code DatumShiftGridFile} construction.</p>
      *
      * @see #getCellPrecision()
      */
     double accuracy;
+
+    /**
+     * The sub-grids, or {@code null} if none. The domain of validity of each sub-grid should be contained
+     * in the domain of validity of this grid. Children do not change the way this {@code DatumShiftGrid}
+     * performs its calculation; this list is used only at the time of building {@link MathTransform} tree.
+     *
+     * <div class="note"><b>Design note:</b>
+     * we do not provide sub-grids functionality in the {@link DatumShiftGrid} parent class because
+     * the {@link MathTransform} tree will depend on assumptions about {@link #getCoordinateToGrid()},
+     * in particular that it contains only translations and scales (no rotation, no shear).
+     * Those assumptions are enforced by the {@link DatumShiftGridFile} constructor.</div>
+     *
+     * This field has protected access for usage by {@link DatumShiftGridGroup} subclass only.
+     * No access to this field should be done except by subclasses.
+     *
+     * @see #setSubGrids(Collection)
+     */
+    protected DatumShiftGridFile<C,T>[] subgrids;
 
     /**
      * Creates a new datum shift grid for the given grid geometry.
@@ -132,11 +173,11 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         this.descriptor = descriptor;
         this.files      = files;
         this.nx         = nx;
-        this.accuracy   = Double.NaN;
     }
 
     /**
      * Creates a new datum shift grid with the same grid geometry than the given grid.
+     * This is used by {@link DatumShiftGridCompressed} for replacing a grid by another one.
      *
      * @param  other  the other datum shift grid from which to copy the grid geometry.
      */
@@ -146,6 +187,82 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         files      = other.files;
         nx         = other.nx;
         accuracy   = other.accuracy;
+        subgrids   = other.subgrids;
+    }
+
+    /**
+     * Creates a new datum shift grid with the same configuration than the given grid,
+     * except the size and transform which are set to the given values.
+     * The {@link #accuracy} is initialized to zero and should be updated by the caller.
+     *
+     * @param other             the other datum shift grid from which to copy parameters.
+     * @param coordinateToGrid  conversion from the "real world" coordinates to grid indices including fractional parts.
+     * @param nx                number of cells along the <var>x</var> axis in the grid.
+     * @param ny                number of cells along the <var>y</var> axis in the grid.
+     */
+    DatumShiftGridFile(final DatumShiftGridFile<C,T> other,
+                       final AffineTransform2D coordinateToGrid, final int nx, final int ny)
+    {
+        super(other.getCoordinateUnit(), coordinateToGrid, new int[] {nx, ny},
+              other.isCellValueRatio(), other.getTranslationUnit());
+        descriptor = other.descriptor;
+        files      = other.files;
+        this.nx    = nx;
+        // Accuracy to be set by caller. Initial value needs to be zero.
+    }
+
+    /**
+     * Sets the sub-grids that are direct children of this grid.
+     * This method can be invoked only once.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    final void setSubGrids(final Collection<DatumShiftGridFile<C,T>> children) {
+        if (subgrids != null) throw new IllegalStateException();
+        subgrids = children.toArray(new DatumShiftGridFile[children.size()]);
+    }
+
+    /**
+     * Returns the number of grids, including this grid and all sub-grids counted recursively.
+     * This is used for information purpose only.
+     *
+     * @see #toTree(TreeTable.Node)
+     */
+    private int getGridCount() {
+        int n = 1;
+        if (subgrids != null) {
+            for (final DatumShiftGridFile<C,T> subgrid : subgrids) {
+                n += subgrid.getGridCount();
+            }
+        }
+        return n;
+    }
+
+    /**
+     * Returns a string representation of this grid for debugging purpose.
+     * If this grid has children, then it will be formatted as a tree.
+     */
+    @Override
+    public final String toString() {
+        if (subgrids == null) {
+            return super.toString();
+        }
+        final TreeTable tree = new DefaultTreeTable(TableColumn.NAME);
+        toTree(tree.getRoot());
+        return tree.toString();
+    }
+
+    /**
+     * Formats this grid as a tree with its children.
+     */
+    private void toTree(final TreeTable.Node branch) {
+        String label = super.toString();
+        if (subgrids != null) {
+            label = label + " (" + getGridCount() + " grids)";
+            for (final DatumShiftGridFile<C,T> subgrid : subgrids) {
+                subgrid.toTree(branch.newChild());
+            }
+        }
+        branch.setValue(TableColumn.NAME, label);
     }
 
     /**
@@ -203,6 +320,37 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     protected abstract Object[] getData();
 
     /**
+     * Returns {@code true} if the given object is a grid containing the same data than this grid.
+     * This method compares the data provided by {@link #getData()}.
+     *
+     * @param  other  the other object to compare with this datum shift grid.
+     * @return {@code true} if the given object is non-null, of the same class than this {@code DatumShiftGrid}
+     *         and contains the same data.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {                        // Optimization for a common case.
+            return true;
+        }
+        if (super.equals(other)) {
+            final DatumShiftGridFile<?,?> that = (DatumShiftGridFile<?,?>) other;
+            return Arrays.equals(files, that.files) && Arrays.deepEquals(getData(), that.getData());
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this datum shift grid. The hash code is based on metadata
+     * such as filename, but not on {@link #getData()} for performance reason.
+     *
+     * @return a hash code based on metadata.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + Arrays.hashCode(files);
+    }
+
+    /**
      * Suggests a precision for the translation values in this grid.
      * This information is used for deciding when to stop iterations in inverse transformations.
      * The default implementation returns the {@linkplain #accuracy} divided by an arbitrary value.
@@ -245,32 +393,38 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     }
 
     /**
-     * Returns {@code true} if the given object is a grid containing the same data than this grid.
+     * Creates a transformation between two geodetic CRS, including the sub-grid transforms.
+     * If the given grid has no sub-grid, then this method is equivalent to a direct call to
+     * {@link InterpolatedTransform#createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)}.
      *
-     * @param  other  the other object to compare with this datum shift grid.
-     * @return {@code true} if the given object is non-null, of the same class than this {@code DatumShiftGrid}
-     *         and contains the same data.
-     */
-    @Override
-    public boolean equals(final Object other) {
-        if (other == this) {                        // Optimization for a common case.
-            return true;
-        }
-        if (super.equals(other)) {
-            final DatumShiftGridFile<?,?> that = (DatumShiftGridFile<?,?>) other;
-            return Arrays.equals(files, that.files) && Arrays.deepEquals(getData(), that.getData());
-        }
-        return false;
-    }
-
-    /**
-     * Returns a hash code value for this datum shift grid.
+     * @param  provider  the provider which is creating a transform.
+     * @param  factory   the factory to use for creating the transform.
+     * @param  grid      the grid of datum shifts from source to target datum.
+     * @return the transformation between geodetic coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
      *
-     * @return {@inheritDoc}
+     * @see InterpolatedTransform#createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
-    @Override
-    public int hashCode() {
-        return super.hashCode() + Arrays.hashCode(files);
+    public static MathTransform createGeodeticTransformation(final Class<? extends AbstractProvider> provider,
+            final MathTransformFactory factory, final DatumShiftGridFile<Angle,Angle> grid) throws FactoryException
+    {
+        MathTransform global = InterpolatedTransform.createGeodeticTransformation(factory, grid);
+        final DatumShiftGridFile<Angle,Angle>[] subgrids = grid.subgrids;
+        if (subgrids == null) {
+            return global;
+        }
+        final Map<Envelope,MathTransform> specializations = new LinkedHashMap<>(Containers.hashMapCapacity(subgrids.length));
+        for (final DatumShiftGridFile<Angle,Angle> sg : subgrids) try {
+            final Envelope domain = sg.getDomainOfValidity(Units.DEGREE);
+            final MathTransform st = createGeodeticTransformation(provider, factory, sg);
+            if (specializations.putIfAbsent(domain, st) != null) {
+                DatumShiftGridLoader.log(provider, Errors.getResources((Locale) null)
+                        .getLogRecord(Level.FINE, Errors.Keys.DuplicatedElement_1, domain));
+            }
+        } catch (TransformException e) {
+            throw new FactoryException(e);
+        }
+        return MathTransforms.specialize(global, specializations);
     }
 
 
@@ -308,6 +462,8 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         /**
          * Creates a new datum shift grid with the given grid geometry, filename and number of shift dimensions.
          * All {@code double} values given to this constructor will be converted from degrees to radians.
+         *
+         * @param  dim  number of dimensions of translation vectors.
          */
         Float(final int dim,
               final Unit<C> coordinateUnit,
@@ -320,11 +476,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
               final Path... files) throws NoninvertibleTransformException
         {
             super(coordinateUnit, translationUnit, isCellValueRatio, x0, y0, Δx, Δy, nx, ny, descriptor, files);
-            offsets = new float[dim][];
-            final int size = Math.multiplyExact(nx, ny);
-            for (int i=0; i<dim; i++) {
-                Arrays.fill(offsets[i] = new float[size], java.lang.Float.NaN);
-            }
+            offsets = new float[dim][Math.multiplyExact(nx, ny)];
         }
 
         /**
@@ -337,6 +489,9 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
 
         /**
          * Returns a new grid with the same geometry than this grid but different data arrays.
+         * This method is invoked by {@link #useSharedData()} when it detects that a newly created
+         * grid uses the same data than an existing grid. The {@code other} object is the old grid,
+         * so we can share existing data.
          */
         @Override
         protected final DatumShiftGridFile<C,T> setData(final Object[] other) {
@@ -376,6 +531,109 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         @Override
         public final double getCellValue(final int dim, final int gridX, final int gridY) {
             return DecimalFunctions.floatToDouble(offsets[dim][gridX + gridY*nx]);
+        }
+
+        /**
+         * Returns the average translation parameters from source to target.
+         * There is no need to use double-double arithmetic here since all data have only single precision.
+         *
+         * @param  dim  the dimension for which to get an average value.
+         * @return a value close to the average for the given dimension.
+         */
+        @Override
+        public double getCellMean(final int dim) {
+            final float[] data = offsets[dim];
+            double sum = 0;
+            for (final float value : data) {
+                sum += value;
+            }
+            return sum / data.length;
+        }
+    }
+
+
+
+
+    /**
+     * An implementation of {@link DatumShiftGridFile} which stores the offset values in {@code double[]} arrays.
+     * See {@link DatumShiftGridFile.Float} for more information (most comments apply to this class as well).
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.1
+     * @since   1.1
+     * @module
+     */
+    static final class Double<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
+        /**
+         * Serial number for inter-operability with different versions.
+         */
+        private static final long serialVersionUID = 3999271636016362364L;
+
+        /**
+         * The translation values. See {@link DatumShiftGridFile.Float#offsets} for more documentation.
+         */
+        final double[][] offsets;
+
+        /**
+         * Creates a new datum shift grid with the given grid geometry, filename and number of shift dimensions.
+         * All {@code double} values given to this constructor will be converted from degrees to radians.
+         */
+        Double(final int dim,
+               final Unit<C> coordinateUnit,
+               final Unit<T> translationUnit,
+               final boolean isCellValueRatio,
+               final double x0, final double y0,
+               final double Δx, final double Δy,
+               final int    nx, final int    ny,
+               final ParameterDescriptorGroup descriptor,
+               final Path... files) throws NoninvertibleTransformException
+        {
+            super(coordinateUnit, translationUnit, isCellValueRatio, x0, y0, Δx, Δy, nx, ny, descriptor, files);
+            offsets = new double[dim][Math.multiplyExact(nx, ny)];
+        }
+
+        /**
+         * Creates a new grid of the same geometry than the given grid but using a different data array.
+         */
+        private Double(final DatumShiftGridFile<C,T> grid, final double[][] offsets) {
+            super(grid);
+            this.offsets = offsets;
+        }
+
+        /**
+         * Returns a new grid with the same geometry than this grid but different data arrays.
+         * See {@link DatumShiftGridFile.Float#setData(Object[])} for more documentation.
+         */
+        @Override
+        protected final DatumShiftGridFile<C,T> setData(final Object[] other) {
+            return new Double<>(this, (double[][]) other);
+        }
+
+        /**
+         * Returns direct references (not cloned) to the data arrays.
+         * See {@link DatumShiftGridFile.Float#getData()} for more documentation.
+         */
+        @Override
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
+        protected final Object[] getData() {
+            return offsets;
+        }
+
+        /**
+         * Returns the number of shift dimensions.
+         */
+        @Override
+        public final int getTranslationDimensions() {
+            return offsets.length;
+        }
+
+        /**
+         * Returns the cell value at the given dimension and grid index.
+         * See {@link DatumShiftGridFile.Float#getCellValue(int, int, int)} for more documentation.
+         */
+        @Override
+        public final double getCellValue(final int dim, final int gridX, final int gridY) {
+            return offsets[dim][gridX + gridY*nx];
         }
     }
 }

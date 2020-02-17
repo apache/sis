@@ -532,9 +532,10 @@ search: for (int j=numPoints; --j >= 0;) {
     }
 
     /**
-     * Sets all matching control point pairs, overwriting any previous setting. The source positions are the keys in
-     * the given map, and the target positions are the associated values in the map. The map should not contain two
-     * entries with the same source position. Coordinate reference systems are ignored.
+     * Sets all control point (source, target) pairs, overwriting any previous setting.
+     * The source positions are the keys in given map, and the target positions are the associated values.
+     * The map should not contain two entries with the same source position.
+     * Coordinate reference systems are ignored.
      * Null positions are silently ignored.
      * Positions with NaN or infinite coordinates cause an exception to be thrown.
      *
@@ -575,7 +576,7 @@ search: for (int j=numPoints; --j >= 0;) {
             final DirectPosition tgt = position(entry.getValue()); if (tgt == null) continue;
             /*
              * The first time that we get a non-null source and target coordinate, allocate the arrays.
-             * The sources arrays are allocated only if the source coordiantes are randomly distributed.
+             * The sources arrays are allocated only if the source coordinates are randomly distributed.
              */
             if (targets == null) {
                 tgtDim = tgt.getDimension();

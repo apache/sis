@@ -38,13 +38,15 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Loggers;
 
 
 /**
  * Base class for all providers defined in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -261,5 +263,17 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      */
     public boolean isInvertible() {
         return false;
+    }
+
+    /**
+     * Convenience method for reporting a non-fatal error at transform construction time.
+     * This method assumes that the error occurred (indirectly) during execution of
+     * {@link #createMathTransform(MathTransformFactory, ParameterValueGroup)}.
+     *
+     * @param  caller  the provider class in which the error occurred.
+     * @param  e       the error that occurred.
+     */
+    static void recoverableException(final Class<? extends AbstractProvider> caller, Exception e) {
+        Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION), caller, "createMathTransform", e);
     }
 }

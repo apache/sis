@@ -311,13 +311,16 @@ public final class MathTransforms extends Static {
     public static MathTransform specialize(final MathTransform global, final Map<Envelope,MathTransform> specializations) {
         ArgumentChecks.ensureNonNull("generic", global);
         ArgumentChecks.ensureNonNull("specializations", specializations);
+        final SpecializableTransform tr;
         if (specializations.isEmpty()) {
             return global;
         } else if (global.getSourceDimensions() == 2 && global.getTargetDimensions() == 2) {
-            return new SpecializableTransform2D(global, specializations);
+            tr = new SpecializableTransform2D(global, specializations);
         } else {
-            return new SpecializableTransform(global, specializations);
+            tr = new SpecializableTransform(global, specializations);
         }
+        final MathTransform substitute = tr.getSubstitute();
+        return (substitute != null) ? substitute : tr;
     }
 
     /**
