@@ -254,12 +254,12 @@ public class TileOrganizer {
                     groupBounds.translate(dx, dy);
                 }
                 reference = new AffineTransform2D(reference);               // Make immutable.
-                final Map<Dimension,TileTranslation> pool = new HashMap<>();
+                final Map<Dimension,Translation> pool = new HashMap<>();
                 for (final Tile tile : tilesArray) {
                     final Dimension subsampling = tile.getSubsampling();
-                    TileTranslation translated = pool.get(subsampling);
+                    Translation translated = pool.get(subsampling);
                     if (translated == null) {
-                        translated = new TileTranslation(subsampling, reference, dx, dy);
+                        translated = new Translation(subsampling, reference, dx, dy);
                         pool.put(subsampling, translated);
                     }
                     translated.applyTo(tile);
@@ -268,6 +268,56 @@ public class TileOrganizer {
             }
         }
         return results;
+    }
+
+
+    /**
+     * An affine transform which is translated relative to an original transform.
+     * The translation terms are stored separately without modifying the transform.
+     * This class if for internal use by {@link TileOrganizer} only.
+     */
+    private static final class Translation {
+        /**
+         * The translated "grid to real world" transform, as an immutable instance.
+         */
+        private final AffineTransform gridToCRS;
+
+        /**
+         * The translation in "absolute units". This is the same units than for tiles at subsampling (1,1).
+         */
+        private final int dx, dy;
+
+        /**
+         * Creates a new translated transform. The translation is specified in "absolute units",
+         * i.e. in the same units than for tiles at subsampling (1,1).
+         *
+         * @param  subsampling  the {@linkplain Tile#getSubsampling() tile subsampling}.
+         * @param  reference    the "grid to real world" transform at subsampling (1,1).
+         * @param  dx           the translation along <var>x</var> axis in "absolute units".
+         * @param  dy           the translation along <var>y</var> axis in "absolute units".
+         */
+        Translation(final Dimension subsampling, AffineTransform reference, int dx, int dy) {
+            this.dx = dx / subsampling.width;                           // It is okay to round toward zero.
+            this.dy = dy / subsampling.height;
+            dx %= subsampling.width;
+            dy %= subsampling.height;
+            reference = new AffineTransform(reference);
+            reference.scale(subsampling.width, subsampling.height);
+            reference.translate(dx, dy);                                // Correction for non-integer division of (dx,dy).
+            gridToCRS = new ImmutableAffineTransform(reference);
+        }
+
+        /**
+         * Applies the translation and the new "grid to CRS" transform on the given tile.
+         *
+         * @param  tile  the tile on which to apply the translation.
+         */
+        final void applyTo(final Tile tile) {
+            synchronized (tile) {
+                tile.translate(dx, dy);
+                tile.setGridToCRS(gridToCRS);
+            }
+        }
     }
 
     /**
