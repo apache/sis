@@ -285,12 +285,12 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
     public void interpolateInCell(final double gridX, final double gridY, final double[] vector) {
         int ni = 0;
         Region nearest = regions[ni];
-        double distance = nearest.distance(gridX, gridY);
+        double dmin = nearest.distanceSquared(gridX, gridY);
         for (int i=1; i<regions.length; i++) {
             final Region r = regions[i];
-            final double d = r.distance(gridX, gridY);
-            if (d < distance) {
-                distance = d;
+            final double d = r.distanceSquared(gridX, gridY);
+            if (d < dmin) {
+                dmin     = d;
                 nearest  = r;
                 ni       = i;
                 if (d == 0) break;

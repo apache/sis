@@ -44,7 +44,7 @@ import org.apache.sis.internal.util.Strings;
  * This class provides the following additional methods which are not defined in {@link Rectangle2D}:
  * <ul>
  *   <li>{@link #containsInclusive(double, double)}</li>
- *   <li>{@link #distance(double, double)}</li>
+ *   <li>{@link #distanceSquared(double, double)}</li>
  * </ul>
  *
  * This class does <strong>not</strong> support by itself rectangles crossing the anti-meridian of a geographic CRS.
@@ -401,14 +401,14 @@ public class IntervalRectangle extends Rectangle2D {
     }
 
     /**
-     * Returns the minimal distance between a point and this rectangle.
+     * Returns the square of the minimal distance between a point and this rectangle.
      * If the point is inside the rectangle or on the edge, then this method returns 0.
      *
      * @param  x  the <var>x</var> coordinates to test.
      * @param  y  the <var>y</var> coordinates to test.
-     * @return minimal distance, or 0 if the point is inside this rectangle.
+     * @return square of minimal distance, or 0 if the point is inside this rectangle.
      */
-    public final double distance(final double x, final double y) {
+    public final double distanceSquared(final double x, final double y) {
         int outcode = 0;
         double dx = java.lang.Double.POSITIVE_INFINITY;
         double dy = java.lang.Double.POSITIVE_INFINITY;
@@ -418,12 +418,21 @@ public class IntervalRectangle extends Rectangle2D {
         if ((d = (xmin - x)) >= 0 && d < dx) {dx = d; outcode |= 1;}
         if ((d = (ymin - y)) >= 0 && d < dy) {dy = d; outcode |= 2;}
         switch (outcode) {
-            case 1:  return dx;                                     // Only x coordinate is outside.
-            case 2:  return dy;                                     // Only y coordinate is outside.
-            case 3:  return Math.hypot(dx, dy);                     // Both coordinates are outside.
+            case 1:  return dx*dx;                                  // Only x coordinate is outside.
+            case 2:  return dy*dy;                                  // Only y coordinate is outside.
+            case 3:  return dx*dx + dy*dy;                          // Both coordinates are outside.
             case 0:  assert containsInclusive(x, y); return 0;      // No coordinate is outside.
             default: throw new AssertionError(outcode);
         }
+        /*
+         * Note: if we want non-squared distance in a future version, we can rely on the fact
+         * that `dx` and `dy` are guaranteed positives (no need to take the absolute value).
+         * So we would replace the 3 first cases as below:
+         *
+         *     case 1:  return dx;
+         *     case 2:  return dy;
+         *     case 3:  return Math.hypot(dx, dy);
+         */
     }
 
     /**
