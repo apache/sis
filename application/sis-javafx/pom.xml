@@ -127,7 +127,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-referencing</artifactId>
+      <artifactId>sis-portrayal</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

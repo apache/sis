@@ -50,6 +50,11 @@ import org.apache.sis.util.Debug;
  */
 public final class ColorModelFactory {
     /**
+     * The fully transparent color.
+     */
+    public static final Color TRANSPARENT = new Color(0, true);
+
+    /**
      * Applies a gray scale to quantitative category and transparent colors to qualitative categories.
      * This is a possible argument for {@link #createColorModel(SampleDimension[], int, int, Function)}.
      */
