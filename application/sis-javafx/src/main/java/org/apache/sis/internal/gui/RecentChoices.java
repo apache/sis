@@ -19,6 +19,8 @@ package org.apache.sis.internal.gui;
 import java.io.File;
 import java.util.List;
 import java.util.prefs.Preferences;
+import javafx.scene.control.ComboBox;
+import javafx.collections.ObservableList;
 
 
 /**
@@ -91,5 +93,31 @@ public final class RecentChoices {
             }
         }
         return parent;
+    }
+
+    /**
+     * Sets a value in a list of choices provided by an editable combo box.
+     * The combo box will remember the last choices, up to an arbitrary limit.
+     * The most recently used choices appear firsT.
+     *
+     * @param  <T>       type of values in the combo box.
+     * @param  choices   the list of choices to update.
+     * @param  newValue  the new choice.
+     */
+    public static <T> void setInList(final ComboBox<T> choices, final T newValue) {
+        final ObservableList<T> items = choices.getItems();
+        final int p = items.indexOf(newValue);
+        if (p != 0) {
+            if (p > 0) {
+                items.remove(p);
+            } else {
+                final int count = items.size();
+                if (count >= 20) {
+                    items.remove(count - 1);
+                }
+            }
+            items.add(0, newValue);
+        }
+        choices.getSelectionModel().selectFirst();
     }
 }

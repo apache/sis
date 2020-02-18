@@ -22,21 +22,29 @@ import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.Background;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.internal.gui.RecentChoices;
 
 
 /**
  * Formatter for cell values with a number of fraction digits determined from the sample value resolution.
+ * The property value is the localized format pattern as produced by {@link DecimalFormat#toLocalizedPattern()}.
+ * This property is usually available but not always; see {@link #hasPattern()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-final class CellFormat {
+final class CellFormat extends SimpleStringProperty {
     /**
      * The "classic" number format pattern (as opposed to scientific notation). This is non-null only after
      * {@link #cellFormat} switched to scientific notation and is used for switching back to classic notation.
@@ -85,12 +93,128 @@ final class CellFormat {
     boolean dataTypeisInteger;
 
     /**
-     * Creates a new cell formatter.
+     * Temporarily set to {@code true} when the user selects or enters a new pattern in a GUI control, then
+     * reset to {@code false} after the new values has been set. This is a safety against recursive calls
+     * to {@link #patternSelected(ComboBox, String)} because of bi-directional change listeners.
      */
-    CellFormat() {
+    private boolean isAdjusting;
+
+    /**
+     * Creates a new cell formatter which is also a {@code "cellFormatPattern"} property for the given bean.
+     */
+    CellFormat(final GridView bean) {
+        super(bean, "cellFormatPattern");
         cellFormat  = NumberFormat.getInstance();
         formatField = new FieldPosition(0);
         buffer      = new StringBuffer();
+        updatePropertyValue();
+    }
+
+    /**
+     * Returns whether the format can be configured with a pattern. If this method returns {@code false},
+     * then the {@link GridView#cellFormatPattern()} property is not available.
+     */
+    final boolean hasPattern() {
+        return (cellFormat instanceof DecimalFormat);
+    }
+
+    /**
+     * Sets this property to the current {@link DecimalFormat} pattern and notifies all listeners
+     * if the new pattern is different than the old one. This method needs to be invoked explicitly
+     * after the {@link #cellFormat} has been configured.
+     */
+    private void updatePropertyValue() {
+        if (cellFormat instanceof DecimalFormat) {
+            super.setValue(((DecimalFormat) cellFormat).toLocalizedPattern());
+        }
+    }
+
+    /**
+     * Invoked when a new pattern is set programmatically on the {@link GridView#cellFormatPattern()} property.
+     * This is also invoked when the used selected or entered a new pattern, by user action through the GUI.
+     *
+     * @param  pattern  the new pattern.
+     * @throws NullPointerException if {@code pattern} is {@code null}.
+     * @throws IllegalArgumentException if the given pattern is invalid.
+     */
+    @Override
+    public void setValue(final String pattern) {
+        if (cellFormat instanceof DecimalFormat) {
+            ((DecimalFormat) cellFormat).applyLocalizedPattern(pattern);
+            updatePropertyValue();
+            ((GridView) getBean()).contentChanged(false);
+        }
+    }
+
+    /**
+     * Invoked when the user selects or enters a new pattern. This method should not be invoked explicitly.
+     * This is a callback to be invoked by the {@link javafx.scene.control.SingleSelectionModel} of a control.
+     *
+     * @param  choices   the control where format pattern is selected.
+     * @param  newValue  the new format pattern.
+     */
+    private void patternSelected(final ComboBox<String> choices, final String newValue) {
+        if (!isAdjusting) {
+            Background background;
+            String message;
+            try {
+                isAdjusting = true;
+                setValue(newValue);
+                background = null;
+                message = null;
+            } catch (IllegalArgumentException e) {
+                background = Styles.ERROR_BACKGROUND;
+                message = e.getLocalizedMessage();
+            } finally {
+                isAdjusting = false;
+            }
+            Tooltip tooltip = null;
+            if (message != null) {
+                tooltip = choices.getTooltip();
+                if (tooltip != null) {
+                    tooltip.setText(message);
+                } else {
+                    tooltip = new Tooltip(message);
+                }
+            }
+            choices.setTooltip(tooltip);
+            choices.getEditor().setBackground(background);
+        }
+    }
+
+    /**
+     * An editable combo box which remember the most recently used values,
+     * or {@code null} if the {@link NumberFormat} does not support patterns.
+     */
+    final ComboBox<String> createEditor() {
+        if (!hasPattern()) {
+            return null;
+        }
+        /*
+         * Create a few pre-defined choices of patterns with various number of fraction digits.
+         */
+        final int min = cellFormat.getMinimumFractionDigits();
+        final int max = cellFormat.getMaximumFractionDigits();
+        final String[] patterns = new String[max + 2];
+        patterns[max + 1] = getValue();
+        cellFormat.setMinimumFractionDigits(max);
+        for (int n=max; n >= 0; n--) {
+            cellFormat.setMaximumFractionDigits(n);
+            patterns[n] = ((DecimalFormat) cellFormat).toLocalizedPattern();
+        }
+        cellFormat.setMinimumFractionDigits(min);           // Restore previous setting.
+        cellFormat.setMaximumFractionDigits(max);
+        /*
+         * Create the combo-box with above patterns and register listeners in both directions.
+         */
+        final ComboBox<String> choices = new ComboBox<>();
+        choices.setEditable(true);
+        choices.getItems().setAll(patterns);
+        choices.getSelectionModel().selectFirst();
+        choices.getSelectionModel().selectedItemProperty().addListener((e,o,n) -> patternSelected(choices, n));
+        addListener((e,o,n) -> RecentChoices.setInList(choices, n));
+        choices.setMaxWidth(Double.POSITIVE_INFINITY);
+        return choices;
     }
 
     /**
@@ -134,6 +258,7 @@ final class CellFormat {
         }
         buffer.setLength(0);
         formatCell(lastValue);
+        updatePropertyValue();
     }
 
     /**
@@ -177,7 +302,8 @@ final class CellFormat {
     }
 
     /**
-     * Formats the given sample value.
+     * Formats the given sample value. This is used for formatting the values from another source
+     * than a {@link Raster}, such as a {@link org.apache.sis.coverage.SampleDimension}.
      */
     final String format(final Number value) {
         buffer.setLength(0);

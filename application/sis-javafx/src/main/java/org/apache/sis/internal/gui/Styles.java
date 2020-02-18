@@ -16,10 +16,15 @@
  */
 package org.apache.sis.internal.gui;
 
+import java.util.Arrays;
 import java.io.IOException;
 import java.io.InputStream;
 import javafx.scene.paint.Color;
 import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 
@@ -28,6 +33,9 @@ import org.apache.sis.internal.system.Modules;
  * A central place where to store all colors used by SIS application.
  * This provides a single place to revisit if we learn more about how
  * to make those color more dynamic with JavaFX styling.
+ *
+ * <p>This class also opportunistically provides a few utility methods
+ * related to appearance.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -87,6 +95,12 @@ public final class Styles {
     public static final Color SELECTION_BACKGROUND = Color.LIGHTBLUE;
 
     /**
+     * The background for cell having an illegal input value.
+     */
+    public static final Background ERROR_BACKGROUND =
+            new Background(new BackgroundFill(Color.LIGHTPINK, null, null));
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Styles() {
@@ -115,5 +129,18 @@ public final class Styles {
             Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), caller, method, error);
         }
         return image;
+    }
+
+    /**
+     * Sets all rows in the given grid pane to the same height.
+     *
+     * @param  gp  the grid pane in which to set row constraints.
+     */
+    public static void allRowSameHeight(final GridPane gp) {
+        final RowConstraints[] constraints = new RowConstraints[gp.getRowCount()];
+        final RowConstraints c = new RowConstraints();
+        c.setPercentHeight(100.0 / constraints.length);
+        Arrays.fill(constraints, c);
+        gp.getRowConstraints().setAll(constraints);
     }
 }

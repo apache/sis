@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.Optional;
 import java.text.NumberFormat;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
@@ -29,6 +30,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.scene.control.Control;
@@ -184,7 +186,12 @@ public class GridView extends Control {
     private final NumberFormat headerFormat;
 
     /**
-     * The formatter to use for writing sample values.
+     * The formatter to use for writing sample values. This is also the the property for the localized format pattern.
+     * Note that this pattern depends on current locale. It is provided for user interactions (i.e. in a GUI control)
+     * instead than programmatic action.
+     *
+     * @see #cellFormatPattern()
+     * @see java.text.DecimalFormat#toLocalizedPattern()
      */
     final CellFormat cellFormat;
 
@@ -201,7 +208,7 @@ public class GridView extends Control {
         cellSpacing      = new SimpleDoubleProperty  (this, "cellSpacing",  4);
         headerBackground = new SimpleObjectProperty<>(this, "headerBackground", Color.GAINSBORO);
         headerFormat     = NumberFormat.getIntegerInstance();
-        cellFormat       = new CellFormat();
+        cellFormat       = new CellFormat(this);
         tileWidth        = 1;
         tileHeight       = 1;       // For avoiding division by zero.
 
@@ -494,6 +501,19 @@ public class GridView extends Control {
             return cellFormat.format(headerFormat, index + (long) (vertical ? minY : minX));
         }
         return OUT_OF_BOUNDS;
+    }
+
+    /**
+     * The property for the pattern of values in cells. Note that this pattern depends on current locale.
+     * It is provided for user interactions (i.e. in a GUI control) instead than programmatic action.
+     *
+     * @return the <em>localized</em> format pattern property, or an empty value if the {@link NumberFormat}
+     *         used for writing cell values is not an instance of {@link java.text.DecimalFormat}.
+     *
+     * @see java.text.DecimalFormat#toLocalizedPattern()
+     */
+    public final Optional<StringProperty> cellFormatPattern() {
+        return cellFormat.hasPattern() ? Optional.of(cellFormat) : Optional.empty();
     }
 
     /**

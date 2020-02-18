@@ -25,6 +25,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.Accordion;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.SplitPane;
@@ -136,22 +137,24 @@ public class CoverageExplorer {
             gp.setBorder(GROUP_BORDER);
             gp.setVgap(9);
             gp.setHgap(9);
-            int row = 0;
-            do {
-                final DoubleProperty property;
-                final double min, max;
+addRows:    for (int row = 0;; row++) {
+                final Control control;
                 final short key;
-                if (row == 0) {key = Vocabulary.Keys.Width;   property = gridView.cellWidth;   min = 30; max = 200;}
-                else          {key = Vocabulary.Keys.Height;  property = gridView.cellHeight;  min = 10; max =  50;}
-                final Label  label  = new Label(vocabulary.getLabel(key));
-                final Slider slider = new Slider(min, max, property.getValue());
-                property.bind(slider.valueProperty());
-                slider.setShowTickMarks(false);
-                label.setLabelFor(slider);
-                GridPane.setConstraints(label,  0, row);
-                GridPane.setConstraints(slider, 1, row);
-                gp.getChildren().addAll(label, slider);
-            } while (++row <= 1);
+                switch (row) {
+                    case 0: key = Vocabulary.Keys.Width;  control = createSlider(gridView.cellWidth,  30, 200); break;
+                    case 1: key = Vocabulary.Keys.Height; control = createSlider(gridView.cellHeight, 10, 50);  break;
+                    case 2: key = Vocabulary.Keys.Format; control = gridView.cellFormat.createEditor();         break;
+                    default: break addRows;
+                }
+                if (control != null) {
+                    final Label label = new Label(vocabulary.getLabel(key));
+                    label.setLabelFor(control);
+                    GridPane.setConstraints(label,   0, row);
+                    GridPane.setConstraints(control, 1, row);
+                    gp.getChildren().addAll(label, control);
+                }
+            }
+            Styles.allRowSameHeight(gp);
             final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Cells));
             label.setPadding(CAPTION_MARGIN);
             label.setLabelFor(gp);
@@ -174,6 +177,17 @@ public class CoverageExplorer {
         coverageProperty = new SimpleObjectProperty<>(this, "coverage");
         coverageProperty.addListener(this::onCoverageSpecified);
         gridView.bandProperty.addListener(this::onBandSpecified);
+    }
+
+    /**
+     * Creates a new slider for the given range of values and bound to the specified properties.
+     * This is used for creating the sliders to shown in the "Display" pane.
+     */
+    private static Slider createSlider(final DoubleProperty property, final double min, final double max) {
+        final Slider slider = new Slider(min, max, property.getValue());
+        property.bind(slider.valueProperty());
+        slider.setShowTickMarks(false);
+        return slider;
     }
 
     /**
