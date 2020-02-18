@@ -324,18 +324,23 @@ public class Tile implements Serializable {
      *
      * @return the region in units relative to the tile having the finest resolution.
      * @throws IOException if an I/O operation was required for fetching the tile size and that operation failed.
+     * @throws ArithmeticException if the region exceeded the capacity of 32-bits integer type.
      * @throws IllegalStateException if this tile has been {@linkplain #Tile(Rectangle, AffineTransform) created
      *         without location} and has not yet been processed by {@link TileOrganizer}, of if this tile does
      *         not have enough information for providing a tile size.
      */
-    public synchronized Rectangle getAbsoluteRegion() throws IOException {
-        final Rectangle region = getRegion();
-        final int sx = xSubsampling;
-        final int sy = ySubsampling;
-        region.x      *= sx;
-        region.y      *= sy;
-        region.width  *= sx;
-        region.height *= sy;
+    public Rectangle getRegionOnFinestLevel() throws IOException {
+        final Rectangle region;
+        final int sx, sy;
+        synchronized (this) {
+            region = getRegion();
+            sx = xSubsampling;
+            sy = ySubsampling;
+        }
+        region.x      = Math.multiplyExact(region.x,      sx);
+        region.y      = Math.multiplyExact(region.y,      sy);
+        region.width  = Math.multiplyExact(region.width,  sx);
+        region.height = Math.multiplyExact(region.height, sy);
         return region;
     }
 
@@ -350,7 +355,7 @@ public class Tile implements Serializable {
      * @param  region  the region to assign to this tile in units of tile having finest resolution.
      * @throws ArithmeticException if {@link #setSubsampling(Dimension)} method has not be invoked.
      */
-    final void setAbsoluteRegion(final Rectangle region) throws ArithmeticException {
+    final void setRegionOnFinestLevel(final Rectangle region) throws ArithmeticException {
         assert Thread.holdsLock(this);
         final int sx = xSubsampling;
         final int sy = ySubsampling;
@@ -477,8 +482,8 @@ public class Tile implements Serializable {
      */
     final void translate(final int dx, final int dy) {
         assert Thread.holdsLock(this);
-        x += dx;
-        y += dy;
+        x = Math.addExact(x, dx);
+        y = Math.addExact(y, dy);
         gridToCRS = null;
     }
 

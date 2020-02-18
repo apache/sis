@@ -230,7 +230,7 @@ public class TileOrganizer {
                         tr.transform(location, location);
                         bounds = new Rectangle(location.x, location.y, 0, 0);
                     }
-                    tile.setAbsoluteRegion(bounds);
+                    tile.setRegionOnFinestLevel(bounds);
                 }
                 if (groupBounds == null) {
                     groupBounds = bounds;
@@ -249,7 +249,7 @@ public class TileOrganizer {
             if (groupBounds != null) {
                 final int dx = xLocation - groupBounds.x;
                 final int dy = yLocation - groupBounds.y;
-                if (dx != 0 || dy != 0) {
+                if ((dx | dy) != 0) {
                     reference.translate(-dx, -dy);
                     groupBounds.translate(dx, dy);
                 }
@@ -283,18 +283,19 @@ public class TileOrganizer {
         private final AffineTransform gridToCRS;
 
         /**
-         * The translation in "absolute units". This is the same units than for tiles at subsampling (1,1).
+         * The translation in units of the level having finest resolution.
+         * This is the same units than for tiles at subsampling (1,1).
          */
         private final int dx, dy;
 
         /**
-         * Creates a new translated transform. The translation is specified in "absolute units",
-         * i.e. in the same units than for tiles at subsampling (1,1).
+         * Creates a new translated transform. The translation is specified in unit of the level
+         * having finest resolution, i.e. in the same units than for tiles at subsampling (1,1).
          *
          * @param  subsampling  the {@linkplain Tile#getSubsampling() tile subsampling}.
          * @param  reference    the "grid to real world" transform at subsampling (1,1).
-         * @param  dx           the translation along <var>x</var> axis in "absolute units".
-         * @param  dy           the translation along <var>y</var> axis in "absolute units".
+         * @param  dx           the translation along <var>x</var> axis in "finest units".
+         * @param  dy           the translation along <var>y</var> axis in "finest units".
          */
         Translation(final Dimension subsampling, AffineTransform reference, int dx, int dy) {
             this.dx = dx / subsampling.width;                           // It is okay to round toward zero.

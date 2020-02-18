@@ -79,7 +79,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
 
         /** Creates a new instance from the given {@link TileOrganizer} result. */
         Region(final Tile tile) throws IOException {
-            final Rectangle r = tile.getAbsoluteRegion();       // In units of the grid having finest resolution.
+            final Rectangle r = tile.getRegionOnFinestLevel();      // In units of the grid having finest resolution.
             final Dimension s = tile.getSubsampling();
             xmin = r.getMinX();
             xmax = r.getMaxX();
