@@ -256,7 +256,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     private SubArea locate(final DirectPosition pos) {
         /*
          * All nodes should be SubArea instances, except in some circumstances the root node.
-         * That root node may returned by `RTreeNode.locate(…)` if given position is inside
+         * That root node may be returned by `RTreeNode.locate(…)` if given position is inside
          * the union of all bounding boxes, but not in the bounding box of any specific grid.
          * In such case the caller will fallback on `DatumShiftGridGroup.interpolateInCell(…)`
          * which perform a more extensive search for the nearest grid.

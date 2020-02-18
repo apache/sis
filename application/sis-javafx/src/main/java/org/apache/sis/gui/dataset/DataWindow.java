@@ -26,6 +26,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.gui.ToolbarButton;
 
 
 /**
@@ -63,9 +64,21 @@ final class DataWindow extends Stage {
         final Button fullScreen = new Button("⇱");
         fullScreen.setTooltip(new Tooltip(data.localized.getString(Resources.Keys.FullScreen)));
         fullScreen.setOnAction((event) -> setFullScreen(true));
-
+        /*
+         * Hide/show the toolbar when entering/exiting full screen mode.
+         */
         tools = new ToolBar(mainWindow, fullScreen);
         fullScreenProperty().addListener((source, oldValue, newValue) -> onFullScreen(newValue));
+        /*
+         * Add content-specific buttons.
+         */
+        final ToolbarButton[] contentButtons = (ToolbarButton[]) content.getProperties().remove(ToolbarButton.PROPERTY_KEY);
+        if (contentButtons != null) {
+            for (final ToolbarButton tb : contentButtons) {
+                final Button b = new Button(tb.getText());
+                tools.getItems().add(b);
+            }
+        }
         /*
          * Main content. We use an initial size covering a large fraction of the screen
          * since this window is typically used for showing image or large tabular data.

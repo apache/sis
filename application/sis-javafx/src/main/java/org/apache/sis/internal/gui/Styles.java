@@ -136,7 +136,7 @@ public final class Styles {
      *
      * @param  gp  the grid pane in which to set row constraints.
      */
-    public static void allRowSameHeight(final GridPane gp) {
+    public static void setAllRowToSameHeight(final GridPane gp) {
         final RowConstraints[] constraints = new RowConstraints[gp.getRowCount()];
         final RowConstraints c = new RowConstraints();
         c.setPercentHeight(100.0 / constraints.length);

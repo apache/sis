@@ -31,7 +31,9 @@ import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 import javafx.util.Callback;
+import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.map.PlanarCanvas;
 import org.apache.sis.internal.util.Numerics;
@@ -40,6 +42,9 @@ import org.apache.sis.internal.util.Numerics;
 /**
  * Shows a {@link RenderedImage} produced by a {@link GridCoverage}.
  *
+ * This class should not be put in public API yet.
+ * It may be refactored to a {@code MapView} after we have a renderer in SIS.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
@@ -47,9 +52,9 @@ import org.apache.sis.internal.util.Numerics;
  */
 final class CoverageView extends PlanarCanvas {
     /**
-     * The data to shown, or {@code null} if not yet specified. This image may be tiled
+     * The data to shown, or {@code null} if not yet specified. This image may be tiled,
      * and fetching tiles may require computations to be performed in background thread.
-     * This image size is not necessarily the {@link #buffer} or {@link #image} size.
+     * The size of this image is not necessarily {@link #buffer} or {@link #image} size.
      * In particular this image way cover a larger area.
      */
     private RenderedImage data;
@@ -57,14 +62,14 @@ final class CoverageView extends PlanarCanvas {
     /**
      * A buffer where to draw the {@link RenderedImage} for the region to be displayed.
      * This buffer uses ARGB color model, contrarily to {@link #data} which may have any
-     * color model. This buffer content will be only the visible region of the data;
+     * color model. This buffered image will contain only the visible region of the data;
      * it may be a zoom over a small region.
      */
     private BufferedImage buffer;
 
     /**
      * Wraps {@link #buffer} data array for use by JavaFX images. This is the mechanism used
-     * by JavaFX for allowing {@link #image} to share the same data than {@link #buffer}.
+     * by JavaFX 13+ for allowing {@link #image} to share the same data than {@link #buffer}.
      * The same wrapper can be used for many {@link WritableImage} instances (e.g. thumbnails).
      */
     private PixelBuffer<IntBuffer> bufferWrapper;
@@ -77,15 +82,17 @@ final class CoverageView extends PlanarCanvas {
     private final ImageView image;
 
     /**
-     * The pane where to put children. This pane use absolute layout. It contains at least the
-     * {@linkplain #image} to show, but can also contain additional nodes (geometric shapes,
-     * texts, <i>etc</i>).
+     * The pane where to put children. This pane uses absolute layout. It contains at least the
+     * {@linkplain #image} to show, but can also contain additional nodes for geometric shapes,
+     * texts, <i>etc</i>.
      */
     private final Pane view;
 
     /**
      * The transform from {@link #data} pixel coordinates to {@link #buffer} (and {@link #image})
-     * pixel coordinates.
+     * pixel coordinates. This is the concatenation of {@link GridGeometry#getGridToCRS(PixelInCell)}
+     * followed by {@link #getObjectiveToDisplay()}. This transform is updated when the zoom changes
+     * or when the viewed area is translated.
      */
     private final AffineTransform dataToImage;
 

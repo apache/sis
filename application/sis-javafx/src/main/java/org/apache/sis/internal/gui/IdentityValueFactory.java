@@ -23,8 +23,8 @@ import javafx.util.Callback;
 
 
 /**
- * An value for {@link TableColumn#setCellValueFactory(Callback)} which just forward
- * the values as-is (ignoring the observable wrapper).
+ * A value for {@link TableColumn#setCellValueFactory(Callback)} which just forwards
+ * given values as-is (ignoring the observable wrapper).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -54,6 +54,7 @@ public final class IdentityValueFactory<S extends T, T>
     public static <S extends T, T> IdentityValueFactory<S,T> instance() {
         return (IdentityValueFactory<S,T>) INSTANCE;
     }
+
     /**
      * For the singleton constructor only.
      */
@@ -68,7 +69,7 @@ public final class IdentityValueFactory<S extends T, T>
      * @return the wrapped value.
      */
     @Override
-    public ObservableValue<T> call(final TableColumn.CellDataFeatures<S, T> cell) {
+    public ObservableValue<T> call(final TableColumn.CellDataFeatures<S,T> cell) {
         return new ReadOnlyObjectWrapper<>(cell.getValue());
     }
 }

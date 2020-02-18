@@ -41,7 +41,8 @@ import org.apache.sis.storage.DataStore;
 
 
 /**
- * Task in charge of loading a resource. No action is registered by default;
+ * Task in charge of loading a {@link org.apache.sis.storage.Resource} from a data store.
+ * No action is registered by default;
  * caller should invoke {@link #setOnSucceeded(EventHandler)} for defining such action.
  * Example:
  *

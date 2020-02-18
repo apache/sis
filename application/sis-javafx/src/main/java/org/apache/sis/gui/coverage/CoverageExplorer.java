@@ -42,6 +42,7 @@ import javafx.scene.layout.VBox;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.gui.Styles;
+import org.apache.sis.internal.gui.ToolbarButton;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -154,7 +155,7 @@ addRows:    for (int row = 0;; row++) {
                     gp.getChildren().addAll(label, control);
                 }
             }
-            Styles.allRowSameHeight(gp);
+            Styles.setAllRowToSameHeight(gp);
             final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Cells));
             label.setPadding(CAPTION_MARGIN);
             label.setLabelFor(gp);
@@ -177,6 +178,16 @@ addRows:    for (int row = 0;; row++) {
         coverageProperty = new SimpleObjectProperty<>(this, "coverage");
         coverageProperty.addListener(this::onCoverageSpecified);
         gridView.bandProperty.addListener(this::onBandSpecified);
+        /*
+         * Prepare buttons to add on the toolbar. Those buttons are not managed by this class;
+         * they are managed by org.apache.sis.gui.dataset.DataWindow. We only declare here the
+         * text and action for each button.
+         */
+        content.getProperties().put(ToolbarButton.PROPERTY_KEY, new ToolbarButton[] {
+            new ToolbarButton() {
+                @Override public String getText() {return "\uD83D\uDDFA";}      // World map character.
+            }
+        });
     }
 
     /**
