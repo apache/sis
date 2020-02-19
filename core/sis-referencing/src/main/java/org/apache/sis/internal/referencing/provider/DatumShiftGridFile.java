@@ -124,7 +124,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      *
      * @see #replaceOutsideGridCoordinate(int, double)
      */
-    private final double cycle;
+    private final double periodX;
 
     /**
      * The best translation accuracy that we can expect from this file.
@@ -186,9 +186,9 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         this.files      = files;
         this.nx         = nx;
         if (Units.isAngular(coordinateUnit)) {
-            cycle = Math.rint((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / Math.abs(Δx));
+            periodX = Math.rint((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / Math.abs(Δx));
         } else {
-            cycle = 0;
+            periodX = 0;
             /*
              * Note: non-angular source coordinates are currently never used in this package.
              * If it continue to be like that in the future, we should remove the check for
@@ -210,7 +210,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         nx         = other.nx;
         accuracy   = other.accuracy;
         subgrids   = other.subgrids;
-        cycle      = other.cycle;
+        periodX    = other.periodX;
     }
 
     /**
@@ -233,8 +233,8 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         descriptor = other.descriptor;
         files      = other.files;
         this.nx    = nx;
-        cycle      = (other.cycle == 0) ? 0 :
-                Math.rint((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / AffineTransforms2D.getScaleX0(gridToCRS));
+        periodX    = (other.periodX == 0) ? 0 : Math.rint((Longitude.MAX_VALUE - Longitude.MIN_VALUE)
+                                              / AffineTransforms2D.getScaleX0(gridToCRS));
         // Accuracy to be set by caller. Initial value needs to be zero.
     }
 
@@ -396,8 +396,8 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      */
     @Override
     protected double replaceOutsideGridCoordinate(final int dimension, final double gridCoordinate) {
-        if (dimension == 0 && cycle != 0) {
-            return Math.IEEEremainder(gridCoordinate, cycle);
+        if (dimension == 0 && periodX != 0) {
+            return Math.IEEEremainder(gridCoordinate, periodX);
         }
         return super.replaceOutsideGridCoordinate(dimension, gridCoordinate);
     }

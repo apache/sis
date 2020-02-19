@@ -767,8 +767,8 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * <p>The default implementation returns {@code gridCoordinate} unchanged. Subclasses need to override this
      * method if they want to handle longitude cycles. Note that the coordinate value is a grid index, not a
-     * longitude value. So the cycle to add or remove is the number of cells that the grid would have if it was
-     * spanning 360° of longitude.</p>
+     * longitude value. So the period to add or remove is the number of cells that the grid would have if it
+     * was spanning 360° of longitude.</p>
      *
      * <div class="note"><b>Example:</b>
      * this method may be implemented as below:
@@ -777,7 +777,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *     &#64;Override
      *     protected double replaceOutsideGridCoordinate(int dimension, double gridCoordinate) {
      *         if (dimension == 0) {
-     *             return Math.IEEEremainder(gridCoordinate, cycle);
+     *             return Math.IEEEremainder(gridCoordinate, periodX);
      *         } else {
      *             return super.replaceOutsideGridCoordinate(dimension, gridCoordinate);
      *         }

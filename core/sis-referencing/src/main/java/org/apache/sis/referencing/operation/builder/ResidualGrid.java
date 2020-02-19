@@ -22,6 +22,7 @@ import javax.measure.quantity.Dimensionless;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
@@ -42,7 +43,7 @@ import org.apache.sis.measure.Units;
  * The residuals after an affine approximation has been created for a set of matching control point pairs.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -133,21 +134,68 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     private final double accuracy;
 
     /**
+     * If grid coordinates in some target dimensions are cyclic, their periods in number of cells.
+     * Otherwise {@code null}. If non-null, non-cyclic dimensions shall have a period of zero.
+     *
+     * <p>Note that the unit of measurement is different than {@link LocalizationGridBuilder#periods}.
+     * This fields contain values in number of cells, which must have been converted from values in
+     * degrees (for example). Those numbers may be non-integers.</p>
+     *
+     * @see LocalizationGridBuilder#periods
+     */
+    private final double[] cellPeriods;
+
+    /**
      * Creates a new residual grid.
      *
      * @param sourceToGrid  conversion from the "real world" source coordinates to grid indices including fractional parts.
      * @param gridToTarget  conversion from grid coordinates to the final "real world" coordinates.
      * @param residuals     the residual data, as translations to apply on the result of affine transform.
      * @param precision     desired precision of inverse transformations in unit of grid cells.
+     * @param periods       if grid coordinates in some dimensions are cyclic, their periods in units of target CRS.
      */
     ResidualGrid(final LinearTransform sourceToGrid, final LinearTransform gridToTarget,
-            final int nx, final int ny, final float[] residuals, final double precision)
+            final int nx, final int ny, final float[] residuals, final double precision,
+            final double[] periods) throws TransformException
     {
         super(Units.UNITY, sourceToGrid, new int[] {nx, ny}, true, Units.UNITY);
         this.gridToTarget = gridToTarget;
         this.offsets      = residuals;
         this.accuracy     = precision;
         this.nx           = nx;
+        double[] cellPeriods = null;
+        if (periods != null && gridToTarget.isAffine()) {
+            /*
+             * We require the transform to be affine because it makes the Jacobian independent of
+             * coordinate values. It allows us to replace a period in target units by periods in
+             * grid units without having to take the coordinate values in account.
+             */
+            final MatrixSIS m = MatrixSIS.castOrCopy(gridToTarget.inverse().derivative(null));
+            cellPeriods = m.multiply(periods);
+            /*
+             * Ideally we would be done. But if we have more than one wraparound dimension
+             * (i.e. if the `periods` array contains more than 1 non-zero value) and if the
+             * `gridToTarget` transform combines the coordinates in many dimensions, we may
+             * have the contributions of many dimensions mixed in a way that we will not be
+             * able to use. This loop verify that each `cellPeriods` value depends on only
+             * one wraparound dimension of the target CRS. If this is not the case, we have
+             * ambiguity; value will be reset to 0 for disabling wraparound on that dimension.
+             */
+            for (int j=0; j<cellPeriods.length; j++) {
+                int contributions = 0;
+                final double cp = Math.abs(cellPeriods[j]);
+                if (cp > 0 && cp >= getGridSize()[j]) {
+                    final double tolerance = Math.ulp(cp);
+                    for (int i=0; i<periods.length; i++) {
+                        if (!(Math.abs(periods[i] * m.getElement(j,i)) <= tolerance)) {     // ! for counting NaNs.
+                            if (++contributions >= 2) break;                                // No need to continue.
+                        }
+                    }
+                }
+                cellPeriods[j] = (contributions == 1) ? cp : 0;
+            }
+        }
+        this.cellPeriods = cellPeriods;
     }
 
     /**
@@ -193,6 +241,22 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     @Override
     public double getCellValue(int dim, int gridX, int gridY) {
         return offsets[(gridX + gridY*nx) * SOURCE_DIMENSION + dim];
+    }
+
+    /**
+     * Invoked when a {@code gridX} or {@code gridY} coordinate is outside the range of valid grid coordinates.
+     * If the coordinate outside the range is a longitude value and if we handle those values as cyclic, brings
+     * that coordinate inside the range.
+     */
+    @Override
+    protected double replaceOutsideGridCoordinate(final int dimension, final double gridCoordinate) {
+        if (cellPeriods != null) {
+            final double p = cellPeriods[dimension];
+            if (p != 0) {
+                return Math.IEEEremainder(gridCoordinate, p);
+            }
+        }
+        return super.replaceOutsideGridCoordinate(dimension, gridCoordinate);
     }
 
     /**

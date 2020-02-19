@@ -84,7 +84,7 @@ import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_D
  * See the <cite>Linearizers</cite> section in {@link LinearTransformBuilder} for more discussion.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see InterpolatedTransform
  * @see LinearTransform
@@ -137,6 +137,17 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * The transform created by {@link #create(MathTransformFactory)}.
      */
     private MathTransform transform;
+
+    /**
+     * If the coordinates in some dimensions are cyclic, their periods. Otherwise {@code null}.
+     * Values are in units of the target CRS. For longitude wraparounds, the period is typically 360°.
+     * Array length shall be {@code linear.getTargetDimensions()} and non-cyclic dimensions shall have
+     * a period of zero (not {@link Double#NaN}, because we will use this array as a displacement vector).
+     *
+     * @see #resolveWraparoundAxis(int, int, double)
+     * @see ResidualGrid#cellPeriods
+     */
+    private double[] periods;
 
     /**
      * Creates a new, initially empty, builder for a localization grid of the given size.
@@ -549,7 +560,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *                    The recommended direction is the direction of most stable values, typically 1 (rows) for longitudes.
      * @param  period     that wraparound range (typically 360° for longitudes). Must be strictly positive.
      * @return the range of coordinate values in the specified dimension after correction for wraparound values.
-     * @throws IllegalStateException if {@link #create(MathTransformFactory) create(…)} has already been invoked.
+     * @throws IllegalStateException if this method has already been invoked for the same dimension,
+     *         or if {@link #create(MathTransformFactory) create(…)} has already been invoked.
      *
      * @since 1.0
      */
@@ -558,6 +570,14 @@ public class LocalizationGridBuilder extends TransformBuilder {
         ArgumentChecks.ensureBetween("dimension", 0, linear.getTargetDimensions() - 1, dimension);
         ArgumentChecks.ensureBetween("direction", 0, linear.getSourceDimensions() - 1, direction);
         ArgumentChecks.ensureStrictlyPositive("period", period);
+        if (periods == null) {
+            periods = new double[linear.getTargetDimensions()];
+        }
+        if (periods[dimension] != 0) {
+            throw new IllegalStateException(Errors.format(
+                    Errors.Keys.ValueAlreadyDefined_1, Strings.bracket("periods", dimension)));
+        }
+        periods[dimension] = period;
         return linear.resolveWraparoundAxis(dimension, direction, period);
     }
 
@@ -670,15 +690,15 @@ public class LocalizationGridBuilder extends TransformBuilder {
                             residual[k++] = (float) dy;
                         }
                     }
+                    if (isLinear) {
+                        step = MathTransforms.concatenate(sourceToGrid, gridToCoord);
+                    } else {
+                        step = InterpolatedTransform.createGeodeticTransformation(nonNull(factory),
+                                new ResidualGrid(sourceToGrid, gridToCoord, width, height, residual,
+                                (gridPrecision > 0) ? gridPrecision : DEFAULT_PRECISION, periods));
+                    }
                 } catch (TransformException e) {
                     throw new FactoryException(e);                                          // Should never happen.
-                }
-                if (isLinear) {
-                    step = MathTransforms.concatenate(sourceToGrid, gridToCoord);
-                } else {
-                    step = InterpolatedTransform.createGeodeticTransformation(nonNull(factory),
-                            new ResidualGrid(sourceToGrid, gridToCoord, width, height, residual,
-                            (gridPrecision > 0) ? gridPrecision : DEFAULT_PRECISION));
                 }
             }
             /*
@@ -693,7 +713,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
                 throw new InvalidGeodeticParameterException(Resources.format(
                         Resources.Keys.NonInvertibleOperation_1, linear.linearizerID()), e);
             }
-            transform = step;
+            transform = step;                               // Set only after everything succeeded.
         }
         return transform;
     }

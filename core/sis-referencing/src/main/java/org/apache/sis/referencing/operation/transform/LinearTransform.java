@@ -75,7 +75,8 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 public interface LinearTransform extends MathTransform {
     /**
      * Returns {@code true} if this transform is affine.
-     * An affine transform preserves parallelism.
+     * An affine transform preserves parallelism and has the same
+     * {@linkplain AbstractMathTransform#derivative derivative} at every locations.
      *
      * @return {@code true} if this transform is affine.
      *
