@@ -37,6 +37,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.measure.Units;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.collection.TreeTable;
@@ -47,6 +48,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 
@@ -62,9 +64,9 @@ import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  *
- * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
- * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
- *             or {@link javax.measure.quantity.Length}).
+ * @param <C>  dimension of the coordinate unit (usually {@link Angle}).
+ * @param <T>  dimension of the translation unit. Usually {@link Angle},
+ *             but can also be {@link javax.measure.quantity.Length}.
  *
  * @see org.apache.sis.referencing.operation.transform.InterpolatedTransform
  *
@@ -115,6 +117,16 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     protected final int nx;
 
     /**
+     * Number of cells that the grid would have if it was spanning 360° of longitude, or 0 if no wraparound
+     * should be applied. Current implementation rounds to nearest integer on the assumption that we expect
+     * an integer number of cells in 360°. This value is used for longitude values that are on the other side
+     * of the ±180° meridian compared to the region where the grid is defined.
+     *
+     * @see #replaceOutsideGridCoordinate(int, double)
+     */
+    private final double cycle;
+
+    /**
      * The best translation accuracy that we can expect from this file.
      * The unit of measurement depends on {@link #isCellValueRatio()}.
      *
@@ -150,8 +162,8 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * @param coordinateUnit    the unit of measurement of input values, before conversion to grid indices by {@code coordinateToGrid}.
      * @param translationUnit   the unit of measurement of output values.
      * @param isCellValueRatio  {@code true} if results of {@link #interpolateInCell interpolateInCell(…)} are divided by grid cell size.
-     * @param x0                longitude in degrees of the center of the cell at grid index (0,0).
-     * @param y0                latitude in degrees of the center of the cell at grid index (0,0).
+     * @param x0                longitude in degrees of the center of the cell at grid index (0,0), positive east.
+     * @param y0                latitude in degrees of the center of the cell at grid index (0,0), positive north.
      * @param Δx                increment in <var>x</var> value between cells at index <var>gridX</var> and <var>gridX</var> + 1.
      * @param Δy                increment in <var>y</var> value between cells at index <var>gridY</var> and <var>gridY</var> + 1.
      * @param nx                number of cells along the <var>x</var> axis in the grid.
@@ -173,6 +185,16 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         this.descriptor = descriptor;
         this.files      = files;
         this.nx         = nx;
+        if (Units.isAngular(coordinateUnit)) {
+            cycle = Math.rint((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / Math.abs(Δx));
+        } else {
+            cycle = 0;
+            /*
+             * Note: non-angular source coordinates are currently never used in this package.
+             * If it continue to be like that in the future, we should remove the check for
+             * Units.isAngular(…) and replace the C parameterized type by Angle directly.
+             */
+        }
     }
 
     /**
@@ -188,26 +210,31 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         nx         = other.nx;
         accuracy   = other.accuracy;
         subgrids   = other.subgrids;
+        cycle      = other.cycle;
     }
 
     /**
      * Creates a new datum shift grid with the same configuration than the given grid,
      * except the size and transform which are set to the given values.
+     * This is used for creating a {@link DatumShiftGridGroup} containing many grids,
+     * using one grid as a template for setting parameter values.
      * The {@link #accuracy} is initialized to zero and should be updated by the caller.
      *
-     * @param other             the other datum shift grid from which to copy parameters.
-     * @param coordinateToGrid  conversion from the "real world" coordinates to grid indices including fractional parts.
-     * @param nx                number of cells along the <var>x</var> axis in the grid.
-     * @param ny                number of cells along the <var>y</var> axis in the grid.
+     * @param  other      the other datum shift grid from which to copy parameters.
+     * @param  gridToCRS  conversion from grid indices to "real world" coordinates.
+     * @param  nx         number of cells along the <var>x</var> axis in the grid.
+     * @param  ny         number of cells along the <var>y</var> axis in the grid.
      */
-    DatumShiftGridFile(final DatumShiftGridFile<C,T> other,
-                       final AffineTransform2D coordinateToGrid, final int nx, final int ny)
+    DatumShiftGridFile(final DatumShiftGridFile<C,T> other, final AffineTransform2D gridToCRS, final int nx, final int ny)
+            throws NoninvertibleTransformException
     {
-        super(other.getCoordinateUnit(), coordinateToGrid, new int[] {nx, ny},
+        super(other.getCoordinateUnit(), gridToCRS.inverse(), new int[] {nx, ny},
               other.isCellValueRatio(), other.getTranslationUnit());
         descriptor = other.descriptor;
         files      = other.files;
         this.nx    = nx;
+        cycle      = (other.cycle == 0) ? 0 :
+                Math.rint((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / AffineTransforms2D.getScaleX0(gridToCRS));
         // Accuracy to be set by caller. Initial value needs to be zero.
     }
 
@@ -360,6 +387,19 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     @Override
     public double getCellPrecision() {
         return accuracy / 10;               // Division by 10 is arbitrary.
+    }
+
+    /**
+     * Invoked when a {@code gridX} or {@code gridY} coordinate is outside the range of valid grid coordinates.
+     * If the coordinate outside the range is a longitude value and if we handle those values as cyclic, brings
+     * that coordinate inside the range.
+     */
+    @Override
+    protected double replaceOutsideGridCoordinate(final int dimension, final double gridCoordinate) {
+        if (dimension == 0 && cycle != 0) {
+            return Math.IEEEremainder(gridCoordinate, cycle);
+        }
+        return super.replaceOutsideGridCoordinate(dimension, gridCoordinate);
     }
 
     /**
