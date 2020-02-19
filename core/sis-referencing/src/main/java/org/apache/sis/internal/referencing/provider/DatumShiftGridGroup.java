@@ -128,7 +128,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
                                 final Dimension gridSize)
             throws IOException, NoninvertibleTransformException
     {
-        super(grids.get(tiles[0]), gridToCRS.inverse(), gridSize.width, gridSize.height);
+        super(grids.get(tiles[0]), gridToCRS, gridSize.width, gridSize.height);
         final int n = grids.size();
         regions  = new Region[n];
         subgrids = new DatumShiftGridFile[n];
