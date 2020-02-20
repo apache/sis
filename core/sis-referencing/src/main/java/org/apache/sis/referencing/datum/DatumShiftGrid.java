@@ -124,7 +124,7 @@ import org.apache.sis.measure.Units;
  * in which case a longitude of 170° needs to be replaced by −190° before it can be processed by the grid.
  * The default {@code DatumShiftGrid} class does not apply longitude wraparound automatically
  * (it does not even know which axis, if any, is longitude),
- * but subclasses can add this support by overriding the {@link #replaceOutsideGridCoordinate(int, double)} method.
+ * but subclasses can add this support by overriding the {@link #replaceOutsideGridCoordinates(double[])} method.
  *
  * <h2>Sub-grids</h2>
  * Some datum shift grid files provide a grid valid on a wide region, refined with denser sub-grids in smaller regions.
@@ -280,6 +280,20 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      */
     public int[] getGridSize() {
         return gridSize.clone();
+    }
+
+    /**
+     * Returns the number of cells in the specified dimension.
+     * Invoking this method is equivalent to {@code getGridSize()[dimension]}.
+     *
+     * @param  dimension  the dimension for which to get the grid size.
+     * @return the number of grid cells in the specified dimension.
+     * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     *
+     * @since 1.1
+     */
+    public int getGridSize(final int dimension) {
+        return gridSize[dimension];
     }
 
     /**
@@ -506,13 +520,13 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
         final int xmax = gridSize[0] - 2;
         final int ymax = gridSize[1] - 2;
         int ix = (int) gridX;                               // Really want rounding toward zero (not floor).
-        if (ix < 0 || ix > xmax) {
-            gridX = replaceOutsideGridCoordinate(0, gridX);
-            ix = Math.max(0, Math.min(xmax, (int) gridX));
-        }
         int iy = (int) gridY;
-        if (iy < 0 || iy > ymax) {
-            gridY = replaceOutsideGridCoordinate(1, gridY);
+        if (ix < 0 || ix > xmax || iy < 0 || iy > ymax) {
+            final double[] gridCoordinates = {gridX, gridY};
+            replaceOutsideGridCoordinates(gridCoordinates);
+            gridX = gridCoordinates[0];
+            gridY = gridCoordinates[1];
+            ix = Math.max(0, Math.min(xmax, (int) gridX));
             iy = Math.max(0, Math.min(ymax, (int) gridY));
         }
         gridX -= ix;                                        // If was negative, will continue to be negative.
@@ -608,13 +622,13 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
         final int xmax = gridSize[0] - 2;
         final int ymax = gridSize[1] - 2;
         int ix = (int) gridX;
-        if (ix < 0 || ix > xmax) {
-            gridX = replaceOutsideGridCoordinate(0, gridX);
-            ix = Math.max(0, Math.min(xmax, (int) gridX));
-        }
         int iy = (int) gridY;
-        if (iy < 0 || iy > ymax) {
-            gridY = replaceOutsideGridCoordinate(1, gridY);
+        if (ix < 0 || ix > xmax || iy < 0 || iy > ymax) {
+            final double[] gridCoordinates = {gridX, gridY};
+            replaceOutsideGridCoordinates(gridCoordinates);
+            gridX = gridCoordinates[0];
+            gridY = gridCoordinates[1];
+            ix = Math.max(0, Math.min(xmax, (int) gridX));
             iy = Math.max(0, Math.min(ymax, (int) gridY));
         }
         gridX -= ix;
@@ -745,17 +759,16 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * @since 1.0
      */
     public boolean isCellInGrid(double gridX, double gridY) {
-        double max = gridSize[1] - 1;
-        if (!(gridY >= 0 && gridY <= max)) {
-            gridY = replaceOutsideGridCoordinate(1, gridY);
-            if (!(gridY >= 0 && gridY <= max)) return false;
+        final double xmax = gridSize[0] - 1;
+        final double ymax = gridSize[1] - 1;
+        if (gridX >= 0 && gridX <= xmax && gridY >= 0 && gridY <= ymax) {
+            return true;
         }
-        max = gridSize[0] - 1;
-        if (!(gridX >= 0 && gridX <= max)) {
-            gridX = replaceOutsideGridCoordinate(0, gridX);
-            if (!(gridX >= 0 && gridX <= max)) return false;
-        }
-        return true;
+        final double[] gridCoordinates = {gridX, gridY};
+        replaceOutsideGridCoordinates(gridCoordinates);
+        gridX = gridCoordinates[0];
+        gridY = gridCoordinates[1];
+        return (gridX >= 0 && gridX <= xmax && gridY >= 0 && gridY <= ymax);
     }
 
     /**
@@ -765,35 +778,40 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * longitude range, so a longitude of 170° needs to be converted to a longitude of −190° before it can be
      * processed by that grid.
      *
-     * <p>The default implementation returns {@code gridCoordinate} unchanged. Subclasses need to override this
-     * method if they want to handle longitude cycles. Note that the coordinate value is a grid index, not a
-     * longitude value. So the period to add or remove is the number of cells that the grid would have if it
-     * was spanning 360° of longitude.</p>
+     * <p>The default implementation does nothing. Subclasses need to override this method if they want to handle
+     * longitude wraparounds. Note that the coordinate values are grid indices, not longitude or latitude values.
+     * So the period to add or remove is the number of cells that the grid would have if it was spanning 360° of
+     * longitude.</p>
      *
      * <div class="note"><b>Example:</b>
-     * this method may be implemented as below:
+     * if longitude values are mapped to {@code gridX} coordinates (in dimension 0), and if a shift of 360° in
+     * longitude values is equivalent to a shift of {@code periodX} cells in the grid, then this method can be
+     * implemented as below:
      *
      * {@preformat java
+     *     private final double periodX = ...;      // Number of grid cells in 360° of longitude.
+     *
      *     &#64;Override
-     *     protected double replaceOutsideGridCoordinate(int dimension, double gridCoordinate) {
-     *         if (dimension == 0) {
-     *             return Math.IEEEremainder(gridCoordinate, periodX);
-     *         } else {
-     *             return super.replaceOutsideGridCoordinate(dimension, gridCoordinate);
-     *         }
+     *     protected void replaceOutsideGridCoordinates(double[] gridCoordinates) {
+     *         gridCoordinates[0] = Math.IEEEremainder(gridCoordinates[0], periodX);
      *     }
      * }</div>
      *
-     * @param  dimension       0 if the given coordinate is {@code gridX}, or 1 if it is {@code gridY}.
-     * @param  gridCoordinate  the grid coordinate which is outside the range of valid values.
-     * @return the grid coordinate to use. May still be outside the range of valid grid values.
+     * This method receives all grid coordinates in the {@code gridCoordinates} argument and can modify any
+     * of them, possibly many at once. The reason is because a shift of 360° of longitude (for example) may
+     * correspond to an offset in both {@code gridX} and {@code gridY} indices if the grid is inclined.
+     * The {@code gridCoordinates} array length is the number of grid dimensions,
+     * typically {@value #INTERPOLATED_DIMENSIONS}.
+     *
+     * @param  gridCoordinates  on input, the cell indices of the point which is outside the grid.
+     *         On output, the cell indices of an equivalent point inside the grid if possible.
+     *         Coordinate values are modified in-place.
      *
      * @see Math#IEEEremainder(double, double)
      *
      * @since 1.1
      */
-    protected double replaceOutsideGridCoordinate(final int dimension, final double gridCoordinate) {
-        return gridCoordinate;
+    protected void replaceOutsideGridCoordinates(double[] gridCoordinates) {
     }
 
     /**
