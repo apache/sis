@@ -77,7 +77,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -4471670781277328193L;
+    private static final long serialVersionUID = -5801692909082130314L;
 
     /**
      * Cache of grids loaded so far. Those grids will be stored by soft references until the amount of
@@ -111,10 +111,11 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     private final Path[] files;
 
     /**
-     * Number of grid cells along the <var>x</var> axis.
-     * This is <code>{@linkplain #getGridSize()}[0]</code> as a field for performance reasons.
+     * Number of cells between the start of adjacent rows in the grid. This is usually {@code getGridSize(0)},
+     * stored as a field for performance reasons. Value could be greater than {@code getGridSize(0)} if there
+     * is some elements to ignore at the end of each row.
      */
-    protected final int nx;
+    protected final int scanlineStride;
 
     /**
      * Number of cells that the grid would have if it was spanning 360° of longitude, or 0 if no wraparound
@@ -122,9 +123,9 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * an integer number of cells in 360°. This value is used for longitude values that are on the other side
      * of the ±180° meridian compared to the region where the grid is defined.
      *
-     * @see #replaceOutsideGridCoordinate(int, double)
+     * @see #replaceOutsideGridCoordinates(double[])
      */
-    private final double cycle;
+    private final double periodX;
 
     /**
      * The best translation accuracy that we can expect from this file.
@@ -182,13 +183,13 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     {
         super(coordinateUnit, new AffineTransform2D(Δx, 0, 0, Δy, x0, y0).inverse(),
               new int[] {nx, ny}, isCellValueRatio, translationUnit);
-        this.descriptor = descriptor;
-        this.files      = files;
-        this.nx         = nx;
+        this.descriptor     = descriptor;
+        this.files          = files;
+        this.scanlineStride = nx;
         if (Units.isAngular(coordinateUnit)) {
-            cycle = Math.rint((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / Math.abs(Δx));
+            periodX = Math.rint((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / Math.abs(Δx));
         } else {
-            cycle = 0;
+            periodX = 0;
             /*
              * Note: non-angular source coordinates are currently never used in this package.
              * If it continue to be like that in the future, we should remove the check for
@@ -205,12 +206,12 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      */
     protected DatumShiftGridFile(final DatumShiftGridFile<C,T> other) {
         super(other);
-        descriptor = other.descriptor;
-        files      = other.files;
-        nx         = other.nx;
-        accuracy   = other.accuracy;
-        subgrids   = other.subgrids;
-        cycle      = other.cycle;
+        descriptor     = other.descriptor;
+        files          = other.files;
+        scanlineStride = other.scanlineStride;
+        accuracy       = other.accuracy;
+        subgrids       = other.subgrids;
+        periodX        = other.periodX;
     }
 
     /**
@@ -230,11 +231,11 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     {
         super(other.getCoordinateUnit(), gridToCRS.inverse(), new int[] {nx, ny},
               other.isCellValueRatio(), other.getTranslationUnit());
-        descriptor = other.descriptor;
-        files      = other.files;
-        this.nx    = nx;
-        cycle      = (other.cycle == 0) ? 0 :
-                Math.rint((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / AffineTransforms2D.getScaleX0(gridToCRS));
+        scanlineStride = nx;
+        descriptor     = other.descriptor;
+        files          = other.files;
+        periodX        = (other.periodX == 0) ? 0 : Math.rint((Longitude.MAX_VALUE - Longitude.MIN_VALUE)
+                                                  / AffineTransforms2D.getScaleX0(gridToCRS));
         // Accuracy to be set by caller. Initial value needs to be zero.
     }
 
@@ -395,11 +396,10 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * that coordinate inside the range.
      */
     @Override
-    protected double replaceOutsideGridCoordinate(final int dimension, final double gridCoordinate) {
-        if (dimension == 0 && cycle != 0) {
-            return Math.IEEEremainder(gridCoordinate, cycle);
+    protected void replaceOutsideGridCoordinates(final double[] gridCoordinates) {
+        if (periodX != 0) {
+            gridCoordinates[0] = Math.IEEEremainder(gridCoordinates[0], periodX);
         }
-        return super.replaceOutsideGridCoordinate(dimension, gridCoordinate);
     }
 
     /**
@@ -495,7 +495,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         /**
          * The translation values. {@code offsets.length} is the number of dimensions, and {@code offsets[dim].length}
          * shall be the same for all {@code dim} value. Component {@code dim} of the translation vector at coordinate
-         * {@code gridX}, {@code gridY} is {@code offsets[dim][gridX + gridY*nx]}.
+         * {@code gridX}, {@code gridY} is {@code offsets[dim][gridX + gridY*scanlineStride]}.
          */
         final float[][] offsets;
 
@@ -564,13 +564,13 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
          * from an ASCII file, or any other medium that format numbers in base 10.
          *
          * @param  dim    the dimension for which to get an average value.
-         * @param  gridX  the grid index along the <var>x</var> axis, from 0 inclusive to {@link #nx} exclusive.
-         * @param  gridY  the grid index along the <var>y</var> axis, from 0 inclusive to {@code  ny} exclusive.
+         * @param  gridX  the grid index along the <var>x</var> axis, from 0 inclusive to {@code nx} exclusive.
+         * @param  gridY  the grid index along the <var>y</var> axis, from 0 inclusive to {@code ny} exclusive.
          * @return the offset at the given dimension in the grid cell at the given index.
          */
         @Override
         public final double getCellValue(final int dim, final int gridX, final int gridY) {
-            return DecimalFunctions.floatToDouble(offsets[dim][gridX + gridY*nx]);
+            return DecimalFunctions.floatToDouble(offsets[dim][gridX + gridY*scanlineStride]);
         }
 
         /**
@@ -673,7 +673,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
          */
         @Override
         public final double getCellValue(final int dim, final int gridX, final int gridY) {
-            return offsets[dim][gridX + gridY*nx];
+            return offsets[dim][gridX + gridY*scanlineStride];
         }
     }
 }

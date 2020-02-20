@@ -42,13 +42,7 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 4847888093457104917L;
-
-    /**
-     * Maximal grid index along the <var>y</var> axis, inclusive.
-     * This is the number of grid cells minus 2.
-     */
-    private final int ymax;
+    private static final long serialVersionUID = 1889111858140209014L;
 
     /**
      * An "average" value for the offset in each dimension.
@@ -75,7 +69,6 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
             final short[][] data, final double scale)
     {
         super(grid);
-        this.ymax     = getGridSize()[1] - 2;
         this.averages = averages;
         this.data     = data;
         this.scale    = scale;
@@ -181,7 +174,7 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
      */
     @Override
     public double getCellValue(final int dim, final int gridX, final int gridY) {
-        return data[dim][gridX + gridY*nx] * scale + averages[dim];
+        return data[dim][gridX + gridY*scanlineStride] * scale + averages[dim];
     }
 
     /**
@@ -190,24 +183,26 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
      */
     @Override
     public void interpolateInCell(double gridX, double gridY, double[] vector) {
-        boolean skipX = false;
-        boolean skipY = false;                          // Whether to skip derivative calculation for X or Y.
-        if (gridX < 0) {gridX = 0; skipX = true;}
-        if (gridY < 0) {gridY = 0; skipY = true;}
-        int ix = (int) gridX;  gridX -= ix;
-        int iy = (int) gridY;  gridY -= iy;
-        if (ix > nx - 2) {
-            skipX |= (ix != nx-1 || gridX != 0);        // Keep value 'false' if gridX == gridSize[0] - 1.
-            ix     = nx - 2;
-            gridX  = 1;
+        final int xmax = getGridSize(0) - 2;
+        final int ymax = getGridSize(1) - 2;
+        int ix = (int) gridX;                               // Really want rounding toward zero (not floor).
+        int iy = (int) gridY;
+        if (ix < 0 || ix > xmax || iy < 0 || iy > ymax) {
+            final double[] gridCoordinates = {gridX, gridY};
+            replaceOutsideGridCoordinates(gridCoordinates);
+            gridX = gridCoordinates[0];
+            gridY = gridCoordinates[1];
+            ix = Math.max(0, Math.min(xmax, (int) gridX));
+            iy = Math.max(0, Math.min(ymax, (int) gridY));
         }
-        if (iy > ymax) {                                // Subtraction of 2 already done by the constructor.
-            skipY |= (iy != ymax+1 || gridY != 0);      // Keep value 'false' if gridY == gridSize[1] - 1.
-            iy     = ymax;
-            gridY  = 1;
-        }
-        final int p00 = nx*iy + ix;
-        final int p10 = nx + p00;
+        gridX -= ix;                                        // If was negative, will continue to be negative.
+        gridY -= iy;
+        boolean skipX = (gridX < 0); if (skipX) gridX = 0;
+        boolean skipY = (gridY < 0); if (skipY) gridY = 0;
+        if (gridX > 1)  {gridX = 1; skipX = true;}
+        if (gridY > 1)  {gridY = 1; skipY = true;}
+        final int p00 = scanlineStride * iy + ix;
+        final int p10 = scanlineStride + p00;
         final int n   = data.length;
         boolean derivative = (vector.length >= n + INTERPOLATED_DIMENSIONS * INTERPOLATED_DIMENSIONS);
         for (int dim = 0; dim < n; dim++) {

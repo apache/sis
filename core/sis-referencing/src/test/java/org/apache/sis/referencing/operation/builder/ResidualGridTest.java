@@ -31,7 +31,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link ResidualGrid}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -45,13 +45,15 @@ public final strictfp class ResidualGridTest extends TestCase {
      * Creates a new test case with a 3×4 grid with 2 values in each cells.
      * Those two values are typically the horizontal components of translation vectors.
      * The grid has no "source to grid" or "grid to CRS" transformations.
+     *
+     * @throws TransformException if an error occurred while handling a wraparound axis.
      */
-    public ResidualGridTest() {
+    public ResidualGridTest() throws TransformException {
         grid = new ResidualGrid(MathTransforms.identity(2), MathTransforms.identity(2), 3, 4, new float[] {
                 0,2  ,  1,2  ,  2,1,
                 1,3  ,  2,2  ,  1,1,
                 0,4  ,  2,3  ,  3,2,
-                1,4  ,  3,3  ,  3,2}, 0.1);
+                1,4  ,  3,3  ,  3,2}, 0.1, null);
     }
 
     /**

@@ -1324,6 +1324,11 @@ search:         for (int j=domain(); --j >= 0;) {
      * Computes the matrix of the linear approximation. This is the implementation of {@link #create(MathTransformFactory)}
      * without the step creating the {@link LinearTransform} from a matrix. The {@link #correlations} field is set as a side
      * effect of this method call.
+     *
+     * <p>In current implementation, the transform represented by the returned matrix is always affine
+     * (i.e. the last row is fixed to [0 0 … 0 1]). If this is no longer the case in a future version,
+     * some codes may not work anymore. Search for {@code isAffine()} statements for locating codes
+     * that depend on affine transform assumption.</p>
      */
     @SuppressWarnings("serial")
     private MatrixSIS fit() throws FactoryException {
