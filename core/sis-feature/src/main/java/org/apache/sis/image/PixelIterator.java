@@ -318,6 +318,8 @@ public abstract class PixelIterator {
              * one tile at index (0,0).  But they return `raster.getSampleModelTranslateX()` instead, which may
              * be non-zero if the image is a sub-region of another image.  Delegating to `create(Raster)` avoid
              * this problem in addition of being a slight optimization.
+             *
+             * Issue tracker: https://bugs.openjdk.java.net/browse/JDK-8166038
              */
             if (order == SequenceType.LINEAR) {
                 return new LinearIterator(data, null, subArea, window);
