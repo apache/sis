@@ -185,7 +185,10 @@ addRows:    for (int row = 0;; row++) {
          */
         content.getProperties().put(ToolbarButton.PROPERTY_KEY, new ToolbarButton[] {
             new ToolbarButton() {
-                @Override public String getText() {return "\uD83D\uDDFA";}      // World map character.
+                @Override public String getText() {return "\uD83D\uDDFA\uFE0F";}      // World map character.
+                @Override public Region createView() {
+                    return new CoverageView(null).getView();
+                }
             }
         });
     }

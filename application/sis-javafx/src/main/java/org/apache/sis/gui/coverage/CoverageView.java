@@ -30,6 +30,7 @@ import javafx.scene.image.PixelBuffer;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.util.Callback;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -101,7 +102,7 @@ final class CoverageView extends PlanarCanvas {
      *
      * @param  locale  the locale to use for labels and some messages, or {@code null} for default.
      */
-    CoverageView(final Locale locale) {
+    public CoverageView(final Locale locale) {
         super(locale);
         dataToImage = new AffineTransform();
         view        = new Pane();
@@ -109,6 +110,16 @@ final class CoverageView extends PlanarCanvas {
         image.setPreserveRatio(true);
         view.getChildren().add(image);
         view.setPrefSize(600, 400);
+    }
+
+    /**
+     * Returns the region containing the image view.
+     * The subclass is implementation dependent and may change in any future version.
+     *
+     * @return the region to show.
+     */
+    public final Region getView() {
+        return view;
     }
 
     /**

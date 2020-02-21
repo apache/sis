@@ -17,12 +17,16 @@
 package org.apache.sis.internal.gui;
 
 import javafx.scene.Node;
+import javafx.scene.layout.Region;
 
 
 /**
  * A button in a the toolbar of a {@link org.apache.sis.gui.dataset.DataWindow},
  * other than the common buttons provided by {@code DataWindow} itself.
  * Those button depends on the window content.
+ *
+ * <p>Current API is for creating a new window of related data. A future version
+ * may move that API in a subclass if we need to support other kinds of service.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -48,4 +52,13 @@ public abstract class ToolbarButton {
      * @return the button text.
      */
     public abstract String getText();
+
+    /**
+     * Creates the content of the window to show when the user click on the button.
+     * This method is invoked only on the first click. For all subsequent clicks,
+     * the existing window will be shown again.
+     *
+     * @return content of the window to show.
+     */
+    public abstract Region createView();
 }
