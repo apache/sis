@@ -24,6 +24,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
+import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
@@ -109,8 +110,8 @@ public abstract class PixelIterator {
 
     /**
      * The domain, in tile coordinates, of the region traversed by this pixel iterator.
-     * This may be smaller than the image or raster tile grid bounds, but not greater.
-     * The lower values are inclusive and the upper values exclusive.
+     * The tile index ranges may be smaller than the ranges of valid indices in image,
+     * but not greater. The lower values are inclusive and the upper values exclusive.
      */
     final int tileLowerX, tileLowerY, tileUpperX, tileUpperY;
 
@@ -308,6 +309,16 @@ public abstract class PixelIterator {
          */
         public PixelIterator create(final RenderedImage data) {
             ArgumentChecks.ensureNonNull("data", data);
+            if (data instanceof BufferedImage) {
+                return create(((BufferedImage) data).getRaster());
+            }
+            /*
+             * Note: As of Java 14, `BufferedImage.getTileGridXOffset()` and `getTileGridYOffset()` have a bug.
+             * They should return `BufferedImage.getMinX()` (which is always 0) because the image contains only
+             * one tile at index (0,0).  But they return `raster.getSampleModelTranslateX()` instead, which may
+             * be non-zero if the image is a sub-region of another image.  Delegating to `create(Raster)` avoid
+             * this problem in addition of being a slight optimization.
+             */
             if (order == SequenceType.LINEAR) {
                 return new LinearIterator(data, null, subArea, window);
             } else if (order != null) {
@@ -336,6 +347,9 @@ public abstract class PixelIterator {
          */
         public WritablePixelIterator createWritable(final WritableRenderedImage data) {
             ArgumentChecks.ensureNonNull("data", data);
+            if (data instanceof BufferedImage) {
+                return createWritable(((BufferedImage) data).getRaster());
+            }
             return createWritable(data, data);
         }
 
