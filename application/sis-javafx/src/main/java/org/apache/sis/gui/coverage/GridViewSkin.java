@@ -510,8 +510,17 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
                 layoutInArea(cell, pos, y, cellWidth, headerHeight, Node.BASELINE_OFFSET_SAME_AS_HEIGHT, HPos.RIGHT, VPos.CENTER);
                 pos += cellWidth;
             }
+            /*
+             * For a mysterious reason, all row headers except the first one (0) are invisible on the first time
+             * that the grid is shown. I have been unable to identify the reason; all `GridCell` are created and
+             * received a non-empty text string. Doing a full layout again makes them appear. So as a workaround
+             * we request the next layout to be full again if it seems that we have done the initial layout. The
+             * very first layout create one cell (count = 0 & missing = 1), the next layout create missing cells
+             * (count = 1 & missing = 18) — this is where we want to force a third layou — then the third layout
+             * is stable (count = 19 & missing = 0).
+             */
+            layoutAll = count <= missing;
         }
-        layoutAll = false;
         if (hasErrors) {
             computeErrorBounds(flow);
         }
