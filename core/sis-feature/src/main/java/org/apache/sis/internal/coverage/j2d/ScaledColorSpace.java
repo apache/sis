@@ -25,7 +25,7 @@ import org.apache.sis.util.collection.WeakHashSet;
 /**
  * Color space for images storing pixels as real numbers. The color space can have an
  * arbitrary number of bands, but in current implementation only one band is used.
- * Current implementation create a gray scale.
+ * Current implementation creates a gray scale.
  *
  * <p>The use of this color space is very slow.
  * It should be used only when no standard color space can be used.</p>
@@ -33,6 +33,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  *
+ * @see ScaledColorModel
  * @see ColorModelFactory#createColorSpace(int, int, double, double)
  *
  * @since 1.0
@@ -72,7 +73,7 @@ final class ScaledColorSpace extends ColorSpace {
     /**
      * Index of the band to display.
      */
-    private final int visibleBand;
+    final int visibleBand;
 
     /**
      * Creates a color model for the given range of values.
@@ -80,8 +81,8 @@ final class ScaledColorSpace extends ColorSpace {
      *
      * @param  numComponents  the number of components.
      * @param  visibleBand    the band to use for computing colors.
-     * @param  minimum        the minimal sample value expected.
-     * @param  maximum        the maximal sample value expected.
+     * @param  minimum        the minimal sample value expected, inclusive.
+     * @param  maximum        the maximal sample value expected, exclusive.
      */
     ScaledColorSpace(final int numComponents, final int visibleBand, final double minimum, final double maximum) {
         super(TYPE_GRAY, numComponents);
@@ -171,7 +172,7 @@ final class ScaledColorSpace extends ColorSpace {
     }
 
     /**
-     * Returns a string representation of this color model.
+     * Returns a string representation of this color space.
      *
      * @return a string representation for debugging purpose.
      */
@@ -203,7 +204,7 @@ final class ScaledColorSpace extends ColorSpace {
     }
 
     /**
-     * Returns a hash code value for this color model.
+     * Returns a hash code value for this color space.
      * Defined for implementation of {@link #unique()}.
      */
     @Override

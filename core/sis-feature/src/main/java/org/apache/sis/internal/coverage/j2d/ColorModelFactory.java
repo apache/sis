@@ -100,7 +100,7 @@ public final class ColorModelFactory {
                                        r2.getKey().getMinDouble(true));
 
     /**
-     * The minimum and maximum sample values.
+     * The minimum (inclusive) and maximum (exclusive) sample values.
      */
     private final double minimum, maximum;
 
@@ -228,7 +228,13 @@ public final class ColorModelFactory {
          */
         if (type != DataBuffer.TYPE_BYTE && type != DataBuffer.TYPE_USHORT) {
             final ColorSpace colors = createColorSpace(numBands, visibleBand, minimum, maximum);
-            return unique(new ComponentColorModel(colors, false, false, Transparency.OPAQUE, type));
+            final ComponentColorModel cm;
+            if (colors instanceof ScaledColorSpace) {
+                cm = new ScaledColorModel((ScaledColorSpace) colors, minimum, maximum, type);
+            } else {
+                cm = new ComponentColorModel(colors, false, false, Transparency.OPAQUE, type);
+            }
+            return unique(cm);
         }
         /*
          * If there is no category, constructs a gray scale palette.
