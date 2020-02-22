@@ -26,6 +26,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TableCell;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.Region;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
@@ -140,8 +142,28 @@ public class FeatureTable extends TableView<Feature> {
         textLocale    = other.textLocale;
         dataLocale    = other.dataLocale;
         featureType   = other.featureType;
-        initialize();
-        createColumns(featureType);
+        setFeatures(other.getFeatures());           // Shall be invoked before to install the listener.
+        initialize();                               // Install listener.
+        if (featureType != null) {
+            createColumns();
+        } else if (getFeatures() != null) {
+            /*
+             * It may not be possible to create the columns immediately because the table is still loading
+             * in a background thread. In such case, we will create the columns later when the feature type
+             * will become known (which we identify by the other feature table updating its own columns).
+             */
+            other.getColumns().addListener(new InvalidationListener() {
+                @Override public void invalidated(final Observable list) {
+                    list.removeListener(this);                              // This event is needed only once.
+                    if (other.getFeatures() == getFeatures()) {
+                        featureType = other.featureType;
+                        if (featureType != null) {
+                            createColumns();
+                        }
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -241,19 +263,22 @@ public class FeatureTable extends TableView<Feature> {
     final void setFeatureType(final FeatureType type) {
         setPlaceholder(null);
         getItems().clear();
-        if (type != null && !type.equals(featureType)) {
-            createColumns(type);
+        final boolean update = (type != null) && !type.equals(featureType);
+        /*
+         * The feature type must be set before to invoke `createColumns(…)` because it is used not only
+         * by that method, but also by the listener registered in `FeatureTable(other)` constructor.
+         */
+        featureType = type;
+        if (update) {
+            createColumns();
         }
-        featureType = type;     // Set only after `createColumns(…)` succeeded.
     }
 
     /**
-     * Creates table columns for the specified feature type.
-     *
-     * @param  type  the feature type, typically a new type before {@link #featureType} is updated.
+     * Creates table columns for the current {@link #featureType}.
      */
-    private void createColumns(final FeatureType type) {
-        final Collection<? extends PropertyType> properties = type.getProperties(true);
+    private void createColumns() {
+        final Collection<? extends PropertyType> properties = featureType.getProperties(true);
         final List<TableColumn<Feature,?>> columns = new ArrayList<>(properties.size());
         final List<String> multiValued = new ArrayList<>(columns.size());
         for (final PropertyType pt : properties) {
