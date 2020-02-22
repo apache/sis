@@ -87,6 +87,12 @@ public class CoverageExplorer {
     public final ObjectProperty<GridCoverage> coverageProperty;
 
     /**
+     * Whether the {@link #coverageProperty} is in process of being set, in which case some
+     * listeners should not react.
+     */
+    private boolean isCoverageAdjusting;
+
+    /**
      * The component for showing sample values.
      */
     private final GridView gridView;
@@ -198,7 +204,9 @@ addRows:    for (int row = 0;; row++) {
 
             /** Creates a visualization of the coverage. */
             @Override public Region createView(final Locale locale) {
-                return new CoverageView(locale).getView();
+                final CoverageView view = new CoverageView(locale);
+                view.coverageProperty.bind(coverageProperty);
+                return view.getView();
             }
         });
     }
@@ -269,7 +277,7 @@ addRows:    for (int row = 0;; row++) {
     }
 
     /**
-     * Invoked when a new coverage has been specified
+     * Invoked when a new coverage has been specified.
      *
      * @param  property  the {@link #coverageProperty} (ignored).
      * @param  previous  ignored.
@@ -278,11 +286,13 @@ addRows:    for (int row = 0;; row++) {
     private void onCoverageSpecified(final ObservableValue<? extends GridCoverage> property,
                                      final GridCoverage previous, final GridCoverage coverage)
     {
-        gridView.setImage((RenderedImage) null);
-        if (coverage != null) {
-            gridView.setImage(new ImageRequest(coverage, null));        // Start a background thread.
+        if (!isCoverageAdjusting) {
+            gridView.setImage((RenderedImage) null);
+            setSampleDimensions(coverage);
+            if (coverage != null) {
+                gridView.setImage(new ImageRequest(coverage, null));        // Start a background thread.
+            }
         }
-        onCoverageLoaded(coverage);
     }
 
     /**
@@ -294,6 +304,19 @@ addRows:    for (int row = 0;; row++) {
      * @param  coverage  the new coverage, or {@code null} if loading failed.
      */
     final void onCoverageLoaded(final GridCoverage coverage) {
+        setSampleDimensions(coverage);
+        isCoverageAdjusting = true;
+        try {
+            setCoverage(coverage);
+        } finally {
+            isCoverageAdjusting = false;
+        }
+    }
+
+    /**
+     * Sets the values in the sample dimensions table according information in the given coverage.
+     */
+    private void setSampleDimensions(final GridCoverage coverage) {
         final ObservableList<SampleDimension> items = sampleDimensions.getItems();
         if (coverage != null) {
             items.setAll(coverage.getSampleDimensions());
@@ -304,7 +327,7 @@ addRows:    for (int row = 0;; row++) {
     }
 
     /**
-     * Invoked when the selected band changed. This method ensures that the selected row
+     * Invoked when the band property changed. This method ensures that the selected row
      * in the sample dimension table matches the band which is shown in the grid view.
      */
     private void onBandSpecified(final ObservableValue<? extends Number> property,

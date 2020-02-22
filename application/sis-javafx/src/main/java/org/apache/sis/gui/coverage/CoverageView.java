@@ -31,9 +31,13 @@ import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.util.Callback;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.map.PlanarCanvas;
@@ -52,6 +56,28 @@ import org.apache.sis.internal.util.Numerics;
  * @module
  */
 final class CoverageView extends PlanarCanvas {
+    /**
+     * The data shown in this view. Note that setting this property to a non-null value may not
+     * modify the view content immediately. Instead, a background process will request the tiles.
+     *
+     * <p>Current implementation is restricted to {@link GridCoverage} instances, but a future
+     * implementation may generalize to {@link org.opengis.coverage.Coverage} instances.</p>
+     *
+     * @see #getCoverage()
+     * @see #setCoverage(GridCoverage)
+     */
+    public final ObjectProperty<GridCoverage> coverageProperty;
+
+    /**
+     * A subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
+     * May be {@code null} if this grid coverage has only two dimensions with a size greater than 1 cell.
+     *
+     * @see #getSliceExtent()
+     * @see #setSliceExtent(GridExtent)
+     * @see GridCoverage#render(GridExtent)
+     */
+    public final ObjectProperty<GridExtent> sliceExtentProperty;
+
     /**
      * The data to shown, or {@code null} if not yet specified. This image may be tiled,
      * and fetching tiles may require computations to be performed in background thread.
@@ -104,12 +130,26 @@ final class CoverageView extends PlanarCanvas {
      */
     public CoverageView(final Locale locale) {
         super(locale);
+        coverageProperty    = new SimpleObjectProperty<>(this, "coverage");
+        sliceExtentProperty = new SimpleObjectProperty<>(this, "sliceExtent");
         dataToImage = new AffineTransform();
-        view        = new Pane();
-        image       = new ImageView();
+        view = new Pane() {
+            @Override protected void layoutChildren() {
+                super.layoutChildren();
+                repaint();
+            }
+        };
+        image = new ImageView();
         image.setPreserveRatio(true);
         view.getChildren().add(image);
-        view.setPrefSize(600, 400);
+        /*
+         * Do not set a preferred size, otherwise `repaint()` is invoked twice: once with the preferred size
+         * and once with the actual size of the parent window. Actually the `repaint()` method appears to be
+         * invoked twice anyway, but without preferred size the width appears to be 0, in which case nothing
+         * is repainted.
+         */
+        coverageProperty   .addListener(this::onImageSpecified);
+        sliceExtentProperty.addListener(this::onImageSpecified);
     }
 
     /**
@@ -123,13 +163,69 @@ final class CoverageView extends PlanarCanvas {
     }
 
     /**
-     * Sets the image to display.
+     * Returns the source of image for this viewer.
+     * This method, like all other methods in this class, shall be invoked from the JavaFX thread.
+     *
+     * @return the coverage shown in this explorer, or {@code null} if none.
+     *
+     * @see #coverageProperty
      */
-    private void setImage(final RenderedImage source) {
+    public final GridCoverage getCoverage() {
+        return coverageProperty.get();
+    }
+
+    /**
+     * Sets the coverage to show in this viewer.
+     * This method shall be invoked from JavaFX thread and returns immediately.
+     * The new data are loaded in a background thread and will appear after an
+     * undetermined amount of time.
+     *
+     * @param  coverage  the data to show in this viewer, or {@code null} if none.
+     *
+     * @see #coverageProperty
+     */
+    public final void setCoverage(final GridCoverage coverage) {
+        coverageProperty.set(coverage);
+    }
+
+    /**
+     * Returns a subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
+     *
+     * @return subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
+     *
+     * @see #sliceExtentProperty
+     * @see GridCoverage#render(GridExtent)
+     */
+    public final GridExtent getSliceExtent() {
+        return sliceExtentProperty.get();
+    }
+
+    /**
+     * Sets a subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
+     *
+     * @param  sliceExtent  subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
+     *
+     * @see #sliceExtentProperty
+     * @see GridCoverage#render(GridExtent)
+     */
+    public final void setSliceExtent(final GridExtent sliceExtent) {
+        sliceExtentProperty.set(sliceExtent);
+    }
+
+    /**
+     * Invoked when a new coverage has been specified or when the slice extent changed.
+     *
+     * @param  property  the {@link #coverageProperty} or {@link #sliceExtentProperty} (ignored).
+     * @param  previous  ignored.
+     * @param  value     ignored.
+     */
+    private void onImageSpecified(final ObservableValue<?> property, final Object previous, final Object value) {
         image.setImage(null);
+        data   = null;
         buffer = null;
-        data = source;
-        if (source != null) {
+        final GridCoverage coverage = getCoverage();
+        if (coverage != null) {
+            data = coverage.render(getSliceExtent());     // TODO: background thread.
             repaint();
         }
     }
@@ -142,6 +238,9 @@ final class CoverageView extends PlanarCanvas {
     private void repaint() {
         final int width  = Numerics.clamp(Math.round(view.getWidth()));
         final int height = Numerics.clamp(Math.round(view.getHeight()));
+        if (width <= 0 || height <= 0) {
+            return;
+        }
         PixelBuffer<IntBuffer> wrapper = bufferWrapper;
         BufferedImage drawTo = buffer;
         if (drawTo == null || drawTo.getWidth() != width || drawTo.getHeight() != height) {
