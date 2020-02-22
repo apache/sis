@@ -291,6 +291,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Summary = 29;
 
         /**
+         * Tabular data
+         */
+        public static final short TabularData = 51;
+
+        /**
          * Topic category:
          */
         public static final short TopicCategory = 25;
@@ -299,6 +304,11 @@ public final class Resources extends IndexedResourceBundle {
          * Type of resource:
          */
         public static final short TypeOfResource = 26;
+
+        /**
+         * Visualize
+         */
+        public static final short Visualize = 52;
 
         /**
          * Windows

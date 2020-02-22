@@ -26,6 +26,7 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Control;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.SplitPane;
@@ -41,6 +42,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
 import org.apache.sis.internal.gui.ToolbarButton;
 import org.apache.sis.util.resources.Vocabulary;
@@ -125,7 +127,7 @@ public class CoverageExplorer {
         }
         /*
          * "Display" section with the following controls:
-         *    - Number format as a localized pattern (TODO).
+         *    - Number format as a localized pattern.
          *    - Cell width as a slider.
          */
         final VBox displayPane;
@@ -183,12 +185,20 @@ addRows:    for (int row = 0;; row++) {
          * they are managed by org.apache.sis.gui.dataset.DataWindow. We only declare here the
          * text and action for each button.
          */
-        content.getProperties().put(ToolbarButton.PROPERTY_KEY, new ToolbarButton[] {
-            new ToolbarButton() {
-                @Override public String getText() {return "\uD83D\uDDFA\uFE0F";}      // World map character.
-                @Override public Region createView() {
-                    return new CoverageView(null).getView();
-                }
+        ToolbarButton.insert(content, new ToolbarButton.RelatedWindow() {
+            /** 🗺 — World map. */
+            @Override public Button createButton(final Resources localized) {
+                return createButton("\uD83D\uDDFA\uFE0F", localized, Resources.Keys.Visualize);
+            }
+
+            /** 🔢 — Input symbol for numbers. */
+            @Override public Button createBackButton(final Resources localized) {
+                return createButton("\uD83D\uDD22\uFE0F", localized, Resources.Keys.TabularData);
+            }
+
+            /** Creates a visualization of the coverage. */
+            @Override public Region createView(final Locale locale) {
+                return new CoverageView(locale).getView();
             }
         });
     }
