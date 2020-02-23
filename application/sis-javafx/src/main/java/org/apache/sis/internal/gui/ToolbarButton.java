@@ -18,8 +18,13 @@ package org.apache.sis.internal.gui;
 
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBase;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Region;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -27,8 +32,7 @@ import org.apache.sis.util.ArraysExt;
  * Description of a button to add in a the {@link org.apache.sis.gui.dataset.DataWindow} toolbar.
  * This class is used only for content-specific buttons; it is not used for buttons managed directly by
  * {@code DataWindow} itself. A {@code ToolbarButton} can create and configure a button with its icon,
- * tooltip text and action to execute when the button is pushed. {@code ToolbarButton} instances exist
- * only temporarily and are discarded after the button has been created and placed in the toolbar.
+ * tooltip text and action to execute when the button is pushed.
  *
  * <p>This class is defined in this internal package for allowing interactions between classes
  * in different packages without making toolbar API public.</p>
@@ -38,7 +42,7 @@ import org.apache.sis.util.ArraysExt;
  * @since   1.1
  * @module
  */
-public abstract class ToolbarButton {
+public abstract class ToolbarButton implements EventHandler<ActionEvent> {
     /**
      * The property to use in {@link Node#getProperties()} for storing instances of this class.
      * Values associated to this key shall be arrays of {@code ToolbarButton[]} type.
@@ -99,17 +103,35 @@ public abstract class ToolbarButton {
 
     /**
      * Convenience method for creating a button.
+     * The action handler will be {@code this}.
      *
+     * @param  group      the group of the toggle button, or {@code null} for an ordinary button.
      * @param  icon       the text to put in the button, as a Unicode emoji.
      * @param  localized  an instance of {@link Resources} for current locale.
      * @param  tooltip    the {@link Resources.Keys} value for the tooltip.
      * @return the button configured with text or icon, tooltip and action.
      */
-    protected static Button createButton(final String icon, final Resources localized, final short tooltip) {
-        final Button b = new Button(icon);
+    protected final ButtonBase createButton(final ToggleGroup group, final String icon, final Resources localized, final short tooltip) {
+        final ButtonBase b;
+        if (group != null) {
+            final ToggleButton tb = new ToggleButton(icon);
+            tb.setToggleGroup(group);
+            b = tb;
+        } else {
+            b = new Button(icon);
+        }
         b.setTooltip(new Tooltip(localized.getString(tooltip)));
+        b.setOnAction(this);
         return b;
     }
+
+    /**
+     * Invoked when the user pushed the button.
+     *
+     * @param  event  the pushed button event.
+     */
+    @Override
+    public abstract void handle(ActionEvent event);
 
     /**
      * A toolbar button for creating and showing a new window related to the window in which the button has been pushed.

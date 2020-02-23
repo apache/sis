@@ -24,6 +24,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.Labeled;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
@@ -119,8 +120,8 @@ final class DataWindow extends Stage {
          */
         final Font font = Font.font(20);
         for (final Node node : tools.getItems()) {
-            if (node instanceof Button) {
-                ((Button) node).setFont(font);
+            if (node instanceof Labeled) {
+                ((Labeled) node).setFont(font);
             }
         }
         /*
@@ -181,10 +182,14 @@ final class DataWindow extends Stage {
                 final Resources  localized  = Resources.forLocale(null);
                 final Region     content    = creator.createView();
                 final Button     backButton = creator.createBackButton(localized);
-                backButton.setOnAction((e) -> {originator.show(); originator.toFront();});
                 ToolbarButton.insert(content, new ToolbarButton() {
                     @Override public Node createButton(Resources localized) {
+                        backButton.setOnAction(this);
                         return backButton;
+                    }
+                    @Override public void handle(ActionEvent event) {
+                        originator.show();
+                        originator.toFront();
                     }
                 });
                 final DataWindow rw = new DataWindow(content, localized);

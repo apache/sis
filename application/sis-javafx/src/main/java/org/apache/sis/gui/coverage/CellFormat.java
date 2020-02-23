@@ -26,6 +26,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Background;
+import javafx.util.Duration;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.Numbers;
@@ -175,6 +176,7 @@ final class CellFormat extends SimpleStringProperty {
                     tooltip.setText(message);
                 } else {
                     tooltip = new Tooltip(message);
+                    tooltip.setShowDelay(Duration.seconds(0.1));
                 }
             }
             choices.setTooltip(tooltip);
@@ -213,7 +215,6 @@ final class CellFormat extends SimpleStringProperty {
         choices.getSelectionModel().selectFirst();
         choices.getSelectionModel().selectedItemProperty().addListener((e,o,n) -> patternSelected(choices, n));
         addListener((e,o,n) -> RecentChoices.setInList(choices, n));
-        choices.setMaxWidth(Double.POSITIVE_INFINITY);
         return choices;
     }
 

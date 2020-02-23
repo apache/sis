@@ -110,6 +110,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Azimuth = 11;
 
         /**
+         * Background
+         */
+        public static final short Background = 198;
+
+        /**
          * Band {0}
          */
         public static final short Band_1 = 12;
@@ -478,6 +483,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Identity
          */
         public static final short Identity = 74;
+
+        /**
+         * Image
+         */
+        public static final short Image = 199;
 
         /**
          * Image layout

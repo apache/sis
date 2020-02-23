@@ -17,30 +17,15 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
-import java.awt.image.RenderedImage;
-import javafx.beans.property.DoubleProperty;
+import javafx.scene.Node;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Toggle;
+import javafx.event.ActionEvent;
+import javafx.scene.layout.Region;
+import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.scene.control.Accordion;
-import javafx.scene.control.Control;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TitledPane;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
-import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
@@ -59,24 +44,14 @@ import org.apache.sis.util.resources.Vocabulary;
  */
 public class CoverageExplorer {
     /**
-     * Margin to keep around captions on top of tables or lists.
+     * Index in the {@link #views} array for the {@link GridView} (tabular data)
+     * or the {@link CoverageView} (image).
      */
-    private static final Insets CAPTION_MARGIN = new Insets(12, 0, 9, 0);
+    private static final int TABLE_VIEW = 0, IMAGE_VIEW = 1;
 
     /**
-     * Space between a group of controls and the border encompassing the group.
-     */
-    private static final Insets GROUP_INSETS = new Insets(12);
-
-    /**
-     * The border to use for grouping some controls together.
-     */
-    private static final Border GROUP_BORDER = new Border(new BorderStroke(
-            Styles.GROUP_BORDER, BorderStrokeStyle.SOLID, null, null));
-
-    /**
-     * The data shown in this table. Note that setting this property to a non-null value may not
-     * modify the grid content immediately. Instead, a background process will request the tiles.
+     * The coverage shown in this view. Note that setting this property to a non-null value may not
+     * modify the view content immediately. Instead, a background process will request the tiles.
      *
      * <p>Current implementation is restricted to {@link GridCoverage} instances, but a future
      * implementation may generalize to {@link org.opengis.coverage.Coverage} instances.</p>
@@ -93,16 +68,6 @@ public class CoverageExplorer {
     private boolean isCoverageAdjusting;
 
     /**
-     * The component for showing sample values.
-     */
-    private final GridView gridView;
-
-    /**
-     * The control showing sample dimensions for the current coverage.
-     */
-    private final TableView<SampleDimension> sampleDimensions;
-
-    /**
      * The control that put everything together.
      * The type of control may change in any future SIS version.
      *
@@ -111,114 +76,70 @@ public class CoverageExplorer {
     private final SplitPane content;
 
     /**
+     * The different views we can provide on {@link #coverageProperty},
+     * together with associated controls.
+     */
+    private final Controls[] views;
+
+    /**
      * Creates an initially empty explorer.
      */
     public CoverageExplorer() {
-        final Vocabulary vocabulary = Vocabulary.getResources((Locale) null);
-        gridView         = new GridView();
-        sampleDimensions = new CategoryCellFactory(gridView.cellFormat).createSampleDimensionTable(vocabulary);
-        sampleDimensions.getSelectionModel().selectedIndexProperty().addListener(new BandSelectionListener(gridView.bandProperty));
-        /*
-         * "Coverage" section with the following controls:
-         *    - Coverage domain as a list of CRS dimensions with two of them selected (TODO).
-         *    - Coverage range as a list of sample dimensions with at least one selected.
-         */
-        final VBox coveragePane;
-        {   // Block for making variables locale to this scope.
-            final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.SampleDimensions));
-            label.setPadding(CAPTION_MARGIN);
-            label.setLabelFor(sampleDimensions);
-            coveragePane = new VBox(label, sampleDimensions);
-        }
-        /*
-         * "Display" section with the following controls:
-         *    - Number format as a localized pattern.
-         *    - Cell width as a slider.
-         */
-        final VBox displayPane;
-        {   // Block for making variables locale to this scope.
-            final GridPane gp = new GridPane();
-            final ColumnConstraints sliderColumn = new ColumnConstraints();
-            sliderColumn.setHgrow(Priority.ALWAYS);
-            gp.getColumnConstraints().setAll(new ColumnConstraints(), sliderColumn);
-            gp.setPadding(GROUP_INSETS);
-            gp.setBorder(GROUP_BORDER);
-            gp.setVgap(9);
-            gp.setHgap(9);
-addRows:    for (int row = 0;; row++) {
-                final Control control;
-                final short key;
-                switch (row) {
-                    case 0: key = Vocabulary.Keys.Width;  control = createSlider(gridView.cellWidth,  30, 200); break;
-                    case 1: key = Vocabulary.Keys.Height; control = createSlider(gridView.cellHeight, 10, 50);  break;
-                    case 2: key = Vocabulary.Keys.Format; control = gridView.cellFormat.createEditor();         break;
-                    default: break addRows;
-                }
-                if (control != null) {
-                    final Label label = new Label(vocabulary.getLabel(key));
-                    label.setLabelFor(control);
-                    GridPane.setConstraints(label,   0, row);
-                    GridPane.setConstraints(control, 1, row);
-                    gp.getChildren().addAll(label, control);
-                }
-            }
-            Styles.setAllRowToSameHeight(gp);
-            final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Cells));
-            label.setPadding(CAPTION_MARGIN);
-            label.setLabelFor(gp);
-            displayPane = new VBox(label, gp);
-        }
-        /*
-         * Put all sections together and have the first one expanded by default.
-         */
-        final Accordion controls = new Accordion(
-                new TitledPane(vocabulary.getString(Vocabulary.Keys.Coverage), coveragePane),
-                new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),  displayPane)
-                // TODO: more controls to be added in a future version.
-        );
-        controls.setExpandedPane(controls.getPanes().get(0));
-        content = new SplitPane(controls, gridView);
-        SplitPane.setResizableWithParent(controls, Boolean.FALSE);
-        SplitPane.setResizableWithParent(gridView, Boolean.TRUE);
-        content.setDividerPosition(0, Styles.INITIAL_SPLIT);
-
         coverageProperty = new SimpleObjectProperty<>(this, "coverage");
         coverageProperty.addListener(this::onCoverageSpecified);
-        gridView.bandProperty.addListener(this::onBandSpecified);
+        /*
+         * The coverage property may be shown in various ways (tabular data, image).
+         * Each visualization way is an entry in the `views` array.
+         */
+        final Vocabulary vocabulary = Vocabulary.getResources((Locale) null);
+        views = new Controls[2];
+        views[TABLE_VIEW] = new GridControls(vocabulary);
+        views[IMAGE_VIEW] = new CoverageControls(vocabulary, coverageProperty);
+        for (final Controls c : views) {
+            SplitPane.setResizableWithParent(c.controls(), Boolean.FALSE);
+            SplitPane.setResizableWithParent(c.view(),     Boolean.TRUE);
+        }
+        final Controls c = views[TABLE_VIEW];
+        content = new SplitPane(c.controls(), c.view());
+        content.setDividerPosition(0, Styles.INITIAL_SPLIT);
         /*
          * Prepare buttons to add on the toolbar. Those buttons are not managed by this class;
          * they are managed by org.apache.sis.gui.dataset.DataWindow. We only declare here the
          * text and action for each button.
          */
-        ToolbarButton.insert(content, new ToolbarButton.RelatedWindow() {
+        final ToggleGroup group = new ToggleGroup();
+        ToolbarButton.insert(content, new ToolbarButton() {
             /** 🗺 — World map. */
-            @Override public Button createButton(final Resources localized) {
-                return createButton("\uD83D\uDDFA\uFE0F", localized, Resources.Keys.Visualize);
+            @Override public Node createButton(final Resources localized) {
+                return createButton(group, "\uD83D\uDDFA\uFE0F", localized, Resources.Keys.Visualize);
             }
-
+            @Override public void handle(final ActionEvent event) {
+                selectView(event, IMAGE_VIEW);
+            }
+        }, new ToolbarButton() {
             /** 🔢 — Input symbol for numbers. */
-            @Override public Button createBackButton(final Resources localized) {
-                return createButton("\uD83D\uDD22\uFE0F", localized, Resources.Keys.TabularData);
+            @Override public Node createButton(final Resources localized) {
+                return createButton(group, "\uD83D\uDD22\uFE0F", localized, Resources.Keys.TabularData);
             }
-
-            /** Creates a visualization of the coverage. */
-            @Override public Region createView() {
-                final CoverageView view = new CoverageView();
-                view.coverageProperty.bind(coverageProperty);
-                return view.getView();
+            @Override public void handle(final ActionEvent event) {
+                selectView(event, TABLE_VIEW);
             }
         });
     }
 
     /**
-     * Creates a new slider for the given range of values and bound to the specified properties.
-     * This is used for creating the sliders to shown in the "Display" pane.
+     * Invoked when the user selects another view to show (tabular data or the image).
+     *
+     * @param  index  {@link #TABLE_VIEW} or {@link #IMAGE_VIEW}.
      */
-    private static Slider createSlider(final DoubleProperty property, final double min, final double max) {
-        final Slider slider = new Slider(min, max, property.getValue());
-        property.bind(slider.valueProperty());
-        slider.setShowTickMarks(false);
-        return slider;
+    private void selectView(final ActionEvent event, final int index) {
+        final Toggle button = (Toggle) event.getSource();
+        if (button.isSelected()) {
+            final Controls c = views[index];
+            content.getItems().setAll(c.controls(), c.view());
+        } else {
+            button.setSelected(true);       // Prevent situation where all buttons are unselected.
+        }
     }
 
     /**
@@ -245,7 +166,7 @@ addRows:    for (int row = 0;; row++) {
     }
 
     /**
-     * Sets the coverage to show in this table.
+     * Sets the coverage to show in this view.
      * This method shall be invoked from JavaFX thread and returns immediately.
      * The new data are loaded in a background thread and will appear after an
      * undetermined amount of time.
@@ -271,7 +192,7 @@ addRows:    for (int row = 0;; row++) {
             setCoverage((GridCoverage) null);
         } else {
             source.listener = this;
-            gridView.setImage(source);
+            startLoading(source);
         }
     }
 
@@ -286,10 +207,10 @@ addRows:    for (int row = 0;; row++) {
                                      final GridCoverage previous, final GridCoverage coverage)
     {
         if (!isCoverageAdjusting) {
-            gridView.setImage((RenderedImage) null);
-            setSampleDimensions(coverage);
+            startLoading(null);                                         // Clear data.
+            updateBandTable(coverage);
             if (coverage != null) {
-                gridView.setImage(new ImageRequest(coverage, null));        // Start a background thread.
+                startLoading(new ImageRequest(coverage, null));         // Start a background thread.
             }
         }
     }
@@ -303,7 +224,7 @@ addRows:    for (int row = 0;; row++) {
      * @param  coverage  the new coverage, or {@code null} if loading failed.
      */
     final void onCoverageLoaded(final GridCoverage coverage) {
-        setSampleDimensions(coverage);
+        updateBandTable(coverage);
         isCoverageAdjusting = true;
         try {
             setCoverage(coverage);
@@ -313,25 +234,25 @@ addRows:    for (int row = 0;; row++) {
     }
 
     /**
-     * Sets the values in the sample dimensions table according information in the given coverage.
+     * Invoked by {@link #setCoverage(ImageRequest)} for starting data loading in a background thread.
+     * This method is invoked in JavaFX thread.
+     *
+     * @param  source  the coverage or resource to load, or {@code null} if none.
      */
-    private void setSampleDimensions(final GridCoverage coverage) {
-        final ObservableList<SampleDimension> items = sampleDimensions.getItems();
-        if (coverage != null) {
-            items.setAll(coverage.getSampleDimensions());
-            sampleDimensions.getSelectionModel().clearAndSelect(gridView.getBand());
-        } else {
-            items.clear();
-        }
+    private void startLoading(final ImageRequest source) {
+        final GridView main = (GridView) views[0].view();
+        main.setImage(source);
     }
 
     /**
-     * Invoked when the band property changed. This method ensures that the selected row
-     * in the sample dimension table matches the band which is shown in the grid view.
+     * Invoked after {@link #setCoverage(ImageRequest)} for updating the table of sample dimensions
+     * with information become available. This method is invoked in JavaFX thread.
+     *
+     * @param  data  the new coverage, or {@code null} if none.
      */
-    private void onBandSpecified(final ObservableValue<? extends Number> property,
-                                 final Number previous, final Number band)
-    {
-        sampleDimensions.getSelectionModel().clearAndSelect(band.intValue());
+    private void updateBandTable(final GridCoverage data) {
+        for (final Controls c : views) {
+            c.updateBandTable(data);
+        }
     }
 }

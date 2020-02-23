@@ -224,7 +224,7 @@ final class CoverageView extends PlanarCanvas {
         final GridCoverage coverage = getCoverage();
         if (coverage != null) {
             data = coverage.render(getSliceExtent());     // TODO: background thread.
-            repaint();
+            view.requestLayout();
         }
     }
 

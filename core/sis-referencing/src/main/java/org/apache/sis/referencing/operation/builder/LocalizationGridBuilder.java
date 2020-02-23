@@ -145,7 +145,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * a period of zero (not {@link Double#NaN}, because we will use this array as a displacement vector).
      *
      * @see #resolveWraparoundAxis(int, int, double)
-     * @see ResidualGrid#cellPeriods
+     * @see ResidualGrid#periodVector
      */
     private double[] periods;
 
