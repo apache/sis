@@ -100,7 +100,7 @@ public class ResourceTree extends TreeView<Resource> {
      * For showing a resource, invoke {@link #setResource(Resource)} after construction.
      */
     public ResourceTree() {
-        localized = Resources.forLocale(Locale.getDefault(Locale.Category.DISPLAY));
+        localized = Resources.forLocale(null);
         setCellFactory(ResourceTree::newCell);
         setOnDragOver(ResourceTree::onDragOver);
         setOnDragDropped(this::load);

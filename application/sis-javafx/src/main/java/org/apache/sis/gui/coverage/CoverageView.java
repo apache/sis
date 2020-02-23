@@ -125,11 +125,9 @@ final class CoverageView extends PlanarCanvas {
 
     /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
-     *
-     * @param  locale  the locale to use for labels and some messages, or {@code null} for default.
      */
-    public CoverageView(final Locale locale) {
-        super(locale);
+    public CoverageView() {
+        super(Locale.getDefault());
         coverageProperty    = new SimpleObjectProperty<>(this, "coverage");
         sliceExtentProperty = new SimpleObjectProperty<>(this, "sliceExtent");
         dataToImage = new AffineTransform();

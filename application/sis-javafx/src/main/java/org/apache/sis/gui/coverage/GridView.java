@@ -186,7 +186,7 @@ public class GridView extends Control {
     private final NumberFormat headerFormat;
 
     /**
-     * The formatter to use for writing sample values. This is also the the property for the localized format pattern.
+     * The formatter to use for writing sample values. This is also the property for the localized format pattern.
      * Note that this pattern depends on current locale. It is provided for user interactions (i.e. in a GUI control)
      * instead than programmatic action.
      *

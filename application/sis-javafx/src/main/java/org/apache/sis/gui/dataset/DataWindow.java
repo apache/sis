@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.dataset;
 
-import java.util.Locale;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -45,11 +44,6 @@ import org.apache.sis.internal.gui.ToolbarButton;
  * @module
  */
 final class DataWindow extends Stage {
-    /**
-     * The locale for texts and tooltips in this window.
-     */
-    private final Locale locale;
-
     /**
      * The tools bar. Removed from the pane when going in full screen mode, and reinserted
      * when exiting full screen mode. The first button in this toolbar shall be the "home"
@@ -96,7 +90,6 @@ final class DataWindow extends Stage {
      * @param  localized  {@link Resources} instance, provided because often known by the caller.
      */
     private DataWindow(final Region content, final Resources localized) {
-        locale = localized.getLocale();
         /*
          * Build the tools bar. This bar will be hidden in full screen mode. Note that above
          * method assumes that the "home" button created below is the first one in the toolbar.
@@ -185,8 +178,8 @@ final class DataWindow extends Stage {
         public void handle(final ActionEvent event) {
             if (creator != null) {
                 final DataWindow originator = window;
-                final Resources  localized  = Resources.forLocale(originator.locale);
-                final Region     content    = creator.createView(originator.locale);
+                final Resources  localized  = Resources.forLocale(null);
+                final Region     content    = creator.createView();
                 final Button     backButton = creator.createBackButton(localized);
                 backButton.setOnAction((e) -> {originator.show(); originator.toFront();});
                 ToolbarButton.insert(content, new ToolbarButton() {

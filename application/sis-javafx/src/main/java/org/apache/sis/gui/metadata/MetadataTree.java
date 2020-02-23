@@ -113,15 +113,10 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
     }
 
     /**
-     * The locale to use for texts.
+     * The locale to use for texts. This is usually {@link Locale#getDefault()}.
+     * This value is given to {@link InternationalString#toString(Locale)} calls.
      */
     final Locale textLocale;
-
-    /**
-     * The locale to use for dates/numbers.
-     * This is often the same than {@link #textLocale}.
-     */
-    private final Locale dataLocale;
 
     /**
      * Creates a new initially empty metadata tree.
@@ -150,10 +145,8 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
     MetadataTree(final MetadataSummary controller, final boolean standard) {
         if (controller != null) {
             textLocale = controller.localized.getLocale();
-            dataLocale = controller.dataLocale;
         } else {
             textLocale = Locale.getDefault(Locale.Category.DISPLAY);
-            dataLocale = Locale.getDefault(Locale.Category.FORMAT);
         }
         contentProperty = new ContentProperty(this);
         nameColumn      = new TreeTableColumn<>(TableColumn.NAME .getHeader().toString(textLocale));

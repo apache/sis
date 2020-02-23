@@ -83,15 +83,10 @@ import org.apache.sis.internal.gui.ExceptionReporter;
 @DefaultProperty("features")
 public class FeatureTable extends TableView<Feature> {
     /**
-     * The locale to use for texts.
+     * The locale to use for texts. This is usually {@link Locale#getDefault()}.
+     * This value is given to {@link InternationalString#toString(Locale)} calls.
      */
     final Locale textLocale;
-
-    /**
-     * The locale to use for dates/numbers.
-     * This is often the same than {@link #textLocale}.
-     */
-    private final Locale dataLocale;
 
     /**
      * The type of features, or {@code null} if not yet determined.
@@ -124,7 +119,6 @@ public class FeatureTable extends TableView<Feature> {
     public FeatureTable() {
         super(new FeatureList());
         textLocale = Locale.getDefault(Locale.Category.DISPLAY);
-        dataLocale = Locale.getDefault(Locale.Category.FORMAT);
         initialize();
     }
 
@@ -140,7 +134,6 @@ public class FeatureTable extends TableView<Feature> {
         other.isSharingList = true;
         isSharingList = true;
         textLocale    = other.textLocale;
-        dataLocale    = other.dataLocale;
         featureType   = other.featureType;
         setFeatures(other.getFeatures());           // Shall be invoked before to install the listener.
         initialize();                               // Install listener.

@@ -375,7 +375,7 @@ public class Canvas extends Observable implements Localized {
     private final DefaultCoordinateOperationFactory coordinateOperationFactory;
 
     /**
-     * The locale for labels or error messages.
+     * The locale for labels or error messages, or {@code null} for the default.
      */
     private final Locale locale;
 

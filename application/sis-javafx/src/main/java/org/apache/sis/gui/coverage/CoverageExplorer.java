@@ -114,8 +114,7 @@ public class CoverageExplorer {
      * Creates an initially empty explorer.
      */
     public CoverageExplorer() {
-        final Locale locale = Locale.getDefault(Locale.Category.DISPLAY);
-        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final Vocabulary vocabulary = Vocabulary.getResources((Locale) null);
         gridView         = new GridView();
         sampleDimensions = new CategoryCellFactory(gridView.cellFormat).createSampleDimensionTable(vocabulary);
         sampleDimensions.getSelectionModel().selectedIndexProperty().addListener(new BandSelectionListener(gridView.bandProperty));
@@ -203,8 +202,8 @@ addRows:    for (int row = 0;; row++) {
             }
 
             /** Creates a visualization of the coverage. */
-            @Override public Region createView(final Locale locale) {
-                final CoverageView view = new CoverageView(locale);
+            @Override public Region createView() {
+                final CoverageView view = new CoverageView();
                 view.coverageProperty.bind(coverageProperty);
                 return view.getView();
             }

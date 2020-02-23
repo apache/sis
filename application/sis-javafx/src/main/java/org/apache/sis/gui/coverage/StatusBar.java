@@ -17,7 +17,6 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
-import java.util.TimeZone;
 import javax.measure.Unit;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -86,7 +85,7 @@ final class StatusBar extends HBox {
      */
     StatusBar(final GridView view) {
         this.view = view;
-        format = new CoordinateFormat(Locale.getDefault(Locale.Category.FORMAT), TimeZone.getDefault());
+        format = new CoordinateFormat();
         coordinates = new Label();
         setAlignment(Pos.CENTER_RIGHT);
         getChildren().setAll(coordinates);

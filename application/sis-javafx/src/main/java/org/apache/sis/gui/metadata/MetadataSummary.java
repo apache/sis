@@ -20,7 +20,6 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.StringJoiner;
 import javafx.application.Platform;
 import javafx.beans.DefaultProperty;
@@ -74,12 +73,6 @@ public class MetadataSummary {
      * The resources for localized strings. Stored because needed often.
      */
     final Resources localized;
-
-    /**
-     * The locale to use for date/number formatters.
-     * This is often the same than {@link #localized}.
-     */
-    final Locale dataLocale;
 
     /**
      * The format to use for writing numbers, created when first needed.
@@ -147,8 +140,7 @@ public class MetadataSummary {
      * Creates an initially empty metadata overview.
      */
     public MetadataSummary() {
-        localized   = Resources.forLocale(Locale.getDefault(Locale.Category.DISPLAY));
-        dataLocale  = Locale.getDefault(Locale.Category.FORMAT);
+        localized   = Resources.forLocale(null);
         information = new TitledPane[] {
             new TitledPane(localized.getString(Resources.Keys.ResourceIdentification), new IdentificationInfo(this)),
             new TitledPane(localized.getString(Resources.Keys.SpatialRepresentation),  new RepresentationInfo(this))
@@ -182,7 +174,7 @@ public class MetadataSummary {
      */
     final NumberFormat getNumberFormat() {
         if (numberFormat == null) {
-            numberFormat = NumberFormat.getInstance(dataLocale);
+            numberFormat = NumberFormat.getInstance();
         }
         return numberFormat;
     }
@@ -192,7 +184,7 @@ public class MetadataSummary {
      */
     final DateFormat getDateFormat() {
         if (dateFormat == null) {
-            dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, dataLocale);
+            dateFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM);
         }
         return dateFormat;
     }

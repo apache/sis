@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.gui;
 
-import java.util.Locale;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
@@ -148,9 +147,8 @@ public abstract class ToolbarButton {
          * This method is invoked only on the first click. For all subsequent clicks,
          * the existing window will be shown again.
          *
-         * @param  locale  locale of the window creating a new window.
          * @return content of the window to show.
          */
-        public abstract Region createView(Locale locale);
+        public abstract Region createView();
     }
 }
