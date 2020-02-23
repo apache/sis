@@ -20,7 +20,6 @@ import java.awt.Transparency;
 import java.awt.image.DataBuffer;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.RasterFormatException;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.feature.Resources;
 
 
@@ -29,7 +28,7 @@ import org.apache.sis.internal.feature.Resources;
  * This color model is slightly more efficient than the default {@link ComponentColorModel} by
  * reducing the amount of object allocations, made possible by the knowledge that we use only
  * one sample value and returns only one color component (the gray).
- * In addition, this class render the {@link Float#NaN} values as transparent.
+ * In addition, this class renders the {@link Float#NaN} values as transparent.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -38,65 +37,45 @@ import org.apache.sis.internal.feature.Resources;
  */
 final class ScaledColorModel extends ComponentColorModel {
     /**
-     * Index of the band to display. This is a copy of {@link ScaledColorSpace#visibleBand}.
+     * The mask to apply for getting a single color component.
+     * This is also the maximum (inclusive) color/alpha value.
      */
-    private final int visibleBand;
+    private static final int MASK = 0xFF;
 
     /**
-     * The scaling factor from sample values to RGB normalized values.
-     * This information duplicates {@link ScaledColorSpace#scale} but
-     * for a scale from 0 to 256 instead than 0 to 1.
+     * Size of the range of color values. Since minimum value is zero,
+     * this range is also the maximum (exclusive) color/alpha value.
      */
-    private final double scale;
+    static final int RANGE = 0x100;
 
     /**
-     * The offset to subtract from sample values before to apply the {@linkplain #scale} factor.
-     * This information duplicates {@link ScaledColorSpace#offset} but for a scale from 0 to 256
-     * instead than 0 to 1.
+     * The object from which to get the coefficients for converting values to colors.
+     * This is a reference to the same object than {@link #getColorSpace()}, but stored
+     * as a {@link ScaledColorSpace} for avoiding the need to perform casts.
      */
-    private final double offset;
+    private final ScaledColorSpace cs;
 
     /**
-     * Creates a new color model.
+     * Creates a new color model for the range of values in the given color space.
      *
-     * @param  colorSpace  the color space to use with this color model.
-     * @param  minimum     the minimal sample value expected, inclusive.
-     * @param  maximum     the maximal sample value expected, exclusive.
-     * @param  type        one of the {@link DataBuffer} constants.
+     * @param  colorSpace   the color space to use with this color model.
+     * @param  type         one of the {@link DataBuffer} constants.
      */
-    ScaledColorModel(final ScaledColorSpace colorSpace, final double minimum, final double maximum, final int type) {
+    ScaledColorModel(final ScaledColorSpace colorSpace, final int type) {
         super(colorSpace, false, false, Transparency.BITMASK, type);
-        visibleBand = colorSpace.visibleBand;
-        scale  = 0x100 / (maximum - minimum);
-        offset = minimum;
+        cs = colorSpace;
     }
 
     /**
-     * Returns the red component of the given value.
      * Defined for consistency but should not be used.
      */
-    @Override
-    public int getRed(final Object inData) {
-        return getRGB(inData) & 0xFF;
-    }
-
-    /**
-     * Returns the green component of the given value.
-     * Defined for consistency but should not be used.
-     */
-    @Override
-    public int getGreen(final Object inData) {
-        return (getRGB(inData) >>> Byte.SIZE) & 0xFF;
-    }
-
-    /**
-     * Returns the green component of the given value.
-     * Defined for consistency but should not be used.
-     */
-    @Override
-    public int getBlue(final Object inData) {
-        return (getRGB(inData) >>> 2*Byte.SIZE) & 0xFF;
-    }
+    @Override public int getRed  (int    value) {return (getRGB(value) >>> 2*Byte.SIZE) & MASK;}
+    @Override public int getRed  (Object value) {return (getRGB(value) >>> 2*Byte.SIZE) & MASK;}
+    @Override public int getGreen(int    value) {return (getRGB(value) >>>   Byte.SIZE) & MASK;}
+    @Override public int getGreen(Object value) {return (getRGB(value) >>>   Byte.SIZE) & MASK;}
+    @Override public int getBlue (int    value) {return  getRGB(value)                  & MASK;}
+    @Override public int getBlue (Object value) {return  getRGB(value)                  & MASK;}
+    @Override public int getAlpha(int    value) {return                                   MASK;}
 
     /**
      * Returns the alpha value for the given sample values.
@@ -104,10 +83,11 @@ final class ScaledColorModel extends ComponentColorModel {
      */
     @Override
     public int getAlpha(final Object inData) {
+        final int visibleBand = cs.visibleBand;
         switch (transferType) {
-            case DataBuffer.TYPE_FLOAT:  return Float .isNaN(((float[])  inData)[visibleBand]) ? 0 : 0xFF;
-            case DataBuffer.TYPE_DOUBLE: return Double.isNaN(((double[]) inData)[visibleBand]) ? 0 : 0xFF;
-            default: return 0xFF;
+            case DataBuffer.TYPE_FLOAT:  return Float .isNaN(((float[])  inData)[visibleBand]) ? 0 : MASK;
+            case DataBuffer.TYPE_DOUBLE: return Double.isNaN(((double[]) inData)[visibleBand]) ? 0 : MASK;
+            default: return MASK;
         }
     }
 
@@ -116,6 +96,7 @@ final class ScaledColorModel extends ComponentColorModel {
      */
     @Override
     public int getRGB(final Object inData) {
+        final int visibleBand = cs.visibleBand;
         final double value;
         switch (transferType) {
             case DataBuffer.TYPE_BYTE:   value = Byte .toUnsignedInt(((byte[])   inData)[visibleBand]); break;
@@ -129,31 +110,16 @@ final class ScaledColorModel extends ComponentColorModel {
         if (Double.isNaN(value)) {
             return 0;                                           // Transparent pixel.
         }
-        final int c = Math.max(0, Math.min(0xFF, (int) ((value - offset) * scale)));
-        return c | (c << Byte.SIZE) | (c << 2*Byte.SIZE) | 0xFF000000;
+        final int c = Math.max(0, Math.min(MASK, (int) ((value - cs.offset) * cs.scale)));
+        return c | (c << Byte.SIZE) | (c << 2*Byte.SIZE) | (MASK << 3*Byte.SIZE);
     }
 
     /**
-     * Returns a hash code value for this color model.
+     * Returns the color/alpha components of the pixel.
      */
     @Override
-    public int hashCode() {
-        return Long.hashCode(Double.doubleToLongBits(scale)
-                      + 31 * Double.doubleToLongBits(offset))
-                      +  7 * getNumComponents() + visibleBand;
-    }
-
-    /**
-     * Compares this color model with the given object for equality.
-     */
-    @Override
-    public boolean equals(final Object other) {
-        if (other instanceof ScaledColorModel && super.equals(other)) {
-            final ScaledColorModel that = (ScaledColorModel) other;
-            return visibleBand == that.visibleBand
-                    && Numerics.equals(scale,  that.scale)
-                    && Numerics.equals(offset, that.offset);
-        }
-        return false;
+    public int getRGB(final int value) {
+        final int c = Math.max(0, Math.min(MASK, (int) ((value - cs.offset) * cs.scale)));
+        return c | (c << Byte.SIZE) | (c << 2*Byte.SIZE) | (MASK << 3*Byte.SIZE);
     }
 }

@@ -19,13 +19,11 @@ package org.apache.sis.internal.coverage.j2d;
 import java.awt.color.ColorSpace;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.collection.WeakHashSet;
 
 
 /**
- * Color space for images storing pixels as real numbers. The color space can have an
- * arbitrary number of bands, but in current implementation only one band is used.
- * Current implementation creates a gray scale.
+ * Color space for images storing pixels as real numbers. This color space can have an arbitrary number of bands,
+ * but only one band is shown. Current implementation produces grayscale image only, but it may change in future.
  *
  * <p>The use of this color space is very slow.
  * It should be used only when no standard color space can be used.</p>
@@ -34,7 +32,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  * @version 1.1
  *
  * @see ScaledColorModel
- * @see ColorModelFactory#createColorSpace(int, int, double, double)
+ * @see ColorModelFactory#createGrayScale(int, int, int, double, double)
  *
  * @since 1.0
  * @module
@@ -43,41 +41,28 @@ final class ScaledColorSpace extends ColorSpace {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 438226855772441165L;
+    private static final long serialVersionUID = -6635165959083590494L;
 
     /**
-     * Shared instances of {@link ScaledColorSpace}s.
+     * The scaling factor from sample values to RGB values. The target RGB values will be in range 0
+     * to 255 inclusive. Note that the target range is different than the range of {@link ColorSpace}
+     * normalized values; methods in this class has to divide values by {@value ScaledColorModel#RANGE}.
      */
-    private static final WeakHashSet<ScaledColorSpace> POOL = new WeakHashSet<>(ScaledColorSpace.class);
-
-    /**
-     * Minimal normalized RGB value.
-     */
-    private static final float MIN_VALUE = 0f;
-
-    /**
-     * Maximal normalized RGB value.
-     */
-    private static final float MAX_VALUE = 1f;
-
-    /**
-     * The scaling factor from sample values to RGB normalized values.
-     */
-    private final float scale;
+    final double scale;
 
     /**
      * The offset to subtract from sample values before to apply the {@linkplain #scale} factor.
      */
-    private final float offset;
+    final double offset;
 
     /**
-     * Index of the band to display.
+     * Index of the band to display, from 0 inclusive to {@link #getNumComponents()} exclusive.
      */
     final int visibleBand;
 
     /**
      * Creates a color model for the given range of values.
-     * Callers should invoke {@link #unique()} on the newly created instance.
+     * The given range does not need to be exact; values outside that range will be clamped.
      *
      * @param  numComponents  the number of components.
      * @param  visibleBand    the band to use for computing colors.
@@ -87,9 +72,8 @@ final class ScaledColorSpace extends ColorSpace {
     ScaledColorSpace(final int numComponents, final int visibleBand, final double minimum, final double maximum) {
         super(TYPE_GRAY, numComponents);
         this.visibleBand = visibleBand;
-        final double scale  = (MAX_VALUE - MIN_VALUE) / (maximum - minimum);
-        this.scale  = (float) scale;
-        this.offset = (float) (minimum - MIN_VALUE / scale);
+        scale  = ScaledColorModel.RANGE / (maximum - minimum);
+        offset = minimum;
     }
 
     /**
@@ -100,12 +84,8 @@ final class ScaledColorSpace extends ColorSpace {
      */
     @Override
     public float[] toRGB(final float[] samples) {
-        float value = (samples[visibleBand] - offset) * scale;
-        if (!(value >= MIN_VALUE)) {                            // Use '!' for catching NaN.
-            value = MIN_VALUE;
-        } else if (value > MAX_VALUE) {
-            value = MAX_VALUE;
-        }
+        float value = Math.min(1, (float) ((samples[visibleBand] - offset) * (1d/ScaledColorModel.RANGE * scale)));
+        if (!(value >= 0)) value = 0;                   // Use '!' for replacing NaN.
         return new float[] {value, value, value};
     }
 
@@ -118,7 +98,8 @@ final class ScaledColorSpace extends ColorSpace {
     @Override
     public float[] fromRGB(final float[] color) {
         final float[] values = new float[getNumComponents()];
-        values[visibleBand] = (color[0] + color[1] + color[2]) / (3 * scale) + offset;
+        values[visibleBand] = (float) ((color[0] + color[1] + color[2])
+                            / (3d/ScaledColorModel.RANGE * scale) + offset);
         return values;
     }
 
@@ -145,7 +126,8 @@ final class ScaledColorSpace extends ColorSpace {
     @Override
     public float[] fromCIEXYZ(final float[] color) {
         final float[] values = new float[getNumComponents()];
-        values[visibleBand] = (color[0] / 0.9642f + color[1] + color[2] / 0.8249f) / (3 * scale) + offset;
+        values[visibleBand] = (float) ((color[0] / 0.9642f + color[1] + color[2] / 0.8249f)
+                            / (3d/ScaledColorModel.RANGE * scale) + offset);
         return values;
     }
 
@@ -157,7 +139,7 @@ final class ScaledColorSpace extends ColorSpace {
      */
     @Override
     public float getMinValue(final int component) {
-        return MIN_VALUE / scale + offset;
+        return (float) offset;
     }
 
     /**
@@ -168,7 +150,7 @@ final class ScaledColorSpace extends ColorSpace {
      */
     @Override
     public float getMaxValue(final int component) {
-        return MAX_VALUE / scale + offset;
+        return (float) (ScaledColorModel.RANGE / scale + offset);
     }
 
     /**
@@ -197,32 +179,25 @@ final class ScaledColorSpace extends ColorSpace {
     }
 
     /**
-     * Returns a unique instance of this color space. May be {@code this}.
-     */
-    final ScaledColorSpace unique() {
-        return POOL.unique(this);
-    }
-
-    /**
      * Returns a hash code value for this color space.
-     * Defined for implementation of {@link #unique()}.
      */
     @Override
     public int hashCode() {
-        return Float.floatToIntBits(scale) + 31 * Float.floatToIntBits(offset) + 7 * getNumComponents() + visibleBand;
+        return Long.hashCode(Double.doubleToLongBits(scale)
+                      + 31 * Double.doubleToLongBits(offset))
+                      +  7 * getNumComponents() + visibleBand;
     }
 
     /**
      * Compares this color space with the given object for equality.
-     * Defined for implementation of {@link #unique()}.
      */
     @Override
     public boolean equals(final Object obj) {
         if (obj instanceof ScaledColorSpace) {
             final ScaledColorSpace that = (ScaledColorSpace) obj;
-            return Numerics.equals(scale,  that.scale)  &&
-                   Numerics.equals(offset, that.offset) &&
-                   visibleBand         ==  that.visibleBand &&
+            return Numerics.equals(scale,  that.scale)             &&
+                   Numerics.equals(offset, that.offset)            &&
+                   visibleBand         ==  that.visibleBand        &&
                    getNumComponents()  ==  that.getNumComponents() &&
                    getType()           ==  that.getType();
         }

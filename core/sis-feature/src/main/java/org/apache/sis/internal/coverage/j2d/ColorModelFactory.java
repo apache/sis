@@ -227,14 +227,7 @@ public final class ColorModelFactory {
          * fallback on a generic (but very slow!) color model.
          */
         if (type != DataBuffer.TYPE_BYTE && type != DataBuffer.TYPE_USHORT) {
-            final ColorSpace colors = createColorSpace(numBands, visibleBand, minimum, maximum);
-            final ComponentColorModel cm;
-            if (colors instanceof ScaledColorSpace) {
-                cm = new ScaledColorModel((ScaledColorSpace) colors, minimum, maximum, type);
-            } else {
-                cm = new ComponentColorModel(colors, false, false, Transparency.OPAQUE, type);
-            }
-            return unique(cm);
+            return createGrayScale(type, numBands, visibleBand, minimum, maximum);
         }
         /*
          * If there is no category, constructs a gray scale palette.
@@ -406,34 +399,22 @@ public final class ColorModelFactory {
      * @param  visibleBand    the band to use for computing colors.
      * @param  minimum        the minimal sample value expected.
      * @param  maximum        the maximal sample value expected.
-     * @return the color space for the given range of values.
+     * @return the color model for the given range of values.
      *
      * @see RasterFactory#createGrayScaleImage(int, int, int, int, int, double, double)
      */
     public static ColorModel createGrayScale(final int dataType, final int numComponents,
             final int visibleBand, final double minimum, final double maximum)
     {
-        final ColorSpace cs = createColorSpace(numComponents, visibleBand, minimum, maximum);
-        return new ComponentColorModel(cs, false, false, Transparency.OPAQUE, dataType);
-    }
-
-    /**
-     * Returns a color space for images storing pixels as real numbers. The color space can have an arbitrary number of bands,
-     * but in current implementation only one band is used. Current implementation create a gray scale.
-     *
-     * <p>The use of this color space is very slow. It should be used only when no standard color space can be used.</p>
-     *
-     * @param  numComponents  the number of components.
-     * @param  visibleBand    the band to use for computing colors.
-     * @param  minimum        the minimal sample value expected.
-     * @param  maximum        the maximal sample value expected.
-     * @return the color space for the given range of values.
-     */
-    public static ColorSpace createColorSpace(final int numComponents, final int visibleBand, final double minimum, final double maximum) {
+        final ColorModel cm;
         if (numComponents == 1 && minimum == 0 && maximum == 1) {
-            return ColorSpace.getInstance(ColorSpace.CS_GRAY);
+            final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+            cm = new ComponentColorModel(cs, false, false, Transparency.OPAQUE, dataType);
+        } else {
+            final ScaledColorSpace cs = new ScaledColorSpace(numComponents, visibleBand, minimum, maximum);
+            cm = new ScaledColorModel(cs, dataType);
         }
-        return new ScaledColorSpace(numComponents, visibleBand, minimum, maximum).unique();
+        return unique(cm);
     }
 
     /**
