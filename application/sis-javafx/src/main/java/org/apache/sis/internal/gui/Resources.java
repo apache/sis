@@ -196,6 +196,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short Format = 38;
 
         /**
+         * From metadata
+         */
+        public static final short FromMetadata = 53;
+
+        /**
          * Full screen
          */
         public static final short FullScreen = 42;

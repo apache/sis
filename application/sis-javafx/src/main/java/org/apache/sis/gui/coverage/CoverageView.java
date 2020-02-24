@@ -29,8 +29,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelBuffer;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
+import javafx.scene.paint.Color;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -226,6 +229,21 @@ final class CoverageView extends PlanarCanvas {
             data = coverage.render(getSliceExtent());     // TODO: background thread.
             view.requestLayout();
         }
+    }
+
+    /**
+     * Sets the background, as a color for now but more patterns my be allowed in a future version.
+     */
+    final void setBackground(final Color color) {
+        view.setBackground(new Background(new BackgroundFill(color, null, null)));
+    }
+
+    /**
+     * Invoked when the user selected a new range of values to scale.
+     */
+    final void onRangeTypeChanged(final ObservableValue<? extends RangeType> property,
+                                  final RangeType previous, final RangeType value)
+    {
     }
 
     /**

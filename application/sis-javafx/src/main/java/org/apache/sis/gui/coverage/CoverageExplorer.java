@@ -20,8 +20,9 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Toggle;
-import javafx.event.ActionEvent;
 import javafx.scene.layout.Region;
+import javafx.event.ActionEvent;
+import javafx.collections.ObservableList;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -113,6 +114,8 @@ public class CoverageExplorer {
             new Selector(IMAGE_VIEW).createButton(group, "\uD83D\uDDFA\uFE0F", localized, Resources.Keys.Visualize),    // 🗺 — World map.
             new Selector(TABLE_VIEW).createButton(group, "\uD83D\uDD22\uFE0F", localized, Resources.Keys.TabularData)   // 🔢 — Input symbol for numbers.
         );
+        final ObservableList<Toggle> toggles = group.getToggles();
+        group.selectToggle(toggles.get(toggles.size() - 1));
     }
 
     /**

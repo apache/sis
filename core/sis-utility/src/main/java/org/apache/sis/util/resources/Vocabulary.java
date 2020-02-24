@@ -100,6 +100,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Attributes = 9;
 
         /**
+         * Automatic
+         */
+        public static final short Automatic = 201;
+
+        /**
          * Axis changes
          */
         public static final short AxisChanges = 10;
@@ -993,6 +998,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Value domain
          */
         public static final short ValueDomain = 164;
+
+        /**
+         * Value range
+         */
+        public static final short ValueRange = 200;
 
         /**
          * Values

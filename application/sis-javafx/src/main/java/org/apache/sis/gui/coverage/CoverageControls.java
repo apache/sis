@@ -24,8 +24,8 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.beans.property.ObjectProperty;
+import javafx.scene.paint.Color;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -56,7 +56,9 @@ final class CoverageControls extends Controls {
      * @param  coverage    property containing the coverage to show.
      */
     CoverageControls(final Vocabulary vocabulary, final ObjectProperty<GridCoverage> coverage) {
+        final Color background = Color.BLACK;
         view = new CoverageView();
+        view.setBackground(background);
         /*
          * "Display" section with the following controls:
          *    - Background color
@@ -64,7 +66,8 @@ final class CoverageControls extends Controls {
         final VBox displayPane;
         {   // Block for making variables locale to this scope.
             final GridPane gp = createControlGrid(
-                label(vocabulary, Vocabulary.Keys.Background, createBackgroundButton())
+                label(vocabulary, Vocabulary.Keys.Background, createBackgroundButton(background)),
+                label(vocabulary, Vocabulary.Keys.ValueRange, RangeType.createButton(view::onRangeTypeChanged))
             );
             final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Image));
             label.setPadding(CAPTION_MARGIN);
@@ -85,11 +88,10 @@ final class CoverageControls extends Controls {
     /**
      * Creates the button for selecting a background color.
      */
-    private static ColorPicker createBackgroundButton() {
-        final ColorPicker b = new ColorPicker();
+    private ColorPicker createBackgroundButton(final Color background) {
+        final ColorPicker b = new ColorPicker(background);
         b.setOnAction((e) -> {
-            final Color color = ((ColorPicker) e.getSource()).getValue();
-            // TODO
+            view.setBackground(((ColorPicker) e.getSource()).getValue());
         });
         return b;
     }
