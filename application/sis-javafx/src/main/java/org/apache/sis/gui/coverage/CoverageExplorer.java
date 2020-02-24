@@ -16,9 +16,8 @@
  */
 package org.apache.sis.gui.coverage;
 
-import java.util.Locale;
-import javafx.scene.Node;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Separator;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Toggle;
 import javafx.event.ActionEvent;
@@ -91,7 +90,8 @@ public class CoverageExplorer {
          * The coverage property may be shown in various ways (tabular data, image).
          * Each visualization way is an entry in the `views` array.
          */
-        final Vocabulary vocabulary = Vocabulary.getResources((Locale) null);
+        final Resources  localized  = Resources.forLocale(null);
+        final Vocabulary vocabulary = Vocabulary.getResources(localized.getLocale());
         views = new Controls[2];
         views[TABLE_VIEW] = new GridControls(vocabulary);
         views[IMAGE_VIEW] = new CoverageControls(vocabulary, coverageProperty);
@@ -108,37 +108,34 @@ public class CoverageExplorer {
          * text and action for each button.
          */
         final ToggleGroup group = new ToggleGroup();
-        ToolbarButton.insert(content, new ToolbarButton() {
-            /** 🗺 — World map. */
-            @Override public Node createButton(final Resources localized) {
-                return createButton(group, "\uD83D\uDDFA\uFE0F", localized, Resources.Keys.Visualize);
-            }
-            @Override public void handle(final ActionEvent event) {
-                selectView(event, IMAGE_VIEW);
-            }
-        }, new ToolbarButton() {
-            /** 🔢 — Input symbol for numbers. */
-            @Override public Node createButton(final Resources localized) {
-                return createButton(group, "\uD83D\uDD22\uFE0F", localized, Resources.Keys.TabularData);
-            }
-            @Override public void handle(final ActionEvent event) {
-                selectView(event, TABLE_VIEW);
-            }
-        });
+        ToolbarButton.insert(content,
+            new Separator(),
+            new Selector(IMAGE_VIEW).createButton(group, "\uD83D\uDDFA\uFE0F", localized, Resources.Keys.Visualize),    // 🗺 — World map.
+            new Selector(TABLE_VIEW).createButton(group, "\uD83D\uDD22\uFE0F", localized, Resources.Keys.TabularData)   // 🔢 — Input symbol for numbers.
+        );
     }
 
     /**
-     * Invoked when the user selects another view to show (tabular data or the image).
-     *
-     * @param  index  {@link #TABLE_VIEW} or {@link #IMAGE_VIEW}.
+     * The action to execute when the user selects a view.
      */
-    private void selectView(final ActionEvent event, final int index) {
-        final Toggle button = (Toggle) event.getSource();
-        if (button.isSelected()) {
-            final Controls c = views[index];
-            content.getItems().setAll(c.controls(), c.view());
-        } else {
-            button.setSelected(true);       // Prevent situation where all buttons are unselected.
+    private final class Selector extends ToolbarButton {
+        /** {@link #TABLE_VIEW} or {@link #IMAGE_VIEW}. */
+        private final int index;
+
+        /** Creates a new action which will show the view at the given index. */
+        Selector(final int index) {
+            this.index = index;
+        }
+
+        /** Invoked when the user selects another view to show (tabular data or the image). */
+        @Override public void handle(final ActionEvent event) {
+            final Toggle button = (Toggle) event.getSource();
+            if (button.isSelected()) {
+                final Controls c = views[index];
+                content.getItems().setAll(c.controls(), c.view());
+            } else {
+                button.setSelected(true);       // Prevent situation where all buttons are unselected.
+            }
         }
     }
 

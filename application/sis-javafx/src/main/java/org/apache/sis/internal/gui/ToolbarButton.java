@@ -17,19 +17,19 @@
 package org.apache.sis.internal.gui;
 
 import javafx.scene.Node;
+import javafx.scene.control.Control;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
-import javafx.scene.layout.Region;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import org.apache.sis.util.ArraysExt;
 
 
 /**
- * Description of a button to add in a the {@link org.apache.sis.gui.dataset.DataWindow} toolbar.
+ * Builder for a button to add in a the {@link org.apache.sis.gui.dataset.DataWindow} toolbar.
  * This class is used only for content-specific buttons; it is not used for buttons managed directly by
  * {@code DataWindow} itself. A {@code ToolbarButton} can create and configure a button with its icon,
  * tooltip text and action to execute when the button is pushed.
@@ -45,32 +45,32 @@ import org.apache.sis.util.ArraysExt;
 public abstract class ToolbarButton implements EventHandler<ActionEvent> {
     /**
      * The property to use in {@link Node#getProperties()} for storing instances of this class.
-     * Values associated to this key shall be arrays of {@code ToolbarButton[]} type.
+     * Values associated to this key shall be arrays of {@code Control[]} type.
      */
-    private static final String PROPERTY_KEY = "org.apache.sis.gui.ToolbarButton";
+    private static final String PROPERTY_KEY = "org.apache.sis.gui.ToolbarButtons";
 
     /**
      * Gets and removes the toolbar buttons associated to the given content pane. Those buttons
-     * should have been specified by a previous call to {@link #insert(Node, ToolbarButton...)}.
+     * should have been specified by a previous call to {@link #insert(Node, Control...)}.
      * They will be requested by {@link org.apache.sis.gui.dataset.DataWindow} only once,
      * which is why we remove them afterward.
      *
      * @param  content  the pane for which to get the toolbar buttons.
      * @return the toolbar buttons (never null, but may be empty).
      */
-    public static ToolbarButton[] remove(final Node content) {
-        final ToolbarButton[] buttons = (ToolbarButton[]) content.getProperties().remove(PROPERTY_KEY);
-        return (buttons != null) ? buttons : new ToolbarButton[0];
+    public static Control[] remove(final Node content) {
+        final Control[] buttons = (Control[]) content.getProperties().remove(PROPERTY_KEY);
+        return (buttons != null) ? buttons : new Control[0];
     }
 
     /**
-     * Sets the toolbar buttons that the given pane which to have in the data window.
-     * If the pane already has buttons, the new one will be inserted before existing ones.
+     * Sets the toolbar buttons that the given pane wants to have in the data window.
+     * If the pane already has buttons, the new ones will be inserted before existing ones.
      *
      * @param  content  the pane for which to set the toolbar buttons.
      * @param  buttons  the toolbar buttons to add.
      */
-    public static void insert(final Node content, final ToolbarButton... buttons) {
+    public static void insert(final Node content, final Control... buttons) {
         content.getProperties().merge(PROPERTY_KEY, buttons, ToolbarButton::prepend);
     }
 
@@ -89,19 +89,6 @@ public abstract class ToolbarButton implements EventHandler<ActionEvent> {
     }
 
     /**
-     * Creates a button configured with its icon, tooltip and action.
-     * The button will be added to the toolbar by the caller.
-     *
-     * <p>If this {@code ToolbarButton} is an instance of {@link RelatedWindow},
-     * then this method does not need to set an action on the button because it
-     * will be done by the caller.</p>
-     *
-     * @param  localized  an instance of {@link Resources} for current locale.
-     * @return the button configured with text or icon, tooltip and action.
-     */
-    public abstract Node createButton(Resources localized);
-
-    /**
      * Convenience method for creating a button.
      * The action handler will be {@code this}.
      *
@@ -111,7 +98,7 @@ public abstract class ToolbarButton implements EventHandler<ActionEvent> {
      * @param  tooltip    the {@link Resources.Keys} value for the tooltip.
      * @return the button configured with text or icon, tooltip and action.
      */
-    protected final ButtonBase createButton(final ToggleGroup group, final String icon, final Resources localized, final short tooltip) {
+    public final ButtonBase createButton(final ToggleGroup group, final String icon, final Resources localized, final short tooltip) {
         final ButtonBase b;
         if (group != null) {
             final ToggleButton tb = new ToggleButton(icon);
@@ -132,45 +119,4 @@ public abstract class ToolbarButton implements EventHandler<ActionEvent> {
      */
     @Override
     public abstract void handle(ActionEvent event);
-
-    /**
-     * A toolbar button for creating and showing a new window related to the window in which the button has been pushed.
-     * The button action will create a new instance of {@link org.apache.sis.gui.dataset.DataWindow} which will itself
-     * contain a button for going back to the original window.
-     */
-    public abstract static class RelatedWindow extends ToolbarButton {
-        /**
-         * For subclass constructors.
-         */
-        protected RelatedWindow() {
-        }
-
-        /**
-         * Creates a button configured with its icon, tooltip and action.
-         * This button does not need to contain an action; it will be set by the caller.
-         *
-         * @param  localized  an instance of {@link Resources} for current locale.
-         * @return the button configured with text or icon and tooltip.
-         */
-        @Override
-        public abstract Button createButton(Resources localized);
-
-        /**
-         * Creates the button for navigation back to the original window.
-         * This button does not need to contain an action; it will be set by the caller.
-         *
-         * @param  localized  an instance of {@link Resources} for current locale.
-         * @return the button configured with text or icon and tooltip.
-         */
-        public abstract Button createBackButton(Resources localized);
-
-        /**
-         * Creates the content of the window to show when the user click on the button.
-         * This method is invoked only on the first click. For all subsequent clicks,
-         * the existing window will be shown again.
-         *
-         * @return content of the window to show.
-         */
-        public abstract Region createView();
-    }
 }
