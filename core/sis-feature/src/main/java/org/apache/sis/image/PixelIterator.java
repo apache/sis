@@ -36,6 +36,7 @@ import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.internal.coverage.j2d.PropertyCalculator;
 
 import static java.lang.Math.floorDiv;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
@@ -63,7 +64,7 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -285,6 +286,18 @@ public abstract class PixelIterator {
         }
 
         /**
+         * If the given image is a wrapper doing nothing else than computing a property value,
+         * unwraps it since the iterators are not interested in properties. This unwrapping is
+         * also necessary for allowing the builder to recognize the {@link BufferedImage} case.
+         */
+        private static RenderedImage unwrap(RenderedImage image) {
+            while (image instanceof PropertyCalculator) {
+                image = ((PropertyCalculator) image).source;
+            }
+            return image;
+        }
+
+        /**
          * Creates a read-only iterator for the given raster.
          *
          * @param  data  the raster which contains the sample values on which to iterate.
@@ -307,8 +320,9 @@ public abstract class PixelIterator {
          * @param  data  the image which contains the sample values on which to iterate.
          * @return a new iterator traversing pixels in the given image.
          */
-        public PixelIterator create(final RenderedImage data) {
+        public PixelIterator create(RenderedImage data) {
             ArgumentChecks.ensureNonNull("data", data);
+            data = unwrap(data);
             if (data instanceof BufferedImage) {
                 return create(((BufferedImage) data).getRaster());
             }
@@ -381,9 +395,10 @@ public abstract class PixelIterator {
          * @param  output   the image where to write the sample values. Can be the same than {@code input}.
          * @return a new writable iterator.
          */
-        public WritablePixelIterator createWritable(final RenderedImage input, final WritableRenderedImage output) {
+        public WritablePixelIterator createWritable(RenderedImage input, final WritableRenderedImage output) {
             ArgumentChecks.ensureNonNull("input",  input);
             ArgumentChecks.ensureNonNull("output", output);
+            input = unwrap(input);
             if (order == SequenceType.LINEAR) {
                 return new LinearIterator(input, output, subArea, window);
             } else if (order != null) {

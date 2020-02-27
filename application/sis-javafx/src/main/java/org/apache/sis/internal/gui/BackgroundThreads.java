@@ -28,8 +28,13 @@ import org.apache.sis.util.logging.Logging;
 
 
 /**
- * Provides the thread pool for JavaFX application. Those threads are not daemon threads
- * in order to not stop for example in the middle of a write operation.
+ * Provides the thread pool for JavaFX application. This thread pool is different than the pool used by
+ * the {@link org.apache.sis.internal.system.CommonExecutor} shared by the rest of Apache SIS library.
+ * Contrarily to {@code CommonExecutor}, this {@code BackgroundThreads} class always allocates threads
+ * to new tasks immediately (no queuing of tasks), no matter if all processors are already busy or not.
+ * The intent is to have quicker responsiveness to user actions, even at the cost of lower throughput.
+ * Another difference is that the threads used by this class are not daemon threads in order to not stop
+ * for example in the middle of a write operation.
  *
  * <p>This class extends {@link AtomicInteger} for opportunistic reason.
  * Users should not rely on this implementation details.</p>
@@ -39,7 +44,7 @@ import org.apache.sis.util.logging.Logging;
  * @since   1.1
  * @module
  */
-@SuppressWarnings("serial")
+@SuppressWarnings("serial")                         // Not intended to be serialized.
 public final class BackgroundThreads extends AtomicInteger implements ThreadFactory {
     /**
      * The executor for background tasks. This is actually an {@link ExecutorService} instance,
@@ -56,6 +61,9 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
     /**
      * Creates a new thread. This method is invoked by {@link #EXECUTOR}
      * when needed and does not need to be invoked explicitly.
+     *
+     * @param  r  the runnable to assign to the thread.
+     * @return a thread for the executor.
      */
     @Override
     public Thread newThread(final Runnable r) {
@@ -72,7 +80,7 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
     }
 
     /**
-     * Invoked at application shutdown time for stopping the executor threads after they completed their task.
+     * Invoked at application shutdown time for stopping the executor threads after they completed their tasks.
      * This method returns soon but the background threads may continue for some time if they did not finished
      * their task yet.
      *

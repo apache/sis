@@ -93,6 +93,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotMapToGridDimensions = 24;
 
         /**
+         * Can not process tile ({0}, {1}).
+         */
+        public static final short CanNotProcessTile_2 = 70;
+
+        /**
          * Can not set a value of type ‘{1}’ to characteristic “{0}”.
          */
         public static final short CanNotSetCharacteristics_2 = 4;
