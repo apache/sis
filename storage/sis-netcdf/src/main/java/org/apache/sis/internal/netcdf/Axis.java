@@ -62,7 +62,7 @@ import ucar.nc2.constants.CF;
  * {@link ucar.nc2.dataset.CoordinateAxis1D} or {@link ucar.nc2.dataset.CoordinateAxis2D} respectively.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see Grid#getAxes(Decoder)
  *
@@ -542,10 +542,9 @@ public final class Axis extends NamedElement {
         /*
          * Axis abbreviation, direction and unit of measurement are mandatory. If any of them is null,
          * creation of CoordinateSystemAxis is likely to fail with an InvalidGeodeticParameterException.
-         * We provide default values for the most well-identified axes and leave other values to null.
-         * Those null values can be accepted if users specify their own factory.
+         * We provide default values for the most well-identified axes.
          *
-         * The default values are SI base units except degrees, which is the usually angular units for netCDF files.
+         * The default values are SI base units except degrees, which is the usual angular units for netCDF files.
          * Providing default units is a little bit dangerous, but we can not create CRS otherwise. Note that wrong
          * defaults become harmless if the CRS is overwritten by GridMapping attributes in Variable.getGridGeometry().
          */
@@ -564,16 +563,24 @@ public final class Axis extends NamedElement {
                     if (increment != null && increment.doubleValue() == 1) {
                         // Do not test values.doubleValue(0) since different conventions exit (0-based, 1-based, etc).
                         unit = Units.PIXEL;
+                    } else {
+                        unit = Units.UNITY;
                     }
                     break;
                 }
+                default: unit = Units.UNITY; break;
             }
         }
         AxisDirection dir = direction;
         if (dir == null) {
-            switch (order) {
-                case 0: dir = AxisDirection.COLUMN_POSITIVE; break;
-                case 1: dir = AxisDirection.ROW_POSITIVE; break;
+            if (Units.isTemporal(unit)) {
+                dir = AxisDirection.FUTURE;
+            } else if (Units.isPressure(unit)) {
+                dir = AxisDirection.UP;
+            } else switch (order) {
+                case 0:  dir = AxisDirection.COLUMN_POSITIVE; break;
+                case 1:  dir = AxisDirection.ROW_POSITIVE;    break;
+                default: dir = AxisDirection.OTHER;           break;
             }
         }
         final String abbr;
@@ -582,7 +589,7 @@ public final class Axis extends NamedElement {
         } else if (dir != null && unit != null) {
             abbr = AxisDirections.suggestAbbreviation(name, dir, unit);
         } else {
-            abbr = null;
+            abbr = "A" + (order + 1);
         }
         return factory.createCoordinateSystemAxis(properties, abbr, dir, unit);
     }
