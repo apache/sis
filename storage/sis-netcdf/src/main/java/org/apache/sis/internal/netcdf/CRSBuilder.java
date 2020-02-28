@@ -39,11 +39,13 @@ import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.internal.referencing.provider.Equirectangular;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.TemporalUtilities;
@@ -73,7 +75,7 @@ import org.apache.sis.math.Vector;
  * which is a {@linkplain Axis#abbreviation controlled vocabulary} for this implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -137,9 +139,9 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
      * The same exception may be repeated many time, in which case we will report only the
      * first one.
      *
-     * @see #recoverableException(NoSuchAuthorityCodeException)
+     * @see #recoverableException(FactoryException)
      */
-    private NoSuchAuthorityCodeException warnings;
+    private FactoryException warnings;
 
     /**
      * Creates a new CRS builder based on datum of the given type.
@@ -358,8 +360,14 @@ previous:   for (int i=components.size(); --i >= 0;) {
      * Reports a non-fatal exception that may occur during {@link #setPredefinedComponents(Decoder)}.
      * In order to avoid repeating the same warning many times, this method collects the warnings
      * together and reports them in a single log record after we finished creating the CRS.
+     *
+     * <p>The expected exception types are:</p>
+     * <ul>
+     *   <li>{@link NoSuchAuthorityCodeException}</li>
+     *   <li>{@link InvalidGeodeticParameterException}</li>
+     * </ul>
      */
-    final void recoverableException(final NoSuchAuthorityCodeException e) {
+    final void recoverableException(final FactoryException e) {
         if (warnings == null) warnings = e;
         else warnings.addSuppressed(e);
     }
@@ -836,7 +844,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
     /**
      * Unknown CRS with (x,y,z) axes.
      */
-    private static final class Engineering extends CRSBuilder<EngineeringDatum, AffineCS> {
+    private static final class Engineering extends CRSBuilder<EngineeringDatum, CoordinateSystem> {
         /**
          * Creates a new builder (invoked by lambda function).
          */
@@ -858,13 +866,23 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /**
-         * Creates two- or three-dimensional {@link AffineCS} from given axes.
+         * Creates two- or three-dimensional coordinate system (usually {@link AffineCS}) from given axes.
          */
         @Override void createCS(CSFactory factory, Map<String,?> properties, CoordinateSystemAxis[] axes) throws FactoryException {
-            if (axes.length > 2) {
-                coordinateSystem = factory.createAffineCS(properties, axes[0], axes[1], axes[2]);
-            } else {
-                coordinateSystem = factory.createAffineCS(properties, axes[0], axes[1]);
+            try {
+                if (axes.length > 2) {
+                    coordinateSystem = factory.createAffineCS(properties, axes[0], axes[1], axes[2]);
+                } else {
+                    coordinateSystem = factory.createAffineCS(properties, axes[0], axes[1]);
+                }
+            } catch (InvalidGeodeticParameterException e) {
+                /*
+                 * Unknown Coordinate System type, for example because of unexpected units of measurement for a
+                 * Cartesian or affine coordinate system.  The fallback object created below is not abstract in
+                 * the Java sense, but in the sense that we don't have more specific information on the CS type.
+                 */
+                coordinateSystem = new AbstractCS(properties, axes);
+                recoverableException(e);
             }
         }
 
