@@ -20,6 +20,8 @@ import java.util.Locale;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.io.IOException;
+import javafx.util.Callback;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -32,12 +34,13 @@ import javafx.scene.control.TreeTableView;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import org.opengis.util.InternationalString;
-import org.opengis.util.ControlledVocabulary;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.internal.util.PropertyFormat;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
-import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -113,10 +116,9 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
     }
 
     /**
-     * The locale to use for texts. This is usually {@link Locale#getDefault()}.
-     * This value is given to {@link InternationalString#toString(Locale)} calls.
+     * The object to use for formatting property values.
      */
-    final Locale textLocale;
+    private final Formatter formatter;
 
     /**
      * Creates a new initially empty metadata tree.
@@ -143,16 +145,18 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     MetadataTree(final MetadataSummary controller, final boolean standard) {
+        final Locale locale;
         if (controller != null) {
-            textLocale = controller.localized.getLocale();
+            locale = controller.localized.getLocale();
         } else {
-            textLocale = Locale.getDefault(Locale.Category.DISPLAY);
+            locale = Locale.getDefault(Locale.Category.DISPLAY);
         }
+        formatter       = new Formatter(locale);
         contentProperty = new ContentProperty(this);
-        nameColumn      = new TreeTableColumn<>(TableColumn.NAME .getHeader().toString(textLocale));
-        valueColumn     = new TreeTableColumn<>(TableColumn.VALUE.getHeader().toString(textLocale));
+        nameColumn      = new TreeTableColumn<>(TableColumn.NAME .getHeader().toString(locale));
+        valueColumn     = new TreeTableColumn<>(TableColumn.VALUE.getHeader().toString(locale));
         nameColumn .setCellValueFactory(MetadataTree::getPropertyName);
-        valueColumn.setCellValueFactory(MetadataTree::getPropertyValue);
+        valueColumn.setCellValueFactory(formatter);
 
         setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         getColumns().setAll(nameColumn, valueColumn);
@@ -163,6 +167,14 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
                 controller.nativeMetadataViews.add(this);
             }
         }
+    }
+
+    /**
+     * The locale to use for texts. This is usually {@link Locale#getDefault()}.
+     * This value is given to {@link InternationalString#toString(Locale)} calls.
+     */
+    final Locale getLocale() {
+        return formatter.getLocale();
     }
 
     /**
@@ -281,7 +293,7 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
         final String text;
         if (value instanceof InternationalString) {
             final MetadataTree view = (MetadataTree) cell.getTreeTableView();
-            text = ((InternationalString) value).toString(view.textLocale);
+            text = ((InternationalString) value).toString(view.getLocale());
         } else {
             text = (value != null) ? value.toString() : null;
         }
@@ -289,25 +301,57 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
     }
 
     /**
-     * Returns the value of the metadata property wrapped by the given argument.
-     * This method is invoked by JavaFX when a new cell needs to be rendered.
-     *
-     * @todo Format other kinds of objects (numbers, dates, timezones, etc.).
-     *       See {@link org.apache.sis.util.collection.TreeTableFormat},
-     *       if possible by putting some code in common.
+     * Formatter for metadata property value in a tree cell. This formatter handles in a special way
+     * many object classes like {@link InternationalString}, <i>etc</i>.
      */
-    private static ObservableValue<Object> getPropertyValue(final CellDataFeatures<TreeTable.Node, Object> cell) {
-        final MetadataTree view = (MetadataTree) cell.getTreeTableView();
-        Object value = getValue(cell, TableColumn.VALUE);
-        if (value instanceof IdentifiedObject) {
-            value = IdentifiedObjects.getDisplayName((IdentifiedObject) value, view.textLocale);
+    private static final class Formatter extends PropertyFormat
+            implements Callback<CellDataFeatures<TreeTable.Node, Object>, ObservableValue<Object>>
+    {
+        /**
+         * The locale to use for texts. This is usually {@link Locale#getDefault()}.
+         * This value is given to {@link InternationalString#toString(Locale)} calls.
+         */
+        private final Locale locale;
+
+        /**
+         * Creates a new formatter for the given locale.
+         */
+        Formatter(final Locale locale) {
+            super(new StringBuilder());
+            this.locale = locale;
         }
-        if (value instanceof ControlledVocabulary) {
-            value = Types.getCodeTitle((ControlledVocabulary) value);
+
+        /**
+         * The locale to use for formatting textual content.
+         */
+        @Override
+        public Locale getLocale() {
+            return locale;
         }
-        if (value instanceof InternationalString) {
-            value = ((InternationalString) value).toString(view.textLocale);
+
+        /**
+         * Returns the value of the metadata property wrapped by the given argument.
+         * This method is invoked by JavaFX when a new cell needs to be rendered.
+         */
+        @Override
+        public ObservableValue<Object> call(final CellDataFeatures<TreeTable.Node, Object> cell) {
+            final MetadataTree view = (MetadataTree) cell.getTreeTableView();
+            Object value = getValue(cell, TableColumn.VALUE);
+            if (value instanceof IdentifiedObject) {
+                value = IdentifiedObjects.getDisplayName((IdentifiedObject) value, locale);
+            }
+            try {
+                clear();
+                final StringBuilder buffer = (StringBuilder) out;
+                buffer.setLength(0);
+                appendValue(value);
+                flush();
+                value = buffer.toString();
+            } catch (IOException e) {               // Should never happen because we append in a StringBuilder.
+                Logging.unexpectedException(Logging.getLogger(Modules.APPLICATION), Formatter.class, "call", e);
+                // Leave `value` as-is. It will be formatted using `Object.toString()`.
+            }
+            return new ReadOnlyObjectWrapper<>(value);
         }
-        return new ReadOnlyObjectWrapper<>(value);
     }
 }

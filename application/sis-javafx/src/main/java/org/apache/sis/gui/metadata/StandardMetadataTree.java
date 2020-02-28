@@ -94,7 +94,7 @@ public class StandardMetadataTree extends MetadataTree {
      */
     public StandardMetadataTree(final MetadataSummary controller) {
         super(controller, true);
-        final Resources localized = Resources.forLocale(textLocale);
+        final Resources localized = Resources.forLocale(getLocale());
         copy   = localized.getString(Resources.Keys.Copy);
         copyAs = localized.getString(Resources.Keys.CopyAs);
         setRowFactory(Row::new);
@@ -227,7 +227,7 @@ public class StandardMetadataTree extends MetadataTree {
                             text = value.toString();
                         }
                     } catch (Exception e) {
-                        final Resources localized = Resources.forLocale(((StandardMetadataTree) getTreeTableView()).textLocale);
+                        final Resources localized = Resources.forLocale(((StandardMetadataTree) getTreeTableView()).getLocale());
                         ExceptionReporter.show(localized.getString(Resources.Keys.ErrorExportingData),
                                                localized.getString(Resources.Keys.CanNotCreateXML), e);
                         return;
