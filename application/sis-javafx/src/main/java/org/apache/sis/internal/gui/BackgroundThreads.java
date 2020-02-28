@@ -67,7 +67,9 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
      */
     @Override
     public Thread newThread(final Runnable r) {
-        return new Thread(Threads.SIS, r, "Application worker #" + incrementAndGet());
+        final Thread t = new Thread(Threads.SIS, r, "Application worker #" + incrementAndGet());
+        t.setPriority(Thread.NORM_PRIORITY - 1);      // Let JavaFX thread have higher priority.
+        return t;
     }
 
     /**

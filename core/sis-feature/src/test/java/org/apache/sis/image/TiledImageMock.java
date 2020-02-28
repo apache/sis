@@ -217,6 +217,9 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
      *   <li><var>Y</var> is the <var>y</var> coordinate (row index) of the sample value relative to current tile.</li>
      * </ul>
      *
+     * The "TXY" pattern holds if all values are less than 10. If some values are greater than 10,
+     * then the sample values are a mix of above values resulting from arithmetic sums.
+     *
      * @param  band  band index where to set values. Other bands will be unmodified.
      */
     public void initializeAllTiles(final int band) {
@@ -236,6 +239,26 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
             }
         }
         assertEquals(tiles.length, ti);
+    }
+
+    /**
+     * Initializes the sample values of all tiles to random values. The image must have been
+     * initialized by a call to {@link #initializeAllTiles(int)} before to invoke this method.
+     *
+     * @param  band       band index where to set values. Other bands will be unmodified.
+     * @param  generator  the random number generator to use for obtaining values.
+     * @param  upper      upper limit (exclusive) of random numbers to generate.
+     */
+    public void setRandomValues(final int band, final Random generator, final int upper) {
+        for (final WritableRaster raster : tiles) {
+            final int x = raster.getMinX();
+            final int y = raster.getMinY();
+            for (int j=0; j<tileHeight; j++) {
+                for (int i=0; i<tileWidth; i++) {
+                    raster.setSample(x+i, y+j, band, generator.nextInt(upper));
+                }
+            }
+        }
     }
 
     /**

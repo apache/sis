@@ -14,16 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage.j2d;
+package org.apache.sis.image;
 
 import java.util.Locale;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.function.Supplier;
-import java.util.function.Consumer;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
 import java.util.stream.Collector;
 import java.awt.Image;
 import java.awt.Rectangle;
@@ -32,16 +28,16 @@ import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 
 
 /**
- * An image which wraps an existing image unchanged, except for a property which is computed
- * on the fly when first requested. All methods delegate to the wrapped image except the one
- * for getting the property value and {@link #getSources()}.
+ * An image which wraps an existing image unchanged, except for properties which are computed
+ * on the fly when first requested. All {@link RenderedImage} methods delegate to the wrapped
+ * image except {@link #getSources()} and the methods for getting the property names or values.
  *
  * <p>The name of the computed property is given by {@link #getComputedPropertyName()}.
  * In addition this method automatically creates another property with the same name
@@ -50,27 +46,15 @@ import org.apache.sis.internal.system.Modules;
  * The computation results are cached by this class.</p>
  *
  * <div class="note"><b>Design note:</b>
- * most non-abstract methods are final because {@link org.apache.sis.image.PixelIterator}
- * (among others) relies on the fact that it can unwrap this image and still get the same
- * pixel values.</div>
- *
- * This class implements various {@link java.util.function} interfaces for implementation convenience
- * (would not be recommended for public API, but this is an internal class). Users should not rely on
- * this fact. Compared to lambda functions, this is one less level of indirection and makes stack traces
- * a little bit shorter to analyze in case of exceptions.
+ * most non-abstract methods are final because {@link PixelIterator} (among others) relies
+ * on the fact that it can unwrap this image and still get the same pixel values.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- *
- * @param  <A>  type of the thread-local object (the accumulator) for holding intermediate results during computation.
- *              This is usually the final type of the property value, but not necessarily.
- *
- * @since 1.1
+ * @since   1.1
  * @module
  */
-public abstract class PropertyCalculator<A> implements RenderedImage,
-        Supplier<A>, BinaryOperator<A>, BiConsumer<A, Raster>, Consumer<LogRecord>
-{
+abstract class AnnotatedImage implements RenderedImage {
     /**
      * The suffix to add to property name for errors that occurred during computation.
      */
@@ -79,7 +63,7 @@ public abstract class PropertyCalculator<A> implements RenderedImage,
     /**
      * The source image from which to compute the property.
      */
-    public final RenderedImage source;
+    protected final RenderedImage source;
 
     /**
      * The computation result, or {@link Image#UndefinedProperty} if not yet computed.
@@ -94,20 +78,27 @@ public abstract class PropertyCalculator<A> implements RenderedImage,
     private LogRecord errors;
 
     /**
-     * Creates a new calculator wrapping the given image.
-     *
-     * @param  source  the image to wrap.
+     * Whether parallel execution is authorized for the {@linkplain #source} image.
      */
-    protected PropertyCalculator(final RenderedImage source) {
-        this.source = source;
+    private final boolean parallel;
+
+    /**
+     * Creates a new annotated image wrapping the given image.
+     * The annotations are the additional properties computed by the subclass.
+     *
+     * @param  source    the image to wrap for adding properties (annotations).
+     * @parma  parallel  whether parallel execution is authorized.
+     */
+    protected AnnotatedImage(final RenderedImage source, final boolean parallel) {
+        this.source   = source;
+        this.parallel = parallel;
         result = Image.UndefinedProperty;
     }
 
     /**
-     * Returns the source of this image. The default implementation
-     * returns {@link #source} in an vector of length 1.
+     * Returns the {@linkplain #source} of this image in an vector of length 1.
      *
-     * @return the source (usually only {@linkplain #source}) of this image.
+     * @return the unique {@linkplain #source} of this image.
      */
     @Override
     @SuppressWarnings("UseOfObsoleteCollectionType")
@@ -118,7 +109,7 @@ public abstract class PropertyCalculator<A> implements RenderedImage,
     }
 
     /**
-     * If the property should be computed on a subset of the tiles,
+     * If the properties should be computed on a subset of the tiles,
      * the pixel coordinates of the region intersecting those tiles.
      * The default implementation returns {@code null}.
      *
@@ -143,7 +134,7 @@ public abstract class PropertyCalculator<A> implements RenderedImage,
      * @return all recognized property names.
      */
     @Override
-    public final String[] getPropertyNames() {
+    public String[] getPropertyNames() {
         final String name = getComputedPropertyName();
         return ArraysExt.concatenate(source.getPropertyNames(), new String[] {name, name + ERRORS_SUFFIX});
     }
@@ -164,7 +155,7 @@ public abstract class PropertyCalculator<A> implements RenderedImage,
     /**
      * Gets a property from this image or from its source. If the given name is for the property
      * to be computed by this class and if that property has not been computed before, then this
-     * method starts computation now and caches the result.
+     * method invokes {@link #computeProperty()} and caches the result.
      *
      * @param  name  name of the property to get.
      * @return the property for the given name (may be {@code null}).
@@ -176,9 +167,22 @@ public abstract class PropertyCalculator<A> implements RenderedImage,
             final boolean isProperty = cn.equals(name);
             if (isProperty || isErrorProperty(cn, name)) {
                 synchronized (this) {
-                    if (result == Image.UndefinedProperty) {
-                        final TileOpExecutor executor = new TileOpExecutor(source, getAreaOfInterest());
-                        result = executor.executeOnReadable(source, Collector.of(this, this, this), this);
+                    if (result == Image.UndefinedProperty) try {
+                        result = computeProperty();
+                    } catch (Exception e) {
+                        result = null;
+                        if (errors != null) {
+                            errors.getThrown().addSuppressed(e);
+                        } else {
+                            /*
+                             * Stores the given exception in a log record. We use a log record in order to initialize
+                             * the timestamp and thread ID to the values they had at the time the first error occurred.
+                             */
+                            final LogRecord record = Errors.getResources((Locale) null).getLogRecord(
+                                                        Level.WARNING, Errors.Keys.CanNotCompute_1, cn);
+                            record.setThrown(e);
+                            setError(record);
+                        }
                     }
                     return isProperty ? result : errors;
                 }
@@ -189,58 +193,103 @@ public abstract class PropertyCalculator<A> implements RenderedImage,
 
     /**
      * Invoked by {@link TileOpExecutor} if an error occurred while processing tiles.
-     * This method should be invoked at most once.
+     * Can also be invoked by {@link #getProperty(String)} directly.
+     * This method shall be invoked at most once.
      *
      * @param  record  a description of the error that occurred.
      */
-    @Override
-    public final synchronized void accept(final LogRecord record) {
+    private synchronized void setError(final LogRecord record) {
         if (errors != null) {
             throw new IllegalStateException();      // Should never happen.
         }
         /*
-         * Completes the record with source identification as if the
-         * error occurred from above `getProperty(String)` method.
+         * Complete record with source identification as if the error occurred from
+         * above `getProperty(String)` method (this is always the case, indirectly).
          */
-        record.setSourceClassName(RenderedImage.class.getCanonicalName());
+        record.setSourceClassName(AnnotatedImage.class.getCanonicalName());
         record.setSourceMethodName("getProperty");
         record.setLoggerName(Modules.RASTER);
         errors = record;
     }
 
     /**
-     * Invoked for creating the object holding the information to be computed by a single thread.
-     * This method will be invoked for each worker thread before the worker starts its execution.
+     * Invoked when the property needs to be computed. If the property can not be computed,
+     * then the result will be {@code null} and the exception thrown by this method will be
+     * wrapped in a property of the same name with the {@value #ERRORS_SUFFIX} suffix.
      *
-     * @return a thread-local variable holding information computed by a single thread.
-     *         May be {@code null} is such objects are not needed.
+     * <p>The default implementation makes the following choice:</p>
+     * <ul class="verbose">
+     *   <li>If {@link #parallel} is {@code true} and the {@linkplain #getAreaOfInterest() area of interest}
+     *       covers at least two tiles and {@link #collector()} returned a non-null value, then this method
+     *       distributes the calculation of many threads using the functions provided by the collector.
+     *       See {@link #collector()} Javadoc for more information.</li>
+     *   <li>Otherwise this method delegates to {@link #computeSequentially()}.</li>
+     * </ul>
+     *
+     * @return the property value (may be {@code null}).
+     * @throws Exception if an error occurred while computing the property.
      */
-    @Override
-    public abstract A get();
+    protected Object computeProperty() throws Exception {
+        if (parallel) {
+            final TileOpExecutor executor = new TileOpExecutor(source, getAreaOfInterest());
+            if (executor.isMultiTiled()) {
+                final Collector<? super Raster,?,?> collector = collector();
+                if (collector != null) {
+                    return executor.executeOnReadable(source, collector(), this::setError);
+                }
+            }
+        }
+        return computeSequentially();
+    }
 
     /**
-     * Invoked after a thread finished to process all its tiles and wants to combine its result with the
-     * result of another thread. This method is invoked only if {@link #get()} returned a non-null value.
-     * This method does not need to be thread-safe; synchronizations will be done by the caller.
+     * Invoked when the property needs to be computed sequentially (all computations in current thread).
+     * If the property can not be computed, then the result will be {@code null} and the exception thrown
+     * by this method will be wrapped in a property of the same name with the {@value #ERRORS_SUFFIX} suffix.
      *
-     * @param  previous  the result of another thread (never {@code null}).
-     * @param  computed  the result computed by current thread (never {@code null}).
-     * @return combination of the two results. May be one of the {@code previous} or {@code computed} instances.
+     * <p>This method is invoked when this class does not support parallel execution ({@link #collector()}
+     * returned {@code null}), or when it is not worth to parallelize (image has only one tile), or when
+     * the {@linkplain #source} image may be non-thread safe ({@link #parallel} is {@code false}).</p>
+     *
+     * @return the property value (may be {@code null}).
+     * @throws Exception if an error occurred while computing the property.
      */
-    @Override
-    public abstract A apply(A previous, A computed);
+    protected abstract Object computeSequentially() throws Exception;
 
     /**
-     * Executes this operation on the given tile. This method may be invoked from any thread.
-     * If an exception occurs during computation, that exception will be logged or wrapped in
-     * an {@link ImagingOpException} by the caller {@link TileOpExecutor}.
+     * Returns the function to execute for computing the property value, together with other required functions
+     * (supplier of accumulator, combiner, finisher). Those functions allow multi-threaded property calculation.
+     * This collector is used in a way similar to {@link java.util.stream.Stream#collect(Collector)}. A typical
+     * approach is two define 3 private methods in the subclass as below (where <var>P</var> is the type of the
+     * property to compute):
      *
-     * @param  accumulator  the thread-local variable created by {@link #get()}. May be {@code null}.
-     * @param  tile         the tile on which to perform a computation.
-     * @throws RuntimeException if the calculation failed.
+     * {@preformat java
+     *     private P createAccumulator() {
+     *         // Create an object holding the information to be computed by a single thread.
+     *         // This is invoked for each worker thread before the worker starts its execution.
+     *     }
+     *
+     *     private static P combine(P previous, P computed) {
+     *         // Invoked after a thread finished to process all its tiles and
+     *         // wants to combine its result with the result of another thread.
+     *     }
+     *
+     *     private static void compute(P accumulator, Raster tile) {
+     *         // Perform the actual computation using one tile and update the accumulator with the result.
+     *         // The accumulator may already contain data, which need to be augmented (not overwritten).
+     *     }
+     *
+     *     &#64;Override
+     *     protected Collector<Raster,P,P> collector() {
+     *         return Collector.of(this::createAccumulator, MyClass::compute, MyClass::combine);
+     *     }
+     * }
+     *
+     * @return functions for multi-threaded computation of property value, or {@code null} if unsupported.
      */
-    @Override
-    public abstract void accept(A accumulator, Raster tile);
+    protected Collector<? super Raster, ?, ?> collector() {
+        return null;
+    }
 
     /** Delegates to the wrapped image. */
     @Override public final ColorModel     getColorModel()            {return source.getColorModel();}
@@ -261,5 +310,16 @@ public abstract class PropertyCalculator<A> implements RenderedImage,
     @Override public final Raster         getData()                  {return source.getData();}
     @Override public final Raster         getData(Rectangle region)  {return source.getData(region);}
     @Override public final WritableRaster copyData(WritableRaster r) {return source.copyData(r);}
-    @Override public final String         toString()                 {return source.toString();}
+
+    /**
+     * Returns a string representation of this image for debugging purpose.
+     */
+    @Override
+    public String toString() {
+        final StringBuilder buffer = new StringBuilder(100).append(AnnotatedImage.class.getSimpleName()).append('[');
+        if (result != Image.UndefinedProperty) {
+            buffer.append("Cached ");
+        }
+        return buffer.append("[\"").append(getComputedPropertyName()).append("\" on ").append(source).append(']').toString();
+    }
 }

@@ -31,14 +31,32 @@ import org.apache.sis.util.ArgumentChecks;
  */
 public final class ImageOperations {
     /**
-     * The default set of operations in which failures to compute cause an exception to be thrown.
+     * The set of operations with default configuration. Operations executed by this instance
+     * will be multi-threaded if possible, and failures to compute a value cause an exception
+     * to be thrown.
      */
-    public static final ImageOperations STRICT = new ImageOperations();
+    public static final ImageOperations DEFAULT = new ImageOperations(true);
+
+    /**
+     * The set of operations where all executions are constrained to a single thread.
+     * Only the caller thread is used, with no parallelization. Sequential operations
+     * may be useful for processing {@link RenderedImage} that may not be thread-safe.
+     * The error handling policy is the same than {@link #DEFAULT}.
+     */
+    public static final ImageOperations SEQUENTIAL = new ImageOperations(false);
+
+    /**
+     * Whether the operations can be executed in parallel.
+     */
+    private final boolean parallel;
 
     /**
      * Creates a new set of image operations.
+     *
+     * @param  parallel  whether the operations can be executed in parallel.
      */
-    private ImageOperations() {
+    private ImageOperations(final boolean parallel) {
+        this.parallel = parallel;
     }
 
     /**
@@ -49,7 +67,7 @@ public final class ImageOperations {
      */
     public Statistics[] statistics(final RenderedImage source) {
         ArgumentChecks.ensureNonNull("source", source);
-        final StatisticsCalculator calculator = new StatisticsCalculator(source);
+        final StatisticsCalculator calculator = new StatisticsCalculator(source, parallel);
         final Object property = calculator.getProperty(StatisticsCalculator.PROPERTY_NAME);
         if (property instanceof Statistics[]) {
             // TODO: check error condition.

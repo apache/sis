@@ -36,7 +36,6 @@ import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.internal.coverage.j2d.PropertyCalculator;
 
 import static java.lang.Math.floorDiv;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
@@ -291,8 +290,8 @@ public abstract class PixelIterator {
          * also necessary for allowing the builder to recognize the {@link BufferedImage} case.
          */
         private static RenderedImage unwrap(RenderedImage image) {
-            while (image instanceof PropertyCalculator) {
-                image = ((PropertyCalculator) image).source;
+            while (image instanceof AnnotatedImage) {
+                image = ((AnnotatedImage) image).source;
             }
             return image;
         }

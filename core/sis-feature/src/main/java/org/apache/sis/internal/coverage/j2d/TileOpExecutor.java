@@ -86,7 +86,7 @@ public class TileOpExecutor {
      * @param  aoi    region of interest, or {@code null} for the whole image.
      * @throws ArithmeticException if some tile indices are too large.
      */
-    protected TileOpExecutor(final RenderedImage image, final Rectangle aoi) {
+    public TileOpExecutor(final RenderedImage image, final Rectangle aoi) {
         if (aoi != null) {
             final int  tileWidth       = image.getTileWidth();
             final int  tileHeight      = image.getTileHeight();
@@ -105,10 +105,12 @@ public class TileOpExecutor {
     }
 
     /**
-     * Returns {@code true} if this executor will apply to two tiles or more.
-     * Returns {@code false} if it will apply to a single tile or no tile at all.
+     * Returns {@code true} if the region of interest covers at least two tiles.
+     * Returns {@code false} if the region of interest covers a single tile or no tile at all.
+     *
+     * @return whether the operation will be executed on two tiles or more.
      */
-    private boolean isMultiTiled() {
+    public final boolean isMultiTiled() {
         /*
          * Following expression is negative if at least one (max - min) value is negative
          * (empty case), and 0 if all (max - min) values are zero (singleton case).

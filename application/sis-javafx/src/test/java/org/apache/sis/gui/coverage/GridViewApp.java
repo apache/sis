@@ -39,7 +39,7 @@ public final strictfp class GridViewApp extends Application {
     /**
      * Size of the artificial tiles. Should be small enough so we can have many of them.
      * Width and height should be different in order to increase the chance to see bugs
-     * if some code confused them.
+     * if some code confuse them.
      */
     private static final int TILE_WIDTH = 10, TILE_HEIGHT = 15;
 
@@ -75,7 +75,6 @@ public final strictfp class GridViewApp extends Application {
      * have artificial errors in order to see the error controls.
      */
     private static TiledImageMock createImage() {
-        final Random random = new Random();
         final TiledImageMock image = new TiledImageMock(
                 DataBuffer.TYPE_USHORT, 1,
                 -50,                            // minX

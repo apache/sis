@@ -18,32 +18,36 @@ package org.apache.sis.image;
 
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.ImagingOpException;
+import java.util.stream.Collector;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.coverage.j2d.PropertyCalculator;
 
 
 /**
- * Computes statistics on all pixel values of an image.
+ * Computes statistics on all pixel values of an image. The results are stored in an array
+ * of {@link Statistics} objects (one per band) in a property named {@value #PROPERTY_NAME}.
+ * The statistics can be computed in parallel or sequentially for non thread-safe images.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-final class StatisticsCalculator extends PropertyCalculator<Statistics[]> {
+final class StatisticsCalculator extends AnnotatedImage {
     /**
      * Name of the property computed by this class.
      */
-    static final String PROPERTY_NAME = "statistics";
+    static final String PROPERTY_NAME = "org.apache.sis.image.statistics";
 
     /**
      * Creates a new calculator.
      *
-     * @param  image  the image for which to compute statistics.
+     * @param  image     the image for which to compute statistics.
+     * @parma  parallel  whether parallel execution is authorized.
      */
-    StatisticsCalculator(final RenderedImage image) {
-        super(image);
+    StatisticsCalculator(final RenderedImage image, final boolean parallel) {
+        super(image, parallel);
     }
 
     /**
@@ -55,29 +59,90 @@ final class StatisticsCalculator extends PropertyCalculator<Statistics[]> {
     }
 
     /**
-     * Invoked for creating the objects holding the statistics to be computed by a single thread.
-     * This method will be invoked for each worker threads.
+     * Creates the objects where to add sample values for computing statistics.
+     * We will have one accumulator for each band in the source image.
+     * This is used for both sequential and parallel executions.
      */
-    @Override
-    public Statistics[] get() {
-        final Statistics[] stats = new Statistics[source.getSampleModel().getNumBands()];
-        for (int i=0; i<stats.length; i++) {
+    private static Statistics[] createAccumulator(final int numBands) {
+        final Statistics[] stats = new Statistics[numBands];
+        for (int i=0; i<numBands; i++) {
             stats[i] = new Statistics(Vocabulary.formatInternational(Vocabulary.Keys.Band_1, i));
         }
         return stats;
     }
 
     /**
-     * Invoked after a thread finished to process all its tiles and wants to combine its statistics
-     * with the ones computed by another thread. This method does not need to be thread-safe;
-     * synchronizations will be done by the caller.
+     * Computes statistics using the given iterator and accumulates the result for all bands.
+     * This method is invoked in both sequential and parallel case. In the sequential case it
+     * is invoked for the whole image; in the parallel case it is invoked for only one tile.
      *
-     * @param  previous  the statistics computed by another thread (never {@code null}).
-     * @param  computed  the statistics computed by current thread (never {@code null}).
-     * @return combination of the two results, stored in {@code previous} instances.
+     * @param accumulator  where to accumulate the statistics results.
+     * @param it           the iterator on a raster or on the whole image.
+     */
+    private static void compute(final Statistics[] accumulator, final PixelIterator it) {
+        double[] samples = null;
+        while (it.next()) {
+            samples = it.getPixel(samples);                 // Get values in all bands.
+            for (int i=0; i<accumulator.length; i++) {
+                accumulator[i].accept(samples[i]);
+            }
+        }
+    }
+
+    /**
+     * Computes statistics on the given image in a sequential way (everything computed in current thread).
+     * This is used for testing purposes, or when the image has only one tile, or when the implementation
+     * of {@link RenderedImage#getTile(int, int)} may be non thread-safe.
+     *
+     * @param  source  the image on which to compute statistics.
+     * @return statistics on the given image computed sequentially.
+     */
+    static Statistics[] computeSequentially(final RenderedImage source) {
+        final PixelIterator it = PixelIterator.create(source);
+        final Statistics[] accumulator = createAccumulator(it.getNumBands());
+        compute(accumulator, it);
+        return accumulator;
+    }
+
+    /**
+     * Computes the statistics on the whole image using a single thread. This method is invoked when it is
+     * not worth to parallelize (image has only one tile), or when the source image may be non-thread safe.
      */
     @Override
-    public Statistics[] apply(final Statistics[] previous, final Statistics[] computed) {
+    protected Object computeSequentially() {
+        return computeSequentially(source);
+    }
+
+    /**
+     * Returns the function to execute for parallel computation of statistics,
+     * together with other required functions (supplier of accumulator, combiner, finisher).
+     */
+    @Override
+    protected Collector<Raster, Statistics[], Statistics[]> collector() {
+        return Collector.of(this::createAccumulator, StatisticsCalculator::compute, StatisticsCalculator::combine);
+    }
+
+    /**
+     * Invoked for creating the object holding the information to be computed by a single thread.
+     * This method will be invoked for each worker thread before the worker starts its execution.
+     *
+     * @return a thread-local variable holding information computed by a single thread.
+     *         May be {@code null} is such objects are not needed.
+     */
+    private Statistics[] createAccumulator() {
+        return createAccumulator(source.getSampleModel().getNumBands());
+    }
+
+    /**
+     * Invoked after a thread finished to process all its tiles and wants to combine its result with the
+     * result of another thread. This method is invoked only if {@link #createAccumulator()} returned a non-null value.
+     * This method does not need to be thread-safe; synchronizations will be done by the caller.
+     *
+     * @param  previous  the result of another thread (never {@code null}).
+     * @param  computed  the result computed by current thread (never {@code null}).
+     * @return combination of the two results. May be one of the {@code previous} or {@code computed} instances.
+     */
+    private static Statistics[] combine(final Statistics[] previous, final Statistics[] computed) {
         for (int i=0; i<computed.length; i++) {
             previous[i].combine(computed[i]);
         }
@@ -85,20 +150,15 @@ final class StatisticsCalculator extends PropertyCalculator<Statistics[]> {
     }
 
     /**
-     * Invoked for computing statistics on all pixel values in a raster.
+     * Executes this operation on the given tile. This method may be invoked from any thread.
+     * If an exception occurs during computation, that exception will be logged or wrapped in
+     * an {@link ImagingOpException} by the caller.
      *
-     * @param  accumulator  where to store statistics.
-     * @param  tile         the tile for which to compute statistics.
+     * @param  accumulator  the thread-local variable created by {@link #createAccumulator()}.
+     * @param  tile         the tile on which to perform a computation.
+     * @throws RuntimeException if the calculation failed.
      */
-    @Override
-    public void accept(final Statistics[] accumulator, final Raster tile) {
-        final PixelIterator it = new PixelIterator.Builder().create(tile);
-        double[] samples = null;
-        while (it.next()) {
-            samples = it.getPixel(samples);         // Get values in all bands.
-            for (int i=0; i<samples.length; i++) {
-                accumulator[i].accept(samples[i]);
-            }
-        }
+    private static void compute(final Statistics[] accumulator, final Raster tile) {
+        compute(accumulator, new PixelIterator.Builder().create(tile));
     }
 }
