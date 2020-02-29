@@ -37,9 +37,7 @@ import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import org.opengis.geometry.DirectPosition;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.internal.gui.BackgroundThreads;
 
@@ -521,8 +519,9 @@ public class GridView extends Control {
      * {@link RenderedImage} uses a coordinate system where the coordinates of the upper-left corner
      * is not (0,0).
      */
-    final DirectPosition toImageCoordinates(final int column, final int row) {
-        return new DirectPosition2D(column + (long) minX, row + (long) minY);
+    final void toImageCoordinates(final double[] indices) {
+        indices[0] += minX;
+        indices[1] += minY;
     }
 
     /**

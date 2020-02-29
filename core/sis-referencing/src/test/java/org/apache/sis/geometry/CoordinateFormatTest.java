@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Michael Hausegger
  *
- * @version 1.0
+ * @version 1.1
  *
  * @see org.apache.sis.measure.AngleFormatTest
  *
@@ -268,6 +268,24 @@ public final strictfp class CoordinateFormatTest extends TestCase {
         assertEquals("40°07,4′N 9°52,6′E", format.format(pos));
         format.setPrecision(0.01, Units.METRE);
         assertEquals("40°07′24,4444″N 9°52′35,5556″E", format.format(pos));
+    }
+
+    /**
+     * Tests {@link CoordinateFormat#setPrecisions(double...)} followed by
+     * {@link CoordinateFormat#getPrecisions()}
+     */
+    @Test
+    public void testSetPrecisions() {
+        final CoordinateFormat format = new CoordinateFormat(Locale.FRANCE, null);
+        final DirectPosition2D pos = new DirectPosition2D(40.123456789, 9.87654321);
+        format.setDefaultCRS(HardCodedCRS.WGS84_φλ);
+        format.setPrecisions(0.05, 0.0001);
+        assertEquals("40°07′N 9°52′35,6″E", format.format(pos));
+        assertArrayEquals("precisions", new double[] {1.0/60, 0.1/3600}, format.getPrecisions(), 1E-15);
+
+        format.setPrecisions(0.0005, 0.01);
+        assertEquals("40°07′24″N 9°52,6′E", format.format(pos));
+        assertArrayEquals("precisions", new double[] {1.0/3600, 0.1/60}, format.getPrecisions(), 1E-15);
     }
 
     /**

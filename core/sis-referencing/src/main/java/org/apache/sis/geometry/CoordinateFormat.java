@@ -52,6 +52,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
@@ -77,13 +78,20 @@ import org.apache.sis.io.CompoundFormat;
  * The format can be controlled by invoking the {@link #applyPattern(Class, String)} public method,
  * or by overriding the {@link #createFormat(Class)} protected method.
  *
- * <p>This format does <strong>not</strong> transform the given coordinates in a unique CRS.
+ * <h2>Coordinate reference system</h2>
+ * If the Coordinate Reference System (CRS) of the positions to format is known, it should
+ * {@linkplain #setDefaultCRS(CoordinateReferenceSystem) be specified} before to invoke other methods in this
+ * class because that CRS may impact calculation of properties like the number of fraction digits achieving a
+ * {@linkplain #setPrecision(double, Unit) specified precision}.
+ * That default CRS is used only if the {@link DirectPosition} does not specify its own CRS.
+ *
+ * <p>{@code CoordinateFormat} does <strong>not</strong> transform the given coordinates in a unique CRS.
  * If the coordinates need to be formatted in a specific CRS, then the caller should
  * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform#transform(DirectPosition, DirectPosition)
  * transform the position} before to format it.</p>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see AngleFormat
  * @see org.apache.sis.measure.UnitFormat
@@ -123,6 +131,20 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     private String parseSeparator;
 
     /**
+     * The desired precisions for each coordinate, or {@code null} if unspecified.
+     * The length of this array does not need to be equal to the number of dimensions;
+     * extraneous values are ignored and missing values are assumed equal to 0.
+     * A value of 0 means to use the default precision for that dimension.
+     *
+     * <p>Note that this is the precision specified by the user, which may differ from
+     * the precision returned by {@link #getPrecisions()}.</p>
+     *
+     * @see #setPrecisions(double...)
+     * @see #getPrecisions()
+     */
+    private double[] desiredPrecisions;
+
+    /**
      * The coordinate reference system to assume if no CRS is attached to the position to format.
      * May be {@code null}.
      */
@@ -146,8 +168,17 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     private transient byte[] types;
 
     /**
-     * The formats to use for formatting, or {@code null} if not yet computed.
-     * This array length should be equal to the {@link #lastCRS} dimension.
+     * The format instances given by {@link #getFormat(Class)}, to use by default when we have
+     * not been able to configure the precision. This is the same array than {@link #formats},
+     * unless {@link #setPrecisions(double...)} has been invoked.
+     * Values at different indices may reference the same {@link Format} instance.
+     */
+    private transient Format[] sharedFormats;
+
+    /**
+     * The formats to use for formatting each coordinate value, or {@code null} if not yet computed.
+     * The length of this array should be equal to the number of dimensions in {@link #lastCRS}.
+     * Values at different indices may reference the same {@link Format} instance.
      */
     private transient Format[] formats;
 
@@ -239,6 +270,8 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
 
     /**
      * Returns the coordinate reference system to use if no CRS is explicitly associated to a given {@code DirectPosition}.
+     * This CRS determines the type of format to use for each coordinate (number, angle or date) and the number of fraction
+     * digits to use for achieving a {@linkplain #setPrecision(double, Unit) specified precision}.
      *
      * @return the default coordinate reference system, or {@code null} if none.
      */
@@ -260,15 +293,16 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     /**
      * Computes the value of transient fields from the given CRS.
      */
-    private void initialize(final CoordinateReferenceSystem crs) {
-        types        = null;
-        formats      = null;
-        units        = null;
-        toFormatUnit = null;
-        unitSymbols  = null;
-        epochs       = null;
-        negate       = 0;
-        lastCRS      = crs;
+    private void configure(final CoordinateReferenceSystem crs) {
+        types         = null;
+        formats       = null;
+        sharedFormats = null;
+        units         = null;
+        toFormatUnit  = null;
+        unitSymbols   = null;
+        epochs        = null;
+        negate        = 0;
+        lastCRS       = crs;
         if (crs == null) {
             return;
         }
@@ -287,7 +321,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
         for (int i=0; i<dimension; i++) {
             final CoordinateSystemAxis axis = cs.getAxis(i);
             if (axis == null) {                                               // Paranoiac check.
-                formats[i] = getFormat(Number.class);
+                formats[i] = getDefaultFormat();
                 continue;
             }
             final Unit<?> unit = axis.getUnit();
@@ -349,8 +383,34 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 }
             }
         }
-        this.types   = types;           // Assign only on success.
-        this.formats = formats;
+        this.types    = types;         // Assign only on success.
+        this.formats  = formats;
+        sharedFormats = formats;
+    }
+
+    /**
+     * Returns a clone of the format at the specified dimension. Format instances are cloned only when first needed.
+     * The clones are needed when we want to change the format pattern (number of fraction digits, <i>etc.</i>) for
+     * only one dimension, without impacting other dimensions that may use the same format.
+     */
+    private Format getFormatClone(final int dim) {
+        if (formats == sharedFormats) {
+            formats = formats.clone();
+        }
+        Format format = formats[dim];
+        if (format == sharedFormats[dim]) {
+            formats[dim] = format = (Format) format.clone();
+        }
+        return format;
+    }
+
+    /**
+     * The default format to use when no CRS or no axis information is available. The coordinate type
+     * could be anything (a date, an angle, …), but since we have no information we assume a number.
+     * This method is defined for making clearer when such fallback is used.
+     */
+    private Format getDefaultFormat() {
+        return getFormat(Number.class);
     }
 
     /**
@@ -383,6 +443,125 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     }
 
     /**
+     * Returns the precisions at which coordinate values are formatted in each dimension.
+     * For example if coordinates in dimension <var>i</var> are formatted with two fraction digits,
+     * then the precision reported in {@code precisions[i]} will be 0.01. If the precision can not
+     * be determined for some dimensions, the corresponding values in the returned array will be 0.
+     *
+     * <p>The values returned by this method are not necessarily equal to the values specified in the last
+     * call to {@link #setPrecisions(double...)}. For example if a precision of 0.03 has been requested for
+     * a dimension whose coordinates are formatted as decimal numbers, then the actual precision returned
+     * by this method for that dimension will be 0.01.</p>
+     *
+     * @return precision of coordinate values in each dimension (may contain 0 values for unknown precisions).
+     *
+     * @see AngleFormat#getPrecision()
+     * @see DecimalFormat#getMaximumFractionDigits()
+     *
+     * @since 1.1
+     */
+    public double[] getPrecisions() {
+        if (lastCRS != defaultCRS) {
+            configure(defaultCRS);
+        }
+        Format[] cf = formats;
+        if (cf == null) {
+            cf = new Format[DEFAULT_DIMENSION];
+            Arrays.fill(cf, getDefaultFormat());
+        }
+        final double[] precisions = new double[cf.length];
+        for (int i=0; i<precisions.length; i++) {
+            final Format f = cf[i];
+            if (f instanceof DecimalFormat) {
+                /*
+                 * Intentionally check the DecimalFormat subtype, not the more generic NumberFormat type,
+                 * because the calculation below assumes base 10 and assumes that fraction digits are for
+                 * fractions of 1 (by contrast, CompactNumberFormat may apply fraction to larger values).
+                 */
+                precisions[i] = MathFunctions.pow10(-((DecimalFormat) f).getMaximumFractionDigits());
+            } else if (f instanceof AngleFormat) {
+                precisions[i] = ((AngleFormat) f).getPrecision();
+            }
+        }
+        return precisions;
+    }
+
+    /**
+     * Sets the desired precisions at which to format coordinate values in each dimension.
+     * For example if {@code precisions[i]} is 0.05, then coordinates in dimension <var>i</var>
+     * will be shown with two fraction digits when formatted as decimal numbers, or with "D°MM"
+     * pattern when formatted as angles.
+     *
+     * <p>This precision does not have a clear relationship to the precision on the ground.
+     * For example a precision of 0.01 could be one centimeter or 10 meters, depending if
+     * the units of measurement in that dimension is meter or kilometer.
+     * For a precision related to the ground, use {@link #setPrecision(double, Unit)} instead.</p>
+     *
+     * <p>If any value in the given array is 0 or {@link Double#NaN}, then there is a choice:
+     * if {@link #setPrecision(double, Unit)} has been invoked, the ground precision specified to that
+     * method will apply (if possible). Otherwise an implementation-specific default precision is used.
+     * So it is possible to use {@link #setPrecision(double, Unit)} for specifying a precision in "real
+     * world" units and to use this {@code setPrecisions(double...)} method for adjusting the precision
+     * of only the vertical axis for example.</p>
+     *
+     * @param  precisions  desired precision at which to format coordinate values in each dimension
+     *                     (may have 0 values for unspecified precision in some of those dimensions),
+     *                     or {@code null} for restoring the default values.
+     *
+     * @see AngleFormat#setPrecision(double, boolean)
+     * @see DecimalFormat#setMaximumFractionDigits(int)
+     *
+     * @since 1.1
+     */
+    public void setPrecisions(final double... precisions) {
+        if (precisions == null) {
+            desiredPrecisions = null;
+            formats = sharedFormats;
+        } else {
+            if (desiredPrecisions == null || desiredPrecisions.length != 0) {
+                desiredPrecisions = new double[precisions.length];
+                Arrays.fill(desiredPrecisions, Double.NaN);
+            }
+            for (int i=0; i<precisions.length; i++) {
+                double p = Math.abs(precisions[i]);
+                if (!(p < Double.POSITIVE_INFINITY)) p = 0;                 // Use ! for replacing NaN.
+                if (desiredPrecisions[i] != (desiredPrecisions[i] = p)) {
+                    // Precision changed. Keep format up to date.
+                    if (formats != null && i < formats.length) {
+                        applyPrecision(i);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets the pattern of the format for the specified dimension according the desired precision.
+     * The format to configure is {@code formats[dim]} and the pattern will be constructed from the
+     * {@code desiredPrecisions[dim]} value. Caller must ensure that the given dimension is valid
+     * for both {@link #formats} and {@link #desiredPrecisions} arrays.
+     */
+    private void applyPrecision(final int dim) {
+        final double precision = desiredPrecisions[dim];
+        if (precision > 0) {
+            final Format format = formats[dim];
+            /*
+             * Intentionally check the DecimalFormat subtype, not the more generic NumberFormat type,
+             * because the calculation below assumes base 10 and assumes that fraction digits are for
+             * fractions of 1 (by contrast, CompactNumberFormat may apply fraction to larger values).
+             */
+            if (format instanceof DecimalFormat) {
+                final int c = Math.max(DecimalFunctions.fractionDigitsForDelta(precision, false), 0);
+                final DecimalFormat nf = (DecimalFormat) getFormatClone(dim);
+                nf.setMinimumFractionDigits(c);
+                nf.setMaximumFractionDigits(c);
+            } else if (format instanceof AngleFormat) {
+                ((AngleFormat) getFormatClone(dim)).setPrecision(precision, true);
+            }
+        }
+    }
+
+    /**
      * Adjusts the number of fraction digits to show in coordinates for achieving the given precision.
      * The {@link NumberFormat} and {@link AngleFormat} are configured for coordinates expressed in the
      * {@linkplain #getDefaultCRS() default coordinate reference system} defined at the moment this method is invoked.
@@ -402,7 +581,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @param  resolution  the desired resolution.
      * @param  unit        unit of the desired resolution.
      *
-     * @see NumberFormat#setMaximumFractionDigits(int)
+     * @see DecimalFormat#setMaximumFractionDigits(int)
      * @see AngleFormat#setPrecision(double, boolean)
      *
      * @since 1.0
@@ -551,12 +730,17 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
          */
         void setPrecision(final CoordinateFormat owner) {
             final Format format = owner.getFormat(isAngular ? Angle.class : Number.class);
-            if (format instanceof NumberFormat) {
+            if (format instanceof DecimalFormat) {
+                /*
+                 * Intentionally check the DecimalFormat subtype, not the more generic NumberFormat type,
+                 * because the calculation below assumes base 10 and assumes that fraction digits are for
+                 * fractions of 1 (by contrast, CompactNumberFormat may apply fraction to larger values).
+                 */
                 if (resolution == 0) resolution = 1E-6;                     // Arbitrary value.
                 final int p = Math.max(0, DecimalFunctions.fractionDigitsForDelta(resolution, true));
                 final int m = Math.max(0, DecimalFunctions.fractionDigitsForDelta(Math.ulp(magnitude), false));
-                ((NumberFormat) format).setMinimumFractionDigits(Math.min(p, m));
-                ((NumberFormat) format).setMaximumFractionDigits(p);
+                ((DecimalFormat) format).setMinimumFractionDigits(Math.min(p, m));
+                ((DecimalFormat) format).setMaximumFractionDigits(p);
             } else if (format instanceof AngleFormat) {
                 ((AngleFormat) format).setPrecision(resolution, true);
             }
@@ -631,6 +815,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
         } else {
             return false;
         }
+        formats = sharedFormats;            // For forcing an update of `formats` when needed.
         return true;
     }
 
@@ -646,6 +831,8 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
 
     /**
      * Formats the given coordinate.
+     * The type of each coordinate value (number, angle or date) is determined by the CRS of the given
+     * position if such CRS is defined, or from the {@linkplain #getDefaultCRS() default CRS} otherwise.
      *
      * @param  position  the coordinate to format.
      * @return the formatted position.
@@ -669,13 +856,15 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
 
     /**
      * Formats the given coordinate and appends the resulting text to the given stream or buffer.
+     * The type of each coordinate value (number, angle or date) is determined by the CRS of the given
+     * position if such CRS is defined, or from the {@linkplain #getDefaultCRS() default CRS} otherwise.
      *
      * @param  position    the coordinate to format.
      * @param  toAppendTo  where the text is to be appended.
      * @throws IOException if an error occurred while writing to the given appendable.
      */
     @Override
-    @SuppressWarnings("UnnecessaryBoxing")
+    @SuppressWarnings({"UnnecessaryBoxing", "null"})
     public void format(final DirectPosition position, final Appendable toAppendTo) throws IOException {
         ArgumentChecks.ensureNonNull("position",   position);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
@@ -684,7 +873,13 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             crs = defaultCRS;                           // May still be null.
         }
         if (crs != lastCRS) {
-            initialize(crs);
+            configure(crs);
+        }
+        if (desiredPrecisions != null && formats != null && formats == sharedFormats) {
+            final int n = Math.min(desiredPrecisions.length, formats.length);
+            for (int i=0; i<n; i++) {
+                applyPrecision(i);
+            }
         }
         /*
          * Standard java.text.Format API can only write into a StringBuffer. If the given Appendable is not a
@@ -704,7 +899,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
             dummy = new FieldPosition(0);
         }
         /*
-         * The format to use for each coordinate has been computed by 'initialize'.  The format array length
+         * The format to use for each coordinate has been computed by `configure`. The format array length
          * should match the number of dimensions in the given position if the DirectPosition is consistent
          * with its CRS, but we will nevertheless verify has a paranoiac check.  If there is no CRS, or if
          * the DirectPosition dimension is (illegally) greater than the CRS dimension, then we will format
@@ -735,7 +930,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 }
             } else {
                 object = value;
-                f = getFormat(Number.class);
+                f = getDefaultFormat();
             }
             /*
              * At this point we got the value to format together with the Format instance to use.
@@ -799,16 +994,16 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
          * If no such CRS has been specified, then we will parse everything as plain numbers.
          */
         if (lastCRS != defaultCRS) {
-            initialize(defaultCRS);
+            configure(defaultCRS);
         }
         final double[] coordinates;
         Format format;
         final Format[] formats = this.formats;
         if (formats != null) {
-            format    = null;
+            format      = null;
             coordinates = new double[formats.length];
         } else {
-            format    = getFormat(Number.class);
+            format      = getDefaultFormat();
             coordinates = new double[DEFAULT_DIMENSION];
         }
         /*
@@ -944,12 +1139,9 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
         final CoordinateFormat clone = (CoordinateFormat) super.clone();
         clone.dummy  = null;
         clone.buffer = null;
-        Format[] cf = clone.formats;
-        if (cf != null) {
-            clone.formats = cf = cf.clone();
-            for (int i=0; i < cf.length; i++) {
-                cf[i] = (Format) cf[i].clone();
-            }
+        clone.configure(null);
+        if (desiredPrecisions != null) {
+            clone.desiredPrecisions = desiredPrecisions.clone();
         }
         return clone;
     }
