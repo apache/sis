@@ -664,7 +664,7 @@ public class TileOpExecutor {
             synchronized (this) {
                 if (errors == null) {
                     errors = Resources.forLocale((Locale) null).getLogRecord(Level.WARNING,
-                             Resources.Keys.CanNotUpdateTile_2, indices.tx, indices.ty);
+                             Resources.Keys.CanNotProcessTile_2, indices.tx, indices.ty);
                     errors.setThrown(ex);
                 } else {
                     errors.getThrown().addSuppressed(ex);

@@ -18,11 +18,16 @@ package org.apache.sis.image;
 
 import java.util.Random;
 import java.awt.image.DataBuffer;
+import java.awt.image.ImagingOpException;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.test.LoggingWatcher;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.test.TestCase;
+import org.junit.Rule;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 
 /**
@@ -41,6 +46,12 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
      * if some code confuse them.
      */
     private static final int TILE_WIDTH = 5, TILE_HEIGHT = 3;
+
+    /**
+     * Intercepts log records for verifying them.
+     */
+    @Rule
+    public final LoggingWatcher loggings = new LoggingWatcher(Logging.getLogger(Modules.RASTER));
 
     /**
      * Creates a dummy image for testing purpose. This image will contain many small tiles
@@ -71,7 +82,7 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
     public void testParallelExecution() {
         final TiledImageMock image = createImage();
         final Statistics[] expected = StatisticsCalculator.computeSequentially(image);
-        final Statistics[] actual = ImageOperations.DEFAULT.statistics(image);
+        final Statistics[] actual = ImageOperations.PARALLEL.statistics(image);
         for (int i=0; i<expected.length; i++) {
             final Statistics e = expected[i];
             final Statistics a = actual  [i];
@@ -79,16 +90,43 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
             assertEquals("maximum", e.maximum(), a.maximum(), STRICT);
             assertEquals("sum",     e.sum(),     a.sum(),     STRICT);
         }
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
-     * Tests with random failures.
+     * Tests with random failures propagated as exceptions.
      */
     @Test
     public void testWithFailures() {
         final TiledImageMock image = createImage();
-        image.failRandomly(new Random());
-        final Statistics[] stats = ImageOperations.DEFAULT.statistics(image);
-        // TODO: clarify the policy on error handling.
+        image.failRandomly(new Random(-8739538736973900203L));
+        try {
+            ImageOperations.PARALLEL.statistics(image);
+            fail("Expected ImagingOpException.");
+        } catch (ImagingOpException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("statistics"));
+            assertNotNull("Expected a cause.", e.getCause());
+        }
+        loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Tests with random failures that are logged.
+     */
+    @Test
+    public void testWithLoggings() {
+        final TiledImageMock image = createImage();
+        image.failRandomly(new Random(8004277484984714811L));
+        final Statistics[] stats = ImageOperations.LENIENT.statistics(image);
+        for (final Statistics a : stats) {
+            assertTrue(a.count() > 0);
+        }
+        /*
+         * Verifies that a logging message has been emitted because of the errors.
+         * All errors (there is many) should have been consolidated in a single record.
+         */
+        loggings.assertNextLogContains(/* no keywords we could rely on. */);
+        loggings.assertNoUnexpectedLog();
     }
 }

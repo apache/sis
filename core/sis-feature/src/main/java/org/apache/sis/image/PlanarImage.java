@@ -173,6 +173,21 @@ public abstract class PlanarImage implements RenderedImage {
     }
 
     /**
+     * Returns the image location (<var>x</var>, <var>y</var>) and image size (<var>width</var>, <var>height</var>).
+     * This is a convenience method encapsulating the results of 4 method calls in a single object.
+     *
+     * @return the image location and image size as a new rectangle.
+     *
+     * @see #getMinX()
+     * @see #getMinY()
+     * @see #getWidth()
+     * @see #getHeight()
+     */
+    public Rectangle getBounds() {
+        return ImageUtilities.getBounds(this);
+    }
+
+    /**
      * Returns the minimum <var>x</var> coordinate (inclusive) of this image.
      *
      * <p>Default implementation returns zero.

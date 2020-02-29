@@ -16,34 +16,53 @@
  */
 package org.apache.sis.image;
 
+import java.util.logging.LogRecord;
 import java.awt.image.RenderedImage;
+import java.awt.image.ImagingOpException;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.system.Modules;
 
 
 /**
  * A predefined set of operations on images as convenience methods.
+ * Operations can be executed in parallel if applied on image with a thread-safe
+ * and concurrent implementation of {@link RenderedImage#getTile(int, int)}.
+ * Otherwise the same operations can be executed sequentially in the caller thread.
+ * Errors during calculation can either be propagated as an {@link ImagingOpException}
+ * (in which case no result is available), or notified as a {@link LogRecord}
+ * (in which case partial results may be available).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-public final class ImageOperations {
+public class ImageOperations {
     /**
      * The set of operations with default configuration. Operations executed by this instance
      * will be multi-threaded if possible, and failures to compute a value cause an exception
      * to be thrown.
      */
-    public static final ImageOperations DEFAULT = new ImageOperations(true);
+    public static final ImageOperations PARALLEL = new ImageOperations(true, true);
 
     /**
      * The set of operations where all executions are constrained to a single thread.
      * Only the caller thread is used, with no parallelization. Sequential operations
      * may be useful for processing {@link RenderedImage} that may not be thread-safe.
-     * The error handling policy is the same than {@link #DEFAULT}.
+     * The error handling policy is the same than {@link #PARALLEL}.
      */
-    public static final ImageOperations SEQUENTIAL = new ImageOperations(false);
+    public static final ImageOperations SEQUENTIAL = new ImageOperations(false, true);
+
+    /**
+     * The set of operations executed without throwing an exception in case of failure.
+     * Instead the warnings are logged. Whether the operations are executed in parallel
+     * or not is implementation dependent.
+     *
+     * <p>Users should prefer {@link #PARALLEL} or {@link #SEQUENTIAL} in most cases since the use
+     * of {@code LENIENT} may cause errors to be unnoticed (not everyone read log messages).</p>
+     */
+    public static final ImageOperations LENIENT = new ImageOperations(true, false);
 
     /**
      * Whether the operations can be executed in parallel.
@@ -51,26 +70,43 @@ public final class ImageOperations {
     private final boolean parallel;
 
     /**
+     * Whether errors occurring during computation should be propagated instead than wrapped in a {@link LogRecord}.
+     */
+    private final boolean failOnException;
+
+    /**
      * Creates a new set of image operations.
      *
-     * @param  parallel  whether the operations can be executed in parallel.
+     * @param  parallel         whether the operations can be executed in parallel.
+     * @param  failOnException  whether errors occurring during computation should be propagated.
      */
-    private ImageOperations(final boolean parallel) {
-        this.parallel = parallel;
+    public ImageOperations(final boolean parallel, final boolean failOnException) {
+        this.parallel        = parallel;
+        this.failOnException = failOnException;
     }
 
     /**
-     * Returns statistics on all bands of the given image.
+     * Whether the operations can be executed in parallel for the specified image.
+     * Should be a method overridden by {@link #LENIENT}, but for this simple need
+     * it is not yet worth to do sub-classing.
+     */
+    private boolean parallel(final RenderedImage source) {
+        return (this == LENIENT) ? source.getClass().getName().startsWith(Modules.CLASSNAME_PREFIX) : parallel;
+    }
+
+    /**
+     * Returns statistics (minimum, maximum, mean, standard deviation) on each bands of the given image.
      *
      * @param  source  the image for which to compute statistics.
      * @return the statistics of sample values in each band.
+     * @throws ImagingOpException if an error occurred during calculation and {@code failOnException} is {@code true}.
      */
     public Statistics[] statistics(final RenderedImage source) {
         ArgumentChecks.ensureNonNull("source", source);
-        final StatisticsCalculator calculator = new StatisticsCalculator(source, parallel);
+        final StatisticsCalculator calculator = new StatisticsCalculator(source, parallel(source), failOnException);
         final Object property = calculator.getProperty(StatisticsCalculator.PROPERTY_NAME);
+        calculator.logAndClearError(ImageOperations.class, "statistics");
         if (property instanceof Statistics[]) {
-            // TODO: check error condition.
             return (Statistics[]) property;
         }
         return null;

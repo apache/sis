@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
@@ -43,11 +44,12 @@ final class StatisticsCalculator extends AnnotatedImage {
     /**
      * Creates a new calculator.
      *
-     * @param  image     the image for which to compute statistics.
-     * @parma  parallel  whether parallel execution is authorized.
+     * @param  image            the image for which to compute statistics.
+     * @param  parallel         whether parallel execution is authorized.
+     * @param  failOnException  whether errors occurring during computation should be propagated.
      */
-    StatisticsCalculator(final RenderedImage image, final boolean parallel) {
-        super(image, parallel);
+    StatisticsCalculator(final RenderedImage image, final boolean parallel, final boolean failOnException) {
+        super(image, parallel, failOnException);
     }
 
     /**
@@ -109,8 +111,21 @@ final class StatisticsCalculator extends AnnotatedImage {
      * not worth to parallelize (image has only one tile), or when the source image may be non-thread safe.
      */
     @Override
-    protected Object computeSequentially() {
+    protected Object computeSequentially(Rectangle areaOfInterest) {
         return computeSequentially(source);
+    }
+
+    /**
+     * Invoked when a property of the given name has been requested and that property is cached.
+     * The property should be cloned before to be returned to the user in order to protect this image state.
+     */
+    @Override
+    protected Object cloneProperty(final String name, final Object value) {
+        final Statistics[] result = ((Statistics[]) value).clone();
+        for (int i=0; i<result.length; i++) {
+            result[i] = result[i].clone();
+        }
+        return result;
     }
 
     /**

@@ -28,7 +28,9 @@ import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
+import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
@@ -40,10 +42,13 @@ import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
  * image except {@link #getSources()} and the methods for getting the property names or values.
  *
  * <p>The name of the computed property is given by {@link #getComputedPropertyName()}.
- * In addition this method automatically creates another property with the same name
- * and {@value #ERRORS_SUFFIX} suffix. That property will contain a {@link LogRecord}
- * with the exception that occurred during tile computations, if any.
- * The computation results are cached by this class.</p>
+ * If an exception is thrown during calculation and {@link #failOnException} is {@code false},
+ * then {@code AnnotatedImage} automatically creates another property with the same name and
+ * {@value #WARNINGS_SUFFIX} suffix. That property will contain the exception encapsulated
+ * in a {@link LogRecord} in order to retain additional information such as the instant when
+ * the first error occurred.</p>
+ *
+ * <p>The computation results are cached by this class.</p>
  *
  * <div class="note"><b>Design note:</b>
  * most non-abstract methods are final because {@link PixelIterator} (among others) relies
@@ -57,8 +62,10 @@ import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 abstract class AnnotatedImage implements RenderedImage {
     /**
      * The suffix to add to property name for errors that occurred during computation.
+     * A property with suffix is automatically created if an exception is thrown during
+     * computation and {@link #failOnException} is {@code false}.
      */
-    public static final String ERRORS_SUFFIX = ".errors";
+    public static final String WARNINGS_SUFFIX = ".warnings";
 
     /**
      * The source image from which to compute the property.
@@ -72,27 +79,35 @@ abstract class AnnotatedImage implements RenderedImage {
     private Object result;
 
     /**
-     * The errors that occurred while computing the result, or {@code null} if none
-     * or not yet determined.
+     * The errors that occurred while computing the result, or {@code null} if none or not yet determined.
+     * This field is never set if {@link #failOnException} is {@code true}.
      */
     private LogRecord errors;
 
     /**
      * Whether parallel execution is authorized for the {@linkplain #source} image.
+     * If {@code true}, then {@link RenderedImage#getTile(int, int)} implementation should be concurrent.
      */
     private final boolean parallel;
+
+    /**
+     * Whether errors occurring during computation should be propagated instead than wrapped in a {@link LogRecord}.
+     */
+    private final boolean failOnException;
 
     /**
      * Creates a new annotated image wrapping the given image.
      * The annotations are the additional properties computed by the subclass.
      *
-     * @param  source    the image to wrap for adding properties (annotations).
-     * @parma  parallel  whether parallel execution is authorized.
+     * @param  source           the image to wrap for adding properties (annotations).
+     * @param  parallel         whether parallel execution is authorized.
+     * @param  failOnException  whether errors occurring during computation should be propagated.
      */
-    protected AnnotatedImage(final RenderedImage source, final boolean parallel) {
-        this.source   = source;
-        this.parallel = parallel;
-        result = Image.UndefinedProperty;
+    protected AnnotatedImage(final RenderedImage source, final boolean parallel, final boolean failOnException) {
+        this.source          = source;
+        this.parallel        = parallel;
+        this.failOnException = failOnException;
+        this.result          = Image.UndefinedProperty;
     }
 
     /**
@@ -109,17 +124,6 @@ abstract class AnnotatedImage implements RenderedImage {
     }
 
     /**
-     * If the properties should be computed on a subset of the tiles,
-     * the pixel coordinates of the region intersecting those tiles.
-     * The default implementation returns {@code null}.
-     *
-     * @return pixel coordinates of the region of interest, or {@code null} for the whole image.
-     */
-    protected Rectangle getAreaOfInterest() {
-        return null;
-    }
-
-    /**
      * Returns the name of the property which is computed by this image.
      *
      * @return name of property computed by this image. Shall not be null.
@@ -129,14 +133,20 @@ abstract class AnnotatedImage implements RenderedImage {
     /**
      * Returns an array of names recognized by {@link #getProperty(String)}.
      * The default implementation returns the {@linkplain #source} properties names
-     * followed by {@link #getComputedPropertyName()} and the error property name.
+     * followed by {@link #getComputedPropertyName()}. If that property has already
+     * been computed and an error occurred, then the names returned by this method
+     * will include the property name with {@value #WARNINGS_SUFFIX} suffix.
      *
      * @return all recognized property names.
      */
     @Override
     public String[] getPropertyNames() {
-        final String name = getComputedPropertyName();
-        return ArraysExt.concatenate(source.getPropertyNames(), new String[] {name, name + ERRORS_SUFFIX});
+        final String[] names = new String[(errors != null) ? 2 : 1];
+        names[0] = getComputedPropertyName();
+        if (errors != null) {
+            names[1] = names[0] + WARNINGS_SUFFIX;
+        }
+        return ArraysExt.concatenate(source.getPropertyNames(), names);
     }
 
     /**
@@ -145,17 +155,18 @@ abstract class AnnotatedImage implements RenderedImage {
      *
      * @param  cn    name of the computed property.
      * @param  name  the property name to test.
-     * @return whether {@code name} is {@code cn} + {@value #ERRORS_SUFFIX}.
+     * @return whether {@code name} is {@code cn} + {@value #WARNINGS_SUFFIX}.
      */
     private static boolean isErrorProperty(final String cn, final String name) {
-        return name.length() == cn.length() + ERRORS_SUFFIX.length() &&
-                    name.startsWith(cn) && name.endsWith(ERRORS_SUFFIX);
+        return name.length() == cn.length() + WARNINGS_SUFFIX.length() &&
+                    name.startsWith(cn) && name.endsWith(WARNINGS_SUFFIX);
     }
 
     /**
      * Gets a property from this image or from its source. If the given name is for the property
      * to be computed by this class and if that property has not been computed before, then this
-     * method invokes {@link #computeProperty()} and caches the result.
+     * method invokes {@link #computeProperty(Rectangle)} with a {@code null} "area of interest"
+     * argument value. This {@code computeProperty(…)} result will be cached.
      *
      * @param  name  name of the property to get.
      * @return the property for the given name (may be {@code null}).
@@ -168,8 +179,12 @@ abstract class AnnotatedImage implements RenderedImage {
             if (isProperty || isErrorProperty(cn, name)) {
                 synchronized (this) {
                     if (result == Image.UndefinedProperty) try {
-                        result = computeProperty();
+                        result = computeProperty(null);
                     } catch (Exception e) {
+                        if (failOnException) {
+                            throw (ImagingOpException) new ImagingOpException(
+                                    Errors.format(Errors.Keys.CanNotCompute_1, cn)).initCause(e);
+                        }
                         result = null;
                         if (errors != null) {
                             errors.getThrown().addSuppressed(e);
@@ -184,7 +199,7 @@ abstract class AnnotatedImage implements RenderedImage {
                             setError(record);
                         }
                     }
-                    return isProperty ? result : errors;
+                    return isProperty ? cloneProperty(cn, result) : errors;
                 }
             }
         }
@@ -192,16 +207,13 @@ abstract class AnnotatedImage implements RenderedImage {
     }
 
     /**
-     * Invoked by {@link TileOpExecutor} if an error occurred while processing tiles.
-     * Can also be invoked by {@link #getProperty(String)} directly.
-     * This method shall be invoked at most once.
+     * Invoked by {@link TileOpExecutor} if an error occurred during calculation on a tiles.
+     * Can also be invoked by {@link #getProperty(String)} directly if the error occurred
+     * outside {@link TileOpExecutor}. This method shall be invoked at most once.
      *
      * @param  record  a description of the error that occurred.
      */
-    private synchronized void setError(final LogRecord record) {
-        if (errors != null) {
-            throw new IllegalStateException();      // Should never happen.
-        }
+    private void setError(final LogRecord record) {
         /*
          * Complete record with source identification as if the error occurred from
          * above `getProperty(String)` method (this is always the case, indirectly).
@@ -209,52 +221,84 @@ abstract class AnnotatedImage implements RenderedImage {
         record.setSourceClassName(AnnotatedImage.class.getCanonicalName());
         record.setSourceMethodName("getProperty");
         record.setLoggerName(Modules.RASTER);
-        errors = record;
+        synchronized (this) {
+            if (errors == null) {
+                errors = record;
+            } else {
+                throw new IllegalStateException();      // If it happens, this is a bug in thie AnnotatedImage class.
+            }
+        }
+    }
+
+    /**
+     * If an error occurred, logs the message. The log record is cleared by this method call
+     * and will no longer be reported, unless the property is recomputed.
+     *
+     * @param  classe  the class to report as the source of the logging message.
+     * @param  method  the method to report as the source of the logging message.
+     */
+    final void logAndClearError(final Class<?> classe, String method) {
+        final LogRecord record;
+        synchronized (this) {
+            record = errors;
+            errors = null;
+        }
+        if (record != null) {
+            Logging.log(classe, method, record);
+        }
     }
 
     /**
      * Invoked when the property needs to be computed. If the property can not be computed,
      * then the result will be {@code null} and the exception thrown by this method will be
-     * wrapped in a property of the same name with the {@value #ERRORS_SUFFIX} suffix.
+     * wrapped in a property of the same name with the {@value #WARNINGS_SUFFIX} suffix.
      *
      * <p>The default implementation makes the following choice:</p>
      * <ul class="verbose">
-     *   <li>If {@link #parallel} is {@code true} and the {@linkplain #getAreaOfInterest() area of interest}
-     *       covers at least two tiles and {@link #collector()} returned a non-null value, then this method
-     *       distributes the calculation of many threads using the functions provided by the collector.
+     *   <li>If {@link #parallel} is {@code true}, {@link #collector()} returns a non-null value
+     *       and the area of interest covers at least two tiles, then this method distributes
+     *       calculation on many threads using the functions provided by the collector.
      *       See {@link #collector()} Javadoc for more information.</li>
-     *   <li>Otherwise this method delegates to {@link #computeSequentially()}.</li>
+     *   <li>Otherwise this method delegates to {@link #computeSequentially(Rectangle)}.</li>
      * </ul>
      *
-     * @return the property value (may be {@code null}).
+     * The {@code areaOfInterest} argument is {@code null} by default, which means to calculate
+     * the property on all tiles. This argument exists for allowing subclasses to override this
+     * method and invoke {@code super.computeProperty(…)} with a sub-region to compute.
+     *
+     * @param  areaOfInterest  pixel coordinates of the region of interest, or {@code null} for the whole image.
+     * @return the computed property value. Note that {@code null} is a valid result.
      * @throws Exception if an error occurred while computing the property.
      */
-    protected Object computeProperty() throws Exception {
+    protected Object computeProperty(final Rectangle areaOfInterest) throws Exception {
         if (parallel) {
-            final TileOpExecutor executor = new TileOpExecutor(source, getAreaOfInterest());
+            final TileOpExecutor executor = new TileOpExecutor(source, areaOfInterest);
             if (executor.isMultiTiled()) {
                 final Collector<? super Raster,?,?> collector = collector();
                 if (collector != null) {
-                    return executor.executeOnReadable(source, collector(), this::setError);
+                    return executor.executeOnReadable(source, collector(), failOnException ? null : this::setError);
                 }
             }
         }
-        return computeSequentially();
+        return computeSequentially(areaOfInterest);
     }
 
     /**
      * Invoked when the property needs to be computed sequentially (all computations in current thread).
      * If the property can not be computed, then the result will be {@code null} and the exception thrown
-     * by this method will be wrapped in a property of the same name with the {@value #ERRORS_SUFFIX} suffix.
+     * by this method will be wrapped in a property of the same name with the {@value #WARNINGS_SUFFIX} suffix.
      *
      * <p>This method is invoked when this class does not support parallel execution ({@link #collector()}
      * returned {@code null}), or when it is not worth to parallelize (image has only one tile), or when
      * the {@linkplain #source} image may be non-thread safe ({@link #parallel} is {@code false}).</p>
      *
-     * @return the property value (may be {@code null}).
+     * @param  areaOfInterest  pixel coordinates of the region of interest, or {@code null} for the whole image.
+     *         This is the argument given to {@link #computeProperty(Rectangle)} and can usually be ignored
+     *         (because always {@code null}) if that method has not been overridden.
+     * @return the computed property value. Note that {@code null} is a valid result.
      * @throws Exception if an error occurred while computing the property.
      */
-    protected abstract Object computeSequentially() throws Exception;
+    protected abstract Object computeSequentially(Rectangle areaOfInterest) throws Exception;
 
     /**
      * Returns the function to execute for computing the property value, together with other required functions
@@ -289,6 +333,19 @@ abstract class AnnotatedImage implements RenderedImage {
      */
     protected Collector<? super Raster, ?, ?> collector() {
         return null;
+    }
+
+    /**
+     * Invoked when a property of the given name has been requested and that property is cached.
+     * If the property is mutable, subclasses may want to clone it before to return it to users.
+     * The default implementation returns {@code value} unchanged.
+     *
+     * @param  name   the property name.
+     * @param  value  the property value.
+     * @return the property value to give to user.
+     */
+    protected Object cloneProperty(final String name, final Object value) {
+        return value;
     }
 
     /** Delegates to the wrapped image. */
