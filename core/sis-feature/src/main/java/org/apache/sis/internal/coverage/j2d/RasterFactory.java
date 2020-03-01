@@ -89,20 +89,16 @@ public final class RasterFactory extends Static {
             final int numComponents, final int visibleBand, final double minimum, final double maximum)
     {
         switch (dataType) {
-            case DataBuffer.TYPE_BYTE: {
-                if (numComponents == 1 && minimum <= 0 && maximum >= 0xFF) {
-                    return new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-                }
-                break;
-            }
+            case DataBuffer.TYPE_BYTE:
             case DataBuffer.TYPE_USHORT: {
-                if (numComponents == 1 && minimum <= 0 && maximum >= 0xFFFF) {
-                    return new BufferedImage(width, height, BufferedImage.TYPE_USHORT_GRAY);
+                if (numComponents == 1 && ColorModelFactory.isStandardRange(dataType, minimum, maximum)) {
+                    return new BufferedImage(width, height, (dataType == DataBuffer.TYPE_BYTE)
+                                ? BufferedImage.TYPE_BYTE_GRAY : BufferedImage.TYPE_USHORT_GRAY);
                 }
                 break;
             }
         }
-        final ColorModel cm = ColorModelFactory.createGrayScale(DataBuffer.TYPE_INT, 1, 0, -10, 10);
+        final ColorModel cm = ColorModelFactory.createGrayScale(dataType, numComponents, visibleBand, minimum, maximum);
         return new BufferedImage(cm, cm.createCompatibleWritableRaster(width, height), false, null);
     }
 

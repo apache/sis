@@ -407,14 +407,56 @@ public final class ColorModelFactory {
             final int visibleBand, final double minimum, final double maximum)
     {
         final ColorModel cm;
-        if (numComponents == 1 && minimum == 0 && maximum == 1) {
+        if (numComponents == 1 && isStandardRange(dataType, minimum, maximum)) {
             final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-            cm = new ComponentColorModel(cs, false, false, Transparency.OPAQUE, dataType);
+            cm = new ComponentColorModel(cs, false, true, Transparency.OPAQUE, dataType);
         } else {
             final ScaledColorSpace cs = new ScaledColorSpace(numComponents, visibleBand, minimum, maximum);
             cm = new ScaledColorModel(cs, dataType);
         }
         return unique(cm);
+    }
+
+    /**
+     * Returns {@code true} if the given range of values is the standard range for the given data type.
+     * In such case it may be possible to use a Java standard color model, which sometime benefit from
+     * acceleration in Java2D rendering pipe.
+     *
+     * <p>This method does not clamp the given values to the maximum range supported by the given type.
+     * For example even if {@code TYPE_BYTE} can not represent values outside the [0 … 255] range,
+     * we do not clamp the minimum and maximum values to that range because it would change the visual
+     * appearance (because of different color scale).</p>
+     *
+     * @param  dataType  one of {@link DataBuffer} constants.
+     * @param  minimum   the minimal sample value expected.
+     * @param  maximum   the maximal sample value expected.
+     * @return whether the given minimum and maximum are the standard range for the given type.
+     */
+    static boolean isStandardRange(final int dataType, double minimum, final double maximum) {
+        final boolean signed;
+        switch (dataType) {
+            case DataBuffer.TYPE_BYTE:
+            case DataBuffer.TYPE_USHORT: signed = false; break;
+            case DataBuffer.TYPE_SHORT:
+            case DataBuffer.TYPE_INT:    signed = true; break;
+            case DataBuffer.TYPE_FLOAT:
+            case DataBuffer.TYPE_DOUBLE: return ((float) minimum) == 0f && ((float) maximum) == 1f;
+            default: return false;
+        }
+        final int numBits = DataBuffer.getDataTypeSize(dataType);
+        final double upper;     // Exclusive (e.g. 256 or 65536)
+        if (signed) {
+            upper = 1L << (numBits - 1);        // E.g. 128 for TYPE_BYTE.
+            minimum += upper;                   // Convert e.g. -128 to 0.
+        } else {
+            upper = 1L << numBits;              // E.g. 256 for TYPE_BYTE.
+        }
+        /*
+         * Since sample values are integers, take a tolerance of 1. But for the upper bounds,
+         * we take a slightly larger tolerance in case the caller confused "inclusive" versus
+         * "exclusive" values. For example 255.5 ± 1.5 accepts the |254.001 … 256.999] range.
+         */
+        return Math.abs(minimum) < 1 && Math.abs(maximum - (upper - 0.5)) < 1.5;
     }
 
     /**

@@ -109,6 +109,33 @@ public final class ImageUtilities extends Static {
     }
 
     /**
+     * If the given image is showing only one band, returns the index of that band.
+     * Otherwise returns 0. Image showing only one band are SIS-specific (usually an
+     * image show all its bands).
+     *
+     * @param  image  the image for which to get the visible band, or {@code null}.
+     * @return index of the visible band, or -1 if there is none or more than one.
+     */
+    public static int getVisibleBand(final RenderedImage image) {
+        if (image != null) {
+            final ColorModel cm = image.getColorModel();
+            if (cm != null) {
+                final ColorSpace cs = cm.getColorSpace();
+                if (cs instanceof ScaledColorSpace) {
+                    return ((ScaledColorSpace) cs).visibleBand;
+                }
+                if (cm instanceof MultiBandsIndexColorModel) {
+                    return ((MultiBandsIndexColorModel) cm).visibleBand;
+                }
+                if (cm.getNumComponents() == 1) {
+                    return 0;
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Returns the data type of the given image.
      *
      * @param  image  the image for which to get the data type, or {@code null}.

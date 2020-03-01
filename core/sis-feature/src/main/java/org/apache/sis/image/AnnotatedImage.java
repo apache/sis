@@ -17,7 +17,6 @@
 package org.apache.sis.image;
 
 import java.util.Locale;
-import java.util.Vector;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -25,11 +24,8 @@ import java.util.logging.Filter;
 import java.util.stream.Collector;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.awt.image.ColorModel;
-import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.Logging;
@@ -63,7 +59,7 @@ import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
  * @since   1.1
  * @module
  */
-abstract class AnnotatedImage implements RenderedImage {
+abstract class AnnotatedImage extends ImageAdapter {
     /**
      * The suffix to add to property name for errors that occurred during computation.
      * A property with suffix is automatically created if an exception is thrown during
@@ -103,11 +99,6 @@ abstract class AnnotatedImage implements RenderedImage {
     private final Cache<String,Object> cache;
 
     /**
-     * The source image from which to compute the property.
-     */
-    protected final RenderedImage source;
-
-    /**
      * The errors that occurred while computing the result, or {@code null} if none or not yet determined.
      * This field is never set if {@link #failOnException} is {@code true}.
      */
@@ -132,8 +123,8 @@ abstract class AnnotatedImage implements RenderedImage {
      * @param  parallel         whether parallel execution is authorized.
      * @param  failOnException  whether errors occurring during computation should be propagated.
      */
-    protected AnnotatedImage(final RenderedImage source, final boolean parallel, final boolean failOnException) {
-        this.source          = source;
+    protected AnnotatedImage(RenderedImage source, final boolean parallel, final boolean failOnException) {
+        super(source);
         this.parallel        = parallel;
         this.failOnException = failOnException;
         /*
@@ -143,24 +134,16 @@ abstract class AnnotatedImage implements RenderedImage {
          * cache is shared by all images using the same data. This is okay if calculation depends
          * only on sample value, not on other data.
          */
-        if (source instanceof AnnotatedImage) {
-            cache = ((AnnotatedImage) source).cache;        // Cache for the source of the source.
-        } else synchronized (CACHE) {
+        while (source instanceof ImageAdapter) {
+            if (source instanceof AnnotatedImage) {
+                cache = ((AnnotatedImage) source).cache;        // Cache for the source of the source.
+                return;
+            }
+            source = ((ImageAdapter) source).source;
+        }
+        synchronized (CACHE) {
             cache = CACHE.computeIfAbsent(source, (k) -> new Cache<>(8, 1000, true));
         }
-    }
-
-    /**
-     * Returns the {@linkplain #source} of this image in an vector of length 1.
-     *
-     * @return the unique {@linkplain #source} of this image.
-     */
-    @Override
-    @SuppressWarnings("UseOfObsoleteCollectionType")
-    public final Vector<RenderedImage> getSources() {
-        final Vector<RenderedImage> sources = new Vector<>(1);
-        sources.add(source);
-        return sources;
     }
 
     /**
@@ -411,35 +394,17 @@ abstract class AnnotatedImage implements RenderedImage {
         return value;
     }
 
-    /** Delegates to the wrapped image. */
-    @Override public final ColorModel     getColorModel()            {return source.getColorModel();}
-    @Override public final SampleModel    getSampleModel()           {return source.getSampleModel();}
-    @Override public final int            getWidth()                 {return source.getWidth();}
-    @Override public final int            getHeight()                {return source.getHeight();}
-    @Override public final int            getMinX()                  {return source.getMinX();}
-    @Override public final int            getMinY()                  {return source.getMinY();}
-    @Override public final int            getNumXTiles()             {return source.getNumXTiles();}
-    @Override public final int            getNumYTiles()             {return source.getNumYTiles();}
-    @Override public final int            getMinTileX()              {return source.getMinTileX();}
-    @Override public final int            getMinTileY()              {return source.getMinTileY();}
-    @Override public final int            getTileWidth()             {return source.getTileWidth();}
-    @Override public final int            getTileHeight()            {return source.getTileHeight();}
-    @Override public final int            getTileGridXOffset()       {return source.getTileGridXOffset();}
-    @Override public final int            getTileGridYOffset()       {return source.getTileGridYOffset();}
-    @Override public final Raster         getTile(int tx, int ty)    {return source.getTile(tx, ty);}
-    @Override public final Raster         getData()                  {return source.getData();}
-    @Override public final Raster         getData(Rectangle region)  {return source.getData(region);}
-    @Override public final WritableRaster copyData(WritableRaster r) {return source.copyData(r);}
-
     /**
-     * Returns a string representation of this image for debugging purpose.
+     * Appends the name of the computed property in the {@link #toString()} representation,
+     * after the class name and before the string representation of the wrapped image.
      */
     @Override
-    public String toString() {
-        final StringBuilder buffer = new StringBuilder(100).append(AnnotatedImage.class.getSimpleName()).append('[');
-        if (cache.containsKey(getComputedPropertyName())) {
+    final Class<AnnotatedImage> stringStart(final StringBuilder buffer) {
+        final String key = getComputedPropertyName();
+        if (cache.containsKey(key)) {
             buffer.append("Cached ");
         }
-        return buffer.append("[\"").append(getComputedPropertyName()).append("\" on ").append(source).append(']').toString();
+        buffer.append('"').append(key).append('"');
+        return AnnotatedImage.class;
     }
 }

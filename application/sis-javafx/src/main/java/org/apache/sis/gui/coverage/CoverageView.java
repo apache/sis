@@ -17,6 +17,7 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
+import java.util.EnumMap;
 import java.nio.IntBuffer;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -43,6 +44,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.gui.ImageRenderings;
 import org.apache.sis.internal.map.PlanarCanvas;
 import org.apache.sis.internal.util.Numerics;
 
@@ -80,6 +82,11 @@ final class CoverageView extends PlanarCanvas {
      * @see GridCoverage#render(GridExtent)
      */
     public final ObjectProperty<GridExtent> sliceExtentProperty;
+
+    /**
+     * Different ways to represent the data. The {@link #data} field shall be one value from this map.
+     */
+    private final EnumMap<RangeType,RenderedImage> dataAlternatives;
 
     /**
      * The data to shown, or {@code null} if not yet specified. This image may be tiled,
@@ -133,6 +140,7 @@ final class CoverageView extends PlanarCanvas {
         super(Locale.getDefault());
         coverageProperty    = new SimpleObjectProperty<>(this, "coverage");
         sliceExtentProperty = new SimpleObjectProperty<>(this, "sliceExtent");
+        dataAlternatives    = new EnumMap<>(RangeType.class);
         dataToImage = new AffineTransform();
         view = new Pane() {
             @Override protected void layoutChildren() {
@@ -224,9 +232,11 @@ final class CoverageView extends PlanarCanvas {
         image.setImage(null);
         data   = null;
         buffer = null;
+        dataAlternatives.clear();
         final GridCoverage coverage = getCoverage();
         if (coverage != null) {
             data = coverage.render(getSliceExtent());     // TODO: background thread.
+            dataAlternatives.put(RangeType.DECLARED, data);
             view.requestLayout();
         }
     }
@@ -244,6 +254,17 @@ final class CoverageView extends PlanarCanvas {
     final void onRangeTypeChanged(final ObservableValue<? extends RangeType> property,
                                   final RangeType previous, final RangeType value)
     {
+        RenderedImage alt = dataAlternatives.get(value);
+        if (alt == null) {
+            alt = dataAlternatives.get(RangeType.DECLARED);     // Source needed by all alternatives.
+            if (value == RangeType.AUTOMATIC) {
+                alt = ImageRenderings.automaticScale(alt);
+            }
+        }
+        if (alt != data) {
+            data = alt;
+            view.requestLayout();
+        }
     }
 
     /**
@@ -292,7 +313,7 @@ final class CoverageView extends PlanarCanvas {
     }
 
     /**
-     * The task for updating an image be reusing existing resources (JavaFX image and Java2D buffered image).
+     * The task for updating an image by reusing existing resources (JavaFX image and Java2D buffered image).
      * This task is used when the image size did not changed.
      *
      * @todo Extend {@code Task}, write in a background thread in a {@link VolatileImage} (may be long especially

@@ -290,8 +290,8 @@ public abstract class PixelIterator {
          * also necessary for allowing the builder to recognize the {@link BufferedImage} case.
          */
         private static RenderedImage unwrap(RenderedImage image) {
-            while (image instanceof AnnotatedImage) {
-                image = ((AnnotatedImage) image).source;
+            while (image instanceof ImageAdapter) {
+                image = ((ImageAdapter) image).source;
             }
             return image;
         }
