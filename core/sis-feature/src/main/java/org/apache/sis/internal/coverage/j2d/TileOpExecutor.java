@@ -453,8 +453,9 @@ public class TileOpExecutor {
      *         and {@code errorHandler} is {@code null}.
      * @throws RuntimeException if an exception occurred elsewhere (for example in the combiner or finisher).
      */
-    public final <A,R> R executeOnWritable(final WritableRenderedImage target, final Collector<? super WritableRaster,A,R> collector,
-            final Consumer<LogRecord> errorHandler)
+    public final <A,R> R executeOnWritable(final WritableRenderedImage target,
+                                           final Collector<? super WritableRaster,A,R> collector,
+                                           final Consumer<LogRecord> errorHandler)
     {
         ArgumentChecks.ensureNonNull("target", target);
         ArgumentChecks.ensureNonNull("collector", collector);

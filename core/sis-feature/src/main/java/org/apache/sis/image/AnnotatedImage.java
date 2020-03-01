@@ -18,8 +18,10 @@ package org.apache.sis.image;
 
 import java.util.Locale;
 import java.util.Vector;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Filter;
 import java.util.stream.Collector;
 import java.awt.Image;
 import java.awt.Rectangle;
@@ -70,14 +72,30 @@ abstract class AnnotatedImage implements RenderedImage {
     public static final String WARNINGS_SUFFIX = ".warnings";
 
     /**
-     * The source image from which to compute the property.
+     * An arbitrary value that we use for storing {@code null} values in the {@linkplain #cache}.
      */
-    protected final RenderedImage source;
+    private static final Object NULL = Void.TYPE;
 
     /**
-     * Cache of computed property values for this image. This cache is shared by all {@link AnnotatedImage}
-     * instances wrapping the same {@linkplain #source} image, in order to avoid computing the same property
-     * twice by two concurrent threads.
+     * Cache of properties already computed for images. That map shall contain computation results only,
+     * never the {@link AnnotatedImage} instances that computed those results, as doing so would create
+     * memory leak (because of the {@link #source} reference preventing the key to be garbage-collected).
+     * All accesses to this cache shall be synchronized on the {@code CACHE} instance.
+     *
+     * <p>In current implementation we cache only the values that have been computed without warnings.
+     * We do that because otherwise, an {@code AnnotatedImage} with {@link #failOnException} flag set
+     * could wrongly return a partially computed value if that value has been cached by another image
+     * instance with the {@link #failOnException} flag unset. As a consequence of this policy, if the
+     * computation failed for some tiles, that computation will be redone again for the same property
+     * every time it is requested, until it eventually fully succeeds and the result become cached.</p>
+     */
+    private static final WeakHashMap<RenderedImage, Cache<String,Object>> CACHE = new WeakHashMap<>();
+
+    /**
+     * Cache of property values computed for the {@linkplain #source} image. This is an entry from the
+     * global {@link #CACHE}. This cache is shared by all {@link AnnotatedImage} instances wrapping the
+     * same {@linkplain #source} image in order to avoid computing the same property many times if an
+     * {@code AnnotatedImage} wrapper is recreated many times for the same operation on the same image.
      *
      * <p>Note that {@code null} is a valid result. Since {@link Cache} can not store null values,
      * those results are replaced by {@link #NULL}.</p>
@@ -85,15 +103,15 @@ abstract class AnnotatedImage implements RenderedImage {
     private final Cache<String,Object> cache;
 
     /**
-     * An arbitrary value that we use for storing {@code null} values in the {@linkplain #cache}.
+     * The source image from which to compute the property.
      */
-    private static final Object NULL = Void.TYPE;
+    protected final RenderedImage source;
 
     /**
      * The errors that occurred while computing the result, or {@code null} if none or not yet determined.
      * This field is never set if {@link #failOnException} is {@code true}.
      */
-    private LogRecord errors;
+    private volatile LogRecord errors;
 
     /**
      * Whether parallel execution is authorized for the {@linkplain #source} image.
@@ -110,28 +128,26 @@ abstract class AnnotatedImage implements RenderedImage {
      * Creates a new annotated image wrapping the given image.
      * The annotations are the additional properties computed by the subclass.
      *
-     * @param  processor        the processor which is creating this operation.
      * @param  source           the image to wrap for adding properties (annotations).
      * @param  parallel         whether parallel execution is authorized.
      * @param  failOnException  whether errors occurring during computation should be propagated.
      */
-    protected AnnotatedImage(final ImageOperations processor, RenderedImage source,
-                             final boolean parallel, final boolean failOnException)
-    {
+    protected AnnotatedImage(final RenderedImage source, final boolean parallel, final boolean failOnException) {
         this.source          = source;
         this.parallel        = parallel;
         this.failOnException = failOnException;
         /*
-         * The `this.source` field should be as-specified, even if it is another `AnnotatedImage`,
+         * The `this.source` field should be as specified, even if it is another `AnnotatedImage`,
          * for allowing computation of properties managed by those other instances. However we try
          * to apply the cache on a deeper source if possible, for increasing the chances that the
          * cache is shared by all images using the same data. This is okay if calculation depends
          * only on sample value, not on other data.
          */
-        while (source instanceof AnnotatedImage) {
-            source = ((AnnotatedImage) source).source;
+        if (source instanceof AnnotatedImage) {
+            cache = ((AnnotatedImage) source).cache;        // Cache for the source of the source.
+        } else synchronized (CACHE) {
+            cache = CACHE.computeIfAbsent(source, (k) -> new Cache<>(8, 1000, true));
         }
-        cache = processor.cache(source);
     }
 
     /**
@@ -190,10 +206,11 @@ abstract class AnnotatedImage implements RenderedImage {
      * Gets a property from this image or from its source. If the given name is for the property
      * to be computed by this class and if that property has not been computed before, then this
      * method invokes {@link #computeProperty(Rectangle)} with a {@code null} "area of interest"
-     * argument value. This {@code computeProperty(…)} result will be cached.
+     * argument value. That {@code computeProperty(…)} result will be cached.
      *
      * @param  name  name of the property to get.
-     * @return the property for the given name (may be {@code null}).
+     * @return the property for the given name ({@code null} is a valid result),
+     *         or {@link Image#UndefinedProperty} if the given name is not a recognized property name.
      */
     @Override
     public final Object getProperty(final String name) {
@@ -205,37 +222,39 @@ abstract class AnnotatedImage implements RenderedImage {
              * `AnnotatedImage` instance of the same class wrapping the same image, which is why we do
              * not store the result in this class.
              */
-            try {
-                value = cache.getOrCreate(key, this::compute);
-                value = (value == NULL) ? null : cloneProperty(key, value);
+            value = cache.peek(key);
+            if (value == null) try {
+                boolean success = false;
+                final Cache.Handler<Object> handler = cache.lock(key);
+                try {
+                    value = handler.peek();
+                    if (value == null) {
+                        value = computeProperty(null);
+                        if (value == null) value = NULL;
+                        success = (errors == null);
+                    }
+                } finally {
+                    handler.putAndUnlock(success ? value : null);       // Cache only if no error occurred.
+                }
+                if (value == NULL) value = null;
+                else value = cloneProperty(key, value);
             } catch (Exception e) {
                 /*
-                 * Remember that the calculation failed. A non-null value would mean that another thread
-                 * successfully computed the value in the very short time between above failure in this line,
-                 * in which case we return the computed value.
+                 * Stores the given exception in a log record. We use a log record in order to initialize
+                 * the timestamp and thread ID to the values they had at the time the first error occurred.
                  */
-                value = cache.putIfAbsent(key, Image.UndefinedProperty);
-                if (value != null) {
-                    Logging.recoverableException(Logging.getLogger(Modules.RASTER), AnnotatedImage.class, "getProperty", e);
-                } else {
-                    value = Image.UndefinedProperty;
-                    /*
-                     * Stores the given exception in a log record. We use a log record in order to initialize
-                     * the timestamp and thread ID to the values they had at the time the first error occurred.
-                     */
-                    if (failOnException) {
-                        throw (ImagingOpException) new ImagingOpException(
-                                Errors.format(Errors.Keys.CanNotCompute_1, key)).initCause(e);
-                    }
-                    synchronized (this) {
-                        if (errors != null) {
-                            errors.getThrown().addSuppressed(e);
-                        } else {
-                            final LogRecord record = Errors.getResources((Locale) null).getLogRecord(
-                                                        Level.WARNING, Errors.Keys.CanNotCompute_1, key);
-                            record.setThrown(e);
-                            setError(record);
-                        }
+                if (failOnException) {
+                    throw (ImagingOpException) new ImagingOpException(
+                            Errors.format(Errors.Keys.CanNotCompute_1, key)).initCause(e);
+                }
+                synchronized (this) {
+                    LogRecord record = errors;
+                    if (record != null) {
+                        record.getThrown().addSuppressed(e);
+                    } else {
+                        record = Errors.getResources((Locale) null).getLogRecord(Level.WARNING, Errors.Keys.CanNotCompute_1, key);
+                        record.setThrown(e);
+                        setError(record);
                     }
                 }
             }
@@ -245,14 +264,6 @@ abstract class AnnotatedImage implements RenderedImage {
             value = source.getProperty(name);
         }
         return value;
-    }
-
-    /**
-     * Invoked by {@link Cache} when the property value is not in the cache.
-     */
-    private Object compute() throws Exception {
-        final Object value = computeProperty(null);
-        return (value == null) ? NULL : value;
     }
 
     /**
@@ -283,17 +294,20 @@ abstract class AnnotatedImage implements RenderedImage {
      * If an error occurred, logs the message. The log record is cleared by this method call
      * and will no longer be reported, unless the property is recomputed.
      *
-     * @param  classe  the class to report as the source of the logging message.
-     * @param  method  the method to report as the source of the logging message.
+     * @param  classe   the class to report as the source of the logging message.
+     * @param  method   the method to report as the source of the logging message.
+     * @param  handler  where to send the log message, or {@code null} for the standard logger.
      */
-    final void logAndClearError(final Class<?> classe, String method) {
+    final void logAndClearError(final Class<?> classe, final String method, final Filter handler) {
         final LogRecord record;
         synchronized (this) {
             record = errors;
             errors = null;
         }
         if (record != null) {
-            Logging.log(classe, method, record);
+            if (handler == null || handler.isLoggable(record)) {
+                Logging.log(classe, method, record);
+            }
         }
     }
 

@@ -16,13 +16,12 @@
  */
 package org.apache.sis.image;
 
-import java.util.WeakHashMap;
+import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.system.Modules;
 
 
@@ -46,7 +45,7 @@ public class ImageOperations {
      * will be multi-threaded if possible, and failures to compute a value cause an exception
      * to be thrown.
      */
-    public static final ImageOperations PARALLEL = new ImageOperations(true, true);
+    public static final ImageOperations PARALLEL = new ImageOperations(true, true, null);
 
     /**
      * The set of operations where all executions are constrained to a single thread.
@@ -54,7 +53,7 @@ public class ImageOperations {
      * may be useful for processing {@link RenderedImage} that may not be thread-safe.
      * The error handling policy is the same than {@link #PARALLEL}.
      */
-    public static final ImageOperations SEQUENTIAL = new ImageOperations(PARALLEL, false);
+    public static final ImageOperations SEQUENTIAL = new ImageOperations(false, true, null);
 
     /**
      * The set of operations executed without throwing an exception in case of failure.
@@ -64,7 +63,7 @@ public class ImageOperations {
      * <p>Users should prefer {@link #PARALLEL} or {@link #SEQUENTIAL} in most cases since the use
      * of {@code LENIENT} may cause errors to be unnoticed (not everyone read log messages).</p>
      */
-    public static final ImageOperations LENIENT = new ImageOperations(true, false);
+    public static final ImageOperations LENIENT = new ImageOperations(true, false, null);
 
     /**
      * Whether the operations can be executed in parallel.
@@ -77,43 +76,41 @@ public class ImageOperations {
     private final boolean failOnException;
 
     /**
-     * Cache of properties already computed for images. That map shall contains computation result only,
-     * never the {@link AnnotatedImage} instances that computed those results, as doing so would create
-     * memory leak (because of {@link AnnotatedImage#source} preventing the key to be garbage-collected).
-     * All accesses to this cache shall be synchronized on the {@link WeakHashMap} instance.
+     * Where to send exceptions (wrapped in {@link LogRecord}) if an operation failed on one or more tiles.
+     * Only one log record is created for all tiles that failed for the same operation on the same image.
+     * This is always {@code null} if {@link #failOnException} is {@code true}.
      */
-    private final WeakHashMap<RenderedImage, Cache<String,Object>> cache;
+    private final Filter errorListener;
 
     /**
      * Creates a new set of image operations.
      *
+     * <h4>Error handling</h4>
+     * If an exception occurs during the computation of a tile, then the {@code ImageOperations} behavior
+     * is controlled by the following parameters:
+     *
+     * <ul>
+     *   <li>If {@code failOnException} is {@code true}, the exception is thrown as an {@link ImagingOpException}.</li>
+     *   <li>If {@code failOnException} is {@code false}, then:<ul>
+     *     <li>If {@code errorListener} is {@code null}, the exception is logged and a partial result is returned.</li>
+     *     <li>If {@code errorListener} is non-null, the exception is wrapped in a {@link LogRecord} and sent to that handler.
+     *         The listener can store the log record, for example for showing later in a graphical user interface (GUI).
+     *         If the listener returns {@code true}, the log record is also logged, otherwise it is silently discarded.
+     *         In both cases a partial result is returned.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
      * @param  parallel         whether the operations can be executed in parallel.
-     * @param  failOnException  whether errors occurring during computation should be propagated.
+     * @param  failOnException  whether exceptions occurring during computation should be propagated.
+     * @param  errorListener     handler to notify when an operation failed on one or more tiles,
+     *                          or {@code null} for printing the exceptions with the default logger.
+     *                          This is ignored if {@code failOnException} is {@code true}.
      */
-    public ImageOperations(final boolean parallel, final boolean failOnException) {
+    public ImageOperations(final boolean parallel, final boolean failOnException, final Filter errorListener) {
         this.parallel        = parallel;
         this.failOnException = failOnException;
-        cache = new WeakHashMap<>();
-    }
-
-    /**
-     * Creates a new set of operations sharing the same cache then the given instance.
-     * The two sets of operations must have the same {@link #failOnException} policy;
-     * only their parallelism can differ.
-     */
-    private ImageOperations(final ImageOperations other, final boolean parallel) {
-        this.parallel = parallel;
-        failOnException = other.failOnException;
-        cache = other.cache;
-    }
-
-    /**
-     * Returns the cache for properties computed on the specified image.
-     */
-    final Cache<String,Object> cache(final RenderedImage source) {
-        synchronized (cache) {
-            return cache.computeIfAbsent(source, (k) -> new Cache<>(8, 1000, true));
-        }
+        this.errorListener   = failOnException ? null : errorListener;
     }
 
     /**
@@ -134,9 +131,9 @@ public class ImageOperations {
      */
     public Statistics[] statistics(final RenderedImage source) {
         ArgumentChecks.ensureNonNull("source", source);
-        final StatisticsCalculator calculator = new StatisticsCalculator(this, source, parallel(source), failOnException);
+        final StatisticsCalculator calculator = new StatisticsCalculator(source, parallel(source), failOnException);
         final Object property = calculator.getProperty(StatisticsCalculator.PROPERTY_NAME);
-        calculator.logAndClearError(ImageOperations.class, "statistics");
+        calculator.logAndClearError(ImageOperations.class, "statistics", errorListener);
         if (property instanceof Statistics[]) {
             return (Statistics[]) property;
         }

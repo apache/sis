@@ -44,15 +44,14 @@ final class StatisticsCalculator extends AnnotatedImage {
     /**
      * Creates a new calculator.
      *
-     * @param  processor        the processor which is creating this operation.
      * @param  image            the image for which to compute statistics.
      * @param  parallel         whether parallel execution is authorized.
      * @param  failOnException  whether errors occurring during computation should be propagated.
      */
-    StatisticsCalculator(final ImageOperations processor, final RenderedImage image,
+    StatisticsCalculator(final RenderedImage image,
                          final boolean parallel, final boolean failOnException)
     {
-        super(processor, image, parallel, failOnException);
+        super(image, parallel, failOnException);
     }
 
     /**
