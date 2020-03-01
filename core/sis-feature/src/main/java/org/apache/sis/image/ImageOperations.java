@@ -16,11 +16,13 @@
  */
 package org.apache.sis.image;
 
+import java.util.WeakHashMap;
 import java.util.logging.LogRecord;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.system.Modules;
 
 
@@ -52,7 +54,7 @@ public class ImageOperations {
      * may be useful for processing {@link RenderedImage} that may not be thread-safe.
      * The error handling policy is the same than {@link #PARALLEL}.
      */
-    public static final ImageOperations SEQUENTIAL = new ImageOperations(false, true);
+    public static final ImageOperations SEQUENTIAL = new ImageOperations(PARALLEL, false);
 
     /**
      * The set of operations executed without throwing an exception in case of failure.
@@ -75,6 +77,14 @@ public class ImageOperations {
     private final boolean failOnException;
 
     /**
+     * Cache of properties already computed for images. That map shall contains computation result only,
+     * never the {@link AnnotatedImage} instances that computed those results, as doing so would create
+     * memory leak (because of {@link AnnotatedImage#source} preventing the key to be garbage-collected).
+     * All accesses to this cache shall be synchronized on the {@link WeakHashMap} instance.
+     */
+    private final WeakHashMap<RenderedImage, Cache<String,Object>> cache;
+
+    /**
      * Creates a new set of image operations.
      *
      * @param  parallel         whether the operations can be executed in parallel.
@@ -83,6 +93,27 @@ public class ImageOperations {
     public ImageOperations(final boolean parallel, final boolean failOnException) {
         this.parallel        = parallel;
         this.failOnException = failOnException;
+        cache = new WeakHashMap<>();
+    }
+
+    /**
+     * Creates a new set of operations sharing the same cache then the given instance.
+     * The two sets of operations must have the same {@link #failOnException} policy;
+     * only their parallelism can differ.
+     */
+    private ImageOperations(final ImageOperations other, final boolean parallel) {
+        this.parallel = parallel;
+        failOnException = other.failOnException;
+        cache = other.cache;
+    }
+
+    /**
+     * Returns the cache for properties computed on the specified image.
+     */
+    final Cache<String,Object> cache(final RenderedImage source) {
+        synchronized (cache) {
+            return cache.computeIfAbsent(source, (k) -> new Cache<>(8, 1000, true));
+        }
     }
 
     /**
@@ -103,7 +134,7 @@ public class ImageOperations {
      */
     public Statistics[] statistics(final RenderedImage source) {
         ArgumentChecks.ensureNonNull("source", source);
-        final StatisticsCalculator calculator = new StatisticsCalculator(source, parallel(source), failOnException);
+        final StatisticsCalculator calculator = new StatisticsCalculator(this, source, parallel(source), failOnException);
         final Object property = calculator.getProperty(StatisticsCalculator.PROPERTY_NAME);
         calculator.logAndClearError(ImageOperations.class, "statistics");
         if (property instanceof Statistics[]) {

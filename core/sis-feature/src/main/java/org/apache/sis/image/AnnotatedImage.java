@@ -32,6 +32,7 @@ import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 
@@ -48,7 +49,8 @@ import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
  * in a {@link LogRecord} in order to retain additional information such as the instant when
  * the first error occurred.</p>
  *
- * <p>The computation results are cached by this class.</p>
+ * <p>The computation results are cached by this class. The cache strategy assumes that the
+ * property value depend only on sample values, not on properties of the source image.</p>
  *
  * <div class="note"><b>Design note:</b>
  * most non-abstract methods are final because {@link PixelIterator} (among others) relies
@@ -73,10 +75,19 @@ abstract class AnnotatedImage implements RenderedImage {
     protected final RenderedImage source;
 
     /**
-     * The computation result, or {@link Image#UndefinedProperty} if not yet computed.
-     * Note that {@code null} is a valid result.
+     * Cache of computed property values for this image. This cache is shared by all {@link AnnotatedImage}
+     * instances wrapping the same {@linkplain #source} image, in order to avoid computing the same property
+     * twice by two concurrent threads.
+     *
+     * <p>Note that {@code null} is a valid result. Since {@link Cache} can not store null values,
+     * those results are replaced by {@link #NULL}.</p>
      */
-    private Object result;
+    private final Cache<String,Object> cache;
+
+    /**
+     * An arbitrary value that we use for storing {@code null} values in the {@linkplain #cache}.
+     */
+    private static final Object NULL = Void.TYPE;
 
     /**
      * The errors that occurred while computing the result, or {@code null} if none or not yet determined.
@@ -99,15 +110,28 @@ abstract class AnnotatedImage implements RenderedImage {
      * Creates a new annotated image wrapping the given image.
      * The annotations are the additional properties computed by the subclass.
      *
+     * @param  processor        the processor which is creating this operation.
      * @param  source           the image to wrap for adding properties (annotations).
      * @param  parallel         whether parallel execution is authorized.
      * @param  failOnException  whether errors occurring during computation should be propagated.
      */
-    protected AnnotatedImage(final RenderedImage source, final boolean parallel, final boolean failOnException) {
+    protected AnnotatedImage(final ImageOperations processor, RenderedImage source,
+                             final boolean parallel, final boolean failOnException)
+    {
         this.source          = source;
         this.parallel        = parallel;
         this.failOnException = failOnException;
-        this.result          = Image.UndefinedProperty;
+        /*
+         * The `this.source` field should be as-specified, even if it is another `AnnotatedImage`,
+         * for allowing computation of properties managed by those other instances. However we try
+         * to apply the cache on a deeper source if possible, for increasing the chances that the
+         * cache is shared by all images using the same data. This is okay if calculation depends
+         * only on sample value, not on other data.
+         */
+        while (source instanceof AnnotatedImage) {
+            source = ((AnnotatedImage) source).source;
+        }
+        cache = processor.cache(source);
     }
 
     /**
@@ -154,12 +178,12 @@ abstract class AnnotatedImage implements RenderedImage {
      * The implementation of this method avoids the creation of concatenated string.
      *
      * @param  cn    name of the computed property.
-     * @param  name  the property name to test.
+     * @param  name  the property name to test (may be {@code null}).
      * @return whether {@code name} is {@code cn} + {@value #WARNINGS_SUFFIX}.
      */
     private static boolean isErrorProperty(final String cn, final String name) {
-        return name.length() == cn.length() + WARNINGS_SUFFIX.length() &&
-                    name.startsWith(cn) && name.endsWith(WARNINGS_SUFFIX);
+        return name != null && name.length() == cn.length() + WARNINGS_SUFFIX.length()
+                            && name.startsWith(cn) && name.endsWith(WARNINGS_SUFFIX);
     }
 
     /**
@@ -173,37 +197,62 @@ abstract class AnnotatedImage implements RenderedImage {
      */
     @Override
     public final Object getProperty(final String name) {
-        if (name != null) {
-            final String cn = getComputedPropertyName();
-            final boolean isProperty = cn.equals(name);
-            if (isProperty || isErrorProperty(cn, name)) {
-                synchronized (this) {
-                    if (result == Image.UndefinedProperty) try {
-                        result = computeProperty(null);
-                    } catch (Exception e) {
-                        if (failOnException) {
-                            throw (ImagingOpException) new ImagingOpException(
-                                    Errors.format(Errors.Keys.CanNotCompute_1, cn)).initCause(e);
-                        }
-                        result = null;
+        Object value;
+        final String key = getComputedPropertyName();
+        if (key.equals(name)) {
+            /*
+             * Get the previously computed value. Note that the value may have been computed by another
+             * `AnnotatedImage` instance of the same class wrapping the same image, which is why we do
+             * not store the result in this class.
+             */
+            try {
+                value = cache.getOrCreate(key, this::compute);
+                value = (value == NULL) ? null : cloneProperty(key, value);
+            } catch (Exception e) {
+                /*
+                 * Remember that the calculation failed. A non-null value would mean that another thread
+                 * successfully computed the value in the very short time between above failure in this line,
+                 * in which case we return the computed value.
+                 */
+                value = cache.putIfAbsent(key, Image.UndefinedProperty);
+                if (value != null) {
+                    Logging.recoverableException(Logging.getLogger(Modules.RASTER), AnnotatedImage.class, "getProperty", e);
+                } else {
+                    value = Image.UndefinedProperty;
+                    /*
+                     * Stores the given exception in a log record. We use a log record in order to initialize
+                     * the timestamp and thread ID to the values they had at the time the first error occurred.
+                     */
+                    if (failOnException) {
+                        throw (ImagingOpException) new ImagingOpException(
+                                Errors.format(Errors.Keys.CanNotCompute_1, key)).initCause(e);
+                    }
+                    synchronized (this) {
                         if (errors != null) {
                             errors.getThrown().addSuppressed(e);
                         } else {
-                            /*
-                             * Stores the given exception in a log record. We use a log record in order to initialize
-                             * the timestamp and thread ID to the values they had at the time the first error occurred.
-                             */
                             final LogRecord record = Errors.getResources((Locale) null).getLogRecord(
-                                                        Level.WARNING, Errors.Keys.CanNotCompute_1, cn);
+                                                        Level.WARNING, Errors.Keys.CanNotCompute_1, key);
                             record.setThrown(e);
                             setError(record);
                         }
                     }
-                    return isProperty ? cloneProperty(cn, result) : errors;
                 }
             }
+        } else if (isErrorProperty(key, name)) {
+            value = errors;
+        } else {
+            value = source.getProperty(name);
         }
-        return source.getProperty(name);
+        return value;
+    }
+
+    /**
+     * Invoked by {@link Cache} when the property value is not in the cache.
+     */
+    private Object compute() throws Exception {
+        final Object value = computeProperty(null);
+        return (value == null) ? NULL : value;
     }
 
     /**
@@ -341,7 +390,7 @@ abstract class AnnotatedImage implements RenderedImage {
      * The default implementation returns {@code value} unchanged.
      *
      * @param  name   the property name.
-     * @param  value  the property value.
+     * @param  value  the property value (never {@code null}).
      * @return the property value to give to user.
      */
     protected Object cloneProperty(final String name, final Object value) {
@@ -374,7 +423,7 @@ abstract class AnnotatedImage implements RenderedImage {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(100).append(AnnotatedImage.class.getSimpleName()).append('[');
-        if (result != Image.UndefinedProperty) {
+        if (cache.containsKey(getComputedPropertyName())) {
             buffer.append("Cached ");
         }
         return buffer.append("[\"").append(getComputedPropertyName()).append("\" on ").append(source).append(']').toString();
