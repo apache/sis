@@ -39,6 +39,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.beans.Observable;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -186,6 +187,15 @@ final class CoverageView extends PlanarCanvas {
     private int renderedDataStamp;
 
     /**
+     * Whether a rendering task is in progress. This flag is used for avoiding to send to many
+     * {@link #repaint()} requests; we will wait for current repaint event to finish before to
+     * send another one.
+     *
+     * @see #executeRendering(Task)
+     */
+    private boolean isRendering;
+
+    /**
      * The bar where to format the coordinates below mouse cursor.
      */
     private final StatusBar statusBar;
@@ -225,6 +235,8 @@ final class CoverageView extends PlanarCanvas {
         imageRegion.setOnMouseMoved(this::onMouveMoved);
         imageRegion.setOnMouseEntered(statusBar);
         imageRegion.setOnMouseExited (statusBar);
+        imageRegion.widthProperty() .addListener(this::onSizeChanged);
+        imageRegion.heightProperty().addListener(this::onSizeChanged);
     }
 
     /**
@@ -307,6 +319,22 @@ final class CoverageView extends PlanarCanvas {
         task.runningProperty().addListener(statusBar::setRunningState);
         task.setOnFailed((e) -> errorOccurred(e.getSource().getException()));
         BackgroundThreads.execute(task);
+    }
+
+    /**
+     * Executes a rendering task in a background thread.
+     */
+    private void executeRendering(final Task<?> task) {
+        task.runningProperty().addListener((p,o,n) -> isRendering = n);
+        execute(task);
+    }
+
+    /**
+     * Invoked when the size of image region changed.
+     */
+    private void onSizeChanged(final Observable property) {
+        dataChangeCount++;
+        repaint();
     }
 
     /**
@@ -422,6 +450,15 @@ final class CoverageView extends PlanarCanvas {
      * or have been zoomed.
      */
     private void repaint() {
+        /*
+         * If a rendering is already in progress, do not send a new request now.
+         * Wait for current rendering to finish; a new one will be automatically
+         * happens if data changes are detected after the rendering.
+         */
+        if (isRendering) {
+            dataChangeCount++;
+            return;
+        }
         renderedDataStamp = dataChangeCount;
         final RenderedImage data = this.data;       // Need to copy this reference here before background tasks.
         if (data == null) {
@@ -452,7 +489,7 @@ final class CoverageView extends PlanarCanvas {
             doubleBuffer        = null;
             bufferWrapper       = null;
             bufferConfiguration = null;
-            execute(new Task<WritableImage>() {
+            executeRendering(new Task<WritableImage>() {
                 /**
                  * The Java2D image where to do the rendering. This image will be created in a background thread
                  * and assigned to the {@link CoverageView#buffer} field in JavaFX thread if rendering succeed.
@@ -508,6 +545,9 @@ final class CoverageView extends PlanarCanvas {
                     buffer              = drawTo;
                     bufferWrapper       = wrapper;
                     bufferConfiguration = configuration;
+                    if (isDataChanged()) {
+                        repaint();
+                    }
                 }
             });
         } else {
@@ -586,13 +626,13 @@ final class CoverageView extends PlanarCanvas {
                     } finally {
                         gr.dispose();
                     }
-                    if (contentsLost) {
+                    if (contentsLost || isDataChanged()) {
                         repaint();
                     }
                     return null;
                 }
             }
-            execute(new Updater());
+            executeRendering(new Updater());
         }
     }
 
