@@ -67,7 +67,7 @@ final class CoverageControls extends Controls {
         {   // Block for making variables locale to this scope.
             final GridPane gp = createControlGrid(
                 label(vocabulary, Vocabulary.Keys.Background, createBackgroundButton(background)),
-                label(vocabulary, Vocabulary.Keys.ValueRange, RangeType.createButton(view::onRangeTypeChanged))
+                label(vocabulary, Vocabulary.Keys.ValueRange, RangeType.createButton((p,o,n) -> view.setRangeType(n)))
             );
             final Label label = new Label(vocabulary.getLabel(Vocabulary.Keys.Image));
             label.setPadding(CAPTION_MARGIN);
