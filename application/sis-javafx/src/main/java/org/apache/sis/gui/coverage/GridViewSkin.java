@@ -181,8 +181,10 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         flow.setOnMouseExited(this::hideSelection);
         /*
          * The status bar where to show coordinates of selected cell.
+         * Mouse exit event is handled by `hideSelection(…)`.
          */
-        statusBar = new StatusBar(view);
+        statusBar = new StatusBar(view::toImageCoordinates);
+        flow.setOnMouseEntered(statusBar);
         /*
          * The list of children is initially empty. We need to
          * add the virtual flow, otherwise nothing will appear.
@@ -230,6 +232,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         selection     .setVisible(false);
         selectedRow   .setVisible(false);
         selectedColumn.setVisible(false);
+        statusBar     .handle    (null);        // Hide the coordinates.
     }
 
     /**

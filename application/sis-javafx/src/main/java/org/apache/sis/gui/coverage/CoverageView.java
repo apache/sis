@@ -23,6 +23,7 @@ import java.nio.IntBuffer;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.awt.image.RenderedImage;
@@ -35,12 +36,14 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
+import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -52,6 +55,7 @@ import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.ImageRenderings;
 import org.apache.sis.internal.map.PlanarCanvas;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
@@ -151,7 +155,12 @@ final class CoverageView extends PlanarCanvas {
      * {@linkplain #image} to show, but can also contain additional nodes for geometric shapes,
      * texts, <i>etc</i>.
      */
-    private final Pane view;
+    private final Pane imageRegion;
+
+    /**
+     * The image together with the status bar.
+     */
+    private final BorderPane imageAndStatus;
 
     /**
      * The transform from {@link #data} pixel coordinates to {@link #buffer} (and {@link #image})
@@ -162,7 +171,7 @@ final class CoverageView extends PlanarCanvas {
     private final AffineTransform dataToImage;
 
     /**
-     * Incremented when {@link #data} changed.
+     * Incremented when {@link #data} or {@link #dataToImage} changed.
      *
      * @see #renderedDataStamp
      */
@@ -177,6 +186,11 @@ final class CoverageView extends PlanarCanvas {
     private int renderedDataStamp;
 
     /**
+     * The bar where to format the coordinates below mouse cursor.
+     */
+    private final StatusBar statusBar;
+
+    /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
      */
     public CoverageView() {
@@ -186,7 +200,7 @@ final class CoverageView extends PlanarCanvas {
         dataAlternatives       = new EnumMap<>(RangeType.class);
         dataToImage            = new AffineTransform();
         currentDataAlternative = RangeType.DECLARED;
-        view = new Pane() {
+        imageRegion = new Pane() {
             @Override protected void layoutChildren() {
                 super.layoutChildren();
                 repaint();
@@ -194,7 +208,10 @@ final class CoverageView extends PlanarCanvas {
         };
         image = new ImageView();
         image.setPreserveRatio(true);
-        view.getChildren().add(image);
+        imageRegion.getChildren().add(image);
+        imageAndStatus = new BorderPane(imageRegion);
+        statusBar = new StatusBar(this::toImageCoordinates);
+        imageAndStatus.setBottom(statusBar);
         /*
          * Do not set a preferred size, otherwise `repaint()` is invoked twice: once with the preferred size
          * and once with the actual size of the parent window. Actually the `repaint()` method appears to be
@@ -203,6 +220,9 @@ final class CoverageView extends PlanarCanvas {
          */
         coverageProperty   .addListener(this::onImageSpecified);
         sliceExtentProperty.addListener(this::onImageSpecified);
+        imageRegion.setOnMouseMoved(this::onMouveMoved);
+        imageRegion.setOnMouseEntered(statusBar);
+        imageRegion.setOnMouseExited (statusBar);
     }
 
     /**
@@ -220,7 +240,7 @@ final class CoverageView extends PlanarCanvas {
      * @return the region to show.
      */
     public final Region getView() {
-        return view;
+        return imageAndStatus;
     }
 
     /**
@@ -303,6 +323,7 @@ final class CoverageView extends PlanarCanvas {
             bufferWrapper = null;
         } else {
             final GridExtent sliceExtent = getSliceExtent();
+            statusBar.setCoordinateConversion(coverage.getGridGeometry(), sliceExtent);
             execute(new Task<RenderedImage>() {
                 /** Invoked in background thread for fetching the image. */
                 @Override protected RenderedImage call() {
@@ -374,7 +395,7 @@ final class CoverageView extends PlanarCanvas {
         if (alt != data) {
             data = alt;
             dataChangeCount++;
-            view.requestLayout();
+            imageRegion.requestLayout();
         }
     }
 
@@ -382,7 +403,7 @@ final class CoverageView extends PlanarCanvas {
      * Sets the background, as a color for now but more patterns my be allowed in a future version.
      */
     final void setBackground(final Color color) {
-        view.setBackground(new Background(new BackgroundFill(color, null, null)));
+        imageRegion.setBackground(new Background(new BackgroundFill(color, null, null)));
     }
 
     /**
@@ -399,8 +420,8 @@ final class CoverageView extends PlanarCanvas {
         if (data == null) {
             return;
         }
-        final int width  = Numerics.clamp(Math.round(view.getWidth()));
-        final int height = Numerics.clamp(Math.round(view.getHeight()));
+        final int width  = Numerics.clamp(Math.round(imageRegion.getWidth()));
+        final int height = Numerics.clamp(Math.round(imageRegion.getHeight()));
         if (width <= 0 || height <= 0) {
             return;
         }
@@ -577,5 +598,24 @@ final class CoverageView extends PlanarCanvas {
      */
     private void errorOccurred(final Throwable ex) {
         ExceptionReporter.show(null, null, ex);
+    }
+
+    /**
+     * Invoked when the mouse moved. This method update the coordinates below mouse cursor.
+     */
+    private void onMouveMoved(final MouseEvent event) {
+        statusBar.setCoordinates((int) Math.round(event.getX()),
+                                 (int) Math.round(event.getY()));
+    }
+
+    /**
+     * Converts pixel indices in the window to pixel indices in the image.
+     */
+    private void toImageCoordinates(final double[] indices) {
+        try {
+            dataToImage.inverseTransform(indices, 0, indices, 0, 1);
+        } catch (NoninvertibleTransformException e) {
+            throw new BackingStoreException(e);         // Will be unwrapped by the caller
+        }
     }
 }

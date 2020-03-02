@@ -17,12 +17,15 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
+import java.util.function.Consumer;
 import javax.measure.Unit;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseEvent;
+import javafx.event.EventHandler;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
@@ -37,22 +40,30 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Exceptions;
 
 
 /**
  * A status bar showing coordinates of a grid cell.
  * The number of fraction digits is adjusted according pixel resolution for each coordinate to format.
  *
+ * <p>Callers can register this object to {@link javafx.scene.Node#setOnMouseEntered(EventHandler)} and
+ * {@link javafx.scene.Node#setOnMouseExited(EventHandler)} for showing or hiding the coordinate values
+ * when the mouse enter or exit the region of interest.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-final class StatusBar extends HBox {
+final class StatusBar extends HBox implements EventHandler<MouseEvent> {
     /**
-     * The view for which we are showing geographic or projected coordinates of selected cell.
+     * A function which take cell indices in input and gives pixel coordinates in output.
+     * The input and output coordinates are in the given array, which is updated in-place.
+     *
+     * @see GridView#toImageCoordinates(double[])
      */
-    private final GridView view;
+    private final Consumer<double[]> toImageCoordinates;
 
     /**
      * Zero-based cell coordinates currently formatted in the {@link #coordinates} field.
@@ -97,8 +108,8 @@ final class StatusBar extends HBox {
     /**
      * Creates a new status bar.
      */
-    StatusBar(final GridView view) {
-        this.view = view;
+    StatusBar(final Consumer<double[]> toImageCoordinates) {
+        this.toImageCoordinates = toImageCoordinates;
         format = new CoordinateFormat();
         coordinates = new Label();
         setAlignment(Pos.CENTER_RIGHT);
@@ -190,9 +201,9 @@ final class StatusBar extends HBox {
         if (x != column || y != row) {
             sourceCoordinates[0] = column = x;
             sourceCoordinates[1] = row    = y;
-            view.toImageCoordinates(sourceCoordinates);
             String text;
             try {
+                toImageCoordinates.accept(sourceCoordinates);
                 Matrix derivative;
                 try {
                     derivative = MathTransforms.derivativeAndTransform(gridToCRS,
@@ -230,16 +241,29 @@ final class StatusBar extends HBox {
                 }
                 format.setPrecisions(precisions);
                 text = format.format(targetCoordinates);
-            } catch (TransformException e) {
+            } catch (TransformException | RuntimeException e) {
                 /*
                  * If even the fallback without derivative failed, show the error message.
                  */
-                text = e.getLocalizedMessage();
+                Throwable cause = Exceptions.unwrap(e);
+                text = cause.getLocalizedMessage();
                 if (text == null) {
-                    text = Classes.getShortClassName(e);
+                    text = Classes.getShortClassName(cause);
                 }
             }
             coordinates.setText(text);
         }
+    }
+
+    /**
+     * Shows or hide the coordinates depending on whether the mouse entered or exited
+     * the region for which this status bar is providing information.
+     *
+     * <p>For the convenience of {@link GridViewSkin}, a null value is equivalent to
+     * a mouse exit event.</p>
+     */
+    @Override
+    public final void handle(final MouseEvent event) {
+        coordinates.setVisible(event != null && event.getEventType() != MouseEvent.MOUSE_EXITED);
     }
 }
