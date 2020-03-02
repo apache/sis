@@ -20,12 +20,15 @@ import java.util.Locale;
 import java.util.function.Consumer;
 import javax.measure.Unit;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.scene.paint.Color;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.input.MouseEvent;
 import javafx.event.EventHandler;
+import javafx.beans.value.ObservableValue;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
@@ -49,7 +52,7 @@ import org.apache.sis.util.Exceptions;
  *
  * <p>Callers can register this object to {@link javafx.scene.Node#setOnMouseEntered(EventHandler)} and
  * {@link javafx.scene.Node#setOnMouseExited(EventHandler)} for showing or hiding the coordinate values
- * when the mouse enter or exit the region of interest.</p>
+ * when the mouse enters or exits the region of interest.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -57,6 +60,23 @@ import org.apache.sis.util.Exceptions;
  * @module
  */
 final class StatusBar extends HBox implements EventHandler<MouseEvent> {
+    /**
+     * Some spaces to add around the status bar.
+     */
+    private static final Insets PADDING = new Insets(5, GridViewSkin.SCROLLBAR_WIDTH, 6, 0);
+
+    /**
+     * The progress bar, hidden by default. This bar is initialized to undetermined state.
+     */
+    private final ProgressBar progress;
+
+    /**
+     * Message to write in the middle of the status bar.
+     * This component usually has nothing to show; it is used mostly for error messages.
+     * It takes all the space between {@link #progress} and {@link #coordinates}.
+     */
+    private final Label message;
+
     /**
      * A function which take cell indices in input and gives pixel coordinates in output.
      * The input and output coordinates are in the given array, which is updated in-place.
@@ -110,11 +130,20 @@ final class StatusBar extends HBox implements EventHandler<MouseEvent> {
      */
     StatusBar(final Consumer<double[]> toImageCoordinates) {
         this.toImageCoordinates = toImageCoordinates;
-        format = new CoordinateFormat();
+        format      = new CoordinateFormat();
         coordinates = new Label();
-        setAlignment(Pos.CENTER_RIGHT);
-        getChildren().setAll(coordinates);
-        setPadding(new Insets(5, GridViewSkin.SCROLLBAR_WIDTH, 6, 0));
+        message     = new Label();
+        progress    = new ProgressBar();
+        progress.setVisible(false);
+        message.setTextFill(Color.RED);
+        message.setMaxWidth(Double.POSITIVE_INFINITY);
+        HBox.setHgrow(message, Priority.ALWAYS);
+        getChildren().setAll(progress, message, coordinates);
+        setPadding(PADDING);
+        setSpacing(12);
+        /*
+         * Following method call will initialize `gridtoCRS` to default value.
+         */
         setCoordinateConversion(null, null);
     }
 
@@ -265,5 +294,21 @@ final class StatusBar extends HBox implements EventHandler<MouseEvent> {
     @Override
     public final void handle(final MouseEvent event) {
         coordinates.setVisible(event != null && event.getEventType() != MouseEvent.MOUSE_EXITED);
+    }
+
+    /**
+     * Invoked when the {@link javafx.concurrent.Worker#runningProperty()} state of a task changed.
+     * This method shows or hides the progress bar according the {@code newValue} argument.
+     */
+    final void setRunningState(ObservableValue<? extends Boolean> property, Boolean oldValue, Boolean newValue) {
+        progress.setVisible(newValue);
+    }
+
+    /**
+     * Invoked when an error occurred, or for clearing the error message.
+     */
+    final void setErrorMessage(final String text) {
+        message.setVisible(text != null);
+        message.setText(text);
     }
 }

@@ -51,7 +51,6 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.ImageRenderings;
 import org.apache.sis.internal.map.PlanarCanvas;
 import org.apache.sis.internal.util.Numerics;
@@ -174,6 +173,7 @@ final class CoverageView extends PlanarCanvas {
      * Incremented when {@link #data} or {@link #dataToImage} changed.
      *
      * @see #renderedDataStamp
+     * @see #isDataChanged()
      */
     private int dataChangeCount;
 
@@ -181,7 +181,7 @@ final class CoverageView extends PlanarCanvas {
      * Value of {@link #dataChangeCount} last time the data have been rendered. This is used for deciding
      * if a call to {@link #repaint()} should be done with the next layout operation. We need this check
      * for avoiding never-ending repaint events caused by calls to {@link ImageView#setImage(Image)}
-     * causing themselves new layout events.
+     * causing themselves new layout events. It is okay if this value overflows.
      */
     private int renderedDataStamp;
 
@@ -203,7 +203,9 @@ final class CoverageView extends PlanarCanvas {
         imageRegion = new Pane() {
             @Override protected void layoutChildren() {
                 super.layoutChildren();
-                repaint();
+                if (isDataChanged()) {
+                    repaint();
+                }
             }
         };
         image = new ImageView();
@@ -301,7 +303,8 @@ final class CoverageView extends PlanarCanvas {
      * But {@link Task#succeeded()} and similar methods can read and write those fields.</p>
      */
     private void execute(final Task<?> task) {
-        // TODO: set a listener on task.state property.
+        statusBar.setErrorMessage(null);
+        task.runningProperty().addListener(statusBar::setRunningState);
         task.setOnFailed((e) -> errorOccurred(e.getSource().getException()));
         BackgroundThreads.execute(task);
     }
@@ -392,7 +395,7 @@ final class CoverageView extends PlanarCanvas {
          */
         dataAlternatives.put(type, alt);
         alt = dataAlternatives.get(currentDataAlternative);
-        if (alt != data) {
+        if (!Objects.equals(alt, data)) {
             data = alt;
             dataChangeCount++;
             imageRegion.requestLayout();
@@ -407,14 +410,18 @@ final class CoverageView extends PlanarCanvas {
     }
 
     /**
+     * Returns {@code true} if data changed since the last {@link #repaint()} execution.
+     */
+    private boolean isDataChanged() {
+        return dataChangeCount != renderedDataStamp;
+    }
+
+    /**
      * Invoked when the {@link #data} content needs to be rendered again into {@link #image}.
      * It may be because a new image has been specified, or because the viewed region moved
      * or have been zoomed.
      */
     private void repaint() {
-        if (dataChangeCount == renderedDataStamp) {
-            return;                                 // Nothing changed since last rendering.
-        }
         renderedDataStamp = dataChangeCount;
         final RenderedImage data = this.data;       // Need to copy this reference here before background tasks.
         if (data == null) {
@@ -594,10 +601,14 @@ final class CoverageView extends PlanarCanvas {
      *
      * @param  ex  the exception that occurred.
      *
-     * @todo should do something better (e.g. show in status bar).
+     * @todo Should provide a button for getting more details.
      */
     private void errorOccurred(final Throwable ex) {
-        ExceptionReporter.show(null, null, ex);
+        String message = ex.getMessage();
+        if (message == null) {
+            message = ex.toString();
+        }
+        statusBar.setErrorMessage(message);
     }
 
     /**
