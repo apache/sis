@@ -68,16 +68,16 @@ public abstract class PlanarCanvas extends Canvas {
     }
 
     /**
-     * The conversion from {@linkplain #getObjectiveCRS() objective CRS} to the display coordinate system.
-     * This transform will be modified in-place when user applies zoom, translation or rotation on the view area.
-     * The {@link #objectiveToDisplay} transform inherited from parent class is used as an immutable snapshot of
-     * this {@link #toDisplayAsAffine} transform. That snapshot is created when needed and reset to {@code null}
-     * when {@link #toDisplayAsAffine} is modified.
+     * The conversion from {@linkplain #getObjectiveCRS() objective CRS} to the display coordinate system as a
+     * Java2D affine transform. This transform will be modified in-place when user applies zoom, translation or
+     * rotation on the view area. Subclasses should generally not modify this affine transform directly; invoke
+     * one of the <code>transform<var>Foo</var>Coordinates(AffineTransform)</code> methods instead.
      *
      * @see #getObjectiveToDisplay()
-     * @see #objectiveToDisplay
+     * @see #transformObjectiveCoordinates(AffineTransform)
+     * @see #transformDisplayCoordinates(AffineTransform)
      */
-    private final AffineTransform toDisplayAsAffine;
+    protected final AffineTransform objectiveToDisplay;
 
     /**
      * Creates a new two-dimensional canvas.
@@ -86,7 +86,7 @@ public abstract class PlanarCanvas extends Canvas {
      */
     protected PlanarCanvas(final Locale locale) {
         super(DISPLAY_CRS, locale);
-        toDisplayAsAffine = new AffineTransform();
+        objectiveToDisplay = new AffineTransform();
     }
 
     /**
@@ -141,12 +141,18 @@ public abstract class PlanarCanvas extends Canvas {
      * subsequent changes in the <cite>objective to display</cite> conversion are not reflected in
      * the returned transform.
      *
+     * <p>The {@link Canvas#objectiveToDisplay} transform in parent class is used as an immutable snapshot of
+     * the {@link #objectiveToDisplay} transform in this class. That snapshot is created when needed and reset
+     * to {@code null} when {@link #objectiveToDisplay} is modified.</p>
+     *
      * @return snapshot of the affine conversion from objective CRS
      *         to display coordinate system (never {@code null}).
+     *
+     * @see Canvas#objectiveToDisplay
      */
     @Override
     final LinearTransform updateObjectiveToDisplay() {
-        return new AffineTransform2D(toDisplayAsAffine);
+        return new AffineTransform2D(objectiveToDisplay);
     }
 
     /**
@@ -161,19 +167,37 @@ public abstract class PlanarCanvas extends Canvas {
      */
     @Override
     final void updateObjectiveToDisplay(final LinearTransform newValue) {
-        toDisplayAsAffine.setTransform(AffineTransforms2D.castOrCopy(newValue.getMatrix()));
+        objectiveToDisplay.setTransform(AffineTransforms2D.castOrCopy(newValue.getMatrix()));
         super.updateObjectiveToDisplay(newValue);
     }
 
-    public void scale(final double sx, final double sy) {
-        // TODO
+    /**
+     * Updates the <cite>objective to display</cite> transform as if the given transform was applied <em>before</em>
+     * the current transform. For example if the given {@code before} transform is a translation, then the translation
+     * vector is in units of the {@linkplain #getObjectiveCRS() objective CRS} (typically metres on the map).
+     *
+     * @param  before  coordinate conversion to apply before the current <cite>objective to display</cite> transform.
+     */
+    public void transformObjectiveCoordinates(final AffineTransform before) {
+        if (!before.isIdentity()) {
+            final LinearTransform old = hasListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
+            objectiveToDisplay.concatenate(before);
+            invalidateObjectiveToDisplay(old);
+        }
     }
 
-    public void translate(final double tx, final double ty) {
-        // TODO
-    }
-
-    public void rotate(final double angle) {
-        // TODO
+    /**
+     * Updates the <cite>objective to display</cite> transform as if the given transform was applied <em>after</em>
+     * the current transform. For example if the given {@code after} transform is a translation, then the translation
+     * vector is in pixel units.
+     *
+     * @param  after  coordinate conversion to apply after the current <cite>objective to display</cite> transform.
+     */
+    public void transformDisplayCoordinates(final AffineTransform after) {
+        if (!after.isIdentity()) {
+            final LinearTransform old = hasListener(OBJECTIVE_TO_DISPLAY_PROPERTY) ? getObjectiveToDisplay() : null;
+            objectiveToDisplay.preConcatenate(after);
+            invalidateObjectiveToDisplay(old);
+        }
     }
 }

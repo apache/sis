@@ -519,9 +519,10 @@ public class GridView extends Control {
      * {@link RenderedImage} uses a coordinate system where the coordinates of the upper-left corner
      * is not (0,0).
      */
-    final void toImageCoordinates(final double[] indices) {
+    final boolean toImageCoordinates(final double[] indices) {
         indices[0] += minX;
         indices[1] += minY;
+        return true;
     }
 
     /**

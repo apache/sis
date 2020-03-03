@@ -33,9 +33,12 @@ import javafx.scene.layout.Pane;
 import javafx.beans.Observable;
 import javafx.concurrent.Task;
 import javafx.util.Callback;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.gui.BackgroundThreads;
+import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.map.PlanarCanvas;
+import org.apache.sis.internal.map.RenderException;
 import org.apache.sis.internal.util.Numerics;
 
 
@@ -58,6 +61,9 @@ public abstract class MapCanvas extends PlanarCanvas {
      * {@link org.apache.sis.coverage.grid.GridCoverage} which may have any color model.
      * This buffered image will contain only the visible region of the map;
      * it may be a zoom over a small region.
+     *
+     * <p>This buffered image contains the same data than the {@linkplain #image} of this canvas.
+     * Those two images will share the same data array (no copy) and the same coordinate system.</p>
      */
     private BufferedImage buffer;
 
@@ -83,15 +89,14 @@ public abstract class MapCanvas extends PlanarCanvas {
     private PixelBuffer<IntBuffer> bufferWrapper;
 
     /**
-     * The node where the image will be shown. The image of this canvas contains the same data than
-     * {@link #buffer}. They will share the same data array (no copy) and the same coordinate system.
+     * The node where the rendered map will be shown.
      */
-    private final ImageView image;
+    protected final ImageView image;
 
     /**
      * The pane where to put children. This pane uses absolute layout. It contains at least the
-     * JavaFX image of the map, but can also contain additional nodes for geometric shapes, texts,
-     * <i>etc</i>.
+     * JavaFX {@linkplain #image} of the map, but can also contain additional nodes for geometric
+     * shapes, texts, <i>etc</i>.
      */
     protected final Pane view;
 
@@ -118,6 +123,11 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #executeRendering(Task)
      */
     private boolean isRendering;
+
+    /**
+     * Whether the size of this canvas changed.
+     */
+    private boolean sizeChanged;
 
     /**
      * Creates a new canvas for JavaFX application.
@@ -153,6 +163,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     private void onSizeChanged(final Observable property) {
         contentChangeCount++;
+        sizeChanged = true;
         repaint();
     }
 
@@ -301,6 +312,19 @@ public abstract class MapCanvas extends PlanarCanvas {
             return;
         }
         renderedContentStamp = contentChangeCount;
+        /*
+         * If a new canvas size is known, inform the parent `PlanarCanvas` about that.
+         * It may cause a recomputation of the "objective to display" transform.
+         */
+        if (sizeChanged) try {
+            sizeChanged = false;
+            Envelope2D bounds = new Envelope2D(null, view.getLayoutX(), view.getLayoutY(), view.getWidth(), view.getHeight());
+            if (bounds.isEmpty()) return;
+            setDisplayBounds(bounds);
+        } catch (RenderException ex) {
+            errorOccurred(ex);
+            return;
+        }
         final Renderer context = createRenderer();
         if (context == null || !context.initialize(view)) {
             return;
@@ -485,5 +509,15 @@ public abstract class MapCanvas extends PlanarCanvas {
         bufferWrapper       = null;
         doubleBuffer        = null;
         bufferConfiguration = null;
+    }
+
+    /**
+     * Invoked when an error occurred. The default implementation popups a dialog box.
+     * Subclasses may override. For example the error messages could be written in a status bar instead.
+     *
+     * @param  ex  the exception that occurred.
+     */
+    protected void errorOccurred(final Throwable ex) {
+        ExceptionReporter.show(null, null, ex);
     }
 }

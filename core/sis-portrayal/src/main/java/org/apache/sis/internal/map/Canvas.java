@@ -106,10 +106,8 @@ import org.apache.sis.coverage.grid.GridExtent;
  * <h2>Location of data to display</h2>
  * In addition of above-cited Coordinate Reference Systems, a {@code Canvas} contains also a point of interest.
  * The point of interest is often, but not necessarily, at the center of display area.
- * It defines the position where {@linkplain #getSpatialResolution() resolutions} will be computed, and where
- * {@linkplain PlanarCanvas#scale(double, double) scales},
- * {@linkplain PlanarCanvas#translate(double, double) translations} and
- * {@linkplain PlanarCanvas#rotate(double) rotations} will be applied.
+ * It defines the position where {@linkplain #getSpatialResolution() resolutions} will be computed,
+ * and the position to keep fixed when scales and rotations are applied.
  *
  * <p>The point of interest can be expressed in any CRS;
  * it does not need to be the objective CRS or the CRS of any data.
@@ -593,6 +591,7 @@ public class Canvas extends Observable implements Localized {
      * @return snapshot of objective to display conversion, never null.
      *
      * @see #updateObjectiveToDisplay(LinearTransform)
+     * @see #invalidateObjectiveToDisplay(LinearTransform)
      */
     LinearTransform updateObjectiveToDisplay() {
         return MathTransforms.identity(getDisplayDimensions());
@@ -645,6 +644,24 @@ public class Canvas extends Observable implements Localized {
         objectiveToDisplay = newValue;
         gridGeometry       = null;
         operationContext.clear();
+    }
+
+    /**
+     * Declares that the {@link #objectiveToDisplay} transform became invalid and will need to be recomputed.
+     * It is subclasses responsibility to recompute the transform in their {@link #updateObjectiveToDisplay()}
+     * method.
+     *
+     * @param  oldValue  the old value, or {@code null} for not firing change event.
+     *
+     * @see #updateObjectiveToDisplay()
+     */
+    final void invalidateObjectiveToDisplay(final LinearTransform oldValue) {
+        objectiveToDisplay = null;
+        gridGeometry       = null;
+        operationContext.clear();
+        if (oldValue != null) {
+            firePropertyChange(OBJECTIVE_TO_DISPLAY_PROPERTY, oldValue, getObjectiveToDisplay());
+        }
     }
 
     /**

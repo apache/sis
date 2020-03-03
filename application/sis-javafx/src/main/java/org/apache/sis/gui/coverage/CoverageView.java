@@ -40,6 +40,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.gui.ImageRenderings;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.gui.map.MapCanvas;
+import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 
 
 /**
@@ -96,17 +97,24 @@ final class CoverageView extends MapCanvas {
     private RenderedImage data;
 
     /**
+     * The {@link GridGeometry#getGridToCRS(PixelInCell)} conversion of rendered {@linkplain #data}
+     * as an affine transform. This is often an immutable instance.
+     */
+    private AffineTransform gridToCRS;
+
+    /*
+     * The transform from {@link #data} pixel coordinates to pixel coordinates in the widget.
+     * This is the concatenation of {@link #gridToCRS} followed by {@link #objectiveToDisplay}.
+     * This transform is replaced when the zoom changes or when the viewed area is translated.
+     * We create a new transform each time (we do not modify the existing instance) because it
+     * may be used by a background thread.
+     */
+    private AffineTransform gridToDisplay;
+
+    /**
      * The image together with the status bar.
      */
     private final BorderPane imageAndStatus;
-
-    /**
-     * The transform from {@link #data} pixel coordinates to {@link #buffer} (and {@link #image})
-     * pixel coordinates. This is the concatenation of {@link GridGeometry#getGridToCRS(PixelInCell)}
-     * followed by {@link #getObjectiveToDisplay()}. This transform is updated when the zoom changes
-     * or when the viewed area is translated.
-     */
-    private final AffineTransform dataToImage;
 
     /**
      * The bar where to format the coordinates below mouse cursor.
@@ -121,7 +129,6 @@ final class CoverageView extends MapCanvas {
         coverageProperty       = new SimpleObjectProperty<>(this, "coverage");
         sliceExtentProperty    = new SimpleObjectProperty<>(this, "sliceExtent");
         dataAlternatives       = new EnumMap<>(RangeType.class);
-        dataToImage            = new AffineTransform();
         currentDataAlternative = RangeType.DECLARED;
         statusBar              = new StatusBar(this::toImageCoordinates);
         imageAndStatus         = new BorderPane(view);
@@ -231,7 +238,6 @@ final class CoverageView extends MapCanvas {
             clear();
         } else {
             final GridExtent sliceExtent = getSliceExtent();
-            statusBar.setCoordinateConversion(coverage.getGridGeometry(), sliceExtent);
             execute(new Task<RenderedImage>() {
                 /** Invoked in background thread for fetching the image. */
                 @Override protected RenderedImage call() {
@@ -242,8 +248,7 @@ final class CoverageView extends MapCanvas {
                 @Override protected void succeeded() {
                     super.succeeded();
                     if (coverage.equals(getCoverage()) && Objects.equals(sliceExtent, getSliceExtent())) {
-                        setImage(RangeType.DECLARED, getValue());
-                        setRangeType(currentDataAlternative);
+                        setImage(getValue(), coverage.getGridGeometry(), sliceExtent);
                     }
                 }
             });
@@ -307,6 +312,28 @@ final class CoverageView extends MapCanvas {
     }
 
     /**
+     * Invoked when a new image has been successfully loaded.
+     *
+     * @param  image        the image to load.
+     * @param  geometry     the grid geometry of the coverage that produced the image.
+     * @param  sliceExtent  the extent that were requested.
+     */
+    private void setImage(final RenderedImage image, final GridGeometry geometry, final GridExtent sliceExtent) {
+        setImage(RangeType.DECLARED, image);
+        setRangeType(currentDataAlternative);
+        statusBar.setCoordinateConversion(geometry, sliceExtent);
+        try {
+            gridToCRS = AffineTransforms2D.castOrCopy(geometry.getGridToCRS(PixelInCell.CELL_CENTER));
+
+            // TODO: scale according the display bounds.
+            setObjectiveToDisplay(new org.apache.sis.internal.referencing.j2d.AffineTransform2D(gridToCRS.createInverse()));
+        } catch (Exception e) {
+            gridToCRS = null;
+            errorOccurred(e);               // Conversion not defined or not affine.
+        }
+    }
+
+    /**
      * Sets the background, as a color for now but more patterns my be allowed in a future version.
      */
     final void setBackground(final Color color) {
@@ -322,10 +349,14 @@ final class CoverageView extends MapCanvas {
         if (data == null) {
             return null;
         }
-        final AffineTransform dataToImage = new AffineTransform(this.dataToImage);
+        final AffineTransform tr = new AffineTransform(objectiveToDisplay);
+        if (gridToCRS != null) {
+            tr.concatenate(gridToCRS);
+        }
+        gridToDisplay = tr;
         return new Renderer() {
             @Override protected void paint(final Graphics2D gr) {
-                gr.drawRenderedImage(data, dataToImage);
+                gr.drawRenderedImage(data, tr);
             }
         };
     }
@@ -337,7 +368,8 @@ final class CoverageView extends MapCanvas {
      *
      * @todo Should provide a button for getting more details.
      */
-    private void errorOccurred(final Throwable ex) {
+    @Override
+    protected void errorOccurred(final Throwable ex) {
         String message = ex.getMessage();
         if (message == null) {
             message = ex.toString();
@@ -356,11 +388,15 @@ final class CoverageView extends MapCanvas {
     /**
      * Converts pixel indices in the window to pixel indices in the image.
      */
-    private void toImageCoordinates(final double[] indices) {
+    private boolean toImageCoordinates(final double[] indices) {
+        if (gridToDisplay == null) {
+            return false;
+        }
         try {
-            dataToImage.inverseTransform(indices, 0, indices, 0, 1);
+            gridToDisplay.inverseTransform(indices, 0, indices, 0, 1);
         } catch (NoninvertibleTransformException e) {
             throw new BackingStoreException(e);         // Will be unwrapped by the caller
         }
+        return true;
     }
 }

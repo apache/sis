@@ -25,6 +25,8 @@ import java.awt.geom.RectangularShape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
@@ -47,6 +49,23 @@ public final class AffineTransforms2D extends Static {
      * Do not allows instantiation of this class.
      */
     private AffineTransforms2D() {
+    }
+
+    /**
+     * Returns the given transform as a Java2D affine transform.
+     *
+     * @param  transform  the transform to convert, or {@code null}.
+     * @return the transform argument if it can be safely casted (including {@code null} argument) or converted.
+     * @throws IllegalArgumentException if the given transform can not be caster or converted.
+     */
+    public static AffineTransform castOrCopy(final MathTransform transform) throws IllegalArgumentException {
+        if (transform == null || transform instanceof AffineTransform) {
+            return (AffineTransform) transform;
+        }
+        if (transform instanceof LinearTransform) {
+            return castOrCopy(((LinearTransform) transform).getMatrix());
+        }
+        throw new IllegalArgumentException(Resources.format(Resources.Keys.NotAnAffineTransform));
     }
 
     /**

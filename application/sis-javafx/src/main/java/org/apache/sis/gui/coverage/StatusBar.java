@@ -17,7 +17,7 @@
 package org.apache.sis.gui.coverage;
 
 import java.util.Locale;
-import java.util.function.Consumer;
+import java.util.function.Predicate;
 import javax.measure.Unit;
 import javafx.geometry.Insets;
 import javafx.scene.paint.Color;
@@ -80,10 +80,11 @@ final class StatusBar extends HBox implements EventHandler<MouseEvent> {
     /**
      * A function which take cell indices in input and gives pixel coordinates in output.
      * The input and output coordinates are in the given array, which is updated in-place.
+     * This method returns {@code false} if it can not compute the coordinates.
      *
      * @see GridView#toImageCoordinates(double[])
      */
-    private final Consumer<double[]> toImageCoordinates;
+    private final Predicate<double[]> toImageCoordinates;
 
     /**
      * Zero-based cell coordinates currently formatted in the {@link #coordinates} field.
@@ -128,7 +129,7 @@ final class StatusBar extends HBox implements EventHandler<MouseEvent> {
     /**
      * Creates a new status bar.
      */
-    StatusBar(final Consumer<double[]> toImageCoordinates) {
+    StatusBar(final Predicate<double[]> toImageCoordinates) {
         this.toImageCoordinates = toImageCoordinates;
         format      = new CoordinateFormat();
         coordinates = new Label();
@@ -230,46 +231,47 @@ final class StatusBar extends HBox implements EventHandler<MouseEvent> {
         if (x != column || y != row) {
             sourceCoordinates[0] = column = x;
             sourceCoordinates[1] = row    = y;
-            String text;
+            String text = null;
             try {
-                toImageCoordinates.accept(sourceCoordinates);
-                Matrix derivative;
-                try {
-                    derivative = MathTransforms.derivativeAndTransform(gridToCRS,
-                            sourceCoordinates, 0, targetCoordinates.coordinates, 0);
-                } catch (TransformException ignore) {
-                    /*
-                     * If above operation failed, it may be because the MathTransform does not support
-                     * derivative calculation. Try again without derivative (the precision will be set
-                     * to the default resolution computed in `setCoordinateConversion(…)`).
-                     */
-                    gridToCRS.transform(sourceCoordinates, 0, targetCoordinates.coordinates, 0, 1);
-                    derivative = null;
-                }
-                if (derivative == null) {
-                    precisions = null;
-                } else {
-                    if (precisions == null) {
-                        precisions = new double[targetCoordinates.getDimension()];
+                if (toImageCoordinates.test(sourceCoordinates)) {
+                    Matrix derivative;
+                    try {
+                        derivative = MathTransforms.derivativeAndTransform(gridToCRS,
+                                sourceCoordinates, 0, targetCoordinates.coordinates, 0);
+                    } catch (TransformException ignore) {
+                        /*
+                         * If above operation failed, it may be because the MathTransform does not support
+                         * derivative calculation. Try again without derivative (the precision will be set
+                         * to the default resolution computed in `setCoordinateConversion(…)`).
+                         */
+                        gridToCRS.transform(sourceCoordinates, 0, targetCoordinates.coordinates, 0, 1);
+                        derivative = null;
                     }
-                    /*
-                     * Estimate the precision by looking at the maximal displacement in the CRS caused by
-                     * a displacement of one cell (i.e. when moving by row or one column).  We search for
-                     * maximal displacement instead than minimal because we expect the displacement to be
-                     * zero along some axes (e.g. one row down does not change longitude value in a Plate
-                     * Carrée projection).
-                     */
-                    for (int j=derivative.getNumRow(); --j >= 0;) {
-                        double p = 0;
-                        for (int i=derivative.getNumCol(); --i >= 0;) {
-                            final double e = Math.abs(derivative.getElement(j, i));
-                            if (e > p) p = e;
+                    if (derivative == null) {
+                        precisions = null;
+                    } else {
+                        if (precisions == null) {
+                            precisions = new double[targetCoordinates.getDimension()];
                         }
-                        precisions[j] = p;
+                        /*
+                         * Estimate the precision by looking at the maximal displacement in the CRS caused by
+                         * a displacement of one cell (i.e. when moving by row or one column).  We search for
+                         * maximal displacement instead than minimal because we expect the displacement to be
+                         * zero along some axes (e.g. one row down does not change longitude value in a Plate
+                         * Carrée projection).
+                         */
+                        for (int j=derivative.getNumRow(); --j >= 0;) {
+                            double p = 0;
+                            for (int i=derivative.getNumCol(); --i >= 0;) {
+                                final double e = Math.abs(derivative.getElement(j, i));
+                                if (e > p) p = e;
+                            }
+                            precisions[j] = p;
+                        }
                     }
+                    format.setPrecisions(precisions);
+                    text = format.format(targetCoordinates);
                 }
-                format.setPrecisions(precisions);
-                text = format.format(targetCoordinates);
             } catch (TransformException | RuntimeException e) {
                 /*
                  * If even the fallback without derivative failed, show the error message.

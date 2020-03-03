@@ -147,4 +147,14 @@ abstract class Observable {
             }
         }
     }
+
+    /**
+     * Returns {@code true} if the given property has at least one listener.
+     *
+     * @param  propertyName  name of the property.
+     * @return {@code true} if the given property has at least one listener.
+     */
+    final boolean hasListener(final String propertyName) {
+        return (listeners != null) && listeners.containsKey(propertyName);
+    }
 }
