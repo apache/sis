@@ -80,9 +80,11 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
      */
     @Test
     public void testParallelExecution() {
+        final ImageOperations operations = new ImageOperations();
+        operations.setExecutionMode(ImageOperations.Mode.PARALLEL);
         final TiledImageMock image = createImage();
         final Statistics[] expected = StatisticsCalculator.computeSequentially(image);
-        final Statistics[] actual = ImageOperations.PARALLEL.statistics(image);
+        final Statistics[] actual = operations.statistics(image);
         for (int i=0; i<expected.length; i++) {
             final Statistics e = expected[i];
             final Statistics a = actual  [i];
@@ -98,10 +100,12 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
      */
     @Test
     public void testWithFailures() {
+        final ImageOperations operations = new ImageOperations();
+        operations.setExecutionMode(ImageOperations.Mode.PARALLEL);
         final TiledImageMock image = createImage();
         image.failRandomly(new Random(-8739538736973900203L));
         try {
-            ImageOperations.PARALLEL.statistics(image);
+            operations.statistics(image);
             fail("Expected ImagingOpException.");
         } catch (ImagingOpException e) {
             final String message = e.getMessage();
@@ -116,9 +120,12 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
      */
     @Test
     public void testWithLoggings() {
+        final ImageOperations operations = new ImageOperations();
+        operations.setExecutionMode(ImageOperations.Mode.PARALLEL);
+        operations.setErrorAction(ImageOperations.ErrorAction.LOG);
         final TiledImageMock image = createImage();
         image.failRandomly(new Random(8004277484984714811L));
-        final Statistics[] stats = ImageOperations.LENIENT.statistics(image);
+        final Statistics[] stats = operations.statistics(image);
         for (final Statistics a : stats) {
             assertTrue(a.count() > 0);
         }

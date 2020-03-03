@@ -29,12 +29,39 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 
 /**
  * A predefined set of operations on images as convenience methods.
- * Operations can be executed in parallel if applied on image with a thread-safe
- * and concurrent implementation of {@link RenderedImage#getTile(int, int)}.
- * Otherwise the same operations can be executed sequentially in the caller thread.
- * Errors during calculation can either be propagated as an {@link ImagingOpException}
- * (in which case no result is available), or notified as a {@link LogRecord}
- * (in which case partial results may be available).
+ * After instantiation, {@code ImageOperations} can be configured for the following aspects:
+ *
+ * <ul class="verbose">
+ *   <li>
+ *     Whether operations can be executed in parallel. By default operations on unknown
+ *     {@link RenderedImage} implementations are executed sequentially in the caller thread, for safety reasons.
+ *     Some operations can be parallelized, but it should be enabled only if the {@link RenderedImage} is known
+ *     to be thread-safe and has concurrent (or fast) implementation of {@link RenderedImage#getTile(int, int)}.
+ *     Apache SIS implementations of {@link RenderedImage} can be parallelized, but it may not be the case of
+ *     images from other libraries.
+ *   </li><li>
+ *     Whether the operations should fail if an exception is thrown while processing a tile.
+ *     By default errors during calculation are propagated as an {@link ImagingOpException},
+ *     in which case no result is available. But errors can also be notified as a {@link LogRecord} instead,
+ *     in which case partial results may be available.
+ *   </li>
+ * </ul>
+ *
+ * <h2>Error handling</h2>
+ * If an exception occurs during the computation of a tile, then the {@code ImageOperations} behavior
+ * is controlled by the {@link #getErrorAction() errorAction} property:
+ *
+ * <ul>
+ *   <li>If {@link ErrorAction#THROW}, the exception is wrapped in an {@link ImagingOpException} and thrown.</li>
+ *   <li>If {@link ErrorAction#LOG}, the exception is logged and a partial result is returned.</li>
+ *   <li>If any other value, the exception is wrapped in a {@link LogRecord} and sent to that filter.
+ *     The filter can store the log record, for example for showing later in a graphical user interface (GUI).
+ *     If the filter returns {@code true}, the log record is also logged, otherwise it is silently discarded.
+ *     In both cases a partial result is returned.</li>
+ * </ul>
+ *
+ * <h2>Thread-safety</h2>
+ * {@code ImageOperations} is thread-safe if its configuration is not modified after construction.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -43,85 +70,182 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
  */
 public class ImageOperations {
     /**
-     * The set of operations with default configuration. Operations executed by this instance
-     * will be multi-threaded if possible, and failures to compute a value cause an exception
-     * to be thrown.
-     */
-    public static final ImageOperations PARALLEL = new ImageOperations(true, true, null);
-
-    /**
-     * The set of operations where all executions are constrained to a single thread.
-     * Only the caller thread is used, with no parallelization. Sequential operations
-     * may be useful for processing {@link RenderedImage} that may not be thread-safe.
-     * The error handling policy is the same than {@link #PARALLEL}.
-     */
-    public static final ImageOperations SEQUENTIAL = new ImageOperations(false, true, null);
-
-    /**
-     * The set of operations executed without throwing an exception in case of failure.
-     * Instead the warnings are logged. Whether the operations are executed in parallel
-     * or not is implementation dependent.
+     * Execution modes specifying whether operations can be executed in parallel.
+     * If {@link #SEQUENTIAL}, operations are executed sequentially in the caller thread.
+     * If {@link #PARALLEL}, some operations may be parallelized using an arbitrary number of threads.
      *
-     * <p>Users should prefer {@link #PARALLEL} or {@link #SEQUENTIAL} in most cases since the use
-     * of {@code LENIENT} may cause errors to be unnoticed (not everyone read log messages).</p>
+     * @see #getExecutionMode()
+     * @see #setExecutionMode(Mode)
      */
-    public static final ImageOperations LENIENT = new ImageOperations(true, false, null);
+    public enum Mode {
+        /**
+         * Operations executed in multi-threaded mode if possible.
+         * This mode can be used if the {@link RenderedImage} instances are thread-safe and provide
+         * a concurrent (or very fast) implementation of {@link RenderedImage#getTile(int, int)}.
+         */
+        PARALLEL,
+
+        /**
+         * Operations executed in the caller thread, without parallelization.
+         * Sequential operations may be useful for processing {@link RenderedImage}
+         * implementations that may not be thread-safe.
+         */
+        SEQUENTIAL,
+
+        /**
+         * Operations are executed in multi-threaded mode if the {@link RenderedImage} instance
+         * is an implementation known to be thread-safe. All operations on image implementations
+         * unknown to Apache SIS are executed in sequential mode.
+         */
+        DEFAULT
+    }
+
+    /**
+     * Specifies how exceptions occurring during calculation should be handled.
+     * This enumeration provides common actions, but the set of values that can
+     * be specified to {@link #setErrorAction(Filter)} is not limited to this enumeration.
+     *
+     * @see #getErrorAction()
+     * @see #setErrorAction(Filter)
+     */
+    public enum ErrorAction implements Filter {
+        /**
+         * Exceptions are wrapped in an {@link ImagingOpException} and thrown.
+         * In such case, no result is available. This is the default action.
+         */
+        THROW,
+
+        /**
+         * Exceptions are wrapped in a {@link LogRecord} and logged at {@link java.util.logging.Level#WARNING}.
+         * Only one log record is created for all tiles that failed for the same operation on the same image.
+         * A partial result may be available.
+         *
+         * <p>Users are encouraged to use {@link #THROW} or to specify their own {@link Filter}
+         * instead than using this error action, because not everyone read logging records.</p>
+         */
+        LOG;
+
+        /**
+         * Unconditionally returns {@code true} for allowing the given record to be logged.
+         * This method is not useful for this {@code ErrorAction} enumeration, but is useful
+         * for other instances given to {@link #setErrorAction(Filter)}.
+         *
+         * @param  record  the error that occurred during computation of a tile.
+         * @return always {@code true}.
+         */
+        @Override
+        public boolean isLoggable(final LogRecord record) {
+            return true;
+        }
+    }
 
     /**
      * Whether the operations can be executed in parallel.
+     *
+     * @see #getExecutionMode()
+     * @see #setExecutionMode(Mode)
      */
-    private final boolean parallel;
+    private Mode executionMode;
 
     /**
-     * Whether errors occurring during computation should be propagated instead than wrapped in a {@link LogRecord}.
-     */
-    private final boolean failOnException;
-
-    /**
-     * Where to send exceptions (wrapped in {@link LogRecord}) if an operation failed on one or more tiles.
+     * Whether errors occurring during computation should be propagated or wrapped in a {@link LogRecord}.
+     * If errors are wrapped in a {@link LogRecord}, this field specifies what to do with the record.
      * Only one log record is created for all tiles that failed for the same operation on the same image.
-     * This is always {@code null} if {@link #failOnException} is {@code true}.
+     *
+     * @see #getErrorAction()
+     * @see #setErrorAction(Filter)
      */
-    private final Filter errorListener;
+    private Filter errorAction;
 
     /**
-     * Creates a new set of image operations.
-     *
-     * <h4>Error handling</h4>
-     * If an exception occurs during the computation of a tile, then the {@code ImageOperations} behavior
-     * is controlled by the following parameters:
-     *
-     * <ul>
-     *   <li>If {@code failOnException} is {@code true}, the exception is thrown as an {@link ImagingOpException}.</li>
-     *   <li>If {@code failOnException} is {@code false}, then:<ul>
-     *     <li>If {@code errorListener} is {@code null}, the exception is logged and a partial result is returned.</li>
-     *     <li>If {@code errorListener} is non-null, the exception is wrapped in a {@link LogRecord} and sent to that handler.
-     *         The listener can store the log record, for example for showing later in a graphical user interface (GUI).
-     *         If the listener returns {@code true}, the log record is also logged, otherwise it is silently discarded.
-     *         In both cases a partial result is returned.</li>
-     *     </ul>
-     *   </li>
-     * </ul>
-     *
-     * @param  parallel         whether the operations can be executed in parallel.
-     * @param  failOnException  whether exceptions occurring during computation should be propagated.
-     * @param  errorListener     handler to notify when an operation failed on one or more tiles,
-     *                          or {@code null} for printing the exceptions with the default logger.
-     *                          This is ignored if {@code failOnException} is {@code true}.
+     * Creates a new set of image operations with default configuration.
+     * The execution mode is initialized to {@link Mode#DEFAULT} and the error action to {@link ErrorAction#THROW}.
      */
-    public ImageOperations(final boolean parallel, final boolean failOnException, final Filter errorListener) {
-        this.parallel        = parallel;
-        this.failOnException = failOnException;
-        this.errorListener   = failOnException ? null : errorListener;
+    public ImageOperations() {
+        executionMode = Mode.DEFAULT;
+        errorAction   = ErrorAction.THROW;
+    }
+
+    /**
+     * Returns whether operations can be executed in parallel.
+     * If {@link Mode#SEQUENTIAL}, operations are executed sequentially in the caller thread.
+     * If {@link Mode#PARALLEL}, some operations may be parallelized using an arbitrary number of threads.
+     *
+     * @return whether the operations can be executed in parallel.
+     */
+    public Mode getExecutionMode() {
+        return executionMode;
+    }
+
+    /**
+     * Sets whether operations can be executed in parallel.
+     * This value can be set to {@link Mode#PARALLEL} if the {@link RenderedImage} instances are thread-safe
+     * and provide a concurrent (or very fast) implementation of {@link RenderedImage#getTile(int, int)}.
+     * If {@link Mode#SEQUENTIAL}, only the caller thread is used. Sequential operations may be useful
+     * for processing {@link RenderedImage} implementations that may not be thread-safe.
+     *
+     * <p>It is safe to set this flag to {@link Mode#PARALLEL} with {@link java.awt.image.BufferedImage}
+     * (it will actually have no effect in this particular case) or with Apache SIS implementations of
+     * {@link RenderedImage}.</p>
+     *
+     * @param  mode  whether the operations can be executed in parallel.
+     */
+    public void setExecutionMode(final Mode mode) {
+        ArgumentChecks.ensureNonNull("mode", mode);
+        executionMode = mode;
     }
 
     /**
      * Whether the operations can be executed in parallel for the specified image.
-     * Should be a method overridden by {@link #LENIENT}, but for this simple need
-     * it is not yet worth to do sub-classing.
      */
     private boolean parallel(final RenderedImage source) {
-        return (this == LENIENT) ? source.getClass().getName().startsWith(Modules.CLASSNAME_PREFIX) : parallel;
+        switch (executionMode) {
+            case PARALLEL:   return true;
+            case SEQUENTIAL: return false;
+            default:         return source.getClass().getName().startsWith(Modules.CLASSNAME_PREFIX);
+        }
+    }
+
+    /**
+     * Returns whether exceptions occurring during computation are propagated or logged.
+     * If {@link ErrorAction#THROW} (the default), exceptions are wrapped in {@link ImagingOpException} and thrown.
+     * If any other value, exceptions are wrapped in a {@link LogRecord}, filtered then eventually logged.
+     *
+     * @return whether exceptions occurring during computation are propagated or logged.
+     */
+    public Filter getErrorAction() {
+        return errorAction;
+    }
+
+    /**
+     * Sets whether exceptions occurring during computation are propagated or logged.
+     * The default behavior is to wrap exceptions in {@link ImagingOpException} and throw them.
+     * If this property is set to {@link ErrorAction#LOG} or any other value, then exceptions will
+     * be wrapped in {@link LogRecord} instead, in which case a partial result may be available.
+     * Only one log record is created for all tiles that failed for the same operation on the same image.
+     *
+     * @param  action  filter to notify when an operation failed on one or more tiles,
+     *                 or {@link ErrorAction#THROW} for propagating the exception.
+     */
+    public void setErrorAction(final Filter action) {
+        ArgumentChecks.ensureNonNull("action", action);
+        errorAction = action;
+    }
+
+    /**
+     * Whether errors occurring during computation should be propagated instead than wrapped in a {@link LogRecord}.
+     */
+    private boolean failOnException() {
+        return errorAction == ErrorAction.THROW;
+    }
+
+    /**
+     * Where to send exceptions (wrapped in {@link LogRecord}) if an operation failed on one or more tiles.
+     * Only one log record is created for all tiles that failed for the same operation on the same image.
+     * This is always {@code null} if {@link #failOnException()} is {@code true}.
+     */
+    private Filter errorListener() {
+        return (errorAction instanceof ErrorAction) ? null : errorAction;
     }
 
     /**
@@ -133,9 +257,9 @@ public class ImageOperations {
      */
     public Statistics[] statistics(final RenderedImage source) {
         ArgumentChecks.ensureNonNull("source", source);
-        final StatisticsCalculator calculator = new StatisticsCalculator(source, parallel(source), failOnException);
+        final StatisticsCalculator calculator = new StatisticsCalculator(source, parallel(source), failOnException());
         final Object property = calculator.getProperty(StatisticsCalculator.PROPERTY_NAME);
-        calculator.logAndClearError(ImageOperations.class, "statistics", errorListener);
+        calculator.logAndClearError(ImageOperations.class, "statistics", errorListener());
         if (property instanceof Statistics[]) {
             return (Statistics[]) property;
         }

@@ -37,7 +37,10 @@ public final class ImageRenderings {
      * @todo Creates our own instance which listen to logging messages.
      *       We need to create a logging panel first.
      */
-    private static final ImageOperations OPERATIONS = ImageOperations.LENIENT;
+    private static final ImageOperations OPERATIONS = new ImageOperations();
+    static {
+        OPERATIONS.setErrorAction(ImageOperations.ErrorAction.LOG);
+    }
 
     /**
      * Do not allow instantiation of this class.
