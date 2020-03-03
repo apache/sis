@@ -19,57 +19,38 @@ package org.apache.sis.gui.coverage;
 import java.util.Locale;
 import java.util.EnumMap;
 import java.util.Objects;
-import java.nio.IntBuffer;
 import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.awt.image.RenderedImage;
-import java.awt.image.VolatileImage;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.image.ImageView;
-import javafx.scene.image.PixelBuffer;
-import javafx.scene.image.PixelFormat;
-import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import javafx.beans.Observable;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.scene.input.MouseEvent;
-import javafx.util.Callback;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
-import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ImageRenderings;
-import org.apache.sis.internal.map.PlanarCanvas;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.gui.map.MapCanvas;
 
 
 /**
  * Shows a {@link RenderedImage} produced by a {@link GridCoverage}.
- *
- * This class should not be put in public API yet.
- * It may be refactored to a {@code MapView} after we have a renderer in SIS.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-final class CoverageView extends PlanarCanvas {
+final class CoverageView extends MapCanvas {
     /**
      * The data shown in this view. Note that setting this property to a non-null value may not
      * modify the view content immediately. Instead, a background process will request the tiles.
@@ -115,49 +96,6 @@ final class CoverageView extends PlanarCanvas {
     private RenderedImage data;
 
     /**
-     * A buffer where to draw the {@link RenderedImage} for the region to be displayed.
-     * This buffer uses ARGB color model, contrarily to {@link #data} which may have any
-     * color model. This buffered image will contain only the visible region of the data;
-     * it may be a zoom over a small region.
-     */
-    private BufferedImage buffer;
-
-    /**
-     * A temporary buffer where to draw the {@link RenderedImage} in a background thread.
-     * We use this double-buffering when the {@link #buffer} is already wrapped by JavaFX.
-     * After creating the image in background, its content is copied to {@link #buffer} in
-     * JavaFX thread.
-     */
-    private VolatileImage doubleBuffer;
-
-    /**
-     * The graphic configuration at the time {@link #buffer} has been rendered.
-     * This will be used for creating compatible {@link VolatileImage} for updating.
-     */
-    private GraphicsConfiguration bufferConfiguration;
-
-    /**
-     * Wraps {@link #buffer} data array for use by JavaFX images. This is the mechanism used
-     * by JavaFX 13+ for allowing {@link #image} to share the same data than {@link #buffer}.
-     * The same wrapper can be used for many {@link WritableImage} instances (e.g. thumbnails).
-     */
-    private PixelBuffer<IntBuffer> bufferWrapper;
-
-    /**
-     * The node where the image will be shown. The image of this view contains the same
-     * data than {@link #buffer}. They will share the same data array (no copy) and the
-     * same coordinate system.
-     */
-    private final ImageView image;
-
-    /**
-     * The pane where to put children. This pane uses absolute layout. It contains at least the
-     * {@linkplain #image} to show, but can also contain additional nodes for geometric shapes,
-     * texts, <i>etc</i>.
-     */
-    private final Pane imageRegion;
-
-    /**
      * The image together with the status bar.
      */
     private final BorderPane imageAndStatus;
@@ -169,31 +107,6 @@ final class CoverageView extends PlanarCanvas {
      * or when the viewed area is translated.
      */
     private final AffineTransform dataToImage;
-
-    /**
-     * Incremented when {@link #data} or {@link #dataToImage} changed.
-     *
-     * @see #renderedDataStamp
-     * @see #isDataChanged()
-     */
-    private int dataChangeCount;
-
-    /**
-     * Value of {@link #dataChangeCount} last time the data have been rendered. This is used for deciding
-     * if a call to {@link #repaint()} should be done with the next layout operation. We need this check
-     * for avoiding never-ending repaint events caused by calls to {@link ImageView#setImage(Image)}
-     * causing themselves new layout events. It is okay if this value overflows.
-     */
-    private int renderedDataStamp;
-
-    /**
-     * Whether a rendering task is in progress. This flag is used for avoiding to send to many
-     * {@link #repaint()} requests; we will wait for current repaint event to finish before to
-     * send another one.
-     *
-     * @see #executeRendering(Task)
-     */
-    private boolean isRendering;
 
     /**
      * The bar where to format the coordinates below mouse cursor.
@@ -210,33 +123,14 @@ final class CoverageView extends PlanarCanvas {
         dataAlternatives       = new EnumMap<>(RangeType.class);
         dataToImage            = new AffineTransform();
         currentDataAlternative = RangeType.DECLARED;
-        imageRegion = new Pane() {
-            @Override protected void layoutChildren() {
-                super.layoutChildren();
-                if (isDataChanged()) {
-                    repaint();
-                }
-            }
-        };
-        image = new ImageView();
-        image.setPreserveRatio(true);
-        imageRegion.getChildren().add(image);
-        imageAndStatus = new BorderPane(imageRegion);
-        statusBar = new StatusBar(this::toImageCoordinates);
+        statusBar              = new StatusBar(this::toImageCoordinates);
+        imageAndStatus         = new BorderPane(view);
         imageAndStatus.setBottom(statusBar);
-        /*
-         * Do not set a preferred size, otherwise `repaint()` is invoked twice: once with the preferred size
-         * and once with the actual size of the parent window. Actually the `repaint()` method appears to be
-         * invoked twice anyway, but without preferred size the width appears to be 0, in which case nothing
-         * is repainted.
-         */
         coverageProperty   .addListener(this::onImageSpecified);
         sliceExtentProperty.addListener(this::onImageSpecified);
-        imageRegion.setOnMouseMoved(this::onMouveMoved);
-        imageRegion.setOnMouseEntered(statusBar);
-        imageRegion.setOnMouseExited (statusBar);
-        imageRegion.widthProperty() .addListener(this::onSizeChanged);
-        imageRegion.heightProperty().addListener(this::onSizeChanged);
+        view.setOnMouseMoved(this::onMouveMoved);
+        view.setOnMouseEntered(statusBar);
+        view.setOnMouseExited (statusBar);
     }
 
     /**
@@ -310,31 +204,16 @@ final class CoverageView extends PlanarCanvas {
     /**
      * Starts a background task for loading data, computing slice or rendering the data in a {@link CoverageView}.
      *
-     * <p>Tasks need to be careful to not use any {@link CoverageView} field in their {@link Task#call()} method
-     * (needed fields shall be copied in the JavaFX thread before the background thread is started).
+     * <p>Tasks need to be careful to not use any {@link CoverageView} field in their {@link Task#call()}
+     * method (needed fields shall be copied in the JavaFX thread before the background thread is started).
      * But {@link Task#succeeded()} and similar methods can read and write those fields.</p>
      */
-    private void execute(final Task<?> task) {
+    @Override
+    protected final void execute(final Task<?> task) {
         statusBar.setErrorMessage(null);
         task.runningProperty().addListener(statusBar::setRunningState);
         task.setOnFailed((e) -> errorOccurred(e.getSource().getException()));
-        BackgroundThreads.execute(task);
-    }
-
-    /**
-     * Executes a rendering task in a background thread.
-     */
-    private void executeRendering(final Task<?> task) {
-        task.runningProperty().addListener((p,o,n) -> isRendering = n);
-        execute(task);
-    }
-
-    /**
-     * Invoked when the size of image region changed.
-     */
-    private void onSizeChanged(final Observable property) {
-        dataChangeCount++;
-        repaint();
+        super.execute(task);
     }
 
     /**
@@ -345,13 +224,11 @@ final class CoverageView extends PlanarCanvas {
      * @param  value     ignored.
      */
     private void onImageSpecified(final ObservableValue<?> property, final Object previous, final Object value) {
-        image.setImage(null);
         data = null;
         dataAlternatives.clear();
         final GridCoverage coverage = getCoverage();
         if (coverage == null) {
-            buffer        = null;           // Free memory.
-            bufferWrapper = null;
+            clear();
         } else {
             final GridExtent sliceExtent = getSliceExtent();
             statusBar.setCoordinateConversion(coverage.getGridGeometry(), sliceExtent);
@@ -425,8 +302,7 @@ final class CoverageView extends PlanarCanvas {
         alt = dataAlternatives.get(currentDataAlternative);
         if (!Objects.equals(alt, data)) {
             data = alt;
-            dataChangeCount++;
-            imageRegion.requestLayout();
+            requestRepaint();
         }
     }
 
@@ -434,206 +310,24 @@ final class CoverageView extends PlanarCanvas {
      * Sets the background, as a color for now but more patterns my be allowed in a future version.
      */
     final void setBackground(final Color color) {
-        imageRegion.setBackground(new Background(new BackgroundFill(color, null, null)));
+        view.setBackground(new Background(new BackgroundFill(color, null, null)));
     }
 
     /**
-     * Returns {@code true} if data changed since the last {@link #repaint()} execution.
+     * Invoked in JavaFX thread for creating a renderer to be executed in a background thread.
      */
-    private boolean isDataChanged() {
-        return dataChangeCount != renderedDataStamp;
-    }
-
-    /**
-     * Invoked when the {@link #data} content needs to be rendered again into {@link #image}.
-     * It may be because a new image has been specified, or because the viewed region moved
-     * or have been zoomed.
-     */
-    private void repaint() {
-        /*
-         * If a rendering is already in progress, do not send a new request now.
-         * Wait for current rendering to finish; a new one will be automatically
-         * happens if data changes are detected after the rendering.
-         */
-        if (isRendering) {
-            dataChangeCount++;
-            return;
-        }
-        renderedDataStamp = dataChangeCount;
+    @Override
+    protected Renderer createRenderer(){
         final RenderedImage data = this.data;       // Need to copy this reference here before background tasks.
         if (data == null) {
-            return;
+            return null;
         }
-        final int width  = Numerics.clamp(Math.round(imageRegion.getWidth()));
-        final int height = Numerics.clamp(Math.round(imageRegion.getHeight()));
-        if (width <= 0 || height <= 0) {
-            return;
-        }
-        /*
-         * There is two possible situations: if the current buffers are not suitable, we clear everything related
-         * to Java2D buffered images and will recreate everything from scratch in the background thread. There is
-         * no need for double-buffering in such case since the new `BufferedImage` will not be shared with JavaFX
-         * image before the end of this task.
-         *
-         * The second situation is if the buffers are still valid. In such case we should not update the BufferedImage
-         * in a background thread because the internal array of that image is shared with JavaFX image, and that image
-         * should be updated only in JavaFX thread through the `PixelBuffer.update(…)` method. For that second case we
-         * will use a `VolatileImage` as a temporary buffer.
-         *
-         * In both cases we need to be careful to not use directly any `CoverageView` field from the `call()` method.
-         * Information needed by `call()` must be copied first. This is the case of `dataToImage` below among others.
-         */
         final AffineTransform dataToImage = new AffineTransform(this.dataToImage);
-        if (buffer == null || buffer.getWidth() != width || buffer.getHeight() != height) {
-            buffer              = null;
-            doubleBuffer        = null;
-            bufferWrapper       = null;
-            bufferConfiguration = null;
-            executeRendering(new Task<WritableImage>() {
-                /**
-                 * The Java2D image where to do the rendering. This image will be created in a background thread
-                 * and assigned to the {@link CoverageView#buffer} field in JavaFX thread if rendering succeed.
-                 */
-                private BufferedImage drawTo;
-
-                /**
-                 * Wrapper around {@link #buffer} internal array for interoperability between Java2D and JavaFX.
-                 * Created only if {@link #drawTo} have been successfully painted.
-                 */
-                private PixelBuffer<IntBuffer> wrapper;
-
-                /**
-                 * The graphic configuration at the time {@link #drawTo} has been rendered.
-                 * This will be used for creating {@link VolatileImage} when updating the image.
-                 */
-                private GraphicsConfiguration configuration;
-
-                /**
-                 * Invoked in background thread for creating and rendering the image (may be slow).
-                 * Any {@link CoverageView} field needed by this method shall be copied before the
-                 * background thread is executed; no direct reference to {@link CoverageView} here.
-                 */
-                @Override
-                protected WritableImage call() {
-                    drawTo = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
-                    final Graphics2D gr = drawTo.createGraphics();
-                    configuration = gr.getDeviceConfiguration();
-                    try {
-                        gr.drawRenderedImage(data, dataToImage);
-                    } finally {
-                        gr.dispose();
-                    }
-                    /*
-                     * The call to `array.getData()` below should be after we finished drawing in the new
-                     * BufferedImage, because this direct access to data array disables GPU accelerations.
-                     */
-                    final DataBufferInt array = (DataBufferInt) drawTo.getRaster().getDataBuffer();
-                    IntBuffer ib = IntBuffer.wrap(array.getData(), array.getOffset(), array.getSize());
-                    wrapper = new PixelBuffer<>(width, height, ib, PixelFormat.getIntArgbPreInstance());
-                    return new WritableImage(wrapper);
-                }
-
-                /**
-                 * Invoked in JavaFX thread on success. The JavaFX image is set to the result, then intermediate
-                 * buffers created by this task are saved in {@link CoverageView} fields for reuse next time that
-                 * an image of the same size will be rendered again.
-                 */
-                @Override
-                protected void succeeded() {
-                    super.succeeded();
-                    image.setImage(getValue());
-                    buffer              = drawTo;
-                    bufferWrapper       = wrapper;
-                    bufferConfiguration = configuration;
-                    if (isDataChanged()) {
-                        repaint();
-                    }
-                }
-            });
-        } else {
-            /*
-             * This is the second case described in the block comment at the beginning of this method:
-             * The existing resources (JavaFX image and Java2D volatile/buffered image) can be reused.
-             * The Java2D volatile image will be rendered in background thread, then its content will
-             * be transferred to JavaFX image (through BufferedImage shared array) in JavaFX thread.
-             */
-            final VolatileImage         previousBuffer = doubleBuffer;
-            final GraphicsConfiguration configuration  = bufferConfiguration;
-            final class Updater extends Task<VolatileImage> implements Callback<PixelBuffer<IntBuffer>, Rectangle2D> {
-                /**
-                 * Invoked in background thread for rendering the image (may be slow).
-                 * Any {@link CoverageView} field needed by this method shall be copied before the
-                 * background thread is executed; no direct reference to {@link CoverageView} here.
-                 */
-                @Override
-                protected VolatileImage call() {
-                    VolatileImage drawTo = previousBuffer;
-                    if (drawTo == null) {
-                        drawTo = configuration.createCompatibleVolatileImage(width, height);
-                    }
-                    boolean invalid = true;
-                    try {
-                        do {
-                            if (drawTo.validate(configuration) == VolatileImage.IMAGE_INCOMPATIBLE) {
-                                drawTo = configuration.createCompatibleVolatileImage(width, height);
-                            }
-                            final Graphics2D gr = drawTo.createGraphics();
-                            try {
-                                gr.setBackground(ColorModelFactory.TRANSPARENT);
-                                gr.clearRect(0, 0, drawTo.getWidth(), drawTo.getHeight());
-                                gr.drawRenderedImage(data, dataToImage);
-                            } finally {
-                                gr.dispose();
-                            }
-                            invalid = drawTo.contentsLost();
-                        } while (invalid && !isCancelled());
-                    } finally {
-                        if (invalid) {
-                            drawTo.flush();         // Release native resources.
-                        }
-                    }
-                    return drawTo;
-                }
-
-                /**
-                 * Invoked in JavaFX thread on success. The JavaFX image is set to the result, then the
-                 * double buffer created by this task is saved in {@link CoverageView} fields for reuse
-                 * next time that an image of the same size will be rendered again.
-                 */
-                @Override
-                protected void succeeded() {
-                    final VolatileImage drawTo = getValue();
-                    doubleBuffer = drawTo;
-                    try {
-                        bufferWrapper.updateBuffer(this);       // This will invoke the `call(…)` method below.
-                    } finally {
-                        drawTo.flush();
-                    }
-                    super.succeeded();
-                }
-
-                /**
-                 * Invoked by {@link PixelBuffer#updateBuffer(Callback)} for updating the {@link #buffer} content.
-                 */
-                @Override
-                public Rectangle2D call(final PixelBuffer<IntBuffer> wrapper) {
-                    final VolatileImage drawTo = doubleBuffer;
-                    final Graphics2D gr = buffer.createGraphics();
-                    final boolean contentsLost;
-                    try {
-                        gr.drawImage(drawTo, 0, 0, null);
-                        contentsLost = drawTo.contentsLost();
-                    } finally {
-                        gr.dispose();
-                    }
-                    if (contentsLost || isDataChanged()) {
-                        repaint();
-                    }
-                    return null;
-                }
+        return new Renderer() {
+            @Override protected void paint(final Graphics2D gr) {
+                gr.drawRenderedImage(data, dataToImage);
             }
-            executeRendering(new Updater());
-        }
+        };
     }
 
     /**
