@@ -52,7 +52,7 @@ public abstract class PlanarCanvas extends Canvas {
     /**
      * The {@value} constant for identifying code specific to bi-dimensional case.
      */
-    private static final int BIDIMENSIONAL = 2;
+    protected static final int BIDIMENSIONAL = 2;
 
     /**
      * The display Coordinate Reference System used by all {@code PlanarCanvas} instances.

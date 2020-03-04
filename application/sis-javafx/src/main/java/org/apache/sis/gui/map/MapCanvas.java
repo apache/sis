@@ -33,13 +33,19 @@ import javafx.scene.layout.Pane;
 import javafx.beans.Observable;
 import javafx.concurrent.Task;
 import javafx.util.Callback;
+import org.opengis.geometry.Envelope;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.map.PlanarCanvas;
 import org.apache.sis.internal.map.RenderException;
-import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -101,6 +107,16 @@ public abstract class MapCanvas extends PlanarCanvas {
     protected final Pane view;
 
     /**
+     * The data bounds to use for computing the initial value of {@link #objectiveToDisplay}.
+     * This is reset to {@code null} after the transform has been computed.
+     * We differ this recomputation until all parameters are known.
+     *
+     * @see #setObjectiveBounds(Envelope)
+     * @see #invalidObjectiveToDisplay
+     */
+    private Envelope objectiveBounds;
+
+    /**
      * Incremented when the map needs to be rendered again.
      *
      * @see #renderedContentStamp
@@ -128,6 +144,12 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Whether the size of this canvas changed.
      */
     private boolean sizeChanged;
+
+    /**
+     * Whether {@link #objectiveToDisplay} needs to be recomputed.
+     * We differ this recomputation until all parameters are known.
+     */
+    private boolean invalidObjectiveToDisplay;
 
     /**
      * Creates a new canvas for JavaFX application.
@@ -172,6 +194,22 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     private boolean contentsChanged() {
         return contentChangeCount != renderedContentStamp;
+    }
+
+    /**
+     * Sets the data bounds to use for computing the initial value of {@link #objectiveToDisplay}.
+     * This method should be invoked only when new data have been loaded, or when the caller wants
+     * to discard any zoom or translation and reset the view of the given bounds.
+     *
+     * @param  visibleArea  bounding box in objective CRS of the initial area to show,
+     *         or {@code null} if unknown (in which case an identity transform will be set).
+     *
+     * @see #setObjectiveCRS(CoordinateReferenceSystem)
+     */
+    protected void setObjectiveBounds(final Envelope visibleArea) {
+        ArgumentChecks.ensureDimensionMatches("bounds", BIDIMENSIONAL, visibleArea);
+        objectiveBounds = visibleArea;
+        invalidObjectiveToDisplay = true;
     }
 
     /**
@@ -312,19 +350,45 @@ public abstract class MapCanvas extends PlanarCanvas {
             return;
         }
         renderedContentStamp = contentChangeCount;
-        /*
-         * If a new canvas size is known, inform the parent `PlanarCanvas` about that.
-         * It may cause a recomputation of the "objective to display" transform.
-         */
-        if (sizeChanged) try {
-            sizeChanged = false;
-            Envelope2D bounds = new Envelope2D(null, view.getLayoutX(), view.getLayoutY(), view.getWidth(), view.getHeight());
-            if (bounds.isEmpty()) return;
-            setDisplayBounds(bounds);
+        try {
+            /*
+             * If a new canvas size is known, inform the parent `PlanarCanvas` about that.
+             * It may cause a recomputation of the "objective to display" transform.
+             */
+            if (sizeChanged) {
+                sizeChanged = false;
+                Envelope2D bounds = new Envelope2D(null, view.getLayoutX(), view.getLayoutY(), view.getWidth(), view.getHeight());
+                if (bounds.isEmpty()) return;
+                setDisplayBounds(bounds);
+            }
+            /*
+             * Compute the `objectiveToDisplay` only before the first rendering, because the display
+             * bounds may not be known before (it may be zero at the time `MapCanvas` is initialized).
+             * This code is executed only once for a new map.
+             */
+            if (invalidObjectiveToDisplay) {
+                invalidObjectiveToDisplay = false;
+                LinearTransform tr;
+                final Envelope source = objectiveBounds;
+                if (objectiveBounds != null) {
+                    objectiveBounds = null;
+                    final Envelope2D target = getDisplayBounds();
+                    final MatrixSIS m = Matrices.createTransform(source, target);
+                    Matrices.forceUniformScale(m, 0, new double[] {target.width / 2, target.height / 2});
+                    tr = MathTransforms.linear(m);
+                } else {
+                    tr = MathTransforms.identity(BIDIMENSIONAL);
+                }
+                setObjectiveToDisplay(tr);
+            }
         } catch (RenderException ex) {
             errorOccurred(ex);
             return;
         }
+        /*
+         * Invoke `createRenderer()` only after we finished above configuration, because that method may take
+         * a snapshot of current canvas state in preparation for use in background threads.
+         */
         final Renderer context = createRenderer();
         if (context == null || !context.initialize(view)) {
             return;

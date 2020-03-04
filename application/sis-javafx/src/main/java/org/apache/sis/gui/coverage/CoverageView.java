@@ -40,14 +40,9 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.gui.ImageRenderings;
-import org.apache.sis.internal.map.RenderException;
 import org.apache.sis.gui.map.MapCanvas;
-import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
@@ -128,12 +123,6 @@ final class CoverageView extends MapCanvas {
      * The bar where to format the coordinates below mouse cursor.
      */
     private final StatusBar statusBar;
-
-    /**
-     * Whether {@link #objectiveToDisplay} needs to be recomputed.
-     * We differ this recomputation until all parameters are known.
-     */
-    private boolean invalidObjectiveToDisplay;
 
     /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
@@ -351,7 +340,17 @@ final class CoverageView extends MapCanvas {
             gridToCRS = null;
             errorOccurred(e);
         }
-        invalidObjectiveToDisplay = true;
+        Envelope visibleArea = null;
+        if (gridToCRS != null && geometry.isDefined(GridGeometry.ENVELOPE)) {
+            visibleArea = geometry.getEnvelope();
+        } else if (geometry.isDefined(GridGeometry.EXTENT)) try {
+            final GridExtent extent = geometry.getExtent();
+            visibleArea = extent.toEnvelope(MathTransforms.identity(extent.getDimension()));
+        } catch (TransformException e) {
+            // Should never happen because we asked for an identity transform.
+            errorOccurred(e);
+        }
+        setObjectiveBounds(visibleArea);
     }
 
     /**
@@ -364,36 +363,6 @@ final class CoverageView extends MapCanvas {
         final RenderedImage data = this.data;       // Need to copy this reference here before background tasks.
         if (data == null) {
             return null;
-        }
-        /*
-         * Compute the `objectiveToDisplay` only before the first rendering, because the display
-         * bounds may not be known before (it may be zero at the time `setImage(…)` is invoked).
-         * This code is executed only once for a new image.
-         */
-        if (invalidObjectiveToDisplay) try {
-            invalidObjectiveToDisplay = false;
-            final Envelope bounds;
-            final GridGeometry geometry = getCoverage().getGridGeometry();
-            if (gridToCRS != null && geometry.isDefined(GridGeometry.ENVELOPE)) {
-                bounds = geometry.getEnvelope();
-            } else if (geometry.isDefined(GridGeometry.EXTENT)) {
-                final GridExtent extent = geometry.getExtent();
-                bounds = extent.toEnvelope(MathTransforms.identity(extent.getDimension()));
-            } else {
-                bounds = null;
-            }
-            LinearTransform tr;
-            if (bounds != null) {
-                final Envelope2D db = getDisplayBounds();
-                final MatrixSIS m = Matrices.createTransform(bounds, db);
-                Matrices.forceUniformScale(m, 0, new double[] {db.width / 2, db.height / 2});
-                tr = MathTransforms.linear(m);
-            } else {
-                tr = MathTransforms.identity(ImageLoader.BIDIMENSIONAL);
-            }
-            setObjectiveToDisplay(tr);
-        } catch (RenderException | TransformException e) {
-            errorOccurred(e);
         }
         /*
          * At each rendering operation, compute the transform from `data` cell coordinates to pixel coordinates

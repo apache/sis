@@ -846,6 +846,8 @@ public final class Matrices extends Static {
      *
      * @param  matrix    the matrix in which to uniformize scale factors. Will be modified in-place.
      * @param  selector  a value between 0 for smallest scale magnitude and 1 for largest scale magnitude (inclusive).
+     *                   Values outside [0 … 1] range are authorized, but will result in scale factors outside the
+     *                   range of current scale factors in the given matrix.
      * @param  shift     compensation for the translation terms, or {@code null} if none.
      * @return {@code true} if the given matrix changed as a result of this method call.
      *
@@ -853,7 +855,7 @@ public final class Matrices extends Static {
      */
     public static boolean forceUniformScale(final Matrix matrix, final double selector, final double[] shift) {
         ArgumentChecks.ensureNonNull("matrix", matrix);
-        ArgumentChecks.ensureBetween("selector", 0, 1, selector);
+        ArgumentChecks.ensureFinite("selector", selector);
         final int srcDim = matrix.getNumCol() - 1;
         final int tgtDim = matrix.getNumRow() - 1;
         ArgumentChecks.ensureDimensionMatches("shift", tgtDim, shift);
