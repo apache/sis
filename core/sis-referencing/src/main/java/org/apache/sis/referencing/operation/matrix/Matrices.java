@@ -32,6 +32,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.referencing.AxisDirections;
@@ -811,6 +812,58 @@ public final class Matrices extends Static {
         resized.setElements(sources, length, stride, transfer, srcRow, 0,       numRow, 0,       1,       copyCol);    // Last row.
         resized.setElements(sources, length, stride, transfer, srcRow, srcCol,  numRow, numCol,  1,       1);          // Last row.
         return resized;
+    }
+
+    /**
+     * Forces the matrix coefficients of the given matrix to a uniform scale factor, assuming an affine transform.
+     * The uniformization is applied on a row-by-row basis (ignoring the last row and last column), i.e.:
+     *
+     * <ul>
+     *   <li>All coefficients (excluding translation term) in the same row are multiplied by the same factor.</li>
+     *   <li>After rescaling, each row (excluding translation column) have the same
+     *       {@linkplain MathFunctions#magnitude(double...) magnitude}.</li>
+     * </ul>
+     *
+     * The scale factors are adjusted for the smallest magnitude if {@code sp} is 0, the largest magnitude
+     * if {@code sp} is 1, or an intermediate value if {@code sp} has any value between 0 and 1.
+     *
+     * @param  matrix  the matrix in which to uniformize scale factors. Will be modified in-place.
+     * @param  sp      0 for smallest magnitude, 1 for largest magnitude, or any intermediate value.
+     * @return {@code true} if the given matrix changed as a result of this method call.
+     *
+     * @since 1.1
+     */
+    public static boolean forceUniformScale(final Matrix matrix, final double sp) {
+        ArgumentChecks.ensureNonNull("matrix", matrix);
+        ArgumentChecks.ensureBetween("sp", 0, 1, sp);
+        final int srcDim = matrix.getNumCol() - 1;
+        final int tgtDim = matrix.getNumRow() - 1;
+        final double[] row = new double[srcDim];
+        final double[] mgn = new double[tgtDim];
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        for (int j=0; j<tgtDim; j++) {
+            for (int i=0; i<srcDim; i++) {
+                row[i] = matrix.getElement(j, i);
+            }
+            final double m = MathFunctions.magnitude(row);
+            if (m < min) min = m;
+            if (m > max) max = m;
+            mgn[j] = m;
+        }
+        boolean changed = false;
+        if (min < max) {
+            final double scale = (1 - sp)*min + sp*max;
+            for (int j=0; j<tgtDim; j++) {
+                final double rescale = scale / mgn[j];
+                for (int i=0; i<srcDim; i++) {
+                    double e = matrix.getElement(j, i);
+                    changed |= (e != (e *= rescale));
+                    matrix.setElement(j, i, e);
+                }
+            }
+        }
+        return changed;
     }
 
     /**

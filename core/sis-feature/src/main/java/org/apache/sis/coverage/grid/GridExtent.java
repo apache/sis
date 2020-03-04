@@ -361,7 +361,7 @@ public class GridExtent implements GridEnvelope, Serializable {
      * @see #slice(DirectPosition, int[])
      */
     GridExtent(final AbstractEnvelope envelope, final GridRoundingMode rounding, final int[] margin,
-            final GridExtent enclosing, final int[] modifiedDimensions)
+               final GridExtent enclosing, final int[] modifiedDimensions)
     {
         final int dimension = envelope.getDimension();
         coordinates = (enclosing != null) ? enclosing.coordinates.clone() : allocate(dimension);
@@ -815,10 +815,29 @@ public class GridExtent implements GridEnvelope, Serializable {
      * The transform shall map <em>cell corner</em> to real world coordinates.
      *
      * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
+     * @return this grid extent in real world coordinates.
+     * @throws TransformException if the envelope can not be computed with the given transform.
+     *
+     * @see GridGeometry#getEnvelope()
+     * @see org.opengis.referencing.datum.PixelInCell#CELL_CORNER
+     *
+     * @since 1.1
+     */
+    public GeneralEnvelope toEnvelope(final MathTransform cornerToCRS) throws TransformException {
+        ArgumentChecks.ensureNonNull("cornerToCRS", cornerToCRS);
+        return toCRS(cornerToCRS, cornerToCRS, null);
+    }
+
+    /**
+     * Transforms this grid extent to a "real world" envelope using the given transform.
+     * The transform shall map <em>cell corner</em> to real world coordinates.
+     *
+     * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
      * @param  gridToCRS    the transform specified by the user. May be the same as {@code cornerToCRS}.
      *                      If different, then this is assumed to map cell centers instead than cell corners.
      * @param  fallback     bounds to use if some values still NaN, or {@code null} if none.
      * @return this grid extent in real world coordinates.
+     * @throws TransformException if the envelope can not be computed with the given transform.
      *
      * @see #GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])
      */

@@ -33,14 +33,21 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.scene.input.MouseEvent;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.gui.ImageRenderings;
-import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.internal.map.RenderException;
 import org.apache.sis.gui.map.MapCanvas;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
 /**
@@ -120,6 +127,12 @@ final class CoverageView extends MapCanvas {
      * The bar where to format the coordinates below mouse cursor.
      */
     private final StatusBar statusBar;
+
+    /**
+     * Whether {@link #objectiveToDisplay} needs to be recomputed.
+     * We differ this recomputation until all parameters are known.
+     */
+    private boolean invalidObjectiveToDisplay;
 
     /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
@@ -206,6 +219,13 @@ final class CoverageView extends MapCanvas {
      */
     public final void setSliceExtent(final GridExtent sliceExtent) {
         sliceExtentProperty.set(sliceExtent);
+    }
+
+    /**
+     * Sets the background, as a color for now but more patterns my be allowed in a future version.
+     */
+    final void setBackground(final Color color) {
+        view.setBackground(new Background(new BackgroundFill(color, null, null)));
     }
 
     /**
@@ -314,6 +334,8 @@ final class CoverageView extends MapCanvas {
     /**
      * Invoked when a new image has been successfully loaded.
      *
+     * @todo Needs to handle non-affine transform.
+     *
      * @param  image        the image to load.
      * @param  geometry     the grid geometry of the coverage that produced the image.
      * @param  sliceExtent  the extent that were requested.
@@ -324,24 +346,17 @@ final class CoverageView extends MapCanvas {
         statusBar.setCoordinateConversion(geometry, sliceExtent);
         try {
             gridToCRS = AffineTransforms2D.castOrCopy(geometry.getGridToCRS(PixelInCell.CELL_CENTER));
-
-            // TODO: scale according the display bounds.
-            setObjectiveToDisplay(new org.apache.sis.internal.referencing.j2d.AffineTransform2D(gridToCRS.createInverse()));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {                      // Conversion not defined or not affine.
             gridToCRS = null;
-            errorOccurred(e);               // Conversion not defined or not affine.
+            errorOccurred(e);
         }
-    }
-
-    /**
-     * Sets the background, as a color for now but more patterns my be allowed in a future version.
-     */
-    final void setBackground(final Color color) {
-        view.setBackground(new Background(new BackgroundFill(color, null, null)));
+        invalidObjectiveToDisplay = true;
     }
 
     /**
      * Invoked in JavaFX thread for creating a renderer to be executed in a background thread.
+     * This method prepares the information needed but does not start the rendering itself.
+     * The rendering will be done later by a call to {@link Renderer#paint(Graphics2D)}.
      */
     @Override
     protected Renderer createRenderer(){
@@ -349,6 +364,41 @@ final class CoverageView extends MapCanvas {
         if (data == null) {
             return null;
         }
+        /*
+         * Compute the `objectiveToDisplay` only before the first rendering, because the display
+         * bounds may not be known before (it may be zero at the time `setImage(…)` is invoked).
+         * This code is executed only once for a new image.
+         */
+        if (invalidObjectiveToDisplay) try {
+            invalidObjectiveToDisplay = false;
+            final Envelope bounds;
+            final GridGeometry geometry = getCoverage().getGridGeometry();
+            if (gridToCRS != null && geometry.isDefined(GridGeometry.ENVELOPE)) {
+                bounds = geometry.getEnvelope();
+            } else if (geometry.isDefined(GridGeometry.EXTENT)) {
+                final GridExtent extent = geometry.getExtent();
+                bounds = extent.toEnvelope(MathTransforms.identity(extent.getDimension()));
+            } else {
+                bounds = null;
+            }
+            LinearTransform tr;
+            if (bounds != null) {
+                final MatrixSIS m = Matrices.createTransform(bounds, getDisplayBounds());
+                Matrices.forceUniformScale(m, 0);
+                tr = MathTransforms.linear(m);
+            } else {
+                tr = MathTransforms.identity(ImageLoader.BIDIMENSIONAL);
+            }
+            setObjectiveToDisplay(tr);
+        } catch (RenderException | TransformException e) {
+            errorOccurred(e);
+        }
+        /*
+         * At each rendering operation, compute the transform from `data` cell coordinates to pixel coordinates
+         * of the image shown in this view. We do this computation every times because `objectiveToDisplay` may
+         * vary at any time, and also because we need a new `AffineTransform` instance anyway (we can not reuse
+         * an existing instance, because it needs to be stable for use by the background thread).
+         */
         final AffineTransform tr = new AffineTransform(objectiveToDisplay);
         if (gridToCRS != null) {
             tr.concatenate(gridToCRS);
@@ -389,14 +439,12 @@ final class CoverageView extends MapCanvas {
      * Converts pixel indices in the window to pixel indices in the image.
      */
     private boolean toImageCoordinates(final double[] indices) {
-        if (gridToDisplay == null) {
-            return false;
-        }
-        try {
+        if (gridToDisplay != null) try {
             gridToDisplay.inverseTransform(indices, 0, indices, 0, 1);
+            return true;
         } catch (NoninvertibleTransformException e) {
             throw new BackingStoreException(e);         // Will be unwrapped by the caller
         }
-        return true;
+        return false;
     }
 }
