@@ -42,6 +42,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.gui.ImageRenderings;
 import org.apache.sis.internal.map.RenderException;
 import org.apache.sis.gui.map.MapCanvas;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -383,8 +384,9 @@ final class CoverageView extends MapCanvas {
             }
             LinearTransform tr;
             if (bounds != null) {
-                final MatrixSIS m = Matrices.createTransform(bounds, getDisplayBounds());
-                Matrices.forceUniformScale(m, 0);
+                final Envelope2D db = getDisplayBounds();
+                final MatrixSIS m = Matrices.createTransform(bounds, db);
+                Matrices.forceUniformScale(m, 0, new double[] {db.width / 2, db.height / 2});
                 tr = MathTransforms.linear(m);
             } else {
                 tr = MathTransforms.identity(ImageLoader.BIDIMENSIONAL);

@@ -824,20 +824,39 @@ public final class Matrices extends Static {
      *       {@linkplain MathFunctions#magnitude(double...) magnitude}.</li>
      * </ul>
      *
-     * The scale factors are adjusted for the smallest magnitude if {@code sp} is 0, the largest magnitude
-     * if {@code sp} is 1, or an intermediate value if {@code sp} has any value between 0 and 1.
+     * The coefficients are multiplied by factors which result in the smallest magnitude if {@code selector} is 0,
+     * the largest magnitude if {@code selector} is 1, or an intermediate value if {@code selector} is any value
+     * between 0 and 1. In the common case where the matrix has no rotation and no shear terms, the magnitude is
+     * directly the scale factors on the matrix diagonal and {@code selector=0} sets all those scales to the smallest
+     * value while {@code selector=1} sets all those scales to the largest value (ignoring sign).
      *
-     * @param  matrix  the matrix in which to uniformize scale factors. Will be modified in-place.
-     * @param  sp      0 for smallest magnitude, 1 for largest magnitude, or any intermediate value.
+     * <p>Translation terms can be compensated for scale changes if the {@code shift} argument is non-null.
+     * The {@code shift} values should be proportional to {@linkplain Envelope#getSpan(int) envelope spans}.
+     * For example if the matrix is for transforming coordinates to a screen device, then:</p>
+     *
+     * <ul>
+     *   <li>{@code shift[i] = 0} will keep translation term unchanged in the dimension <var>i</var>.
+     *       For rendering on screen, it means that the image will stay on the left border (<var>i</var> = 0)
+     *       or upper border (<var>i</var> = 1).</li>
+     *   <li>{@code shift[i] = span} where {@code span} is the window width (<var>i</var> = 0) or height
+     *       (<var>i</var> = 1) will translate the image to the right border or to the bottom border respectively.</li>
+     *   <li>{@code shift[i] = span / 2} where {@code span} is as above will translate the image to the window center.</li>
+     *   <li>Any intermediate values are allowed.</li>
+     * </ul>
+     *
+     * @param  matrix    the matrix in which to uniformize scale factors. Will be modified in-place.
+     * @param  selector  a value between 0 for smallest scale magnitude and 1 for largest scale magnitude (inclusive).
+     * @param  shift     compensation for the translation terms, or {@code null} if none.
      * @return {@code true} if the given matrix changed as a result of this method call.
      *
      * @since 1.1
      */
-    public static boolean forceUniformScale(final Matrix matrix, final double sp) {
+    public static boolean forceUniformScale(final Matrix matrix, final double selector, final double[] shift) {
         ArgumentChecks.ensureNonNull("matrix", matrix);
-        ArgumentChecks.ensureBetween("sp", 0, 1, sp);
+        ArgumentChecks.ensureBetween("selector", 0, 1, selector);
         final int srcDim = matrix.getNumCol() - 1;
         final int tgtDim = matrix.getNumRow() - 1;
+        ArgumentChecks.ensureDimensionMatches("shift", tgtDim, shift);
         final double[] row = new double[srcDim];
         final double[] mgn = new double[tgtDim];
         double min = Double.POSITIVE_INFINITY;
@@ -853,7 +872,7 @@ public final class Matrices extends Static {
         }
         boolean changed = false;
         if (min < max) {
-            final double scale = (1 - sp)*min + sp*max;
+            final double scale = (1 - selector)*min + selector*max;
             for (int j=0; j<tgtDim; j++) {
                 final double rescale = scale / mgn[j];
                 for (int i=0; i<srcDim; i++) {
@@ -861,6 +880,9 @@ public final class Matrices extends Static {
                     changed |= (e != (e *= rescale));
                     matrix.setElement(j, i, e);
                 }
+                double e = matrix.getElement(j, srcDim);
+                changed |= (e != (e += shift[j] * (1 - rescale)));
+                matrix.setElement(j, srcDim, e);
             }
         }
         return changed;
