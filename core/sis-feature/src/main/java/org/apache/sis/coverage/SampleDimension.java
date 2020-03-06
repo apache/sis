@@ -140,11 +140,7 @@ public class SampleDimension implements Serializable {
         name             = original.name;
         categories       = original.categories.converse;
         transferFunction = Category.identity();
-        if (bc == null) {
-            background = null;
-        } else {
-            background = bc.converse.range.getMinValue();
-        }
+        background       = (bc != null) ? bc.converse.range.getMinValue() : null;
     }
 
     /**
@@ -169,7 +165,7 @@ public class SampleDimension implements Serializable {
         if (categories.isEmpty()) {
             list = CategoryList.EMPTY;
         } else {
-            list = CategoryList.create(categories.toArray(new Category[categories.size()]));
+            list = CategoryList.create(categories.toArray(new Category[categories.size()]), background);
         }
         this.name       = name;
         this.background = background;

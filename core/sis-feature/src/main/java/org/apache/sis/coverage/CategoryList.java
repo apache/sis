@@ -31,6 +31,7 @@ import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.math.MathFunctions;
 
 import static java.lang.Double.isNaN;
 import static java.lang.Double.doubleToRawLongBits;
@@ -134,7 +135,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * Never null, but may be {@code this} if the transfer function is the identity function.
      * May also be {@link #EMPTY} if this category list has no quantitative category.
      *
-     * <p>Exempt for the {@link #EMPTY} special case, this field establishes a bidirectional navigation between
+     * <p>Except for the {@link #EMPTY} special case, this field establishes a bidirectional navigation between
      * sample values and real values. This is in contrast with methods named {@code converted()}, which establish
      * a unidirectional navigation from sample values to real values.</p>
      *
@@ -142,6 +143,25 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * @see SampleDimension#converse
      */
     final CategoryList converse;
+
+    /**
+     * The action to take in {@code transform(…)} methods when converting a NaN value to sample value
+     * and no mapping is found for that specific NaN value. The action can be one of the following,
+     * in preference order:
+     *
+     * <ul>
+     *   <li>+0 means to leave the NaN value as-is. In such case, casting the NaN value to an integer will
+     *     produce 0 (so the 0 value is not set explicitely, but obtained as a result of casting to integer).
+     *     This action can be taken only if no category include the 0 value, or if 0 is for the background.</li>
+     *   <li>Any non-zero and non-NaN value means to use that value directly. In such case, the value should
+     *     be {@link SampleDimension#background}.</li>
+     *   <li>{@link Double#NaN} means that none of the above can be applied, in which case an exception will
+     *     be thrown.</li>
+     * </ul>
+     *
+     * @see #unmappedValue(double)
+     */
+    private final double fallback;
 
     /**
      * The constructor for the {@link #EMPTY} constant.
@@ -152,6 +172,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         categories     = new Category[0];
         converseRanges = null;
         converse       = this;
+        fallback       = Double.NaN;        // Specify that NaN values can not be converted to a sample value.
     }
 
     /**
@@ -162,9 +183,12 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * @param  categories  the list of categories. This array is not cloned and is modified in-place.
      * @param  converse    if we are creating the list of categories after conversion from samples to real values,
      *                     the original list before conversion. Otherwise {@code null}.
+     * @param  background  the {@link SampleDimension#background} sample value as a real number (not NaN), or {@code null}.
+     *                     Despite being a sample value, this is used only for constructing the converted category list
+     *                     ({@code converse != null}) because this is used as a fallback for <em>inverse</em> transforms.
      * @throws IllegalSampleDimensionException if two or more categories have overlapping sample value range.
      */
-    private CategoryList(final Category[] categories, CategoryList converse) {
+    private CategoryList(final Category[] categories, CategoryList converse, final Number background) {
         this.categories = categories;
         final int count = categories.length;
         /*
@@ -173,7 +197,8 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
          * instances, otherwise confusion will occur later.  Note that the converse is not true: a list of
          * converted categories may contain plain Category instances if the conversion is identity.
          */
-        if (converse == null) {
+        final boolean isSampleToUnit = (converse == null);
+        if (isSampleToUnit) {
             for (int i=0; i<count; i++) {
                 final Category c = categories[i];
                 if (c instanceof ConvertedCategory) {
@@ -192,12 +217,12 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         minimums  = new double[count];
         int countOfFiniteRanges = 0;
         NumberRange<?> range = null;
-        for (int i=count; --i >= 0;) {                  // Reverse order for making computation of 'range' more convenient.
+        for (int i=count; --i >= 0;) {                  // Reverse order for making computation of `range` more convenient.
             final Category category = categories[i];
             if (!isNaN(minimums[i] = category.range.getMinDouble(true))) {
                 /*
-                 * Initialize with the union of ranges at index 0 and index i.  In most cases, the result will cover the whole
-                 * range so all future calls to 'range.unionAny(…)' will be no-op.  The 'categories[0].range' field should not
+                 * Initialize with the union of ranges at index 0 and index i. In most cases, the result will cover the whole
+                 * range so all future calls to `range.unionAny(…)` will be no-op. The `categories[0].range` field should not
                  * be NaN because categories with NaN ranges are sorted last.
                  */
                 if (range == null) {
@@ -218,7 +243,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         this.converseRanges = (countOfFiniteRanges > 1) ? extremums : null;
         assert ArraysExt.isSorted(minimums, false);
         /*
-         * Verify that the ranges do not overlap and perform adjustments in 'minimums' values for filling some gaps:
+         * Verify that the ranges do not overlap and perform adjustments in `minimums` values for filling some gaps:
          * if we find a qualitative category followed by a quantitative category and empty space between them, then
          * the quantitative category takes that empty space. We do not perform similar check for the opposite side
          * (quantitative followed by qualitative) because CategoryList does not store maximum values; each category
@@ -233,22 +258,22 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
                             previous.name, previous.getRangeLabel(),
                             category.name, category.getRangeLabel()));
             }
-            // No overlapping check for 'converse' ranges here; see next block below.
+            // No overlapping check for `converse` ranges here; see next block below.
             final double limit = previous.range.getMaxDouble(false);
             if (minimum > limit &&  previous.converse.isConvertedQualitative()      // (a>b) implies that values are not NaN.
                                 && !category.converse.isConvertedQualitative())
             {
-                minimums[i] = limit;    // Expand the range of quantitative 'category' to the limit of qualitative 'previous'.
+                minimums[i] = limit;    // Expand the range of quantitative `category` to the limit of qualitative `previous`.
             }
         }
         assert ArraysExt.isSorted(minimums, true);
         /*
          * If we are creating the list of "samples to real values" conversions, we need to create the list of categories
          * resulting from conversions to real values. Note that this will indirectly test if some coverted ranges overlap,
-         * since this block invokes recursively this CategoryList constructor with a non-null 'converse' argument. Note
-         * also that converted categories may not be in the same order.
+         * since this block invokes recursively this CategoryList constructor with a non-null `converse` argument.
+         * Note also that converted categories may not be in the same order.
          */
-        if (converse == null) {
+        if (isSampleToUnit) {
             boolean isQualitative = true;
             boolean isIdentity    = true;
             final Category[] convertedCategories = new Category[count];
@@ -264,14 +289,14 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             } else if (isIdentity) {
                 converse = this;
             } else {
-                converse = new CategoryList(convertedCategories, this);
+                converse = new CategoryList(convertedCategories, this, background);
                 if (converseRanges != null) {
                     /*
                      * For "samples to real values" conversion (only that direction, not the converse) and only if there
                      * is two or more quantitative categories (should be very rare), adjust the converted maximum values
                      * for filling gaps between converted categories.
                      */
-                    for (int i=1; i<converseRanges.length; i+=2) {
+                    for (int i = 1; i < converseRanges.length; i += 2) {
                         final double maximum = converseRanges[i];
                         final int p = ~Arrays.binarySearch(converse.minimums, maximum);
                         if (p >= 0 && p < count) {
@@ -289,9 +314,56 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
             }
         }
         this.converse = converse;
-        if (count != 0 && !isNaN(minimums[0])) {
-            minimums[0] = Double.NEGATIVE_INFINITY;
+        /*
+         * Make the first quantitative category applicable to all low values. This is consistent with
+         * the last quantitative category being applicable to all high values. Note that quantitative
+         * categories are always before qualitative categories (NaN values) in the `minimums` array.
+         */
+        if (count != 0) {
+            if (!isNaN(minimums[0])) {
+                minimums[0] = Double.NEGATIVE_INFINITY;
+            }
+            /*
+             * If we are converting from sample values to units of measurement, we should not have NaN inputs.
+             * If it happens anyway, assume that we can propagate NaN sample values unchanged as output values
+             * if the user seems prepared to see NaN values.
+             *
+             * Design note: we could propagate sample NaN values unconditionally because converted values should
+             * always allow NaN. But even if NaN should be allowed, we are not sure that the user really expects
+             * them if no such value appears in the arguments (s)he provided. Given that NaN sample values are
+             * probably errors, we will let the `unmappedValue(double)` method throws an exception in such case.
+             */
+            if (isSampleToUnit) {
+                final int n = converse.minimums.length;
+                if (n != 0 && Double.isNaN(converse.minimums[n - 1])) {
+                    fallback = 0;
+                    return;
+                }
+            } else {
+                /*
+                 * If a NaN value can not be mapped to a sample value, keep the NaN value only if the 0 value
+                 * (the result of casting NaN to integers) would not conflict with an existing category range.
+                 * This check is important for "unit to sample" conversions, because we typically expect all
+                 * results to be convertible to integers (ignoring rounding errors).
+                 */
+                if (converse.categories.length != 0) {
+                    final NumberRange<?> cr = converse.categories[0].range;
+                    final double cv = cr.getMinDouble();
+                    if ((cv > 0) || (cv == 0 && !cr.isMinIncluded())) {
+                        fallback = 0;
+                        return;
+                    }
+                }
+            }
         }
+        /*
+         * If we can not let NaN value be propagated, use the background value if available.
+         * Note that the background value given in argument is a sample value, so it can be
+         * used only for the "unit to sample" conversion. If that background value is zero,
+         * it will be interpreted as "let NaN values propagate" but it should be okay since
+         * NaN casted to integers become 0.
+         */
+        fallback = (!isSampleToUnit && background != null) ? background.doubleValue() : Double.NaN;
     }
 
     /**
@@ -313,10 +385,12 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * <p>This is defined as a static method for allowing the addition of a caching mechanism in the future if desired.</p>
      *
      * @param  categories  the list of categories. This array is not cloned and is modified in-place.
+     * @param  background  the {@link SampleDimension#background} value (may be {@code null}).
+     *                     This is a sample value (not a NaN value from converted categories).
      * @throws IllegalSampleDimensionException if two or more categories have overlapping sample value range.
      */
-    static CategoryList create(final Category[] categories) {
-        return new CategoryList(categories, null);
+    static CategoryList create(final Category[] categories, final Number background) {
+        return new CategoryList(categories, null, background);
     }
 
     /**
@@ -346,7 +420,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      *
      * <p>This method differs from {@link Arrays#binarySearch(double[],double)} in the following aspects:</p>
      * <ul>
-     *   <li>If differentiates the various NaN values.</li>
+     *   <li>It differentiates the various NaN values.</li>
      *   <li>It does not differentiate exact matches from insertion points.</li>
      * </ul>
      *
@@ -395,7 +469,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         /*
          * If we reach this point and the sample is NaN, then it is not one of the NaN values known
          * to CategoryList constructor and can not be mapped to a category.  Otherwise we found the
-         * index of "insertion point" (~i). This means that 'sample' is lower than category minimum
+         * index of "insertion point" (~i). This means that `sample` is lower than category minimum
          * at that index. Consequently if the sample value is inside the range of some category, it
          * can only be the previous category (~i-1).
          */
@@ -412,6 +486,34 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     final Category search(final double sample) {
         final int i = binarySearch(minimums, sample);
         return (i >= 0) ? categories[i] : null;
+    }
+
+    /**
+     * Invoked when a value can not be located in the {@link #minimums} array. It should happen
+     * only for NaN input values, which in turn should happen only in "unit to sample" conversions.
+     * In such case we fallback on zero value if non ambiguous, or on the background value if available,
+     * or throw an exception otherwise.
+     *
+     * @param  value  the (usually NaN) value that we can not map to a category range.
+     * @return the value to use as converted value.
+     * @throws TransformException if the value can not be converted.
+     */
+    private double unmappedValue(final double value) throws TransformException {
+        if (MathFunctions.isPositiveZero(fallback)) {
+            return value;
+        }
+        if (Double.isNaN(fallback)) {
+            throw new TransformException(formatNoCategory(value));
+        }
+        return fallback;
+    }
+
+    /**
+     * Formats the "No category for value" message.
+     */
+    private static String formatNoCategory(final double value) {
+        return Resources.format(Resources.Keys.NoCategoryForValue_1,
+                Double.isNaN(value) ? "NaN #" + MathFunctions.toNanOrdinal((float) value) : value);
     }
 
     /**
@@ -440,7 +542,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
          */
         int index = lastUsed;
         double value = Double.NaN;
-        for (int peekOff = srcOff; /* numPts >= 0 */; peekOff += direction) {
+main:   for (int peekOff = srcOff; /* numPts >= 0 */; peekOff += direction) {
             final double minimum = minimums[index];
             final double limit = (index+1 < minimums.length) ? minimums[index+1] : Double.NaN;
             final long   rawBits = doubleToRawLongBits(minimum);
@@ -456,8 +558,8 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
                 peekOff += direction;
             }
             /*
-             * The category has changed. Compute the start point (which depends on 'direction') and perform
-             * the conversion on many values in a single 'transform' method call.
+             * The category has changed. Compute the start point (which depends on `direction`) and perform
+             * the conversion on many values in a single `transform` method call.
              */
             int count = peekOff - srcOff;                       // May be negative if we are going backward.
             if (count < 0) {
@@ -485,7 +587,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
              */
             if (converseRanges != null) {
                 dstOff = srcOff + srcToDst;
-                if (dstFloat != null) {                                             // Loop for the 'float' version.
+                if (dstFloat != null) {                                             // Loop for the `float` version.
                     final float min = (float) converseRanges[(index << 1)    ];
                     final float max = (float) converseRanges[(index << 1) | 1];
                     while (--count >= 0) {
@@ -497,7 +599,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
                         }
                         dstOff++;
                     }
-                } else {                                                            // Loop for the 'double' version.
+                } else {                                                            // Loop for the `double` version.
                     final double min = converseRanges[(index << 1)    ];
                     final double max = converseRanges[(index << 1) | 1];
                     while (--count >= 0) {
@@ -512,14 +614,15 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
                 }
             }
             /*
-             * Transformation is now finished for all points in the range [srcOff … peekOff]
-             * (not including 'peekOff'). If there is more points to examine, get the new
-             * category for the next points.
+             * Conversion is now finished for all values in the range [srcOff … peekOff]
+             * (not including `peekOff`). If there is more values to examine, get the new
+             * category for the next values.
              */
             if (numPts < 0) break;
-            index = binarySearch(minimums, value);
-            if (index < 0) {
-                throw new TransformException(Resources.format(Resources.Keys.NoCategoryForValue_1, value));
+            while ((index = binarySearch(minimums, value)) < 0) {
+                dstPts[peekOff + srcToDst] = unmappedValue(value);
+                if (--numPts < 0) break main;
+                value = srcPts[peekOff += direction];
             }
             srcOff = peekOff;
         }
@@ -579,7 +682,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         {
             index = binarySearch(minimums, value);
             if (index < 0) {
-                throw new TransformException(Resources.format(Resources.Keys.NoCategoryForValue_1, value));
+                return unmappedValue(value);
             }
             lastUsed = index;
         }
@@ -609,7 +712,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         {
             index = binarySearch(minimums, value);
             if (index < 0) {
-                throw new TransformException(Resources.format(Resources.Keys.NoCategoryForValue_1, value));
+                throw new TransformException(formatNoCategory(value));
             }
             lastUsed = index;
         }
