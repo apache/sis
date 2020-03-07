@@ -361,7 +361,7 @@ public class GridGeometry implements Serializable {
     /*
      * Do not provide convenience constructor without PixelInCell or PixelOrientation argument.
      * Experience shows that 0.5 pixel offsets in image georeferencing is a recurrent problem.
-     * We really want to force developers to think about whether their 'gridToCRS' transform
+     * We really want to force developers to think about whether their `gridToCRS` transform
      * locates pixel corner or pixel center.
      */
 
@@ -410,8 +410,8 @@ public class GridGeometry implements Serializable {
             this.extent      = extent;
             this.gridToCRS   = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CENTER);
             this.cornerToCRS = PixelTranslation.translate(gridToCRS, anchor, PixelInCell.CELL_CORNER);
-            this.envelope    = computeEnvelope(gridToCRS, crs, null);   // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
-            this.resolution  = resolution(gridToCRS, extent);           // 'gridToCRS' or 'cornerToCRS' does not matter here.
+            this.envelope    = computeEnvelope(gridToCRS, crs, null);   // `gridToCRS` specified by the user, not `this.gridToCRS`.
+            this.resolution  = resolution(gridToCRS, extent);           // `gridToCRS` or `cornerToCRS` does not matter here.
             this.nonLinears  = findNonLinearTargets(gridToCRS);
         } catch (TransformException e) {
             throw new IllegalGridGeometryException(e, "gridToCRS");
@@ -499,14 +499,14 @@ public class GridGeometry implements Serializable {
             try {
                 env = Envelopes.transform(cornerToCRS.inverse(), envelope);
                 extent = new GridExtent(env, rounding, null, null, null);
-                env = extent.toCRS(cornerToCRS, gridToCRS, envelope);     // 'gridToCRS' specified by the user, not 'this.gridToCRS'.
+                env = extent.toCRS(cornerToCRS, gridToCRS, envelope);     // `gridToCRS` specified by the user, not `this.gridToCRS`.
             } catch (TransformException e) {
                 throw new IllegalGridGeometryException(e, "gridToCRS");
             }
             env.setCoordinateReferenceSystem(envelope.getCoordinateReferenceSystem());
             this.envelope = new ImmutableEnvelope(env);
             if (scales == null) try {
-                // 'gridToCRS' can not be null if 'cornerToCRS' is non-null.
+                // `gridToCRS` can not be null if `cornerToCRS` is non-null.
                 scales = gridToCRS.derivative(new DirectPositionView.Double(extent.getPointOfInterest()));
                 numToIgnore = 0;
             } catch (TransformException e) {
@@ -630,8 +630,8 @@ public class GridGeometry implements Serializable {
                 throw new IllegalGridGeometryException(Resources.format(Resources.Keys.IllegalGridGeometryComponent_1, "dimensions"));
             }
             /*
-             * We redo a separation for 'cornerToCRS' instead than applying a translation of the 'gridToCRS'
-             * computed above because we don't know which of 'gridToCRS' and 'cornerToCRS' has less NaN values.
+             * We redo a separation for `cornerToCRS` instead than applying a translation of the `gridToCRS`
+             * computed above because we don't know which of `gridToCRS` and `cornerToCRS` has less NaN values.
              */
             sep = new TransformSeparator(other.cornerToCRS);
             sep.addSourceDimensions(sources);
@@ -785,7 +785,7 @@ public class GridGeometry implements Serializable {
     }
 
     /*
-     * Do not provide a convenience 'getGridToCRS()' method without PixelInCell or PixelOrientation argument.
+     * Do not provide a convenience `getGridToCRS()` method without PixelInCell or PixelOrientation argument.
      * Experience shows that 0.5 pixel offset in image localization is a recurrent problem. We really want to
      * force developers to think about whether they want a gridToCRS transform locating pixel corner or center.
      */
@@ -1211,8 +1211,8 @@ public class GridGeometry implements Serializable {
     }
 
     /**
-     * Returns a grid geometry that encompass only some dimensions of the grid geometry.
-     * The specified dimensions will be copied into a new grid geometry.
+     * Returns a grid geometry that encompass only some dimensions of this grid geometry.
+     * The specified dimensions will be copied into a new grid geometry if necessary.
      * The selection is applied on {@linkplain #getExtent() grid extent} dimensions;
      * they are not necessarily the same than the {@linkplain #getEnvelope() envelope} dimensions.
      * The given dimensions must be in strictly ascending order without duplicated values.
