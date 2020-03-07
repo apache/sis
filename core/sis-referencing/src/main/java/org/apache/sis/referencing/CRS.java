@@ -995,7 +995,7 @@ public final class CRS extends Static {
                     final int verticalDimension = Long.numberOfTrailingZeros((isVertical ? intersect : ~intersect) >>> previous);
                     final CoordinateSystemAxis verticalAxis = crs.getCoordinateSystem().getAxis(verticalDimension);
                     if (AxisDirections.isVertical(verticalAxis.getDirection())) try {
-                        addTo.add(new EllipsoidalHeightSeparator((GeodeticDatum) datum).separate((SingleCRS) crs, isVertical));
+                        addTo.add(new EllipsoidalHeightSeparator((GeodeticDatum) datum, isVertical).separate((SingleCRS) crs));
                         selected &= ~current;
                     } catch (IllegalArgumentException | ClassCastException e) {
                         throw new FactoryException(Resources.format(Resources.Keys.CanNotSeparateCRS_1, crs.getName()));

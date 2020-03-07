@@ -37,6 +37,7 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.internal.jaxb.referencing.CC_Conversion;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Semaphores;
@@ -53,7 +54,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * (not by a {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.1
  *
  * @param <C>  the conversion type, either {@code Conversion} or {@code Projection}.
  *
@@ -107,8 +108,20 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
         ArgumentChecks.ensureNonNull("conversion", conversion);
         final MathTransform baseToDerived = conversion.getMathTransform();
         if (baseToDerived != null) {
-            ArgumentChecks.ensureDimensionMatches("baseCRS",   baseToDerived.getSourceDimensions(), baseCRS);
-            ArgumentChecks.ensureDimensionMatches("derivedCS", baseToDerived.getTargetDimensions(), derivedCS);
+check:      for (int i=0; ; i++) {
+                final CoordinateSystem cs;
+                final int actual;
+                switch (i) {
+                    case 0:  actual = baseToDerived.getSourceDimensions(); cs = baseCRS.getCoordinateSystem(); break;
+                    case 1:  actual = baseToDerived.getTargetDimensions(); cs = derivedCS; break;
+                    default: break check;
+                }
+                final int expected = cs.getDimension();
+                if (actual != expected) {
+                    throw new MismatchedDimensionException(Resources.format(
+                            Resources.Keys.MismatchedTransformDimension_3, i, expected, actual));
+                }
+            }
         }
         conversionFromBase = createConversionFromBase(properties, baseCRS, conversion);
     }

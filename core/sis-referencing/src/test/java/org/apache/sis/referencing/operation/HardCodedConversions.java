@@ -31,7 +31,7 @@ import org.apache.sis.referencing.cs.HardCodedCS;
  * Collection of defining conversions for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -78,7 +78,7 @@ public final strictfp class HardCodedConversions {
      * @return three-dimensional Mercator projection.
      */
     public static DefaultProjectedCRS mercator3D() {
-        return new DefaultProjectedCRS(name("Mercator 3D"),
+        return new DefaultProjectedCRS(name("Mercator (3D)"),
                 HardCodedCRS.WGS84_3D, HardCodedConversions.MERCATOR, HardCodedCS.PROJECTED_3D);
     }
 

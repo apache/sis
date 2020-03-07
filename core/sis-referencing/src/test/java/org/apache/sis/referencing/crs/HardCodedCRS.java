@@ -33,6 +33,8 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 
 /**
  * Collection of coordinate reference systems for testing purpose.
+ * This class defines geographic, vertical, temporal and engineering CRS, but no projected CRS.
+ * For projected CRS, see {@link org.apache.sis.referencing.operation.HardCodedConversions}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
