@@ -147,7 +147,7 @@ public enum DataDirectory {
 
     /**
      * Returns {@code true} if the {@value #ENV} environment variable is unset. In case of doubt, this method
-     * returns {@code false}. This method is used for avoiding or at leat delaying the log messages emitted by
+     * returns {@code false}. This method is used for avoiding or at least delaying the log messages emitted by
      * {@link #getRootDirectory()} when a fallback exists in absence of any user attempt to configure the system.
      *
      * @return {@code true} if the {@value #ENV} environment variable is unset.

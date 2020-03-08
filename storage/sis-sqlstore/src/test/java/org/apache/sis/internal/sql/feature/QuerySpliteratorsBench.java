@@ -23,9 +23,8 @@ import java.sql.SQLException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.sis.internal.metadata.sql.Initializer;
-
 import org.apache.derby.jdbc.EmbeddedDataSource;
+import org.apache.sis.internal.metadata.sql.LocalDataSource;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
@@ -119,7 +118,7 @@ public class QuerySpliteratorsBench {
             try {
                 db.getConnection().close();
             } catch (SQLException e) {                          // This is the expected exception.
-                if (!Initializer.isSuccessfulShutdown(e)) {
+                if (!LocalDataSource.isSuccessfulShutdown(e)) {
                     throw e;
                 }
             }

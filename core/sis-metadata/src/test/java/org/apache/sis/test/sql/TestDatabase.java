@@ -28,7 +28,7 @@ import org.postgresql.ds.PGSimpleDataSource;
 import org.hsqldb.jdbc.JDBCDataSource;
 import org.hsqldb.jdbc.JDBCPool;
 import org.apache.derby.jdbc.EmbeddedDataSource;
-import org.apache.sis.internal.metadata.sql.Initializer;
+import org.apache.sis.internal.metadata.sql.LocalDataSource;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.Debug;
@@ -126,7 +126,7 @@ public strictfp class TestDatabase implements AutoCloseable {
                 try {
                     ds.getConnection().close();
                 } catch (SQLException e) {                          // This is the expected exception.
-                    if (!Initializer.isSuccessfulShutdown(e)) {
+                    if (!LocalDataSource.isSuccessfulShutdown(e)) {
                         throw e;
                     }
                 }
