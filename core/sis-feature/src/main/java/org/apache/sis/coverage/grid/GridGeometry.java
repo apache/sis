@@ -16,7 +16,6 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Locale;
 import java.util.Optional;
@@ -68,7 +67,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.io.TableAppender;
@@ -611,37 +609,45 @@ public class GridGeometry implements Serializable {
      * Creates a new grid geometry over the specified dimensions of the given grid geometry.
      *
      * @param  other       the grid geometry to copy.
-     * @param  dimensions  the dimensions to select, in strictly increasing order (this may not be verified).
+     * @param  dimensions  the grid (not CRS) dimensions to select, in strictly increasing order.
      * @throws FactoryException if an error occurred while separating the "grid to CRS" transform.
      *
      * @see #reduce(int...)
      */
     private GridGeometry(final GridGeometry other, int[] dimensions) throws FactoryException {
         extent = (other.extent != null) ? other.extent.reduce(dimensions) : null;
-        final int n = dimensions.length;
+        /*
+         * If a `gridToCRS` transform is available, retain the source dimensions specified by `dimensions`.
+         * We work on source dimensions because they are the grid dimensions. But after this reduction, we
+         * will work in CRS dimensions for the rest of this method. The CRS dimensions to retain are often
+         * the same than the grid dimensions, but not necessarily.
+         */
         if (other.gridToCRS != null) {
             final int[] sources = dimensions;
             TransformSeparator sep = new TransformSeparator(other.gridToCRS);
             sep.addSourceDimensions(sources);
             gridToCRS  = sep.separate();
             dimensions = sep.getTargetDimensions();
-            assert dimensions.length == n : Arrays.toString(dimensions);
-            if (!ArraysExt.isSorted(dimensions, true)) {
-                throw new IllegalGridGeometryException(Resources.format(Resources.Keys.IllegalGridGeometryComponent_1, "dimensions"));
-            }
             /*
              * We redo a separation for `cornerToCRS` instead than applying a translation of the `gridToCRS`
              * computed above because we don't know which of `gridToCRS` and `cornerToCRS` has less NaN values.
+             * We require however the exact same sequence of target dimensions.
              */
             sep = new TransformSeparator(other.cornerToCRS);
             sep.addSourceDimensions(sources);
             sep.addTargetDimensions(dimensions);
             cornerToCRS = sep.separate();
-            assert Arrays.equals(sep.getSourceDimensions(), dimensions) : Arrays.toString(dimensions);
         } else {
             gridToCRS   = null;
             cornerToCRS = null;
         }
+        /*
+         * At this point, `dimensions` gives CRS dimensions. It is usually the same sequence than grid dimensions
+         * but not always. In particular it may have more elements if `TransformSeparator` detected that dropping
+         * a grid dimension does not force us to drop the corresponding CRS dimension, for example because it has
+         * a constant value.
+         */
+        final int n = dimensions.length;
         final ImmutableEnvelope env = other.envelope;
         if (env != null) {
             CoordinateReferenceSystem crs = env.getCoordinateReferenceSystem();

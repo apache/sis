@@ -295,7 +295,7 @@ public class GridDerivation {
      * instead of CRS coordinates space.
      *
      * @param  extent  the grid extent to set as a result of the given scale, or {@code null} for computing it automatically.
-     *                 In non-null, then this given extent is used <i>as-is</i> without checking intersection with the base
+     *                 If non-null, then this given extent is used <i>as-is</i> without checking intersection with the base
      *                 grid geometry.
      * @param  scales  the scale factors to apply on grid indices. If the length of this array is smaller than the number of
      *                 grid dimension, then a scale of 1 is assumed for all missing dimensions.
@@ -306,6 +306,7 @@ public class GridDerivation {
      * @see #subsample(int...)
      * @see GridExtent#resize(long...)
      */
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     public GridDerivation resize(GridExtent extent, double... scales) {
         ArgumentChecks.ensureNonNull("scales", scales);
         ensureSubgridNotSet();

@@ -45,7 +45,7 @@ import static org.opengis.test.Assert.*;
  * Tests {@link TransformSeparator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.7
  * @module
  */
@@ -186,6 +186,57 @@ public final strictfp class TransformSeparatorTest extends TestCase {
             // This is the expected exception.
             assertNotNull(e.getMessage());
         }
+    }
+
+    /**
+     * Tests separation of a linear transform where a row contains zero values for all terms except translation.
+     *
+     * @throws FactoryException if an error occurred while creating a new transform.
+     */
+    @Test
+    public void testScalelessDimension() throws FactoryException {
+        Matrix matrix = new Matrix4(
+            2, 0, 0, 7,
+            0, 4, 0, 6,
+            0, 0, 0, 5,                 // All scale factors are zero.
+            0, 0, 0, 1);
+
+        MathTransform tr = new ProjectiveTransform(matrix);
+        TransformSeparator s = new TransformSeparator(tr);
+        /*
+         * The usually expected case, where the [0 0 0 5] row is dropped. But here, that row has been dropped
+         * because we explicitly requested so. We test the usual case first before to test the less intuitive
+         * case in next step.
+         */
+        s.addSourceDimensions(0, 1);
+        s.addTargetDimensions(0, 1);
+        matrix = new Matrix3(           // Expected result.
+            2, 0, 7,
+            0, 4, 6,
+            0, 0, 1);
+
+        tr = s.separate();
+        assertArrayEquals("sourceDimensions", new int[] {0, 1}, s.getSourceDimensions());
+        assertArrayEquals("targetDimensions", new int[] {0, 1}, s.getTargetDimensions());
+        assertMatrixEquals("transform", matrix, ((LinearTransform) tr).getMatrix(), STRICT);
+        /*
+         * Below is the less intuitive case. When asking for the first two dimensions, we usually expect the
+         * third dimension to be dropped. But if that third dimension is a constant (all scale factors at 0),
+         * it does not depend on the source dimensions and can be kept. The result is a non-square matrix
+         * with 2 dimensions in input and still 3 dimensions in output.
+         */
+        s.clear();
+        s.addSourceDimensions(0, 1);
+        matrix = Matrices.create(4, 3, new double[] {
+            2, 0, 7,
+            0, 4, 6,
+            0, 0, 5,                    // All scale factors are zero.
+            0, 0, 1});
+
+        tr = s.separate();
+        assertArrayEquals("sourceDimensions", new int[] {0, 1   }, s.getSourceDimensions());
+        assertArrayEquals("targetDimensions", new int[] {0, 1, 2}, s.getTargetDimensions());
+        assertMatrixEquals("transform", matrix, ((LinearTransform) tr).getMatrix(), STRICT);
     }
 
     /**

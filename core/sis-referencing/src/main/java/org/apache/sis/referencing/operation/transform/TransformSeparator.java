@@ -158,7 +158,7 @@ public class TransformSeparator {
 
     /**
      * Adds the specified {@code dimensions} to the specified sequence.
-     * Values must be given in strictly increasing order.
+     * Values must be given in strictly increasing order (this will be verified by this method).
      *
      * @param  sequence    the {@link #sourceDimensions} or {@link #targetDimensions} sequence to update.
      * @param  dimensions  the user-supplied dimensions to add to the given sequence.
@@ -167,7 +167,7 @@ public class TransformSeparator {
      */
     private static int[] add(int[] sequence, final int[] dimensions, final int max) throws IllegalArgumentException {
         int offset = 0;
-        int previous = -1;  // This initial value will ensure that we have no negative value.
+        int previous = -1;                          // This initial value will ensure that we have no negative value.
         if (sequence != null && (offset = sequence.length) != 0) {
             previous = sequence[offset - 1];
             sequence = Arrays.copyOf(sequence, offset + dimensions.length);

@@ -39,7 +39,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests the {@link GridGeometry} implementation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -318,5 +318,28 @@ public final strictfp class GridGeometryTest extends TestCase {
         assertMatrixEquals("gridToCRS", new Matrix2(
                   2, 3,
                   0, 1), MathTransforms.getMatrix(reduced.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
+    }
+
+    /**
+     * Tests {@link GridGeometry#reduce(int...)} with a {@code gridToCRS} transform having a constant value
+     * in one dimension.
+     */
+    @Test
+    public void testReduceScalelessDimension() {
+        final GridGeometry grid = new GridGeometry(
+                new GridExtent(null, new long[] {336, 20, 4}, new long[] {401, 419, 10}, true),
+                PixelInCell.CELL_CORNER, MathTransforms.linear(new Matrix4(
+                        0,   0.5, 0,  -90,
+                        0.5, 0,   0, -180,
+                        0,   0,   0,    3,   // All scale coefficients set to 0.
+                        0,   0,   0,    1)), HardCodedCRS.GEOID_3D);
+
+        GridGeometry reduced = grid.reduce(0, 1);
+        MathTransform tr = reduced.getGridToCRS(PixelInCell.CELL_CORNER);
+        assertMatrixEquals("gridToCRS", Matrices.create(4, 3, new double[] {
+                        0,   0.5, -90,
+                        0.5, 0,  -180,
+                        0,   0,     3,   // All scale coefficients set to 0.
+                        0,   0,     1}), MathTransforms.getMatrix(tr), STRICT);
     }
 }
