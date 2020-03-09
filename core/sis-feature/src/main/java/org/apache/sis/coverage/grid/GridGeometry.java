@@ -218,7 +218,8 @@ public class GridGeometry implements Serializable {
     /**
      * An <em>estimation</em> of the grid resolution, in units of the CRS axes.
      * Computed from {@link #gridToCRS}, eventually together with {@link #extent}.
-     * May be {@code null} if unknown.
+     * May be {@code null} if unknown. If non-null, the array length is equals to
+     * the number of CRS dimensions.
      *
      * @see #RESOLUTION
      * @see #getResolution(boolean)
@@ -699,7 +700,13 @@ public class GridGeometry implements Serializable {
      * as possible, which may be more than expected if a dimension that would normally be dropped is actually
      * a constant (all scale coefficients set to zero). This method tries to avoid this effect by forcing the
      * removal of CRS dimensions too. The CRS dimensions to remove are the ones that seem the less related to
-     * the grid dimensions that we keep.</p>
+     * the grid dimensions that we keep. This method is not provided in {@link TransformSeparator} because of
+     * assumptions on the gridded nature of source coordinates.</p>
+     *
+     * <p>The algorithm used by this method (which is to compare the magnitude of scale coefficients anywhere
+     * in the matrix) assumes that grid cells are "square", e.g. that a translation of 1 pixel to the left is
+     * comparable in "real world" to a translation of 1 pixel to the bottom. This is often true but not always.
+     * To compensate, we divide scale coefficients by the {@linkplain #resolution} for that CRS dimension.</p>
      *
      * @param  dimensions  the grid dimensions to keep.
      * @return the CRS (target) dimensions to keep.
@@ -723,9 +730,6 @@ public class GridGeometry implements Serializable {
             numRow = 0;
         }
         numRow += derivative.getNumRow();               // Excluding the [0 0 0 … 1] row in affine transform.
-        if (numRow > Long.SIZE) {
-            numRow = Long.SIZE;                         // We have this limit because of `selected` type.
-        }
         final int n = dimensions.length + (gridToCRS.getTargetDimensions() - gridToCRS.getSourceDimensions());
         /*
          * Search for the greatest scale coefficient. For the greatest value, take the row as the target
@@ -738,9 +742,14 @@ public class GridGeometry implements Serializable {
             int   kmax = -1;
             int   jmax = -1;
             for (int j=0; j<numRow; j++) {
-                if ((selected & (1L << j)) == 0) {
+                if ((selected & Numerics.bitmask(j)) == 0) {
+                    double r = 1;                               // For compensation of non-square cells.
+                    if (resolution != null) {
+                        final double t = resolution[j];
+                        if (t > 0) r = t;                       // Exclude NaN values.
+                    }
                     for (int k=0; k < dimensions.length; k++) {
-                        final double e = Math.abs(derivative.getElement(j, dimensions[k]));
+                        final double e = Math.abs(derivative.getElement(j, dimensions[k])) / r;
                         if (e > max) {
                             max  = e;
                             kmax = k;
@@ -751,6 +760,9 @@ public class GridGeometry implements Serializable {
             }
             if ((kmax | jmax) < 0) {
                 return null;                            // Can not provide the requested number of dimensions.
+            }
+            if (jmax >= Long.SIZE) {
+                throw excessiveDimension(gridToCRS);
             }
             selected |= (1L << jmax);
             dimensions = ArraysExt.remove(dimensions, kmax, 1);
