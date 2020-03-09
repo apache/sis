@@ -322,7 +322,7 @@ public final strictfp class GridGeometryTest extends TestCase {
 
     /**
      * Tests {@link GridGeometry#reduce(int...)} with a {@code gridToCRS} transform having a constant value
-     * in one dimension.
+     * in one dimension. This method tests indirectly {@link GridGeometry#findTargetDimensions(int[])}.
      */
     @Test
     public void testReduceScalelessDimension() {
@@ -336,10 +336,15 @@ public final strictfp class GridGeometryTest extends TestCase {
 
         GridGeometry reduced = grid.reduce(0, 1);
         MathTransform tr = reduced.getGridToCRS(PixelInCell.CELL_CORNER);
-        assertMatrixEquals("gridToCRS", Matrices.create(4, 3, new double[] {
+        /*
+         * If the boolean argument given to the `GridGeometry(GridGeometry, int[], boolean)` constructor was false,
+         * we would have a 4×3 matrix identical to the matrix below but with a [0 0 3] row inserted at the commented
+         * line. The role of the `GridGeometry.findTargetDimensions(int[])` is to filter that line.
+         */
+        assertMatrixEquals("gridToCRS", new Matrix3(
                         0,   0.5, -90,
                         0.5, 0,  -180,
-                        0,   0,     3,   // All scale coefficients set to 0.
-                        0,   0,     1}), MathTransforms.getMatrix(tr), STRICT);
+        //              0,   0,     3,  // All scale coefficients set to 0.
+                        0,   0,     1), MathTransforms.getMatrix(tr), STRICT);
     }
 }

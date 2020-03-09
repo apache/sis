@@ -67,6 +67,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.io.TableAppender;
@@ -607,14 +608,18 @@ public class GridGeometry implements Serializable {
 
     /**
      * Creates a new grid geometry over the specified dimensions of the given grid geometry.
+     * The number of grid dimensions will be the length of the given {@code dimensions} array,
+     * and the number of CRS dimensions will be reduced by the same amount.
      *
      * @param  other       the grid geometry to copy.
      * @param  dimensions  the grid (not CRS) dimensions to select, in strictly increasing order.
+     * @param  filterCRS   {@code true} for reducing the CRS by the same amount of dimensions than the grid.
+     *                     If {@code false}, this constructor retains as many CRS dimensions as possible.
      * @throws FactoryException if an error occurred while separating the "grid to CRS" transform.
      *
      * @see #reduce(int...)
      */
-    private GridGeometry(final GridGeometry other, int[] dimensions) throws FactoryException {
+    private GridGeometry(final GridGeometry other, int[] dimensions, final boolean filterCRS) throws FactoryException {
         extent = (other.extent != null) ? other.extent.reduce(dimensions) : null;
         /*
          * If a `gridToCRS` transform is available, retain the source dimensions specified by `dimensions`.
@@ -626,6 +631,12 @@ public class GridGeometry implements Serializable {
             final int[] sources = dimensions;
             TransformSeparator sep = new TransformSeparator(other.gridToCRS);
             sep.addSourceDimensions(sources);
+            if (filterCRS) {
+                final int[] target = other.findTargetDimensions(dimensions);
+                if (target != null) {
+                    sep.addTargetDimensions(dimensions);
+                }
+            }
             gridToCRS  = sep.separate();
             dimensions = sep.getTargetDimensions();
             /*
@@ -677,6 +688,83 @@ public class GridGeometry implements Serializable {
         }
         this.resolution = resolution;
         this.nonLinears = nonLinears;
+    }
+
+    /**
+     * Finds CRS (target) dimensions that are related to the given grid (source) dimensions.
+     * This method returns an array where the number of CRS dimensions have been reduced by
+     * the same amount than the number of grid dimensions.
+     *
+     * <p>If this method is not invoked, then {@link TransformSeparator} will retain as many target dimensions
+     * as possible, which may be more than expected if a dimension that would normally be dropped is actually
+     * a constant (all scale coefficients set to zero). This method tries to avoid this effect by forcing the
+     * removal of CRS dimensions too. The CRS dimensions to remove are the ones that seem the less related to
+     * the grid dimensions that we keep.</p>
+     *
+     * @param  dimensions  the grid dimensions to keep.
+     * @return the CRS (target) dimensions to keep.
+     */
+    private int[] findTargetDimensions(int[] dimensions) {
+        /*
+         * In most cases the transform is affine and we do not need a derivative computation
+         * (which save us from requiring a point of interest).
+         */
+        int numRow = -1;
+        Matrix derivative = MathTransforms.getMatrix(gridToCRS);
+        if (derivative == null) {
+            if (extent != null) try {
+                derivative = gridToCRS.derivative(new DirectPositionView.Double(extent.getPointOfInterest()));
+            } catch (TransformException e) {
+                recoverableException(e);
+                return null;
+            } else {
+                return null;
+            }
+            numRow = 0;
+        }
+        numRow += derivative.getNumRow();               // Excluding the [0 0 0 … 1] row in affine transform.
+        if (numRow > Long.SIZE) {
+            numRow = Long.SIZE;                         // We have this limit because of `selected` type.
+        }
+        final int n = dimensions.length + (gridToCRS.getTargetDimensions() - gridToCRS.getSourceDimensions());
+        /*
+         * Search for the greatest scale coefficient. For the greatest value, take the row as the target
+         * dimension and remember that we should not check anymore any value in the row and column where
+         * the value has been found.
+         */
+        long selected = 0;
+        while (Long.bitCount(selected) < n) {
+            double max = -1;
+            int   kmax = -1;
+            int   jmax = -1;
+            for (int j=0; j<numRow; j++) {
+                if ((selected & (1L << j)) == 0) {
+                    for (int k=0; k < dimensions.length; k++) {
+                        final double e = Math.abs(derivative.getElement(j, dimensions[k]));
+                        if (e > max) {
+                            max  = e;
+                            kmax = k;
+                            jmax = j;
+                        }
+                    }
+                }
+            }
+            if ((kmax | jmax) < 0) {
+                return null;                            // Can not provide the requested number of dimensions.
+            }
+            selected |= (1L << jmax);
+            dimensions = ArraysExt.remove(dimensions, kmax, 1);
+        }
+        /*
+         * Expand the values encoded in the `selected` bitmask.
+         */
+        final int[] target = new int[n];
+        for (int i=0; i<n; i++) {
+            final int j = Long.numberOfTrailingZeros(selected);
+            target[i] = j;
+            selected &= ~(1L << j);
+        }
+        return target;
     }
 
     /**
@@ -1008,7 +1096,7 @@ public class GridGeometry implements Serializable {
         long mask = 0;
         for (final int d : targets) {
             ArgumentChecks.ensureValidIndex(dimension, d);
-            if (d < Long.SIZE) mask |= (1L << d);
+            mask |= Numerics.bitmask(d);
         }
         return (nonLinears & mask) == 0;
     }
@@ -1106,7 +1194,7 @@ public class GridGeometry implements Serializable {
                 if (dimension > Long.SIZE) {
                     throw excessiveDimension(gridToCRS);
                 }
-                return (dimension >= Long.SIZE) ? -1 : (1L << dimension) - 1;
+                return Numerics.bitmask(dimension) - 1;
             }
         }
         return nonLinearDimensions;
@@ -1238,7 +1326,7 @@ public class GridGeometry implements Serializable {
     public GridGeometry reduce(int... dimensions) {
         dimensions = GridExtent.verifyDimensions(dimensions, getDimension());
         if (dimensions != null) try {
-            return new GridGeometry(this, dimensions);
+            return new GridGeometry(this, dimensions, true);
         } catch (FactoryException e) {
             throw new IllegalGridGeometryException(e, "dimensions");
         }
