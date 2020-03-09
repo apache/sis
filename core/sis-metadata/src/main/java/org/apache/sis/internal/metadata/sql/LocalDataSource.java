@@ -27,8 +27,6 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -59,18 +57,6 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
     private static final String DERBY_HOME_KEY = "derby.system.home";
 
     /**
-     * The class loader for JavaDB (i.e. the Derby database distributed with the JDK), created when first needed.
-     * This field is never reset to {@code null} even if the classpath changed because this class loader is for
-     * a JAR file the JDK installation directory, and we presume that the JDK installation do not change.
-     *
-     * @see #initialize()
-     *
-     * @deprecated to be removed after we migrate to Java 9, since Derby is no longer distributed with the JDK.
-     */
-    @Deprecated
-    private static URLClassLoader javadbLoader;
-
-    /**
      * The database product to use. Currently supported values are
      * {@link Dialect#DERBY} and {@link Dialect#HSQL}.
      */
@@ -94,8 +80,8 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
     final boolean create;
 
     /**
-     * Prepares a new data source for the given database file. This construction is incomplete; after return
-     * either {@link #initialize(ClassLoader)} shall be invoked or this {@code LocalDataSource} is discarded.
+     * Prepares a new data source for the given database file. This construction is incomplete;
+     * after return either {@link #initialize()} shall be invoked or this {@code LocalDataSource} is discarded.
      *
      * @param  dialect  {@link Dialect#DERBY} or {@link Dialect#HSQL}.
      * @param  dbFile   path to the database to open on the local file system.
@@ -201,22 +187,22 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
     }
 
     /**
-     * Creates the data source using the given class loader.
+     * Creates the data source using the context class loader.
      * It is caller's responsibility to {@linkplain #shutdown() shutdown} the database after usage.
      *
-     * @param  loader  the loader to use for loading the data source class.
      * @throws ClassNotFoundException if the database driver is not on the classpath.
      * @throws ReflectiveOperationException if an error occurred
      *         while setting the properties on the data source.
      */
     @SuppressWarnings("fallthrough")
-    private void initialize(final ClassLoader loader) throws ReflectiveOperationException {
+    private void initialize() throws ReflectiveOperationException {
         final String classname;
         switch (dialect) {
             case DERBY: classname = "org.apache.derby.jdbc.EmbeddedDataSource"; break;
             case HSQL:  classname = "org.hsqldb.jdbc.JDBCDataSource"; break;
             default:    throw new IllegalArgumentException(dialect.toString());
         }
+        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         final Class<?> c = Class.forName(classname, true, loader);
         source = (DataSource) c.getConstructor().newInstance();
         final Class<?>[] args = {String.class};
@@ -225,45 +211,6 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
             case HSQL:  c.getMethod("setDatabaseName",   args).invoke(source, dbFile); break;
         }
         dbFile = null;          // Not needed anymore (let GC do its work).
-    }
-
-    /**
-     * Creates the data source using the context class loader if possible,
-     * or otherwise a URL class loader to the JavaDB distributed with the JDK.
-     *
-     * @throws ClassNotFoundException if the database driver is not on the classpath.
-     * @throws ReflectiveOperationException if an error occurred
-     *         while setting the properties on the data source.
-     * @throws java.net.MalformedURLException if the class loader for JavaDB can not be created.
-     */
-    private void initialize() throws Exception {
-        try {
-            initialize(Thread.currentThread().getContextClassLoader());
-        } catch (ClassNotFoundException e) {
-            if (dialect != Dialect.DERBY) {
-                throw e;
-            }
-            URLClassLoader loader;
-            synchronized (LocalDataSource.class) {
-                loader = javadbLoader;
-                if (loader == null) {
-                    final String home = System.getProperty("java.home");
-                    if (home != null) {
-                        final Path file = Paths.get(home).resolveSibling("db/lib/derby.jar");
-                        if (Files.isRegularFile(file)) {
-                            javadbLoader = loader = new URLClassLoader(new URL[] {
-                                file.toUri().toURL(),
-                                file.resolveSibling("derbynet.jar").toUri().toURL()
-                            });
-                        }
-                    }
-                }
-            }
-            if (loader == null) {
-                throw e;
-            }
-            initialize(loader);
-        }
     }
 
     /**
