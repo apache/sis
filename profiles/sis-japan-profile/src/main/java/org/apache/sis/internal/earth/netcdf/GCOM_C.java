@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.regex.Pattern;
+import javax.measure.Unit;
+import javax.measure.format.ParserException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -40,6 +42,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.measure.Units;
 import ucar.nc2.constants.CF;
 
 
@@ -485,5 +488,26 @@ public final class GCOM_C extends Convention {
             if (Double.isFinite(offset)) tr.setOffset(offset);
         }
         return tr;
+    }
+
+    /**
+     * Returns the unit of measurement to use as a fallback if it can not be determined in a standard way.
+     *
+     * @param  data  the variable for which to get the unit of measurement.
+     * @return the unit of measurement, or {@code null} if none or unknown.
+     * @throws ParserException if the unit symbol can not be parsed.
+     */
+    @Override
+    public Unit<?> getUnitFallback(final Variable data) throws ParserException {
+        if ("Image_data".equals(data.getGroupName())) {
+            final String symbol = data.getAttributeAsString("Unit");
+            if (symbol != null && !symbol.equalsIgnoreCase("NA")) {
+                if (symbol.equalsIgnoreCase("degree")) {
+                    return Units.CELSIUS;
+                }
+                return Units.valueOf(symbol);
+            }
+        }
+        return super.getUnitFallback(data);
     }
 }

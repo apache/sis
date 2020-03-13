@@ -117,6 +117,16 @@ final class StatusBar extends HBox implements EventHandler<MouseEvent> {
     private double[] precisions;
 
     /**
+     * A multiplication factory slightly greater than 1 applied on {@link #precisions}.
+     * The intent is to avoid that a precision like 0.09999 is interpreted as requiring
+     * two decimal digits instead of 1. For avoiding that, we add a small value to the
+     * precision: <var>precision</var> += <var>precision</var> × ε, which we compact as
+     * <var>precision</var> *= (1 + ε). The ε value is chosen to represent an increase
+     * of no more than 0.5 pixel between the lower and upper indices of the grid.
+     */
+    private double[] inflatePrecisions;
+
+    /**
      * The object to use for formatting coordinate values.
      */
     private final CoordinateFormat format;
@@ -197,11 +207,18 @@ final class StatusBar extends HBox implements EventHandler<MouseEvent> {
          * become the coordinates of the original `GridGeometry` before to apply `gridToCRS`.
          */
         if (request != null) {
-            final double[] origin = new double[request.getDimension()];
-            for (int i=0; i<origin.length; i++) {
+            final int n = request.getDimension();
+            if (inflatePrecisions == null || inflatePrecisions.length != n) {
+                inflatePrecisions = new double[n];
+            }
+            final double[] origin = new double[n];
+            for (int i=0; i<n; i++) {
                 origin[i] = request.getLow(i);
+                inflatePrecisions[i] = (0.5 / request.getSize(i)) + 1;
             }
             gridToCRS = MathTransforms.concatenate(MathTransforms.translation(origin), gridToCRS);
+        } else {
+            inflatePrecisions = null;
         }
         /*
          * Prepare objects to be reused for each coordinate transformation.
@@ -263,7 +280,10 @@ final class StatusBar extends HBox implements EventHandler<MouseEvent> {
                         for (int j=derivative.getNumRow(); --j >= 0;) {
                             double p = 0;
                             for (int i=derivative.getNumCol(); --i >= 0;) {
-                                final double e = Math.abs(derivative.getElement(j, i));
+                                double e = Math.abs(derivative.getElement(j, i));
+                                if (inflatePrecisions != null) {
+                                    e *= inflatePrecisions[i];
+                                }
                                 if (e > p) p = e;
                             }
                             precisions[j] = p;
