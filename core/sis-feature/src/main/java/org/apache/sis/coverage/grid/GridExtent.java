@@ -379,8 +379,8 @@ public class GridExtent implements GridEnvelope, Serializable {
          * Now computes the grid extent coordinates.
          */
         for (int i=0; i<dimension; i++) {
-            double min = envelope.getLower(i);
-            double max = envelope.getUpper(i);
+            double min = envelope.getLower(i);                      // Inclusive
+            double max = envelope.getUpper(i);                      // Exclusive
             final boolean isMinValid = (min >= Long.MIN_VALUE);
             final boolean isMaxValid = (max <= Long.MAX_VALUE);
             if (min > max || (enclosing == null && !(isMinValid & isMaxValid))) {
@@ -411,27 +411,33 @@ public class GridExtent implements GridEnvelope, Serializable {
                 case NEAREST: {
                     lower = Math.round(min);
                     upper = Math.round(max);
-                    if (lower != upper) upper--;                                // For making the coordinate inclusive.
-                    /*
-                     * The [lower … upper] range may be slightly larger than desired in some rounding error situations.
-                     * For example if `min` was 1.49999 and 'max' was 2.50001,  the rounding will create a [1…3] range
-                     * while there is actually only 2 pixels. We detect those rounding problems by comparing the spans
-                     * before and after rounding.  We attempt an adjustment only if the span mismatch is ±1, otherwise
-                     * the difference is assumed to be caused by overflow. On the three values that can be affected by
-                     * the adjustment (min, max and span), we change only the number which is farthest from an integer
-                     * value.
-                     */
-                    long error = (upper - lower) + 1;                           // Negative number if overflow.
-                    if (error >= 0) {
-                        final double span = envelope.getSpan(i);
-                        final long extent = Math.round(span);
-                        if (extent != 0 && Math.abs(error -= extent) == 1) {
-                            final double dmin = Math.abs(min - Math.rint(min));
-                            final double dmax = Math.abs(max - Math.rint(max));
-                            final boolean adjustMax = (dmax >= dmin);
-                            if (Math.abs(span - extent) < (adjustMax ? dmax : dmin)) {
-                                if (adjustMax) upper = Math.subtractExact(upper, error);
-                                else lower = Math.addExact(lower, error);
+                    if (lower == upper) {                                       // Equality implies (max - min) < 1.
+                        if (min - Math.floor(min) > Math.ceil(max) - max) {
+                            upper = --lower;
+                        }
+                    } else {
+                        upper--;                                                // For making the coordinate inclusive.
+                        /*
+                         * The [lower … upper] range may be slightly larger than desired in some rounding error situations.
+                         * For example if `min` was 1.49999 and `max` was 2.50001,  the rounding will create a [1…3] range
+                         * while there is actually only 2 pixels. We detect those rounding problems by comparing the spans
+                         * before and after rounding.  We attempt an adjustment only if the span mismatch is ±1, otherwise
+                         * the difference is assumed to be caused by overflow. On the three values that can be affected by
+                         * the adjustment (min, max and span), we change only the number which is farthest from an integer
+                         * value.
+                         */
+                        long delta = (upper - lower) + 1;                       // Negative number if overflow.
+                        if (delta >= 0) {
+                            final double span = envelope.getSpan(i);
+                            final long extent = Math.round(span);
+                            if (extent != 0 && Math.abs(delta -= extent) == 1) {
+                                final double dmin = Math.abs(min - Math.rint(min));
+                                final double dmax = Math.abs(max - Math.rint(max));
+                                final boolean adjustMax = (dmax >= dmin);
+                                if (Math.abs(span - extent) < (adjustMax ? dmax : dmin)) {
+                                    if (adjustMax) upper = Math.subtractExact(upper, delta);
+                                    else lower = Math.addExact(lower, delta);
+                                }
                             }
                         }
                     }

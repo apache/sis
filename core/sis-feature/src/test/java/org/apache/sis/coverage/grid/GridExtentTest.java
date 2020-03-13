@@ -39,7 +39,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link GridExtent}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  */
@@ -74,7 +74,8 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests the {@link GridExtent#GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])} constructor.
+     * Tests the {@link GridExtent#GridExtent(AbstractEnvelope,
+     * GridRoundingMode, int[], GridExtent, int[])} constructor.
      */
     @Test
     public void testCreateFromEnvelope() {
@@ -89,7 +90,24 @@ public final strictfp class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests the rounding performed by the {@link GridExtent#GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])} constructor.
+     * Tests the {@link GridExtent#GridExtent(AbstractEnvelope, GridRoundingMode, int[],
+     * GridExtent, int[])} constructor when an envelope has a span close to zero.
+     */
+    @Test
+    public void testCreateFromThinEnvelope() {
+        final GeneralEnvelope env = new GeneralEnvelope(3);
+        env.setRange(0,  11.22,  11.23);
+        env.setRange(1, -23.02, -23.01);
+        env.setRange(2,  34.91,  34.92);
+        GridExtent extent = new GridExtent(env, GridRoundingMode.NEAREST, null, null, null);
+        assertExtentEquals(extent, 0,  11,  11);
+        assertExtentEquals(extent, 1, -24, -24);
+        assertExtentEquals(extent, 2,  34,  34);
+    }
+
+    /**
+     * Tests the rounding performed by the {@link GridExtent#GridExtent(AbstractEnvelope,
+     * GridRoundingMode, int[], GridExtent, int[])} constructor.
      */
     @Test
     public void testRoundings() {
