@@ -542,6 +542,28 @@ public abstract class PixelIterator {
     public abstract Point getPosition();
 
     /**
+     * Stores in the specified array the column (x) and row (y) indices of the current pixel.
+     * This method is equivalent to invoking {@link #getPosition()} and copying the (<var>x</var>, <var>y</var>)
+     * coordinates in {@code dest[offset]} and {@code dest[offset + 1]} respectively.
+     *
+     * <div class="note"><b>API note:</b>
+     * an array of type {@code double[]} is used for allowing the coordinates to be converted with
+     * {@link org.opengis.referencing.operation.MathTransform#transform(double[], int, double[], int, int)}.
+     * A typical use case is to apply a {@linkplain org.apache.sis.coverage.grid.GridGeometry#getGridToCRS
+     * grid to CRS} transform.</div>
+     *
+     * @param  dest    the array where to store the (<var>x</var>, <var>y</var>) pixel coordinates.
+     * @param  offset  the offset where to store the coordinates in the specified array.
+     *
+     * @since 1.1
+     */
+    public void getPosition(final double[] dest, final int offset) {
+        final Point pos = getPosition();
+        dest[offset    ] = pos.x;
+        dest[offset + 1] = pos.y;
+    }
+
+    /**
      * Moves the pixel iterator to the given column (x) and row (y) indices. After this method invocation,
      * the iterator state is as if the {@link #next()} method has been invoked just before to reach the
      * specified position.

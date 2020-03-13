@@ -97,7 +97,7 @@ public class Convention {
      * @see #validRange(Variable)
      */
     private static final String[] RANGE_ATTRIBUTES = {
-        "valid_range",      // Expected "reasonable" range for variable.
+        CDM.VALID_RANGE,    // Expected "reasonable" range for variable.
         "actual_range",     // Actual data range for variable.
         "valid_min",        // Fallback if "valid_range" is not specified.
         "valid_max"

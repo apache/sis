@@ -187,6 +187,7 @@ public final class CRS extends Static {
      *   <tr><td>EPSG:5714</td> <td>{@link CommonCRS.Vertical#MEAN_SEA_LEVEL MEAN_SEA_LEVEL}</td> <td>Vertical</td> <td>Mean Sea Level height</td></tr>
      * </table></blockquote>
      *
+     * <h4>URI forms</h4>
      * This method accepts also the URN and URL syntaxes.
      * For example the following codes are considered equivalent to {@code "EPSG:4326"}:
      * <ul>
@@ -216,10 +217,12 @@ public final class CRS extends Static {
      * {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian coordinate system} for creating a new
      * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected coordinate reference system}.</p>
      *
-     * Note that the {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)}
-     * method can be seen as a converse of this method.
+     * <div class="note"><b>Note:</b>
+     * The {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)} method can be seen
+     * as a converse of this method: from a CRS object, it tries to find a URN that describes it.
      * More codes may also be supported depending on which extension modules are available.
-     * See for example the {@linkplain org.apache.sis.storage.gdal bindings to Proj.4 library}.
+     * See for example the {@linkplain org.apache.sis.storage.gdal bindings to PROJ library}.
+     * </div>
      *
      * @param  code  the authority code.
      * @return the Coordinate Reference System for the given authority code.
@@ -605,9 +608,15 @@ public final class CRS extends Static {
      * </ul>
      *
      * If the source and target CRS are equivalent, then this method returns an operation backed by an
-     * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform#isIdentity() identity}
-     * transform. If there is no known operation between the given pair of CRS, then this method throws an
+     * {@linkplain org.opengis.referencing.operation.MathTransform#isIdentity() identity} transform.
+     * If there is no known operation between the given pair of CRS, then this method throws an
      * {@link OperationNotFoundException}.
+     *
+     * <p>Note that <code>CRS.findOperation(<var>B</var>, <var>A</var>, <var>aoi</var>)</code> is not necessarily
+     * the exact converse of <code>CRS.findOperation(<var>A</var>, <var>B</var>, <var>aoi</var>)</code>.
+     * Some deviations may exist for example because of different paths explored in the geodetic database.
+     * For the inverse of an existing {@link CoordinateOperation}, using
+     * {@link org.opengis.referencing.operation.MathTransform#inverse()} is preferable.</p>
      *
      * @param  sourceCRS       the CRS of source coordinates.
      * @param  targetCRS       the CRS of target coordinates.

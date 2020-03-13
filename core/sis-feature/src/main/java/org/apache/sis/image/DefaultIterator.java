@@ -50,7 +50,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   1.0
  * @module
  *
@@ -160,7 +160,7 @@ class DefaultIterator extends WritablePixelIterator {
 
     /**
      * Returns the column (x) and row (y) indices of the current pixel.
-     * This implementation {@link #x} and {@link #tileY} for determining if the iteration is valid.
+     * This implementation checks {@link #x} and {@link #tileY} for determining if the iteration is valid.
      *
      * @return column and row indices of current iterator position.
      * @throws IllegalStateException if this method is invoked before the first call to {@link #next()}
@@ -177,6 +177,19 @@ class DefaultIterator extends WritablePixelIterator {
             return new Point(x,y);
         }
         throw new IllegalStateException(Resources.format(message));
+    }
+
+    /**
+     * Stores the column (x) and row (y) indices of the current pixel.
+     */
+    @Override
+    public void getPosition(final double[] dest, final int offset) {
+        if (x >= lowerX && tileY < tileUpperY) {
+            dest[offset    ] = x;
+            dest[offset + 1] = y;
+        } else {
+            super.getPosition(dest, offset);        // Will cause exception to be thrown.
+        }
     }
 
     /**
