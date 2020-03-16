@@ -130,6 +130,7 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
@@ -150,7 +151,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -913,8 +914,9 @@ public class MetadataBuilder {
     /**
      * Adds a resource (data) identifier, a metadata identifier, or both as they are often the same.
      * The identifier is added only if {@code code} is non-null, regardless other argument values.
-     * Empty strings (ignoring spaces) are ignored.
-     * Storages locations are:
+     * Empty strings (ignoring spaces) are considered as null.
+     * The identifier is not added if already presents.
+     * Storage locations are:
      *
      * <ul>
      *   <li><b>Metadata:</b> {@code metadata/metadataIdentifier}</li>
@@ -1139,7 +1141,10 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds a title or alternate title of the resource.
+     * Adds a title or alternate title of the resource, if not already present.
+     * This operation does nothing if the title is already defined and the given
+     * title is already used as an identifier (this policy is a complement of the
+     * {@link #addTitleOrIdentifier(String, Scope)} behavior).
      * Storage location is:
      *
      * <ul>
@@ -1159,6 +1164,11 @@ public class MetadataBuilder {
             if (current == null) {
                 citation.setTitle(i18n);
             } else if (!equals(current, i18n)) {
+                for (final Identifier id : citation.getIdentifiers()) {
+                    if (CharSequences.equalsFiltered(title, id.getCode(), Characters.Filter.LETTERS_AND_DIGITS, true)) {
+                        return;
+                    }
+                }
                 addIfNotPresent(citation.getAlternateTitles(), i18n);
             }
         }

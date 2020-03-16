@@ -211,6 +211,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short GeospatialFiles = 4;
 
         /**
+         * Identifiers:
+         */
+        public static final short Identifiers = 54;
+
+        /**
          * Loading…
          */
         public static final short Loading = 7;

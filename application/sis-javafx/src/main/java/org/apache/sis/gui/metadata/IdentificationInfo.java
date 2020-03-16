@@ -17,6 +17,7 @@
 package org.apache.sis.gui.metadata;
 
 import java.util.Date;
+import java.util.StringJoiner;
 import javafx.geometry.HPos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -53,6 +54,18 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  * The pane where to show the values of {@link Identification} objects.
  * The same pane can be used for an arbitrary amount of identifications.
  * Each instance is identified by its title.
+ * The content is:
+ *
+ * <ol>
+ *   <li>The title in bold font.</li>
+ *   <li>Identifiers.</li>
+ *   <li>Abstract, or purpose, or credit (in this preference order).</li>
+ *   <li>Topic category.</li>
+ *   <li>Release date, or publication date, or creation date, or any date (in this preference order).</li>
+ *   <li>Type of resource.</li>
+ *   <li>Spatiotemporal extent as a textual description.</li>
+ *   <li>Extent shown as a rectangle on a world map.</li>
+ * </ol>
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
@@ -147,6 +160,7 @@ final class IdentificationInfo extends Section<Identification> {
     /**
      * Invoked when new identification information should be shown.
      * This method updates all fields in this section with the content of given identification information.
+     * The content is summarized in {@linkplain IdentificationInfo class javadoc}.
      */
     @Override
     void buildContent(final Identification info) {
@@ -165,6 +179,19 @@ final class IdentificationInfo extends Section<Identification> {
             text = CharSequences.camelCaseToSentence(text).toString();
         }
         title.setText(text);
+        /*
+         * Identifiers as a comma-separated list on a single line. Each identifier
+         * is formatted as "codespace:code" or only "code" if there is no codespace.
+         */
+        if (citation != null) {
+            final StringJoiner buffer = new StringJoiner(", ");
+            for (final Identifier id : citation.getIdentifiers()) {
+                buffer.add(IdentifiedObjects.toString(id));
+            }
+            if (buffer.length() != 0) {
+                addLine(Resources.Keys.Identifiers, buffer.toString());
+            }
+        }
         /*
          * The abstract, or if there is no abstract the purpose, or if no purpose the credit as a fallback.
          * We use those fallback because they can provide some hints about the product.
@@ -186,6 +213,9 @@ final class IdentificationInfo extends Section<Identification> {
             }
         }
         addLine(label, text);
+        /*
+         * Topic category.
+         */
         addLine(Resources.Keys.TopicCategory, owner.string(nonNull(info.getTopicCategories())));
         /*
          * Select a single, arbitrary date. We take the release or publication date if available.

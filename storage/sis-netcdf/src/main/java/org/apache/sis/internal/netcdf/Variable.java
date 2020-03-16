@@ -155,6 +155,8 @@ public abstract class Variable extends Node {
 
     /**
      * Returns the name of this variable. May be used as sample dimension name in a raster.
+     * The variable name should be unique in each netCDF file
+     * (by contrast, {@link #getStandardName()} is not always unique).
      *
      * @return the name of this variable.
      */
@@ -162,24 +164,23 @@ public abstract class Variable extends Node {
     public abstract String getName();
 
     /**
-     * Returns the standard name if available, or the long name other, or the ordinary name otherwise.
-     * May be used as the {@link RasterResource} label, or the label of a {@link Raster} as a whole
-     * (including all bands). Standard name is preferred to variable name when controlled vocabulary
-     * is desired, for example for more stable identifier or more consistency between similar data.
+     * Returns the standard name if available, or the unique variable name otherwise.
+     * May be used for {@link RasterResource#getIdentifier()} and {@link Raster#label}.
+     * Standard name is preferred to variable name when controlled vocabulary is desired,
+     * for example for more stable identifier or more consistency between similar data.
+     *
+     * <p>This method does not check the {@code "long_name"} attribute because the long
+     * name is more like a sentence (e.g. <cite>"model wind direction at 10 m"</cite>)
+     * while standard name and variable name are more like identifiers.
+     * For the long name, use {@link #getDescription()} instead.</p>
      *
      * @return the standard name, or a fallback if there is no standard name.
      *
      * @see RasterResource#identifier
      */
     public final String getStandardName() {
-        String name = getAttributeAsString(CF.STANDARD_NAME);
-        if (name == null) {
-            name = getAttributeAsString(CDM.LONG_NAME);
-            if (name == null) {
-                name = getName();
-            }
-        }
-        return name;
+        final String name = getAttributeAsString(CF.STANDARD_NAME);
+        return (name != null) ? name : getName();
     }
 
     /**

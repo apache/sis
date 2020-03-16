@@ -938,8 +938,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             variable.writeDataTypeName(buffer);
             setBandIdentifier(f.createMemberName(null, name, f.createTypeName(null, buffer.toString())));
         }
-        final String id = variable.getAttributeAsString(CF.STANDARD_NAME);
-        if (id != null && !id.equals(name)) {
+        final String id = Strings.trimOrNull(variable.getStandardName());
+        if (!id.equals(name)) {
             addBandName(variable.getAttributeAsString(ACDD.standard_name_vocabulary), id);
         }
         final String description = Strings.trimOrNull(variable.getDescription());

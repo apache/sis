@@ -68,7 +68,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
 
     /**
      * Creates a new concatenated feature set with the same types than the given feature set,
-     * but different sources.
+     * but different sources. This is used for creating {@linkplain #subset(Query) subsets}.
      */
     private ConcatenatedFeatureSet(final FeatureSet[] sources, final ConcatenatedFeatureSet original) {
         super(original);

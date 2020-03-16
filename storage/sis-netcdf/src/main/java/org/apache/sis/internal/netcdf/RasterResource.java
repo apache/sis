@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Optional;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -53,9 +54,11 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.internal.storage.MetadataBuilder;
 
 
 /**
@@ -100,7 +103,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
      * than variable name because the former is controlled vocabulary. The use of controlled vocabulary for identifiers increases
      * the chances of stability or consistency between similar products.
      *
-     * <p>The value set by constructor may be updated by {@link #resolveNameCollision(RasterResource, Decoder)},
+     * <p>The value set by constructor may be updated by {@link #resolveNameCollision(Decoder)},
      * but should not be modified after that point.</p>
      *
      * @see #getIdentifier()
@@ -203,7 +206,7 @@ public final class RasterResource extends AbstractGridResource implements Resour
         final Variable[]     variables = decoder.getVariables().clone();        // Needs a clone because may be modified.
         final List<Variable> siblings  = new ArrayList<>(4);                    // Usually has only 1 element, sometime 2.
         final List<Resource> resources = new ArrayList<>(variables.length);     // The raster resources to be returned.
-        final Map<GenericName,RasterResource> firstOfName = new HashMap<>();    // For detecting name collisions.
+        final Map<GenericName,List<RasterResource>> byName = new HashMap<>();   // For detecting name collisions.
         for (int i=0; i<variables.length; i++) {
             final Variable variable = variables[i];
             if (variable == null || variable.getRole() != VariableRole.COVERAGE) {
@@ -306,40 +309,95 @@ public final class RasterResource extends AbstractGridResource implements Resour
                 numBands = siblings.size();
             }
             final RasterResource r = new RasterResource(decoder, name.trim(), grid, siblings, numBands, bandDimension, lock);
-            r.resolveNameCollision(firstOfName.putIfAbsent(r.identifier, r), decoder);
+            r.addToNameMap(byName);
             resources.add(r);
             siblings.clear();
         }
+        /*
+         * At this point all resources have been prepared. If the same standard name is used by more than one resource,
+         * replace the standard name by the identifier for all resources in collision (an "all or nothing" replacement).
+         * The identifiers should be unique, which should resolve the name collision. We nevertheless check again after
+         * renaming until there is nothing to change.
+         */
+        boolean changed;
+        do {
+            changed = false;
+            List<RasterResource> collisions = null;
+            for (final Iterator<List<RasterResource>> it = byName.values().iterator(); it.hasNext();) {
+                final List<RasterResource> rs = it.next();
+                if (rs.size() >= 2) {
+                    it.remove();                            // Remove resources before to re-insert them in next loop below.
+                    if (collisions == null) {
+                        collisions = rs;
+                    } else {
+                        collisions.addAll(rs);
+                    }
+                }
+            }
+            if (collisions != null) {                       // After above loop because may change the byName` map.
+                for (final RasterResource r : collisions) {
+                    changed |= r.resolveNameCollision(decoder);
+                    r.addToNameMap(byName);                 // For checking if new names cause new collisions.
+                }
+            }
+        }
+        while (changed);
         return resources;
     }
 
     /**
-     * If the given resource is non-null, modifies the name of this resource for avoiding name collision.
-     * The {@code other} resource shall be non-null when the caller detected that there is a name collision
-     * with that resource.
-     *
-     * @param  other  the other resource for which there is a name collision, or {@code null} if no collision.
+     * Adds the name of the given resource to the given map. This is used for resolving name collision: any entry
+     * associated to two values or more will have the resources renamed by {@link #resolveNameCollision(Decoder)}.
      */
-    private void resolveNameCollision(final RasterResource other, final Decoder decoder) {
-        if (other != null) {
-            if (identifier.equals(other.identifier)) {
-                other.resolveNameCollision(decoder);
-            }
-            resolveNameCollision(decoder);
-        }
+    private void addToNameMap(final Map<GenericName,List<RasterResource>> byName) {
+        byName.computeIfAbsent(identifier, (key) -> new ArrayList<>()).add(this);
     }
 
     /**
      * Invoked when the name of this resource needs to be changed because it collides with the name of another resource.
-     * This method appends the variable name, which should be unique in each netCDF file.
+     * This method uses the variable name, which should be unique in each netCDF file. If this resource wraps more than
+     * one variable (for example "eastward_velocity" and "northward_velocity"), then this method takes the common part
+     * of all variable names ("velocity" in above example).
+     *
+     * @return whether this resource has been renamed as an effect of this method call.
      */
-    private void resolveNameCollision(final Decoder decoder) {
-        String name = identifier + " (" + data[0].getName() + ')';
-        identifier = decoder.nameFactory.createLocalName(decoder.namespace, name);
+    private boolean resolveNameCollision(final Decoder decoder) {
+        String name = null;
+        for (final Variable v : data) {
+            name = (String) CharSequences.commonWords(name, v.getName());
+        }
+        if (name == null || name.isEmpty()) {
+            name = data[0].getName();           // If unable to get a common name, fallback on the first one.
+        }
+        final GenericName newValue = decoder.nameFactory.createLocalName(decoder.namespace, name);
+        if (newValue.equals(identifier)) return false;
+        identifier = newValue;
+        return true;
     }
 
     /**
-     * Returns the variable name as an identifier of this resource.
+     * Invoked the first time that {@link #getMetadata()} is invoked. Computes metadata based on information
+     * provided by {@link #getIdentifier()}, {@link #getGridGeometry()}, {@link #getSampleDimensions()} and
+     * variable names.
+     *
+     * @param  metadata  the builder where to set metadata properties.
+     * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     */
+    @Override
+    protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
+        String title = null;
+        for (final Variable v : data) {
+            title = (String) CharSequences.commonWords(title, v.getDescription());
+            metadata.addIdentifier(v.getGroupName(), v.getName(), MetadataBuilder.Scope.RESOURCE);
+        }
+        if (title != null && !title.isEmpty()) {
+            metadata.addTitle(CharSequences.camelCaseToSentence(title).toString());
+        }
+        super.createMetadata(metadata);
+    }
+
+    /**
+     * Returns the standard name (if non ambiguous) or the variable name as an identifier of this resource.
      */
     @Override
     public Optional<GenericName> getIdentifier() {

@@ -16,8 +16,10 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.Locale;
 import java.util.Optional;
 import org.opengis.util.GenericName;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
@@ -27,6 +29,8 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.event.WarningEvent;
+import org.apache.sis.util.iso.AbstractInternationalString;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -47,7 +51,7 @@ import org.apache.sis.storage.event.WarningEvent;
  * Synchronization, when needed, uses {@code this} lock.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.1
  * @since   0.8
  * @module
  */
@@ -92,7 +96,7 @@ public class AbstractResource extends StoreListeners implements Resource {
 
     /**
      * Returns a description of this resource. This method invokes {@link #createMetadata(MetadataBuilder)}
-     * the first time it is invoked, then cache the result.
+     * the first time it is invoked, then caches the result.
      *
      * @return information about this resource (never {@code null} in this implementation).
      * @throws DataStoreException if an error occurred while reading or computing the envelope.
@@ -116,7 +120,7 @@ public class AbstractResource extends StoreListeners implements Resource {
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
     protected void createMetadata(final MetadataBuilder metadata) throws DataStoreException {
-        getIdentifier().ifPresent((name) -> metadata.addTitle(name.toInternationalString()));
+        getIdentifier().ifPresent((name) -> metadata.addTitle(new Sentence(name)));
         getEnvelope().ifPresent((envelope) -> {
             try {
                 metadata.addExtent(envelope);
@@ -124,6 +128,36 @@ public class AbstractResource extends StoreListeners implements Resource {
                 warning(e);
             }
         });
+    }
+
+    /**
+     * An international string where localized identifiers are formatted more like an English sentence.
+     * This is used for wrapping {@link GenericName#toInternationalString()} representation for use as
+     * a citation title.
+     */
+    private static final class Sentence extends AbstractInternationalString {
+        /** The generic name localized representation. */
+        private final InternationalString name;
+
+        /** Returns a new wrapper for the given generic name. */
+        Sentence(final GenericName name) {
+            this.name = name.toInternationalString();
+        }
+
+        /** Returns the generic name as an English-like sentence. */
+        @Override public String toString(final Locale locale) {
+            return CharSequences.camelCaseToSentence(name.toString(locale)).toString();
+        }
+
+        /** Returns a hash code value for this sentence. */
+        @Override public int hashCode() {
+            return ~name.hashCode();
+        }
+
+        /** Compares the given object with this sentence for equality. */
+        @Override public boolean equals(final Object other) {
+            return (other instanceof Sentence) && name.equals(((Sentence) other).name);
+        }
     }
 
     /**

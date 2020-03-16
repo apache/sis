@@ -262,7 +262,7 @@ next:       for (final String name : axisNames) {
              */
             char abbreviation = getAxisType(axis.getAxisType());
             if (abbreviation == 0) {
-                abbreviation = getAxisType(axis.getAttributeAsString(CF.STANDARD_NAME));
+                abbreviation = getAxisType(axis.getAttributeAsString(CF.STANDARD_NAME));    // No fallback on variable name.
                 /*
                  * If the abbreviation is still unknown, look at the "long_name", "description" or "title" attribute. Those
                  * attributes are not standardized, so they are less reliable than "standard_name". But they are still more
