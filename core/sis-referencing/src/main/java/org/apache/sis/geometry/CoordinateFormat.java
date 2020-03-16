@@ -875,7 +875,18 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
         if (crs != lastCRS) {
             configure(crs);
         }
-        if (desiredPrecisions != null && formats != null && formats == sharedFormats) {
+        /*
+         * Unconditionally configure the formatters for the desired precisions because those precisions
+         * may change for every point. Note that the formatters may not have been created if the CRS is
+         * null (because `configure(…)` does not know which format to use), in which case generic number
+         * formats will be used.
+         */
+        if (desiredPrecisions != null) {
+            if (sharedFormats == null) {
+                formats = sharedFormats = new Format[desiredPrecisions.length];
+                Arrays.fill(formats, getDefaultFormat());
+                types = new byte[formats.length];
+            }
             final int n = Math.min(desiredPrecisions.length, formats.length);
             for (int i=0; i<n; i++) {
                 applyPrecision(i);
