@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
-import java.util.Collection;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferDouble;
@@ -26,15 +25,15 @@ import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.RasterFormatException;
 import java.awt.image.RenderedImage;
+import java.util.Collection;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.coverage.grid.ImageRenderer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-
-// Branch-specific imports
 import org.opengis.coverage.CannotEvaluateException;
 
 
@@ -67,6 +66,16 @@ public class BufferedGridCoverage extends GridCoverage {
         super(grid, bands);
         this.data = data;
         ArgumentChecks.ensureNonNull("data", data);
+
+        //verify buffer size
+        GridExtent extent = grid.getExtent();
+        long expectedSize = extent.getSize(0) * bands.size();
+        for (int i = 1; i <extent.getDimension(); i++) {
+            expectedSize *= extent.getSize(i);
+        }
+        if (data.getSize() < expectedSize) {
+            throw new IllegalGridGeometryException("Expecting a buffer size of at least " + expectedSize + " to contain all samples from given grid geometry, but buffer is only " +data.getSize());
+        }
     }
 
     /**

@@ -17,7 +17,6 @@
 package org.apache.sis.coverage.grid;
 
 import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferInt;
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,71 +63,71 @@ public class GridCoverageBuilder {
         this.bufferNbSample = -1;
     }
 
-    /**
-     * Creates a coverage from the given matrix.
-     * This method copies the values from the given matrix to a new DataBuffer.
-     * <p>
-     * The coverage height will be the length of the {@code matrix} argument.
-     * The coverage width will be the length of the first row, all rows are expected
-     * to have the same length.
-     *
-     * @param matrix The matrix data in a {@code [row][column]} layout.
-     * @throws ArithmeticException if the buffer size exceeds the {@code int} capacity.
-     */
-    public void setValues(int[][] matrix) throws ArithmeticException {
-        final int height = matrix.length;
-        final int width = matrix[0].length;
-        final int[] datas = new int[StrictMath.toIntExact( ((long) height) * width)];
-        for (int i = 0, offset=0; i < matrix.length; i++,offset+=width) {
-            System.arraycopy(matrix[i], 0, datas, offset, width);
-        }
-        final DataBuffer buffer = new DataBufferInt(datas, datas.length);
-        setValues(buffer, width, height);
-    }
-
-    /**
-     * Creates a coverage from the given matrix.
-     * This method copies the values from the given matrix to a new DataBuffer.
-     * <p>
-     * The coverage height will be the length of the {@code matrix} argument.
-     * The coverage width will be the length of the first row, all rows are expected
-     * to have the same length.
-     *
-     * @param matrix The matrix data in a {@code [row][column]} layout.
-     * @throws ArithmeticException if the buffer size exceeds the {@code int} capacity.
-     */
-    public void setValues(float[][] matrix) throws ArithmeticException {
-        final int height = matrix.length;
-        final int width = matrix[0].length;
-        final int[] datas = new int[StrictMath.toIntExact( ((long) height) * width)];
-        for (int i = 0, offset=0; i < matrix.length; i++,offset+=width) {
-            System.arraycopy(matrix[i], 0, datas, offset, width);
-        }
-        final DataBuffer buffer = new DataBufferInt(datas, datas.length);
-        setValues(buffer, width, height);
-    }
-
-    /**
-     * Creates a coverage from the given matrix.
-     * This method copies the values from the given matrix to a new DataBuffer.
-     * <p>
-     * The coverage height will be the length of the {@code matrix} argument.
-     * The coverage width will be the length of the first row, all rows are expected
-     * to have the same length.
-     *
-     * @param matrix The matrix data in a {@code [row][column]} layout.
-     * @throws ArithmeticException if the buffer size exceeds the {@code int} capacity.
-     */
-    public void setValues(double[][] matrix) throws ArithmeticException {
-        final int height = matrix.length;
-        final int width = matrix[0].length;
-        final int[] datas = new int[StrictMath.toIntExact( ((long) height) * width)];
-        for (int i = 0, offset=0; i < matrix.length; i++,offset+=width) {
-            System.arraycopy(matrix[i], 0, datas, offset, width);
-        }
-        final DataBuffer buffer = new DataBufferInt(datas, datas.length);
-        setValues(buffer, width, height);
-    }
+//    /**
+//     * Creates a coverage from the given matrix.
+//     * This method copies the values from the given matrix to a new DataBuffer.
+//     * <p>
+//     * The coverage height will be the length of the {@code matrix} argument.
+//     * The coverage width will be the length of the first row, all rows are expected
+//     * to have the same length.
+//     *
+//     * @param matrix The matrix data in a {@code [row][column]} layout.
+//     * @throws ArithmeticException if the buffer size exceeds the {@code int} capacity.
+//     */
+//    public void setValues(int[][] matrix) throws ArithmeticException {
+//        final int height = matrix.length;
+//        final int width = matrix[0].length;
+//        final int[] datas = new int[Math.multiplyExact(height,width)];
+//        for (int i = 0, offset=0; i < matrix.length; i++,offset+=width) {
+//            System.arraycopy(matrix[i], 0, datas, offset, width);
+//        }
+//        final DataBuffer buffer = new DataBufferInt(datas, datas.length);
+//        setValues(buffer, width, height);
+//    }
+//
+//    /**
+//     * Creates a coverage from the given matrix.
+//     * This method copies the values from the given matrix to a new DataBuffer.
+//     * <p>
+//     * The coverage height will be the length of the {@code matrix} argument.
+//     * The coverage width will be the length of the first row, all rows are expected
+//     * to have the same length.
+//     *
+//     * @param matrix The matrix data in a {@code [row][column]} layout.
+//     * @throws ArithmeticException if the buffer size exceeds the {@code int} capacity.
+//     */
+//    public void setValues(float[][] matrix) throws ArithmeticException {
+//        final int height = matrix.length;
+//        final int width = matrix[0].length;
+//        final float[] datas = new float[Math.multiplyExact(height,width)];
+//        for (int i = 0, offset=0; i < matrix.length; i++,offset+=width) {
+//            System.arraycopy(matrix[i], 0, datas, offset, width);
+//        }
+//        final DataBuffer buffer = new DataBufferFloat(datas, datas.length);
+//        setValues(buffer, width, height);
+//    }
+//
+//    /**
+//     * Creates a coverage from the given matrix.
+//     * This method copies the values from the given matrix to a new DataBuffer.
+//     * <p>
+//     * The coverage height will be the length of the {@code matrix} argument.
+//     * The coverage width will be the length of the first row, all rows are expected
+//     * to have the same length.
+//     *
+//     * @param matrix The matrix data in a {@code [row][column]} layout.
+//     * @throws ArithmeticException if the buffer size exceeds the {@code int} capacity.
+//     */
+//    public void setValues(double[][] matrix) throws ArithmeticException {
+//        final int height = matrix.length;
+//        final int width = matrix[0].length;
+//        final double[] datas = new double[Math.multiplyExact(height,width)];
+//        for (int i = 0, offset=0; i < matrix.length; i++,offset+=width) {
+//            System.arraycopy(matrix[i], 0, datas, offset, width);
+//        }
+//        final DataBuffer buffer = new DataBufferDouble(datas, datas.length);
+//        setValues(buffer, width, height);
+//    }
 
     /**
      * Creates a coverage from the given buffer.
