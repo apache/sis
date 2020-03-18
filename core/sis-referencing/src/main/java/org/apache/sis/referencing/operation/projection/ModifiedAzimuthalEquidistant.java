@@ -50,26 +50,40 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  */
 public class ModifiedAzimuthalEquidistant extends NormalizedProjection {
     /**
+     * For compatibility with different versions during deserialization.
+     */
+    private static final long serialVersionUID = -5394894530514589924L;
+
+    /**
      * Sine and cosine of the latitude of origin φ₀.
      */
     private final double sinφ0, cosφ0;
 
     /**
-     * The radius of curvature (assuming <var>a</var>=1) at the latitude of origin
-     * multiplied by the sine of that latitude.
+     * A term involving radius of curvature ν₀, the latitude of origin φ₀ and the eccentricity.
+     * The semi-major axis length <var>a</var> is omitted since it is handled outside this class.
      */
     private final double ℯ2_ν0_sinφ0;
 
     /**
-     * The ℯ⋅sin(φ₀)/√(1 − ℯ²) term.
+     * The ℯ⋅sin(φ₀)/√(1 − ℯ²) term, used in direct projection.
      */
     private final double G;
 
     /**
      * The ℯ⋅cos(φ₀)/√(1 − ℯ²) term. This is the <var>H</var> term in EPSG guidance notes
-     * but without the cos(α) term.
+     * but without the cos(α) term (omitted because α depends on the point to project).
+     *
+     * <p>Note that during inverse projection, EPSG guidance notes has a <var>A</var> as:
+     * −ℯ²⋅cos²φ₀/(1 − ℯ²)⋅cos²α. We opportunistically use Hp² for that purpose.</p>
      */
     private final double Hp;
+
+    /**
+     * The 3⋅ℯ²⋅sin(φ₀)⋅cos(φ₀)/(1 − ℯ²) term. This is the <var>B</var> term in EPSG guidance notes
+     * for inverse projection but without the terms that depend on coordinates of transformed point.
+     */
+    private final double Bp;
 
     /**
      * Work around for RFE #4093999 in Sun's bug database
@@ -106,14 +120,16 @@ public class ModifiedAzimuthalEquidistant extends NormalizedProjection {
     @Workaround(library="JDK", version="1.8")
     private ModifiedAzimuthalEquidistant(final Initializer initializer) {
         super(initializer);
-        final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
-        cosφ0 = cos(φ0);
-        sinφ0 = sin(φ0);
-        final double ν0 = initializer.radiusOfCurvature(sinφ0);
+        final double φ0, ν0, f;
+        φ0          = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
+        cosφ0       = cos(φ0);
+        sinφ0       = sin(φ0);
+        ν0          = initializer.radiusOfCurvature(sinφ0);
         ℯ2_ν0_sinφ0 = eccentricitySquared * ν0 * sinφ0;
-        final double f = eccentricity / sqrt(1 - eccentricitySquared);
-        G  = f * sinφ0;
-        Hp = f * cosφ0;
+        f           = eccentricity / sqrt(1 - eccentricitySquared);
+        G           = f * sinφ0;
+        Hp          = f * cosφ0;
+        Bp          = 3*eccentricitySquared * (sinφ0*cosφ0) / (1 - eccentricitySquared);
 
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertBefore(0, ν0, null);
@@ -132,24 +148,32 @@ public class ModifiedAzimuthalEquidistant extends NormalizedProjection {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double λ    = srcPts[srcOff  ];
-        final double φ    = srcPts[srcOff+1];
-        final double cosλ = cos(λ);
-        final double sinλ = sin(λ);
-        final double cosφ = cos(φ);
-        final double sinφ = sin(φ);
-        final double rν   = sqrt(1 - eccentricitySquared*(sinφ*sinφ));
-        final double Ψ    = atan((1 - eccentricitySquared)*tan(φ) + ℯ2_ν0_sinφ0*rν/cosφ);
-        final double α    = atan2(sinλ, cosφ0*tan(Ψ) - sinφ0*cosλ);
-        final double sinα = sin(α);
-        final double cosα = cos(α);
-        final double H    = cosα * Hp;
+        final double λ     = srcPts[srcOff  ];
+        final double φ     = srcPts[srcOff+1];
+        final double cosλ  = cos(λ);
+        final double sinλ  = sin(λ);
+        final double cosφ  = cos(φ);
+        final double sinφ  = sin(φ);
+        final double rν    = sqrt(1 - eccentricitySquared*(sinφ*sinφ));
+        final double tanΨ  = ((1 - eccentricitySquared)*sinφ + ℯ2_ν0_sinφ0*rν) / cosφ;
+        final double rcosΨ = sqrt(1 + tanΨ*tanΨ);
+        final double α     = atan2(sinλ, cosφ0*tanΨ - sinφ0*cosλ);
+        final double sinα  = sin(α);
+        final double cosα  = cos(α);
+        final double H     = cosα * Hp;
+        /*
+         * Equations are:    s  =  asin(cos(φ₀)⋅sin(Ψ) − sin(φ₀)⋅cos(Ψ)) ⋅ signum(cos(α))     for small α
+         *                   s  =  asin(sin(λ)⋅cos(Ψ) / sin(α))                               for other α
+         *
+         * Using identity:   sin(atan(x))  =  x / √(1 + x²)
+         * Rewrite as:       sin(Ψ)  =   tan(Ψ) / √(1 + tan²Ψ)
+         */
         double c;
-        if (abs(α) < ANGULAR_TOLERANCE) {
-            c = cosφ0*sin(Ψ) - sinφ0*cos(Ψ);
-            if (abs(α) > PI/2) c = -c;
+        if (abs(sinα) < ANGULAR_TOLERANCE) {
+            c = (cosφ0*tanΨ - sinφ0) / rcosΨ;
+            if (cosα < 0) c = -c;
         } else {
-            c = sinλ*cos(Ψ) / sinα;
+            c = sinλ / (rcosΨ * sinα);
         }
         c = asin(c);                    // After this line this is the `s` value in EPSG guidance notes.
         final double s2 = c  * c;
@@ -181,7 +205,25 @@ public class ModifiedAzimuthalEquidistant extends NormalizedProjection {
                                     final double[] dstPts, final int dstOff)
             throws ProjectionException
     {
-        throw new ProjectionException("Inverse transform not yet implemented.");
+        final double x    = srcPts[srcOff  ];
+        final double y    = srcPts[srcOff+1];
+        final double α    = atan2(x, y);                // Actually α′ in EPSG guidance notes.
+        final double sinα = sin(α);
+        final double cosα = cos(α);
+              double negA = Hp * cosα; negA *= negA;    // mA = −A  compared to EPSG guidance note.
+        final double B    = Bp * (1 + negA) * cosα;
+        final double D2   = x*x + y*y;
+        final double D    = sqrt(D2);                   // D = c′/ν₀, but division by ν₀ is already done here.
+        final double J    = D + (negA*(1 -   negA)*(D2*D )/6)
+                              - (   B*(1 - 3*negA)*(D2*D2)/24);
+        final double J2   = J*J;
+        final double K    = 1 + (negA*J2/2) - (B*(J2*J)/6);
+        final double sinJ = sin(J);
+        final double sinΨ = sinφ0*cos(J) + cosφ0*sinJ*cosα;
+        final double cosΨ = sqrt(1 - sinΨ*sinΨ);
+        dstPts[dstOff  ]  = asin(sinα*sinJ / cosΨ);
+        dstPts[dstOff+1]  = atan((1 - eccentricitySquared*sinφ0*K / sinΨ) * (sinΨ/cosΨ)
+                               / (1 - eccentricitySquared));
     }
 
     /**

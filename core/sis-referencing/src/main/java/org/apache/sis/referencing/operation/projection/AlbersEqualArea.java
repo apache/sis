@@ -255,8 +255,8 @@ public class AlbersEqualArea extends EqualAreaProjection {
         /*
          * End of map projection. Now compute the derivative.
          */
-        final double me = 1 - eccentricitySquared;
-        final double dρ_dφ = -0.5 * nm*dqm_dφ(sinφ, cos(φ)*me) / (me*ρ);
+        final double ome = 1 - eccentricitySquared;
+        final double dρ_dφ = -0.5 * nm*dqm_dφ(sinφ, cos(φ)*ome) / (ome*ρ);
         return new Matrix2(cosθ*ρ, dρ_dφ*sinθ,          // ∂x/∂λ, ∂x/∂φ
                           -sinθ*ρ, dρ_dφ*cosθ);         // ∂y/∂λ, ∂y/∂φ
     }
