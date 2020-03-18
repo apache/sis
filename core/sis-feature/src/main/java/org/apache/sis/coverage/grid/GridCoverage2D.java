@@ -254,10 +254,12 @@ public class GridCoverage2D extends GridCoverage {
                     crs = domain.getCoordinateReferenceSystem();
                 }
                 final GridExtent extent = createExtent(dimension, data, crs);
-                try {
+                if (domain.isDefined(GridGeometry.GRID_TO_CRS)) try {
                     domain = new GridGeometry(domain, extent, null);
                 } catch (TransformException e) {
                     throw new IllegalGridGeometryException(e);                  // Should never happen.
+                } else {
+                    domain = new GridGeometry(extent, domain.envelope);
                 }
             }
         }
