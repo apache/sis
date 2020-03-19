@@ -16,14 +16,18 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.BufferedGridCoverage;
+import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.opengis.geometry.Envelope;
@@ -42,6 +46,7 @@ import org.opengis.referencing.operation.TransformException;
 public class GridCoverageBuilder {
 
     private List<SampleDimension> ranges;
+    private WritableRaster raster;
     private RenderedImage image;
     private DataBuffer buffer;
     private int bufferWidth = -1;
@@ -57,6 +62,22 @@ public class GridCoverageBuilder {
     public void setValues(RenderedImage image) {
         ArgumentChecks.ensureNonNull("image", image);
         this.image = image;
+        this.raster = null;
+        this.buffer = null;
+        this.bufferWidth = -1;
+        this.bufferHeight = -1;
+        this.bufferNbSample = -1;
+    }
+
+    /**
+     * Sets coverage data raster.
+     *
+     * @param raster The raster to be wrapped by {@code GridCoverage2D}, not {@code null}.
+     */
+    public void setValues(WritableRaster raster) {
+        ArgumentChecks.ensureNonNull("raster", raster);
+        this.image = null;
+        this.raster = raster;
         this.buffer = null;
         this.bufferWidth = -1;
         this.bufferHeight = -1;
@@ -137,6 +158,8 @@ public class GridCoverageBuilder {
      */
     public void setValues(DataBuffer data) {
         ArgumentChecks.ensureNonNull("data", data);
+        this.image = null;
+        this.raster = null;
         this.buffer = data;
         this.bufferWidth = -1;
         this.bufferHeight = -1;
@@ -144,6 +167,8 @@ public class GridCoverageBuilder {
     }
 
     private void setValues(DataBuffer data, int width, int height) {
+        this.image = null;
+        this.raster = null;
         this.buffer = data;
         this.bufferWidth = width;
         this.bufferHeight = height;
@@ -201,6 +226,23 @@ public class GridCoverageBuilder {
 
         if (image != null) {
             return new GridCoverage2D(grid, ranges, image);
+        } else if (raster != null) {
+
+            final int dataType = raster.getSampleModel().getDataType();
+            final int numBands = raster.getSampleModel().getNumBands();
+
+            List<SampleDimension> ranges = this.ranges;
+            if (ranges == null) {
+                ranges = new ArrayList<>(numBands);
+                for (int i = 0; i < numBands; i++) {
+                    ranges.add(new SampleDimension.Builder().setName(i).build());
+                }
+            }
+
+            final ColorModel colors = ColorModelFactory.createColorModel(ranges.toArray(new SampleDimension[0]), 0, dataType, ColorModelFactory.GRAYSCALE);
+            final BufferedImage image = new BufferedImage(colors, raster, false, null);
+            return new GridCoverage2D(grid, this.ranges, image);
+
         } else if (buffer != null) {
 
             GridGeometry grid = this.grid;
