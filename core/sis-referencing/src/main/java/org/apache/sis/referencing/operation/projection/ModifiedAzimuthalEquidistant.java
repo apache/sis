@@ -51,16 +51,11 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  * @since 1.1
  * @module
  */
-public class ModifiedAzimuthalEquidistant extends NormalizedProjection {
+public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
     /**
      * For compatibility with different versions during deserialization.
      */
-    private static final long serialVersionUID = -5394894530514589924L;
-
-    /**
-     * Sine and cosine of the latitude of origin φ₀.
-     */
-    private final double sinφ0, cosφ0;
+    private static final long serialVersionUID = 96569177715708509L;
 
     /**
      * A term involving radius of curvature ν₀, the latitude of origin φ₀ and the eccentricity.
@@ -123,10 +118,7 @@ public class ModifiedAzimuthalEquidistant extends NormalizedProjection {
     @Workaround(library="JDK", version="1.8")
     private ModifiedAzimuthalEquidistant(final Initializer initializer) {
         super(initializer);
-        final double φ0, ν0, f;
-        φ0          = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
-        cosφ0       = cos(φ0);
-        sinφ0       = sin(φ0);
+        final double ν0, f;
         ν0          = initializer.radiusOfCurvature(sinφ0);
         ℯ2_ν0_sinφ0 = eccentricitySquared * ν0 * sinφ0;
         f           = eccentricity / sqrt(1 - eccentricitySquared);

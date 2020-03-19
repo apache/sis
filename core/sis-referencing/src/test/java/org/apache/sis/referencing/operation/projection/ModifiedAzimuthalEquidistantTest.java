@@ -16,8 +16,9 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -31,7 +32,43 @@ import org.junit.Test;
  * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class ModifiedAzimuthalEquidistantTest extends MapProjectionTestCase {
+public final strictfp class ModifiedAzimuthalEquidistantTest extends AzimuthalEquidistantTest {
+    /**
+     * Returns the method to be tested.
+     */
+    @Override
+    MapProjection method() {
+        return new org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEquidistant();
+    }
+
+    /**
+     * Tests the projection on a sphere. We override the method provides in parent class
+     * because the point provided in Snyder is too far from projection centre.
+     *
+     * @throws FactoryException if an error occurred while creating the projection.
+     * @throws TransformException if an error occurred while projecting the test point.
+     */
+    @Test
+    @Override
+    public void testSpherical() throws FactoryException, TransformException {
+        tolerance = 20;                     // Same tolerance than in parent class.
+        final double r = 6357767.51;        // Conformal sphere radius at the latitude being tested.
+        testWithEPSG(r, r);
+    }
+
+    /**
+     * Tests with the point published in EPSG guidance note.
+     *
+     * @throws FactoryException if an error occurred while creating the projection.
+     * @throws TransformException if an error occurred while projecting the test point.
+     */
+    @Test
+    @Override
+    public void testWithEPSG() throws FactoryException, TransformException {
+        tolerance = 0.01;
+        testWithEPSG(CLARKE_A, CLARKE_B);
+    }
+
     /**
      * Tests the <cite>"Modified Azimuthal Equidistant"</cite> (EPSG:9832) projection method.
      * This test is defined in GeoAPI conformance test suite.
@@ -44,7 +81,6 @@ public final strictfp class ModifiedAzimuthalEquidistantTest extends MapProjecti
     @Test
     @org.junit.Ignore("Implementation not yet completed")
     public void runGeoapiTest() throws FactoryException, TransformException {
-        createGeoApiTest(new org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEquidistant())
-                         .testModifiedAzimuthalEquidistant();
+        createGeoApiTest(method()).testModifiedAzimuthalEquidistant();
     }
 }

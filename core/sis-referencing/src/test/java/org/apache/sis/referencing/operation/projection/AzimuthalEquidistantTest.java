@@ -41,7 +41,7 @@ public strictfp class AzimuthalEquidistantTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the forward projection using test point given in Snyder page 337.
+     * Tests the forward and inverse projection using test point given in Snyder page 337.
      * The Snyder's test uses a sphere of radius R=3 and a center at 40°N and 100°W.
      * The test in this class modify the longitude to 10°W for avoiding to mix wraparound
      * considerations in this test.
@@ -73,16 +73,34 @@ public strictfp class AzimuthalEquidistantTest extends MapProjectionTestCase {
     }
 
     /**
-     * Tests the point published in EPSG guidance note.
+     * Tests with the point published in EPSG guidance note.
      *
      * @throws FactoryException if an error occurred while creating the projection.
      * @throws TransformException if an error occurred while projecting the test point.
      */
     @Test
-    public void testEPSGPoint() throws FactoryException, TransformException {
+    public void testWithEPSG() throws FactoryException, TransformException {
+        /*
+         * Since we are testing spherical formulas with a sample point calculated
+         * for ellipsoidal formulas, we have to use a high tolerance threshold.
+         */
+        tolerance = 20;
+        testWithEPSG(CLARKE_A, CLARKE_B);
+    }
+
+    /**
+     * Tests with the point published in EPSG guidance note.
+     * Callers must set {@link #tolerance} before to invoke this method.
+     *
+     * @param  semiMajor {@link #CLARKE_A}, or an alternative value if desired.
+     * @param  semiMinor {@link #CLARKE_B}, or an alternative value if desired.
+     * @throws FactoryException if an error occurred while creating the projection.
+     * @throws TransformException if an error occurred while projecting the test point.
+     */
+    final void testWithEPSG(final double semiMajor, final double semiMinor) throws FactoryException, TransformException {
         createCompleteProjection(method(),
-                CLARKE_A,                       // Semi-major axis (Clarke 1866)
-                CLARKE_B,                       // Semi-minor axis
+                semiMajor,
+                semiMinor,
                 138 + (10 +  7.48/60)/60,       // Longitude of natural origin (central-meridian)
                   9 + (32 + 48.15/60)/60,       // Latitude of natural origin
                 Double.NaN,                     // Standard parallel 1
@@ -90,11 +108,7 @@ public strictfp class AzimuthalEquidistantTest extends MapProjectionTestCase {
                 Double.NaN,                     // Scale factor
                 40000,                          // False easting
                 60000);                         // False Northing
-        /*
-         * Since we are testing spherical formulas with a sample point calculated
-         * for ellipsoidal formulas, we have to use a high tolerance threshold.
-         */
-        tolerance = 20;
+
         verifyTransform(new double[] {
             138 + (11 + 34.908/60)/60,          // 138°11'34.908"E
               9 + (35 + 47.493/60)/60           //   9°35'47.493"N

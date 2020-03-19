@@ -57,7 +57,7 @@ public class AzimuthalEquidistant extends NormalizedProjection {
     /**
      * Sine and cosine of the latitude of origin φ₀.
      */
-    private final double sinφ0, cosφ0;
+    final double sinφ0, cosφ0;
 
     /**
      * Work around for RFE #4093999 in Sun's bug database
@@ -89,11 +89,11 @@ public class AzimuthalEquidistant extends NormalizedProjection {
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Creates a new normalized projection from the parameters computed by the given initializer.
+     *
+     * @param initializer  the initializer for computing map projection internal parameters.
      */
-    @Workaround(library="JDK", version="1.8")
-    private AzimuthalEquidistant(final Initializer initializer) {
+    AzimuthalEquidistant(final Initializer initializer) {
         super(initializer);
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         cosφ0 = cos(φ0);

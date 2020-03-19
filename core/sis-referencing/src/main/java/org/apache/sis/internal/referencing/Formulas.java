@@ -161,7 +161,7 @@ public final class Formulas extends Static {
     }
 
     /**
-     * Returns the radius of the conformal sphere (assuming a semi-major axis length of 1) at a given latitude.
+     * Returns the radius of the conformal sphere at a given latitude.
      * The radius of conformal sphere is computed as below:
      *
      * <blockquote>Rc = √(1 – ℯ²) / (1 – ℯ²sin²φ)  where  ℯ² = 1 - (b/a)²</blockquote>
