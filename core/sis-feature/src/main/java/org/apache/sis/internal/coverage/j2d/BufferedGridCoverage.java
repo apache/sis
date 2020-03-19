@@ -73,8 +73,9 @@ public class BufferedGridCoverage extends GridCoverage {
         for (int i = 1; i <extent.getDimension(); i++) {
             expectedSize *= extent.getSize(i);
         }
-        if (data.getSize() < expectedSize) {
-            throw new IllegalGridGeometryException("Expecting a buffer size of at least " + expectedSize + " to contain all samples from given grid geometry, but buffer is only " +data.getSize());
+        long buffersize = Math.multiplyExact(data.getSize(), data.getNumBanks());
+        if (buffersize < expectedSize) {
+            throw new IllegalGridGeometryException("Expecting a buffer size of at least " + expectedSize + " to contain all samples from given grid geometry, but buffer is only " + buffersize);
         }
     }
 
