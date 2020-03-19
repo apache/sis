@@ -45,7 +45,10 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @see AzimuthalEquidistant
+ *
+ * @since 1.1
  * @module
  */
 public class ModifiedAzimuthalEquidistant extends NormalizedProjection {
@@ -187,8 +190,8 @@ public class ModifiedAzimuthalEquidistant extends NormalizedProjection {
                + (s4/120 * (H2*(4 - 7*H2) - 3*(G*G)*(1 - 7*H2)))
                - (s5/48  * GH);
         if (dstPts != null) {
-            dstPts[dstOff  ] = c*sinα;
-            dstPts[dstOff+1] = c*cosα;
+            dstPts[dstOff  ] = c * sinα;
+            dstPts[dstOff+1] = c * cosα;
         }
         if (!derivate) {
             return null;

@@ -19,11 +19,11 @@ package org.apache.sis.internal.referencing.provider;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.PlanarProjection;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
-import org.opengis.referencing.operation.PlanarProjection;
 
 
 /**
@@ -52,6 +52,7 @@ public final class ModifiedAzimuthalEquidistant extends MapProjection {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Latitude of natural origin </td></tr>
+     *   <tr><td> OGC:     </td><td> latitude_of_origin </td></tr>
      *   <tr><td> GeoTIFF: </td><td> CenterLat </td></tr>
      *   <tr><td> Proj4:   </td><td> lat_0 </td></tr>
      * </table>
@@ -66,6 +67,7 @@ public final class ModifiedAzimuthalEquidistant extends MapProjection {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> Longitude of natural origin </td></tr>
+     *   <tr><td> OGC:     </td><td> central_meridian </td></tr>
      *   <tr><td> GeoTIFF: </td><td> CenterLong </td></tr>
      *   <tr><td> Proj4:   </td><td> lon_0 </td></tr>
      * </table>
@@ -80,6 +82,7 @@ public final class ModifiedAzimuthalEquidistant extends MapProjection {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> False easting </td></tr>
+     *   <tr><td> OGC:     </td><td> false_easting </td></tr>
      *   <tr><td> GeoTIFF: </td><td> FalseEasting </td></tr>
      *   <tr><td> Proj4:   </td><td> x_0 </td></tr>
      * </table>
@@ -94,6 +97,7 @@ public final class ModifiedAzimuthalEquidistant extends MapProjection {
      * <table class="sis">
      *   <caption>Parameter names</caption>
      *   <tr><td> EPSG:    </td><td> False northing </td></tr>
+     *   <tr><td> OGC:     </td><td> false_northing </td></tr>
      *   <tr><td> GeoTIFF: </td><td> FalseNorthing </td></tr>
      *   <tr><td> Proj4:   </td><td> y_0 </td></tr>
      * </table>
@@ -102,8 +106,9 @@ public final class ModifiedAzimuthalEquidistant extends MapProjection {
 
     /**
      * Returns a parameter with the same names and identifiers than the given parameter,
-     * except OGC, ESRI and netCDF names which are omitted. We omit those names for now
+     * except (OGC), ESRI and netCDF names which are omitted. We omit those names for now
      * because we have not seen a reference about what those parameter names should be.
+     * The OGC names are kept despite that because it uses the same names for most projection.
      * This may be revisited in future SIS versions.
      *
      * <p>The OGC and GeoTIFF names kept by this method are actually the names for
@@ -111,8 +116,7 @@ public final class ModifiedAzimuthalEquidistant extends MapProjection {
      */
     private static ParameterBuilder erase(final ParameterBuilder builder, ParameterDescriptor<?> template) {
         return builder.addNamesAndIdentifiers(template)                         // Copy from this parameter…
-                      .rename(Citations.OGC,    (CharSequence[]) null)          // … except for those names.
-                      .rename(Citations.ESRI,   (CharSequence[]) null)
+                      .rename(Citations.ESRI,   (CharSequence[]) null)          // … except for those names.
                       .rename(Citations.NETCDF, (CharSequence[]) null);
     }
 

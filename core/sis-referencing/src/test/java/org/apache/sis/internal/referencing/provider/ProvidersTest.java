@@ -105,6 +105,7 @@ public final strictfp class ProvidersTest extends TestCase {
             ObliqueMercatorTwoPointsCenter.class,
             Orthographic.class,
             ModifiedAzimuthalEquidistant.class,
+            AzimuthalEquidistantSpherical.class,
             ZonedTransverseMercator.class,
             SatelliteTracking.class,
             Sinusoidal.class,
