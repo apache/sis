@@ -192,6 +192,8 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.PolyconicTest.class,
     org.apache.sis.referencing.operation.projection.MollweideTest.class,
     org.apache.sis.referencing.operation.projection.OrthographicTest.class,
+    org.apache.sis.referencing.operation.projection.AzimuthalEquidistantTest.class,
+    org.apache.sis.referencing.operation.projection.ModifiedAzimuthalEquidistantTest.class,
     org.apache.sis.referencing.operation.projection.SatelliteTrackingTest.class,
 
     // Coordinate operation and derived Coordinate Reference Systems (cyclic dependency).

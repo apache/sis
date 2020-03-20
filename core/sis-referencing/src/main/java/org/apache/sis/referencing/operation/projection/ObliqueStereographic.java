@@ -370,11 +370,11 @@ public class ObliqueStereographic extends NormalizedProjection {
         final double ψ = log((1 + sinχ) / ((1 - sinχ)*c)) / (2*n);
         double φ = 2*atan(exp(ψ)) - PI/2;                               // First approximation
         final double he = eccentricity/2;
-        final double me = 1 - eccentricitySquared;
+        final double ome = 1 - eccentricitySquared;
         for (int it=0; it<MAXIMUM_ITERATIONS; it++) {
             final double ℯsinφ = eccentricity * sin(φ);
             final double ψi = log(tan(φ/2 + PI/4) * pow((1 - ℯsinφ) / (1 + ℯsinφ), he));
-            final double Δφ = (ψ - ψi) * cos(φ) * (1 - ℯsinφ*ℯsinφ) / me;
+            final double Δφ = (ψ - ψi) * cos(φ) * (1 - ℯsinφ*ℯsinφ) / ome;
             φ += Δφ;
             if (!(abs(Δφ) > ITERATION_TOLERANCE)) {     // Use '!' for accepting NaN.
                 dstPts[dstOff  ] = λ;
