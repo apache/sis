@@ -16,11 +16,12 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
-import org.opengis.util.FactoryException;
 
 
 /**
@@ -108,7 +109,9 @@ public strictfp class AzimuthalEquidistantTest extends MapProjectionTestCase {
                 Double.NaN,                     // Scale factor
                 40000,                          // False easting
                 60000);                         // False Northing
-
+        /*
+         * Test point given in EPSG guidance note.
+         */
         verifyTransform(new double[] {
             138 + (11 + 34.908/60)/60,          // 138°11'34.908"E
               9 + (35 + 47.493/60)/60           //   9°35'47.493"N
@@ -116,5 +119,44 @@ public strictfp class AzimuthalEquidistantTest extends MapProjectionTestCase {
             42665.90,
             65509.82
         });
+        /*
+         * North of map origin, for entering in the special case for c/sin(c)
+         * when c is close to zero. This point is not given by EPSG guidance
+         * notes; this is an anti-regression test.
+         */
+        verifyTransform(new double[] {
+            138 + (10 +  7.48/60)/60 + 0.00000000001,
+              9 + (32 + 48.15/60)/60 + 0.01
+        }, new double[] {
+            40000.00,
+            61105.98
+        });
+    }
+
+    /**
+     * Tests the derivatives at a few points on a sphere. This method compares the derivatives computed
+     * by the projection with an estimation of derivatives computed by the finite differences method.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a point.
+     */
+    @Test
+    public void testDerivative() throws FactoryException, TransformException {
+        createCompleteProjection(method(),
+                CLARKE_A,
+                CLARKE_B,
+                 40,                // Longitude of natural origin (central-meridian)
+                 25,                // Latitude of natural origin
+                Double.NaN,         // Standard parallel 1
+                Double.NaN,         // Standard parallel 2
+                Double.NaN,         // Scale factor
+                40000,              // False easting
+                60000);             // False Northing
+        final double delta = (1.0 / 60) / 1852;                 // Approximately 1 metre.
+        derivativeDeltas = new double[] {delta, delta};
+        tolerance = Formulas.LINEAR_TOLERANCE / 100;
+        verifyDerivative(30, 27);
+        verifyDerivative(27, 20);
+        verifyDerivative(40, 25);
     }
 }

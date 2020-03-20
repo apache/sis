@@ -20,6 +20,7 @@ import java.util.EnumMap;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.ParameterDescriptor;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;
 
@@ -103,6 +104,11 @@ public class AzimuthalEquidistant extends NormalizedProjection {
     /**
      * Converts the specified (λ,φ) coordinate and stores the (<var>x</var>,<var>y</var>) result in {@code dstPts}.
      *
+     * @param  srcPts    source point coordinate, as (<var>longitude</var>, <var>latitude</var>) in radians.
+     * @param  srcOff    the offset of the single coordinate to be converted in the source array.
+     * @param  dstPts    the array into which the converted coordinate is returned (may be the same than {@code srcPts}).
+     * @param  dstOff    the offset of the location of the converted coordinate that is stored in the destination array.
+     * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
      * @throws ProjectionException if the coordinate can not be converted.
@@ -112,27 +118,51 @@ public class AzimuthalEquidistant extends NormalizedProjection {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double λ    = srcPts[srcOff  ];
-        final double φ    = srcPts[srcOff+1];
-        final double cosλ = cos(λ);
-        final double sinλ = sin(λ);
-        final double cosφ = cos(φ);
-        final double sinφ = sin(φ);
-        final double c    = acos(sinφ0*sinφ + cosφ0*cosφ*cosλ);
-        final double k    = abs(c) >= ANGULAR_TOLERANCE ? c/sin(c) : 1;
+        final double  λ     = srcPts[srcOff  ];
+        final double  φ     = srcPts[srcOff+1];
+        final double  cosλ  = cos(λ);
+        final double  sinλ  = sin(λ);
+        final double  cosφ  = cos(φ);
+        final double  sinφ  = sin(φ);
+        final double  cosc  = sinφ0*sinφ + cosφ0*cosφ*cosλ;
+        final double  c     = acos(cosc);
+        final boolean ind   = abs(c) < ANGULAR_TOLERANCE;
+        final double  k     = ind ? 1 : c/sin(c);
+        final double  cφcλ  = cosφ * cosλ;
+        final double  cφsλ  = cosφ * sinλ;
+        final double  x     = k * cφsλ;
+        final double  y     = k * (cosφ0*sinφ - sinφ0*cφcλ);
         if (dstPts != null) {
-            dstPts[dstOff  ] = k * cosφ*sinλ;
-            dstPts[dstOff+1] = k * (cosφ0*sinφ - sinφ0*cosφ*cosλ);
+            dstPts[dstOff  ] = x;
+            dstPts[dstOff+1] = y;
         }
         if (!derivate) {
             return null;
         }
-        throw new ProjectionException("Derivative not yet implemented.");
+        /*
+         * Formulas below can be verified with Maxima.
+         *
+         * https://svn.apache.org/repos/asf/sis/analysis/Azimuthal%20Equidistant%20(Spherical).wxmx
+         */
+        final double t    = ind ? 1./3 : (1/k - cosc) / (1 - cosc*cosc);
+        final double sφcλ = sinφ * cosλ;
+        final double tλ   = cφsλ * cosφ0*t;
+        final double tφ   = (cosφ0*sφcλ - sinφ0*cosφ) * t;
+        return new Matrix2(x*tλ + k*cφcλ,                           // ∂x/∂λ
+                           x*tφ - k*sinλ*sinφ,                      // ∂x/∂φ
+                           y*tλ + x*sinφ0,                          // ∂y/∂λ
+                           y*tφ + k*(sinφ0*sφcλ + cosφ0*cosφ));     // ∂y/∂φ
     }
 
     /**
      * Converts the specified (<var>x</var>,<var>y</var>) coordinates
      * and stores the result in {@code dstPts} (angles in radians).
+     *
+     * @param  srcPts  the array containing the source point coordinate, as linear distance on a unit sphere or ellipse.
+     * @param  srcOff  the offset of the point to be converted in the source array.
+     * @param  dstPts  the array into which the converted point coordinate is returned (may be the same than {@code srcPts}).
+     * @param  dstOff  the offset of the location of the converted point that is stored in the destination array.
+     * @throws ProjectionException if the point can not be converted.
      */
     @Override
     protected void inverseTransform(final double[] srcPts, final int srcOff,

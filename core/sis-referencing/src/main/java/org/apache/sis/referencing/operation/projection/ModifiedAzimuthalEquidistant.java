@@ -23,8 +23,6 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
@@ -118,10 +116,11 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
     @Workaround(library="JDK", version="1.8")
     private ModifiedAzimuthalEquidistant(final Initializer initializer) {
         super(initializer);
-        final double ν0, f;
+        final double axisRatio, ν0, f;
+        axisRatio   = initializer.axisLengthRatio().doubleValue();
         ν0          = initializer.radiusOfCurvature(sinφ0);
         ℯ2_ν0_sinφ0 = eccentricitySquared * ν0 * sinφ0;
-        f           = eccentricity / sqrt(1 - eccentricitySquared);
+        f           = eccentricity / axisRatio;                 // √(1 - ℯ²) = b/a
         G           = f * sinφ0;
         Hp          = f * cosφ0;
         Bp          = 3*eccentricitySquared * (sinφ0*cosφ0) / (1 - eccentricitySquared);
@@ -181,6 +180,7 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
                + (s3/8   *  GH*(1 - 2*H2))
                + (s4/120 * (H2*(4 - 7*H2) - 3*(G*G)*(1 - 7*H2)))
                - (s5/48  * GH);
+
         if (dstPts != null) {
             dstPts[dstOff  ] = c * sinα;
             dstPts[dstOff+1] = c * cosα;
@@ -219,17 +219,5 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
         dstPts[dstOff  ]  = asin(sinα*sinJ / cosΨ);
         dstPts[dstOff+1]  = atan((1 - eccentricitySquared*sinφ0*K / sinΨ) * (sinΨ/cosΨ)
                                / (1 - eccentricitySquared));
-    }
-
-    /**
-     * Compares the given object with this transform for equivalence.
-     */
-    @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (super.equals(object, mode)) {
-            final ModifiedAzimuthalEquidistant that = (ModifiedAzimuthalEquidistant) object;
-            return Numerics.epsilonEqual(ℯ2_ν0_sinφ0, that.ℯ2_ν0_sinφ0, mode);
-        }
-        return false;
     }
 }
