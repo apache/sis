@@ -24,16 +24,24 @@ import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.internal.coverage.j2d.BufferedGridCoverage;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
 /**
@@ -53,13 +61,14 @@ public class GridCoverageBuilder {
     private int bufferHeight = -1;
     private int bufferNbSample = -1;
     private GridGeometry grid;
+    private final Set<Integer> flippedAxis = new HashSet<>();
 
     /**
      * Sets coverage data rendered image.
      *
      * @param image The rendered image to be wrapped by {@code GridCoverage2D}, not {@code null}.
      */
-    public void setValues(RenderedImage image) {
+    public GridCoverageBuilder setValues(RenderedImage image) {
         ArgumentChecks.ensureNonNull("image", image);
         this.image = image;
         this.raster = null;
@@ -67,6 +76,7 @@ public class GridCoverageBuilder {
         this.bufferWidth = -1;
         this.bufferHeight = -1;
         this.bufferNbSample = -1;
+        return this;
     }
 
     /**
@@ -74,7 +84,7 @@ public class GridCoverageBuilder {
      *
      * @param raster The raster to be wrapped by {@code GridCoverage2D}, not {@code null}.
      */
-    public void setValues(WritableRaster raster) {
+    public GridCoverageBuilder setValues(WritableRaster raster) {
         ArgumentChecks.ensureNonNull("raster", raster);
         this.image = null;
         this.raster = raster;
@@ -82,6 +92,7 @@ public class GridCoverageBuilder {
         this.bufferWidth = -1;
         this.bufferHeight = -1;
         this.bufferNbSample = -1;
+        return this;
     }
 
 //    /**
@@ -156,7 +167,7 @@ public class GridCoverageBuilder {
      *
      * @param data the coverage datas, not {@code null}.
      */
-    public void setValues(DataBuffer data) {
+    public GridCoverageBuilder setValues(DataBuffer data) {
         ArgumentChecks.ensureNonNull("data", data);
         this.image = null;
         this.raster = null;
@@ -164,6 +175,7 @@ public class GridCoverageBuilder {
         this.bufferWidth = -1;
         this.bufferHeight = -1;
         this.bufferNbSample = -1;
+        return this;
     }
 
     private void setValues(DataBuffer data, int width, int height) {
@@ -182,8 +194,8 @@ public class GridCoverageBuilder {
      *
      * @param envelope The new grid geometry envelope, or {@code null}.
      */
-    public void setDomain(Envelope envelope) {
-        setDomain(envelope == null ? null : new GridGeometry(null, envelope));
+    public GridCoverageBuilder setDomain(Envelope envelope) {
+        return setDomain(envelope == null ? null : new GridGeometry(null, envelope));
     }
 
     /**
@@ -191,8 +203,9 @@ public class GridCoverageBuilder {
      *
      * @param grid The new grid geometry, or {@code null}.
      */
-    public void setDomain(GridGeometry grid) {
+    public GridCoverageBuilder setDomain(GridGeometry grid) {
         this.grid = grid;
+        return this;
     }
 
     /**
@@ -200,8 +213,9 @@ public class GridCoverageBuilder {
      *
      * @param range The new sample dimensions, or {@code null}.
      */
-    public void setRanges(final SampleDimension... range) {
+    public GridCoverageBuilder setRanges(final SampleDimension... range) {
         this.ranges = (range == null) ? null : new ArrayList<>(Arrays.asList(range));
+        return this;
     }
 
     /**
@@ -209,8 +223,23 @@ public class GridCoverageBuilder {
      *
      * @param range The new sample dimensions, or {@code null}.
      */
-    public void setRanges(Collection<? extends SampleDimension> range) {
+    public GridCoverageBuilder setRanges(Collection<? extends SampleDimension> range) {
         this.ranges = (range == null) ? null : new ArrayList<>(range);
+        return this;
+    }
+
+    /**
+     * When building coverage with a grid geometry without a grid to crs transform
+     * the grid to crs is computed automaticaly.
+     * The default behavior creates a grid geometry with increasing values on all
+     * axis. This method allows to reverse direction on an axis.
+     *
+     * @param dimension
+     */
+    public GridCoverageBuilder flipAxis(int dimension) {
+        ArgumentChecks.ensurePositive("idx", dimension);
+        flippedAxis.add(dimension);
+        return this;
     }
 
     /**
@@ -224,14 +253,15 @@ public class GridCoverageBuilder {
      */
     public GridCoverage build() {
 
-        if (image != null) {
-            return new GridCoverage2D(grid, ranges, image);
-        } else if (raster != null) {
+        GridGeometry grid = this.grid;
+        List<SampleDimension> ranges = this.ranges;
+        RenderedImage image = this.image;
 
+        //create an image from raster
+        if (raster != null) {
             final int dataType = raster.getSampleModel().getDataType();
             final int numBands = raster.getSampleModel().getNumBands();
 
-            List<SampleDimension> ranges = this.ranges;
             if (ranges == null) {
                 ranges = new ArrayList<>(numBands);
                 for (int i = 0; i < numBands; i++) {
@@ -240,13 +270,14 @@ public class GridCoverageBuilder {
             }
 
             final ColorModel colors = ColorModelFactory.createColorModel(ranges.toArray(new SampleDimension[0]), 0, dataType, ColorModelFactory.GRAYSCALE);
-            final BufferedImage image = new BufferedImage(colors, raster, false, null);
+            image = new BufferedImage(colors, raster, false, null);
+        }
+
+        if (image != null) {
+            grid = addExtentIfAbsent(grid, image.getWidth(), image.getHeight(), flippedAxis);
+            //use provided ranges, even if null, GridCoverage2D makes a better work at building them
             return new GridCoverage2D(grid, this.ranges, image);
-
         } else if (buffer != null) {
-
-            GridGeometry grid = this.grid;
-            List<SampleDimension> ranges = this.ranges;
 
             //verify and enrich grid geometry
             if (bufferWidth != -1) {
@@ -260,7 +291,7 @@ public class GridCoverageBuilder {
                         throw new IllegalGridGeometryException("Grid height differ from buffer height, expected " + bufferHeight + " found " + extent.getSize(1));
                     }
                 } else {
-                    grid = addExtentIfAbsent(grid, bufferWidth, bufferHeight);
+                    grid = addExtentIfAbsent(grid, bufferWidth, bufferHeight, flippedAxis);
                 }
             }
             //verify sample dimensions
@@ -287,7 +318,7 @@ public class GridCoverageBuilder {
      * If the given domain does not have a {@link GridExtent}, creates a new grid geometry
      * with an extent of given size.
      */
-    private static GridGeometry addExtentIfAbsent(GridGeometry domain, int width, int height) {
+    private static GridGeometry addExtentIfAbsent(GridGeometry domain, int width, int height, Set<Integer> flippedAxis) {
         if (domain == null) {
             GridExtent extent = new GridExtent(width, height);
             domain = new GridGeometry(extent, PixelInCell.CELL_CENTER, null, null);
@@ -309,13 +340,55 @@ public class GridCoverageBuilder {
                 if (!ArraysExt.contains(axisTypes, DimensionNameType.COLUMN)) axisTypes[0] = DimensionNameType.COLUMN;
                 if (!ArraysExt.contains(axisTypes, DimensionNameType.ROW))    axisTypes[1] = DimensionNameType.ROW;
                 final GridExtent extent = new GridExtent(axisTypes, low, high, true);
-                try {
-                    domain = new GridGeometry(domain, extent, null);
-                } catch (TransformException e) {
-                    throw new IllegalGridGeometryException(e);                  // Should never happen.
+                if (domain.isDefined(GridGeometry.GRID_TO_CRS)) {
+                    try {
+                        domain = new GridGeometry(domain, extent, null);
+                    } catch (TransformException e) {
+                        throw new IllegalGridGeometryException(e);                  // Should never happen.
+                    }
+                } else if (flippedAxis.isEmpty()) {
+                    domain = new GridGeometry(extent, domain.envelope);
+                } else {
+                    // create transform with flipped axis
+                    boolean nilEnvelope = true;
+                    final ImmutableEnvelope env = ImmutableEnvelope.castOrCopy(domain.envelope);
+                    if (env == null || ((nilEnvelope = env.isAllNaN()) && env.getCoordinateReferenceSystem() == null)) {
+                        //do nothing
+                    } else if (!nilEnvelope) {
+                        /*
+                         * If we have both the extent and an envelope with at least one non-NaN coordinates,
+                         * create the `cornerToCRS` transform. The `gridToCRS` calculation uses the knowledge
+                         * that all scale factors are on diagonal with no sign reversal, which allows simpler
+                         * calculation than full matrix multiplication. Use double-double arithmetic everywhere.
+                         */
+                        final MatrixSIS affine = extent.cornerToCRS(env);
+                        final MathTransform cornerToCRS = MathTransforms.linear(affine);
+                        final int srcDim = cornerToCRS.getSourceDimensions();       // Translation column in matrix.
+                        final int tgtDim = cornerToCRS.getTargetDimensions();       // Number of matrix rows before last row.
+                        for (int j=0; j<tgtDim; j++) {
+                            final DoubleDouble scale  = (DoubleDouble) affine.getNumber(j, j);
+                            final DoubleDouble offset = (DoubleDouble) affine.getNumber(j, srcDim);
+                            scale.multiply(0.5);
+                            offset.add(scale);
+                            affine.setNumber(j, srcDim, offset);
+                        }
+                        MathTransform gridToCRS = MathTransforms.linear(affine);
+
+                        //apply flipped axis
+                        final MatrixSIS flip = Matrices.createDiagonal(affine.getNumRow(), affine.getNumCol());
+                        for (Integer i : flippedAxis) {
+                            flip.setElement(i, i, -1);
+                            flip.setElement(i, srcDim, extent.getSize(i, true));
+                        }
+
+                        gridToCRS = MathTransforms.concatenate(MathTransforms.linear(flip), gridToCRS);
+
+                        domain = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, env.getCoordinateReferenceSystem());
+                    }
                 }
             }
         }
         return domain;
     }
 }
+

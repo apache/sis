@@ -23,11 +23,14 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.NullArgumentException;
 import org.junit.Assert;
 import org.junit.Test;
+import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.MathTransform;
 
 /**
  *
@@ -209,4 +212,36 @@ public class GridCoverageBuilderTest extends TestCase {
 
     }
 
+    /**
+     * Tests {@link GridCoverageBuilder#flipAxis(int)}.
+     */
+    @Test
+    public void flippedAxisTest() {
+
+        final RenderedImage image = new BufferedImage(360, 180, BufferedImage.TYPE_INT_ARGB);
+
+        final GeneralEnvelope domain = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
+        domain.setRange(0, -180, +180);
+        domain.setRange(1, -90, +90);
+
+        final GridCoverageBuilder builder = new GridCoverageBuilder();
+        builder.setValues(image);
+        builder.setDomain(domain);
+
+        { //check positive increasing grid to crs
+            GridCoverage coverage = builder.build();
+            Assert.assertTrue(domain.equals(coverage.getGridGeometry().getEnvelope(), 0.0, false));
+            MathTransform gridToCRS = coverage.getGridGeometry().getGridToCRS(PixelInCell.CELL_CENTER);
+            Assert.assertEquals(new AffineTransform2D(1, 0, 0, 1, -179.5, -89.5), gridToCRS);
+        }
+
+        { //check negative increasing grid to crs
+            builder.flipAxis(1);
+            GridCoverage coverage = builder.build();
+            Assert.assertTrue(domain.equals(coverage.getGridGeometry().getEnvelope(), 0.0, false));
+            MathTransform gridToCRS = coverage.getGridGeometry().getGridToCRS(PixelInCell.CELL_CENTER);
+            Assert.assertEquals(new AffineTransform2D(1, 0, 0, -1, -179.5, 89.5), gridToCRS);
+        }
+
+    }
 }
