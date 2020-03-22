@@ -127,4 +127,15 @@ public final class JDK9 {
         name = (separator >= 1) ? name.substring(0, separator) : "";
         return name;
     }
+
+    /**
+     * Place holder for {@code Math.multiplyFull​(int, int)}.
+     *
+     * @param  x  the first value.
+     * @param  y  the second value.
+     * @return Product of the two values.
+     */
+    public static long multiplyFull​(int x, int y) {
+        return ((long) x) * ((long) y);
+    }
 }

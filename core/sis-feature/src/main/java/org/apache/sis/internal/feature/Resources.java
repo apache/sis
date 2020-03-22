@@ -222,6 +222,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IncompatibleTile_2 = 35;
 
         /**
+         * Data buffer capacity is insufficient for a grid of {0} cells × {1} bands. Missing {2}
+         * elements.
+         */
+        public static final short InsufficientBufferCapacity_3 = 71;
+
+        /**
          * Invalid or unsupported “{1}” expression at index {0}.
          */
         public static final short InvalidExpression_2 = 56;

@@ -176,7 +176,7 @@ final class CanvasContext extends CoordinateOperationContext {
         /*
          * Estimate spatial resolution at the point of interest. The calculation is done in
          * (longitude, latitude, height) space where the height is optional. The angles are
-         * converted to meters using the authalic radius.
+         * converted to meters using the radius of conformal sphere.
          */
         if (!(resolution > 0)) {
             final double[] poi = canvas.getObjectivePOI();

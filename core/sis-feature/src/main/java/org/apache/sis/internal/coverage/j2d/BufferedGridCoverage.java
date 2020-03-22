@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
+import java.util.Collection;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferDouble;
@@ -25,15 +26,18 @@ import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.RasterFormatException;
 import java.awt.image.RenderedImage;
-import java.util.Collection;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.coverage.grid.ImageRenderer;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+
+// Branch-specific imports
+import org.apache.sis.internal.jdk9.JDK9;
 import org.opengis.coverage.CannotEvaluateException;
 
 
@@ -58,24 +62,45 @@ public class BufferedGridCoverage extends GridCoverage {
      * Constructs a grid coverage using the specified grid geometry, sample dimensions and data buffer.
      * This method stores the given buffer by reference (no copy).
      *
-     * @param grid   the grid extent, CRS and conversion from cell indices to CRS.
-     * @param bands  sample dimensions for each image band.
-     * @param data   the sample values, potentially multi-banded.
+     * @param  domain  the grid extent, CRS and conversion from cell indices to CRS.
+     * @param  range   sample dimensions for each image band.
+     * @param  data    the sample values, potentially multi-banded.
+     * @throws NullPointerException if an argument is {@code null}.
+     * @throws IllegalArgumentException if the data buffer has an incompatible number of banks.
+     * @throws IllegalGridGeometryException if the grid extent is larger than the data buffer capacity.
+     * @throws ArithmeticException if the grid extent is larger than 64 bits integer capacity.
      */
-    public BufferedGridCoverage(final GridGeometry grid, final Collection<? extends SampleDimension> bands, final DataBuffer data) {
-        super(grid, bands);
+    public BufferedGridCoverage(final GridGeometry domain, final Collection<? extends SampleDimension> range, final DataBuffer data) {
+        super(domain, range);
         this.data = data;
         ArgumentChecks.ensureNonNull("data", data);
-
-        //verify buffer size
-        GridExtent extent = grid.getExtent();
-        long expectedSize = extent.getSize(0) * bands.size();
-        for (int i = 1; i <extent.getDimension(); i++) {
-            expectedSize *= extent.getSize(i);
+        /*
+         * The buffer shall either contain all values in a single bank (pixel interleaved sample model)
+         * or contain as many banks as bands (banded sample model).
+         */
+        final int numBands = range.size();
+        final int numBanks = data.getNumBanks();
+        if (numBanks != 1 && numBands != numBands) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedBandCount_2, numBands, numBands));
         }
-        long buffersize = Math.multiplyExact(data.getSize(), data.getNumBanks());
-        if (buffersize < expectedSize) {
-            throw new IllegalGridGeometryException("Expecting a buffer size of at least " + expectedSize + " to contain all samples from given grid geometry, but buffer is only " + buffersize);
+        /*
+         * Verify that the buffer has enough elements for all cells in grid extent.
+         * Note that the buffer may have all elements in a single bank.
+         */
+        long expectedSize = numBands;
+        final GridExtent extent = domain.getExtent();
+        for (int i = extent.getDimension(); --i >= 0;) {
+            expectedSize = Math.multiplyExact(expectedSize, extent.getSize(i));
+        }
+        final long bufferSize = JDK9.multiplyFull(data.getSize(), numBanks);
+        if (bufferSize < expectedSize) {
+            final StringBuilder b = new StringBuilder();
+            for (int i=0; i < extent.getDimension(); i++) {
+                if (i != 0) b.append(" × ");
+                b.append(extent.getSize(i));
+            }
+            throw new IllegalGridGeometryException(Resources.format(
+                    Resources.Keys.InsufficientBufferCapacity_3, b, numBands, expectedSize - bufferSize));
         }
     }
 

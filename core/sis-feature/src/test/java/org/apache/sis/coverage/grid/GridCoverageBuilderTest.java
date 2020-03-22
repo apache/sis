@@ -43,7 +43,7 @@ import org.opengis.referencing.operation.MathTransform;
 public class GridCoverageBuilderTest extends TestCase {
 
     /**
-     * Tests {@link GridCoverageBuilder#setValues(Image)}.
+     * Tests {@link GridCoverageBuilder#setValues(RenderedImage)}.
      */
     @Test
     public void createFromImageTest() {
@@ -105,7 +105,7 @@ public class GridCoverageBuilderTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridCoverageBuilder#setValues(Raster)}.
+     * Tests {@link GridCoverageBuilder#setValues(WritableRaster)}.
      */
     @Test
     public void createFromRasterTest() {

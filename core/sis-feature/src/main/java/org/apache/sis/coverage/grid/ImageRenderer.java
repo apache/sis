@@ -444,13 +444,9 @@ public class ImageRenderer {
          * Add the offset specified by the user (if any), or the default offset. The default is 0, 1, 2…
          * for interleaved sample model (all bands in one bank) and 0, 0, 0… for banded sample model.
          */
-        if (bandOffsets != null) {
+        if (bandOffsets != null || isInterleaved) {
             for (int i=0; i<offsets.length; i++) {
-                offsets[i] = Math.addExact(offsets[i], bandOffsets[i]);
-            }
-        } else if (isInterleaved) {
-            for (int i=1; i<offsets.length; i++) {
-                offsets[i] = Math.addExact(offsets[i], i);
+                offsets[i] = Math.addExact(offsets[i], (bandOffsets != null) ? bandOffsets[i] : i);
             }
         }
         final Point location = new Point(imageX, imageY);
