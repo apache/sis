@@ -44,6 +44,7 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
+
 /**
  * Helper class for the creation of {@link GridCoverage} instances. This builder can creates the
  * parameters to be given to {@linkplain GridCoverage2D} and {@linkplain BufferedGridCoverage}

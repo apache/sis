@@ -18,151 +18,138 @@ package org.apache.sis.coverage.grid;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferInt;
+import java.awt.image.DataBufferByte;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.NullArgumentException;
-import org.junit.Assert;
+import org.apache.sis.test.TestCase;
 import org.junit.Test;
-import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.operation.MathTransform;
+
+import static org.junit.Assert.*;
+
 
 /**
- *
  * Tests the {@link GridCoverageBuilder} helper class.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
  */
-public class GridCoverageBuilderTest extends TestCase {
-
+public final strictfp class GridCoverageBuilderTest extends TestCase {
     /**
      * Tests {@link GridCoverageBuilder#setValues(RenderedImage)}.
      */
     @Test
-    public void createFromImageTest() {
-
-        final RenderedImage image = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
-
+    public void testBuildFromImage() {
+        final RenderedImage image = new BufferedImage(5, 8, BufferedImage.TYPE_INT_ARGB);
         final GridCoverageBuilder builder = new GridCoverageBuilder();
-        builder.setValues(image);
-
-        { //sample dimensions and an undefined grid geometry should be created
-            GridCoverage coverage = builder.build();
-            Assert.assertEquals(4, coverage.getSampleDimensions().size());
-            Assert.assertFalse(coverage.getGridGeometry().isDefined(GridGeometry.CRS));
-            Assert.assertFalse(coverage.getGridGeometry().isDefined(GridGeometry.ENVELOPE));
-            Assert.assertFalse(coverage.getGridGeometry().isDefined(GridGeometry.GRID_TO_CRS));
-        }
-
-        { //should cause an exceptin number of sample dimensions do not match
-            builder.setRanges(new SampleDimension.Builder().setName(0).build());
-            try {
-                GridCoverage coverage = builder.build();
-                Assert.fail("Wrong number of sample dimensions, build should fail");
-            } catch (IllegalArgumentException ex) {
-                //ok
-            }
-        }
-
-        { //number of sample matches, should build correctly
-            final SampleDimension r0 = new SampleDimension.Builder().setName(0).build();
-            final SampleDimension r1 = new SampleDimension.Builder().setName(1).build();
-            final SampleDimension r2 = new SampleDimension.Builder().setName(2).build();
-            final SampleDimension r3 = new SampleDimension.Builder().setName(3).build();
-            builder.setRanges(r0, r1, r2, r3);
-            GridCoverage coverage = builder.build();
-        }
-
-        { //should cause an exceptin extent size do not match
-            final GeneralEnvelope env = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
-            env.setRange(0, 0, 10);
-            env.setRange(1, 0, 10);
-            final GridGeometry grid = new GridGeometry(new GridExtent(8, 6), env);
-            builder.setDomain(grid);
-            try {
-                GridCoverage coverage = builder.build();
-                Assert.fail("Wrong extent size, build should fail");
-            } catch (IllegalArgumentException ex) {
-                //ok
-            }
-        }
-
-        { //extent size matches, should build correctly
-            final GeneralEnvelope env = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
-            env.setRange(0, 0, 10);
-            env.setRange(1, 0, 10);
-            final GridGeometry grid = new GridGeometry(new GridExtent(10, 10), env);
-            builder.setDomain(grid);
-            GridCoverage coverage = builder.build();
-        }
+        assertSame(builder, builder.setValues(image));
+        final GridCoverage coverage = testBuilder(builder, 4);
+        assertSame(image, coverage.render(null));
     }
 
     /**
      * Tests {@link GridCoverageBuilder#setValues(WritableRaster)}.
      */
     @Test
-    public void createFromRasterTest() {
-
-        final WritableRaster raster = new BufferedImage(10, 10, BufferedImage.TYPE_3BYTE_BGR).getRaster();
-
+    public void testBuildFromRaster() {
+        final WritableRaster raster = new BufferedImage(5, 8, BufferedImage.TYPE_3BYTE_BGR).getRaster();
         final GridCoverageBuilder builder = new GridCoverageBuilder();
-        builder.setValues(raster);
+        assertSame(builder, builder.setValues(raster));
+        final GridCoverage coverage = testBuilder(builder, 3);
+        assertSame(raster, coverage.render(null).getTile(0,0));
+    }
 
-        { //sample dimensions and an undefined grid geometry should be created
-            GridCoverage coverage = builder.build();
-            Assert.assertEquals(3, coverage.getSampleDimensions().size());
-            Assert.assertFalse(coverage.getGridGeometry().isDefined(GridGeometry.CRS));
-            Assert.assertFalse(coverage.getGridGeometry().isDefined(GridGeometry.ENVELOPE));
-            Assert.assertFalse(coverage.getGridGeometry().isDefined(GridGeometry.GRID_TO_CRS));
+    /**
+     * Tests {@link GridCoverageBuilder#build()} with various properties defined.
+     * Before to invoke this method, caller must invoke a {@code GridCoverageBuilder.setValues(…)} method
+     * with an image or raster of size 5×8 pixels. This method starts by an attempt to build the coverage
+     * with no other property set, then add properties like sample dimensions and grid extent one by one.
+     *
+     * @param  builder   the builder to test. Values must be already defined.
+     * @param  numBands  the expected number of sample dimensions in the coverage.
+     * @return the grid coverage created by the given builder.
+     */
+    private static GridCoverage testBuilder(final GridCoverageBuilder builder, final int numBands) {
+        /*
+         * Test creation with no properties other than data explicity set.
+         * A default list of sample dimensions should be created.
+         * Grid geometry should be undefined except for grid extent.
+         */
+        {
+            final GridCoverage coverage = builder.build();
+            assertEquals("numBands", numBands, coverage.getSampleDimensions().size());
+            final GridGeometry gg = coverage.getGridGeometry();
+            assertFalse("isDefined(CRS)",         gg.isDefined(GridGeometry.CRS));
+            assertFalse("isDefined(ENVELOPE)",    gg.isDefined(GridGeometry.ENVELOPE));
+            assertFalse("isDefined(GRID_TO_CRS)", gg.isDefined(GridGeometry.GRID_TO_CRS));
+            assertTrue ("isDefined(EXTENT)",      gg.isDefined(GridGeometry.EXTENT));
         }
-
-        { //should cause an exceptin number of sample dimensions do not match
-            builder.setRanges(new SampleDimension.Builder().setName(0).build());
+        /*
+         * Test creation with the sample dimensions specified. First, we try with a wrong
+         * number of sample dimensions; that construction shall fail. Then try again with
+         * the right number of sample dimensions. That time, construction shall succeed
+         * and the coverage shall contain the sample dimensions that we specified.
+         */
+        {
+            assertSame(builder, builder.setRanges(new SampleDimension.Builder().setName(0).build()));
             try {
-                GridCoverage coverage = builder.build();
-                Assert.fail("Wrong number of sample dimensions, build should fail");
+                builder.build();
+                fail("Wrong number of sample dimensions, build() should fail.");
             } catch (IllegalArgumentException ex) {
-                //ok
+                assertNotNull(ex.getMessage());
             }
-        }
-
-        { //number of sample matches, should build correctly
-            final SampleDimension r0 = new SampleDimension.Builder().setName(0).build();
-            final SampleDimension r1 = new SampleDimension.Builder().setName(1).build();
-            final SampleDimension r2 = new SampleDimension.Builder().setName(2).build();
-            builder.setRanges(r0, r1, r2);
-            GridCoverage coverage = builder.build();
-        }
-
-        { //should cause an exceptin extent size do not match
-            final GeneralEnvelope env = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
-            env.setRange(0, 0, 10);
-            env.setRange(1, 0, 10);
-            final GridGeometry grid = new GridGeometry(new GridExtent(8, 6), env);
-            builder.setDomain(grid);
-            try {
-                GridCoverage coverage = builder.build();
-                Assert.fail("Wrong extent size, build should fail");
-            } catch (IllegalArgumentException ex) {
-                //ok
+            final SampleDimension[] ranges = new SampleDimension[numBands];
+            for (int i=0; i<numBands; i++) {
+                ranges[i] = new SampleDimension.Builder().setName(i).build();
             }
+            assertSame(builder, builder.setRanges(ranges));
+            final GridCoverage coverage = builder.build();
+            assertArrayEquals("sampleDimensions", ranges, coverage.getSampleDimensions().toArray());
         }
+        /*
+         * Test creation with grid extent and envelope specified. First, we try with a
+         * wrong grid extent; that construction shall fail. Then try again with correct
+         * grid extent.
+         */
+        final GridCoverage coverage = testSetDomain(builder, 5, 8);
+        final Matrix gridToCRS = MathTransforms.getMatrix(coverage.getGridGeometry().getGridToCRS(PixelInCell.CELL_CENTER));
+        assertEquals(2.0, gridToCRS.getElement(0, 0), STRICT);
+        assertEquals(0.5, gridToCRS.getElement(1, 1), STRICT);
+        return coverage;
+    }
 
-        { //extent size matches, should build correctly
-            final GeneralEnvelope env = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
-            env.setRange(0, 0, 10);
-            env.setRange(1, 0, 10);
-            final GridGeometry grid = new GridGeometry(new GridExtent(10, 10), env);
-            builder.setDomain(grid);
-            GridCoverage coverage = builder.build();
+    /**
+     * Tests {@link GridCoverageBuilder#setDomain(GridGeometry)}.
+     *
+     * @param  builder  the builder to test. Values must be already defined.
+     * @param  width    expected width in pixels.
+     * @param  height   expected height in pixels.
+     * @return the grid coverage created by the given builder.
+     */
+    private static GridCoverage testSetDomain(final GridCoverageBuilder builder, final int width, final int height) {
+        final GeneralEnvelope env = new GeneralEnvelope(HardCodedCRS.WGS84);
+        env.setRange(0, 0, 10);     // Scale factor of 2 for grid size of 10.
+        env.setRange(1, 0,  4);     // Scale factor of ½ for grid size of 8.
+        GridGeometry grid = new GridGeometry(new GridExtent(8, 5), env);
+        assertSame(builder, builder.setDomain(grid));
+        try {
+            builder.build();
+            fail("Wrong extent size, build() should fail.");
+        } catch (IllegalArgumentException ex) {
+            assertNotNull(ex.getMessage());
         }
+        grid = new GridGeometry(new GridExtent(width, height), env);
+        assertSame(builder, builder.setDomain(grid));
+        return builder.build();
     }
 
     /**
@@ -170,46 +157,18 @@ public class GridCoverageBuilderTest extends TestCase {
      */
     @Test
     public void createFromBufferTest() {
-
-        final DataBuffer buffer = new DataBufferInt(new int[]{1,2,3,4,5,6},6);
-
+        final DataBuffer buffer = new DataBufferByte(new byte[] {1,2,3,4,5,6}, 6);
         final GridCoverageBuilder builder = new GridCoverageBuilder();
-        builder.setValues(buffer);
-        final SampleDimension r0 = new SampleDimension.Builder().setName(0).build();
-        builder.setRanges(r0);
-
-        { // size is undefined, build should fail
-            try {
-                GridCoverage coverage = builder.build();
-                Assert.fail("Extent is undefined, build should fail");
-            } catch (NullArgumentException ex) {
-                //ok
-            }
+        assertSame(builder, builder.setValues(buffer));
+        assertSame(builder, builder.setRanges(new SampleDimension.Builder().setName(0).build()));
+        try {
+            builder.build();
+            fail("Extent is undefined, build() should fail.");
+        } catch (NullArgumentException ex) {
+            assertNotNull(ex.getMessage());
         }
-
-        { //should cause an exceptin extent size do not match
-            final GeneralEnvelope env = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
-            env.setRange(0, 0, 10);
-            env.setRange(1, 0, 10);
-            final GridGeometry grid = new GridGeometry(new GridExtent(8, 6), env);
-            builder.setDomain(grid);
-            try {
-                GridCoverage coverage = builder.build();
-                Assert.fail("Wrong extent size, build should fail");
-            } catch (IllegalGridGeometryException ex) {
-                //ok
-            }
-        }
-
-        { //extent size matches, should build correctly
-            final GeneralEnvelope env = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
-            env.setRange(0, 0, 10);
-            env.setRange(1, 0, 10);
-            final GridGeometry grid = new GridGeometry(new GridExtent(3, 2), env);
-            builder.setDomain(grid);
-            GridCoverage coverage = builder.build();
-        }
-
+        final GridCoverage coverage = testSetDomain(builder, 3, 2);
+        assertSame(buffer, coverage.render(null).getTile(0,0).getDataBuffer());
     }
 
     /**
@@ -217,31 +176,37 @@ public class GridCoverageBuilderTest extends TestCase {
      */
     @Test
     public void flippedAxisTest() {
-
-        final RenderedImage image = new BufferedImage(360, 180, BufferedImage.TYPE_INT_ARGB);
-
-        final GeneralEnvelope domain = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
+        final RenderedImage image = new BufferedImage(36, 18, BufferedImage.TYPE_INT_ARGB);
+        final GeneralEnvelope domain = new GeneralEnvelope(HardCodedCRS.WGS84);
         domain.setRange(0, -180, +180);
-        domain.setRange(1, -90, +90);
+        domain.setRange(1,  -90,  +90);
 
         final GridCoverageBuilder builder = new GridCoverageBuilder();
-        builder.setValues(image);
-        builder.setDomain(domain);
-
-        { //check positive increasing grid to crs
-            GridCoverage coverage = builder.build();
-            Assert.assertTrue(domain.equals(coverage.getGridGeometry().getEnvelope(), 0.0, false));
-            MathTransform gridToCRS = coverage.getGridGeometry().getGridToCRS(PixelInCell.CELL_CENTER);
-            Assert.assertEquals(new AffineTransform2D(1, 0, 0, 1, -179.5, -89.5), gridToCRS);
+        assertSame(builder, builder.setValues(image));
+        assertSame(builder, builder.setDomain(domain));
+        /*
+         * Test creation with the default axis direction:
+         * latitude values are increasing with row indices.
+         */
+        {
+            final GridCoverage coverage = builder.build();
+            final GridGeometry gg = coverage.getGridGeometry();
+            assertTrue(domain.equals(gg.getEnvelope(), STRICT, false));
+            MathTransform gridToCRS = gg.getGridToCRS(PixelInCell.CELL_CENTER);
+            assertEquals(new AffineTransform2D(10, 0, 0, 10, -175, -85), gridToCRS);
         }
-
-        { //check negative increasing grid to crs
-            builder.flipAxis(1);
-            GridCoverage coverage = builder.build();
-            Assert.assertTrue(domain.equals(coverage.getGridGeometry().getEnvelope(), 0.0, false));
-            MathTransform gridToCRS = coverage.getGridGeometry().getGridToCRS(PixelInCell.CELL_CENTER);
-            Assert.assertEquals(new AffineTransform2D(1, 0, 0, -1, -179.5, 89.5), gridToCRS);
+        /*
+         * Test creation with the reverse Y axis direction:
+         * latitude values are decreasing with row indices.
+         * This is the common orientation for images.
+         */
+        {
+            assertSame(builder, builder.flipAxis(1));
+            final GridCoverage coverage = builder.build();
+            final GridGeometry gg = coverage.getGridGeometry();
+            assertTrue(domain.equals(gg.getEnvelope(), STRICT, false));
+            MathTransform gridToCRS = gg.getGridToCRS(PixelInCell.CELL_CENTER);
+            assertEquals(new AffineTransform2D(10, 0, 0, -10, -175, 85), gridToCRS);
         }
-
     }
 }
