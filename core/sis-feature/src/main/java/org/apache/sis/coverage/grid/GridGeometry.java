@@ -809,7 +809,7 @@ public class GridGeometry implements Serializable {
      * Returns the number of dimensions of the <em>CRS</em>. This is typically the same than the
      * number of {@linkplain #getDimension() grid dimensions}, but not necessarily.
      */
-    private int getTargetDimension() {
+    final int getTargetDimension() {
         if (envelope != null) {
             return envelope.getDimension();     // Most reliable source since that class is final.
         } else if (gridToCRS != null) {

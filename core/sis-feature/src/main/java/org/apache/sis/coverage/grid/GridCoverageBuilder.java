@@ -16,83 +16,323 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.awt.Point;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.internal.coverage.j2d.BufferedGridCoverage;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
-import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.coverage.j2d.TiledImage;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ArraysExt;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.spatial.DimensionNameType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Helper class for the creation of {@link GridCoverage} instances. This builder can creates the
- * parameters to be given to {@linkplain GridCoverage2D} and {@linkplain BufferedGridCoverage}
- * from simpler parameters given to this builder.
+ * Helper class for the creation of {@link GridCoverage} instances.
+ * A grid coverage is a function described by three parts:
  *
- * @author Johann Sorel (Geomatys)
+ * <ul>
+ *   <li>A <cite>domain</cite>, which describes the input values (e.g. geographic coordinates).</li>
+ *   <li>One or more <cite>ranges</cite>, which describe the output values that the coverage can produce.</li>
+ *   <li>The actual values, distributed on a regular grid.</li>
+ * </ul>
+ *
+ * Each of those parts can be set by a {@code setDomain(…)}, {@code setRanges(…)} or {@code setValues(…)} method.
+ * Those methods are overloaded with many variants accepting different kind of arguments. For example values can
+ * be specified as a {@link RenderedImage}, a {@link Raster} or some other types.
+ *
+ * <div class="note"><b>Example:</b>
+ * the easiest way to create a {@link GridCoverage} from a matrix of values is to set the values in a
+ * {@link WritableRaster} and to specify the domain as an {@link Envelope}:
+ *
+ * {@preformat java
+ *     WritableRaster data = Raster.createBandedRaster​(DataBuffer.TYPE_USHORT, width, height, numBands, null);
+ *     for (int y=0; y<height; y++) {
+ *         for (int x=0; x<width; x++) {
+ *             int value = ...;                     // Compute a value here.
+ *             data.setSample(x, y, 0, value);      // Set value in the first band.
+ *         }
+ *     }
+ *     GridCoverageBuilder builder = new GridCoverageBuilder();
+ *     builder.setValues(data).flixAxis(1);
+ *
+ *     Envelope domain = ...;                       // Specify here the "real world" coordinates.
+ *     GridCoverage coverage = builder.setDomain(domain).build();
+ * }
+ * </div>
+ *
+ * Current implementation creates only two-dimensional coverages.
+ * A future version may extend this builder API for creating <var>n</var>-dimensional coverages.
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.1
+ *
+ * @see GridCoverage2D
+ * @see SampleDimension.Builder
+ *
+ * @since 1.1
+ * @module
  */
 public class GridCoverageBuilder {
-
-    private List<SampleDimension> ranges;
-    private WritableRaster raster;
-    private RenderedImage image;
-    private DataBuffer buffer;
-    private int bufferWidth = -1;
-    private int bufferHeight = -1;
-    private int bufferNbSample = -1;
-    private GridGeometry grid;
-    private final Set<Integer> flippedAxis = new HashSet<>();
+    /**
+     * The domain (input) of the coverage function, or {@code null} if unspecified.
+     * If {@code null}, an identify "grid to CRS" transform will be assumed.
+     *
+     * @see #setDomain(GridGeometry)
+     * @see #setDomain(Envelope)
+     */
+    private GridGeometry domain;
 
     /**
-     * Sets coverage data rendered image.
+     * The range (output) of the coverage function, or {@code null} if unspecified.
+     * If non-null, then the size of this list must be equal to the number of bands.
      *
-     * @param image The rendered image to be wrapped by {@code GridCoverage2D}, not {@code null}.
+     * @see #setRanges(Collection)
+     * @see #setRanges(SampleDimension...)
+     * @see #addRange(SampleDimension)
      */
-    public GridCoverageBuilder setValues(RenderedImage image) {
-        ArgumentChecks.ensureNonNull("image", image);
-        this.image = image;
-        this.raster = null;
-        this.buffer = null;
-        this.bufferWidth = -1;
-        this.bufferHeight = -1;
-        this.bufferNbSample = -1;
+    private List<SampleDimension> ranges;
+
+    /**
+     * The band to be made visible (usually 0). All other bands, if any will be hidden.
+     * This is used only for data without color model as {@link #raster} and {@link #buffer}.
+     *
+     * @todo There is not yet a setter method for this property.
+     */
+    private int visibleBand;
+
+    /**
+     * The raster containing the coverage values.
+     * Exactly one of {@code image}, {@link #raster} and {@link #buffer} shall be non-null.
+     *
+     * @see #setValues(RenderedImage)
+     */
+    private RenderedImage image;
+
+    /**
+     * The raster containing the coverage values.
+     * May be a {@link WritableRaster}, in which case a {@link BufferedImage} may be created.
+     * Exactly one of {@link #image}, {@code raster} and {@link #buffer} shall be non-null.
+     *
+     * @see #setValues(Raster)
+     */
+    private Raster raster;
+
+    /**
+     * The data buffer containing the coverage values.
+     * Exactly one of {@link #image}, {@link #raster} and {@code #buffer} shall be non-null.
+     *
+     * @see #setValues(DataBuffer, Dimension)
+     */
+    private DataBuffer buffer;
+
+    /**
+     * The image size, or {@code null} if unspecified. It needs to be specified only
+     * if values were specified as a buffer without information about the grid size.
+     *
+     * @see #setValues(DataBuffer, Dimension)
+     */
+    private Dimension size;
+
+    /**
+     * Set of grid axes to reverse, as a bit mask. For any dimension <var>i</var>, the bit
+     * at {@code 1L << i} is set to 1 if the grid axis at that dimension should be flipped.
+     *
+     * @see #flipAxis(int)
+     */
+    private long flippedAxes;
+
+    /**
+     * Creates an initially empty builder.
+     */
+    public GridCoverageBuilder() {
+    }
+
+    /**
+     * Sets the domain envelope (including its CRS) and/or the transform from grid indices to domain coordinates.
+     * The given {@code GridGeometry} does not need to contain a {@link GridExtent} because that extent will be
+     * computed automatically if needed. However if an extent is present, then it must be consistent with the
+     * size of data given to {@code setValues(…)} method (will be verified at {@link #build()} time).
+     *
+     * @param  grid  the new grid geometry, or {@code null} for removing previous domain setting.
+     * @return {@code this} for method invocation chaining.
+     */
+    public GridCoverageBuilder setDomain(final GridGeometry grid) {
+        domain = grid;
         return this;
     }
 
     /**
-     * Sets coverage data raster.
+     * Sets the domain envelope (including its CRS).
+     * If the given envelope contains a CRS, then that CRS will be the coverage CRS.
+     * A transform from grid indices to domain coordinates will be created automatically.
+     * That transform will map grid dimensions to envelope dimensions in the same order
+     * (i.e. the matrix representation of the affine transform will be diagonal,
+     * ignoring the translation column).
      *
-     * @param raster The raster to be wrapped by {@code GridCoverage2D}, not {@code null}.
+     * <h4>Axis directions</h4>
+     * By default grid indices increase in the same direction than domain coordinates.
+     * When applied to images with pixels located by (<var>column</var>, <var>row</var>) indices,
+     * it means that by default row indices in the image are increasing toward up if the <var>y</var>
+     * coordinates in the coverage domain (e.g. latitude values) are also increasing toward up.
+     * It often results in images flipped vertically, because popular image formats such as PNG
+     * use row indices increasing in the opposite direction (toward down).
+     * This effect can be compensated by invoking <code>{@linkplain #flipAxis(int) flipAxis}(1)</code>.
+     *
+     * <div class="note"><b>Design note:</b>
+     * {@code GridCoverageBuilder} does not flip the <var>y</var> axis by default because not all
+     * file formats have row indices increasing toward down. A counter-example is the netCDF format.
+     * Even if we consider that the majority of images have <var>y</var> axis flipped, things become
+     * less obvious when considering data in more than two dimensions. Having the same default policy
+     * (no flipping) for all dimensions make problem analysis easier.</div>
+     *
+     * {@code GridCoverageBuilder} provides method only for flipping axes.
+     * If more sophisticated operations is desired (for example a rotation),
+     * then {@link #setDomain(GridGeometry)} should be used instead than this method.
+     *
+     * <h4>Default implementation</h4>
+     * The default implementation creates a new {@link GridGeometry} from the given envelope
+     * then invokes {@link #setDomain(GridGeometry)}. Subclasses can override that later method
+     * as a single overriding point for all domain settings.
+     *
+     * @param  domain  envelope of the coverage domain together with its CRS,
+     *                 or {@code null} for removing previous domain setting.
+     * @return {@code this} for method invocation chaining.
+     *
+     * @see #flipAxis(int)
+     * @see GridGeometry#GridGeometry(GridExtent, Envelope)
      */
-    public GridCoverageBuilder setValues(WritableRaster raster) {
-        ArgumentChecks.ensureNonNull("raster", raster);
-        this.image = null;
-        this.raster = raster;
-        this.buffer = null;
-        this.bufferWidth = -1;
-        this.bufferHeight = -1;
-        this.bufferNbSample = -1;
+    public GridCoverageBuilder setDomain(final Envelope domain) {
+        return setDomain(domain == null ? null : new GridGeometry(null, domain));
+    }
+
+    /**
+     * Sets the sample dimensions for all bands.
+     * The list size must be equal to the number of bands in the data specified to
+     * {@code setValues(…)} method (it will be verified at {@link #build()} time).
+     *
+     * @param  bands  the new sample dimensions, or {@code null} for removing previous range setting.
+     * @return {@code this} for method invocation chaining.
+     * @throws IllegalArgumentException if the given list is empty.
+     *
+     * @see SampleDimension.Builder
+     */
+    public GridCoverageBuilder setRanges(final Collection<? extends SampleDimension> bands) {
+        if (bands == null) {
+            ranges = null;
+        } else {
+            ArgumentChecks.ensureNonEmpty("bands", bands);
+            if (ranges instanceof ArrayList<?>) {
+                ranges.clear();
+                ranges.addAll(bands);
+            } else {
+                ranges = new ArrayList<>(bands);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Sets the sample dimensions for all bands.
+     * The array length must be equal to the number of bands in the data specified to
+     * {@code setValues(…)} method (it will be verified at {@link #build()} time).
+     *
+     * @param  bands  the new sample dimensions, or {@code null} for removing previous range setting.
+     * @return {@code this} for method invocation chaining.
+     * @throws IllegalArgumentException if the given array is empty.
+     *
+     * @see SampleDimension.Builder
+     */
+    public GridCoverageBuilder setRanges(final SampleDimension... bands) {
+        if (bands == null) {
+            ranges = null;
+        } else {
+            ArgumentChecks.ensureNonEmpty("bands", bands);
+            ranges = Arrays.asList(bands);
+        }
+        return this;
+    }
+
+    /**
+     * Adds a sample dimension for one band. This method can be invoked repeatedly until the number of
+     * sample dimensions is equal to the number of bands in the data specified to {@code setValues(…)}.
+     *
+     * @param  band  the sample dimension to add.
+     * @return {@code this} for method invocation chaining.
+     *
+     * @see SampleDimension.Builder
+     */
+    public GridCoverageBuilder addRange(final SampleDimension band) {
+        ArgumentChecks.ensureNonNull("band", band);
+        if (!(ranges instanceof ArrayList<?>)) {
+            ranges = (ranges != null) ? new ArrayList<>(ranges) : new ArrayList<>();
+        }
+        ranges.add(band);
+        return this;
+    }
+
+    /**
+     * Sets a two-dimensional slice of sample values as a rendered image.
+     * If {@linkplain #setRanges(SampleDimension...) sample dimensions are specified},
+     * then the {@linkplain java.awt.image.SampleModel#getNumBands() number of bands}
+     * must be equal to the number of sample dimensions.
+     *
+     * <p><b>Note:</b> row indices in an image are usually increasing down, while geographic coordinates
+     * are usually increasing up. Consequently the <code>{@linkplain #flipAxis(int) flipAxis}(1)</code>
+     * method may need to be invoked after this method.</p>
+     *
+     * @param  data  the rendered image to be wrapped in a {@code GridCoverage}. Can not be {@code null}.
+     * @return {@code this} for method invocation chaining.
+     *
+     * @see BufferedImage
+     */
+    public GridCoverageBuilder setValues(final RenderedImage data) {
+        ArgumentChecks.ensureNonNull("data", data);
+        image  = data;
+        raster = null;
+        buffer = null;
+        size   = null;
+        return this;
+    }
+
+    /**
+     * Sets a two-dimensional slice of sample values as a raster.
+     * If {@linkplain #setRanges(SampleDimension...) sample dimensions are specified},
+     * then the {@linkplain Raster#getNumBands() number of bands} must be equal to the
+     * number of sample dimensions.
+     *
+     * <p><b>Note:</b> row indices in a raster are usually increasing down, while geographic coordinates
+     * are usually increasing up. Consequently the <code>{@linkplain #flipAxis(int) flipAxis}(1)</code>
+     * method may need to be invoked after this method.</p>
+     *
+     * @param  data  the raster to be wrapped in a {@code GridCoverage}. Can not be {@code null}.
+     * @return {@code this} for method invocation chaining.
+     *
+     * @see Raster#createBandedRaster(int, int, int, int, Point)
+     */
+    public GridCoverageBuilder setValues(final Raster data) {
+        ArgumentChecks.ensureNonNull("data", data);
+        raster = data;
+        image  = null;
+        buffer = null;
+        size   = null;
         return this;
     }
 
@@ -163,233 +403,183 @@ public class GridCoverageBuilder {
 //    }
 
     /**
-     * Creates a coverage from the given buffer.
-     * This method uses the given buffer unmodified to create the coverage.
+     * Sets a two-dimensional slice of sample values as a Java2D data buffer.
+     * The {@linkplain DataBuffer#getNumBanks() number of banks} will be the number of bands in the image.
+     * If {@linkplain #setRanges(SampleDimension...) sample dimensions are specified}, then the number of
+     * bands must be equal to the number of sample dimensions.
      *
-     * @param data the coverage datas, not {@code null}.
+     * @param  data  the data buffer to be wrapped in a {@code GridCoverage}. Can not be {@code null}.
+     * @param  size  the image size in pixels, or {@code null} if unspecified. If null, then the image
+     *               size will be taken from the {@linkplain GridGeometry#getExtent() grid extent}.
+     * @return {@code this} for method invocation chaining.
+     * @throws IllegalArgumentException if {@code width} or {@code height} is negative or equals to zero.
      */
-    public GridCoverageBuilder setValues(DataBuffer data) {
+    public GridCoverageBuilder setValues(final DataBuffer data, Dimension size) {
         ArgumentChecks.ensureNonNull("data", data);
-        this.image = null;
-        this.raster = null;
-        this.buffer = data;
-        this.bufferWidth = -1;
-        this.bufferHeight = -1;
-        this.bufferNbSample = -1;
-        return this;
-    }
-
-    private void setValues(DataBuffer data, int width, int height) {
-        this.image = null;
-        this.raster = null;
-        this.buffer = data;
-        this.bufferWidth = width;
-        this.bufferHeight = height;
-        this.bufferNbSample = 1;
-    }
-
-    /**
-     * Sets the grid geometry to the given envelope.
-     * This method creates a new {@link GridGeometry}
-     * then invokes {@link #setDomain(GridGeometry)}.
-     *
-     * @param envelope The new grid geometry envelope, or {@code null}.
-     */
-    public GridCoverageBuilder setDomain(Envelope envelope) {
-        return setDomain(envelope == null ? null : new GridGeometry(null, envelope));
-    }
-
-    /**
-     * Sets the grid geometry to the given value.
-     *
-     * @param grid The new grid geometry, or {@code null}.
-     */
-    public GridCoverageBuilder setDomain(GridGeometry grid) {
-        this.grid = grid;
-        return this;
-    }
-
-    /**
-     * Sets all sample dimensions.
-     *
-     * @param range The new sample dimensions, or {@code null}.
-     */
-    public GridCoverageBuilder setRanges(final SampleDimension... range) {
-        this.ranges = (range == null) ? null : new ArrayList<>(Arrays.asList(range));
-        return this;
-    }
-
-    /**
-     * Sets all sample dimensions.
-     *
-     * @param range The new sample dimensions, or {@code null}.
-     */
-    public GridCoverageBuilder setRanges(Collection<? extends SampleDimension> range) {
-        this.ranges = (range == null) ? null : new ArrayList<>(range);
-        return this;
-    }
-
-    /**
-     * When building coverage with a grid geometry without a grid to crs transform
-     * the grid to crs is computed automaticaly.
-     * The default behavior creates a grid geometry with increasing values on all
-     * axis. This method allows to reverse direction on an axis.
-     *
-     * @param dimension
-     */
-    public GridCoverageBuilder flipAxis(int dimension) {
-        ArgumentChecks.ensurePositive("idx", dimension);
-        flippedAxis.add(dimension);
-        return this;
-    }
-
-    /**
-     * Creates the grid coverage.
-     * Current implementation may create a {@link BufferedGridCoverage} or {@link GridCoverage2D},
-     * but future implementations may instantiate different other coverage types.
-     *
-     * @return created coverage
-     * @throws IllegalGridGeometryException if the {@code domain} does not met the above-documented conditions.
-     * @throws IllegalArgumentException if the image number of bands is not the same than the number of sample dimensions.
-     */
-    public GridCoverage build() {
-
-        GridGeometry grid = this.grid;
-        List<SampleDimension> ranges = this.ranges;
-        RenderedImage image = this.image;
-
-        //create an image from raster
-        if (raster != null) {
-            final int dataType = raster.getSampleModel().getDataType();
-            final int numBands = raster.getSampleModel().getNumBands();
-
-            if (ranges == null) {
-                ranges = new ArrayList<>(numBands);
-                for (int i = 0; i < numBands; i++) {
-                    ranges.add(new SampleDimension.Builder().setName(i).build());
-                }
-            }
-
-            final ColorModel colors = ColorModelFactory.createColorModel(ranges.toArray(new SampleDimension[0]), 0, dataType, ColorModelFactory.GRAYSCALE);
-            image = new BufferedImage(colors, raster, false, null);
+        if (size != null) {
+            size = new Dimension(size);
+            ArgumentChecks.ensureStrictlyPositive("width",  size.width);
+            ArgumentChecks.ensureStrictlyPositive("height", size.height);
         }
+        this.size = size;
+        buffer = data;
+        image  = null;
+        raster = null;
+        return this;
+    }
 
-        if (image != null) {
-            grid = addExtentIfAbsent(grid, image.getWidth(), image.getHeight(), flippedAxis);
-            //use provided ranges, even if null, GridCoverage2D makes a better work at building them
-            return new GridCoverage2D(grid, this.ranges, image);
-        } else if (buffer != null) {
+    /**
+     * Reverses axis direction in the specified grid dimension.
+     * For example if grid indices are (<var>column</var>, <var>row</var>),
+     * then {@code flipAxis(1)} will reverse the direction of rows axis.
+     * Invoking this method a second time for the same dimension will cancel the flipping.
+     *
+     * <p>When building coverage with a {@linkplain #setDomain(Envelope) domain specified by an envelope}
+     * (i.e. with no explicit <cite>grid to CRS</cite> transform), the default {@code GridCoverageBuilder}
+     * behavior is to create a {@link GridGeometry} with grid indices increasing in the same direction than
+     * domain coordinates. This method allows to reverse direction for an axis.
+     * The most typical usage is to reverse the direction of the <var>y</var> axis in images.</p>
+     *
+     * @param  dimension  index of the dimension in the grid to reverse direction.
+     * @return {@code this} for method invocation chaining.
+     *
+     * @see #setDomain(Envelope)
+     */
+    public GridCoverageBuilder flipAxis(final int dimension) {
+        ArgumentChecks.ensurePositive("dimension", dimension);
+        if (dimension >= Long.SIZE) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension + 1));
+        }
+        flippedAxes ^= (1L << dimension);
+        return this;
+    }
 
-            //verify and enrich grid geometry
-            if (bufferWidth != -1) {
-                if (grid.isDefined(GridGeometry.EXTENT)) {
-                    GridExtent extent = grid.getExtent();
-                    if (extent.getDimension() != 2) {
-                        throw new IllegalGridGeometryException("Grid dimension differ from buffer size, expected 2 found " + extent.getDimension());
-                    } else if (extent.getSize(0) != bufferWidth) {
-                        throw new IllegalGridGeometryException("Grid width differ from buffer width, expected " + bufferWidth + " found " + extent.getSize(0));
-                    } else if (extent.getSize(1) != bufferHeight) {
-                        throw new IllegalGridGeometryException("Grid height differ from buffer height, expected " + bufferHeight + " found " + extent.getSize(1));
+    /**
+     * Creates the grid coverage from the domain, ranges and values given to setter methods.
+     * The returned coverage is often a {@link GridCoverage2D} instance, but not necessarily.
+     *
+     * @return grid coverage created from specified domain, ranges and sample values.
+     * @throws IllegalStateException if some properties are inconsistent, for example
+     *         {@linkplain GridGeometry#getExtent() grid extent} not matching image size or
+     *         {@linkplain #setRanges(SampleDimension...) number of sample dimensions} not matching
+     *         the number of bands. This exception often wraps an {@link IllegalGridGeometryException},
+     *         {@link IllegalArgumentException} or {@link org.apache.sis.util.NullArgumentException}.
+     */
+    public GridCoverage build() throws IllegalStateException {
+        GridGeometry grid = domain;                                 // May be replaced by an instance with extent.
+        Collection<? extends SampleDimension> bands = ranges;       // May be replaced by a non-null value.
+        /*
+         * If not already done, create the image from the raster. We try to create the most standard objects
+         * when possible: a BufferedImage (from Java2D), then later a GridCoverage2D (from SIS public API).
+         * An exception to this rule is the DataBuffer case: we use a dedicated BufferedGridCoverage class
+         * instead.
+         */
+        try {
+            if (image == null) {
+                if (raster == null) {
+                    if (buffer == null) {
+                        throw new IllegalStateException(missingProperty("values"));
                     }
+                    if (size != null) {
+                        grid = GridCoverage2D.addExtentIfAbsent(grid, new Rectangle(size));
+                        verifyGridExtent(grid.getExtent(), size.width, size.height);
+                    } else if (grid == null) {
+                        throw new IncompleteGridGeometryException(missingProperty("size"));
+                    }
+                    bands = GridCoverage2D.defaultIfAbsent(bands, null, buffer.getNumBanks());
+                    return new BufferedGridCoverage(domainWithAxisFlips(grid), bands, buffer);
+                }
+                /*
+                 * If the band list is null, create a default list of bands because we need
+                 * them for creating the color model. Note that we shall not do that when a
+                 * RenderedImage has been specified because GridCoverage2D constructor will
+                 * will infer better names.
+                 */
+                bands = GridCoverage2D.defaultIfAbsent(bands, null, raster.getNumBands());
+                final int dataType = raster.getSampleModel().getDataType();
+                final ColorModel colors = ColorModelFactory.createColorModel(
+                        bands.toArray(new SampleDimension[bands.size()]),
+                        visibleBand, dataType, ColorModelFactory.GRAYSCALE);
+                /*
+                 * Create an image from the raster. We favor BufferedImage instance when possible,
+                 * and fallback on TiledImage only if the BufferedImage can not be created.
+                 */
+                if (raster instanceof WritableRaster && raster.getMinX() == 0 && raster.getMinY() == 0) {
+                    image = new BufferedImage(colors, (WritableRaster) raster, false, null);
                 } else {
-                    grid = addExtentIfAbsent(grid, bufferWidth, bufferHeight, flippedAxis);
+                    image = new TiledImage(colors, raster.getWidth(), raster.getHeight(), 0, 0, raster);
                 }
             }
-            //verify sample dimensions
-            if (bufferNbSample != -1) {
-                if (ranges != null && ranges.size() != bufferNbSample) {
-                    throw new IllegalArgumentException("Sample dimension list differ from matrix, expected " + bufferNbSample + " found " + ranges.size());
-                }
-                if (ranges == null) {
-                    //create default dimensions
-                    ranges = new ArrayList<>(bufferNbSample);
-                    for (int i = 0; i < bufferNbSample; i++) {
-                        ranges.add(new SampleDimension.Builder().setName(i).build());
-                    }
-                }
-            }
-
-            return new BufferedGridCoverage(grid, ranges, buffer);
-        } else {
-            throw new IllegalArgumentException("Image, buffer or matrix must be set before building coverage.");
+            /*
+             * At this point `image` shall be non-null but `bands` may still be null (it is okay).
+             */
+            return new GridCoverage2D(domainWithAxisFlips(grid), bands, image);
+        } catch (TransformException | NullPointerException | IllegalArgumentException | ArithmeticException e) {
+            throw new IllegalStateException(Resources.format(Resources.Keys.CanNotBuildGridCoverage), e);
         }
     }
 
     /**
-     * If the given domain does not have a {@link GridExtent}, creates a new grid geometry
-     * with an extent of given size.
+     * Returns the {@linkplain #domain} with axis flips applied. If there is no axis to flip,
+     * {@link #domain} is returned unchanged (without completion for missing extent; we leave
+     * that to {@link GridCoverage2D} constructor).
+     *
+     * @see GridCoverage2D#addExtentIfAbsent(GridGeometry, Rectangle)
      */
-    private static GridGeometry addExtentIfAbsent(GridGeometry domain, int width, int height, Set<Integer> flippedAxis) {
-        if (domain == null) {
-            GridExtent extent = new GridExtent(width, height);
-            domain = new GridGeometry(extent, PixelInCell.CELL_CENTER, null, null);
-        } else if (!domain.isDefined(GridGeometry.EXTENT)) {
-            final int dimension = domain.getDimension();
-            if (dimension >= 2) {
-                CoordinateReferenceSystem crs = null;
-                if (domain.isDefined(GridGeometry.CRS)) {
-                    crs = domain.getCoordinateReferenceSystem();
-                }
-                final long[] low  = new long[dimension];
-                final long[] high = new long[dimension];
-                high[0] = width - 1;        // Inclusive.
-                high[1] = height - 1;
-                DimensionNameType[] axisTypes = GridExtent.typeFromAxes(crs, dimension);
-                if (axisTypes == null) {
-                    axisTypes = new DimensionNameType[dimension];
-                }
-                if (!ArraysExt.contains(axisTypes, DimensionNameType.COLUMN)) axisTypes[0] = DimensionNameType.COLUMN;
-                if (!ArraysExt.contains(axisTypes, DimensionNameType.ROW))    axisTypes[1] = DimensionNameType.ROW;
-                final GridExtent extent = new GridExtent(axisTypes, low, high, true);
-                if (domain.isDefined(GridGeometry.GRID_TO_CRS)) {
-                    try {
-                        domain = new GridGeometry(domain, extent, null);
-                    } catch (TransformException e) {
-                        throw new IllegalGridGeometryException(e);                  // Should never happen.
-                    }
-                } else if (flippedAxis.isEmpty()) {
-                    domain = new GridGeometry(extent, domain.envelope);
-                } else {
-                    // create transform with flipped axis
-                    boolean nilEnvelope = true;
-                    final ImmutableEnvelope env = ImmutableEnvelope.castOrCopy(domain.envelope);
-                    if (env == null || ((nilEnvelope = env.isAllNaN()) && env.getCoordinateReferenceSystem() == null)) {
-                        //do nothing
-                    } else if (!nilEnvelope) {
-                        /*
-                         * If we have both the extent and an envelope with at least one non-NaN coordinates,
-                         * create the `cornerToCRS` transform. The `gridToCRS` calculation uses the knowledge
-                         * that all scale factors are on diagonal with no sign reversal, which allows simpler
-                         * calculation than full matrix multiplication. Use double-double arithmetic everywhere.
-                         */
-                        final MatrixSIS affine = extent.cornerToCRS(env);
-                        final MathTransform cornerToCRS = MathTransforms.linear(affine);
-                        final int srcDim = cornerToCRS.getSourceDimensions();       // Translation column in matrix.
-                        final int tgtDim = cornerToCRS.getTargetDimensions();       // Number of matrix rows before last row.
-                        for (int j=0; j<tgtDim; j++) {
-                            final DoubleDouble scale  = (DoubleDouble) affine.getNumber(j, j);
-                            final DoubleDouble offset = (DoubleDouble) affine.getNumber(j, srcDim);
-                            scale.multiply(0.5);
-                            offset.add(scale);
-                            affine.setNumber(j, srcDim, offset);
-                        }
-                        MathTransform gridToCRS = MathTransforms.linear(affine);
-
-                        //apply flipped axis
-                        final MatrixSIS flip = Matrices.createDiagonal(affine.getNumRow(), affine.getNumCol());
-                        for (Integer i : flippedAxis) {
-                            flip.setElement(i, i, -1);
-                            flip.setElement(i, srcDim, extent.getSize(i, true));
-                        }
-
-                        gridToCRS = MathTransforms.concatenate(MathTransforms.linear(flip), gridToCRS);
-
-                        domain = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, env.getCoordinateReferenceSystem());
-                    }
-                }
+    private GridGeometry domainWithAxisFlips(GridGeometry grid) throws TransformException {
+        long f = flippedAxes;
+        if (f != 0) {
+            grid = GridCoverage2D.addExtentIfAbsent(grid, image);
+            if (grid != null && grid.isDefined(GridGeometry.EXTENT)) {
+                final GridExtent extent = grid.getExtent();
+                final int srcDim = extent.getDimension();
+                final MatrixSIS flip = Matrices.createDiagonal(grid.getTargetDimension() + 1, srcDim + 1);
+                do {
+                    final int j = Long.numberOfTrailingZeros(f);
+                    flip.setElement(j, j, -1);
+                    flip.setElement(j, srcDim, extent.getSize(j, false));
+                    f &= ~(1L << j);
+                } while (f != 0);
+                grid = new GridGeometry(grid, extent, MathTransforms.linear(flip));
             }
         }
-        return domain;
+        return grid;
+    }
+
+    /**
+     * Verifies that the grid extent has the expected size. This method does not verify grid location
+     * (low coordinates) because it is okay to have it anywhere. The {@code expectedSize} array can be
+     * shorter than the number of dimensions (i.e. it may be a slice in a data cube); this method uses
+     * {@link GridExtent#getSubspaceDimensions(int)} for determining which dimensions to check.
+     *
+     * <p>This verification can be useful because {@link DataBuffer} does not contain any information
+     * about image size, so {@link BufferedGridCoverage#render(GridExtent)} will rely on the size
+     * provided by the grid extent. If those information do not reflect accurately the image size,
+     * the image will not be rendered properly.</p>
+     *
+     * @param  extent        the extent to verify.
+     * @param  expectedSize  the expected image size.
+     * @throws IllegalGridGeometryException if the extent does not have the expected size.
+     */
+    private static void verifyGridExtent(final GridExtent extent, final int... expectedSize) {
+        final int[] imageAxes = extent.getSubspaceDimensions(expectedSize.length);
+        for (int i=0; i<expectedSize.length; i++) {
+            final int imageSize = expectedSize[i];
+            final long gridSize = extent.getSize(imageAxes[i]);
+            if (imageSize != gridSize) {
+                throw new IllegalGridGeometryException(Resources.format(
+                        Resources.Keys.MismatchedImageSize_3, i, imageSize, gridSize));
+            }
+        }
+    }
+
+    /**
+     * Returns an error message for the exception to thrown when a mandatory property is missing.
+     *
+     * @param  name  name of the missing property.
+     * @return message for the exception to throw.
+     */
+    private static String missingProperty(final String name) {
+        return Errors.format(Errors.Keys.MissingValueForProperty_1, name);
     }
 }
-

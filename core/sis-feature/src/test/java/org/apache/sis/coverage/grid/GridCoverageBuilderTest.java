@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
@@ -29,7 +30,6 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -57,7 +57,7 @@ public final strictfp class GridCoverageBuilderTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridCoverageBuilder#setValues(WritableRaster)}.
+     * Tests {@link GridCoverageBuilder#setValues(Raster)}.
      */
     @Test
     public void testBuildFromRaster() {
@@ -104,7 +104,7 @@ public final strictfp class GridCoverageBuilderTest extends TestCase {
             try {
                 builder.build();
                 fail("Wrong number of sample dimensions, build() should fail.");
-            } catch (IllegalArgumentException ex) {
+            } catch (IllegalStateException ex) {
                 assertNotNull(ex.getMessage());
             }
             final SampleDimension[] ranges = new SampleDimension[numBands];
@@ -144,7 +144,7 @@ public final strictfp class GridCoverageBuilderTest extends TestCase {
         try {
             builder.build();
             fail("Wrong extent size, build() should fail.");
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalStateException ex) {
             assertNotNull(ex.getMessage());
         }
         grid = new GridGeometry(new GridExtent(width, height), env);
@@ -153,19 +153,20 @@ public final strictfp class GridCoverageBuilderTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridCoverageBuilder#setValues(DataBuffer)}.
+     * Tests {@link GridCoverageBuilder#setValues(DataBuffer, Dimension)}.
      */
     @Test
     public void createFromBufferTest() {
         final DataBuffer buffer = new DataBufferByte(new byte[] {1,2,3,4,5,6}, 6);
         final GridCoverageBuilder builder = new GridCoverageBuilder();
-        assertSame(builder, builder.setValues(buffer));
         assertSame(builder, builder.setRanges(new SampleDimension.Builder().setName(0).build()));
+        assertSame(builder, builder.setValues(buffer, null));
         try {
             builder.build();
             fail("Extent is undefined, build() should fail.");
-        } catch (NullArgumentException ex) {
-            assertNotNull(ex.getMessage());
+        } catch (IncompleteGridGeometryException ex) {
+            final String message = ex.getMessage();         // "No value for "size" property" but may be localized.
+            assertTrue(message, message.contains("size"));
         }
         final GridCoverage coverage = testSetDomain(builder, 3, 2);
         assertSame(buffer, coverage.render(null).getTile(0,0).getDataBuffer());

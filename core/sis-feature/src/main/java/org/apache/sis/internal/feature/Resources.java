@@ -68,6 +68,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotAssignCharacteristics_1 = 2;
 
         /**
+         * Can not build the grid coverage.
+         */
+        public static final short CanNotBuildGridCoverage = 72;
+
+        /**
          * Can not compute tile ({0}, {1}).
          */
         public static final short CanNotComputeTile_2 = 66;

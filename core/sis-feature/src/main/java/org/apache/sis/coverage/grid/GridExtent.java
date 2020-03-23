@@ -252,7 +252,7 @@ public class GridExtent implements GridEnvelope, Serializable {
      * @param  width   number of pixels in each row.
      * @param  height  number of pixels in each column.
      */
-    GridExtent(final long xmin, final long ymin, final long width, final long height) {
+    GridExtent(final int xmin, final int ymin, final int width, final int height) {
         this(width, height);
         for (int i=coordinates.length; --i >= 0;) {
             coordinates[i] += ((i & 1) == 0) ? xmin : ymin;
@@ -659,8 +659,8 @@ public class GridExtent implements GridEnvelope, Serializable {
     /**
      * Returns the number of grid coordinates as a double precision floating point value.
      * Invoking this method is equivalent to invoking {@link #getSize(int)} and converting
-     * the result from {@code long} to the {@code double} primitive type,
-     * except that this method does not overflow.
+     * the result from {@code long} to the {@code double} primitive type, except that this
+     * method does not overflow (i.e. does not throw {@link ArithmeticException}).
      *
      * @param  index     the dimension for which to obtain the size.
      * @param  minusOne  {@code true} for returning <var>size</var>−1 instead of <var>size</var>.

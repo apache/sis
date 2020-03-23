@@ -430,7 +430,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      */
     private void negate(final int dimension) {
         if (dimension >= Long.SIZE) {
-            throw new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension));
+            throw new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension + 1));
         }
         negate |= (1L << dimension);
     }

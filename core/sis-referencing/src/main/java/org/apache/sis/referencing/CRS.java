@@ -958,7 +958,7 @@ public final class CRS extends Static {
                 throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, d));
             }
             if (d >= Long.SIZE) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, d));
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, d+1));
             }
             selected |= (1L << d);
         }

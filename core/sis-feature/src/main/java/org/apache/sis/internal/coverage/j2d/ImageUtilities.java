@@ -109,6 +109,23 @@ public final class ImageUtilities extends Static {
     }
 
     /**
+     * Returns the number of bands in the given image, or 0 if the image or its sample model is null.
+     *
+     * @param  image  the image for which to get the number of bands, or {@code null}.
+     * @return number of bands in the specified image, or 0 if the image or its sample model is null.
+     *
+     * @see SampleModel#getNumBands()
+     * @see Raster#getNumBands()
+     */
+    public static int getNumBands(final RenderedImage image) {
+        if (image != null) {
+            final SampleModel sm = image.getSampleModel();
+            if (sm != null) return sm.getNumBands();
+        }
+        return 0;
+    }
+
+    /**
      * If the given image is showing only one band, returns the index of that band.
      * Otherwise returns 0. Image showing only one band are SIS-specific (usually an
      * image show all its bands).

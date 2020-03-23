@@ -97,15 +97,15 @@ public abstract class GridCoverage {
      * and the sample dimensions define the "range" (output) of that function.
      *
      * @param  domain  the grid extent, CRS and conversion from cell indices to CRS.
-     * @param  range   sample dimensions for each image band.
+     * @param  ranges  sample dimensions for each image band.
      * @throws NullPointerException if an argument is {@code null} or if the list contains a null element.
      * @throws IllegalArgumentException if the {@code range} list is empty.
      */
-    protected GridCoverage(final GridGeometry domain, final Collection<? extends SampleDimension> range) {
+    protected GridCoverage(final GridGeometry domain, final Collection<? extends SampleDimension> ranges) {
         ArgumentChecks.ensureNonNull ("domain", domain);
-        ArgumentChecks.ensureNonEmpty("range", range);
+        ArgumentChecks.ensureNonEmpty("ranges", ranges);
         gridGeometry = domain;
-        sampleDimensions = range.toArray(new SampleDimension[range.size()]);
+        sampleDimensions = ranges.toArray(new SampleDimension[ranges.size()]);
         ArgumentChecks.ensureNonEmpty("range", sampleDimensions);
         for (int i=0; i<sampleDimensions.length; i++) {
             ArgumentChecks.ensureNonNullElement("range", i, sampleDimensions[i]);

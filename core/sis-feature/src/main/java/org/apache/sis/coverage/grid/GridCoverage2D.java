@@ -26,6 +26,7 @@ import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
@@ -185,8 +186,15 @@ public class GridCoverage2D extends GridCoverage {
      * @throws ArithmeticException if the distance between grid location and image location exceeds the {@code long} capacity.
      */
     public GridCoverage2D(GridGeometry domain, final Collection<? extends SampleDimension> range, RenderedImage data) {
-        super(domain = addExtentIfAbsent(domain, data = unwrapIfSameSize(data)), defaultIfAbsent(range, data));
-        this.data = data;           // Non-null verified by addExtentIfAbsent(…, data).
+        /*
+         * The complex nesting of method calls below is a workaround for RFE #4093999
+         * ("Relax constraint on placement of this()/super() call in constructors").
+         */
+        super(domain = addExtentIfAbsent(domain, data = unwrapIfSameSize(data)),
+                defaultIfAbsent(range, data, ImageUtilities.getNumBands(data)));
+
+        this.data = data;
+        ArgumentChecks.ensureNonNull("data", data);
         /*
          * Find indices of the two dimensions of the slice. Those dimensions are usually 0 for x and 1 for y,
          * but not necessarily. A two dimensional CRS will be extracted for those dimensions later if needed.
@@ -237,14 +245,33 @@ public class GridCoverage2D extends GridCoverage {
      * with an extent computed from the given image. The new grid will start at the same
      * location than the image and will have the same size.
      *
-     * <p>This static method is a workaround for RFE #4093999
-     * ("Relax constraint on placement of this()/super() call in constructors").</p>
+     * @param  domain  the domain to complete. May be {@code null}.
+     * @param  data    user-supplied image, or {@code null} if missing.
+     * @return the potentially completed domain (may be {@code null}).
      */
-    @Workaround(library="JDK", version="1.8")
-    private static GridGeometry addExtentIfAbsent(GridGeometry domain, final RenderedImage data) {
-        ArgumentChecks.ensureNonNull("data", data);
+    static GridGeometry addExtentIfAbsent(GridGeometry domain, final RenderedImage data) {
+        if (data != null) {
+            domain = addExtentIfAbsent(domain, ImageUtilities.getBounds(data));
+        }
+        return domain;
+    }
+
+    /**
+     * If the given domain does not have a {@link GridExtent}, creates a new grid geometry
+     * with an extent computed from the given image bounds. The new grid will start at the
+     * same location than the image and will have the same size.
+     *
+     * <p>This method does nothing if the given domain already has an extent;
+     * it does not verify that the extent is consistent with image size.
+     * This verification should be done by the caller.</p>
+     *
+     * @param  domain  the domain to complete. May be {@code null}.
+     * @param  bounds  image or raster bounds (can not be {@code null}).
+     * @return the potentially completed domain (may be {@code null}).
+     */
+    static GridGeometry addExtentIfAbsent(GridGeometry domain, final Rectangle bounds) {
         if (domain == null) {
-            GridExtent extent = new GridExtent(data.getMinX(), data.getMinY(), data.getWidth(), data.getHeight());
+            GridExtent extent = new GridExtent(bounds.x, bounds.y, bounds.width, bounds.height);
             domain = new GridGeometry(extent, PixelInCell.CELL_CENTER, null, null);
         } else if (!domain.isDefined(GridGeometry.EXTENT)) {
             final int dimension = domain.getDimension();
@@ -253,7 +280,7 @@ public class GridCoverage2D extends GridCoverage {
                 if (domain.isDefined(GridGeometry.CRS)) {
                     crs = domain.getCoordinateReferenceSystem();
                 }
-                final GridExtent extent = createExtent(dimension, data, crs);
+                final GridExtent extent = createExtent(dimension, bounds, crs);
                 if (domain.isDefined(GridGeometry.GRID_TO_CRS)) try {
                     domain = new GridGeometry(domain, extent, null);
                 } catch (TransformException e) {
@@ -287,7 +314,7 @@ public class GridCoverage2D extends GridCoverage {
      * @see GridGeometry#GridGeometry(GridExtent, Envelope)
      */
     public GridCoverage2D(final Envelope domain, final Collection<? extends SampleDimension> range, final RenderedImage data) {
-        super(createGridGeometry(data, domain), defaultIfAbsent(range, data));
+        super(createGridGeometry(data, domain), defaultIfAbsent(range, data, ImageUtilities.getNumBands(data)));
         this.data = data;   // Non-null verified by createGridGeometry(…, data).
         xDimension   = 0;
         yDimension   = 1;
@@ -315,27 +342,27 @@ public class GridCoverage2D extends GridCoverage {
             }
             crs = envelope.getCoordinateReferenceSystem();
         }
-        return new GridGeometry(createExtent(dimension, data, crs), envelope);
+        return new GridGeometry(createExtent(dimension, ImageUtilities.getBounds(data), crs), envelope);
     }
 
     /**
-     * Creates a grid extent with the low and high coordinates of the given image.
+     * Creates a grid extent with the low and high coordinates of the given image bounds.
      * The coordinate reference system is used for extracting grid axis names, in particular
      * the {@link DimensionNameType#VERTICAL} and {@link DimensionNameType#TIME} dimensions.
      * The {@link DimensionNameType#COLUMN} and {@link DimensionNameType#ROW} dimensions can
      * not be inferred from CRS analysis; they are added from knowledge that we have an image.
      *
      * @param  dimension  number of dimensions.
-     * @param  data       the image for which to create a grid extent.
+     * @param  bounds     bounds of the image for which to create a grid extent.
      * @param  crs        coordinate reference system, or {@code null} if none.
      */
-    private static GridExtent createExtent(final int dimension, final RenderedImage data, final CoordinateReferenceSystem crs) {
+    private static GridExtent createExtent(final int dimension, final Rectangle bounds, final CoordinateReferenceSystem crs) {
         final long[] low  = new long[dimension];
         final long[] high = new long[dimension];
-        low [0] = data.getMinX();
-        low [1] = data.getMinY();
-        high[0] = data.getWidth()  + low[0] - 1;        // Inclusive.
-        high[1] = data.getHeight() + low[1] - 1;
+        low [0] = bounds.x;
+        low [1] = bounds.y;
+        high[0] = bounds.width  + low[0] - 1;        // Inclusive.
+        high[1] = bounds.height + low[1] - 1;
         DimensionNameType[] axisTypes = GridExtent.typeFromAxes(crs, dimension);
         if (axisTypes == null) {
             axisTypes = new DimensionNameType[dimension];
@@ -346,20 +373,26 @@ public class GridCoverage2D extends GridCoverage {
     }
 
     /**
-     * If the sample dimensions are null, creates default sample dimensions
-     * with "gray", "red, green, blue" or "cyan, magenta, yellow" names.
+     * If the sample dimensions are null, creates default sample dimensions with default names.
+     * The default names are "gray", "red, green, blue" or "cyan, magenta, yellow" if the color
+     * model is identified as such, or numbers if the color model is not recognized.
+     *
+     * @param  range     the list of sample dimensions, potentially null.
+     * @param  data      the image for which to build sample dimensions, or {@code null}.
+     * @param  numBands  the number of bands in the given image, or 0 if none.
+     * @return the given list of sample dimensions if it was non-null, or a default list otherwise.
      */
-    private static Collection<? extends SampleDimension> defaultIfAbsent(
-            Collection<? extends SampleDimension> range, final RenderedImage data)
+    static Collection<? extends SampleDimension> defaultIfAbsent(Collection<? extends SampleDimension> range,
+                                                                 final RenderedImage data, final int numBands)
     {
         if (range == null) {
-            final short[] names = ImageUtilities.bandNames(data);
-            final SampleDimension[] sd = new SampleDimension[names.length];
+            final short[] names = (data != null) ? ImageUtilities.bandNames(data) : ArraysExt.EMPTY_SHORT;
+            final SampleDimension[] sd = new SampleDimension[numBands];
             final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
-            for (int i=0; i<names.length; i++) {
+            for (int i=0; i<numBands; i++) {
                 final InternationalString name;
-                final short k = names[0];
-                if (k != 0) {
+                final short k;
+                if (i < names.length && (k = names[i]) != 0) {
                     name = Vocabulary.formatInternational(k);
                 } else {
                     name = Vocabulary.formatInternational(Vocabulary.Keys.Band_1, i+1);

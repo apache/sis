@@ -44,8 +44,12 @@ import org.opengis.coverage.CannotEvaluateException;
 /**
  * A {@link GridCoverage} with data stored in an in-memory Java2D buffer.
  * Those data can be shown as {@link RenderedImage}.
+ * Images are created when {@link #render(GridExtent)} is invoked instead than at construction time.
+ * This delayed construction makes this class better suited to <var>n</var>-dimensional grids since
+ * those grids can not be wrapped into a single {@link RenderedImage}.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
  * @module
@@ -60,7 +64,14 @@ public class BufferedGridCoverage extends GridCoverage {
 
     /**
      * Constructs a grid coverage using the specified grid geometry, sample dimensions and data buffer.
-     * This method stores the given buffer by reference (no copy).
+     * This method stores the given buffer by reference (no copy). The bands in the given buffer can be
+     * stored either in a single bank (pixel interleaved image) or in different banks (banded image).
+     * This class detects automatically which of those two sample models is used.
+     *
+     * <p>Note that {@link DataBuffer} does not contain any information about image size.
+     * Consequently {@link #render(GridExtent)} depends on the domain {@link GridExtent},
+     * which must be accurate. If the extent size does not reflect accurately the image size,
+     * then the image will not be rendered properly.</p>
      *
      * @param  domain  the grid extent, CRS and conversion from cell indices to CRS.
      * @param  range   sample dimensions for each image band.
@@ -87,11 +98,8 @@ public class BufferedGridCoverage extends GridCoverage {
          * Verify that the buffer has enough elements for all cells in grid extent.
          * Note that the buffer may have all elements in a single bank.
          */
-        long expectedSize = numBands;
         final GridExtent extent = domain.getExtent();
-        for (int i = extent.getDimension(); --i >= 0;) {
-            expectedSize = Math.multiplyExact(expectedSize, extent.getSize(i));
-        }
+        final long expectedSize = getSampleCount(extent, numBands);
         final long bufferSize = JDK9.multiplyFull(data.getSize(), numBanks);
         if (bufferSize < expectedSize) {
             final StringBuilder b = new StringBuilder();
@@ -116,12 +124,7 @@ public class BufferedGridCoverage extends GridCoverage {
      */
     public BufferedGridCoverage(final GridGeometry grid, final Collection<? extends SampleDimension> bands, final int dataType) {
         super(grid, bands);
-        long nbSamples = bands.size();
-        final GridExtent extent = grid.getExtent();
-        for (int i = grid.getDimension(); --i >= 0;) {
-            nbSamples = Math.multiplyExact(nbSamples, extent.getSize(i));
-        }
-        final int n = Math.toIntExact(nbSamples);
+        final int n = Math.toIntExact(getSampleCount(grid.getExtent(), bands.size()));
         switch (dataType) {
             case DataBuffer.TYPE_BYTE:   data = new DataBufferByte  (n); break;
             case DataBuffer.TYPE_SHORT:  data = new DataBufferShort (n); break;
@@ -131,6 +134,21 @@ public class BufferedGridCoverage extends GridCoverage {
             case DataBuffer.TYPE_DOUBLE: data = new DataBufferDouble(n); break;
             default: throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownType_1, dataType));
         }
+    }
+
+    /**
+     * Returns the number of cells in the given extent multiplied by the number of bands.
+     *
+     * @param  extent     the extent for which to get the number of cells.
+     * @param  nbSamples  number of bands.
+     * @return number of cells multiplied by the number of bands.
+     * @throws ArithmeticException if the number of samples exceeds 64-bits integer capacity.
+     */
+    private static long getSampleCount(final GridExtent extent, long nbSamples) {
+        for (int i = extent.getDimension(); --i >= 0;) {
+            nbSamples = Math.multiplyExact(nbSamples, extent.getSize(i));
+        }
+        return nbSamples;
     }
 
     /**
