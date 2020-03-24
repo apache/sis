@@ -155,6 +155,8 @@ public final class FeatureOperations extends Static {
      * @param  identification  the name and other information to be given to the operation.
      * @param  referent        the referenced attribute or feature association.
      * @return an operation which is an alias for the {@code referent} property.
+     *
+     * @see Features#getLinkTarget(PropertyType)
      */
     public static Operation link(final Map<String,?> identification, final PropertyType referent) {
         ArgumentChecks.ensureNonNull("referent", referent);

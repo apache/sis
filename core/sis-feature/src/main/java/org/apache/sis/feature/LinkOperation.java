@@ -38,7 +38,7 @@ import org.opengis.feature.PropertyType;
  * The operation acts like a reference to another property.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.1
  * @since   0.6
  * @module
  */
@@ -47,6 +47,11 @@ final class LinkOperation extends AbstractOperation {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 765096861589501215L;
+
+    /**
+     * The parameter descriptor for the "Link" operation, which does not take any parameter.
+     */
+    private static final ParameterDescriptorGroup PARAMETERS = FeatureUtilities.parameters("Link");
 
     /**
      * The type of the result.
@@ -84,7 +89,7 @@ final class LinkOperation extends AbstractOperation {
      */
     @Override
     public ParameterDescriptorGroup getParameters() {
-        return FeatureUtilities.LINK_PARAMS;
+        return PARAMETERS;
     }
 
     /**

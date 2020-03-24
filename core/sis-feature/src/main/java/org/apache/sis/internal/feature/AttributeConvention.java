@@ -403,9 +403,9 @@ public final class AttributeConvention extends Static {
      * @return the default value of the named characteristic in the given property, or {@code null} if none.
      */
     private static Object getCharacteristic(final FeatureType feature, PropertyType property, final String characteristic) {
-        final String referent = FeatureUtilities.linkOf(property);
-        if (referent != null && feature != null) {
-            property = feature.getProperty(referent);
+        final Optional<String> referent = Features.getLinkTarget(property);
+        if (referent.isPresent() && feature != null) {
+            property = feature.getProperty(referent.get());
         }
         if (property instanceof AttributeType<?>) {
             final AttributeType<?> type = ((AttributeType<?>) property).characteristics().get(characteristic);

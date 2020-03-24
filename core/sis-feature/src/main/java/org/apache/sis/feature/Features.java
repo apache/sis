@@ -256,6 +256,26 @@ public final class Features extends Static {
     }
 
     /**
+     * If the given property is a link, returns the name of the referenced property.
+     * A link is an operation created by a call to {@link FeatureOperations#link(Map, PropertyType)},
+     * in which case the value returned by this method is the name of the {@link PropertyType} argument
+     * which has been given to that {@code link(…)} method.
+     *
+     * @param  property  the property to test, or {@code null} if none.
+     * @return the referenced property name if {@code property} is a link, or an empty value otherwise.
+     *
+     * @see FeatureOperations#link(Map, PropertyType)
+     *
+     * @since 1.1
+     */
+    public static Optional<String> getLinkTarget(final PropertyType property) {
+        if (property instanceof LinkOperation) {
+            return Optional.of(((LinkOperation) property).referentName);
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Ensures that all characteristics and property values in the given feature are valid.
      * An attribute is valid if it contains a number of values between the
      * {@linkplain DefaultAttributeType#getMinimumOccurs() minimum} and
