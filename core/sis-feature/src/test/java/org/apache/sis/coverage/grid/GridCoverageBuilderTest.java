@@ -159,7 +159,6 @@ public final strictfp class GridCoverageBuilderTest extends TestCase {
     public void createFromBufferTest() {
         final DataBuffer buffer = new DataBufferByte(new byte[] {1,2,3,4,5,6}, 6);
         final GridCoverageBuilder builder = new GridCoverageBuilder();
-        assertSame(builder, builder.setRanges(new SampleDimension.Builder().setName(0).build()));
         assertSame(builder, builder.setValues(buffer, null));
         try {
             builder.build();
