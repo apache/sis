@@ -31,6 +31,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.BandedSampleConverter;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.measure.NumberRange;
 
@@ -54,12 +55,6 @@ import org.apache.sis.measure.NumberRange;
  * @module
  */
 final class ConvertedGridCoverage extends GridCoverage {
-    /**
-     * The band to make visible when the image is shown on screen.
-     * All other bands, if any, will be computed their result ignored at display time.
-     */
-    static final int VISIBLE_BAND = 0;
-
     /**
      * The coverage containing source values.
      * Sample values will be converted from that coverage using the {@link #converters}.
@@ -217,7 +212,7 @@ final class ConvertedGridCoverage extends GridCoverage {
          * That image should never be null. But if an implementation wants to do so, respect that.
          */
         if (image != null) {
-            final ColorModel colorModel = createColorModel(VISIBLE_BAND, dataType);
+            final ColorModel colorModel = createColorModel(ImageUtilities.getVisibleBand(image), dataType);
             image = BandedSampleConverter.create(image, null, dataType, colorModel, getRanges(), converters);
         }
         return image;
