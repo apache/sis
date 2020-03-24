@@ -180,19 +180,6 @@ class DefaultIterator extends WritablePixelIterator {
     }
 
     /**
-     * Stores the column (x) and row (y) indices of the current pixel.
-     */
-    @Override
-    public void getPosition(final double[] dest, final int offset) {
-        if (x >= lowerX && tileY < tileUpperY) {
-            dest[offset    ] = x;
-            dest[offset + 1] = y;
-        } else {
-            super.getPosition(dest, offset);        // Will cause exception to be thrown.
-        }
-    }
-
-    /**
      * Moves the pixel iterator to the given column (x) and row (y) indices.
      *
      * @param  px  the column index of the pixel to make current.
@@ -201,7 +188,7 @@ class DefaultIterator extends WritablePixelIterator {
      */
     @Override
     public void moveTo(final int px, final int py) {
-        if (px < lowerX || px >= upperX ||  py < lowerY || py >= upperY) {
+        if (px < lowerX || px >= upperX  ||  py < lowerY || py >= upperY) {
             throw new IndexOutOfBoundsException(Resources.format(Resources.Keys.OutOfIteratorDomain_2, px, py));
         }
         if (image != null) {

@@ -163,7 +163,7 @@ public final class Shapes2D extends Static {
      * @param  envelope     the rectangle to transform (may be {@code null}).
      * @param  destination  the destination rectangle (may be {@code envelope}).
      *         If {@code null}, a new rectangle will be created and returned.
-     * @return {@code destination}, or a new rectangle if {@code destination} was non-null and {@code envelope} was null.
+     * @return {@code destination}, or a new rectangle if {@code destination} was null and {@code envelope} was non-null.
      * @throws TransformException if a transform failed.
      *
      * @see #transform(CoordinateOperation, Rectangle2D, Rectangle2D)
@@ -384,7 +384,7 @@ public final class Shapes2D extends Static {
      * @param  envelope     the rectangle to transform (may be {@code null}).
      * @param  destination  the destination rectangle (may be {@code envelope}).
      *         If {@code null}, a new rectangle will be created and returned.
-     * @return {@code destination}, or a new rectangle if {@code destination} was non-null and {@code envelope} was null.
+     * @return {@code destination}, or a new rectangle if {@code destination} was null and {@code envelope} was non-null.
      * @throws TransformException if a transform failed.
      *
      * @see #transform(MathTransform2D, Rectangle2D, Rectangle2D)

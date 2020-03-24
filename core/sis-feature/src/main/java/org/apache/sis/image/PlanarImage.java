@@ -33,6 +33,7 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -283,7 +284,7 @@ public abstract class PlanarImage implements RenderedImage {
     @Override
     public int getTileGridXOffset() {
         // We may have temporary `int` overflow after multiplication but exact result after addition.
-        return Math.toIntExact(getMinX() - getMinTileX() * ((long) getTileWidth()));
+        return Math.toIntExact(getMinX() - JDK9.multiplyFull(getMinTileX(), getTileWidth()));
     }
 
     /**
@@ -297,7 +298,7 @@ public abstract class PlanarImage implements RenderedImage {
      */
     @Override
     public int getTileGridYOffset() {
-        return Math.toIntExact(getMinY() - getMinTileY() * ((long) getTileHeight()));
+        return Math.toIntExact(getMinY() - JDK9.multiplyFull(getMinTileY(), getTileHeight()));
     }
 
     /**
@@ -372,7 +373,7 @@ public abstract class PlanarImage implements RenderedImage {
      * It is caller responsibility to ensure that all arguments are non-null and that the rectangle is contained
      * inside both this image and the given raster.
      *
-     * @param  aoi  the region of this image to copy.
+     * @param  aoi     the region of this image to copy.
      * @param  raster  the raster to hold a copy of this image, or {@code null}.
      */
     private void copyData(final Rectangle aoi, final WritableRaster raster) {
@@ -447,10 +448,10 @@ public abstract class PlanarImage implements RenderedImage {
             if (sm.getWidth()  < tileWidth)  return "tileWidth";
             if (sm.getHeight() < tileHeight) return "tileHeight";
         }
-        if (((long) getNumXTiles()) * tileWidth  != getWidth())  return "numXTiles";
-        if (((long) getNumYTiles()) * tileHeight != getHeight()) return "numYTiles";
-        if (((long) getMinTileX())  * tileWidth  + getTileGridXOffset() != getMinX()) return "tileX";
-        if (((long) getMinTileY())  * tileHeight + getTileGridYOffset() != getMinY()) return "tileY";
+        if (JDK9.multiplyFull(getNumXTiles(), tileWidth)  != getWidth())  return "numXTiles";
+        if (JDK9.multiplyFull(getNumYTiles(), tileHeight) != getHeight()) return "numYTiles";
+        if (JDK9.multiplyFull(getMinTileX(),  tileWidth)  + getTileGridXOffset() != getMinX()) return "tileX";
+        if (JDK9.multiplyFull(getMinTileY(),  tileHeight) + getTileGridYOffset() != getMinY()) return "tileY";
         return null;
     }
 

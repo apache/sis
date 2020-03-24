@@ -91,7 +91,7 @@ public abstract class PixelIterator {
     /**
      * The domain, in pixel coordinates, of the region traversed by this pixel iterator.
      * This may be smaller than the image or raster bounds, but not greater.
-     * The lower values are inclusive and the upper values exclusive.
+     * The lower values are inclusive and the upper values are exclusive.
      *
      * @see #getDomain()
      */
@@ -180,7 +180,7 @@ public abstract class PixelIterator {
     }
 
     /**
-     * Computes the intersection between the given bounds and and {@code subArea} if {@code subArea} is non-null.
+     * Computes the intersection between the given bounds and {@code subArea} if {@code subArea} is non-null.
      * If the result is empty, then the width and/or height are set to zero (not negative).
      */
     private static Rectangle intersection(int x, int y, int width, int height, Rectangle subArea, Dimension window) {
@@ -540,28 +540,6 @@ public abstract class PixelIterator {
      *         or {@link #moveTo(int,int)}, or after {@code next()} returned {@code false}.
      */
     public abstract Point getPosition();
-
-    /**
-     * Stores in the specified array the column (x) and row (y) indices of the current pixel.
-     * This method is equivalent to invoking {@link #getPosition()} and copying the (<var>x</var>, <var>y</var>)
-     * coordinates in {@code dest[offset]} and {@code dest[offset + 1]} respectively.
-     *
-     * <div class="note"><b>API note:</b>
-     * an array of type {@code double[]} is used for allowing the coordinates to be converted with
-     * {@link org.opengis.referencing.operation.MathTransform#transform(double[], int, double[], int, int)}.
-     * A typical use case is to apply a {@linkplain org.apache.sis.coverage.grid.GridGeometry#getGridToCRS
-     * grid to CRS} transform.</div>
-     *
-     * @param  dest    the array where to store the (<var>x</var>, <var>y</var>) pixel coordinates.
-     * @param  offset  the offset where to store the coordinates in the specified array.
-     *
-     * @since 1.1
-     */
-    public void getPosition(final double[] dest, final int offset) {
-        final Point pos = getPosition();
-        dest[offset    ] = pos.x;
-        dest[offset + 1] = pos.y;
-    }
 
     /**
      * Moves the pixel iterator to the given column (x) and row (y) indices. After this method invocation,

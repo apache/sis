@@ -180,7 +180,10 @@ public class GridCoverageBuilder {
     }
 
     /**
-     * Sets the domain envelope (including its CRS).
+     * Sets the domain as an enclosing envelope (including its CRS).
+     * The given envelope should contain all pixel area. For example the
+     * {@linkplain Envelope#getLowerCorner() envelope lower corner} should locate the lower-left
+     * (or upper-left, depending on <var>y</var> axis orientation) pixel corner, not pixel center.
      * If the given envelope contains a CRS, then that CRS will be the coverage CRS.
      * A transform from grid indices to domain coordinates will be created automatically.
      * That transform will map grid dimensions to envelope dimensions in the same order

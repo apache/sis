@@ -50,9 +50,10 @@ public class ImageLayout {
 
     /**
      * The default instance which will target {@value ImageUtilities#DEFAULT_TILE_SIZE} pixels as tile
-     * width and height.
+     * width and height. This default instance conservatively disallows tile sizes that are not divisors
+     * of image size.
      */
-    public static final ImageLayout DEFAULT = new ImageLayout(null, true);
+    public static final ImageLayout DEFAULT = new ImageLayout(null, false);
 
     /**
      * Preferred size for tiles.
@@ -62,7 +63,7 @@ public class ImageLayout {
     private final int preferredTileWidth, preferredTileHeight;
 
     /**
-     * Whether this instance allow tiles that are only partially filled. A value of {@code true} implies that
+     * Whether this instance allows tiles that are only partially filled. A value of {@code true} implies that
      * tiles in the last row or in the last column may contain empty pixels. A value of {@code false} implies
      * that this class will be unable to subdivide large images in smaller tiles if the image size is a prime
      * number.
@@ -73,7 +74,7 @@ public class ImageLayout {
      * Creates a new image layout.
      *
      * @param  preferredTileSize  the preferred tile size, or {@code null} for the default size.
-     * @param  allowPartialTiles  whether this instance allow tiles that are only partially filled.
+     * @param  allowPartialTiles  whether this instance allows tiles that are only partially filled.
      */
     protected ImageLayout(final Dimension preferredTileSize, final boolean allowPartialTiles) {
         if (preferredTileSize != null) {
@@ -195,8 +196,8 @@ public class ImageLayout {
             }
         }
         /*
-         * If the image is already tiled, we may select smaller tiles if the original tiles are too large
-         * but those smaller tiles must be divisors of the original size. This is necessary because image
+         * If the image is already tiled, we may select smaller tiles if the original tiles are too large.
+         * But those smaller tiles must be divisors of the original size. This is necessary because image
          * operations may assume that a call to `source.getTile(…)` will return a tile covering fully the
          * tile to compute.
          */
