@@ -157,6 +157,9 @@ public final class ImageUtilities extends Static {
      *
      * @param  image  the image for which to get the data type, or {@code null}.
      * @return the data type, or {@link DataBuffer#TYPE_UNDEFINED} if unknown.
+     *
+     * @see #getDataType(Raster)
+     * @see #isIntegerType(int)
      */
     public static int getDataType(final RenderedImage image) {
         if (image != null) {
@@ -171,6 +174,9 @@ public final class ImageUtilities extends Static {
      *
      * @param  raster  the raster for which to get the data type, or {@code null}.
      * @return the data type, or {@link DataBuffer#TYPE_UNDEFINED} if unknown.
+     *
+     * @see #getDataType(RenderedImage)
+     * @see #isIntegerType(int)
      */
     public static int getDataType(final Raster raster) {
         if (raster != null) {
@@ -357,6 +363,21 @@ public final class ImageUtilities extends Static {
             }
         }
         return keys;
+    }
+
+    /**
+     * Returns {@code true} if the given data buffer type is an integer type.
+     * Returns {@code false} if the type is a floating point type or in case
+     * of doubt (e.g. for {@link DataBuffer#TYPE_UNDEFINED}).
+     *
+     * @param  dataType  one of {@link DataBuffer} constants.
+     * @return whether the given constant is for an integer type.
+     *
+     * @see #getDataType(RenderedImage)
+     * @see #getDataType(Raster)
+     */
+    public static boolean isIntegerType(final int dataType) {
+        return dataType >= DataBuffer.TYPE_BYTE && dataType <= DataBuffer.TYPE_INT;
     }
 
     /**
