@@ -23,7 +23,7 @@ import java.nio.DoubleBuffer;
 /**
  * Algorithm for image interpolation (resampling). Interpolations are performed by sampling on a regular grid
  * of pixels using a local neighborhood. The sampling is performed by the {@link ResampledImage} class, which
- * gives the sample values to the {@code interpolate(…)} method of this interpolator.
+ * gives the sample values to the {@code interpolate(…)} method of this interpolation.
  *
  * <p>This interface is designed for interpolations in a two-dimensional space only.</p>
  *
@@ -33,7 +33,7 @@ import java.nio.DoubleBuffer;
  * @since   1.1
  * @module
  */
-public interface Interpolator {
+public interface Interpolation {
     /**
      * Returns the size of the area over which the resampling function needs to provide values.
      * Common values are:
@@ -98,7 +98,7 @@ public interface Interpolator {
      * A bilinear interpolation using 2×2 pixels.
      * If the interpolation result is NaN, this method fallbacks on nearest-neighbor.
      */
-    Interpolator BILINEAR = new Interpolator() {
+    Interpolation BILINEAR = new Interpolation() {
         /** Interpolation name for debugging purpose. */
         @Override public String toString() {
             return "BILINEAR";

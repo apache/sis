@@ -60,7 +60,7 @@ import org.apache.sis.measure.NumberRange;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  *
- * @see Interpolator
+ * @see Interpolation
  * @see java.awt.image.AffineTransformOp
  *
  * @since 1.1
@@ -89,7 +89,7 @@ public class ResampledImage extends ComputedImage {
     /**
      * The object to use for performing interpolations.
      */
-    protected final Interpolator interpolator;
+    protected final Interpolation interpolation;
 
     /**
      * The values to use if a pixel in this image can not be mapped to a pixel in the source image.
@@ -103,22 +103,22 @@ public class ResampledImage extends ComputedImage {
      * by a non-linear transform from <em>this</em> image to the specified <em>source</em> image.
      * That transform should map {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER pixel centers}.
      *
-     * @param  bounds        domain of pixel coordinates of this resampled image.
-     * @param  toSource      conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
-     * @param  source        the image to be resampled.
-     * @param  interpolator  the object to use for performing interpolations.
-     * @param  fillValues    the values to use for pixels in this image that can not be mapped to pixels in source image.
-     *                       The array length must be equal to the number of bands. If the array is {@code null},
-     *                       the default value is zero in all bands. If any element in the array is {@code null},
-     *                       the default value is zero for the corresponding band.
+     * @param  bounds         domain of pixel coordinates of this resampled image.
+     * @param  toSource       conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
+     * @param  source         the image to be resampled.
+     * @param  interpolation  the object to use for performing interpolations.
+     * @param  fillValues     the values to use for pixels in this image that can not be mapped to pixels in source image.
+     *                        The array length must be equal to the number of bands. If the array is {@code null},
+     *                        the default value is zero in all bands. If any element in the array is {@code null},
+     *                        the default value is zero for the corresponding band.
      */
     public ResampledImage(final Rectangle bounds, final MathTransform toSource, final RenderedImage source,
-                          final Interpolator interpolator, final Number[] fillValues)
+                          final Interpolation interpolation, final Number[] fillValues)
     {
         super(ImageLayout.DEFAULT.createCompatibleSampleModel(source), source);
         ArgumentChecks.ensureNonNull("bounds", bounds);
         ArgumentChecks.ensureNonNull("toSource", toSource);
-        ArgumentChecks.ensureNonNull("interpolator", interpolator);
+        ArgumentChecks.ensureNonNull("interpolation", interpolation);
         ArgumentChecks.ensureStrictlyPositive("width",  width  = bounds.width);
         ArgumentChecks.ensureStrictlyPositive("height", height = bounds.height);
         minX = bounds.x;
@@ -141,8 +141,8 @@ public class ResampledImage extends ComputedImage {
          * point will be between the second and third pixel, so there is one more pixel on the left
          * to grab. We shift to the left because we need the coordinates of the first pixel.
          */
-        this.interpolator = interpolator;
-        final Dimension s = interpolator.getSupportSize();
+        this.interpolation = interpolation;
+        final Dimension s = interpolation.getSupportSize();
         final double[] offset = new double[numDim];
         offset[0] = interpolationSupportOffset(s.width);
         offset[1] = interpolationSupportOffset(s.height);
@@ -318,7 +318,7 @@ public class ResampledImage extends ComputedImage {
         final double xmin, ymin, xmax, ymax, xlim, ylim, xoff, yoff;
         final PixelIterator it;
         {   // For keeping temporary variables locale.
-            final Dimension support = interpolator.getSupportSize();
+            final Dimension support = interpolation.getSupportSize();
             it = new PixelIterator.Builder().setWindowSize(support).create(getSource(0));
             final Rectangle domain = it.getDomain();    // Source image bounds.
             xmin = domain.getMinX();                    // We will tolerate 0.5 pixels before (from center to border).
@@ -422,7 +422,7 @@ public class ResampledImage extends ComputedImage {
                                  * for NaN values because we want to keep them if output type is floating point,
                                  * and NaN values should not occur if data type (input and output) is integer.
                                  */
-                                if (interpolator.interpolate(buffer.values, numBands, xf, yf, values, isInteger ? 0 : vi)) {
+                                if (interpolation.interpolate(buffer.values, numBands, xf, yf, values, isInteger ? 0 : vi)) {
                                     if (isInteger) {
                                         for (int b=0; b<numBands; b++) {
                                             intValues[vi+b] = (int) Math.max(minValues[b],
