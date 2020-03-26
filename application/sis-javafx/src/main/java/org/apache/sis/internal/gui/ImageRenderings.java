@@ -17,7 +17,7 @@
 package org.apache.sis.internal.gui;
 
 import java.awt.image.RenderedImage;
-import org.apache.sis.image.ImageOperations;
+import org.apache.sis.image.ImageProcessor;
 
 
 /**
@@ -37,9 +37,9 @@ public final class ImageRenderings {
      * @todo Creates our own instance which listen to logging messages.
      *       We need to create a logging panel first.
      */
-    private static final ImageOperations OPERATIONS = new ImageOperations();
+    private static final ImageProcessor PROCESSOR = new ImageProcessor();
     static {
-        OPERATIONS.setErrorAction(ImageOperations.ErrorAction.LOG);
+        PROCESSOR.setErrorAction(ImageProcessor.ErrorAction.LOG);
     }
 
     /**
@@ -56,6 +56,6 @@ public final class ImageRenderings {
      * @return the rescaled image.
      */
     public static RenderedImage automaticScale(final RenderedImage image) {
-        return OPERATIONS.automaticColorRamp(image, 3);
+        return PROCESSOR.automaticColorRamp(image, 3);
     }
 }

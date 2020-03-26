@@ -29,7 +29,7 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 
 /**
  * A predefined set of operations on images as convenience methods.
- * After instantiation, {@code ImageOperations} can be configured for the following aspects:
+ * After instantiation, {@code ImageProcessor} can be configured for the following aspects:
  *
  * <ul class="verbose">
  *   <li>
@@ -48,7 +48,7 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
  * </ul>
  *
  * <h2>Error handling</h2>
- * If an exception occurs during the computation of a tile, then the {@code ImageOperations} behavior
+ * If an exception occurs during the computation of a tile, then the {@code ImageProcessor} behavior
  * is controlled by the {@link #getErrorAction() errorAction} property:
  *
  * <ul>
@@ -61,14 +61,14 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
  * </ul>
  *
  * <h2>Thread-safety</h2>
- * {@code ImageOperations} is thread-safe if its configuration is not modified after construction.
+ * {@code ImageProcessor} is thread-safe if its configuration is not modified after construction.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
  */
-public class ImageOperations {
+public class ImageProcessor {
     /**
      * Execution modes specifying whether operations can be executed in parallel.
      * If {@link #SEQUENTIAL}, operations are executed sequentially in the caller thread.
@@ -161,7 +161,7 @@ public class ImageOperations {
      * Creates a new set of image operations with default configuration.
      * The execution mode is initialized to {@link Mode#DEFAULT} and the error action to {@link ErrorAction#THROW}.
      */
-    public ImageOperations() {
+    public ImageProcessor() {
         executionMode = Mode.DEFAULT;
         errorAction   = ErrorAction.THROW;
     }
@@ -259,7 +259,7 @@ public class ImageOperations {
         ArgumentChecks.ensureNonNull("source", source);
         final StatisticsCalculator calculator = new StatisticsCalculator(source, parallel(source), failOnException());
         final Object property = calculator.getProperty(StatisticsCalculator.PROPERTY_NAME);
-        calculator.logAndClearError(ImageOperations.class, "statistics", errorListener());
+        calculator.logAndClearError(ImageProcessor.class, "statistics", errorListener());
         if (property instanceof Statistics[]) {
             return (Statistics[]) property;
         }

@@ -80,8 +80,8 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
      */
     @Test
     public void testParallelExecution() {
-        final ImageOperations operations = new ImageOperations();
-        operations.setExecutionMode(ImageOperations.Mode.PARALLEL);
+        final ImageProcessor operations = new ImageProcessor();
+        operations.setExecutionMode(ImageProcessor.Mode.PARALLEL);
         final TiledImageMock image = createImage();
         final Statistics[] expected = StatisticsCalculator.computeSequentially(image);
         final Statistics[] actual = operations.statistics(image);
@@ -100,8 +100,8 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
      */
     @Test
     public void testWithFailures() {
-        final ImageOperations operations = new ImageOperations();
-        operations.setExecutionMode(ImageOperations.Mode.PARALLEL);
+        final ImageProcessor operations = new ImageProcessor();
+        operations.setExecutionMode(ImageProcessor.Mode.PARALLEL);
         final TiledImageMock image = createImage();
         image.failRandomly(new Random(-8739538736973900203L));
         try {
@@ -120,9 +120,9 @@ public final strictfp class StatisticsCalculatorTest extends TestCase {
      */
     @Test
     public void testWithLoggings() {
-        final ImageOperations operations = new ImageOperations();
-        operations.setExecutionMode(ImageOperations.Mode.PARALLEL);
-        operations.setErrorAction(ImageOperations.ErrorAction.LOG);
+        final ImageProcessor operations = new ImageProcessor();
+        operations.setExecutionMode(ImageProcessor.Mode.PARALLEL);
+        operations.setErrorAction(ImageProcessor.ErrorAction.LOG);
         final TiledImageMock image = createImage();
         image.failRandomly(new Random(8004277484984714811L));
         final Statistics[] stats = operations.statistics(image);
