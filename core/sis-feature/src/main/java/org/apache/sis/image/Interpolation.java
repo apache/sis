@@ -85,8 +85,10 @@ public interface Interpolation {
      *             xfrac
      * }
      *
-     * <p><b>Output:</b> this method shall write the interpolation results as {@code numBands} consecutive
-     * values in the supplied {@code writeTo} array, starting at {@code writeToOffset} index.</p>
+     * On output, this method shall write the interpolation results as {@code numBands} consecutive
+     * values in the supplied {@code writeTo} array, starting at {@code writeToOffset} index.
+     * This method should not modify the buffer position (use {@link DoubleBuffer#mark()} and
+     * {@link DoubleBuffer#reset() reset()} if needed).
      *
      * @param  source         pixel values from the source image to use for interpolation.
      * @param  numBands       number of bands. This is the number of values to put in the {@code writeTo} array.
