@@ -25,6 +25,9 @@ import java.nio.DoubleBuffer;
  * of pixels using a local neighborhood. The sampling is performed by the {@link ResampledImage} class, which
  * gives the sample values to the {@code interpolate(…)} method of this interpolation.
  *
+ * <p>All methods in this interface shall be safe for concurrent use in multi-threading context.
+ * For example interpolations may be executed in a different thread for each tile in an image.</p>
+ *
  * <p>This interface is designed for interpolations in a two-dimensional space only.</p>
  *
  * @author  Rémi Marechal (Geomatys)
@@ -134,7 +137,9 @@ public interface Interpolation {
     };
 
     /**
-     * Lanczos interpolation. The kernel is:
+     * Lanczos interpolation for photographic images.
+     * This interpolation is not recommended for images that may contain NaN values.
+     * The Lanczos reconstruction kernel is:
      *
      * <blockquote>
      * <var>L</var>(<var>x</var>) = <var>a</var>⋅sin(π⋅<var>x</var>)⋅sin(π⋅<var>x</var>/<var>a</var>)/(π⋅<var>x</var>)²

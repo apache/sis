@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.util.Arrays;
 import java.nio.DoubleBuffer;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -103,14 +104,17 @@ public class ResampledImage extends ComputedImage {
      * by a non-linear transform from <em>this</em> image to the specified <em>source</em> image.
      * That transform should map {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER pixel centers}.
      *
+     * <p>If a pixel in this image can not be mapped to a pixel in the source image, then the sample values are set
+     * to {@code fillValues}. If the given array is {@code null}, or if any element in the given array is {@code null},
+     * then the default fill value is NaN for floating point data types or zero for integer data types.</p>
+     *
      * @param  bounds         domain of pixel coordinates of this resampled image.
      * @param  toSource       conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
      * @param  source         the image to be resampled.
      * @param  interpolation  the object to use for performing interpolations.
      * @param  fillValues     the values to use for pixels in this image that can not be mapped to pixels in source image.
-     *                        The array length must be equal to the number of bands. If the array is {@code null},
-     *                        the default value is zero in all bands. If any element in the array is {@code null},
-     *                        the default value is zero for the corresponding band.
+     *                        The array length must be equal to the number of bands.
+     *                        May be {@code null} or contain {@code null} elements.
      */
     public ResampledImage(final Rectangle bounds, final MathTransform toSource, final RenderedImage source,
                           final Interpolation interpolation, final Number[] fillValues)
@@ -168,6 +172,7 @@ public class ResampledImage extends ComputedImage {
             this.fillValues = fill;
         } else {
             final double[] fill = new double[numBands];
+            Arrays.fill(fill, Double.NaN);
             if (fillValues != null) {
                 for (int i=0; i<numBands; i++) {
                     final Number f = fillValues[i];
@@ -345,7 +350,7 @@ public class ResampledImage extends ComputedImage {
             values      = new double[numBands];
             intValues   = new int[scanline * numBands];
             valuesArray = intValues;
-            final NumberRange<?>[] ranges = it.getSampleRanges();
+            final NumberRange<?>[] ranges = it.getSampleRanges();   // Assumes source.sampleModel == this.sampleModel.
             minValues = new long[ranges.length];
             maxValues = new long[ranges.length];
             for (int i=0; i<ranges.length; i++) {

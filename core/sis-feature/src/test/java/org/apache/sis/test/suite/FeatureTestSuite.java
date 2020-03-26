@@ -81,6 +81,7 @@ import org.junit.runners.Suite;
     org.apache.sis.image.DefaultIteratorTest.class,
     org.apache.sis.image.LinearIteratorTest.class,
     org.apache.sis.image.StatisticsCalculatorTest.class,
+    org.apache.sis.image.InterpolationTest.class,
     org.apache.sis.coverage.CategoryTest.class,
     org.apache.sis.coverage.CategoryListTest.class,
     org.apache.sis.coverage.SampleDimensionTest.class,

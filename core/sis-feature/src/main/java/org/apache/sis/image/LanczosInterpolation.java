@@ -22,8 +22,8 @@ import java.nio.DoubleBuffer;
 
 
 /**
- * Lanczos interpolation of arbitrary size.
- * The kernel is:
+ * Lanczos interpolation of arbitrary size. This interpolation is good for photographic images but
+ * not recommended for images that may contain NaN values. The Lanczos reconstruction kernel is:
  *
  * <blockquote>
  * <var>L</var>(<var>x</var>) = <var>a</var>⋅sin(π⋅<var>x</var>)⋅sin(π⋅<var>x</var>/<var>a</var>)/(π⋅<var>x</var>)²
