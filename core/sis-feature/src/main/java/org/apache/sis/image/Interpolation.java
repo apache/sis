@@ -27,6 +27,7 @@ import java.nio.DoubleBuffer;
  *
  * <p>This interface is designed for interpolations in a two-dimensional space only.</p>
  *
+ * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
@@ -131,4 +132,16 @@ public interface Interpolation {
             return true;
         }
     };
+
+    /**
+     * Lanczos interpolation. The kernel is:
+     *
+     * <blockquote>
+     * <var>L</var>(<var>x</var>) = <var>a</var>⋅sin(π⋅<var>x</var>)⋅sin(π⋅<var>x</var>/<var>a</var>)/(π⋅<var>x</var>)²
+     * for |<var>x</var>| ≤ lanczos window size
+     * </blockquote>
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Lanczos_resampling">Lanczos resampling on Wikipedia</a>
+     */
+    Interpolation LANCZOS = new LanczosInterpolation(2);
 }
