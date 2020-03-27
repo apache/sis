@@ -101,6 +101,31 @@ public interface Interpolation {
     boolean interpolate(DoubleBuffer source, int numBands, double xfrac, double yfrac, double[] writeTo, int writeToOffset);
 
     /**
+     * A nearest-neighbor interpolation using 1×1 pixel.
+     */
+    Interpolation NEAREST = new Interpolation() {
+        /** Interpolation name for debugging purpose. */
+        @Override public String toString() {
+            return "NEAREST";
+        }
+
+        /** Size of the area over which to provide values. */
+        @Override public Dimension getSupportSize() {
+            return new Dimension(1,1);
+        }
+
+        /** Applies nearest-neighbor interpolation on 1×1 window. */
+        @Override public boolean interpolate(final DoubleBuffer source, final int numBands,
+                final double xfrac, final double yfrac, final double[] writeTo, int writeToOffset)
+        {
+            source.mark();
+            source.get(writeTo, writeToOffset, numBands);
+            source.reset();
+            return true;
+        }
+    };
+
+    /**
      * A bilinear interpolation using 2×2 pixels.
      * If the interpolation result is NaN, this method fallbacks on nearest-neighbor.
      */
@@ -110,12 +135,12 @@ public interface Interpolation {
             return "BILINEAR";
         }
 
-        /** Size of the area over which to provide values.*/
+        /** Size of the area over which to provide values. */
         @Override public Dimension getSupportSize() {
             return new Dimension(2,2);
         }
 
-        /** Applies bilinear interpolation. */
+        /** Applies bilinear interpolation on a 2×2 window. */
         @Override public boolean interpolate(final DoubleBuffer source, final int numBands,
                 final double xfrac, final double yfrac, final double[] writeTo, int writeToOffset)
         {

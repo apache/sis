@@ -341,6 +341,8 @@ public class ResampledImage extends ComputedImage {
          * for each pixel. We use integer values if possible because `WritableRaster.setPixels(…)` implementations
          * have optimizations for this case. If data are not integers, then we fallback on non-optimized `double[]`.
          */
+        double[] transfer = null;
+        int[] intTransfer = null;
         final double[] values;
         final int[] intValues;
         final Object valuesArray;
@@ -385,67 +387,93 @@ public class ResampledImage extends ComputedImage {
             }
             toSource.transform(coordinates, 0, coordinates, 0, scanline);
             /*
-             * Interpolate values for all bands in current scanline. The (x,y) values are coordinates
-             * in the source image and (xf,yf) are their fractional parts. Those fractional parts are
-             * between 0 inclusive and 1 exclusive except on the image borders: on the left and upper
-             * sides the fractional parts can go down to -0.5, because 0 is for pixel center and -0.5
-             * is at image border. On the right and bottom sides the fractional parts are constrained
-             * to +0.5 in nearest-neighbor interpolation case, for the same reason than other borders.
-             * However if the interpolation is bilinear, then the fractional parts on the bottom and
-             * right borders can go up to 1.5 because `PixelIterator` has reduced the (xmax, ymax)
-             * values by 1 (for taking in account the padding needed for interpolation support).
-             * This tolerance can be generalized (2.5, 3.5, etc.) depending on interpolation method.
+             * Special case for nearest-neighbor.
              */
-            int ci = 0;     // Index in `coordinates` array.
-            int vi = 0;     // Index in `values` or `intValues` array.
-            for (int tx=tileMinX; tx<tileMaxX; tx++, ci+=tgtDim, vi+=numBands) {
-                double x = coordinates[ci];
-                if (x <= xlim) {
-                    // Separate integer and fractional parts with 0 ≤ xf < 1 except on borders.
-                    final double xf = x - (x = Math.max(xmin, Math.min(xmax, Math.floor(x))));
-                    if (xf >= xoff) {                   // Negative only on left image border.
-                        double y = coordinates[ci+1];
-                        if (y <= ylim) {
-                            // Separate integer and fractional parts with 0 ≤ yf < 1 except on borders.
-                            final double yf = y - (y = Math.max(ymin, Math.min(ymax, Math.floor(y))));
-                            if (yf >= yoff) {                   // Negative only on upper image border.
-                                /*
-                                 * At this point we determined that (x,y) coordinates are inside source image domain.
-                                 * Those coordinates may have been slightly shifted for interpolation support if they
-                                 * were close to an image border. If the MathTransform produced 3 or more coordinates,
-                                 * current implementation does not yet use those coordinates. But if we want to use
-                                 * them in a future version (e.g. for interpolation in 3D cube), it would be there.
-                                 */
-                                if (sx != (sx = (int) x)  |     // Really |, not ||.
-                                    sy != (sy = (int) y))
-                                {
-                                    it.moveTo(sx, sy);
-                                    buffer.update();
-                                }
-                                /*
-                                 * Interpolate the values at current position. We don't do any special processing
-                                 * for NaN values because we want to keep them if output type is floating point,
-                                 * and NaN values should not occur if data type (input and output) is integer.
-                                 */
-                                if (interpolation.interpolate(buffer.values, numBands, xf, yf, values, isInteger ? 0 : vi)) {
-                                    if (isInteger) {
-                                        for (int b=0; b<numBands; b++) {
-                                            intValues[vi+b] = (int) Math.max(minValues[b],
-                                                                    Math.min(maxValues[b], Math.round(values[b])));
-                                        }
+            if (interpolation == Interpolation.NEAREST) {
+                int ci = 0;     // Index in `coordinates` array.
+                int vi = 0;     // Index in `values` or `intValues` array.
+                for (int tx=tileMinX; tx<tileMaxX; tx++, ci+=tgtDim, vi+=numBands) {
+                    final long x = Math.round(coordinates[ci]);
+                    if (x >= it.lowerX && x < it.upperX) {
+                        final long y = Math.round(coordinates[ci+1]);
+                        if (y >= it.lowerY && y < it.upperY) {
+                            it.moveTo((int) x, (int) y);
+                            if (isInteger) {
+                                intTransfer = it.getPixel(intTransfer);
+                                System.arraycopy(intTransfer, 0, intValues, vi, numBands);
+                            } else {
+                                transfer = it.getPixel(transfer);
+                                System.arraycopy(transfer, 0, values, vi, numBands);
+                            }
+                            continue;       // Values have been set, move to next pixel.
+                        }
+                    }
+                    System.arraycopy(fillValues, 0, valuesArray, vi, numBands);
+                }
+            } else {
+                /*
+                 * Interpolate values for all bands in current scanline. The (x,y) values are coordinates
+                 * in the source image and (xf,yf) are their fractional parts. Those fractional parts are
+                 * between 0 inclusive and 1 exclusive except on the image borders: on the left and upper
+                 * sides the fractional parts can go down to -0.5, because 0 is for pixel center and -0.5
+                 * is at image border. On the right and bottom sides the fractional parts are constrained
+                 * to +0.5 in nearest-neighbor interpolation case, for the same reason than other borders.
+                 * However if the interpolation is bilinear, then the fractional parts on the bottom and
+                 * right borders can go up to 1.5 because `PixelIterator` has reduced the (xmax, ymax)
+                 * values by 1 (for taking in account the padding needed for interpolation support).
+                 * This tolerance can be generalized (2.5, 3.5, etc.) depending on interpolation method.
+                 */
+                int ci = 0;     // Index in `coordinates` array.
+                int vi = 0;     // Index in `values` or `intValues` array.
+                for (int tx=tileMinX; tx<tileMaxX; tx++, ci+=tgtDim, vi+=numBands) {
+                    double x = coordinates[ci];
+                    if (x <= xlim) {
+                        // Separate integer and fractional parts with 0 ≤ xf < 1 except on borders.
+                        final double xf = x - (x = Math.max(xmin, Math.min(xmax, Math.floor(x))));
+                        if (xf >= xoff) {                   // Negative only on left image border.
+                            double y = coordinates[ci+1];
+                            if (y <= ylim) {
+                                // Separate integer and fractional parts with 0 ≤ yf < 1 except on borders.
+                                final double yf = y - (y = Math.max(ymin, Math.min(ymax, Math.floor(y))));
+                                if (yf >= yoff) {                   // Negative only on upper image border.
+                                    /*
+                                     * At this point we determined that (x,y) coordinates are inside source image domain.
+                                     * Those coordinates may have been slightly shifted for interpolation support if they
+                                     * were close to an image border. If the MathTransform produced 3 or more coordinates,
+                                     * current implementation does not yet use those coordinates. But if we want to use
+                                     * them in a future version (e.g. for interpolation in 3D cube), it would be there.
+                                     */
+                                    if (sx != (sx = (int) x)  |     // Really |, not ||.
+                                        sy != (sy = (int) y))
+                                    {
+                                        it.moveTo(sx, sy);
+                                        buffer.update();
                                     }
-                                    continue;       // Values have been set, move to next pixel.
+                                    /*
+                                     * Interpolate the values at current position. We don't do any special processing
+                                     * for NaN values because we want to keep them if output type is floating point,
+                                     * and NaN values should not occur if data type (input and output) is integer.
+                                     */
+                                    if (interpolation.interpolate(buffer.values, numBands, xf, yf, values, isInteger ? 0 : vi)) {
+                                        if (isInteger) {
+                                            for (int b=0; b<numBands; b++) {
+                                                intValues[vi+b] = (int) Math.max(minValues[b],
+                                                                        Math.min(maxValues[b], Math.round(values[b])));
+                                            }
+                                        }
+                                        continue;       // Values have been set, move to next pixel.
+                                    }
                                 }
                             }
                         }
                     }
+                    /*
+                     * If we reach this point then any of the "if" conditions above failed
+                     * (i.e. the point to interpolate are outside the source image bounds)
+                     * and no values have been set in the `values` or `intValues` array.
+                     */
+                    System.arraycopy(fillValues, 0, valuesArray, vi, numBands);
                 }
-                /*
-                 * If we reach this point then any of the "if" conditions above failed
-                 * (i.e. the point to interpolate are outside the source image bounds)
-                 * and no values have been set in the `values` or `intValues` array.
-                 */
-                System.arraycopy(fillValues, 0, valuesArray, vi, numBands);
             }
             /*
              * At this point we finished to compute the value of a scanline.

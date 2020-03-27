@@ -179,6 +179,30 @@ public final strictfp class ResampledImageTest extends TestCase {
     }
 
     /**
+     * Tests {@link Interpolation#NEAREST} of floating point values.
+     *
+     * @throws NoninvertibleTransformException if the test did not setup the transform correctly.
+     */
+    @Test
+    public void testNearestOnFloats() throws NoninvertibleTransformException {
+        source = createImage(DataBuffer.TYPE_FLOAT);
+        createScaledByTwo(Interpolation.BILINEAR, -30, 12);
+        verifyAtIntegerPositions();
+    }
+
+    /**
+     * Tests {@link Interpolation#NEAREST} of integer values.
+     *
+     * @throws NoninvertibleTransformException if the test did not setup the transform correctly.
+     */
+    @Test
+    public void testNearestOnIntegers() throws NoninvertibleTransformException {
+        source = createImage(DataBuffer.TYPE_SHORT);
+        createScaledByTwo(Interpolation.BILINEAR, 18, 20);
+        verifyAtIntegerPositions();
+    }
+
+    /**
      * Tests {@link Interpolation#BILINEAR} of floating point values.
      *
      * @throws NoninvertibleTransformException if the test did not setup the transform correctly.
