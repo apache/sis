@@ -157,7 +157,7 @@ public class GridExtent implements GridEnvelope, Serializable {
      *         greater than the corresponding coordinate value in the high part.
      */
     private void validateCoordinates() throws IllegalArgumentException {
-        final int dimension = coordinates.length >>> 1;
+        final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
             final long lower = coordinates[i];
             final long upper = coordinates[i + dimension];
@@ -562,6 +562,23 @@ public class GridExtent implements GridEnvelope, Serializable {
     @Override
     public final int getDimension() {
         return coordinates.length >>> 1;
+    }
+
+    /**
+     * Returns the number of dimensions where this grid extent has a size greater than 1.
+     * This is a value between 0 and {@link #getDimension()} inclusive.
+     *
+     * @return the number of dimensions where this grid extent has a size greater than 1.
+     *
+     * @see #getSubspaceDimensions(int)
+     */
+    final int getSubDimension() {
+        int n = 0;
+        final int dimension = getDimension();
+        for (int i=0; i<dimension; i++) {
+            if (coordinates[i] != coordinates[i + dimension]) n++;
+        }
+        return n;
     }
 
     /**

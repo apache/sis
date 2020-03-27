@@ -65,7 +65,10 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @see org.apache.sis.coverage.grid.GridCoverageProcessor
+ *
+ * @since 1.1
  * @module
  */
 public class ImageProcessor {

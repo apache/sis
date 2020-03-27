@@ -113,6 +113,17 @@ public abstract class GridCoverage {
     }
 
     /**
+     * Constructs a new grid coverage with the same sample dimensions than the given source.
+     *
+     * @param  source  the source from which to copy the sample dimensions.
+     * @param  domain  the grid extent, CRS and conversion from cell indices to CRS.
+     */
+    GridCoverage(final GridCoverage source, final GridGeometry domain) {
+        gridGeometry = domain;
+        sampleDimensions = source.sampleDimensions;
+    }
+
+    /**
      * Returns the coordinate reference system to which the values in grid domain are referenced.
      * This is the CRS used when accessing a coverage with the {@code evaluate(…)} methods.
      * This coordinate reference system is usually different than the coordinate system of the grid.

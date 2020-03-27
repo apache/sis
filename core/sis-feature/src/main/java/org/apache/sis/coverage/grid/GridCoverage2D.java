@@ -157,6 +157,28 @@ public class GridCoverage2D extends GridCoverage {
     }
 
     /**
+     * Creates a new grid coverage for the resampling of specified source coverage.
+     *
+     * @param  source       the coverage containing source values.
+     * @param  domain       the grid extent, CRS and conversion from cell indices to CRS.
+     * @param  extent       the {@code domain.getExtent()} value.
+     * @param  data         the sample values as a {@link RenderedImage}, with one band for each sample dimension.
+     * @param  xDimension   index of extent dimension for image <var>x</var> coordinates.
+     * @param  yDimension   index of extent dimension for image <var>y</var> coordinates.
+     */
+    GridCoverage2D(final GridCoverage source, final GridGeometry domain, final GridExtent extent,
+                   final RenderedImage data, final int xDimension, final int yDimension)
+    {
+        super(source, domain);
+        this.data       = data;
+        this.xDimension = xDimension;
+        this.yDimension = yDimension;
+        gridToImageX    = subtractExact(data.getMinX(), extent.getLow(xDimension));
+        gridToImageY    = subtractExact(data.getMinY(), extent.getLow(yDimension));
+        gridGeometry2D  = new AtomicReference<>();
+    }
+
+    /**
      * Constructs a grid coverage using the specified domain, range and data. If the given domain does not
      * have an extent, then a default {@link GridExtent} will be computed from given image. Otherwise the
      * {@linkplain RenderedImage#getWidth() image width} and {@linkplain RenderedImage#getHeight() height}
