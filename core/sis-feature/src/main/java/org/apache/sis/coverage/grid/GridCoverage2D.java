@@ -102,7 +102,7 @@ public class GridCoverage2D extends GridCoverage {
     /**
      * Minimal number of dimension for this coverage.
      */
-    private static final int MIN_DIMENSION = 2;
+    static final int MIN_DIMENSION = 2;
 
     /**
      * The sample values stored as a {@code RenderedImage}.

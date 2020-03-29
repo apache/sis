@@ -17,6 +17,7 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.Optional;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
@@ -31,14 +32,15 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.image.ResampledImage;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.CRS;
-
-import static java.lang.Math.toIntExact;
-import static java.lang.Math.negateExact;
-import static java.lang.Math.subtractExact;
 
 
 /**
@@ -47,6 +49,7 @@ import static java.lang.Math.subtractExact;
  * stored in a {@link GridCoverage2D}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
  * @module
@@ -124,7 +127,7 @@ final class ResampledGridCoverage extends GridCoverage {
      */
     private GridCoverage specialize() {
         final GridExtent extent = gridGeometry.getExtent();
-        if (extent.getSubDimension() > BIDIMENSIONAL) {
+        if (extent.getDimension() < GridCoverage2D.MIN_DIMENSION || extent.getSubDimension() > BIDIMENSIONAL) {
             return this;
         }
         return new GridCoverage2D(source, gridGeometry, extent, render(null), xDimension, yDimension);
@@ -142,6 +145,9 @@ final class ResampledGridCoverage extends GridCoverage {
     static GridCoverage create(final GridCoverage source, GridGeometry target, final Interpolation interpolation)
             throws FactoryException, TransformException
     {
+        final CoordinateReferenceSystem sourceCRS = source.getCoordinateReferenceSystem();
+        final CoordinateReferenceSystem targetCRS = target.isDefined(GridGeometry.CRS) ?
+                                                    target.getCoordinateReferenceSystem() : sourceCRS;
         /*
          * Get the coordinate operation from source CRS to target CRS. It may be the identity operation,
          * or null only if there is not enough information for determining the operation. We try to take
@@ -153,9 +159,6 @@ final class ResampledGridCoverage extends GridCoverage {
             changeOfCRS = Envelopes.findOperation(sourceGG.getEnvelope(), target.getEnvelope());
         }
         if (changeOfCRS == null) try {
-            final CoordinateReferenceSystem sourceCRS = source.getCoordinateReferenceSystem();
-            final CoordinateReferenceSystem targetCRS = target.isDefined(GridGeometry.CRS) ?
-                                                        target.getCoordinateReferenceSystem() : sourceCRS;
             DefaultGeographicBoundingBox areaOfInterest = null;
             if (sourceGG.isDefined(GridGeometry.ENVELOPE)) {
                 areaOfInterest = new DefaultGeographicBoundingBox();
@@ -171,21 +174,124 @@ final class ResampledGridCoverage extends GridCoverage {
          * The following line may throw IncompleteGridGeometryException, which is desired because if that
          * transform is missing, we can not continue (we have no way to guess it).
          */
-        MathTransform toTarget = sourceGG.getGridToCRS(PixelInCell.CELL_CENTER);
+        MathTransform sourceGridToCRS = sourceGG.getGridToCRS(PixelInCell.CELL_CENTER);
         if (changeOfCRS != null) {
-            toTarget = MathTransforms.concatenate(toTarget, changeOfCRS.getMathTransform());
+            sourceGridToCRS = MathTransforms.concatenate(sourceGridToCRS, changeOfCRS.getMathTransform());
         }
         /*
          * Compute the transform from target grid to target CRS. This transform may be unspecified,
          * in which case we need to compute a default transform trying to preserve resolution at the
          * point of interest.
          */
-        MathTransform toSource = null;
+        GridExtent targetExtent = target.isDefined(GridGeometry.EXTENT) ? target.getExtent() : null;
+        final MathTransform targetGridToCRS;
         if (target.isDefined(GridGeometry.GRID_TO_CRS)) {
-            toSource = target.getGridToCRS(PixelInCell.CELL_CENTER);
+            targetGridToCRS = target.getGridToCRS(PixelInCell.CELL_CENTER);
+            if (targetExtent == null) {
+                targetExtent = targetExtent(sourceGG, changeOfCRS, targetGridToCRS.inverse());
+            }
         } else {
-            throw new UnsupportedOperationException("Automatic computation of gridToCRS not yet implemented.");
-            // TODO: complete the target GridGeometry.
+            /*
+             * The first column below gives the displacement in target CRS when moving is the source grid by one cell
+             * toward right, and the second column gives the displacement when moving one cell toward up (positive y).
+             * More columns may exist in 3D, 4D, etc. cases.
+             */
+            final MatrixSIS vectors = MatrixSIS.castOrCopy(sourceGridToCRS.derivative(
+                    new DirectPositionView.Double(sourceGG.getExtent().getPointOfInterest())));
+            /*
+             * We will retain only the magnitudes of those vectors, in order to have directions parallel with target
+             * grid axes. There is one magnitude value for each target CRS dimension. If there is more target grid
+             * dimensions than magnitude values (unusual, but not forbidden), some grid dimensions will be ignored
+             * provided that their size is 1 (otherwise a SubspaceNotSpecifiedException is thrown).
+             */
+            final double[]  magnitudes = vectors.normalizeColumns();          // Length is dimension  of source grid.
+            final int       crsDim     = vectors.getNumRow();                 // Number of dimensions of target CRS.
+            final int       gridDim    = target.getDimension();               // Number of dimensions of target grid.
+            final int       mappedDim  = Math.min(magnitudes.length, Math.min(crsDim, gridDim));
+            final MatrixSIS crsToGrid  = Matrices.createZero(gridDim + 1, crsDim + 1);
+            final int[]     dimSelect  = (gridDim > crsDim && targetExtent != null) ?
+                                         targetExtent.getSubspaceDimensions(crsDim) : null;
+            /*
+             * The goal below is to build a target "gridToCRS" which perform the same axis swapping and flipping than
+             * the source "gridToCRS". For example if the source "gridToCRS" was flipping y axis, then we want target
+             * "gridToCRS" to also flips that axis, unless the transformation from "source CRS" to "target CRS" flips
+             * that axis, in which case the result in target "gridToCRS" would be to not flip again:
+             *
+             *     (source gridToCRS)    →    (source CRS to target CRS)    →    (target gridToCRS)⁻¹
+             *         flip y axis             no axis direction change              flip y axis
+             *   or    flip y axis                  flip y axis                   no additional flip
+             *
+             * For each column, the row index of the greatest absolute value is taken as the target dimension where
+             * to set vector magnitude in target "crsToGrid" matrix. That way, if transformation from source CRS to
+             * target CRS does not flip or swap axis, target `gridToCRS` matrix should looks like source `gridToCRS`
+             * matrix (i.e. zero and non-zero coefficients at the same places). If two vectors have their greatest
+             * value on the same row, the largest value win (since the `vectors` matrix has been normalized to unit
+             * vectors, values in different columns are comparable).
+             */
+            for (;;) {
+                double max = 0;
+                int tgDim = -1;                         // Grid dimension of maximal value.
+                int tcDim = -1;                         // CRS dimension of maximal value.
+                for (int i=0; i<mappedDim; i++) {
+                    // `ci` differs from `i` only if the source grid has "too much" dimensions.
+                    final int ci = (dimSelect != null) ? dimSelect[i] : i;
+                    for (int j=0; j<crsDim; j++) {
+                        final double m = Math.abs(vectors.getElement(j,ci));
+                        if (m > max) {
+                            max   = m;
+                            tcDim = j;
+                            tgDim = ci;
+                        }
+                    }
+                }
+                if (tgDim < 0) break;                   // No more non-zero value in the `vectors` matrix.
+                for (int j=0; j<crsDim; j++) {
+                    vectors.setElement(j, tgDim, 0);    // For preventing this column to be selected again.
+                }
+                crsToGrid.setElement(tgDim, tcDim, magnitudes[tgDim]);
+            }
+            crsToGrid.setElement(gridDim, crsDim, 1);
+            /*
+             * At this point we got a first estimation of "target CRS to grid" transform, without translation terms.
+             * Apply the complete transform chain on source extent; this will give us a tentative target extent.
+             * This tentative extent will be compared with desired target.
+             */
+            final GridExtent tentative = targetExtent(sourceGG, changeOfCRS, MathTransforms.linear(crsToGrid));
+            if (targetExtent == null) {
+                // Create an extent of same size but with lower coordinates set to 0.
+                final long[] coordinates = new long[gridDim * 2];
+                for (int i=0; i<gridDim; i++) {
+                    coordinates[i + gridDim] = tentative.getSize(i);
+                }
+                targetExtent = new GridExtent(tentative, coordinates);
+            }
+            /*
+             * At this point we have the desired target extent and the extent that we actually got by applying
+             * full "source to target" transform. Compute the scale and offset differences between target and
+             * actual extents, then adjust matrix coefficients for compensating those differences.
+             */
+            final DoubleDouble scale  = new DoubleDouble();
+            final DoubleDouble offset = new DoubleDouble();
+            final DoubleDouble tmp    = new DoubleDouble();
+            for (int j=0; j<gridDim; j++) {
+                tmp.set(targetExtent.getSize(j));
+                scale.set(tentative.getSize(j));
+                scale.inverseDivide(tmp);
+
+                tmp.set(targetExtent.getLow(j));
+                offset.set(-tentative.getLow(j));
+                offset.multiply(scale);
+                offset.add(tmp);
+                crsToGrid.convertAfter(j, scale, offset);
+            }
+            targetGridToCRS = MathTransforms.linear(crsToGrid.inverse());
+        }
+        /*
+         * At this point all target grid geometry components are non-null.
+         * Build the final target GridGeometry if any components were missing.
+         */
+        if (!target.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS | GridGeometry.CRS)) {
+            target = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetGridToCRS, targetCRS);
         }
         if (sourceGG.equals(target)) {
             return source;
@@ -193,8 +299,32 @@ final class ResampledGridCoverage extends GridCoverage {
         /*
          * Complete the "target to source" transform.
          */
-        toSource = MathTransforms.concatenate(toSource, toTarget.inverse());
+        final MathTransform toSource = MathTransforms.concatenate(targetGridToCRS, sourceGridToCRS.inverse());
         return new ResampledGridCoverage(source, target, toSource, interpolation).specialize();
+    }
+
+    /**
+     * Computes a target grid extent by transforming the source grid extent. This method expects a transform
+     * mapping cell centers, but will adjust for getting a result as if the transform was mapping cell corners.
+     *
+     * @param  source       the source grid geometry.
+     * @param  changeOfCRS  the coordinate operation from source CRS to target CRS, or {@code null}.
+     * @param  crsToGrid    the transform from target CRS to target grid, mapping cell <em>centers</em>.
+     * @return target grid extent.
+     */
+    private static GridExtent targetExtent(final GridGeometry source, final CoordinateOperation changeOfCRS,
+            final MathTransform crsToGrid) throws TransformException
+    {
+        MathTransform extentMapper = source.getGridToCRS(PixelInCell.CELL_CORNER);
+        if (changeOfCRS != null) {
+            extentMapper = MathTransforms.concatenate(extentMapper, changeOfCRS.getMathTransform());
+        }
+        extentMapper = MathTransforms.concatenate(extentMapper, crsToGrid);
+        final GeneralEnvelope bounds = source.getExtent().toCRS(extentMapper, extentMapper, null);
+        final double[] vector = new double[bounds.getDimension()];
+        Arrays.fill(vector, 0.5);
+        bounds.translate(vector);       // Convert cell centers to cell corners.
+        return new GridExtent(bounds, GridRoundingMode.NEAREST, null, null, null);
     }
 
     /**
@@ -208,20 +338,20 @@ final class ResampledGridCoverage extends GridCoverage {
         final RenderedImage image        = source.render(null);           // TODO: compute slice.
         final GridExtent    sourceExtent = source.getGridGeometry().getExtent();
         final GridExtent    targetExtent = gridGeometry.getExtent();
-        final Rectangle     bounds       = new Rectangle(toIntExact(targetExtent.getSize(xDimension)),
-                                                         toIntExact(targetExtent.getSize(yDimension)));
+        final Rectangle     bounds       = new Rectangle(Math.toIntExact(targetExtent.getSize(xDimension)),
+                                                         Math.toIntExact(targetExtent.getSize(yDimension)));
         /*
          * `this.toSource` is a transform from source cell coordinates to target cell coordinates.
          * We need a transform from source pixel coordinates to target pixel coordinates (in images).
          * An offset may exist between cell coordinates and pixel coordinates.
          */
         final MathTransform pixelsToTransform = MathTransforms.translation(
-                subtractExact(sourceExtent.getLow(xDimension), image.getMinX()),
-                subtractExact(sourceExtent.getLow(yDimension), image.getMinY()));
+                targetExtent.getLow(xDimension),
+                targetExtent.getLow(yDimension));
 
         final MathTransform transformToPixels = MathTransforms.translation(
-                negateExact(targetExtent.getLow(xDimension)),
-                negateExact(targetExtent.getLow(yDimension)));
+                Math.subtractExact(image.getMinX(), sourceExtent.getLow(xDimension)),
+                Math.subtractExact(image.getMinY(), sourceExtent.getLow(yDimension)));
 
         final MathTransform toImage = MathTransforms.concatenate(pixelsToTransform, toSource, transformToPixels);
         /*

@@ -55,7 +55,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.1
  *
  * @see Matrices
  *
@@ -422,11 +422,13 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * coordinate in the source space is increased by one. Invoking this method turns those vectors
      * into unitary vectors, which is useful for forming the basis of a new coordinate system.</p>
      *
+     * @return the magnitude for each column. The length of this array is the number of columns.
      * @throws UnsupportedOperationException if this matrix is unmodifiable.
      */
-    public void normalizeColumns() {
+    public double[] normalizeColumns() {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
+        final double[] magnitudes = new double[numCol];
         final DoubleDouble sum = new DoubleDouble();
         final DoubleDouble dot = new DoubleDouble();
         final DoubleDouble tmp = new DoubleDouble();
@@ -444,7 +446,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
                 dot.inverseDivide(tmp);
                 set(j, i, dot);
             }
+            magnitudes[i] = sum.doubleValue();
         }
+        return magnitudes;
     }
 
     /**

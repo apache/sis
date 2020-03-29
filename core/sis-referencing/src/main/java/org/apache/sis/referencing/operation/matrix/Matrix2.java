@@ -276,10 +276,12 @@ public class Matrix2 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public void normalizeColumns() {
+    public double[] normalizeColumns() {
+        final double[] magnitudes = new double[2];
         double m;
-        m = Math.hypot(m00, m10); m00 /= m; m10 /= m;
-        m = Math.hypot(m01, m11); m01 /= m; m11 /= m;
+        magnitudes[0] = m = Math.hypot(m00, m10); m00 /= m; m10 /= m;
+        magnitudes[1] = m = Math.hypot(m01, m11); m01 /= m; m11 /= m;
+        return magnitudes;
     }
 
     /**
