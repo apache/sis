@@ -28,6 +28,9 @@ import org.apache.sis.util.ArgumentChecks;
  * This class may become public in a future version, but not yet because managing large tiled
  * images would require a more sophisticated class than current implementation.
  *
+ * <p>This class should not perform any computation; all tiles are given at construction time.
+ * This requirement makes this class thread-safe and concurrent without the need for synchronization.</p>
+ *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
