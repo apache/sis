@@ -42,6 +42,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.util.ComparisonMode;
 
 
 /**
@@ -293,10 +294,12 @@ final class ResampledGridCoverage extends GridCoverage {
          * At this point all target grid geometry components are non-null.
          * Build the final target GridGeometry if any components were missing.
          */
+        ComparisonMode mode = ComparisonMode.IGNORE_METADATA;
         if (!target.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS | GridGeometry.CRS)) {
             target = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetGridToCRS, targetCRS);
+            mode = ComparisonMode.APPROXIMATE;
         }
-        if (sourceGG.equals(target)) {
+        if (sourceGG.equals(target, mode)) {
             return source;
         }
         /*

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.util.Objects;
 import java.util.Locale;
 import java.util.Optional;
 import java.time.Instant;
@@ -65,9 +64,12 @@ import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.io.TableAppender;
@@ -109,7 +111,7 @@ import org.apache.sis.xml.NilReason;
  * @since   1.0
  * @module
  */
-public class GridGeometry implements Serializable {
+public class GridGeometry implements LenientComparable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -1364,17 +1366,60 @@ public class GridGeometry implements Serializable {
 
     /**
      * Compares the specified object with this grid geometry for equality.
+     * This method delegates to {@code equals(object, ComparisonMode.STRICT)}.
      *
      * @param  object  the object to compare with.
      * @return {@code true} if the given object is equals to this grid geometry.
      */
     @Override
     public boolean equals(final Object object) {
-        if (object != null && object.getClass() == getClass()) {
+        return equals(object, ComparisonMode.STRICT);
+    }
+
+    /**
+     * Compares the specified object with this grid geometry for equality.
+     * If the mode is {@link ComparisonMode#IGNORE_METADATA} or more flexible,
+     * then the {@linkplain GridExtent#getAxisType(int) axis types} are ignored.
+     *
+     * @param  object  the object to compare with this grid geometry for equality.
+     * @param  mode    the strictness level of the comparison.
+     * @return {@code true} if the given object is equal to this grid geometry.
+     *
+     * @since 1.1
+     */
+    @Override
+    @SuppressWarnings("fallthrough")
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            return true;
+        }
+        if (object instanceof GridGeometry) {
             final GridGeometry that = (GridGeometry) object;
-            return Objects.equals(this.extent,    that.extent)    &&
-                   Objects.equals(this.gridToCRS, that.gridToCRS) &&
-                   Objects.equals(this.envelope,  that.envelope);
+            if ((mode != ComparisonMode.STRICT || getClass().equals(object.getClass()))
+                    && Utilities.deepEquals(extent,    that.extent,    mode)
+                    && Utilities.deepEquals(gridToCRS, that.gridToCRS, mode))
+            {
+                final ImmutableEnvelope othenv = that.envelope;
+                if (!mode.isApproximate()) {
+                    return Utilities.deepEquals(envelope, othenv, mode);
+                }
+                if ((envelope == null) == (othenv == null) &&
+                        Utilities.deepEquals(getCoordinateReferenceSystem(envelope),
+                                             getCoordinateReferenceSystem(othenv), mode))
+                {
+                    if (envelope != null) {
+                        for (int i=envelope.getDimension(); --i >= 0;) {
+                            final double ε = (resolution != null) ? resolution[i] * Numerics.COMPARISON_THRESHOLD : 0;
+                            if (!MathFunctions.epsilonEqual(envelope.getLower(i), othenv.getLower(i), ε) ||
+                                !MathFunctions.epsilonEqual(envelope.getUpper(i), othenv.getUpper(i), ε))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                }
+            }
         }
         return false;
     }

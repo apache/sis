@@ -150,18 +150,22 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     }
 
     /**
-     * Returns {@code true} if at least one of the specified CRS is null, or both CRS are equals.
-     * This special processing for {@code null} values is different from the usual contract of an
-     * {@code equals} method, but allow to handle the case where the CRS is unknown.
-     *
-     * <p>Note that in debug mode (to be used in assertions only), the comparisons are actually a
-     * bit more relax than just "ignoring metadata", since some rounding errors are tolerated.</p>
+     * Weakly asserts that the given CRS are equal. This method may return {@code false} without throwing
+     * {@link AssertionError}, so callers should still test the returned value in their {@code assert} statement.
      */
-    static boolean equalsIgnoreMetadata(final CoordinateReferenceSystem crs1,
-                                        final CoordinateReferenceSystem crs2, final boolean debug)
+    static boolean assertEquals(final CoordinateReferenceSystem crs1, final CoordinateReferenceSystem crs2) {
+        return equals(crs1, crs2, ComparisonMode.DEBUG);
+    }
+
+    /**
+     * Returns {@code true} if at least one of the specified CRS is null, or both CRS are approximately equals.
+     * This special processing for {@code null} values is different than the usual contract of {@code equals} method,
+     * but allows to handle the case where the CRS is unknown.
+     */
+    private static boolean equals(final CoordinateReferenceSystem crs1,
+                                  final CoordinateReferenceSystem crs2, final ComparisonMode mode)
     {
-        return (crs1 == null) || (crs2 == null) || Utilities.deepEquals(crs1, crs2,
-                debug ? ComparisonMode.DEBUG : ComparisonMode.IGNORE_METADATA);
+        return (crs1 == null) || (crs2 == null) || Utilities.deepEquals(crs1, crs2, mode);
     }
 
     /**
@@ -699,7 +703,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * then this method returns {@code false}.
      *
      * <h4>Pre-conditions</h4>
-     * This method assumes that the specified point uses the same CRS than this envelope.
+     * This method assumes that the specified point uses a CRS equivalent to this envelope CRS.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
@@ -717,8 +721,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
         ensureNonNull("position", position);
         final int dimension = getDimension();
         ensureDimensionMatches("point", dimension, position);
-        assert equalsIgnoreMetadata(getCoordinateReferenceSystem(),
-                position.getCoordinateReferenceSystem(), true) : position;
+        assert assertEquals(getCoordinateReferenceSystem(), position.getCoordinateReferenceSystem()) : position;
         for (int i=0; i<dimension; i++) {
             final double value = position.getOrdinate(i);
             final double lower = getLower(i);
@@ -795,8 +798,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
         ensureNonNull("envelope", envelope);
         final int dimension = getDimension();
         ensureDimensionMatches("envelope", dimension, envelope);
-        assert equalsIgnoreMetadata(getCoordinateReferenceSystem(),
-                envelope.getCoordinateReferenceSystem(), true) : envelope;
+        assert assertEquals(getCoordinateReferenceSystem(), envelope.getCoordinateReferenceSystem()) : envelope;
         final DirectPosition lowerCorner = envelope.getLowerCorner();
         final DirectPosition upperCorner = envelope.getUpperCorner();
         for (int i=0; i<dimension; i++) {
@@ -930,8 +932,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
         ensureNonNull("envelope", envelope);
         final int dimension = getDimension();
         ensureDimensionMatches("envelope", dimension, envelope);
-        assert equalsIgnoreMetadata(getCoordinateReferenceSystem(),
-                envelope.getCoordinateReferenceSystem(), true) : envelope;
+        assert assertEquals(getCoordinateReferenceSystem(), envelope.getCoordinateReferenceSystem()) : envelope;
         final DirectPosition lowerCorner = envelope.getLowerCorner();
         final DirectPosition upperCorner = envelope.getUpperCorner();
         for (int i=0; i<dimension; i++) {
@@ -1021,10 +1022,10 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * [-180…180]° range while the later can have a range of thousands of meters.</div>
      *
      * <h4>Coordinate Reference System</h4>
-     * To be considered equal, the two envelopes must have the same {@linkplain #getDimension() dimension}
-     * and their CRS must be {@linkplain org.apache.sis.util.Utilities#equalsIgnoreMetadata equals,
-     * ignoring metadata}. If at least one envelope has a null CRS, then the CRS are ignored and the
-     * coordinate values are compared as if the CRS were equal.
+     * To be considered equal, the two envelopes must have the same {@linkplain #getDimension() number of dimensions}
+     * and their CRS must be {@linkplain org.apache.sis.util.ComparisonMode#APPROXIMATE approximately equal}.
+     * If at least one envelope has a null CRS, then the CRS are ignored and the coordinate values are compared
+     * as if the CRS were equal.
      *
      * @param  other          the envelope to compare with.
      * @param  eps            the tolerance value to use for numerical comparisons.
@@ -1038,8 +1039,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     public boolean equals(final Envelope other, final double eps, final boolean epsIsRelative) {
         ensureNonNull("other", other);
         final int dimension = getDimension();
-        if (other.getDimension() != dimension || !equalsIgnoreMetadata(
-                getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem(), false))
+        if (other.getDimension() != dimension ||
+                !equals(getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem(),
+                        (eps == 0) ? ComparisonMode.IGNORE_METADATA : ComparisonMode.APPROXIMATE))
         {
             return false;
         }
@@ -1061,6 +1063,12 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
         }
         return true;
     }
+
+    /*
+     * Do not implement `LenientComparable.equals(Object, ComparisonMode)` because the choice of a tolerance
+     * threshold is too arbitrary.  We want users to invoke above `equals(Envelope, double, boolean)` method
+     * themselves with a tolerance computed for example from the resolution of their data.
+     */
 
     /**
      * Returns {@code true} if the specified object is an envelope of the same class

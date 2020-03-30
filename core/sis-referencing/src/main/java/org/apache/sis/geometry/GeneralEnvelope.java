@@ -537,7 +537,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * coordinates was {@link Double#NaN} in which case the corresponding coordinate has been ignored.</p>
      *
      * <h4>Pre-conditions</h4>
-     * This method assumes that the specified point uses the same CRS than this envelope.
+     * This method assumes that the specified point uses a CRS equivalent to this envelope CRS.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
@@ -561,7 +561,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;
         ensureDimensionMatches("position", dimension, position);
-        assert equalsIgnoreMetadata(crs, position.getCoordinateReferenceSystem(), true) : position;
+        assert assertEquals(crs, position.getCoordinateReferenceSystem()) : position;
         final int d = coordinates.length >>> 1;
         for (int i=0; i<dimension; i++) {
             final int iLower = beginIndex + i;
@@ -617,7 +617,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * The resulting envelope is the union of the two {@code Envelope} objects.
      *
      * <h4>Pre-conditions</h4>
-     * This method assumes that the specified envelope uses the same CRS than this envelope.
+     * This method assumes that the specified envelope uses a CRS equivalent to this envelope CRS.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
@@ -665,7 +665,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;
         ensureDimensionMatches("envelope", dimension, envelope);
-        assert equalsIgnoreMetadata(crs, envelope.getCoordinateReferenceSystem(), true) : envelope;
+        assert assertEquals(crs, envelope.getCoordinateReferenceSystem()) : envelope;
         final DirectPosition lower = envelope.getLowerCorner();
         final DirectPosition upper = envelope.getUpperCorner();
         final int d = coordinates.length >>> 1;
@@ -773,7 +773,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * Sets this envelope to the intersection of this envelope with the specified one.
      *
      * <h4>Pre-conditions</h4>
-     * This method assumes that the specified envelope uses the same CRS than this envelope.
+     * This method assumes that the specified envelope uses a CRS equivalent to this envelope CRS.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
@@ -821,7 +821,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;
         ensureDimensionMatches("envelope", dimension, envelope);
-        assert equalsIgnoreMetadata(crs, envelope.getCoordinateReferenceSystem(), true) : envelope;
+        assert assertEquals(crs, envelope.getCoordinateReferenceSystem()) : envelope;
         final DirectPosition lower = envelope.getLowerCorner();
         final DirectPosition upper = envelope.getUpperCorner();
         final int d = coordinates.length >>> 1;

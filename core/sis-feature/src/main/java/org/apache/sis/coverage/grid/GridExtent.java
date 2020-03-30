@@ -55,6 +55,8 @@ import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
@@ -83,7 +85,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * @since   1.0
  * @module
  */
-public class GridExtent implements GridEnvelope, Serializable {
+public class GridExtent implements GridEnvelope, LenientComparable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -1289,15 +1291,42 @@ public class GridExtent implements GridEnvelope, Serializable {
 
     /**
      * Compares the specified object with this grid envelope for equality.
+     * This method delegates to {@code equals(object, ComparisonMode.STRICT)}.
      *
      * @param  object  the object to compare with this grid envelope for equality.
      * @return {@code true} if the given object is equal to this grid envelope.
      */
     @Override
-    public boolean equals(final Object object) {
-        if (object != null && object.getClass() == GridExtent.class) {
+    public final boolean equals(final Object object) {
+        return equals(object, ComparisonMode.STRICT);
+    }
+
+    /**
+     * Compares the specified object with this grid envelope for equality.
+     * If the mode is {@link ComparisonMode#IGNORE_METADATA} or more flexible,
+     * then the {@linkplain #getAxisType(int) axis types} are ignored.
+     *
+     * @param  object  the object to compare with this grid envelope for equality.
+     * @param  mode    the strictness level of the comparison.
+     * @return {@code true} if the given object is equal to this grid envelope.
+     *
+     * @since 1.1
+     */
+    @Override
+    @SuppressWarnings("fallthrough")
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            return true;
+        }
+        if (object instanceof GridExtent) {
             final GridExtent other = (GridExtent) object;
-            return Arrays.equals(coordinates, other.coordinates) && Arrays.equals(types, other.types);
+            if (Arrays.equals(coordinates, other.coordinates)) {
+                switch (mode) {
+                    case STRICT:      if (!getClass().equals(object.getClass())) return false;  // else fallthrough
+                    case BY_CONTRACT: if (!Arrays.equals(types, other.types))    return false;  // else fallthrough
+                    default:          return true;
+                }
+            }
         }
         return false;
     }
