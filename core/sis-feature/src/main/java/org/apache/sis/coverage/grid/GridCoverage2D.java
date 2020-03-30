@@ -551,11 +551,14 @@ public class GridCoverage2D extends GridCoverage {
      */
     @Override
     @SuppressWarnings("AssertWithSideEffects")
-    public RenderedImage render(final GridExtent sliceExtent) throws CannotEvaluateException {
-        if (sliceExtent == null) {
-            return data;
-        }
+    public RenderedImage render(GridExtent sliceExtent) throws CannotEvaluateException {
         final GridExtent extent = gridGeometry.extent;
+        if (sliceExtent == null) {
+            if (extent == null || (data.getMinX() == 0 && data.getMinY() == 0)) {
+                return data;
+            }
+            sliceExtent = extent;
+        }
         if (extent != null) {
             for (int i = min(sliceExtent.getDimension(), extent.getDimension()); --i >= 0;) {
                 if (i != xDimension && i != yDimension) {
@@ -600,7 +603,7 @@ public class GridCoverage2D extends GridCoverage {
              * may force data loading earlier than desired.
              */
             final ReshapedImage r = new ReshapedImage(data, xmin, ymin, xmax, ymax);
-            String error; assert (error = r.verify()) != null : error;
+            String error; assert (error = r.verify()) == null : error;
             return r.isIdentity() ? data : r;
         } catch (ArithmeticException e) {
             throw new CannotEvaluateException(e.getMessage(), e);

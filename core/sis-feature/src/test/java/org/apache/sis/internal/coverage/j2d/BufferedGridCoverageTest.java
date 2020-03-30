@@ -51,6 +51,7 @@ public final strictfp class BufferedGridCoverageTest extends GridCoverage2DTest 
      * @param  sd    the sample dimensions of the coverage to create.
      * @return the coverage instance to test, with above-cited values.
      */
+    @Override
     protected GridCoverage createTestCoverage(final GridGeometry grid, final List<SampleDimension> sd) {
         /*
          * Create the grid coverage, gets its image and set values directly as short integers.

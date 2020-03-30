@@ -18,11 +18,13 @@ package org.apache.sis.image;
 
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
+import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import java.awt.image.RasterFormatException;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -78,6 +80,31 @@ import org.apache.sis.internal.coverage.j2d.TiledImage;
  */
 public class ImageProcessor {
     /**
+     * Interpolation to use during resample operations.
+     *
+     * @see #getInterpolation()
+     * @see #setInterpolation(Interpolation)
+     */
+    private Interpolation interpolation;
+
+    /**
+     * The values to use for pixels that can not be computed.
+     * This array may be {@code null} or may contain {@code null} elements.
+     *
+     * @see #getFillValues()
+     * @see #setFillValues(Number...)
+     */
+    private Number[] fillValues;
+
+    /**
+     * Whether the operations can be executed in parallel.
+     *
+     * @see #getExecutionMode()
+     * @see #setExecutionMode(Mode)
+     */
+    private Mode executionMode;
+
+    /**
      * Execution modes specifying whether operations can be executed in parallel.
      * If {@link #SEQUENTIAL}, operations are executed sequentially in the caller thread.
      * If {@link #PARALLEL}, some operations may be parallelized using an arbitrary number of threads.
@@ -107,6 +134,16 @@ public class ImageProcessor {
          */
         DEFAULT
     }
+
+    /**
+     * Whether errors occurring during computation should be propagated or wrapped in a {@link LogRecord}.
+     * If errors are wrapped in a {@link LogRecord}, this field specifies what to do with the record.
+     * Only one log record is created for all tiles that failed for the same operation on the same image.
+     *
+     * @see #getErrorAction()
+     * @see #setErrorAction(Filter)
+     */
+    private Filter errorAction;
 
     /**
      * Specifies how exceptions occurring during calculation should be handled.
@@ -148,30 +185,59 @@ public class ImageProcessor {
     }
 
     /**
-     * Whether the operations can be executed in parallel.
-     *
-     * @see #getExecutionMode()
-     * @see #setExecutionMode(Mode)
-     */
-    private Mode executionMode;
-
-    /**
-     * Whether errors occurring during computation should be propagated or wrapped in a {@link LogRecord}.
-     * If errors are wrapped in a {@link LogRecord}, this field specifies what to do with the record.
-     * Only one log record is created for all tiles that failed for the same operation on the same image.
-     *
-     * @see #getErrorAction()
-     * @see #setErrorAction(Filter)
-     */
-    private Filter errorAction;
-
-    /**
      * Creates a new set of image operations with default configuration.
      * The execution mode is initialized to {@link Mode#DEFAULT} and the error action to {@link ErrorAction#THROW}.
      */
     public ImageProcessor() {
         executionMode = Mode.DEFAULT;
         errorAction   = ErrorAction.THROW;
+        interpolation = Interpolation.BILINEAR;
+    }
+
+    /**
+     * Returns the interpolation method to use during resample operations.
+     *
+     * @return interpolation method to use during resample operations.
+     *
+     * @see #resample(Rectangle, MathTransform, RenderedImage)
+     */
+    public Interpolation getInterpolation() {
+        return interpolation;
+    }
+
+    /**
+     * Sets the interpolation method to use during resample operations.
+     *
+     * @param  method  interpolation method to use during resample operations.
+     *
+     * @see #resample(Rectangle, MathTransform, RenderedImage)
+     */
+    public void setInterpolation(final Interpolation method) {
+        ArgumentChecks.ensureNonNull("method", method);
+        interpolation = method;
+    }
+
+    /**
+     * Returns the values to use for pixels that can not be computed.
+     * This method returns a copy of the array set by the last call to {@link #setFillValues(Number...)}.
+     *
+     * @return fill values to use for pixels that can not be computed, or {@code null} for the defaults.
+     */
+    public Number[] getFillValues() {
+        return (fillValues != null) ? fillValues.clone() : null;
+    }
+
+    /**
+     * Sets the values to use for pixels that can not be computed. The given array may be {@code null} or may contain
+     * {@code null} elements for default values. Those defaults are zero for images storing sample values as integers,
+     * or {@link Float#NaN} or {@link Double#NaN} for images storing sample values as floating point numbers. If the
+     * given array contains less elements than the number of bands in an image, missing elements will be assumed null.
+     * If the given array contains more elements than the number of bands, extraneous elements will be ignored.
+     *
+     * @param  values  fill values to use for pixels that can not be computed, or {@code null} for the defaults.
+     */
+    public void setFillValues(final Number... values) {
+        fillValues = (values != null) ? values.clone() : null;
     }
 
     /**
@@ -344,6 +410,31 @@ public class ImageProcessor {
             }
         }
         return source;
+    }
+
+    /**
+     * Creates a new image which will resample the given image. The resampling operation is defined
+     * by a non-linear transform from the <em>new</em> image to the specified <em>source</em> image.
+     * That transform should map {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER pixel centers}.
+     * If that transform produces coordinates that are outside source envelope bounds, then the corresponding pixels
+     * in the new image are set to {@linkplain #getFillValues() fill values}. Otherwise sample values are interpolated
+     * using the method given by {@link #getInterpolation()}.
+     *
+     * @param  bounds    domain of pixel coordinates of resampled image.
+     * @param  toSource  conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
+     * @param  source    the image to be resampled.
+     * @return resampled image (may be {@code source}).
+     */
+    public RenderedImage resample(final Rectangle bounds, final MathTransform toSource, final RenderedImage source) {
+        ArgumentChecks.ensureNonNull("bounds",   bounds);
+        ArgumentChecks.ensureNonNull("toSource", toSource);
+        ArgumentChecks.ensureNonNull("source",   source);
+        if (toSource.isIdentity() && bounds.x == source.getMinX() && bounds.y == source.getMinY()
+                && bounds.width == source.getWidth() && bounds.height == source.getHeight())
+        {
+            return source;
+        }
+        return new ResampledImage(bounds, toSource, source, interpolation, fillValues);
     }
 
     /**

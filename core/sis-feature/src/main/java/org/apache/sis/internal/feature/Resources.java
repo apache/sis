@@ -248,12 +248,6 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IterationNotStarted = 37;
 
         /**
-         * The “{0}” array length is {2,number} while {1,number} was expected for matching the number
-         * of bands.
-         */
-        public static final short MismatchedArrayLengthForBands_3 = 73;
-
-        /**
          * Image number of bands {0,number} does not match the number of sample dimensions
          * ({1,number}).
          */

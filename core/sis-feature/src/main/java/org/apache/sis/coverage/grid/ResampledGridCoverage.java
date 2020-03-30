@@ -30,7 +30,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.image.Interpolation;
-import org.apache.sis.image.ResampledImage;
+import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.util.DoubleDouble;
@@ -72,7 +72,7 @@ final class ResampledGridCoverage extends GridCoverage {
      * Note that an offset may exist between cell coordinates and pixel coordinates, so some translations may need
      * to be concatenated with this transform on an image-by-image basis.
      */
-    private final MathTransform toSource;
+    private final MathTransform toSourceCorner, toSourceCenter;
 
     /**
      * The interpolation method to use for resampling images.
@@ -89,18 +89,22 @@ final class ResampledGridCoverage extends GridCoverage {
     /**
      * Creates a new grid coverage which will be the resampling of the given source.
      *
-     * @param  source         the coverage to resample.
-     * @param  domain         the grid extent, CRS and conversion from cell indices to CRS.
-     * @param  toSource       transform from cell coordinates in this coverage to source coverage.
-     * @param  interpolation  the interpolation method to use for resampling images.
+     * @param  source          the coverage to resample.
+     * @param  domain          the grid extent, CRS and conversion from cell indices to CRS.
+     * @param  toSourceCorner  transform from cell corner coordinates in this coverage to source coverage.
+     * @param  toSourceCenter  transform from cell center coordinates in this coverage to source coverage.
+     * @param  interpolation   the interpolation method to use for resampling images.
      */
     private ResampledGridCoverage(final GridCoverage source, final GridGeometry domain,
-                               final MathTransform toSource, final Interpolation interpolation)
+                                  final MathTransform toSourceCorner,
+                                  final MathTransform toSourceCenter,
+                                  final Interpolation interpolation)
     {
         super(source, domain);
-        this.source        = source;
-        this.toSource      = toSource;
-        this.interpolation = interpolation;
+        this.source         = source;
+        this.toSourceCorner = toSourceCorner;
+        this.toSourceCenter = toSourceCenter;
+        this.interpolation  = interpolation;
         final GridExtent extent = domain.getExtent();
         long size1 = 0; int idx1 = 0;
         long size2 = 0; int idx2 = 1;
@@ -176,9 +180,12 @@ final class ResampledGridCoverage extends GridCoverage {
          * The following line may throw IncompleteGridGeometryException, which is desired because if that
          * transform is missing, we can not continue (we have no way to guess it).
          */
-        MathTransform sourceGridToCRS = sourceGG.getGridToCRS(PixelInCell.CELL_CENTER);
+        MathTransform sourceCornerToCRS = sourceGG.getGridToCRS(PixelInCell.CELL_CORNER);
+        MathTransform sourceCenterToCRS = sourceGG.getGridToCRS(PixelInCell.CELL_CENTER);
         if (changeOfCRS != null) {
-            sourceGridToCRS = MathTransforms.concatenate(sourceGridToCRS, changeOfCRS.getMathTransform());
+            final MathTransform tr = changeOfCRS.getMathTransform();
+            sourceCornerToCRS = MathTransforms.concatenate(sourceCornerToCRS, tr);
+            sourceCenterToCRS = MathTransforms.concatenate(sourceCenterToCRS, tr);
         }
         /*
          * Compute the transform from target grid to target CRS. This transform may be unspecified,
@@ -186,11 +193,12 @@ final class ResampledGridCoverage extends GridCoverage {
          * point of interest.
          */
         GridExtent targetExtent = target.isDefined(GridGeometry.EXTENT) ? target.getExtent() : null;
-        final MathTransform targetGridToCRS;
+        final MathTransform targetCenterToCRS;
         if (target.isDefined(GridGeometry.GRID_TO_CRS)) {
-            targetGridToCRS = target.getGridToCRS(PixelInCell.CELL_CENTER);
+            targetCenterToCRS = target.getGridToCRS(PixelInCell.CELL_CENTER);
             if (targetExtent == null) {
-                targetExtent = targetExtent(sourceGG, changeOfCRS, targetGridToCRS.inverse());
+                targetExtent = targetExtent(sourceGG.getExtent(), sourceCornerToCRS,
+                        target.getGridToCRS(PixelInCell.CELL_CORNER).inverse(), false);
             }
         } else {
             /*
@@ -198,8 +206,9 @@ final class ResampledGridCoverage extends GridCoverage {
              * toward right, and the second column gives the displacement when moving one cell toward up (positive y).
              * More columns may exist in 3D, 4D, etc. cases.
              */
-            final MatrixSIS vectors = MatrixSIS.castOrCopy(sourceGridToCRS.derivative(
-                    new DirectPositionView.Double(sourceGG.getExtent().getPointOfInterest())));
+            final GridExtent sourceExtent = sourceGG.getExtent();
+            final MatrixSIS vectors = MatrixSIS.castOrCopy(sourceCenterToCRS.derivative(
+                    new DirectPositionView.Double(sourceExtent.getPointOfInterest())));
             /*
              * We will retain only the magnitudes of those vectors, in order to have directions parallel with target
              * grid axes. There is one magnitude value for each target CRS dimension. If there is more target grid
@@ -260,7 +269,8 @@ final class ResampledGridCoverage extends GridCoverage {
              * Apply the complete transform chain on source extent; this will give us a tentative target extent.
              * This tentative extent will be compared with desired target.
              */
-            final GridExtent tentative = targetExtent(sourceGG, changeOfCRS, MathTransforms.linear(crsToGrid));
+            final GridExtent tentative = targetExtent(sourceExtent, sourceCornerToCRS,
+                                                      MathTransforms.linear(crsToGrid), true);
             if (targetExtent == null) {
                 // Create an extent of same size but with lower coordinates set to 0.
                 final long[] coordinates = new long[gridDim * 2];
@@ -288,7 +298,7 @@ final class ResampledGridCoverage extends GridCoverage {
                 offset.add(tmp);
                 crsToGrid.convertAfter(j, scale, offset);
             }
-            targetGridToCRS = MathTransforms.linear(crsToGrid.inverse());
+            targetCenterToCRS = MathTransforms.linear(crsToGrid.inverse());
         }
         /*
          * At this point all target grid geometry components are non-null.
@@ -296,7 +306,7 @@ final class ResampledGridCoverage extends GridCoverage {
          */
         ComparisonMode mode = ComparisonMode.IGNORE_METADATA;
         if (!target.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS | GridGeometry.CRS)) {
-            target = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetGridToCRS, targetCRS);
+            target = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetCenterToCRS, targetCRS);
             mode = ComparisonMode.APPROXIMATE;
         }
         if (sourceGG.equals(target, mode)) {
@@ -305,31 +315,32 @@ final class ResampledGridCoverage extends GridCoverage {
         /*
          * Complete the "target to source" transform.
          */
-        final MathTransform toSource = MathTransforms.concatenate(targetGridToCRS, sourceGridToCRS.inverse());
-        return new ResampledGridCoverage(source, target, toSource, interpolation).specialize();
+        final MathTransform targetCornerToCRS = target.getGridToCRS(PixelInCell.CELL_CORNER);
+        return new ResampledGridCoverage(source, target,
+                MathTransforms.concatenate(targetCornerToCRS, sourceCornerToCRS.inverse()),
+                MathTransforms.concatenate(targetCenterToCRS, sourceCenterToCRS.inverse()),
+                interpolation).specialize();
     }
 
     /**
-     * Computes a target grid extent by transforming the source grid extent. This method expects a transform
-     * mapping cell centers, but will adjust for getting a result as if the transform was mapping cell corners.
+     * Computes a target grid extent by transforming the source grid extent.
      *
-     * @param  source       the source grid geometry.
-     * @param  changeOfCRS  the coordinate operation from source CRS to target CRS, or {@code null}.
-     * @param  crsToGrid    the transform from target CRS to target grid, mapping cell <em>centers</em>.
+     * @param  source       the source grid extent to transform.
+     * @param  cornerToCRS  transform from source grid corners to target CRS.
+     * @param  crsToGrid    transform from target CRS to target grid corners or centers.
+     * @param  center       whether {@code crsToGrid} maps cell centers ({@code true}) or cell corners ({@code false}).
      * @return target grid extent.
      */
-    private static GridExtent targetExtent(final GridGeometry source, final CoordinateOperation changeOfCRS,
-            final MathTransform crsToGrid) throws TransformException
+    private static GridExtent targetExtent(final GridExtent source, final MathTransform cornerToCRS,
+            final MathTransform crsToGrid, final boolean center) throws TransformException
     {
-        MathTransform extentMapper = source.getGridToCRS(PixelInCell.CELL_CORNER);
-        if (changeOfCRS != null) {
-            extentMapper = MathTransforms.concatenate(extentMapper, changeOfCRS.getMathTransform());
+        final MathTransform tr = MathTransforms.concatenate(cornerToCRS, crsToGrid);
+        final GeneralEnvelope bounds = source.toCRS(tr, tr, null);
+        if (center) {
+            final double[] vector = new double[bounds.getDimension()];
+            Arrays.fill(vector, 0.5);
+            bounds.translate(vector);       // Convert cell centers to cell corners.
         }
-        extentMapper = MathTransforms.concatenate(extentMapper, crsToGrid);
-        final GeneralEnvelope bounds = source.getExtent().toCRS(extentMapper, extentMapper, null);
-        final double[] vector = new double[bounds.getDimension()];
-        Arrays.fill(vector, 0.5);
-        bounds.translate(vector);       // Convert cell centers to cell corners.
         return new GridExtent(bounds, GridRoundingMode.NEAREST, null, null, null);
     }
 
@@ -337,11 +348,14 @@ final class ResampledGridCoverage extends GridCoverage {
      * Returns a two-dimensional slice of resampled grid data as a rendered image.
      */
     @Override
-    public RenderedImage render(final GridExtent sliceExtent) {
-        if (sliceExtent != null) {
-            throw new CannotEvaluateException("Slice extent not yet supported.");
+    public RenderedImage render(GridExtent sliceExtent) {
+        if (sliceExtent != null) try {
+            final GeneralEnvelope bounds = sliceExtent.toCRS(toSourceCorner, toSourceCenter, null);
+            sliceExtent = new GridExtent(bounds, GridRoundingMode.ENCLOSING, null, null, null);
+        } catch (TransformException e) {
+            throw new CannotEvaluateException(e.getLocalizedMessage(), e);
         }
-        final RenderedImage image        = source.render(null);           // TODO: compute slice.
+        final RenderedImage image        = source.render(sliceExtent);
         final GridExtent    sourceExtent = source.getGridGeometry().getExtent();
         final GridExtent    targetExtent = gridGeometry.getExtent();
         final Rectangle     bounds       = new Rectangle(Math.toIntExact(targetExtent.getSize(xDimension)),
@@ -359,7 +373,7 @@ final class ResampledGridCoverage extends GridCoverage {
                 Math.subtractExact(image.getMinX(), sourceExtent.getLow(xDimension)),
                 Math.subtractExact(image.getMinY(), sourceExtent.getLow(yDimension)));
 
-        final MathTransform toImage = MathTransforms.concatenate(pixelsToTransform, toSource, transformToPixels);
+        final MathTransform toImage = MathTransforms.concatenate(pixelsToTransform, toSourceCenter, transformToPixels);
         /*
          * Get fill values from background values declared for each band, if any.
          * If no background value is declared, default is 0 for integer data or
@@ -374,6 +388,9 @@ final class ResampledGridCoverage extends GridCoverage {
                 fillValues[i] = bg.get();
             }
         }
-        return new ResampledImage(bounds, toImage, image, interpolation, fillValues);
+        final ImageProcessor processor = new ImageProcessor();
+        processor.setInterpolation(interpolation);
+        processor.setFillValues(fillValues);
+        return processor.resample(bounds, toImage, image);
     }
 }

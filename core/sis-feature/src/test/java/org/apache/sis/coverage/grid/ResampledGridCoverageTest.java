@@ -18,15 +18,17 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Random;
 import java.awt.image.DataBuffer;
-import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.image.Interpolation;
 import org.apache.sis.image.TiledImageMock;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.opengis.referencing.datum.PixelInCell.CELL_CENTER;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -42,7 +44,7 @@ public final strictfp class ResampledGridCoverageTest {
      * Creates a small grid coverage with arbitrary data. The rendered image will
      * have only one tile since testing tiling is not the purpose of this class.
      */
-    private static GridCoverage createGridCoverage() {
+    private static GridCoverage2D createGridCoverage() {
         final Random random  = TestUtilities.createRandomNumberGenerator();
         final int width  = random.nextInt(8) + 3;
         final int height = random.nextInt(8) + 3;
@@ -68,15 +70,41 @@ public final strictfp class ResampledGridCoverageTest {
      * Tests application of an identity transform.
      * We expect the source coverage to be returned unchanged.
      *
+     * @throws FactoryException if transformation between CRS can not be computed.
      * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
      */
     @Test
-    public void testIdentity() throws TransformException {
-        final GridCoverage source = createGridCoverage();
+    public void testIdentity() throws FactoryException, TransformException {
+        final GridCoverage2D source = createGridCoverage();
         GridGeometry gg = source.getGridGeometry();
-        gg = new GridGeometry(null, PixelInCell.CELL_CENTER, gg.getGridToCRS(PixelInCell.CELL_CENTER),
-                              gg.getCoordinateReferenceSystem());
-        final GridCoverage target = new GridCoverageProcessor().resample(source, gg);
-        assertSame(source, target);
+        gg = new GridGeometry(null, CELL_CENTER, gg.getGridToCRS(CELL_CENTER), gg.getCoordinateReferenceSystem());
+        final GridCoverage target = ResampledGridCoverage.create(source, gg, Interpolation.NEAREST);
+        assertSame("Identity transform should result in same coverage.", source, target);
+    }
+
+    /**
+     * Tests application of a translation.
+     *
+     * @throws FactoryException if transformation between CRS can not be computed.
+     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     */
+    @Test
+    public void testTranslation() throws FactoryException, TransformException {
+        final GridCoverage2D source = createGridCoverage();
+        GridGeometry gg = source.getGridGeometry();
+        gg = new GridGeometry(null, CELL_CENTER, null, gg.getCoordinateReferenceSystem());
+        final GridCoverage target = ResampledGridCoverage.create(source, gg, Interpolation.NEAREST);
+        /*
+         * We let ResampledGridCoverageTest chooses the `GridExtent` itself. Since the default behavior
+         * is to create extents starting at zero, it should be different than source extent unless the
+         * random number generator selected a (0,0) location by coincidence.
+         */
+        assertTrue("GridExtent.startsAtZero", target.getGridGeometry().getExtent().startsAtZero());
+        if (source.getGridGeometry().getExtent().startsAtZero()) {
+            assertSame("Identity transform should result in same coverage.", source, target);
+        } else {
+            assertNotSame(source, target);
+            assertInstanceOf("Expected specialized type for 2D.", GridCoverage2D.class, target);
+        }
     }
 }

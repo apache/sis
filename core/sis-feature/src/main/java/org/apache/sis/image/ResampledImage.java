@@ -31,7 +31,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
@@ -113,15 +112,16 @@ public class ResampledImage extends ComputedImage {
      * @param  source         the image to be resampled.
      * @param  interpolation  the object to use for performing interpolations.
      * @param  fillValues     the values to use for pixels in this image that can not be mapped to pixels in source image.
-     *                        The array length must be equal to the number of bands.
-     *                        May be {@code null} or contain {@code null} elements.
+     *                        May be {@code null} or contain {@code null} elements. If shorter than the number of bands,
+     *                        missing values are assumed {@code null}. If longer than the number of bands, extraneous
+     *                        values are ignored.
+     *
+     * @see ImageProcessor#resample(Rectangle, MathTransform, RenderedImage)
      */
-    public ResampledImage(final Rectangle bounds, final MathTransform toSource, final RenderedImage source,
-                          final Interpolation interpolation, final Number[] fillValues)
+    protected ResampledImage(final Rectangle bounds, final MathTransform toSource, final RenderedImage source,
+                             final Interpolation interpolation, final Number[] fillValues)
     {
         super(ImageLayout.DEFAULT.createCompatibleSampleModel(source), source);
-        ArgumentChecks.ensureNonNull("bounds", bounds);
-        ArgumentChecks.ensureNonNull("toSource", toSource);
         ArgumentChecks.ensureNonNull("interpolation", interpolation);
         ArgumentChecks.ensureStrictlyPositive("width",  width  = bounds.width);
         ArgumentChecks.ensureStrictlyPositive("height", height = bounds.height);
@@ -152,10 +152,6 @@ public class ResampledImage extends ComputedImage {
         offset[1] = interpolationSupportOffset(s.height);
         this.toSource = MathTransforms.concatenate(toSource, MathTransforms.translation(offset));
         final int numBands = ImageUtilities.getNumBands(source);
-        if (fillValues != null && fillValues.length != numBands) {
-            throw new IllegalArgumentException(Resources.format(
-                    Resources.Keys.MismatchedArrayLengthForBands_3, "fillValues", numBands, fillValues.length));
-        }
         /*
          * Copy the `fillValues` either as an `int[]` or `double[]` array, depending on
          * whether the data type is an integer type or not. Null elements default to zero.
@@ -164,7 +160,7 @@ public class ResampledImage extends ComputedImage {
         if (ImageUtilities.isIntegerType(dataType)) {
             final int[] fill = new int[numBands];
             if (fillValues != null) {
-                for (int i=0; i<numBands; i++) {
+                for (int i=Math.min(fillValues.length, numBands); --i >= 0;) {
                     final Number f = fillValues[i];
                     if (f != null) fill[i] = f.intValue();
                 }
@@ -174,7 +170,7 @@ public class ResampledImage extends ComputedImage {
             final double[] fill = new double[numBands];
             Arrays.fill(fill, Double.NaN);
             if (fillValues != null) {
-                for (int i=0; i<numBands; i++) {
+                for (int i=Math.min(fillValues.length, numBands); --i >= 0;) {
                     final Number f = fillValues[i];
                     if (f != null) fill[i] = f.doubleValue();
                 }
