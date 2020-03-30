@@ -251,14 +251,15 @@ public class Matrix1 extends MatrixSIS {
 
     /**
      * Normalizes all columns in-place.
-     * For a 1×1 matrix, this method just sets unconditionally the {@link #m00} value to 1.
+     * For a 1×1 matrix with non-NaN value, this method sets the {@link #m00} value
+     * to +1, -1 or 0 with the same sign than the original value.
      *
      * @return the magnitude of the column, which is the absolute value of {@link #m00}.
      */
     @Override
-    public double[] normalizeColumns() {
-        final double[] magnitudes = new double[] {Math.abs(m00)};
-        m00 = 1;
+    public MatrixSIS normalizeColumns() {
+        final MatrixSIS magnitudes = new Matrix1(Math.abs(m00));
+        m00 = Math.signum(m00);
         return magnitudes;
     }
 

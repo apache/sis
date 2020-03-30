@@ -36,6 +36,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -204,11 +205,11 @@ final class ResampledGridCoverage extends GridCoverage {
              * dimensions than magnitude values (unusual, but not forbidden), some grid dimensions will be ignored
              * provided that their size is 1 (otherwise a SubspaceNotSpecifiedException is thrown).
              */
-            final double[]  magnitudes = vectors.normalizeColumns();          // Length is dimension  of source grid.
+            final MatrixSIS magnitudes = vectors.normalizeColumns();          // Length is dimension  of source grid.
             final int       crsDim     = vectors.getNumRow();                 // Number of dimensions of target CRS.
             final int       gridDim    = target.getDimension();               // Number of dimensions of target grid.
-            final int       mappedDim  = Math.min(magnitudes.length, Math.min(crsDim, gridDim));
-            final MatrixSIS crsToGrid  = Matrices.createZero(gridDim + 1, crsDim + 1);
+            final int       mappedDim  = Math.min(magnitudes.getNumCol(), Math.min(crsDim, gridDim));
+            final MatrixSIS crsToGrid  = Matrices.create(gridDim + 1, crsDim + 1, ExtendedPrecisionMatrix.ZERO);
             final int[]     dimSelect  = (gridDim > crsDim && targetExtent != null) ?
                                          targetExtent.getSubspaceDimensions(crsDim) : null;
             /*
@@ -248,7 +249,9 @@ final class ResampledGridCoverage extends GridCoverage {
                 for (int j=0; j<crsDim; j++) {
                     vectors.setElement(j, tgDim, 0);    // For preventing this column to be selected again.
                 }
-                crsToGrid.setElement(tgDim, tcDim, magnitudes[tgDim]);
+                final DoubleDouble m = DoubleDouble.castOrCopy(magnitudes.getNumber(0, tgDim));
+                m.inverseDivide(1);
+                crsToGrid.setNumber(tgDim, tcDim, m);
             }
             crsToGrid.setElement(gridDim, crsDim, 1);
             /*
@@ -261,7 +264,7 @@ final class ResampledGridCoverage extends GridCoverage {
                 // Create an extent of same size but with lower coordinates set to 0.
                 final long[] coordinates = new long[gridDim * 2];
                 for (int i=0; i<gridDim; i++) {
-                    coordinates[i + gridDim] = tentative.getSize(i);
+                    coordinates[i + gridDim] = tentative.getSize(i) - 1;
                 }
                 targetExtent = new GridExtent(tentative, coordinates);
             }

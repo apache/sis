@@ -411,10 +411,10 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public abstract void transpose();
 
     /**
-     * Normalizes all columns in-place. Each columns in this matrix is considered as a vector.
-     * For each column (vector), this method computes the magnitude (vector length) as the square
-     * root of the sum of all square values. Then, all values in the column are divided by that
-     * magnitude.
+     * Normalizes all columns in-place and returns their magnitudes as a row vector.
+     * Each columns in this matrix is considered as a vector. For each column (vector),
+     * this method computes the magnitude (vector length) as the square root of the sum of all square values.
+     * Then, all values in the column are divided by that magnitude.
      *
      * <p>This method is useful when the matrix is a
      * {@linkplain org.opengis.referencing.operation.MathTransform#derivative transform derivative}.
@@ -422,13 +422,13 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * coordinate in the source space is increased by one. Invoking this method turns those vectors
      * into unitary vectors, which is useful for forming the basis of a new coordinate system.</p>
      *
-     * @return the magnitude for each column. The length of this array is the number of columns.
+     * @return the magnitude for each column in a matrix having only one row.
      * @throws UnsupportedOperationException if this matrix is unmodifiable.
      */
-    public double[] normalizeColumns() {
+    public MatrixSIS normalizeColumns() {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
-        final double[] magnitudes = new double[numCol];
+        final MatrixSIS magnitudes = new NonSquareMatrix(1, numCol, false, 2);
         final DoubleDouble sum = new DoubleDouble();
         final DoubleDouble dot = new DoubleDouble();
         final DoubleDouble tmp = new DoubleDouble();
@@ -440,13 +440,15 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
                 sum.add(dot);
             }
             sum.sqrt();
-            for (int j=0; j<numRow; j++) {
-                get(j, i, tmp);
-                dot.setFrom(sum);
-                dot.inverseDivide(tmp);
-                set(j, i, dot);
+            if (!sum.isZero()) {
+                for (int j=0; j<numRow; j++) {
+                    get(j, i, tmp);
+                    dot.setFrom(sum);
+                    dot.inverseDivide(tmp);
+                    set(j, i, dot);
+                }
+                magnitudes.setNumber(0, i, sum);
             }
-            magnitudes[i] = sum.doubleValue();
         }
         return magnitudes;
     }
