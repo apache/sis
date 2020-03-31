@@ -37,6 +37,7 @@ import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -129,11 +130,33 @@ final class ResampledGridCoverage extends GridCoverage {
     /**
      * If this coverage can be represented as a {@link GridCoverage2D} instance,
      * returns such instance. Otherwise returns {@code this}.
+     *
+     * @param  isGeometryExplicit  whether grid extent or "grid to CRS" transform have been explicitly
+     *         specified by user. In such case, this method will not be allowed to change those values.
      */
-    private GridCoverage specialize() {
-        final GridExtent extent = gridGeometry.getExtent();
+    private GridCoverage specialize(final boolean isGeometryExplicit) throws TransformException {
+        GridExtent extent = gridGeometry.getExtent();
         if (extent.getDimension() < GridCoverage2D.MIN_DIMENSION || extent.getSubDimension() > BIDIMENSIONAL) {
             return this;
+        }
+        /*
+         * If the transform is linear and the user did not specified explicitly a desired transform or grid extent
+         * (i.e. user specified only a target CRS), keep same image with a different `gridToCRS` transform instead
+         * than doing a resampling. The intent is to avoid creating a new image if user apparently doesn't care.
+         */
+        if (!isGeometryExplicit && toSourceCorner instanceof LinearTransform) {
+            MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CORNER);
+            if (gridToCRS instanceof LinearTransform) {
+                final GridGeometry sourceGG = source.getGridGeometry();
+                extent = sourceGG.getExtent();
+                gridToCRS = MathTransforms.concatenate(toSourceCorner.inverse(), gridToCRS);
+                final GridGeometry targetGG = new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS,
+                                                               getCoordinateReferenceSystem());
+                if (sourceGG.equals(targetGG, ComparisonMode.APPROXIMATE)) {
+                    return source;
+                }
+                return new GridCoverage2D(source, targetGG, extent, source.render(null), xDimension, yDimension);
+            }
         }
         return new GridCoverage2D(source, gridGeometry, extent, render(null), xDimension, yDimension);
     }
@@ -191,9 +214,11 @@ final class ResampledGridCoverage extends GridCoverage {
          * in which case we need to compute a default transform trying to preserve resolution at the
          * point of interest.
          */
-        GridExtent targetExtent = target.isDefined(GridGeometry.EXTENT) ? target.getExtent() : null;
+        boolean isGeometryExplicit = target.isDefined(GridGeometry.EXTENT);
+        GridExtent targetExtent = isGeometryExplicit ? target.getExtent() : null;
         final MathTransform targetCenterToCRS;
         if (target.isDefined(GridGeometry.GRID_TO_CRS)) {
+            isGeometryExplicit = true;
             targetCenterToCRS = target.getGridToCRS(PixelInCell.CELL_CENTER);
             if (targetExtent == null) {
                 targetExtent = targetExtent(sourceGG.getExtent(), sourceCornerToCRS,
@@ -335,7 +360,7 @@ final class ResampledGridCoverage extends GridCoverage {
         return new ResampledGridCoverage(source, target,
                 MathTransforms.concatenate(targetCornerToCRS, sourceCornerToCRS.inverse()),
                 MathTransforms.concatenate(targetCenterToCRS, sourceCenterToCRS.inverse()),
-                interpolation).specialize();
+                interpolation).specialize(isGeometryExplicit);
     }
 
     /**

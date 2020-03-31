@@ -167,9 +167,10 @@ public class GridCoverage2D extends GridCoverage {
      * @param  yDimension   index of extent dimension for image <var>y</var> coordinates.
      */
     GridCoverage2D(final GridCoverage source, final GridGeometry domain, final GridExtent extent,
-                   final RenderedImage data, final int xDimension, final int yDimension)
+                   RenderedImage data, final int xDimension, final int yDimension)
     {
         super(source, domain);
+        data = unwrapIfSameSize(data);
         this.data       = data;
         this.xDimension = xDimension;
         this.yDimension = yDimension;
@@ -249,9 +250,7 @@ public class GridCoverage2D extends GridCoverage {
 
     /**
      * Returns the wrapped image if the only difference is a translation, or {@code data} otherwise.
-     * Workaround for RFE #4093999 ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.8")
     private static RenderedImage unwrapIfSameSize(RenderedImage data) {
         if (data instanceof ReshapedImage) {
             final RenderedImage image = ((ReshapedImage) data).image;
