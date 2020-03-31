@@ -107,6 +107,13 @@ public class GridCoverageProcessor {
         ArgumentChecks.ensureNonNull("target", target);
         try {
             return ResampledGridCoverage.create(source, target, interpolation);
+        } catch (IllegalGridGeometryException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof TransformException) {
+                throw (TransformException) cause;
+            } else {
+                throw e;
+            }
         } catch (FactoryException e) {
             throw new TransformException(e);
         }

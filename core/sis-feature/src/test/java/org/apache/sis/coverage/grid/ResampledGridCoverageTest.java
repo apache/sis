@@ -145,6 +145,23 @@ public final strictfp class ResampledGridCoverageTest {
     }
 
     /**
+     * Tests resampling of a sub-region.
+     *
+     * @throws FactoryException if transformation between CRS can not be computed.
+     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     */
+    @Test
+    public void testSubArea() throws FactoryException, TransformException {
+        final GridCoverage2D source = createGridCoverage();           // Envelope2D(20, 15, 60, 62)
+        GridGeometry gg = new GridGeometry(null, new Envelope2D(HardCodedCRS.WGS84, 18, 20, 17, 31));
+        final GridCoverage target = ResampledGridCoverage.create(source, gg, Interpolation.NEAREST);
+        final GridExtent sourceExtent = source.getGridGeometry().getExtent();
+        final GridExtent targetExtent = target.getGridGeometry().getExtent();
+        assertTrue(sourceExtent.getSize(0) > targetExtent.getSize(0));
+        assertTrue(sourceExtent.getSize(1) > targetExtent.getSize(1));
+    }
+
+    /**
      * Tests application of a reprojection.
      *
      * @throws FactoryException if transformation between CRS can not be computed.
@@ -153,8 +170,7 @@ public final strictfp class ResampledGridCoverageTest {
     @Test
     public void testReprojection() throws FactoryException, TransformException {
         final GridCoverage2D source = createGridCoverage();
-        GridGeometry gg = source.getGridGeometry();
-        gg = new GridGeometry(null, CELL_CENTER, null, HardCodedConversions.mercator());
+        GridGeometry gg = new GridGeometry(null, CELL_CENTER, null, HardCodedConversions.mercator());
         final GridCoverage target = ResampledGridCoverage.create(source, gg, Interpolation.NEAREST);
         assertTrue("GridExtent.startsAtZero", target.getGridGeometry().getExtent().startsAtZero());
         /*

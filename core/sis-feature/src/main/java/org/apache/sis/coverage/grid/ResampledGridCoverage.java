@@ -170,7 +170,7 @@ final class ResampledGridCoverage extends GridCoverage {
      * @throws IncompleteGridGeometryException if the source grid geometry is missing an information.
      * @throws TransformException if some coordinates can not be transformed to the specified target.
      */
-    static GridCoverage create(final GridCoverage source, GridGeometry target, final Interpolation interpolation)
+    static GridCoverage create(final GridCoverage source, final GridGeometry target, final Interpolation interpolation)
             throws FactoryException, TransformException
     {
         final CoordinateReferenceSystem sourceCRS = source.getCoordinateReferenceSystem();
@@ -344,20 +344,31 @@ final class ResampledGridCoverage extends GridCoverage {
         /*
          * At this point all target grid geometry components are non-null.
          * Build the final target GridGeometry if any components were missing.
+         * If an envelope is defined, resample only that sub-region.
          */
+        GridGeometry resampled = target;
         ComparisonMode mode = ComparisonMode.IGNORE_METADATA;
         if (!target.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS | GridGeometry.CRS)) {
-            target = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetCenterToCRS, targetCRS);
+            resampled = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetCenterToCRS, targetCRS);
             mode = ComparisonMode.APPROXIMATE;
+            if (target.isDefined(GridGeometry.ENVELOPE)) {
+                final MathTransform targetCornerToCRS = resampled.getGridToCRS(PixelInCell.CELL_CORNER);
+                GeneralEnvelope bounds = new GeneralEnvelope(resampled.getEnvelope());
+                bounds.intersect(target.getEnvelope());
+                bounds = Envelopes.transform(targetCornerToCRS.inverse(), bounds);
+                targetExtent = new GridExtent(bounds, GridRoundingMode.ENCLOSING, null, targetExtent, null);
+                resampled = new GridGeometry(targetExtent, PixelInCell.CELL_CENTER, targetCenterToCRS, targetCRS);
+                isGeometryExplicit = true;
+            }
         }
-        if (sourceGG.equals(target, mode)) {
+        if (sourceGG.equals(resampled, mode)) {
             return source;
         }
         /*
          * Complete the "target to source" transform.
          */
-        final MathTransform targetCornerToCRS = target.getGridToCRS(PixelInCell.CELL_CORNER);
-        return new ResampledGridCoverage(source, target,
+        final MathTransform targetCornerToCRS = resampled.getGridToCRS(PixelInCell.CELL_CORNER);
+        return new ResampledGridCoverage(source, resampled,
                 MathTransforms.concatenate(targetCornerToCRS, sourceCornerToCRS.inverse()),
                 MathTransforms.concatenate(targetCenterToCRS, sourceCenterToCRS.inverse()),
                 interpolation).specialize(isGeometryExplicit);
