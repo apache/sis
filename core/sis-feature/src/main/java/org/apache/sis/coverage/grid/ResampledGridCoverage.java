@@ -35,7 +35,6 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -202,18 +201,24 @@ final class ResampledGridCoverage extends GridCoverage {
             }
         } else {
             /*
-             * The first column below gives the displacement in target CRS when moving is the source grid by one cell
-             * toward right, and the second column gives the displacement when moving one cell toward up (positive y).
-             * More columns may exist in 3D, 4D, etc. cases.
+             * We will try to preserve resolution at the point of interest, which is typically in the center.
+             * We will also try to align the grids in such a way that integer coordinates close to the point
+             * of interest are integers in both grids. This correction is given by the `translation` vector.
              */
             final GridExtent sourceExtent = sourceGG.getExtent();
-            final MatrixSIS vectors = MatrixSIS.castOrCopy(sourceCenterToCRS.derivative(
-                    new DirectPositionView.Double(sourceExtent.getPointOfInterest())));
+            final double[]   sourcePOI    = sourceExtent.getPointOfInterest();
+            final double[]   targetPOI    = new double[sourceCenterToCRS.getTargetDimensions()];
+            final MatrixSIS  vectors      = MatrixSIS.castOrCopy(MathTransforms.derivativeAndTransform(
+                                                        sourceCenterToCRS, sourcePOI, 0, targetPOI, 0));
+            final double[]   originToPOI  = vectors.multiply(sourcePOI);
             /*
-             * We will retain only the magnitudes of those vectors, in order to have directions parallel with target
-             * grid axes. There is one magnitude value for each target CRS dimension. If there is more target grid
-             * dimensions than magnitude values (unusual, but not forbidden), some grid dimensions will be ignored
-             * provided that their size is 1 (otherwise a SubspaceNotSpecifiedException is thrown).
+             * The first column above gives the displacement in target CRS when moving is the source grid by one cell
+             * toward right, and the second column gives the displacement when moving one cell toward up (positive y).
+             * More columns may exist in 3D, 4D, etc. cases. We retain only the magnitudes of those vectors, in order
+             * to build new vectors with directions parallel with target grid axes. There is one magnitude value for
+             * each target CRS dimension. If there is more target grid dimensions than the amount of magnitude values
+             * (unusual, but not forbidden), some grid dimensions will be ignored provided that their size is 1
+             * (otherwise a SubspaceNotSpecifiedException is thrown).
              */
             final MatrixSIS magnitudes = vectors.normalizeColumns();          // Length is dimension  of source grid.
             final int       crsDim     = vectors.getNumRow();                 // Number of dimensions of target CRS.
@@ -261,7 +266,14 @@ final class ResampledGridCoverage extends GridCoverage {
                 }
                 final DoubleDouble m = DoubleDouble.castOrCopy(magnitudes.getNumber(0, tgDim));
                 m.inverseDivide(1);
-                crsToGrid.setNumber(tgDim, tcDim, m);
+                crsToGrid.setNumber(tgDim, tcDim, m);   // Scale factor from CRS coordinates to grid coordinates.
+                /*
+                 * Move the point of interest in a place where conversion to source grid coordinates
+                 * will be close to integer. The exact location does not matter; an additional shift
+                 * will be applied later for translating to target grid extent.
+                 */
+                m.multiply(originToPOI[tcDim] - targetPOI[tcDim]);
+                crsToGrid.setNumber(tgDim, crsDim, m);
             }
             crsToGrid.setElement(gridDim, crsDim, 1);
             /*
@@ -273,11 +285,15 @@ final class ResampledGridCoverage extends GridCoverage {
                                                       MathTransforms.linear(crsToGrid), true);
             if (targetExtent == null) {
                 // Create an extent of same size but with lower coordinates set to 0.
-                final long[] coordinates = new long[gridDim * 2];
-                for (int i=0; i<gridDim; i++) {
-                    coordinates[i + gridDim] = tentative.getSize(i) - 1;
+                if (tentative.startsAtZero()) {
+                    targetExtent = tentative;
+                } else {
+                    final long[] coordinates = new long[gridDim * 2];
+                    for (int i=0; i<gridDim; i++) {
+                        coordinates[i + gridDim] = tentative.getSize(i) - 1;
+                    }
+                    targetExtent = new GridExtent(tentative, coordinates);
                 }
-                targetExtent = new GridExtent(tentative, coordinates);
             }
             /*
              * At this point we have the desired target extent and the extent that we actually got by applying
