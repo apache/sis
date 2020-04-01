@@ -399,7 +399,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      * after the class name and before the string representation of the wrapped image.
      */
     @Override
-    final Class<AnnotatedImage> stringStart(final StringBuilder buffer) {
+    final Class<AnnotatedImage> appendStringContent(final StringBuilder buffer) {
         final String key = getComputedPropertyName();
         if (cache.containsKey(key)) {
             buffer.append("Cached ");

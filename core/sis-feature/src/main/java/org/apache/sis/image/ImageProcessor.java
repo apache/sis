@@ -16,9 +16,13 @@
  */
 package org.apache.sis.image;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.awt.Rectangle;
+import java.awt.image.ColorModel;
+import java.awt.image.SampleModel;
 import java.awt.image.Raster;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -28,10 +32,12 @@ import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
 /**
@@ -79,6 +85,22 @@ import org.apache.sis.internal.coverage.j2d.TiledImage;
  * @module
  */
 public class ImageProcessor {
+    /**
+     * Cache of previously created images. We use this cache only for images of known implementations,
+     * especially the ones which may be costly to compute. Reusing an existing instance avoid to repeat
+     * the computation.
+     */
+    private static final WeakHashSet<RenderedImage> CACHE = new WeakHashSet<>(RenderedImage.class);
+
+    /**
+     * Returns an unique instance of the given image. This method should be invoked only for images
+     * of known implementation, especially the ones which are costly to compute. The implementation
+     * shall override {@link Object#equals(Object)} and {@link Object#hashCode()} methods.
+     */
+    private static RenderedImage unique(final RenderedImage image) {
+        return CACHE.unique(image);
+    }
+
     /**
      * Interpolation to use during resample operations.
      *
@@ -365,7 +387,7 @@ public class ImageProcessor {
         }
         final int visibleBand = ImageUtilities.getVisibleBand(source);
         if (visibleBand >= 0) {
-            return RecoloredImage.rescale(source, visibleBand, minimum, maximum);
+            return unique(RecoloredImage.rescale(source, visibleBand, minimum, maximum));
         }
         return source;
     }
@@ -404,7 +426,7 @@ public class ImageProcessor {
                     final double minimum = Math.max(s.minimum(), mean - deviations);
                     final double maximum = Math.min(s.maximum(), mean + deviations);
                     if (minimum < maximum) {
-                        return RecoloredImage.rescale(source, visibleBand, minimum, maximum);
+                        return unique(RecoloredImage.rescale(source, visibleBand, minimum, maximum));
                     }
                 }
             }
@@ -420,21 +442,52 @@ public class ImageProcessor {
      * in the new image are set to {@linkplain #getFillValues() fill values}. Otherwise sample values are interpolated
      * using the method given by {@link #getInterpolation()}.
      *
+     * <p>If the given source is an instance of {@link ResampledImage} or {@link AnnotatedImage},
+     * then this method will use {@linkplain PlanarImage#getSources() the source} of the given source.
+     * The intent is to avoid resampling a resampled image and try to work on the original data instead.</p>
+     *
      * @param  bounds    domain of pixel coordinates of resampled image.
      * @param  toSource  conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
      * @param  source    the image to be resampled.
      * @return resampled image (may be {@code source}).
      */
-    public RenderedImage resample(final Rectangle bounds, final MathTransform toSource, final RenderedImage source) {
+    public RenderedImage resample(final Rectangle bounds, MathTransform toSource, RenderedImage source) {
         ArgumentChecks.ensureNonNull("bounds",   bounds);
         ArgumentChecks.ensureNonNull("toSource", toSource);
         ArgumentChecks.ensureNonNull("source",   source);
-        if (toSource.isIdentity() && bounds.x == source.getMinX() && bounds.y == source.getMinY()
-                && bounds.width == source.getWidth() && bounds.height == source.getHeight())
-        {
-            return source;
+        final ColorModel  cm = source.getColorModel();
+        final SampleModel sm = source.getSampleModel();
+        boolean isIdentity = toSource.isIdentity();
+        RenderedImage resampled = null;
+        for (;;) {
+            if (isIdentity && bounds.x == source.getMinX() && bounds.y == source.getMinY() &&
+                    bounds.width == source.getWidth() && bounds.height == source.getHeight())
+            {
+                resampled = source;
+                break;
+            }
+            if (Objects.equals(sm, source.getSampleModel())) {
+                if (source instanceof ImageAdapter) {
+                    source = ((ImageAdapter) source).source;
+                    continue;
+                }
+                if (source instanceof ResampledImage) {
+                    final List<RenderedImage> sources = source.getSources();
+                    if (sources != null && sources.size() == 1) {                         // Paranoiac check.
+                        toSource   = MathTransforms.concatenate(toSource, ((ResampledImage) source).toSource);
+                        isIdentity = toSource.isIdentity();
+                        source     = sources.get(0);
+                        continue;
+                    }
+                }
+            }
+            resampled = new ResampledImage(bounds, toSource, source, interpolation, fillValues);
+            break;
         }
-        return new ResampledImage(bounds, toSource, source, interpolation, fillValues);
+        if (cm != null && !cm.equals(resampled.getColorModel())) {
+            resampled = new RecoloredImage(resampled, cm);
+        }
+        return unique(resampled);
     }
 
     /**

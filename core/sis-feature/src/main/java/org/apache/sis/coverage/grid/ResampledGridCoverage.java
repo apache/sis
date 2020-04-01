@@ -65,7 +65,7 @@ final class ResampledGridCoverage extends GridCoverage {
     /**
      * The coverage to resample.
      */
-    private final GridCoverage source;
+    final GridCoverage source;
 
     /**
      * The transform from cell coordinates in this coverage to cell coordinates in {@linkplain #source} coverage.

@@ -102,9 +102,16 @@ public class GridCoverageProcessor {
      *         It may be the source CRS, the source extent, <i>etc.</i> depending on context.
      * @throws TransformException if some coordinates can not be transformed to the specified target.
      */
-    public GridCoverage resample(final GridCoverage source, GridGeometry target) throws TransformException {
+    public GridCoverage resample(GridCoverage source, final GridGeometry target) throws TransformException {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
+        /*
+         * If the source coverage is already the result of a previous "resample" operation,
+         * use the original data in order to avoid interpolating values that are already interpolated.
+         */
+        if (source instanceof ResampledGridCoverage) {
+            source = ((ResampledGridCoverage) source).source;
+        }
         try {
             return ResampledGridCoverage.create(source, target, interpolation);
         } catch (IllegalGridGeometryException e) {

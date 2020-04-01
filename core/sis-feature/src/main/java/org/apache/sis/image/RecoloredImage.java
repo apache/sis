@@ -42,7 +42,7 @@ final class RecoloredImage extends ImageAdapter {
     /**
      * Creates a new recolored image with the given colors.
      */
-    private RecoloredImage(final RenderedImage source, final ColorModel colors) {
+    RecoloredImage(final RenderedImage source, final ColorModel colors) {
         super(source);
         this.colors = colors;
     }
@@ -64,8 +64,7 @@ final class RecoloredImage extends ImageAdapter {
         for (;;) {
             if (colors.equals(source.getColorModel())) {
                 return source;
-            }
-            if (source instanceof RecoloredImage) {
+            } else if (source instanceof RecoloredImage) {
                 source = ((RecoloredImage) source).source;
             } else {
                 break;
@@ -83,11 +82,27 @@ final class RecoloredImage extends ImageAdapter {
     }
 
     /**
+     * Compares the given object with this image for equality.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        return super.equals(object) && colors.equals(((RecoloredImage) object).colors);
+    }
+
+    /**
+     * Returns a hash code value for this image.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + 37*colors.hashCode();
+    }
+
+    /**
      * Appends a content to show in the {@link #toString()} representation,
      * after the class name and before the string representation of the wrapped image.
      */
     @Override
-    final Class<RecoloredImage> stringStart(final StringBuilder buffer) {
+    final Class<RecoloredImage> appendStringContent(final StringBuilder buffer) {
         buffer.append(colors.getColorSpace());
         return RecoloredImage.class;
     }

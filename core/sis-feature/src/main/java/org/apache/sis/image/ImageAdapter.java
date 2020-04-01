@@ -24,6 +24,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -52,6 +53,7 @@ abstract class ImageAdapter extends PlanarImage {
      * @param  source  the image to wrap.
      */
     protected ImageAdapter(final RenderedImage source) {
+        ArgumentChecks.ensureNonNull("source", source);
         this.source = source;
     }
 
@@ -118,12 +120,46 @@ abstract class ImageAdapter extends PlanarImage {
     @Override public final WritableRaster copyData(WritableRaster r) {return source.copyData(r);}
 
     /**
+     * Compares the given object with this image for equality. This method should be quick and compare
+     * how images compute their values from their sources; it should not compare the actual pixel values.
+     *
+     * <p>The default implementation returns {@code true} if the given object is non-null, is an instance
+     * of the exact same class than this image and the {@linkplain #source} of both images are equal.
+     * Subclasses should override this method if more properties need to be compared.</p>
+     *
+     * @param  object  the object to compare with this image.
+     * @return {@code true} if the given object is an image performing the same calculation than this image.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object != null && object.getClass().equals(getClass())) {
+            return source.equals(((ImageAdapter) object).source);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this image. This method should be quick, for example using
+     * only a description of the operation to be done (e.g. implementation class, parameters).
+     * This method should not compute the hash code from sample values.
+     *
+     * <p>The default implementation computes a hash code based on the {@link #source} hash code and
+     * this image class. Subclasses should override this method if more properties need to be hashed.</p>
+     *
+     * @return a hash code value based on a description of the operation performed by this image.
+     */
+    @Override
+    public int hashCode() {
+        return source.hashCode() ^ getClass().hashCode();
+    }
+
+    /**
      * Returns a string representation of this image for debugging purpose.
      */
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(100);
-        final Class<?> subtype = stringStart(buffer.append('['));
+        final Class<?> subtype = appendStringContent(buffer.append('['));
         return buffer.insert(0, subtype.getSimpleName()).append(" on ").append(source).append(']').toString();
     }
 
@@ -134,5 +170,5 @@ abstract class ImageAdapter extends PlanarImage {
      * @param  buffer  where to start writing content of {@link #toString()} representation.
      * @return name of the class to show in the {@link #toString()} representation.
      */
-    abstract Class<? extends ImageAdapter> stringStart(StringBuilder buffer);
+    abstract Class<? extends ImageAdapter> appendStringContent(StringBuilder buffer);
 }

@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.nio.DoubleBuffer;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -87,6 +88,16 @@ public class ResampledImage extends ComputedImage {
     protected final MathTransform toSource;
 
     /**
+     * Same as {@link #toSource} but with the addition of a shift for taking in account the number of pixels required
+     * for interpolations. For example if a bicubic interpolation needs 4×4 pixels, then the source coordinates that
+     * we need are not the coordinates of the pixel we want to interpolate, but 1 or 2 pixels before for making room
+     * for interpolation support.
+     *
+     * @see #interpolationSupportOffset(int)
+     */
+    private final MathTransform toSourceSupport;
+
+    /**
      * The object to use for performing interpolations.
      */
     protected final Interpolation interpolation;
@@ -134,6 +145,7 @@ public class ResampledImage extends ComputedImage {
          * pixels of source image. Supplemental coordinates can be used for selecting an image in a
          * n-dimensional data cube.
          */
+        this.toSource = toSource;
         int numDim = toSource.getSourceDimensions();
         if (numDim != BIDIMENSIONAL || (numDim = toSource.getTargetDimensions()) < BIDIMENSIONAL) {
             throw new IllegalArgumentException(Errors.format(
@@ -150,7 +162,7 @@ public class ResampledImage extends ComputedImage {
         final double[] offset = new double[numDim];
         offset[0] = interpolationSupportOffset(s.width);
         offset[1] = interpolationSupportOffset(s.height);
-        this.toSource = MathTransforms.concatenate(toSource, MathTransforms.translation(offset));
+        toSourceSupport = MathTransforms.concatenate(toSource, MathTransforms.translation(offset));
         final int numBands = ImageUtilities.getNumBands(source);
         /*
          * Copy the `fillValues` either as an `int[]` or `double[]` array, depending on
@@ -198,6 +210,8 @@ public class ResampledImage extends ComputedImage {
      *
      * @param  span  the width or height of the support region for interpolations.
      * @return relative index of the first pixel needed on the left or top sides, as a value ≤ 0.
+     *
+     * @see #toSourceSupport
      */
     private static double interpolationSupportOffset(final int span) {
         return -Math.max(0, (span - 1) / 2);        // Round toward 0.
@@ -305,7 +319,7 @@ public class ResampledImage extends ComputedImage {
         final int tileMinY = tile.getMinY();
         final int tileMaxX = Math.addExact(tileMinX, scanline);
         final int tileMaxY = Math.addExact(tileMinY, tile.getHeight());
-        final int tgtDim   = toSource.getTargetDimensions();
+        final int tgtDim   = toSourceSupport.getTargetDimensions();
         final double[] coordinates = new double[scanline * Math.max(BIDIMENSIONAL, tgtDim)];
         /*
          * Compute the bounds of pixel coordinates that we can use for setting iterator positions in the source image.
@@ -381,7 +395,7 @@ public class ResampledImage extends ComputedImage {
                 coordinates[ci++] = tx;
                 coordinates[ci++] = ty;
             }
-            toSource.transform(coordinates, 0, coordinates, 0, scanline);
+            toSourceSupport.transform(coordinates, 0, coordinates, 0, scanline);
             /*
              * Special case for nearest-neighbor.
              */
@@ -482,5 +496,41 @@ public class ResampledImage extends ComputedImage {
             }
         }
         return tile;
+    }
+
+    /**
+     * Compares the given object with this image for equality. This method returns {@code true}
+     * if the given object is non-null, is an instance of the exact same class than this image,
+     * has equal sources and do the same resampling operation (same interpolation method,
+     * same fill values, same coordinates).
+     *
+     * @param  object  the object to compare with this image.
+     * @return {@code true} if the given object is an image performing the same resampling than this image.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object != null && object.getClass().equals(getClass())) {
+            final ResampledImage other = (ResampledImage) object;
+            return minX   == other.minX &&
+                   minY   == other.minY &&
+                   width  == other.width &&
+                   height == other.height &&
+                   interpolation.equals(other.interpolation) &&
+                   Objects.deepEquals(fillValues, other.fillValues) &&
+                   toSource.equals(other.toSource) &&
+                   getSources().equals(other.getSources());
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this image.
+     *
+     * @return a hash code value based on a description of the operation performed by this image.
+     */
+    @Override
+    public int hashCode() {
+        return minX + 31*(minY + 31*(width + 31*height)) + interpolation.hashCode()
+                + toSource.hashCode() + getSources().hashCode();
     }
 }
