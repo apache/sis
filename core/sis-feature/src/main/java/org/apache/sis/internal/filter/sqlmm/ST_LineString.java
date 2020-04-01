@@ -24,11 +24,11 @@ import java.util.List;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
-import org.apache.sis.internal.filter.NamedFunction;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.filter.FilterGeometryUtils;
 import static org.apache.sis.internal.filter.FilterGeometryUtils.getWKBReader;
 import static org.apache.sis.internal.filter.FilterGeometryUtils.getWKTReader;
+import org.apache.sis.internal.filter.NamedFunction;
 import org.apache.sis.referencing.CRS;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
@@ -82,7 +82,7 @@ final class ST_LineString extends NamedFunction implements FeatureExpression {
         }
 
         if (this.parameters.size() > 1) {
-            constantCrs = getCrs(this.parameters.get(1), null);
+            constantCrs = toCrs(this.parameters.get(1), null);
         }
     }
 
@@ -98,7 +98,7 @@ final class ST_LineString extends NamedFunction implements FeatureExpression {
     public Object evaluate(Object object) {
         CoordinateReferenceSystem crs = constantCrs;
         if (crs == null && parameters.size() > 1) {
-            crs = getCrs(parameters.get(1), object);
+            crs = toCrs(object, parameters.get(1));
         }
 
         Object x = parameters.get(0).evaluate(object);
@@ -164,15 +164,22 @@ final class ST_LineString extends NamedFunction implements FeatureExpression {
         return atb;
     }
 
-    private CoordinateReferenceSystem getCrs(Expression exp, Object candidate) {
+    private CoordinateReferenceSystem toCrs(Object candidate, Expression exp) {
         Object cdt = exp.evaluate(candidate);
         if (cdt instanceof Number) {
             try {
-                return CRS.forCode("EPSG:" + ((Number) cdt).intValue());
+                cdt = CRS.forCode("EPSG:" + ((Number) cdt).intValue());
             } catch (FactoryException ex) {
                 warning(ex);
             }
-        } else if (cdt instanceof CoordinateReferenceSystem) {
+        } else if (cdt instanceof String) {
+            try {
+                cdt = CRS.forCode((String) cdt);
+            } catch (FactoryException ex) {
+                warning(ex);
+            }
+        }
+        if (cdt instanceof CoordinateReferenceSystem) {
             return (CoordinateReferenceSystem) cdt;
         }
         return null;

@@ -17,6 +17,25 @@
 package org.apache.sis.internal.filter.sqlmm;
 
 import java.util.Arrays;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.filter.DefaultFilterFactory;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.feature.jts.JTS;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.test.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.Test;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.FilterFactory;
@@ -28,28 +47,6 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
-
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
-import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.feature.jts.JTS;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.test.TestCase;
-
-import org.junit.Test;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.opengis.test.Assert.assertEquals;
 import static org.opengis.test.Assert.assertInstanceOf;
 
 
@@ -326,10 +323,18 @@ public final strictfp class SQLMMTest extends TestCase {
         /*
          * Execute the function and check the result.
          */
-        final Point result = evaluate(Point.class, null, factory.function("ST_Point",
+        Point result = evaluate(Point.class, null, factory.function("ST_Point",
                 factory.literal(10.0),
                 factory.literal(20.0),
                 factory.literal(HardCodedCRS.WGS84)));
+        assertEquals("userData", HardCodedCRS.WGS84, result.getUserData());
+        assertEquals(10.0, result.getX(), STRICT);
+        assertEquals(20.0, result.getY(), STRICT);
+
+        result = evaluate(Point.class, null, factory.function("ST_Point",
+                factory.literal(10.0),
+                factory.literal(20.0),
+                factory.literal("CRS:84")));
         assertEquals("userData", HardCodedCRS.WGS84, result.getUserData());
         assertEquals(10.0, result.getX(), STRICT);
         assertEquals(20.0, result.getY(), STRICT);

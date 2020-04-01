@@ -19,9 +19,12 @@ package org.apache.sis.internal.filter.sqlmm;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.filter.FilterGeometryUtils;
+import org.apache.sis.referencing.CRS;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.FeatureType;
 import org.opengis.filter.expression.Expression;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.FactoryException;
 
 /**
  *
@@ -57,7 +60,9 @@ public abstract class AbstractGeomConstructor extends AbstractSpatialFunction {
         final Geometry geom = FilterGeometryUtils.toGeometry(candidate, parameters.get(0));
 
         if (parameters.size() == 2) {
+            final CoordinateReferenceSystem crs = toCrs(candidate,  parameters.get(1));
             geom.setSRID(((Number) parameters.get(1).evaluate(candidate)).intValue());
+            geom.setUserData(crs);
         } else if (parameters.size() > 2) {
             warning(new Exception("Unexpected number of arguments : " + parameters.size()));
             return null;
@@ -74,5 +79,26 @@ public abstract class AbstractGeomConstructor extends AbstractSpatialFunction {
     @Override
     public PropertyTypeBuilder expectedType(FeatureType valueType, FeatureTypeBuilder addTo) {
         return addTo.addAttribute(getExpectedClass()).setName(getName());
+    }
+
+    private CoordinateReferenceSystem toCrs(Object candidate, Expression exp) {
+        Object cdt = exp.evaluate(candidate);
+        if (cdt instanceof Number) {
+            try {
+                cdt = CRS.forCode("EPSG:" + ((Number) cdt).intValue());
+            } catch (FactoryException ex) {
+                warning(ex);
+            }
+        } else if (cdt instanceof String) {
+            try {
+                cdt = CRS.forCode((String) cdt);
+            } catch (FactoryException ex) {
+                warning(ex);
+            }
+        }
+        if (cdt instanceof CoordinateReferenceSystem) {
+            return (CoordinateReferenceSystem) cdt;
+        }
+        return null;
     }
 }

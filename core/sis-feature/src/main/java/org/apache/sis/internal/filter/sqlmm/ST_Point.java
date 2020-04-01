@@ -20,9 +20,9 @@ import java.math.BigDecimal;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
-import org.apache.sis.internal.filter.NamedFunction;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.filter.FilterGeometryUtils;
+import org.apache.sis.internal.filter.NamedFunction;
 import org.apache.sis.referencing.CRS;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -174,7 +174,14 @@ final class ST_Point extends NamedFunction implements FeatureExpression {
             } catch (FactoryException ex) {
                 warning(ex);
             }
-        } else if (cdt instanceof CoordinateReferenceSystem) {
+        } else if (cdt instanceof String) {
+            try {
+                cdt = CRS.forCode((String) cdt);
+            } catch (FactoryException ex) {
+                warning(ex);
+            }
+        }
+        if (cdt instanceof CoordinateReferenceSystem) {
             return (CoordinateReferenceSystem) cdt;
         }
         return null;
